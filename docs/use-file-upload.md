@@ -548,7 +548,7 @@ const uploadInChunks = (file: File, chunkSize = 1024 * 1024) => {
 
 ## More Examples
 
-For more examples and live demos of the `useFileUpload` hook in action, visit the [Origin UI File Uploader page](https://originui.com/file-uploader).
+For more examples and live demos of the `useFileUpload` hook in action, visit the [Origin UI File upload page](https://originui.com/file-upload).
 
 The documentation site includes various implementations and use cases, including:
 
