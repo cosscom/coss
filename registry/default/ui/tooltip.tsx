@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import { Tooltip as TooltipPrimitive } from "radix-ui"
 
 import { cn } from "@/registry/default/lib/utils"
 
@@ -56,7 +56,7 @@ function TooltipContent({
       >
         {children}
         {showArrow && (
-          <TooltipPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_hsl(var(--border))]" />
+          <TooltipPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_var(--border)]" />
         )}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>

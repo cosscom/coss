@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import * as PopoverPrimitive from "@radix-ui/react-popover"
+import { Popover as PopoverPrimitive } from "radix-ui"
 
 import { cn } from "@/registry/default/lib/utils"
 
@@ -40,7 +40,7 @@ function PopoverContent({
       >
         {props.children}
         {showArrow && (
-          <PopoverPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_hsl(var(--border))]" />
+          <PopoverPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_var(--border)]" />
         )}
       </PopoverPrimitive.Content>
     </PopoverPrimitive.Portal>

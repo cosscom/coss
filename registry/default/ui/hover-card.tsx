@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
+import { HoverCard as HoverCardPrimitive } from "radix-ui"
 
 import { cn } from "@/registry/default/lib/utils"
 
@@ -41,7 +41,7 @@ function HoverCardContent({
     >
       {props.children}
       {showArrow && (
-        <HoverCardPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_hsl(var(--border))]" />
+        <HoverCardPrimitive.Arrow className="fill-popover -my-px drop-shadow-[0_1px_0_var(--border)]" />
       )}
     </HoverCardPrimitive.Content>
   )

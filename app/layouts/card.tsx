@@ -1,12 +1,15 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import CopyLayout from "@/components/copy-layout"
+
 interface CardProps {
   card: {
     id: number
     title: string
     demoUrl?: string
     repoUrl?: string
+    cmd?: string
     imgHeight: number
   }
 }
@@ -27,6 +30,7 @@ export default function Card({ card }: CardProps) {
         <h2 className="text-sm font-medium">{card.title}</h2>
         {card.demoUrl && card.repoUrl ? (
           <div className="flex items-center gap-6">
+            <CopyLayout command={card.cmd} />
             <Link
               href={card.demoUrl}
               className="inline-flex items-center gap-1 text-sm hover:underline"
