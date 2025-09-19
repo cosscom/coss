@@ -14,6 +14,7 @@ import {
 import { Slider } from "@/registry/default/ui/slider"
 
 import CopyClass from "./copy-class"
+import EasingUsage from "./easing-usage"
 
 interface Easing {
   name: string
@@ -430,6 +431,8 @@ export default function Easings({ easings }: EasingsProps) {
               <CopyClass
                 value={`ease-[cubic-bezier(${easing.points.join(",")})]`}
               />
+
+              <EasingUsage easing={easing} duration={duration} />
             </div>
           </div>
         ))}
