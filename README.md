@@ -1,4 +1,4 @@
-![coss.com](https://github.com/user-attachments/assets/19b8bdcb-ab66-4c27-afd6-c58f85d5178b)
+![coss.com](https://github.com/user-attachments/assets/56dfe7f7-85b7-44ee-b89a-1c30c5c4a156)
 <h3 align="center">coss.com (formerly Origin UI)</h3>
 <p align="center">The <strong>everything but AI</strong> company.</p>
 
