@@ -4,11 +4,11 @@ import { CodeBlock } from "@workspace/ui/components/code-block";
 export default async function Page() {
   const code = `"dependencies": {
   "@coss/auth": "1.18.6",
-  "@coss/video": "^0.59.0",
-  "@coss/calendar": "^84.0.0",
-  "@coss/mail": "^6.7.8",
-  "@coss/sms": "^2.7.8",
-  "@coss/payments": "^9.16.0"
+  "@coss/video": "1.18.6",
+  "@coss/calendar": "1.18.6",
+  "@coss/mail": "1.18.6",
+  "@coss/sms": "1.18.6",
+  "@coss/payments": "1.18.6"
 },`;
 
   return (
