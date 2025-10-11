@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/microfrontends.json",
+  "applications": {
+    "coss-com": {
+      "development": {
+        "fallback": "coss.com"
+      }
+    },
+    "coss-com-origin": {
+      "routing": [
+        {
+          "paths": ["/origin", "/origin/:path*"]
+        }
+      ]
+    },
+    "coss-com-ui": {
+      "routing": [
+        {
+          "paths": ["/ui", "/ui/:path*"]
+        }
+      ]
+    }
+  }
+}
