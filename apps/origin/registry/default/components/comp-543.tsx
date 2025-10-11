@@ -76,7 +76,7 @@ export default function Component() {
       >
         Avatar uploader with droppable area ∙{" "}
         <a
-          href="https://github.com/origin-space/originui/tree/main/docs/use-file-upload.md"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
         >
           API

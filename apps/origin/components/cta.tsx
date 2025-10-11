@@ -8,7 +8,7 @@ export default function Cta() {
       </h2>
       <Button asChild className="rounded-full">
         <a
-          href="https://github.com/origin-space/originui/discussions/categories/suggestions"
+          href="https://github.com/cosscom/coss/discussions/categories/suggestions"
           target="_blank"
         >
           <span className="text-primary-foreground">Suggest component</span>
