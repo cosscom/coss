@@ -42,7 +42,7 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
 
   try {
     console.log("Attempting to subscribe email:", result.data.email)
-    
+
     const response = await fetch(
       `https://api.emailoctopus.com/lists/${process.env.EMAIL_OCTOPUS_LIST_ID}/contacts`,
       {
@@ -98,7 +98,8 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
 
       return {
         success: false,
-        error: data.detail || data.title || "Failed to subscribe. Please try again.",
+        error:
+          data.detail || data.title || "Failed to subscribe. Please try again.",
       }
     }
 
