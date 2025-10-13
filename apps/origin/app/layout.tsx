@@ -33,6 +33,20 @@ export const metadata: Metadata = {
     "coss.com origin - Beautiful UI components built with Tailwind CSS and React",
   description:
     "An extensive collection of copy-and-paste components for quickly building app UIs. Free, open-source, and ready to drop into your projects.",
+  openGraph: {
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 2400,
+        height: 1260,
+        alt: "coss.com origin - Beautiful UI components",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image.jpg"],
+  },
 }
 
 export default function RootLayout({
