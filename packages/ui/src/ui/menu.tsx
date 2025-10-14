@@ -6,13 +6,9 @@ import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 
-function Menu(props: MenuPrimitive.Root.Props) {
-  return <MenuPrimitive.Root {...props} />
-}
+const Menu = MenuPrimitive.Root
 
-function MenuPortal(props: MenuPrimitive.Portal.Props) {
-  return <MenuPrimitive.Portal {...props} />
-}
+const MenuPortal = MenuPrimitive.Portal
 
 function MenuTrigger(props: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="menu-trigger" {...props} />
@@ -38,7 +34,7 @@ function MenuPopup({
         align={align}
         alignOffset={alignOffset}
       >
-        <span className="relative flex origin-(--transform-origin) rounded-lg border bg-popover bg-clip-padding transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-lg has-data-starting-style:scale-98 has-data-starting-style:opacity-0 dark:bg-clip-border">
+        <span className="relative flex origin-(--transform-origin) rounded-lg border bg-popover bg-clip-padding transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-lg has-data-starting-style:scale-98 has-data-starting-style:opacity-0 dark:bg-clip-border dark:shadow-lg dark:shadow-black/24 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
           <MenuPrimitive.Popup
             data-slot="menu-popup"
             className={cn(

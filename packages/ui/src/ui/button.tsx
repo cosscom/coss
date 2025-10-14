@@ -11,15 +11,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-primary bg-primary text-primary-foreground inset-shadow-[0_1px_--theme(--color-white/16%)] before:shadow-sm before:shadow-primary/32 hover:bg-primary/90 active:inset-shadow-[0_1px_--theme(--color-black/8%)] active:before:shadow-xs data-pressed:inset-shadow-[0_1px_--theme(--color-black/8%)] data-pressed:before:shadow-xs",
+          "border-primary bg-primary text-primary-foreground not-disabled:shadow-sm not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] not-disabled:before:shadow-sm not-disabled:before:shadow-primary/32 hover:bg-primary/90 active:inset-shadow-[0_1px_--theme(--color-black/8%)] active:before:shadow-xs data-pressed:inset-shadow-[0_1px_--theme(--color-black/8%)] data-pressed:before:shadow-xs dark:shadow-black/24 dark:before:hidden",
         outline:
-          "border-border bg-background before:shadow-sm hover:bg-accent/50 active:before:shadow-xs data-pressed:bg-accent/50 data-pressed:before:shadow-xs dark:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border dark:hover:bg-input/48 dark:data-pressed:bg-input/48",
+          "border-border bg-background not-disabled:before:shadow-sm hover:bg-accent/50 active:before:shadow-xs data-pressed:bg-accent/50 data-pressed:before:shadow-xs dark:bg-input/32 dark:shadow-black/24 dark:not-disabled:shadow-sm dark:not-in-data-[slot=group]:bg-clip-border dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/8%)] dark:hover:bg-input/48 dark:active:shadow-none dark:data-pressed:bg-input/48 dark:data-pressed:shadow-none",
         secondary:
           "border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/90 data-pressed:bg-secondary/90",
         destructive:
-          "border-destructive bg-destructive text-white inset-shadow-[0_1px_--theme(--color-white/16%)] before:shadow-sm before:shadow-destructive/32 hover:bg-destructive/90 active:inset-shadow-[0_1px_--theme(--color-black/8%)] active:before:shadow-xs data-pressed:bg-destructive/90 data-pressed:inset-shadow-[0_1px_--theme(--color-black/8%)] data-pressed:before:shadow-xs",
+          "border-destructive bg-destructive text-white not-disabled:shadow-sm not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] not-disabled:before:shadow-sm not-disabled:before:shadow-destructive/32 hover:bg-destructive/90 active:inset-shadow-[0_1px_--theme(--color-black/8%)] active:before:shadow-xs data-pressed:bg-destructive/90 data-pressed:inset-shadow-[0_1px_--theme(--color-black/8%)] data-pressed:before:shadow-xs dark:shadow-black/24 dark:before:hidden",
         "destructive-outline":
-          "border-border bg-background text-destructive-foreground before:shadow-sm hover:border-destructive/32 hover:bg-destructive/4 active:before:shadow-xs data-pressed:border-destructive/32 data-pressed:bg-destructive/4 data-pressed:before:shadow-xs dark:bg-clip-border dark:not-hover:bg-input/32 dark:data-pressed:not-hover:bg-input/32",
+          "border-border bg-background text-destructive-foreground not-disabled:before:shadow-sm hover:border-destructive/32 hover:bg-destructive/4 active:before:shadow-xs data-pressed:border-destructive/32 data-pressed:bg-destructive/4 data-pressed:before:shadow-xs dark:shadow-black/24 dark:not-hover:bg-input/32 dark:not-disabled:shadow-sm dark:not-in-data-[slot=group]:bg-clip-border dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/8%)] dark:active:shadow-none dark:data-pressed:shadow-none dark:data-pressed:not-hover:bg-input/32",
         ghost: "hover:bg-accent data-pressed:bg-accent",
         link: "underline-offset-4 hover:underline",
       },
