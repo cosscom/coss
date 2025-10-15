@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 
   try {
     revalidateTag('cms-routes-tag');
-
     return NextResponse.json({ revalidated: true, now: Date.now() });
   } catch {
     return NextResponse.json({ revalidated: false, message: 'Error revalidating' }, { status: 500 });
