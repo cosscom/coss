@@ -1,7 +1,7 @@
 import { revalidateTag } from 'next/cache';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret');
 
   if (secret !== process.env.REVALIDATION_SECRET) {
