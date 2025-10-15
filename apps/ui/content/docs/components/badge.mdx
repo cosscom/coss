@@ -218,6 +218,16 @@ We've added new colored variants for better semantic meaning:
 | `warning` | Yellow badge for warnings      |
 | `error`   | Red badge for errors           |
 
+Ensure you have the following variables imported in your CSS file:
+
+- `--destructive-foreground`
+- `--info`
+- `--info-foreground`
+- `--success`
+- `--success-foreground`
+- `--warning`
+- `--warning-foreground`
+
 ### Comparison Example
 
 <span data-lib="radix-ui">
@@ -249,34 +259,3 @@ export function LinkAsButton() {
 }
 ```
 </span>
-
-## Comparing with Radix / shadcn
-
-If you’re already familiar with Radix UI and shadcn/ui, this guide highlights the small differences and similarities so you can get started with **coss.com ui** quickly.
-
-### Quick Checklist
-
-- Replace `asChild` → `render` on `Button`
-
-## Additional Notes
-
-**New Variants**
-
-We've added new colored variants for better semantic meaning:
-
-| Variant   | Description             |
-| --------- | ----------------------- |
-| `info`    | Displays a blue badge   |
-| `success` | Displays a green badge  |
-| `warning` | Displays a yellow badge |
-| `error`   | Displays a red badge    |
-
-Ensure you have the following variables imported in your CSS file:
-
-- `--destructive-foreground`
-- `--info`
-- `--info-foreground`
-- `--success`
-- `--success-foreground`
-- `--warning`
-- `--warning-foreground`
