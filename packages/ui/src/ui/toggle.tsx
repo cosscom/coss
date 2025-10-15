@@ -12,7 +12,7 @@ const toggleVariants = cva(
       variant: {
         default: "border-transparent",
         outline:
-          "border-border bg-background bg-clip-padding before:shadow-sm active:before:shadow-xs data-pressed:before:shadow-xs dark:not-in-data-[slot=toggle-group]:bg-clip-border",
+          "border-border bg-clip-padding not-disabled:before:shadow-sm active:before:shadow-xs data-pressed:before:shadow-xs dark:not-in-data-[slot=toggle-group]:bg-clip-border dark:not-disabled:not-in-data-[slot=group]:before:shadow-[0_-1px_--theme(--color-white/8%)]",
       },
       size: {
         default: "h-8 min-w-8 px-[calc(--spacing(2)-1px)]",

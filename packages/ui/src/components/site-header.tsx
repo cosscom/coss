@@ -6,16 +6,23 @@ import { GitHubLink } from "@workspace/ui/components/github-link"
 import { ModeSwitcher } from "@workspace/ui/components/mode-switcher"
 import { ProductLabel } from "@workspace/ui/components/product-label"
 import { ProductsDropdown } from "@workspace/ui/components/products-dropdown"
-import { Separator } from "@workspace/ui/ui/separator"
 
-export function SiteHeader({ mobileNav, children }: { mobileNav?: React.ReactNode; children?: React.ReactNode }) {
+export function SiteHeader({
+  mobileNav,
+  children,
+  currentProduct
+}: {
+  mobileNav?: React.ReactNode;
+  children?: React.ReactNode;
+  currentProduct?: string;
+}) {
   const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_URL || ""
   const gatewayHome = gatewayOrigin ? `${gatewayOrigin}/` : "/"
   const isExternal = !!gatewayOrigin
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-sidebar/80 backdrop-blur-sm">
-      <div className="container flex h-(--header-height) w-full items-center justify-between gap-2 px-4 sm:px-6">
+    <header className="sticky top-0 z-5 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/50">
+      <div className="relative container flex h-(--header-height) w-full items-center justify-between gap-2 px-4 sm:px-6">
         {mobileNav}
         <div className="-mt-0.5 font-heading text-2xl sm:text-[1.625em] flex shrink-0 gap-1.5 items-center">
           {isExternal ? (
@@ -27,14 +34,12 @@ export function SiteHeader({ mobileNav, children }: { mobileNav?: React.ReactNod
               coss.com
             </Link>
           )}
-          <ProductLabel items={siteConfig.products} />
+          <ProductLabel items={siteConfig.products} currentProduct={currentProduct} />
         </div>
         <div className="ms-auto flex items-center gap-2 md:flex-1 md:justify-end">
           {children}
           <ProductsDropdown items={siteConfig.products} />
-          <Separator orientation="vertical" className="h-5 max-md:hidden" />
           <GitHubLink />
-          <Separator orientation="vertical" className="h-5 max-md:hidden" />
           <ModeSwitcher />
         </div>
       </div>

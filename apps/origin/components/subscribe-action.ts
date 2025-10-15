@@ -9,7 +9,7 @@ type EmailOctopusError = {
 }
 
 const subscribeSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
 })
 
 type SubscribeResult = { success: true } | { success: false; error: string }
