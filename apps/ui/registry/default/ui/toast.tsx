@@ -86,7 +86,7 @@ function ToastList({ position = "bottom-right" }: { position: ToastPosition }) {
                     : ["right", isTop ? "up" : "down"]
               }
               className={cn(
-                "absolute z-[calc(9999-var(--toast-index))] h-(--toast-calc-height) w-full rounded-lg border bg-popover bg-clip-padding p-4 text-popover-foreground select-none [transition:transform_.5s_cubic-bezier(.22,1,.36,1),opacity_.5s,height_.15s] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-lg dark:bg-clip-border dark:shadow-lg dark:shadow-black/24 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
+                "absolute z-[calc(9999-var(--toast-index))] h-(--toast-calc-height) w-full rounded-lg border bg-popover bg-clip-padding px-3.5 py-3 text-popover-foreground select-none [transition:transform_.5s_cubic-bezier(.22,1,.36,1),opacity_.5s,height_.15s] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-lg dark:bg-clip-border dark:shadow-lg dark:shadow-black/24 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
                 // Base positioning using data-position
                 "data-[position*=right]:right-0 data-[position*=right]:left-auto",
                 "data-[position*=left]:right-auto data-[position*=left]:left-0",
@@ -127,24 +127,24 @@ function ToastList({ position = "bottom-right" }: { position: ToastPosition }) {
                 "data-expanded:data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+100%+var(--toast-inset)))]"
               )}
             >
-              <Toast.Content className="flex items-center justify-between gap-1.5 overflow-hidden transition-opacity duration-250 data-behind:pointer-events-none data-behind:opacity-0 data-expanded:pointer-events-auto data-expanded:opacity-100">
+              <Toast.Content className="flex items-center justify-between gap-1.5 overflow-hidden text-sm transition-opacity duration-250 data-behind:pointer-events-none data-behind:opacity-0 data-expanded:pointer-events-auto data-expanded:opacity-100">
                 <div className="flex gap-2">
                   {Icon && (
                     <div
-                      className="mt-.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+                      className="mt-.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&>svg]:h-[1lh] [&>svg]:w-4"
                       data-slot="toast-icon"
                     >
                       <Icon className="in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=loading]:animate-spin in-data-[type=loading]:opacity-72 in-data-[type=success]:text-success in-data-[type=warning]:text-warning" />
                     </div>
                   )}
 
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-0.5">
                     <Toast.Title
-                      className="text-sm font-medium"
+                      className="font-medium"
                       data-slot="toast-title"
                     />
                     <Toast.Description
-                      className="text-sm text-muted-foreground"
+                      className="text-muted-foreground"
                       data-slot="toast-description"
                     />
                   </div>
