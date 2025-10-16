@@ -9,11 +9,7 @@ export default function AlertDemo() {
     <Alert>
       <AlertTitle>Heads up!</AlertTitle>
       <AlertDescription>
-        <p>
-          Describe what can be done about it here.Describe what can be done
-          about it here.Describe what can be done about it here.Describe what
-          can be done about it here.Describe what can be done about it here.
-        </p>
+        <p>Describe what can be done about it here.</p>
       </AlertDescription>
     </Alert>
   )
