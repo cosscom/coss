@@ -694,6 +694,75 @@
       ]
     },
     {
+      "name": "accordion-with-icon",
+      "description": "Accordion with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "https://coss.com/ui/r/accordion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/accordion-with-icon.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "accordion"
+      ]
+    },
+    {
+      "name": "accordion-multi-level",
+      "description": "Accordion with multiple levels",
+      "type": "registry:example",
+      "registryDependencies": [
+        "https://coss.com/ui/r/accordion.json",
+        "https://coss.com/ui/r/collapsible.json"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/accordion-multi-level.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "accordion"
+      ]
+    },
+    {
+      "name": "accordion-table",
+      "description": "Accordion with table like layout",
+      "type": "registry:example",
+      "registryDependencies": [
+        "https://coss.com/ui/r/accordion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/accordion-table.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "accordion"
+      ]
+    },
+    {
+      "name": "accordion-tabs",
+      "description": "Accordion with tabs like layout",
+      "type": "registry:example",
+      "registryDependencies": [
+        "https://coss.com/ui/r/accordion.json"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/accordion-tabs.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "accordion"
+      ]
+    },
+    {
       "name": "accordion-single",
       "description": "Accordion with one panel open",
       "type": "registry:example",

@@ -834,6 +834,78 @@ export const Index: Record<string, any> = {
     categories: ["accordion"],
     meta: undefined,
   },
+  "accordion-with-icon": {
+    name: "accordion-with-icon",
+    description: "Accordion with icon",
+    type: "registry:example",
+    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    files: [{
+      path: "registry/default/examples/accordion-with-icon.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/accordion-with-icon.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["accordion"],
+    meta: undefined,
+  },
+  "accordion-multi-level": {
+    name: "accordion-multi-level",
+    description: "Accordion with multiple levels",
+    type: "registry:example",
+    registryDependencies: ["https://coss.com/ui/r/accordion.json","https://coss.com/ui/r/collapsible.json"],
+    files: [{
+      path: "registry/default/examples/accordion-multi-level.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/accordion-multi-level.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["accordion"],
+    meta: undefined,
+  },
+  "accordion-table": {
+    name: "accordion-table",
+    description: "Accordion with table like layout",
+    type: "registry:example",
+    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    files: [{
+      path: "registry/default/examples/accordion-table.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/accordion-table.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["accordion"],
+    meta: undefined,
+  },
+  "accordion-tabs": {
+    name: "accordion-tabs",
+    description: "Accordion with tabs like layout",
+    type: "registry:example",
+    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    files: [{
+      path: "registry/default/examples/accordion-tabs.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/accordion-tabs.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["accordion"],
+    meta: undefined,
+  },
   "accordion-single": {
     name: "accordion-single",
     description: "Accordion with one panel open",

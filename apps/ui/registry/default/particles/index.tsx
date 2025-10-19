@@ -2,8 +2,12 @@ import * as React from "react"
 
 import AccordionControlled from "@/registry/default/examples/accordion-controlled"
 import AccordionDemo from "@/registry/default/examples/accordion-demo"
+import AccordionMultiLevel from "@/registry/default/examples/accordion-multi-level"
 import AccordionMultiple from "@/registry/default/examples/accordion-multiple"
 import AccordionSingle from "@/registry/default/examples/accordion-single"
+import AccordionTable from "@/registry/default/examples/accordion-table"
+import AccordionTabs from "@/registry/default/examples/accordion-tabs"
+import AccordionWithIcon from "@/registry/default/examples/accordion-with-icon"
 import AlertDemo from "@/registry/default/examples/alert-demo"
 import AlertDialogDemo from "@/registry/default/examples/alert-dialog-demo"
 import AlertError from "@/registry/default/examples/alert-error"
@@ -1139,6 +1143,34 @@ export const particles: ParticleItem[] = [
   {
     id: "accordion-controlled",
     component: AccordionControlled,
+    category: ["accordion"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:max-w-[80%]",
+  },
+  {
+    id: "accordion-tabs",
+    component: AccordionTabs,
+    category: ["accordion"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:max-w-[80%]",
+  },
+  {
+    id: "accordion-table",
+    component: AccordionTable,
+    category: ["accordion"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:max-w-[80%]",
+  },
+  {
+    id: "accordion-with-icon",
+    component: AccordionWithIcon,
+    category: ["accordion"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:max-w-[80%]",
+  },
+  {
+    id: "accordion-multi-level",
+    component: AccordionMultiLevel,
     category: ["accordion"],
     className:
       "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:max-w-[80%]",
