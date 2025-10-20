@@ -1,5 +1,5 @@
 export const appConfig = {
-  name: "coss.com ui",
+  name: "coss ui",
   url: "https://coss.com/ui",
   ogImage: "https://coss.com/og.jpg",
   description:

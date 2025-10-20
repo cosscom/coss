@@ -1,10 +1,10 @@
-# Contributing to coss.com ui
+# Contributing to coss ui
 
-Thank you for your interest in contributing to coss.com ui! This guide will help you understand how to contribute components, examples, and particles to our design system.
+Thank you for your interest in contributing to coss ui! This guide will help you understand how to contribute components, examples, and particles to our design system.
 
 ## Overview
 
-**coss.com ui** consists of two main types of components:
+**coss ui** consists of two main types of components:
 
 1. **UI Components** - Core reusable components (`Button`, `Input`, etc.)
 2. **Examples** - Demonstrations of how to use UI components
@@ -235,4 +235,4 @@ pnpm ui:propagate
 - Look at similar components for reference
 - Ask questions in our community channels
 
-Thank you for contributing to coss.com ui! 🎉
+Thank you for contributing to coss ui! 🎉

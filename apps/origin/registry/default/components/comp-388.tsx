@@ -18,7 +18,7 @@ export default function Component() {
           <form className="space-y-3">
             <Textarea
               id="feedback"
-              placeholder="How can we improve coss.com ui?"
+              placeholder="How can we improve coss ui?"
               aria-label="Send feedback"
             />
             <div className="flex flex-col sm:flex-row sm:justify-end">

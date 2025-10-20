@@ -15,7 +15,7 @@ This repository contains multiple products and applications that make up the cos
 ### Apps and Packages
 
 - **`apps/www/`** - Main coss.com website
-- **`apps/ui/`** - coss.com UI component library and documentation
+- **`apps/ui/`** - coss ui component library and documentation
 - **`apps/origin/`** - Legacy Origin UI components (pre-acquisition)
 - **`packages/ui/`** - Shared UI components package
 - **`packages/eslint-config/`** - ESLint configurations
@@ -106,9 +106,9 @@ pnpm dev --filter=ui
 pnpm dev --filter=origin
 ```
 
-## coss.com ui
+## coss ui
 
-**coss.com ui** is a collection of beautifully designed, accessible, and composable components for your React apps. Built on top of [Base UI](https://base-ui.com/) and styled with [Tailwind CSS](https://tailwindcss.com/), it's designed for you to copy, paste, and own.
+**coss ui** is a collection of beautifully designed, accessible, and composable components for your React apps. Built on top of [Base UI](https://base-ui.com/) and styled with [Tailwind CSS](https://tailwindcss.com/), it's designed for you to copy, paste, and own.
 
 We think Base UI is the best foundation for modern web applications. We've taken its powerful, unstyled primitives and given them a design system that's ready to go, right out of the box.
 
@@ -116,9 +116,9 @@ This is the component library we'll be progressively adopting for [cal.com](http
 
 ### Origin UI Acquisition
 
-This repository also includes the **Origin UI** components as a legacy snapshot. Origin UI was a pre-acquisition collection of Radix-based, shadcn-style components that remains available for use, but with limited support and maintenance. Active development now focuses on the new [Particles](https://coss.com/ui/particles) components built on the coss.com ui primitives.
+This repository also includes the **Origin UI** components as a legacy snapshot. Origin UI was a pre-acquisition collection of Radix-based, shadcn-style components that remains available for use, but with limited support and maintenance. Active development now focuses on the new [Particles](https://coss.com/ui/particles) components built on the coss ui primitives.
 
-### Contributing to coss.com ui
+### Contributing to coss ui
 
 We're always looking for contributors to help improve our UI components. Whether it's a bug report, a new feature, or a documentation update, we appreciate your help.
 

@@ -8,9 +8,9 @@ import {
 const items = [
   {
     id: "1",
-    title: "What makes coss.com ui different?",
+    title: "What makes coss ui different?",
     content:
-      "coss.com ui focuses on developer experience and performance. Built with TypeScript, it offers excellent type safety, follows accessibility standards, and provides comprehensive documentation with regular updates.",
+      "coss ui focuses on developer experience and performance. Built with TypeScript, it offers excellent type safety, follows accessibility standards, and provides comprehensive documentation with regular updates.",
   },
   {
     id: "2",
@@ -20,7 +20,7 @@ const items = [
   },
   {
     id: "3",
-    title: "Is coss.com ui optimized for performance?",
+    title: "Is coss ui optimized for performance?",
     content:
       "Yes, with tree-shaking, code splitting, and minimal runtime overhead. Most components are under 5KB gzipped.",
   },

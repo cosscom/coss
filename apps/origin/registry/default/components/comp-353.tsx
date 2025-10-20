@@ -24,7 +24,7 @@ import {
 const items = [
   {
     id: "1",
-    title: "What makes coss.com ui different?",
+    title: "What makes coss ui different?",
     icon: CommandIcon,
     collapsibles: [
       {
@@ -62,7 +62,7 @@ const items = [
   },
   {
     id: "3",
-    title: "Is coss.com ui optimized for performance?",
+    title: "Is coss ui optimized for performance?",
     icon: ZapIcon,
     collapsibles: [
       {

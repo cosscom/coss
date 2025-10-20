@@ -22,9 +22,9 @@ const fontHeading = FontHeading({
 export const metadata: Metadata = {
   metadataBase: new URL("https://coss.com"),
   title:
-    "coss.com ui - A new, modern UI component library built on top of Base UI. Built for developers and AI.",
+    "coss ui - A new, modern UI component library built on top of Base UI. Built for developers and AI.",
   description:
-    "coss.com ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
+    "coss ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
 }
 
 export default function RootLayout({

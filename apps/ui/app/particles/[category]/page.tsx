@@ -62,7 +62,7 @@ export async function generateMetadata({
   return {
     title: `${
       categoryObj.name.charAt(0).toUpperCase() + categoryObj.name.slice(1)
-    } particle components built with React and Tailwind CSS - coss.com ui`,
+    } particle components built with React and Tailwind CSS - coss ui`,
     description: `Showing ${categoryParticles.length} particle component${
       categoryParticles.length !== 1 ? "s" : ""
     } in the ${categoryObj.name} category`,
