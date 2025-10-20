@@ -3,4 +3,4 @@ node_modules
 .next
 build
 registry/__index__.tsx
-content/ui/docs/**/*.mdx
+content/docs/**/*.mdx
