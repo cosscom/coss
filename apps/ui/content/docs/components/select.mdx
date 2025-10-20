@@ -138,7 +138,7 @@ For accessible labelling and validation, prefer using the `Field` component to w
 
 ## Comparing with Radix / shadcn
 
-If you’re already familiar with Radix UI and shadcn/ui, this guide highlights the small differences and similarities so you can get started with **coss.com ui** quickly.
+If you’re already familiar with Radix UI and shadcn/ui, this guide highlights the small differences and similarities so you can get started with **coss ui** quickly.
 
 **Important:** Base UI changes how options are provided. Instead of deriving options from children only (Radix pattern), you should pass an `items` prop (array or record) so values and labels are known before hydration. This avoids SSR pitfalls and improves mount performance. Alternatively, provide a function child to `SelectValue` to format the label. See the [Base UI Select docs](https://base-ui.com/react/components/select).
 
@@ -161,15 +161,15 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 
 **Size Comparison**
 
-**coss.com ui** select sizes are more compact compared to shadcn/ui, making them better suited for dense applications:
+**coss ui** select sizes are more compact compared to shadcn/ui, making them better suited for dense applications:
 
-| Size      | Height (shadcn/ui) | Height (coss.com ui) |
+| Size      | Height (shadcn/ui) | Height (coss ui) |
 | --------- | ------------------ | -------------------- |
 | `sm`      | 32px               | 28px                 |
 | `default` | 36px               | 32px                 |
 | `lg`      | -                  | 36px                 |
 
-So, for example, if you were using the `default` size in shadcn/ui and you want to preserve the original height, you should use the `lg` size in coss.com ui.
+So, for example, if you were using the `default` size in shadcn/ui and you want to preserve the original height, you should use the `lg` size in coss ui.
 
 **New Prop**
 
@@ -193,7 +193,7 @@ Base UI introduces the `alignItemWithTrigger` prop to control whether the `Selec
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss.com ui" // [!code word:alignItemWithTrigger={false}] //
+  ```tsx title="coss ui" // [!code word:alignItemWithTrigger={false}] //
   [!code word:items:2]
   <Select
     items={[

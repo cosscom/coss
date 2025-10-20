@@ -17,7 +17,7 @@ import {
 import { Input } from "@/registry/default/ui/input"
 import { Label } from "@/registry/default/ui/label"
 
-const PROJECT_NAME = "coss.com ui"
+const PROJECT_NAME = "coss ui"
 
 export default function Component() {
   const id = useId()

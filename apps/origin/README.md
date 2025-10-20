@@ -2,7 +2,7 @@
 >
 > - This app is a preserved, pre-acquisition version of Origin UI (Radix-based, shadcn-style).
 > - It remains available for use, but support and maintenance are limited.
-> - Active development now focuses on the new [Particles](https://coss.com/ui/particles) components built on the [coss.com ui](https://coss.com/ui/docs) primitives.
+> - Active development now focuses on the new [Particles](https://coss.com/ui/particles) components built on the [coss ui](https://coss.com/ui/docs) primitives.
 
 # coss.com origin (formerly Origin UI)
 

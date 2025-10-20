@@ -4,7 +4,7 @@ export default function SeparatorDemo() {
   return (
     <div className="max-w-72">
       <div className="space-y-1">
-        <h4 className="text-sm font-medium">coss.com ui</h4>
+        <h4 className="text-sm font-medium">coss ui</h4>
         <p className="text-sm text-muted-foreground">
           Unstyled, accessible primitives for fast product UI and design
           systems.

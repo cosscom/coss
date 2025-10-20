@@ -15,7 +15,7 @@ import {
 const items = [
   {
     id: "1",
-    title: "What makes coss.com ui different?",
+    title: "What makes coss ui different?",
     collapsibles: [
       {
         title: "What about performance?",
@@ -47,7 +47,7 @@ const items = [
   },
   {
     id: "3",
-    title: "Is coss.com ui optimized for performance?",
+    title: "Is coss ui optimized for performance?",
     collapsibles: [
       {
         title: "What's the bundle size impact?",
