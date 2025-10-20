@@ -45,7 +45,6 @@ export function CommandMenu({
   tree: typeof source.pageTree
   navItems?: { href: string; label: string }[]
 }) {
-  const cossuiUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/ui"
   const router = useRouter()
   const isMac = useIsMac()
   const [config] = useConfig()
@@ -61,20 +60,29 @@ export function CommandMenu({
       if (isComponent) {
         const componentName = item.url.split("/").pop()
         setSelectedType("component")
-        const url = `${cossuiUrl}/r/${componentName}.json`
-        const cmd =
-          packageManager === "pnpm"
-            ? `pnpm dlx shadcn@latest add ${url}`
-            : packageManager === "bun"
-              ? `bunx --bun shadcn@latest add ${url}`
-              : `npx shadcn@latest add ${url}`
+        const registryItem = `@coss/${componentName}`
+        let cmd: string
+        switch (packageManager) {
+          case "pnpm":
+            cmd = `pnpm dlx shadcn@latest add ${registryItem}`
+            break
+          case "bun":
+            cmd = `bunx --bun shadcn@latest add ${registryItem}`
+            break
+          case "yarn":
+            cmd = `yarn dlx shadcn@latest add ${registryItem}`
+            break
+          default:
+            cmd = `npx shadcn@latest add ${registryItem}`
+        }
+
         setCopyPayload(cmd)
       } else {
         setSelectedType("page")
         setCopyPayload("")
       }
     },
-    [packageManager, setSelectedType, setCopyPayload, cossuiUrl]
+    [packageManager, setSelectedType, setCopyPayload]
   )
 
   const runCommand = React.useCallback((command: () => unknown) => {
