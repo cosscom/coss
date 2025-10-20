@@ -1400,7 +1400,7 @@ export const particles: ParticleItem[] = [
     component: CardDemo,
     category: ["card", "input", "select"],
     className:
-      "**:data-[slot=particle-wrapper]:w-full sm:**:data-[slot=particle-wrapper]:flex **:data-[slot=particle-wrapper]:justify-center",
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:flex **:data-[slot=particle-wrapper]:justify-center",
   },
   {
     id: "collapsible-demo",

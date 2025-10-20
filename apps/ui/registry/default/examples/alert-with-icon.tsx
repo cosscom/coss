@@ -12,24 +12,7 @@ export default function AlertWithIcon() {
       <InfoIcon />
       <AlertTitle>Heads up!</AlertTitle>
       <AlertDescription>
-        <p>
-          Describe what can be done about it here.Describe what can be done
-          about it here.Describe what can be done about it here.Describe what
-          can be done about it here.Describe what can be done about it
-          here.Describe what can be done about it here.Describe what can be done
-          about it here.Describe what can be done about it here.Describe what
-          can be done about it here.Describe what can be done about it
-          here.Describe what can be done about it here.
-        </p>
-        <p>
-          Describe what can be done about it here.Describe what can be done
-          about it here.Describe what can be done about it here.Describe what
-          can be done about it here.Describe what can be done about it
-          here.Describe what can be done about it here.Describe what can be done
-          about it here.Describe what can be done about it here.Describe what
-          can be done about it here.Describe what can be done about it
-          here.Describe what can be done about it here.
-        </p>
+        Describe what can be done about it here.
       </AlertDescription>
     </Alert>
   )
