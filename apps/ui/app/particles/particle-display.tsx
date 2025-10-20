@@ -13,7 +13,6 @@ import { CodeBlockCommand } from "@/components/code-block-command"
 import { ComponentSource } from "@/components/component-source"
 import { CopyRegistry } from "@/components/copy-registry"
 import { Button } from "@/registry/default/ui/button"
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
 import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet"
 
 export type Particle = z.infer<typeof registryItemSchema> & {
