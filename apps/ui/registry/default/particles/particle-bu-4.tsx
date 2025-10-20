@@ -2,7 +2,7 @@ import { ThumbsUpIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
 
-export default function Component() {
+export default function Particle() {
   return (
     <Button className="pe-0" variant="outline">
       <ThumbsUpIcon className="opacity-60" size={16} aria-hidden="true" />

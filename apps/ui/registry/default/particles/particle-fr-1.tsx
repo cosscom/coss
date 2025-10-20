@@ -8,7 +8,7 @@ import {
 } from "@/registry/default/ui/collapsible"
 import { Frame, FrameHeader, FramePanel } from "@/registry/default/ui/frame"
 
-export default function Component() {
+export default function Particle() {
   return (
     <Frame className="w-full">
       <Collapsible>

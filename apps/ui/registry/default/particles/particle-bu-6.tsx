@@ -5,7 +5,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
 
-export default function Component() {
+export default function Particle() {
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
 
   const toggleExpand = () => {

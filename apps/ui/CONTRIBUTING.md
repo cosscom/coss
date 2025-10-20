@@ -161,13 +161,13 @@ export default function CompBu8() {
 
 ```tsx
 // registry/default/particles/index.tsx
-import CompBu8 from "@/registry/default/particles/comp-bu-8"
+import CompBu8 from "@/registry/default/particles/particle-bu-8"
 
 export const particles: ParticleItem[] = [
   // ... existing particles
   {
-    id: "comp-bu-8",
-    component: CompBu8,
+    id: "particle-bu-8",
+    component: ParticleBu8,
     category: ["button"],
   },
 ]
@@ -177,13 +177,13 @@ export const particles: ParticleItem[] = [
 
 ```tsx
 // registry/registry-particles.ts
-import CompBu8 from "@/registry/default/particles/comp-bu-8"
+import Particle from "@/registry/default/particles/particle-bu-8"
 
 export const particles = [
   // ... existing particles
   {
-    name: "comp-bu-8",
-    type: "components:particle",
+    name: "particle-bu-8",
+    type: "particleonents:particle",
     registryDependencies: ["@/registry/default/ui/button"],
     files: ["registry/default/particles/comp-bu-8.tsx"],
     description: "A button group with cancel and save actions.",
