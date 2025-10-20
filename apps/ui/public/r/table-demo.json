@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Basic table",
   "registryDependencies": [
-    "https://coss.com/ui/r/table.json",
-    "https://coss.com/ui/r/badge.json"
+    "@coss/table",
+    "@coss/badge"
   ],
   "files": [
     {

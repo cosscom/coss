@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Small icon button",
   "registryDependencies": [
-    "https://coss.com/ui/r/button.json"
+    "@coss/button"
   ],
   "files": [
     {

@@ -22,7 +22,7 @@ links:
 <TabsPanel value="cli">
 
 ```bash
-npx shadcn@latest add https://coss.com/ui/r/select.json
+npx shadcn@latest add @coss/select
 ```
 
 </TabsPanel>
@@ -164,10 +164,10 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 **coss ui** select sizes are more compact compared to shadcn/ui, making them better suited for dense applications:
 
 | Size      | Height (shadcn/ui) | Height (coss ui) |
-| --------- | ------------------ | -------------------- |
-| `sm`      | 32px               | 28px                 |
-| `default` | 36px               | 32px                 |
-| `lg`      | -                  | 36px                 |
+| --------- | ------------------ | ---------------- |
+| `sm`      | 32px               | 28px             |
+| `default` | 36px               | 32px             |
+| `lg`      | -                  | 36px             |
 
 So, for example, if you were using the `default` size in shadcn/ui and you want to preserve the original height, you should use the `lg` size in coss ui.
 
@@ -193,8 +193,8 @@ Base UI introduces the `alignItemWithTrigger` prop to control whether the `Selec
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:alignItemWithTrigger={false}] //
-  [!code word:items:2]
+  ```tsx title="coss ui" // [!code word:alignItemWithTrigger={false}] // [!code
+  word:items:2]
   <Select
     items={[
       { label: "Select a framework", value: null },

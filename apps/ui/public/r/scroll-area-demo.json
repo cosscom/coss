@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Scroll area - vertical",
   "registryDependencies": [
-    "https://coss.com/ui/r/scroll-area.json"
+    "@coss/scroll-area"
   ],
   "files": [
     {

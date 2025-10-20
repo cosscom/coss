@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Menu with radio options",
   "registryDependencies": [
-    "https://coss.com/ui/r/menu.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/menu",
+    "@coss/button"
   ],
   "files": [
     {

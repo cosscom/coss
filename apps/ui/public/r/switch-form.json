@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Switch in a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/switch.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/switch",
+    "@coss/field",
+    "@coss/form",
+    "@coss/button"
   ],
   "files": [
     {

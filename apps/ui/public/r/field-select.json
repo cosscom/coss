@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Field with select",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/select.json"
+    "@coss/field",
+    "@coss/select"
   ],
   "files": [
     {

@@ -6,8 +6,8 @@
     "@base-ui-components/react"
   ],
   "registryDependencies": [
-    "https://coss.com/ui/r/input.json",
-    "https://coss.com/ui/r/scroll-area.json"
+    "@coss/input",
+    "@coss/scroll-area"
   ],
   "files": [
     {

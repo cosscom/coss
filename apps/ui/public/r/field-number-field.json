@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Field with number field",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/number-field.json"
+    "@coss/field",
+    "@coss/number-field"
   ],
   "files": [
     {

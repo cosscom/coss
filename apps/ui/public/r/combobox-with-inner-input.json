@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Combobox with popup",
   "registryDependencies": [
-    "https://coss.com/ui/r/combobox.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/combobox",
+    "@coss/button"
   ],
   "files": [
     {

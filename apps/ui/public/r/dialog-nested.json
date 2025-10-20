@@ -4,9 +4,9 @@
   "type": "registry:example",
   "description": "Dialog with a nested dialog",
   "registryDependencies": [
-    "https://coss.com/ui/r/dialog.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/dialog",
+    "@coss/button",
+    "@coss/field"
   ],
   "files": [
     {

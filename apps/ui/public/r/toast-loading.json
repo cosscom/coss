@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Loading toast",
   "registryDependencies": [
-    "https://coss.com/ui/r/toast.json"
+    "@coss/toast"
   ],
   "files": [
     {

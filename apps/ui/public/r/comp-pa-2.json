@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Pagination with select, and previous and next buttons",
   "registryDependencies": [
-    "https://coss.com/ui/r/pagination.json",
-    "https://coss.com/ui/r/select.json"
+    "@coss/pagination",
+    "@coss/select"
   ],
   "files": [
     {

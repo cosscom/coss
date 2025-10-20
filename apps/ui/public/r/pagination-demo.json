@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Pagination example",
   "registryDependencies": [
-    "https://coss.com/ui/r/pagination.json"
+    "@coss/pagination"
   ],
   "files": [
     {

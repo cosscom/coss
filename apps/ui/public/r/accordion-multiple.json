@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Accordion allowing multiple panels open",
   "registryDependencies": [
-    "https://coss.com/ui/r/accordion.json"
+    "@coss/accordion"
   ],
   "files": [
     {

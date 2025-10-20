@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Input with disabled state",
   "registryDependencies": [
-    "https://coss.com/ui/r/input.json"
+    "@coss/input"
   ],
   "files": [
     {

@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Textarea in a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/textarea.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/textarea",
+    "@coss/form",
+    "@coss/field",
+    "@coss/button"
   ],
   "files": [
     {

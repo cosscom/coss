@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Tabs with underline indicator",
   "registryDependencies": [
-    "https://coss.com/ui/r/tabs.json"
+    "@coss/tabs"
   ],
   "files": [
     {

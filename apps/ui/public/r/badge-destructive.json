@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Destructive badge",
   "registryDependencies": [
-    "https://coss.com/ui/r/badge.json"
+    "@coss/badge"
   ],
   "files": [
     {

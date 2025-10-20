@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Small textarea",
   "registryDependencies": [
-    "https://coss.com/ui/r/textarea.json"
+    "@coss/textarea"
   ],
   "files": [
     {

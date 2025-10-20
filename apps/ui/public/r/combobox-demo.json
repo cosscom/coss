@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Basic combobox",
   "registryDependencies": [
-    "https://coss.com/ui/r/combobox.json"
+    "@coss/combobox"
   ],
   "files": [
     {

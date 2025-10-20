@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Field with checkbox group",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/checkbox-group.json",
-    "https://coss.com/ui/r/checkbox.json",
-    "https://coss.com/ui/r/fieldset.json"
+    "@coss/field",
+    "@coss/checkbox-group",
+    "@coss/checkbox",
+    "@coss/fieldset"
   ],
   "files": [
     {

@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "A disabled number field",
   "registryDependencies": [
-    "https://coss.com/ui/r/number-field.json"
+    "@coss/number-field"
   ],
   "files": [
     {

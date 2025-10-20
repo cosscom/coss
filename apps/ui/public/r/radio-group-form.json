@@ -4,11 +4,11 @@
   "type": "registry:example",
   "description": "Radio group in a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/radio-group.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/fieldset.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/radio-group",
+    "@coss/field",
+    "@coss/fieldset",
+    "@coss/form",
+    "@coss/button"
   ],
   "files": [
     {

@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Basic dialog",
   "registryDependencies": [
-    "https://coss.com/ui/r/dialog.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/dialog",
+    "@coss/button",
+    "@coss/form",
+    "@coss/field"
   ],
   "files": [
     {

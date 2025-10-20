@@ -51,7 +51,7 @@ export const examples = [
   {
     name: "button-with-icon",
     type: "components:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     dependencies: ["lucide-react"],
     files: ["registry/default/examples/button-with-icon.tsx"],
     description: "A basic download button with icon",

@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Animated progress bar",
   "registryDependencies": [
-    "https://coss.com/ui/r/progress.json"
+    "@coss/progress"
   ],
   "files": [
     {

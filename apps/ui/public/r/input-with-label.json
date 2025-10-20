@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Input with label",
   "registryDependencies": [
-    "https://coss.com/ui/r/input.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/input",
+    "@coss/label"
   ],
   "files": [
     {

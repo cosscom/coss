@@ -4,11 +4,11 @@
   "type": "registry:example",
   "description": "Card example with form",
   "registryDependencies": [
-    "https://coss.com/ui/r/card.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/select.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/card",
+    "@coss/button",
+    "@coss/select",
+    "@coss/form",
+    "@coss/field"
   ],
   "files": [
     {

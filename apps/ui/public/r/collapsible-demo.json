@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Basic collapsible",
   "registryDependencies": [
-    "https://coss.com/ui/r/collapsible.json"
+    "@coss/collapsible"
   ],
   "files": [
     {

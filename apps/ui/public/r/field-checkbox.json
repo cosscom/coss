@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Field with checkbox",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/checkbox.json"
+    "@coss/field",
+    "@coss/checkbox"
   ],
   "files": [
     {

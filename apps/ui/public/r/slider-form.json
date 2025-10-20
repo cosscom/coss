@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Slider in a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/slider.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/slider",
+    "@coss/form",
+    "@coss/field",
+    "@coss/button"
   ],
   "files": [
     {

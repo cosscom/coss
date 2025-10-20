@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Success alert",
   "registryDependencies": [
-    "https://coss.com/ui/r/alert.json"
+    "@coss/alert"
   ],
   "files": [
     {

@@ -6,8 +6,8 @@
     "@base-ui-components/react"
   ],
   "registryDependencies": [
-    "https://coss.com/ui/r/separator.json",
-    "https://coss.com/ui/r/toggle.json"
+    "@coss/separator",
+    "@coss/toggle"
   ],
   "files": [
     {
