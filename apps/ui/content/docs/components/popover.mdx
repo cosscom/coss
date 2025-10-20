@@ -93,31 +93,35 @@ Base UI introduces `PopoverTitle` and `PopoverDescription` to structure headings
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:asChild]
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button variant="outline">Open Popover</Button>
-    </PopoverTrigger>
-    <PopoverContent>
-      <h2>Popover Title</h2>
-      <p>Popover Description</p>
-    </PopoverContent>
-  </Popover>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:asChild]
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline">Open Popover</Button>
+  </PopoverTrigger>
+  <PopoverContent>
+    <h2>Popover Title</h2>
+    <p>Popover Description</p>
+  </PopoverContent>
+</Popover>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:PopoverTitle] // [!code
-  word:PopoverDescription] // [!code word:PopoverClose] // [!code word:render:2]
-  <Popover>
-    <PopoverTrigger render={<Button variant="outline" />}>
-      Open Popover
-    </PopoverTrigger>
-    <PopoverPopup>
-      <PopoverTitle>Popover Title</PopoverTitle>
-      <PopoverDescription>Popover Description</PopoverDescription>
-      <PopoverClose render={<Button variant="ghost" />}>Close</PopoverClose>
-    </PopoverPopup>
-  </Popover>
-  ```
+```tsx title="coss ui"
+// [!code word:PopoverTitle]
+// [!code word:PopoverDescription]
+// [!code word:PopoverClose]
+// [!code word:render:2]
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>
+    Open Popover
+  </PopoverTrigger>
+  <PopoverPopup>
+    <PopoverTitle>Popover Title</PopoverTitle>
+    <PopoverDescription>Popover Description</PopoverDescription>
+    <PopoverClose render={<Button variant="ghost" />}>Close</PopoverClose>
+  </PopoverPopup>
+</Popover>
+```
 </span>

@@ -78,23 +78,25 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:asChild]
-  <HoverCard>
-    <HoverCardTrigger asChild>
-      <Button variant="outline">Open Preview Card</Button>
-    </HoverCardTrigger>
-    <HoverCardContent>Preview Card Content</HoverCardContent>
-  </HoverCard>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:asChild]
+<HoverCard>
+  <HoverCardTrigger asChild>
+    <Button variant="outline">Open Preview Card</Button>
+  </HoverCardTrigger>
+  <HoverCardContent>Preview Card Content</HoverCardContent>
+</HoverCard>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:render]
-  <PreviewCard>
-    <PreviewCardTrigger render={<Button variant="outline" />}>
-      Open Preview Card
-    </PreviewCardTrigger>
-    <PreviewCardPopup>Preview Card Content</PreviewCardPopup>
-  </PreviewCard>
-  ```
+```tsx title="coss ui"
+// [!code word:render]
+<PreviewCard>
+  <PreviewCardTrigger render={<Button variant="outline" />}>
+    Open Preview Card
+  </PreviewCardTrigger>
+  <PreviewCardPopup>Preview Card Content</PreviewCardPopup>
+</PreviewCard>
+```
 </span>

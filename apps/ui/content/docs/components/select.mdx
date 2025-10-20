@@ -178,41 +178,43 @@ Base UI introduces the `alignItemWithTrigger` prop to control whether the `Selec
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:placeholder="Select a framework"]
-  <Select>
-    <SelectTrigger>
-      <SelectValue placeholder="Select a framework" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="next">Next.js</SelectItem>
-      <SelectItem value="vite">Vite</SelectItem>
-      <SelectItem value="astro">Astro</SelectItem>
-    </SelectContent>
-  </Select>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:placeholder="Select a framework"]
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Select a framework" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="next">Next.js</SelectItem>
+    <SelectItem value="vite">Vite</SelectItem>
+    <SelectItem value="astro">Astro</SelectItem>
+  </SelectContent>
+</Select>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:alignItemWithTrigger={false}] // [!code
-  word:items:2]
-  <Select
-    items={[
-      { label: "Select a framework", value: null },
-      { label: "Next.js", value: "next" },
-      { label: "Vite", value: "vite" },
-      { label: "Astro", value: "astro" },
-    ]}
-  >
-    <SelectTrigger>
-      <SelectValue />
-    </SelectTrigger>
-    <SelectPopup alignItemWithTrigger={false}>
-      {items.map((item) => (
-        <SelectItem key={item.value} value={item}>
-          {item.label}
-        </SelectItem>
-      ))}
-    </SelectPopup>
-  </Select>
-  ```
+```tsx title="coss ui"
+// [!code word:alignItemWithTrigger={false}]
+// [!code word:items:2]
+<Select
+  items={[
+    { label: "Select a framework", value: null },
+    { label: "Next.js", value: "next" },
+    { label: "Vite", value: "vite" },
+    { label: "Astro", value: "astro" },
+  ]}
+>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectPopup alignItemWithTrigger={false}>
+    {items.map((item) => (
+      <SelectItem key={item.value} value={item}>
+        {item.label}
+      </SelectItem>
+    ))}
+  </SelectPopup>
+</Select>
+```
 </span>

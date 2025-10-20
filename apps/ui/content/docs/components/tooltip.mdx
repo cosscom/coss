@@ -106,23 +106,25 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:asChild]
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button variant="outline">Hover me</Button>
-    </TooltipTrigger>
-    <TooltipContent>Helpful hint</TooltipContent>
-  </Tooltip>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:asChild]
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Button variant="outline">Hover me</Button>
+  </TooltipTrigger>
+  <TooltipContent>Helpful hint</TooltipContent>
+</Tooltip>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:render]
-  <Tooltip>
-    <TooltipTrigger render={<Button variant="outline" />}>
-      Hover me
-    </TooltipTrigger>
-    <TooltipPopup>Helpful hint</TooltipPopup>
-  </Tooltip>
-  ```
+```tsx title="coss ui"
+// [!code word:render]
+<Tooltip>
+  <TooltipTrigger render={<Button variant="outline" />}>
+    Hover me
+  </TooltipTrigger>
+  <TooltipPopup>Helpful hint</TooltipPopup>
+</Tooltip>
+```
 </span>

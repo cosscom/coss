@@ -122,15 +122,17 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:type="multiple"] // [!code
-  word:collapsible] // [!code word:"item-1":1]
-  <Accordion type="multiple" collapsible defaultValue="item-1">
-    <AccordionItem value="item-1">
-      <AccordionTrigger>Title</AccordionTrigger>
-      <AccordionContent>Content</AccordionContent>
-    </AccordionItem>
-  </Accordion>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:type="multiple"]
+// [!code word:collapsible]
+// [!code word:"item-1":1]
+<Accordion type="multiple" collapsible defaultValue="item-1">
+  <AccordionItem value="item-1">
+    <AccordionTrigger>Title</AccordionTrigger>
+    <AccordionContent>Content</AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
 </span>
 
 <span data-lib="base-ui">

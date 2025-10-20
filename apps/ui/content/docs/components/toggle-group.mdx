@@ -123,21 +123,23 @@ So, for example, if you were using the `default` size in shadcn/ui and you want 
 ### Comparison Examples
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:type="multiple"]
-  <ToggleGroup type="multiple" defaultValue={["bold"]}>
-    <ToggleGroupItem value="bold">B</ToggleGroupItem>
-    <ToggleGroupItem value="italic">I</ToggleGroupItem>
-    <ToggleGroupItem value="underline">U</ToggleGroupItem>
-  </ToggleGroup>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:type="multiple"]
+<ToggleGroup type="multiple" defaultValue={["bold"]}>
+  <ToggleGroupItem value="bold">B</ToggleGroupItem>
+  <ToggleGroupItem value="italic">I</ToggleGroupItem>
+  <ToggleGroupItem value="underline">U</ToggleGroupItem>
+</ToggleGroup>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:multiple]
-  <ToggleGroup multiple defaultValue={["bold"]}>
-    <Toggle value="bold">B</Toggle>
-    <Toggle value="italic">I</Toggle>
-    <Toggle value="underline">U</Toggle>
-  </ToggleGroup>
-  ```
+```tsx title="coss ui"
+// [!code word:multiple]
+<ToggleGroup multiple defaultValue={["bold"]}>
+  <Toggle value="bold">B</Toggle>
+  <Toggle value="italic">I</Toggle>
+  <Toggle value="underline">U</Toggle>
+</ToggleGroup>
+```
 </span>
