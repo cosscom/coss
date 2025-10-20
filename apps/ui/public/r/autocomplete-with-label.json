@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Autocomplete with label",
   "registryDependencies": [
-    "https://coss.com/ui/r/autocomplete.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/autocomplete",
+    "@coss/label"
   ],
   "files": [
     {

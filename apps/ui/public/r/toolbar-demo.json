@@ -4,11 +4,11 @@
   "type": "registry:example",
   "description": "Toolbar",
   "registryDependencies": [
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/select.json",
-    "https://coss.com/ui/r/toggle-group.json",
-    "https://coss.com/ui/r/toolbar.json",
-    "https://coss.com/ui/r/tooltip.json"
+    "@coss/button",
+    "@coss/select",
+    "@coss/toggle-group",
+    "@coss/toolbar",
+    "@coss/tooltip"
   ],
   "files": [
     {

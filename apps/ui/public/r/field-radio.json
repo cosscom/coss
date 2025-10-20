@@ -4,9 +4,9 @@
   "type": "registry:example",
   "description": "Field with radio group",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/radio-group.json",
-    "https://coss.com/ui/r/fieldset.json"
+    "@coss/field",
+    "@coss/radio-group",
+    "@coss/fieldset"
   ],
   "files": [
     {

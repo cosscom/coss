@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Alert with icon and action buttons",
   "registryDependencies": [
-    "https://coss.com/ui/r/alert.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/alert",
+    "@coss/button"
   ],
   "files": [
     {

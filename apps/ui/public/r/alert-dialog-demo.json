@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Alert dialog",
   "registryDependencies": [
-    "https://coss.com/ui/r/alert-dialog.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/alert-dialog",
+    "@coss/button"
   ],
   "files": [
     {

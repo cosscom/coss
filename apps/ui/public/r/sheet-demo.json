@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Basic sheet",
   "registryDependencies": [
-    "https://coss.com/ui/r/sheet.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/sheet",
+    "@coss/button",
+    "@coss/form",
+    "@coss/field"
   ],
   "files": [
     {

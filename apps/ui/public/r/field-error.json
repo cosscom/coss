@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Field showing validation error",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json"
+    "@coss/field"
   ],
   "files": [
     {

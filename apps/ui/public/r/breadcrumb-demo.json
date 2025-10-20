@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Breadcrumb with menu example",
   "registryDependencies": [
-    "https://coss.com/ui/r/breadcrumb.json",
-    "https://coss.com/ui/r/menu.json"
+    "@coss/breadcrumb",
+    "@coss/menu"
   ],
   "files": [
     {

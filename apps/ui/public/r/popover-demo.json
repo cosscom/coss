@@ -4,11 +4,11 @@
   "type": "registry:example",
   "description": "Popover with a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/popover.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/textarea.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/popover",
+    "@coss/button",
+    "@coss/textarea",
+    "@coss/form",
+    "@coss/field"
   ],
   "files": [
     {

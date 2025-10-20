@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Two-thumb range slider",
   "registryDependencies": [
-    "https://coss.com/ui/r/slider.json"
+    "@coss/slider"
   ],
   "files": [
     {

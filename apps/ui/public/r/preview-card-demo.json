@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Preview card example",
   "registryDependencies": [
-    "https://coss.com/ui/r/preview-card.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/preview-card",
+    "@coss/button"
   ],
   "files": [
     {

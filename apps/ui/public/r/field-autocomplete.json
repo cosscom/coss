@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Field with autocomplete",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/autocomplete.json"
+    "@coss/field",
+    "@coss/autocomplete"
   ],
   "files": [
     {

@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Card-style radio options",
   "registryDependencies": [
-    "https://coss.com/ui/r/radio-group.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/radio-group",
+    "@coss/label"
   ],
   "files": [
     {

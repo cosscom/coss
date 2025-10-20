@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Select popup not aligned to trigger",
   "registryDependencies": [
-    "https://coss.com/ui/r/select.json"
+    "@coss/select"
   ],
   "files": [
     {

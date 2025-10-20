@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Avatar with image and fallback",
   "registryDependencies": [
-    "https://coss.com/ui/r/avatar.json"
+    "@coss/avatar"
   ],
   "files": [
     {

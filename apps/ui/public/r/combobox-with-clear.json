@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Combobox with clear button",
   "registryDependencies": [
-    "https://coss.com/ui/r/combobox.json"
+    "@coss/combobox"
   ],
   "files": [
     {

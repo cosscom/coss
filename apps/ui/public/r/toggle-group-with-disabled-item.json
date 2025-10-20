@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Toggle group with disabled item",
   "registryDependencies": [
-    "https://coss.com/ui/r/toggle-group.json"
+    "@coss/toggle-group"
   ],
   "files": [
     {

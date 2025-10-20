@@ -4,10 +4,10 @@
   "type": "registry:example",
   "description": "Select in a form",
   "registryDependencies": [
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/select.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json"
+    "@coss/button",
+    "@coss/select",
+    "@coss/form",
+    "@coss/field"
   ],
   "files": [
     {

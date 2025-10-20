@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Switch with description",
   "registryDependencies": [
-    "https://coss.com/ui/r/switch.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/switch",
+    "@coss/label"
   ],
   "files": [
     {

@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Basic input component without label",
   "registryDependencies": [
-    "https://coss.com/ui/r/input.json"
+    "@coss/input"
   ],
   "files": [
     {

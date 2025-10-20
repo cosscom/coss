@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Basic meter",
   "registryDependencies": [
-    "https://coss.com/ui/r/meter.json"
+    "@coss/meter"
   ],
   "files": [
     {

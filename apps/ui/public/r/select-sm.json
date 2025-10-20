@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "A select with small size",
   "registryDependencies": [
-    "https://coss.com/ui/r/select.json"
+    "@coss/select"
   ],
   "files": [
     {

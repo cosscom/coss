@@ -7,9 +7,9 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "https://coss.com/ui/r/frame.json",
-    "https://coss.com/ui/r/collapsible.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/frame",
+    "@coss/collapsible",
+    "@coss/button"
   ],
   "files": [
     {

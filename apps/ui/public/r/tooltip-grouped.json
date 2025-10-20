@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Toggle group with grouped tooltips",
   "registryDependencies": [
-    "https://coss.com/ui/r/tooltip.json",
-    "https://coss.com/ui/r/toggle-group.json"
+    "@coss/tooltip",
+    "@coss/toggle-group"
   ],
   "files": [
     {

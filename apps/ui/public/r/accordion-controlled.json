@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Controlled accordion",
   "registryDependencies": [
-    "https://coss.com/ui/r/accordion.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/accordion",
+    "@coss/button"
   ],
   "files": [
     {

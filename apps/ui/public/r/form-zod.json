@@ -7,9 +7,9 @@
     "zod"
   ],
   "registryDependencies": [
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/form",
+    "@coss/field",
+    "@coss/button"
   ],
   "files": [
     {

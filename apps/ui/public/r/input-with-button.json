@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Input with button",
   "registryDependencies": [
-    "https://coss.com/ui/r/input.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/input",
+    "@coss/button"
   ],
   "files": [
     {

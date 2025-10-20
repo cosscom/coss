@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Field with toggle switch",
   "registryDependencies": [
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/switch.json"
+    "@coss/field",
+    "@coss/switch"
   ],
   "files": [
     {

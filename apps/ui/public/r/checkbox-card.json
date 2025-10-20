@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Card-style checkbox",
   "registryDependencies": [
-    "https://coss.com/ui/r/checkbox.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/checkbox",
+    "@coss/label"
   ],
   "files": [
     {

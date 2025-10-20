@@ -4,7 +4,7 @@
   "type": "registry:block",
   "description": "Pagination with previous and next buttons only",
   "registryDependencies": [
-    "https://coss.com/ui/r/pagination.json"
+    "@coss/pagination"
   ],
   "files": [
     {

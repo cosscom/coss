@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Radio group with one option disabled",
   "registryDependencies": [
-    "https://coss.com/ui/r/radio-group.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/radio-group",
+    "@coss/label"
   ],
   "files": [
     {

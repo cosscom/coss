@@ -57,10 +57,7 @@ export const ui: Registry["items"] = [
     name: "autocomplete",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: [
-      "https://coss.com/ui/r/input.json",
-      "https://coss.com/ui/r/scroll-area.json",
-    ],
+    registryDependencies: ["@coss/input", "@coss/scroll-area"],
     files: [
       {
         path: "ui/autocomplete.tsx",
@@ -188,10 +185,7 @@ export const ui: Registry["items"] = [
     name: "combobox",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: [
-      "https://coss.com/ui/r/input.json",
-      "https://coss.com/ui/r/scroll-area.json",
-    ],
+    registryDependencies: ["@coss/input", "@coss/scroll-area"],
     files: [
       {
         path: "ui/combobox.tsx",
@@ -265,7 +259,7 @@ export const ui: Registry["items"] = [
     name: "group",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: ["https://coss.com/ui/r/separator.json"],
+    registryDependencies: ["@coss/separator"],
     files: [
       {
         path: "ui/group.tsx",
@@ -340,7 +334,7 @@ export const ui: Registry["items"] = [
     name: "pagination",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "ui/pagination.tsx",
@@ -429,7 +423,7 @@ export const ui: Registry["items"] = [
     name: "sheet",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: ["https://coss.com/ui/r/dialog.json"],
+    registryDependencies: ["@coss/dialog"],
     files: [
       {
         path: "ui/sheet.tsx",
@@ -496,7 +490,7 @@ export const ui: Registry["items"] = [
     name: "toast",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "ui/toast.tsx",
@@ -519,10 +513,7 @@ export const ui: Registry["items"] = [
     name: "toggle-group",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
-    registryDependencies: [
-      "https://coss.com/ui/r/separator.json",
-      "https://coss.com/ui/r/toggle.json",
-    ],
+    registryDependencies: ["@coss/separator", "@coss/toggle"],
     files: [
       {
         path: "ui/toggle-group.tsx",

@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Slider with label and value",
   "registryDependencies": [
-    "https://coss.com/ui/r/slider.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/slider",
+    "@coss/label"
   ],
   "files": [
     {

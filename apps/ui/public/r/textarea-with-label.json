@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Textarea labelled with Field",
   "registryDependencies": [
-    "https://coss.com/ui/r/textarea.json",
-    "https://coss.com/ui/r/label.json"
+    "@coss/textarea",
+    "@coss/label"
   ],
   "files": [
     {

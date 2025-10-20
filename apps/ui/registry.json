@@ -65,8 +65,8 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json",
-        "https://coss.com/ui/r/scroll-area.json"
+        "@coss/input",
+        "@coss/scroll-area"
       ],
       "files": [
         {
@@ -212,8 +212,8 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json",
-        "https://coss.com/ui/r/scroll-area.json"
+        "@coss/input",
+        "@coss/scroll-area"
       ],
       "files": [
         {
@@ -299,7 +299,7 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/separator.json"
+        "@coss/separator"
       ],
       "files": [
         {
@@ -388,7 +388,7 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -495,7 +495,7 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/dialog.json"
+        "@coss/dialog"
       ],
       "files": [
         {
@@ -576,7 +576,7 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -605,8 +605,8 @@
         "@base-ui-components/react"
       ],
       "registryDependencies": [
-        "https://coss.com/ui/r/separator.json",
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/separator",
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -646,8 +646,8 @@
       "description": "Controlled accordion",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/accordion.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/accordion",
+        "@coss/button"
       ],
       "files": [
         {
@@ -664,7 +664,7 @@
       "description": "Basic accordion",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/accordion.json"
+        "@coss/accordion"
       ],
       "files": [
         {
@@ -681,7 +681,7 @@
       "description": "Accordion allowing multiple panels open",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/accordion.json"
+        "@coss/accordion"
       ],
       "files": [
         {
@@ -698,7 +698,7 @@
       "description": "Accordion with one panel open",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/accordion.json"
+        "@coss/accordion"
       ],
       "files": [
         {
@@ -715,7 +715,7 @@
       "description": "Basic alert",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -732,7 +732,7 @@
       "description": "Alert with icon",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -749,8 +749,8 @@
       "description": "Alert with icon and action buttons",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/alert",
+        "@coss/button"
       ],
       "files": [
         {
@@ -767,7 +767,7 @@
       "description": "Info alert",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -785,7 +785,7 @@
       "description": "Success alert",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -803,7 +803,7 @@
       "description": "Warning alert",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -821,7 +821,7 @@
       "description": "Error alert",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert.json"
+        "@coss/alert"
       ],
       "files": [
         {
@@ -839,8 +839,8 @@
       "description": "Alert dialog",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert-dialog.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/alert-dialog",
+        "@coss/button"
       ],
       "files": [
         {
@@ -857,7 +857,7 @@
       "description": "Basic autocomplete",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -875,7 +875,7 @@
       "description": "Disabled autocomplete",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -894,7 +894,7 @@
       "description": "Small autocomplete",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -912,7 +912,7 @@
       "description": "Large autocomplete",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -930,8 +930,8 @@
       "description": "Autocomplete with label",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/autocomplete",
+        "@coss/label"
       ],
       "files": [
         {
@@ -949,7 +949,7 @@
       "description": "Autocomplete autofilling the input with the highlighted item",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -967,7 +967,7 @@
       "description": "Autocomplete auto highlighting the first option",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -985,7 +985,7 @@
       "description": "Autocomplete with clear button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -1003,7 +1003,7 @@
       "description": "Autocomplete with trigger and clear buttons",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -1021,7 +1021,7 @@
       "description": "Autocomplete with grouped items",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -1039,7 +1039,7 @@
       "description": "Autocomplete with limited number of results",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -1057,7 +1057,7 @@
       "description": "Autocomplete with async items loading",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -1076,9 +1076,9 @@
       "description": "Autocomplete form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/autocomplete.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/autocomplete",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -1097,7 +1097,7 @@
       "description": "Avatar with image and fallback",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/avatar.json"
+        "@coss/avatar"
       ],
       "files": [
         {
@@ -1114,7 +1114,7 @@
       "description": "Fallback-only avatar",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/avatar.json"
+        "@coss/avatar"
       ],
       "files": [
         {
@@ -1131,7 +1131,7 @@
       "description": "Overlapping avatar group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/avatar.json"
+        "@coss/avatar"
       ],
       "files": [
         {
@@ -1149,7 +1149,7 @@
       "description": "Avatars with different radii",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/avatar.json"
+        "@coss/avatar"
       ],
       "files": [
         {
@@ -1166,7 +1166,7 @@
       "description": "Avatars with different sizes",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/avatar.json"
+        "@coss/avatar"
       ],
       "files": [
         {
@@ -1183,7 +1183,7 @@
       "description": "Basic badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1200,7 +1200,7 @@
       "description": "Outline badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1217,7 +1217,7 @@
       "description": "Secondary badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1234,7 +1234,7 @@
       "description": "Destructive badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1253,7 +1253,7 @@
       "description": "Info badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1271,7 +1271,7 @@
       "description": "Success badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1289,7 +1289,7 @@
       "description": "Warning badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1307,7 +1307,7 @@
       "description": "Error badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1325,7 +1325,7 @@
       "description": "Small badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1342,7 +1342,7 @@
       "description": "Large badge",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1359,7 +1359,7 @@
       "description": "Badge with icon",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1376,7 +1376,7 @@
       "description": "Badge with link",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/badge.json"
+        "@coss/badge"
       ],
       "files": [
         {
@@ -1393,8 +1393,8 @@
       "description": "Breadcrumb with menu example",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/breadcrumb.json",
-        "https://coss.com/ui/r/menu.json"
+        "@coss/breadcrumb",
+        "@coss/menu"
       ],
       "files": [
         {
@@ -1412,7 +1412,7 @@
       "description": "Breadcrumb with custom separator",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/breadcrumb.json"
+        "@coss/breadcrumb"
       ],
       "files": [
         {
@@ -1429,7 +1429,7 @@
       "description": "Default button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1446,7 +1446,7 @@
       "description": "Secondary button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1463,7 +1463,7 @@
       "description": "Destructive button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1482,7 +1482,7 @@
       "description": "Destructive outline button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1500,7 +1500,7 @@
       "description": "Outline button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1517,7 +1517,7 @@
       "description": "Ghost button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1534,7 +1534,7 @@
       "description": "Link button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1551,7 +1551,7 @@
       "description": "Extra-small button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1568,7 +1568,7 @@
       "description": "Small button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1585,7 +1585,7 @@
       "description": "Large button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1602,7 +1602,7 @@
       "description": "Extra-large button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1619,7 +1619,7 @@
       "description": "Disabled button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1637,7 +1637,7 @@
       "description": "Icon button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1654,7 +1654,7 @@
       "description": "Small icon button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1671,7 +1671,7 @@
       "description": "Large icon button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1688,7 +1688,7 @@
       "description": "Button with icon",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1705,7 +1705,7 @@
       "description": "Link rendered as button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1722,7 +1722,7 @@
       "description": "Loading button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "files": [
         {
@@ -1740,11 +1740,11 @@
       "description": "Card example with form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/card.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/select.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/card",
+        "@coss/button",
+        "@coss/select",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -1766,8 +1766,8 @@
       "description": "Card-style checkbox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1786,8 +1786,8 @@
       "description": "Basic checkbox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1805,8 +1805,8 @@
       "description": "Disabled checkbox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1825,10 +1825,10 @@
       "description": "Checkbox in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/checkbox",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
       ],
       "files": [
         {
@@ -1848,9 +1848,9 @@
       "description": "Checkbox group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1868,9 +1868,9 @@
       "description": "Checkbox group with disabled item",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1889,12 +1889,12 @@
       "description": "Checkbox group in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/fieldset.json",
-        "https://coss.com/ui/r/form.json"
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/button",
+        "@coss/field",
+        "@coss/fieldset",
+        "@coss/form"
       ],
       "files": [
         {
@@ -1916,9 +1916,9 @@
       "description": "Checkbox group parent with nested children controls",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1937,9 +1937,9 @@
       "description": "Checkbox group select/deselect all checkboxes",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1958,8 +1958,8 @@
       "description": "Checkbox with helper text",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/checkbox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -1979,7 +1979,7 @@
       "description": "Basic collapsible",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/collapsible.json"
+        "@coss/collapsible"
       ],
       "files": [
         {
@@ -1996,7 +1996,7 @@
       "description": "Basic combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2014,7 +2014,7 @@
       "description": "Disabled combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2033,7 +2033,7 @@
       "description": "Small combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2051,7 +2051,7 @@
       "description": "Large combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2069,8 +2069,8 @@
       "description": "Combobox with label",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/combobox",
+        "@coss/label"
       ],
       "files": [
         {
@@ -2088,7 +2088,7 @@
       "description": "Combobox auto highlighting the first option",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2106,7 +2106,7 @@
       "description": "Combobox with grouped items",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2124,7 +2124,7 @@
       "description": "Combobox with clear button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2142,7 +2142,7 @@
       "description": "Combobox with multiple selection",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2160,8 +2160,8 @@
       "description": "Combobox with popup",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/combobox",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2179,10 +2179,10 @@
       "description": "Combobox form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/combobox",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2201,10 +2201,10 @@
       "description": "Combobox multiple selection form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/combobox.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/combobox",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2224,12 +2224,12 @@
       "description": "Prompt before closing with unsaved changes",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/alert-dialog.json",
-        "https://coss.com/ui/r/dialog.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/alert-dialog",
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field",
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -2251,10 +2251,10 @@
       "description": "Basic dialog",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/dialog.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2274,9 +2274,9 @@
       "description": "Open dialog from a menu item",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/dialog.json",
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/dialog",
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2295,9 +2295,9 @@
       "description": "Dialog with a nested dialog",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/dialog.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2316,10 +2316,10 @@
       "description": "Basic sheet",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/sheet.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/sheet",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2337,8 +2337,8 @@
       "description": "Sheet position",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/sheet.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/sheet",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2355,8 +2355,8 @@
       "description": "Field with checkbox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/checkbox.json"
+        "@coss/field",
+        "@coss/checkbox"
       ],
       "files": [
         {
@@ -2375,10 +2375,10 @@
       "description": "Field with checkbox group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/checkbox-group.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/fieldset.json"
+        "@coss/field",
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/fieldset"
       ],
       "files": [
         {
@@ -2399,11 +2399,11 @@
       "description": "Complete form built with field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/select.json",
-        "https://coss.com/ui/r/checkbox.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/field",
+        "@coss/select",
+        "@coss/checkbox",
+        "@coss/form",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2427,7 +2427,7 @@
       "description": "Field with description",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json"
+        "@coss/field"
       ],
       "files": [
         {
@@ -2447,7 +2447,7 @@
       "description": "Field in disabled state",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json"
+        "@coss/field"
       ],
       "files": [
         {
@@ -2468,7 +2468,7 @@
       "description": "Field showing validation error",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json"
+        "@coss/field"
       ],
       "files": [
         {
@@ -2487,8 +2487,8 @@
       "description": "Field with autocomplete",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/autocomplete.json"
+        "@coss/field",
+        "@coss/autocomplete"
       ],
       "files": [
         {
@@ -2508,8 +2508,8 @@
       "description": "Field with combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/field",
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2529,8 +2529,8 @@
       "description": "Field with multiple selection combobox",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/combobox.json"
+        "@coss/field",
+        "@coss/combobox"
       ],
       "files": [
         {
@@ -2551,8 +2551,8 @@
       "description": "Field with number field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/field",
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -2574,9 +2574,9 @@
       "description": "Field with radio group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/fieldset.json"
+        "@coss/field",
+        "@coss/radio-group",
+        "@coss/fieldset"
       ],
       "files": [
         {
@@ -2598,7 +2598,7 @@
       "description": "Field with required indicator",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json"
+        "@coss/field"
       ],
       "files": [
         {
@@ -2617,8 +2617,8 @@
       "description": "Field with select",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/select.json"
+        "@coss/field",
+        "@coss/select"
       ],
       "files": [
         {
@@ -2639,8 +2639,8 @@
       "description": "Field with slider",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/slider.json"
+        "@coss/field",
+        "@coss/slider"
       ],
       "files": [
         {
@@ -2661,8 +2661,8 @@
       "description": "Field with toggle switch",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/switch.json"
+        "@coss/field",
+        "@coss/switch"
       ],
       "files": [
         {
@@ -2681,8 +2681,8 @@
       "description": "Field with textarea",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/field",
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -2703,7 +2703,7 @@
       "description": "Show field validity state",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/field.json"
+        "@coss/field"
       ],
       "files": [
         {
@@ -2720,8 +2720,8 @@
       "description": "Fieldset with legend and labeled fields",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/fieldset.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/fieldset",
+        "@coss/field"
       ],
       "files": [
         {
@@ -2742,9 +2742,9 @@
       "description": "Input in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2764,9 +2764,9 @@
       "description": "Form with zod validation",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
       ],
       "dependencies": [
         "zod"
@@ -2791,7 +2791,7 @@
       "description": "Basic input component without label",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json"
+        "@coss/input"
       ],
       "files": [
         {
@@ -2808,7 +2808,7 @@
       "description": "Frame example",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/frame.json"
+        "@coss/frame"
       ],
       "files": [
         {
@@ -2825,8 +2825,8 @@
       "description": "Group example",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/group.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/group",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2843,9 +2843,9 @@
       "description": "Group with input",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/group.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/input.json"
+        "@coss/group",
+        "@coss/button",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2862,7 +2862,7 @@
       "description": "Small input",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json"
+        "@coss/input"
       ],
       "files": [
         {
@@ -2879,7 +2879,7 @@
       "description": "Large input",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json"
+        "@coss/input"
       ],
       "files": [
         {
@@ -2896,7 +2896,7 @@
       "description": "Input with disabled state",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json"
+        "@coss/input"
       ],
       "files": [
         {
@@ -2914,7 +2914,7 @@
       "description": "Input type set to file",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json"
+        "@coss/input"
       ],
       "files": [
         {
@@ -2932,8 +2932,8 @@
       "description": "Input with label",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/input",
+        "@coss/label"
       ],
       "files": [
         {
@@ -2951,8 +2951,8 @@
       "description": "Input with button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/input.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/input",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2970,8 +2970,8 @@
       "description": "Menu with checkbox items",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -2989,8 +2989,8 @@
       "description": "Close menu when items are clicked",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3007,8 +3007,8 @@
       "description": "Basic menu",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3025,8 +3025,8 @@
       "description": "Menu items grouped with labels",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3044,8 +3044,8 @@
       "description": "Open the menu on hover",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3062,8 +3062,8 @@
       "description": "Menu items as links",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3081,8 +3081,8 @@
       "description": "Menu with submenu",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3099,8 +3099,8 @@
       "description": "Menu with radio options",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/menu.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/menu",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3118,7 +3118,7 @@
       "description": "Basic meter",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/meter.json"
+        "@coss/meter"
       ],
       "files": [
         {
@@ -3135,7 +3135,7 @@
       "description": "Meter without label and value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/meter.json"
+        "@coss/meter"
       ],
       "files": [
         {
@@ -3152,7 +3152,7 @@
       "description": "Meter with a custom formatted value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/meter.json"
+        "@coss/meter"
       ],
       "files": [
         {
@@ -3169,7 +3169,7 @@
       "description": "Meter with min and max values",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/meter.json"
+        "@coss/meter"
       ],
       "files": [
         {
@@ -3186,7 +3186,7 @@
       "description": "A number field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3203,7 +3203,7 @@
       "description": "Small number field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3220,7 +3220,7 @@
       "description": "Large number field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3237,7 +3237,7 @@
       "description": "A disabled number field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3256,10 +3256,10 @@
       "description": "A number in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/number-field",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3279,7 +3279,7 @@
       "description": "A number field with formatted value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3296,8 +3296,8 @@
       "description": "A number field with an external label",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/number-field",
+        "@coss/label"
       ],
       "dependencies": [
         "@radix-ui/react-label"
@@ -3318,7 +3318,7 @@
       "description": "A number field with min/max constraints",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3336,7 +3336,7 @@
       "description": "A number field with a scrub area",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3353,7 +3353,7 @@
       "description": "A number field with step",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/number-field.json"
+        "@coss/number-field"
       ],
       "files": [
         {
@@ -3370,7 +3370,7 @@
       "description": "Pagination example",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/pagination.json"
+        "@coss/pagination"
       ],
       "files": [
         {
@@ -3387,11 +3387,11 @@
       "description": "Popover with a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/popover.json",
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/textarea.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/popover",
+        "@coss/button",
+        "@coss/textarea",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -3412,8 +3412,8 @@
       "description": "Popover with close button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/popover.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/popover",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3431,8 +3431,8 @@
       "description": "Preview card example",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/preview-card.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/preview-card",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3450,7 +3450,7 @@
       "description": "Animated progress bar",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/progress.json"
+        "@coss/progress"
       ],
       "files": [
         {
@@ -3467,7 +3467,7 @@
       "description": "Progress with a custom formatted value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/progress.json"
+        "@coss/progress"
       ],
       "files": [
         {
@@ -3484,7 +3484,7 @@
       "description": "Progress with label and value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/progress.json"
+        "@coss/progress"
       ],
       "files": [
         {
@@ -3502,8 +3502,8 @@
       "description": "Card-style radio options",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/radio-group",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3521,8 +3521,8 @@
       "description": "Basic radio group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/radio-group",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3540,8 +3540,8 @@
       "description": "Radio group with one option disabled",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/radio-group",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3559,11 +3559,11 @@
       "description": "Radio group in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/fieldset.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/radio-group",
+        "@coss/field",
+        "@coss/fieldset",
+        "@coss/form",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3584,8 +3584,8 @@
       "description": "Radio options with helper text",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/radio-group.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/radio-group",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3605,7 +3605,7 @@
       "description": "Scroll area - vertical",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/scroll-area.json"
+        "@coss/scroll-area"
       ],
       "files": [
         {
@@ -3622,7 +3622,7 @@
       "description": "Scroll area - horizontal",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/scroll-area.json"
+        "@coss/scroll-area"
       ],
       "files": [
         {
@@ -3639,7 +3639,7 @@
       "description": "Scroll area - both horizontal and vertical",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/scroll-area.json"
+        "@coss/scroll-area"
       ],
       "files": [
         {
@@ -3656,7 +3656,7 @@
       "description": "A basic select",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3673,7 +3673,7 @@
       "description": "A select with small size",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3690,7 +3690,7 @@
       "description": "A select with large size",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3707,7 +3707,7 @@
       "description": "A disabled select",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3725,7 +3725,7 @@
       "description": "Select popup not aligned to trigger",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3742,7 +3742,7 @@
       "description": "Select items grouped with labels",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3759,7 +3759,7 @@
       "description": "Multiple selection with formatted value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/select.json"
+        "@coss/select"
       ],
       "files": [
         {
@@ -3776,10 +3776,10 @@
       "description": "Select in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/select.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json"
+        "@coss/button",
+        "@coss/select",
+        "@coss/form",
+        "@coss/field"
       ],
       "files": [
         {
@@ -3800,7 +3800,7 @@
       "description": "Separator with horizontal and vertical orientations",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/separator.json"
+        "@coss/separator"
       ],
       "files": [
         {
@@ -3817,7 +3817,7 @@
       "description": "Basic slider",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/slider.json"
+        "@coss/slider"
       ],
       "files": [
         {
@@ -3834,8 +3834,8 @@
       "description": "Slider with label and value",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/slider.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/slider",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3853,7 +3853,7 @@
       "description": "Two-thumb range slider",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/slider.json"
+        "@coss/slider"
       ],
       "files": [
         {
@@ -3871,7 +3871,7 @@
       "description": "Vertical slider",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/slider.json"
+        "@coss/slider"
       ],
       "files": [
         {
@@ -3889,10 +3889,10 @@
       "description": "Slider in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/slider.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/slider",
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
       ],
       "files": [
         {
@@ -3914,8 +3914,8 @@
       "description": "Basic switch",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/switch.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/switch",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3933,8 +3933,8 @@
       "description": "Disabled switch",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/switch.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/switch",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3953,8 +3953,8 @@
       "description": "Switch with description",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/switch.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/switch",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3974,8 +3974,8 @@
       "description": "Card-style switch",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/switch.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/switch",
+        "@coss/label"
       ],
       "files": [
         {
@@ -3994,10 +3994,10 @@
       "description": "Switch in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/switch.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/switch",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
       ],
       "files": [
         {
@@ -4017,8 +4017,8 @@
       "description": "Basic table",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/table.json",
-        "https://coss.com/ui/r/badge.json"
+        "@coss/table",
+        "@coss/badge"
       ],
       "files": [
         {
@@ -4036,9 +4036,9 @@
       "description": "Framed table",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/table.json",
-        "https://coss.com/ui/r/badge.json",
-        "https://coss.com/ui/r/frame.json"
+        "@coss/table",
+        "@coss/badge",
+        "@coss/frame"
       ],
       "files": [
         {
@@ -4057,7 +4057,7 @@
       "description": "Tabs with default indicator",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tabs.json"
+        "@coss/tabs"
       ],
       "files": [
         {
@@ -4074,7 +4074,7 @@
       "description": "Tabs with underline indicator",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tabs.json"
+        "@coss/tabs"
       ],
       "files": [
         {
@@ -4091,7 +4091,7 @@
       "description": "Tabs with vertical layout",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tabs.json"
+        "@coss/tabs"
       ],
       "files": [
         {
@@ -4109,7 +4109,7 @@
       "description": "Underline tabs with vertical layout",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tabs.json"
+        "@coss/tabs"
       ],
       "files": [
         {
@@ -4127,7 +4127,7 @@
       "description": "Basic textarea",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -4144,7 +4144,7 @@
       "description": "Small textarea",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -4161,7 +4161,7 @@
       "description": "Large textarea",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -4178,7 +4178,7 @@
       "description": "Disabled textarea",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json"
+        "@coss/textarea"
       ],
       "files": [
         {
@@ -4196,8 +4196,8 @@
       "description": "Textarea labelled with Field",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json",
-        "https://coss.com/ui/r/label.json"
+        "@coss/textarea",
+        "@coss/label"
       ],
       "files": [
         {
@@ -4216,10 +4216,10 @@
       "description": "Textarea in a form",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/textarea.json",
-        "https://coss.com/ui/r/form.json",
-        "https://coss.com/ui/r/field.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/textarea",
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
       ],
       "files": [
         {
@@ -4239,7 +4239,7 @@
       "description": "Status toast",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4257,7 +4257,7 @@
       "description": "Loading toast",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4276,7 +4276,7 @@
       "description": "Drive toasts from promise states",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4294,7 +4294,7 @@
       "description": "Toast with an action button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4312,7 +4312,7 @@
       "description": "Success toast",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4330,7 +4330,7 @@
       "description": "Toast with varying heights",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toast.json"
+        "@coss/toast"
       ],
       "files": [
         {
@@ -4347,7 +4347,7 @@
       "description": "Basic toggle",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4364,7 +4364,7 @@
       "description": "Disabled toggle",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4382,7 +4382,7 @@
       "description": "Toggle group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4400,7 +4400,7 @@
       "description": "Toggle group with small toggles",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4418,7 +4418,7 @@
       "description": "Toggle group with large toggles",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4436,7 +4436,7 @@
       "description": "Toggle group with outline toggles",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4454,7 +4454,7 @@
       "description": "Toggle group with outline toggles and separator",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4472,7 +4472,7 @@
       "description": "Disabled toggle group",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4491,7 +4491,7 @@
       "description": "Toggle group with multiple selection",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4509,7 +4509,7 @@
       "description": "Toggle group with disabled item",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4528,7 +4528,7 @@
       "description": "Multiple toggles",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4545,7 +4545,7 @@
       "description": "Large toggle",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4562,7 +4562,7 @@
       "description": "Outline toggle",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4579,7 +4579,7 @@
       "description": "Small toggle",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4596,7 +4596,7 @@
       "description": "Toggle with icon",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/toggle.json"
+        "@coss/toggle"
       ],
       "files": [
         {
@@ -4613,11 +4613,11 @@
       "description": "Toolbar",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json",
-        "https://coss.com/ui/r/select.json",
-        "https://coss.com/ui/r/toggle-group.json",
-        "https://coss.com/ui/r/toolbar.json",
-        "https://coss.com/ui/r/tooltip.json"
+        "@coss/button",
+        "@coss/select",
+        "@coss/toggle-group",
+        "@coss/toolbar",
+        "@coss/tooltip"
       ],
       "files": [
         {
@@ -4638,8 +4638,8 @@
       "description": "Basic tooltip",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tooltip.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/tooltip",
+        "@coss/button"
       ],
       "files": [
         {
@@ -4657,8 +4657,8 @@
       "description": "Toggle group with grouped tooltips",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/tooltip.json",
-        "https://coss.com/ui/r/toggle-group.json"
+        "@coss/tooltip",
+        "@coss/toggle-group"
       ],
       "files": [
         {
@@ -4677,7 +4677,7 @@
       "description": "Back link button with chevron",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4697,7 +4697,7 @@
       "description": "Card-style button with heading and description",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4717,7 +4717,7 @@
       "description": "Directional pad control buttons",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4737,7 +4737,7 @@
       "description": "Outline like button with count",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4757,7 +4757,7 @@
       "description": "Social login icon buttons",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "@remixicon/react"
@@ -4777,7 +4777,7 @@
       "description": "Expandable show more/less toggle button",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4797,7 +4797,7 @@
       "description": "Star button with count badge",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/button.json"
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4817,9 +4817,9 @@
       "description": "Frame with collapsible content and delete button",
       "type": "registry:example",
       "registryDependencies": [
-        "https://coss.com/ui/r/frame.json",
-        "https://coss.com/ui/r/collapsible.json",
-        "https://coss.com/ui/r/button.json"
+        "@coss/frame",
+        "@coss/collapsible",
+        "@coss/button"
       ],
       "dependencies": [
         "lucide-react"
@@ -4840,7 +4840,7 @@
       "description": "Pagination with previous and next buttons only",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/pagination.json"
+        "@coss/pagination"
       ],
       "files": [
         {
@@ -4857,8 +4857,8 @@
       "description": "Pagination with select, and previous and next buttons",
       "type": "registry:block",
       "registryDependencies": [
-        "https://coss.com/ui/r/pagination.json",
-        "https://coss.com/ui/r/select.json"
+        "@coss/pagination",
+        "@coss/select"
       ],
       "files": [
         {

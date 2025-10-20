@@ -4,12 +4,12 @@
   "type": "registry:example",
   "description": "Prompt before closing with unsaved changes",
   "registryDependencies": [
-    "https://coss.com/ui/r/alert-dialog.json",
-    "https://coss.com/ui/r/dialog.json",
-    "https://coss.com/ui/r/button.json",
-    "https://coss.com/ui/r/form.json",
-    "https://coss.com/ui/r/field.json",
-    "https://coss.com/ui/r/textarea.json"
+    "@coss/alert-dialog",
+    "@coss/dialog",
+    "@coss/button",
+    "@coss/form",
+    "@coss/field",
+    "@coss/textarea"
   ],
   "files": [
     {

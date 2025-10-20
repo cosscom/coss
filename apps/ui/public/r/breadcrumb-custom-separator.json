@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Breadcrumb with custom separator",
   "registryDependencies": [
-    "https://coss.com/ui/r/breadcrumb.json"
+    "@coss/breadcrumb"
   ],
   "files": [
     {

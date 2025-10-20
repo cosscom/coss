@@ -5,10 +5,7 @@ export const examples: Registry["items"] = [
     name: "accordion-controlled",
     description: "Controlled accordion",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/accordion.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/accordion", "@coss/button"],
     files: [
       {
         path: "examples/accordion-controlled.tsx",
@@ -21,7 +18,7 @@ export const examples: Registry["items"] = [
     name: "accordion-demo",
     description: "Basic accordion",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    registryDependencies: ["@coss/accordion"],
     files: [
       {
         path: "examples/accordion-demo.tsx",
@@ -34,7 +31,7 @@ export const examples: Registry["items"] = [
     name: "accordion-multiple",
     description: "Accordion allowing multiple panels open",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    registryDependencies: ["@coss/accordion"],
     files: [
       {
         path: "examples/accordion-multiple.tsx",
@@ -47,7 +44,7 @@ export const examples: Registry["items"] = [
     name: "accordion-single",
     description: "Accordion with one panel open",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/accordion.json"],
+    registryDependencies: ["@coss/accordion"],
     files: [
       {
         path: "examples/accordion-single.tsx",
@@ -60,7 +57,7 @@ export const examples: Registry["items"] = [
     name: "alert-demo",
     description: "Basic alert",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-demo.tsx",
@@ -73,7 +70,7 @@ export const examples: Registry["items"] = [
     name: "alert-with-icon",
     description: "Alert with icon",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-with-icon.tsx",
@@ -86,10 +83,7 @@ export const examples: Registry["items"] = [
     name: "alert-with-icon-action",
     description: "Alert with icon and action buttons",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/alert.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/alert", "@coss/button"],
     files: [
       {
         path: "examples/alert-with-icon-action.tsx",
@@ -102,7 +96,7 @@ export const examples: Registry["items"] = [
     name: "alert-info",
     description: "Info alert",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-info.tsx",
@@ -115,7 +109,7 @@ export const examples: Registry["items"] = [
     name: "alert-success",
     description: "Success alert",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-success.tsx",
@@ -128,7 +122,7 @@ export const examples: Registry["items"] = [
     name: "alert-warning",
     description: "Warning alert",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-warning.tsx",
@@ -141,7 +135,7 @@ export const examples: Registry["items"] = [
     name: "alert-error",
     description: "Error alert",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/alert.json"],
+    registryDependencies: ["@coss/alert"],
     files: [
       {
         path: "examples/alert-error.tsx",
@@ -154,10 +148,7 @@ export const examples: Registry["items"] = [
     name: "alert-dialog-demo",
     description: "Alert dialog",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/alert-dialog.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/alert-dialog", "@coss/button"],
     files: [
       {
         path: "examples/alert-dialog-demo.tsx",
@@ -170,7 +161,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-demo",
     description: "Basic autocomplete",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-demo.tsx",
@@ -183,7 +174,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-disabled",
     description: "Disabled autocomplete",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-disabled.tsx",
@@ -196,7 +187,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-sm",
     description: "Small autocomplete",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-sm.tsx",
@@ -209,7 +200,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-lg",
     description: "Large autocomplete",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-lg.tsx",
@@ -222,10 +213,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-with-label",
     description: "Autocomplete with label",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/autocomplete.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/autocomplete", "@coss/label"],
     files: [
       {
         path: "examples/autocomplete-with-label.tsx",
@@ -238,7 +226,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-inline",
     description: "Autocomplete autofilling the input with the highlighted item",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-inline.tsx",
@@ -251,7 +239,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-autohighlight",
     description: "Autocomplete auto highlighting the first option",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-autohighlight.tsx",
@@ -264,7 +252,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-with-clear",
     description: "Autocomplete with clear button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-with-clear.tsx",
@@ -277,7 +265,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-with-trigger-clear",
     description: "Autocomplete with trigger and clear buttons",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-with-trigger-clear.tsx",
@@ -290,7 +278,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-grouped",
     description: "Autocomplete with grouped items",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-grouped.tsx",
@@ -303,7 +291,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-limit",
     description: "Autocomplete with limited number of results",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-limit.tsx",
@@ -316,7 +304,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-async",
     description: "Autocomplete with async items loading",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/autocomplete.json"],
+    registryDependencies: ["@coss/autocomplete"],
     files: [
       {
         path: "examples/autocomplete-async.tsx",
@@ -329,11 +317,7 @@ export const examples: Registry["items"] = [
     name: "autocomplete-form",
     description: "Autocomplete form",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/autocomplete.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-    ],
+    registryDependencies: ["@coss/autocomplete", "@coss/form", "@coss/field"],
     files: [
       {
         path: "examples/autocomplete-form.tsx",
@@ -346,7 +330,7 @@ export const examples: Registry["items"] = [
     name: "avatar-demo",
     description: "Avatar with image and fallback",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/avatar.json"],
+    registryDependencies: ["@coss/avatar"],
     files: [
       {
         path: "examples/avatar-demo.tsx",
@@ -359,7 +343,7 @@ export const examples: Registry["items"] = [
     name: "avatar-fallback",
     description: "Fallback-only avatar",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/avatar.json"],
+    registryDependencies: ["@coss/avatar"],
     files: [
       {
         path: "examples/avatar-fallback.tsx",
@@ -372,7 +356,7 @@ export const examples: Registry["items"] = [
     name: "avatar-group",
     description: "Overlapping avatar group",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/avatar.json"],
+    registryDependencies: ["@coss/avatar"],
     files: [
       {
         path: "examples/avatar-group.tsx",
@@ -385,7 +369,7 @@ export const examples: Registry["items"] = [
     name: "avatar-radius",
     description: "Avatars with different radii",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/avatar.json"],
+    registryDependencies: ["@coss/avatar"],
     files: [
       {
         path: "examples/avatar-radius.tsx",
@@ -398,7 +382,7 @@ export const examples: Registry["items"] = [
     name: "avatar-size",
     description: "Avatars with different sizes",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/avatar.json"],
+    registryDependencies: ["@coss/avatar"],
     files: [
       {
         path: "examples/avatar-size.tsx",
@@ -411,7 +395,7 @@ export const examples: Registry["items"] = [
     name: "badge-demo",
     description: "Basic badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-demo.tsx",
@@ -424,7 +408,7 @@ export const examples: Registry["items"] = [
     name: "badge-outline",
     description: "Outline badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-outline.tsx",
@@ -437,7 +421,7 @@ export const examples: Registry["items"] = [
     name: "badge-secondary",
     description: "Secondary badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-secondary.tsx",
@@ -450,7 +434,7 @@ export const examples: Registry["items"] = [
     name: "badge-destructive",
     description: "Destructive badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-destructive.tsx",
@@ -463,7 +447,7 @@ export const examples: Registry["items"] = [
     name: "badge-info",
     description: "Info badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-info.tsx",
@@ -476,7 +460,7 @@ export const examples: Registry["items"] = [
     name: "badge-success",
     description: "Success badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-success.tsx",
@@ -489,7 +473,7 @@ export const examples: Registry["items"] = [
     name: "badge-warning",
     description: "Warning badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-warning.tsx",
@@ -502,7 +486,7 @@ export const examples: Registry["items"] = [
     name: "badge-error",
     description: "Error badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-error.tsx",
@@ -515,7 +499,7 @@ export const examples: Registry["items"] = [
     name: "badge-sm",
     description: "Small badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-sm.tsx",
@@ -528,7 +512,7 @@ export const examples: Registry["items"] = [
     name: "badge-lg",
     description: "Large badge",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-lg.tsx",
@@ -541,7 +525,7 @@ export const examples: Registry["items"] = [
     name: "badge-with-icon",
     description: "Badge with icon",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-with-icon.tsx",
@@ -554,7 +538,7 @@ export const examples: Registry["items"] = [
     name: "badge-with-link",
     description: "Badge with link",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/badge.json"],
+    registryDependencies: ["@coss/badge"],
     files: [
       {
         path: "examples/badge-with-link.tsx",
@@ -567,10 +551,7 @@ export const examples: Registry["items"] = [
     name: "breadcrumb-demo",
     description: "Breadcrumb with menu example",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/breadcrumb.json",
-      "https://coss.com/ui/r/menu.json",
-    ],
+    registryDependencies: ["@coss/breadcrumb", "@coss/menu"],
     files: [{ path: "examples/breadcrumb-demo.tsx", type: "registry:example" }],
     categories: ["breadcrumb", "menu"],
   },
@@ -578,7 +559,7 @@ export const examples: Registry["items"] = [
     name: "breadcrumb-custom-separator",
     description: "Breadcrumb with custom separator",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/breadcrumb.json"],
+    registryDependencies: ["@coss/breadcrumb"],
     files: [
       {
         path: "examples/breadcrumb-custom-separator.tsx",
@@ -591,7 +572,7 @@ export const examples: Registry["items"] = [
     name: "button-demo",
     description: "Default button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "examples/button-demo.tsx",
@@ -604,7 +585,7 @@ export const examples: Registry["items"] = [
     name: "button-secondary",
     description: "Secondary button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "examples/button-secondary.tsx",
@@ -617,7 +598,7 @@ export const examples: Registry["items"] = [
     name: "button-destructive",
     description: "Destructive button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "examples/button-destructive.tsx",
@@ -630,7 +611,7 @@ export const examples: Registry["items"] = [
     name: "button-destructive-outline",
     description: "Destructive outline button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "examples/button-destructive-outline.tsx",
@@ -643,7 +624,7 @@ export const examples: Registry["items"] = [
     name: "button-outline",
     description: "Outline button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-outline.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -651,7 +632,7 @@ export const examples: Registry["items"] = [
     name: "button-ghost",
     description: "Ghost button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-ghost.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -659,7 +640,7 @@ export const examples: Registry["items"] = [
     name: "button-link",
     description: "Link button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-link.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -667,7 +648,7 @@ export const examples: Registry["items"] = [
     name: "button-xs",
     description: "Extra-small button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-xs.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -675,7 +656,7 @@ export const examples: Registry["items"] = [
     name: "button-sm",
     description: "Small button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-sm.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -683,7 +664,7 @@ export const examples: Registry["items"] = [
     name: "button-lg",
     description: "Large button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-lg.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -691,7 +672,7 @@ export const examples: Registry["items"] = [
     name: "button-xl",
     description: "Extra-large button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-xl.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -699,7 +680,7 @@ export const examples: Registry["items"] = [
     name: "button-disabled",
     description: "Disabled button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-disabled.tsx", type: "registry:example" }],
     categories: ["button", "disabled"],
   },
@@ -707,7 +688,7 @@ export const examples: Registry["items"] = [
     name: "button-icon",
     description: "Icon button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-icon.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -715,7 +696,7 @@ export const examples: Registry["items"] = [
     name: "button-icon-sm",
     description: "Small icon button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-icon-sm.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -723,7 +704,7 @@ export const examples: Registry["items"] = [
     name: "button-icon-lg",
     description: "Large icon button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-icon-lg.tsx", type: "registry:example" }],
     categories: ["button"],
   },
@@ -731,7 +712,7 @@ export const examples: Registry["items"] = [
     name: "button-with-icon",
     description: "Button with icon",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       { path: "examples/button-with-icon.tsx", type: "registry:example" },
     ],
@@ -741,7 +722,7 @@ export const examples: Registry["items"] = [
     name: "button-with-link",
     description: "Link rendered as button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [
       { path: "examples/button-with-link.tsx", type: "registry:example" },
     ],
@@ -751,7 +732,7 @@ export const examples: Registry["items"] = [
     name: "button-loading",
     description: "Loading button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/button.json"],
+    registryDependencies: ["@coss/button"],
     files: [{ path: "examples/button-loading.tsx", type: "registry:example" }],
     categories: ["button", "loading"],
   },
@@ -760,11 +741,11 @@ export const examples: Registry["items"] = [
     description: "Card example with form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/card.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/select.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/card",
+      "@coss/button",
+      "@coss/select",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [
       {
@@ -778,10 +759,7 @@ export const examples: Registry["items"] = [
     name: "checkbox-card",
     description: "Card-style checkbox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/checkbox", "@coss/label"],
     files: [{ path: "examples/checkbox-card.tsx", type: "registry:example" }],
     categories: ["checkbox", "card", "label"],
   },
@@ -789,10 +767,7 @@ export const examples: Registry["items"] = [
     name: "checkbox-demo",
     description: "Basic checkbox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/checkbox", "@coss/label"],
     files: [{ path: "examples/checkbox-demo.tsx", type: "registry:example" }],
     categories: ["checkbox", "label"],
   },
@@ -800,10 +775,7 @@ export const examples: Registry["items"] = [
     name: "checkbox-disabled",
     description: "Disabled checkbox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/checkbox", "@coss/label"],
     files: [
       { path: "examples/checkbox-disabled.tsx", type: "registry:example" },
     ],
@@ -814,10 +786,10 @@ export const examples: Registry["items"] = [
     description: "Checkbox in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/checkbox",
+      "@coss/field",
+      "@coss/form",
+      "@coss/button",
     ],
     files: [{ path: "examples/checkbox-form.tsx", type: "registry:example" }],
     categories: ["checkbox", "form", "button", "label"],
@@ -827,9 +799,9 @@ export const examples: Registry["items"] = [
     description: "Checkbox group",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/label",
     ],
     files: [
       { path: "examples/checkbox-group-demo.tsx", type: "registry:example" },
@@ -841,9 +813,9 @@ export const examples: Registry["items"] = [
     description: "Checkbox group with disabled item",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/label",
     ],
     files: [
       {
@@ -858,12 +830,12 @@ export const examples: Registry["items"] = [
     description: "Checkbox group in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/fieldset.json",
-      "https://coss.com/ui/r/form.json",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/button",
+      "@coss/field",
+      "@coss/fieldset",
+      "@coss/form",
     ],
     files: [
       { path: "examples/checkbox-group-form.tsx", type: "registry:example" },
@@ -882,9 +854,9 @@ export const examples: Registry["items"] = [
     description: "Checkbox group parent with nested children controls",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/label",
     ],
     files: [
       {
@@ -899,9 +871,9 @@ export const examples: Registry["items"] = [
     description: "Checkbox group select/deselect all checkboxes",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/label",
     ],
     files: [
       { path: "examples/checkbox-group-parent.tsx", type: "registry:example" },
@@ -912,10 +884,7 @@ export const examples: Registry["items"] = [
     name: "checkbox-with-description",
     description: "Checkbox with helper text",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/checkbox", "@coss/label"],
     files: [
       {
         path: "examples/checkbox-with-description.tsx",
@@ -928,7 +897,7 @@ export const examples: Registry["items"] = [
     name: "collapsible-demo",
     description: "Basic collapsible",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/collapsible.json"],
+    registryDependencies: ["@coss/collapsible"],
     files: [
       { path: "examples/collapsible-demo.tsx", type: "registry:example" },
     ],
@@ -938,7 +907,7 @@ export const examples: Registry["items"] = [
     name: "combobox-demo",
     description: "Basic combobox",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [{ path: "examples/combobox-demo.tsx", type: "registry:example" }],
     categories: ["combobox", "input"],
   },
@@ -946,7 +915,7 @@ export const examples: Registry["items"] = [
     name: "combobox-disabled",
     description: "Disabled combobox",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [
       { path: "examples/combobox-disabled.tsx", type: "registry:example" },
     ],
@@ -956,7 +925,7 @@ export const examples: Registry["items"] = [
     name: "combobox-sm",
     description: "Small combobox",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [{ path: "examples/combobox-sm.tsx", type: "registry:example" }],
     categories: ["combobox", "input"],
   },
@@ -964,7 +933,7 @@ export const examples: Registry["items"] = [
     name: "combobox-lg",
     description: "Large combobox",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [{ path: "examples/combobox-lg.tsx", type: "registry:example" }],
     categories: ["combobox", "input"],
   },
@@ -972,10 +941,7 @@ export const examples: Registry["items"] = [
     name: "combobox-with-label",
     description: "Combobox with label",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/combobox.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/combobox", "@coss/label"],
     files: [
       { path: "examples/combobox-with-label.tsx", type: "registry:example" },
     ],
@@ -985,7 +951,7 @@ export const examples: Registry["items"] = [
     name: "combobox-autohighlight",
     description: "Combobox auto highlighting the first option",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [
       { path: "examples/combobox-autohighlight.tsx", type: "registry:example" },
     ],
@@ -995,7 +961,7 @@ export const examples: Registry["items"] = [
     name: "combobox-grouped",
     description: "Combobox with grouped items",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [
       { path: "examples/combobox-grouped.tsx", type: "registry:example" },
     ],
@@ -1005,7 +971,7 @@ export const examples: Registry["items"] = [
     name: "combobox-with-clear",
     description: "Combobox with clear button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [
       { path: "examples/combobox-with-clear.tsx", type: "registry:example" },
     ],
@@ -1015,7 +981,7 @@ export const examples: Registry["items"] = [
     name: "combobox-multiple",
     description: "Combobox with multiple selection",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/combobox.json"],
+    registryDependencies: ["@coss/combobox"],
     files: [
       { path: "examples/combobox-multiple.tsx", type: "registry:example" },
     ],
@@ -1025,10 +991,7 @@ export const examples: Registry["items"] = [
     name: "combobox-with-inner-input",
     description: "Combobox with popup",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/combobox.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/combobox", "@coss/button"],
     files: [
       {
         path: "examples/combobox-with-inner-input.tsx",
@@ -1042,10 +1005,10 @@ export const examples: Registry["items"] = [
     description: "Combobox form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/combobox.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/combobox",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [{ path: "examples/combobox-form.tsx", type: "registry:example" }],
     categories: ["combobox", "input", "form"],
@@ -1055,10 +1018,10 @@ export const examples: Registry["items"] = [
     description: "Combobox multiple selection form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/combobox.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/combobox",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [
       { path: "examples/combobox-multiple-form.tsx", type: "registry:example" },
@@ -1070,12 +1033,12 @@ export const examples: Registry["items"] = [
     description: "Prompt before closing with unsaved changes",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/alert-dialog.json",
-      "https://coss.com/ui/r/dialog.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/textarea.json",
+      "@coss/alert-dialog",
+      "@coss/dialog",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/textarea",
     ],
     files: [
       {
@@ -1097,10 +1060,10 @@ export const examples: Registry["items"] = [
     description: "Basic dialog",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/dialog.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/dialog",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [{ path: "examples/dialog-demo.tsx", type: "registry:example" }],
     categories: ["dialog", "form", "field", "button"],
@@ -1109,11 +1072,7 @@ export const examples: Registry["items"] = [
     name: "dialog-from-menu",
     description: "Open dialog from a menu item",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/dialog.json",
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/dialog", "@coss/menu", "@coss/button"],
     files: [
       { path: "examples/dialog-from-menu.tsx", type: "registry:example" },
     ],
@@ -1123,11 +1082,7 @@ export const examples: Registry["items"] = [
     name: "dialog-nested",
     description: "Dialog with a nested dialog",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/dialog.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/field.json",
-    ],
+    registryDependencies: ["@coss/dialog", "@coss/button", "@coss/field"],
     files: [{ path: "examples/dialog-nested.tsx", type: "registry:example" }],
     categories: ["dialog", "field", "button"],
   },
@@ -1136,10 +1091,10 @@ export const examples: Registry["items"] = [
     description: "Basic sheet",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/sheet.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/sheet",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [{ path: "examples/sheet-demo.tsx", type: "registry:example" }],
     categories: ["sheet", "dialog"],
@@ -1148,10 +1103,7 @@ export const examples: Registry["items"] = [
     name: "sheet-position",
     description: "Sheet position",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/sheet.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/sheet", "@coss/button"],
     files: [{ path: "examples/sheet-position.tsx", type: "registry:example" }],
     categories: ["sheet"],
   },
@@ -1159,10 +1111,7 @@ export const examples: Registry["items"] = [
     name: "field-checkbox",
     description: "Field with checkbox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/checkbox.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/checkbox"],
     files: [{ path: "examples/field-checkbox.tsx", type: "registry:example" }],
     categories: ["field", "label", "checkbox"],
   },
@@ -1171,10 +1120,10 @@ export const examples: Registry["items"] = [
     description: "Field with checkbox group",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/checkbox-group.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/fieldset.json",
+      "@coss/field",
+      "@coss/checkbox-group",
+      "@coss/checkbox",
+      "@coss/fieldset",
     ],
     files: [
       { path: "examples/field-checkbox-group.tsx", type: "registry:example" },
@@ -1186,11 +1135,11 @@ export const examples: Registry["items"] = [
     description: "Complete form built with field",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/select.json",
-      "https://coss.com/ui/r/checkbox.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/field",
+      "@coss/select",
+      "@coss/checkbox",
+      "@coss/form",
+      "@coss/button",
     ],
     files: [
       { path: "examples/field-complete-form.tsx", type: "registry:example" },
@@ -1210,7 +1159,7 @@ export const examples: Registry["items"] = [
     name: "field-demo",
     description: "Field with description",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/field.json"],
+    registryDependencies: ["@coss/field"],
     files: [{ path: "examples/field-demo.tsx", type: "registry:example" }],
     categories: ["field", "label", "helper", "hint"],
   },
@@ -1218,7 +1167,7 @@ export const examples: Registry["items"] = [
     name: "field-disabled",
     description: "Field in disabled state",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/field.json"],
+    registryDependencies: ["@coss/field"],
     files: [{ path: "examples/field-disabled.tsx", type: "registry:example" }],
     categories: ["field", "label", "disabled", "helper", "hint"],
   },
@@ -1226,7 +1175,7 @@ export const examples: Registry["items"] = [
     name: "field-error",
     description: "Field showing validation error",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/field.json"],
+    registryDependencies: ["@coss/field"],
     files: [{ path: "examples/field-error.tsx", type: "registry:example" }],
     categories: ["field", "label", "error"],
   },
@@ -1234,10 +1183,7 @@ export const examples: Registry["items"] = [
     name: "field-autocomplete",
     description: "Field with autocomplete",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/autocomplete.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/autocomplete"],
     files: [
       { path: "examples/field-autocomplete.tsx", type: "registry:example" },
     ],
@@ -1247,10 +1193,7 @@ export const examples: Registry["items"] = [
     name: "field-combobox",
     description: "Field with combobox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/combobox.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/combobox"],
     files: [{ path: "examples/field-combobox.tsx", type: "registry:example" }],
     categories: ["field", "input", "combobox", "label"],
   },
@@ -1258,10 +1201,7 @@ export const examples: Registry["items"] = [
     name: "field-combobox-multiple",
     description: "Field with multiple selection combobox",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/combobox.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/combobox"],
     files: [
       {
         path: "examples/field-combobox-multiple.tsx",
@@ -1274,10 +1214,7 @@ export const examples: Registry["items"] = [
     name: "field-number-field",
     description: "Field with number field",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/number-field.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/number-field"],
     files: [
       { path: "examples/field-number-field.tsx", type: "registry:example" },
     ],
@@ -1288,9 +1225,9 @@ export const examples: Registry["items"] = [
     description: "Field with radio group",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/fieldset.json",
+      "@coss/field",
+      "@coss/radio-group",
+      "@coss/fieldset",
     ],
     files: [{ path: "examples/field-radio.tsx", type: "registry:example" }],
     categories: ["field", "radio", "label", "fieldset", "helper", "hint"],
@@ -1299,7 +1236,7 @@ export const examples: Registry["items"] = [
     name: "field-required",
     description: "Field with required indicator",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/field.json"],
+    registryDependencies: ["@coss/field"],
     files: [{ path: "examples/field-required.tsx", type: "registry:example" }],
     categories: ["field", "label", "required"],
   },
@@ -1307,10 +1244,7 @@ export const examples: Registry["items"] = [
     name: "field-select",
     description: "Field with select",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/select.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/select"],
     files: [{ path: "examples/field-select.tsx", type: "registry:example" }],
     categories: ["field", "select", "label", "helper", "hint"],
   },
@@ -1318,10 +1252,7 @@ export const examples: Registry["items"] = [
     name: "field-slider",
     description: "Field with slider",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/slider.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/slider"],
     files: [{ path: "examples/field-slider.tsx", type: "registry:example" }],
     categories: ["field", "slider", "label", "helper", "hint"],
   },
@@ -1329,10 +1260,7 @@ export const examples: Registry["items"] = [
     name: "field-switch",
     description: "Field with toggle switch",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/switch.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/switch"],
     files: [{ path: "examples/field-switch.tsx", type: "registry:example" }],
     categories: ["field", "switch", "label"],
   },
@@ -1340,10 +1268,7 @@ export const examples: Registry["items"] = [
     name: "field-textarea",
     description: "Field with textarea",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/textarea.json",
-    ],
+    registryDependencies: ["@coss/field", "@coss/textarea"],
     files: [{ path: "examples/field-textarea.tsx", type: "registry:example" }],
     categories: ["field", "textarea", "label", "helper", "hint"],
   },
@@ -1351,7 +1276,7 @@ export const examples: Registry["items"] = [
     name: "field-validity",
     description: "Show field validity state",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/field.json"],
+    registryDependencies: ["@coss/field"],
     files: [{ path: "examples/field-validity.tsx", type: "registry:example" }],
     categories: ["field"],
   },
@@ -1359,10 +1284,7 @@ export const examples: Registry["items"] = [
     name: "fieldset-demo",
     description: "Fieldset with legend and labeled fields",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/fieldset.json",
-      "https://coss.com/ui/r/field.json",
-    ],
+    registryDependencies: ["@coss/fieldset", "@coss/field"],
     files: [{ path: "examples/fieldset-demo.tsx", type: "registry:example" }],
     categories: ["fieldset", "field", "label", "input", "helper"],
   },
@@ -1370,11 +1292,7 @@ export const examples: Registry["items"] = [
     name: "form-demo",
     description: "Input in a form",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/form", "@coss/field", "@coss/button"],
     files: [
       {
         path: "examples/form-demo.tsx",
@@ -1387,11 +1305,7 @@ export const examples: Registry["items"] = [
     name: "form-zod",
     description: "Form with zod validation",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/form", "@coss/field", "@coss/button"],
     dependencies: ["zod"],
     files: [{ path: "examples/form-zod.tsx", type: "registry:example" }],
     categories: ["form", "field", "button", "validation", "label", "zod"],
@@ -1400,7 +1314,7 @@ export const examples: Registry["items"] = [
     name: "input-demo",
     description: "Basic input component without label",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/input.json"],
+    registryDependencies: ["@coss/input"],
     files: [
       {
         path: "examples/input-demo.tsx",
@@ -1413,7 +1327,7 @@ export const examples: Registry["items"] = [
     name: "frame-demo",
     description: "Frame example",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/frame.json"],
+    registryDependencies: ["@coss/frame"],
     files: [{ path: "examples/frame-demo.tsx", type: "registry:example" }],
     categories: ["frame"],
   },
@@ -1421,10 +1335,7 @@ export const examples: Registry["items"] = [
     name: "group-demo",
     description: "Group example",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/group.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/group", "@coss/button"],
     files: [{ path: "examples/group-demo.tsx", type: "registry:example" }],
     categories: ["group"],
   },
@@ -1432,11 +1343,7 @@ export const examples: Registry["items"] = [
     name: "group-with-input",
     description: "Group with input",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/group.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/input.json",
-    ],
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/input"],
     files: [
       { path: "examples/group-with-input.tsx", type: "registry:example" },
     ],
@@ -1446,7 +1353,7 @@ export const examples: Registry["items"] = [
     name: "input-sm",
     description: "Small input",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/input.json"],
+    registryDependencies: ["@coss/input"],
     files: [{ path: "examples/input-sm.tsx", type: "registry:example" }],
     categories: ["input"],
   },
@@ -1454,7 +1361,7 @@ export const examples: Registry["items"] = [
     name: "input-lg",
     description: "Large input",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/input.json"],
+    registryDependencies: ["@coss/input"],
     files: [{ path: "examples/input-lg.tsx", type: "registry:example" }],
     categories: ["input"],
   },
@@ -1462,7 +1369,7 @@ export const examples: Registry["items"] = [
     name: "input-disabled",
     description: "Input with disabled state",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/input.json"],
+    registryDependencies: ["@coss/input"],
     files: [
       {
         path: "examples/input-disabled.tsx",
@@ -1475,7 +1382,7 @@ export const examples: Registry["items"] = [
     name: "input-file",
     description: "Input type set to file",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/input.json"],
+    registryDependencies: ["@coss/input"],
     files: [
       {
         path: "examples/input-file.tsx",
@@ -1488,10 +1395,7 @@ export const examples: Registry["items"] = [
     name: "input-with-label",
     description: "Input with label",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/input.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/input", "@coss/label"],
     files: [
       {
         path: "examples/input-with-label.tsx",
@@ -1504,10 +1408,7 @@ export const examples: Registry["items"] = [
     name: "input-with-button",
     description: "Input with button",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/input.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/input", "@coss/button"],
     files: [
       {
         path: "examples/input-with-button.tsx",
@@ -1520,10 +1421,7 @@ export const examples: Registry["items"] = [
     name: "menu-checkbox",
     description: "Menu with checkbox items",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [{ path: "examples/menu-checkbox.tsx", type: "registry:example" }],
     categories: ["menu", "checkbox"],
   },
@@ -1531,10 +1429,7 @@ export const examples: Registry["items"] = [
     name: "menu-close-on-click",
     description: "Close menu when items are clicked",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [
       { path: "examples/menu-close-on-click.tsx", type: "registry:example" },
     ],
@@ -1544,10 +1439,7 @@ export const examples: Registry["items"] = [
     name: "menu-demo",
     description: "Basic menu",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [{ path: "examples/menu-demo.tsx", type: "registry:example" }],
     categories: ["menu"],
   },
@@ -1555,10 +1447,7 @@ export const examples: Registry["items"] = [
     name: "menu-group-labels",
     description: "Menu items grouped with labels",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [
       { path: "examples/menu-group-labels.tsx", type: "registry:example" },
     ],
@@ -1568,10 +1457,7 @@ export const examples: Registry["items"] = [
     name: "menu-hover",
     description: "Open the menu on hover",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [{ path: "examples/menu-hover.tsx", type: "registry:example" }],
     categories: ["menu"],
   },
@@ -1579,10 +1465,7 @@ export const examples: Registry["items"] = [
     name: "menu-link",
     description: "Menu items as links",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [{ path: "examples/menu-link.tsx", type: "registry:example" }],
     categories: ["menu", "link"],
   },
@@ -1590,10 +1473,7 @@ export const examples: Registry["items"] = [
     name: "menu-nested",
     description: "Menu with submenu",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [{ path: "examples/menu-nested.tsx", type: "registry:example" }],
     categories: ["menu"],
   },
@@ -1601,10 +1481,7 @@ export const examples: Registry["items"] = [
     name: "menu-radio-group",
     description: "Menu with radio options",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/menu.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/menu", "@coss/button"],
     files: [
       { path: "examples/menu-radio-group.tsx", type: "registry:example" },
     ],
@@ -1614,7 +1491,7 @@ export const examples: Registry["items"] = [
     name: "meter-demo",
     description: "Basic meter",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/meter.json"],
+    registryDependencies: ["@coss/meter"],
     files: [{ path: "examples/meter-demo.tsx", type: "registry:example" }],
     categories: ["meter"],
   },
@@ -1622,7 +1499,7 @@ export const examples: Registry["items"] = [
     name: "meter-simple",
     description: "Meter without label and value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/meter.json"],
+    registryDependencies: ["@coss/meter"],
     files: [{ path: "examples/meter-simple.tsx", type: "registry:example" }],
     categories: ["meter"],
   },
@@ -1630,7 +1507,7 @@ export const examples: Registry["items"] = [
     name: "meter-with-formatted-value",
     description: "Meter with a custom formatted value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/meter.json"],
+    registryDependencies: ["@coss/meter"],
     files: [
       {
         path: "examples/meter-with-formatted-value.tsx",
@@ -1643,7 +1520,7 @@ export const examples: Registry["items"] = [
     name: "meter-with-range",
     description: "Meter with min and max values",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/meter.json"],
+    registryDependencies: ["@coss/meter"],
     files: [
       { path: "examples/meter-with-range.tsx", type: "registry:example" },
     ],
@@ -1653,7 +1530,7 @@ export const examples: Registry["items"] = [
     name: "number-field-demo",
     description: "A number field",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       { path: "examples/number-field-demo.tsx", type: "registry:example" },
     ],
@@ -1663,7 +1540,7 @@ export const examples: Registry["items"] = [
     name: "number-field-sm",
     description: "Small number field",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [{ path: "examples/number-field-sm.tsx", type: "registry:example" }],
     categories: ["number field"],
   },
@@ -1671,7 +1548,7 @@ export const examples: Registry["items"] = [
     name: "number-field-lg",
     description: "Large number field",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [{ path: "examples/number-field-lg.tsx", type: "registry:example" }],
     categories: ["number field"],
   },
@@ -1679,7 +1556,7 @@ export const examples: Registry["items"] = [
     name: "number-field-disabled",
     description: "A disabled number field",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       { path: "examples/number-field-disabled.tsx", type: "registry:example" },
     ],
@@ -1690,10 +1567,10 @@ export const examples: Registry["items"] = [
     description: "A number in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/number-field.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/number-field",
+      "@coss/field",
+      "@coss/form",
+      "@coss/button",
     ],
     files: [
       { path: "examples/number-field-form.tsx", type: "registry:example" },
@@ -1704,7 +1581,7 @@ export const examples: Registry["items"] = [
     name: "number-field-with-formatted-value",
     description: "A number field with formatted value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       {
         path: "examples/number-field-with-formatted-value.tsx",
@@ -1717,10 +1594,7 @@ export const examples: Registry["items"] = [
     name: "number-field-with-label",
     description: "A number field with an external label",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/number-field.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/number-field", "@coss/label"],
     dependencies: ["@radix-ui/react-label"],
     files: [
       {
@@ -1734,7 +1608,7 @@ export const examples: Registry["items"] = [
     name: "number-field-with-range",
     description: "A number field with min/max constraints",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       {
         path: "examples/number-field-with-range.tsx",
@@ -1747,7 +1621,7 @@ export const examples: Registry["items"] = [
     name: "number-field-with-scrub",
     description: "A number field with a scrub area",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       {
         path: "examples/number-field-with-scrub.tsx",
@@ -1760,7 +1634,7 @@ export const examples: Registry["items"] = [
     name: "number-field-with-step",
     description: "A number field with step",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/number-field.json"],
+    registryDependencies: ["@coss/number-field"],
     files: [
       { path: "examples/number-field-with-step.tsx", type: "registry:example" },
     ],
@@ -1770,7 +1644,7 @@ export const examples: Registry["items"] = [
     name: "pagination-demo",
     description: "Pagination example",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/pagination.json"],
+    registryDependencies: ["@coss/pagination"],
     files: [{ path: "examples/pagination-demo.tsx", type: "registry:example" }],
     categories: ["pagination"],
   },
@@ -1779,11 +1653,11 @@ export const examples: Registry["items"] = [
     description: "Popover with a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/popover.json",
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/textarea.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/popover",
+      "@coss/button",
+      "@coss/textarea",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [{ path: "examples/popover-demo.tsx", type: "registry:example" }],
     categories: ["popover", "button", "textarea", "form", "field"],
@@ -1792,10 +1666,7 @@ export const examples: Registry["items"] = [
     name: "popover-with-close",
     description: "Popover with close button",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/popover.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/popover", "@coss/button"],
     files: [
       { path: "examples/popover-with-close.tsx", type: "registry:example" },
     ],
@@ -1805,10 +1676,7 @@ export const examples: Registry["items"] = [
     name: "preview-card-demo",
     description: "Preview card example",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/preview-card.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/preview-card", "@coss/button"],
     files: [
       { path: "examples/preview-card-demo.tsx", type: "registry:example" },
     ],
@@ -1818,7 +1686,7 @@ export const examples: Registry["items"] = [
     name: "progress-demo",
     description: "Animated progress bar",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/progress.json"],
+    registryDependencies: ["@coss/progress"],
     files: [{ path: "examples/progress-demo.tsx", type: "registry:example" }],
     categories: ["progress"],
   },
@@ -1826,7 +1694,7 @@ export const examples: Registry["items"] = [
     name: "progress-with-formatted-value",
     description: "Progress with a custom formatted value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/progress.json"],
+    registryDependencies: ["@coss/progress"],
     files: [
       {
         path: "examples/progress-with-formatted-value.tsx",
@@ -1839,7 +1707,7 @@ export const examples: Registry["items"] = [
     name: "progress-with-label-value",
     description: "Progress with label and value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/progress.json"],
+    registryDependencies: ["@coss/progress"],
     files: [
       {
         path: "examples/progress-with-label-value.tsx",
@@ -1852,10 +1720,7 @@ export const examples: Registry["items"] = [
     name: "radio-group-card",
     description: "Card-style radio options",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/radio-group", "@coss/label"],
     files: [
       { path: "examples/radio-group-card.tsx", type: "registry:example" },
     ],
@@ -1865,10 +1730,7 @@ export const examples: Registry["items"] = [
     name: "radio-group-demo",
     description: "Basic radio group",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/radio-group", "@coss/label"],
     files: [
       { path: "examples/radio-group-demo.tsx", type: "registry:example" },
     ],
@@ -1878,10 +1740,7 @@ export const examples: Registry["items"] = [
     name: "radio-group-disabled",
     description: "Radio group with one option disabled",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/radio-group", "@coss/label"],
     files: [
       { path: "examples/radio-group-disabled.tsx", type: "registry:example" },
     ],
@@ -1892,11 +1751,11 @@ export const examples: Registry["items"] = [
     description: "Radio group in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/fieldset.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/radio-group",
+      "@coss/field",
+      "@coss/fieldset",
+      "@coss/form",
+      "@coss/button",
     ],
     files: [
       { path: "examples/radio-group-form.tsx", type: "registry:example" },
@@ -1907,10 +1766,7 @@ export const examples: Registry["items"] = [
     name: "radio-group-with-description",
     description: "Radio options with helper text",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/radio-group.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/radio-group", "@coss/label"],
     files: [
       {
         path: "examples/radio-group-with-description.tsx",
@@ -1923,7 +1779,7 @@ export const examples: Registry["items"] = [
     name: "scroll-area-demo",
     description: "Scroll area - vertical",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/scroll-area.json"],
+    registryDependencies: ["@coss/scroll-area"],
     files: [
       {
         path: "examples/scroll-area-demo.tsx",
@@ -1936,7 +1792,7 @@ export const examples: Registry["items"] = [
     name: "scroll-area-horizontal",
     description: "Scroll area - horizontal",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/scroll-area.json"],
+    registryDependencies: ["@coss/scroll-area"],
     files: [
       {
         path: "examples/scroll-area-horizontal.tsx",
@@ -1949,7 +1805,7 @@ export const examples: Registry["items"] = [
     name: "scroll-area-both",
     description: "Scroll area - both horizontal and vertical",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/scroll-area.json"],
+    registryDependencies: ["@coss/scroll-area"],
     files: [
       {
         path: "examples/scroll-area-both.tsx",
@@ -1962,7 +1818,7 @@ export const examples: Registry["items"] = [
     name: "select-demo",
     description: "A basic select",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-demo.tsx", type: "registry:example" }],
     categories: ["select"],
   },
@@ -1970,7 +1826,7 @@ export const examples: Registry["items"] = [
     name: "select-sm",
     description: "A select with small size",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-sm.tsx", type: "registry:example" }],
     categories: ["select"],
   },
@@ -1978,7 +1834,7 @@ export const examples: Registry["items"] = [
     name: "select-lg",
     description: "A select with large size",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-lg.tsx", type: "registry:example" }],
     categories: ["select"],
   },
@@ -1986,7 +1842,7 @@ export const examples: Registry["items"] = [
     name: "select-disabled",
     description: "A disabled select",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-disabled.tsx", type: "registry:example" }],
     categories: ["select", "disabled"],
   },
@@ -1994,7 +1850,7 @@ export const examples: Registry["items"] = [
     name: "select-without-alignment",
     description: "Select popup not aligned to trigger",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [
       {
         path: "examples/select-without-alignment.tsx",
@@ -2007,7 +1863,7 @@ export const examples: Registry["items"] = [
     name: "select-with-groups",
     description: "Select items grouped with labels",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [
       { path: "examples/select-with-groups.tsx", type: "registry:example" },
     ],
@@ -2017,7 +1873,7 @@ export const examples: Registry["items"] = [
     name: "select-multiple",
     description: "Multiple selection with formatted value",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/select.json"],
+    registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-multiple.tsx", type: "registry:example" }],
     categories: ["select"],
   },
@@ -2026,10 +1882,10 @@ export const examples: Registry["items"] = [
     description: "Select in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/select.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
+      "@coss/button",
+      "@coss/select",
+      "@coss/form",
+      "@coss/field",
     ],
     files: [{ path: "examples/select-form.tsx", type: "registry:example" }],
     categories: ["select", "form", "field", "helper", "hint"],
@@ -2038,7 +1894,7 @@ export const examples: Registry["items"] = [
     name: "separator-demo",
     description: "Separator with horizontal and vertical orientations",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/separator.json"],
+    registryDependencies: ["@coss/separator"],
     files: [{ path: "examples/separator-demo.tsx", type: "registry:example" }],
     categories: ["separator"],
   },
@@ -2046,7 +1902,7 @@ export const examples: Registry["items"] = [
     name: "slider-demo",
     description: "Basic slider",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/slider.json"],
+    registryDependencies: ["@coss/slider"],
     files: [{ path: "examples/slider-demo.tsx", type: "registry:example" }],
     categories: ["slider"],
   },
@@ -2054,10 +1910,7 @@ export const examples: Registry["items"] = [
     name: "slider-with-label-value",
     description: "Slider with label and value",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/slider.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/slider", "@coss/label"],
     files: [
       {
         path: "examples/slider-with-label-value.tsx",
@@ -2070,7 +1923,7 @@ export const examples: Registry["items"] = [
     name: "slider-range",
     description: "Two-thumb range slider",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/slider.json"],
+    registryDependencies: ["@coss/slider"],
     files: [{ path: "examples/slider-range.tsx", type: "registry:example" }],
     categories: ["slider", "range slider"],
   },
@@ -2078,7 +1931,7 @@ export const examples: Registry["items"] = [
     name: "slider-vertical",
     description: "Vertical slider",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/slider.json"],
+    registryDependencies: ["@coss/slider"],
     files: [{ path: "examples/slider-vertical.tsx", type: "registry:example" }],
     categories: ["slider", "vertical slider"],
   },
@@ -2087,10 +1940,10 @@ export const examples: Registry["items"] = [
     description: "Slider in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/slider.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/slider",
+      "@coss/form",
+      "@coss/field",
+      "@coss/button",
     ],
     files: [{ path: "examples/slider-form.tsx", type: "registry:example" }],
     categories: ["slider", "form", "field", "button", "helper", "hint"],
@@ -2099,10 +1952,7 @@ export const examples: Registry["items"] = [
     name: "switch-demo",
     description: "Basic switch",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/switch.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/switch", "@coss/label"],
     files: [{ path: "examples/switch-demo.tsx", type: "registry:example" }],
     categories: ["switch", "label"],
   },
@@ -2110,10 +1960,7 @@ export const examples: Registry["items"] = [
     name: "switch-disabled",
     description: "Disabled switch",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/switch.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/switch", "@coss/label"],
     files: [{ path: "examples/switch-disabled.tsx", type: "registry:example" }],
     categories: ["switch", "label", "disabled"],
   },
@@ -2121,10 +1968,7 @@ export const examples: Registry["items"] = [
     name: "switch-with-description",
     description: "Switch with description",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/switch.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/switch", "@coss/label"],
     files: [
       {
         path: "examples/switch-with-description.tsx",
@@ -2137,10 +1981,7 @@ export const examples: Registry["items"] = [
     name: "switch-card",
     description: "Card-style switch",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/switch.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/switch", "@coss/label"],
     files: [{ path: "examples/switch-card.tsx", type: "registry:example" }],
     categories: ["switch", "label", "card"],
   },
@@ -2149,10 +1990,10 @@ export const examples: Registry["items"] = [
     description: "Switch in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/switch.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/switch",
+      "@coss/field",
+      "@coss/form",
+      "@coss/button",
     ],
     files: [{ path: "examples/switch-form.tsx", type: "registry:example" }],
     categories: ["switch", "form", "field", "button"],
@@ -2161,10 +2002,7 @@ export const examples: Registry["items"] = [
     name: "table-demo",
     description: "Basic table",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/table.json",
-      "https://coss.com/ui/r/badge.json",
-    ],
+    registryDependencies: ["@coss/table", "@coss/badge"],
     files: [{ path: "examples/table-demo.tsx", type: "registry:example" }],
     categories: ["table", "badge"],
   },
@@ -2172,11 +2010,7 @@ export const examples: Registry["items"] = [
     name: "table-framed",
     description: "Framed table",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/table.json",
-      "https://coss.com/ui/r/badge.json",
-      "https://coss.com/ui/r/frame.json",
-    ],
+    registryDependencies: ["@coss/table", "@coss/badge", "@coss/frame"],
     files: [{ path: "examples/table-framed.tsx", type: "registry:example" }],
     categories: ["table", "badge", "frame"],
   },
@@ -2184,7 +2018,7 @@ export const examples: Registry["items"] = [
     name: "tabs-demo",
     description: "Tabs with default indicator",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/tabs.json"],
+    registryDependencies: ["@coss/tabs"],
     files: [{ path: "examples/tabs-demo.tsx", type: "registry:example" }],
     categories: ["tabs"],
   },
@@ -2192,7 +2026,7 @@ export const examples: Registry["items"] = [
     name: "tabs-underline",
     description: "Tabs with underline indicator",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/tabs.json"],
+    registryDependencies: ["@coss/tabs"],
     files: [{ path: "examples/tabs-underline.tsx", type: "registry:example" }],
     categories: ["tabs"],
   },
@@ -2200,7 +2034,7 @@ export const examples: Registry["items"] = [
     name: "tabs-vertical",
     description: "Tabs with vertical layout",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/tabs.json"],
+    registryDependencies: ["@coss/tabs"],
     files: [{ path: "examples/tabs-vertical.tsx", type: "registry:example" }],
     categories: ["tabs", "vertical tabs"],
   },
@@ -2208,7 +2042,7 @@ export const examples: Registry["items"] = [
     name: "tabs-underline-vertical",
     description: "Underline tabs with vertical layout",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/tabs.json"],
+    registryDependencies: ["@coss/tabs"],
     files: [
       {
         path: "examples/tabs-underline-vertical.tsx",
@@ -2221,7 +2055,7 @@ export const examples: Registry["items"] = [
     name: "textarea-demo",
     description: "Basic textarea",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/textarea.json"],
+    registryDependencies: ["@coss/textarea"],
     files: [{ path: "examples/textarea-demo.tsx", type: "registry:example" }],
     categories: ["textarea"],
   },
@@ -2229,7 +2063,7 @@ export const examples: Registry["items"] = [
     name: "textarea-sm",
     description: "Small textarea",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/textarea.json"],
+    registryDependencies: ["@coss/textarea"],
     files: [{ path: "examples/textarea-sm.tsx", type: "registry:example" }],
     categories: ["textarea"],
   },
@@ -2237,7 +2071,7 @@ export const examples: Registry["items"] = [
     name: "textarea-lg",
     description: "Large textarea",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/textarea.json"],
+    registryDependencies: ["@coss/textarea"],
     files: [{ path: "examples/textarea-lg.tsx", type: "registry:example" }],
     categories: ["textarea"],
   },
@@ -2245,7 +2079,7 @@ export const examples: Registry["items"] = [
     name: "textarea-disabled",
     description: "Disabled textarea",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/textarea.json"],
+    registryDependencies: ["@coss/textarea"],
     files: [
       { path: "examples/textarea-disabled.tsx", type: "registry:example" },
     ],
@@ -2255,10 +2089,7 @@ export const examples: Registry["items"] = [
     name: "textarea-with-label",
     description: "Textarea labelled with Field",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/textarea.json",
-      "https://coss.com/ui/r/label.json",
-    ],
+    registryDependencies: ["@coss/textarea", "@coss/label"],
     files: [
       { path: "examples/textarea-with-label.tsx", type: "registry:example" },
     ],
@@ -2269,10 +2100,10 @@ export const examples: Registry["items"] = [
     description: "Textarea in a form",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/textarea.json",
-      "https://coss.com/ui/r/form.json",
-      "https://coss.com/ui/r/field.json",
-      "https://coss.com/ui/r/button.json",
+      "@coss/textarea",
+      "@coss/form",
+      "@coss/field",
+      "@coss/button",
     ],
     files: [{ path: "examples/textarea-form.tsx", type: "registry:example" }],
     categories: ["textarea", "form", "field", "button"],
@@ -2281,7 +2112,7 @@ export const examples: Registry["items"] = [
     name: "toast-demo",
     description: "Status toast",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [{ path: "examples/toast-demo.tsx", type: "registry:example" }],
     categories: ["toast", "button"],
   },
@@ -2289,7 +2120,7 @@ export const examples: Registry["items"] = [
     name: "toast-loading",
     description: "Loading toast",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [{ path: "examples/toast-loading.tsx", type: "registry:example" }],
     categories: ["toast", "button", "loading"],
   },
@@ -2297,7 +2128,7 @@ export const examples: Registry["items"] = [
     name: "toast-promise",
     description: "Drive toasts from promise states",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [{ path: "examples/toast-promise.tsx", type: "registry:example" }],
     categories: ["toast", "button"],
   },
@@ -2305,7 +2136,7 @@ export const examples: Registry["items"] = [
     name: "toast-with-action",
     description: "Toast with an action button",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [
       { path: "examples/toast-with-action.tsx", type: "registry:example" },
     ],
@@ -2315,7 +2146,7 @@ export const examples: Registry["items"] = [
     name: "toast-with-status",
     description: "Success toast",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [
       { path: "examples/toast-with-status.tsx", type: "registry:example" },
     ],
@@ -2325,7 +2156,7 @@ export const examples: Registry["items"] = [
     name: "toast-heights",
     description: "Toast with varying heights",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toast.json"],
+    registryDependencies: ["@coss/toast"],
     files: [{ path: "examples/toast-heights.tsx", type: "registry:example" }],
     categories: ["toast"],
   },
@@ -2333,7 +2164,7 @@ export const examples: Registry["items"] = [
     name: "toggle-demo",
     description: "Basic toggle",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [{ path: "examples/toggle-demo.tsx", type: "registry:example" }],
     categories: ["toggle"],
   },
@@ -2341,7 +2172,7 @@ export const examples: Registry["items"] = [
     name: "toggle-disabled",
     description: "Disabled toggle",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [{ path: "examples/toggle-disabled.tsx", type: "registry:example" }],
     categories: ["toggle", "disabled"],
   },
@@ -2349,7 +2180,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-demo",
     description: "Toggle group",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       { path: "examples/toggle-group-demo.tsx", type: "registry:example" },
     ],
@@ -2359,7 +2190,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-sm",
     description: "Toggle group with small toggles",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [{ path: "examples/toggle-group-sm.tsx", type: "registry:example" }],
     categories: ["toggle group", "toggle"],
   },
@@ -2367,7 +2198,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-lg",
     description: "Toggle group with large toggles",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [{ path: "examples/toggle-group-lg.tsx", type: "registry:example" }],
     categories: ["toggle group", "toggle"],
   },
@@ -2375,7 +2206,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-outline",
     description: "Toggle group with outline toggles",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       { path: "examples/toggle-group-outline.tsx", type: "registry:example" },
     ],
@@ -2385,7 +2216,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-outline-with-separator",
     description: "Toggle group with outline toggles and separator",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       {
         path: "examples/toggle-group-outline-with-separator.tsx",
@@ -2398,7 +2229,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-disabled",
     description: "Disabled toggle group",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       { path: "examples/toggle-group-disabled.tsx", type: "registry:example" },
     ],
@@ -2408,7 +2239,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-multiple",
     description: "Toggle group with multiple selection",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       { path: "examples/toggle-group-multiple.tsx", type: "registry:example" },
     ],
@@ -2418,7 +2249,7 @@ export const examples: Registry["items"] = [
     name: "toggle-group-with-disabled-item",
     description: "Toggle group with disabled item",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle-group.json"],
+    registryDependencies: ["@coss/toggle-group"],
     files: [
       {
         path: "examples/toggle-group-with-disabled-item.tsx",
@@ -2431,7 +2262,7 @@ export const examples: Registry["items"] = [
     name: "toggle-icon-group",
     description: "Multiple toggles",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [
       { path: "examples/toggle-icon-group.tsx", type: "registry:example" },
     ],
@@ -2441,7 +2272,7 @@ export const examples: Registry["items"] = [
     name: "toggle-lg",
     description: "Large toggle",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [{ path: "examples/toggle-lg.tsx", type: "registry:example" }],
     categories: ["toggle"],
   },
@@ -2449,7 +2280,7 @@ export const examples: Registry["items"] = [
     name: "toggle-outline",
     description: "Outline toggle",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [{ path: "examples/toggle-outline.tsx", type: "registry:example" }],
     categories: ["toggle"],
   },
@@ -2457,7 +2288,7 @@ export const examples: Registry["items"] = [
     name: "toggle-sm",
     description: "Small toggle",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [{ path: "examples/toggle-sm.tsx", type: "registry:example" }],
     categories: ["toggle"],
   },
@@ -2465,7 +2296,7 @@ export const examples: Registry["items"] = [
     name: "toggle-with-icon",
     description: "Toggle with icon",
     type: "registry:example",
-    registryDependencies: ["https://coss.com/ui/r/toggle.json"],
+    registryDependencies: ["@coss/toggle"],
     files: [
       { path: "examples/toggle-with-icon.tsx", type: "registry:example" },
     ],
@@ -2476,11 +2307,11 @@ export const examples: Registry["items"] = [
     description: "Toolbar",
     type: "registry:example",
     registryDependencies: [
-      "https://coss.com/ui/r/button.json",
-      "https://coss.com/ui/r/select.json",
-      "https://coss.com/ui/r/toggle-group.json",
-      "https://coss.com/ui/r/toolbar.json",
-      "https://coss.com/ui/r/tooltip.json",
+      "@coss/button",
+      "@coss/select",
+      "@coss/toggle-group",
+      "@coss/toolbar",
+      "@coss/tooltip",
     ],
     files: [{ path: "examples/toolbar-demo.tsx", type: "registry:example" }],
     categories: ["toolbar", "button", "select", "toggle", "tooltip"],
@@ -2489,10 +2320,7 @@ export const examples: Registry["items"] = [
     name: "tooltip-demo",
     description: "Basic tooltip",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/tooltip.json",
-      "https://coss.com/ui/r/button.json",
-    ],
+    registryDependencies: ["@coss/tooltip", "@coss/button"],
     files: [{ path: "examples/tooltip-demo.tsx", type: "registry:example" }],
     categories: ["tooltip", "button"],
   },
@@ -2500,10 +2328,7 @@ export const examples: Registry["items"] = [
     name: "tooltip-grouped",
     description: "Toggle group with grouped tooltips",
     type: "registry:example",
-    registryDependencies: [
-      "https://coss.com/ui/r/tooltip.json",
-      "https://coss.com/ui/r/toggle-group.json",
-    ],
+    registryDependencies: ["@coss/tooltip", "@coss/toggle-group"],
     files: [{ path: "examples/tooltip-grouped.tsx", type: "registry:example" }],
     categories: ["tooltip", "toggle group", "toggle"],
   },

@@ -6,7 +6,7 @@
     "@base-ui-components/react"
   ],
   "registryDependencies": [
-    "https://coss.com/ui/r/separator.json"
+    "@coss/separator"
   ],
   "files": [
     {

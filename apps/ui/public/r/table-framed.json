@@ -4,9 +4,9 @@
   "type": "registry:example",
   "description": "Framed table",
   "registryDependencies": [
-    "https://coss.com/ui/r/table.json",
-    "https://coss.com/ui/r/badge.json",
-    "https://coss.com/ui/r/frame.json"
+    "@coss/table",
+    "@coss/badge",
+    "@coss/frame"
   ],
   "files": [
     {

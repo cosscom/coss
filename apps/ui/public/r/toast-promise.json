@@ -4,7 +4,7 @@
   "type": "registry:example",
   "description": "Drive toasts from promise states",
   "registryDependencies": [
-    "https://coss.com/ui/r/toast.json"
+    "@coss/toast"
   ],
   "files": [
     {

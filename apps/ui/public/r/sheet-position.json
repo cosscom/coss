@@ -4,8 +4,8 @@
   "type": "registry:example",
   "description": "Sheet position",
   "registryDependencies": [
-    "https://coss.com/ui/r/sheet.json",
-    "https://coss.com/ui/r/button.json"
+    "@coss/sheet",
+    "@coss/button"
   ],
   "files": [
     {
