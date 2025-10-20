@@ -13,6 +13,7 @@ import { CodeBlockCommand } from "@/components/code-block-command"
 import { ComponentSource } from "@/components/component-source"
 import { CopyRegistry } from "@/components/copy-registry"
 import { Button } from "@/registry/default/ui/button"
+import { ScrollArea } from "@/registry/default/ui/scroll-area"
 import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet"
 
 export type Particle = z.infer<typeof registryItemSchema> & {
@@ -37,23 +38,23 @@ export async function ParticleDisplay({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-xl border bg-muted/50 bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_2px_1px_--theme(--color-black/4%)] after:pointer-events-none after:absolute after:-inset-[5px] after:-z-1 after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/50 after:bg-clip-padding dark:after:bg-background/72",
+        "relative flex min-w-0 flex-col rounded-xl border bg-muted/50 bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_2px_1px_--theme(--color-black/4%)] after:pointer-events-none after:absolute after:-inset-[5px] after:-z-1 after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/50 after:bg-clip-padding dark:after:bg-background/72",
         className
       )}
     >
-      <div className="-m-px flex flex-1 flex-col items-center justify-center rounded-t-xl rounded-b-lg border bg-background p-6 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] lg:px-8 lg:py-12 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
+      <div className="-m-px flex min-w-0 flex-1 flex-col flex-wrap items-center justify-center overflow-x-auto rounded-t-xl rounded-b-lg border bg-background p-6 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] lg:px-8 lg:py-12 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
         <div data-slot="particle-wrapper">{children}</div>
       </div>
-      <div className="flex items-center gap-3 rounded-b-xl px-3 py-2">
-        <p className="flex-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 rounded-b-xl p-2">
+        <p className="flex flex-1 gap-1 truncate text-xs text-muted-foreground">
           <HugeiconsIcon
             icon={InformationCircleIcon}
             strokeWidth={2}
-            className="-ms-0.5 me-1 -mt-0.5 inline size-3"
+            className="size-3 h-[1lh] shrink-0"
           />
-          {particle.description}
+          <span className="truncate">{particle.description}</span>
         </p>
-        <div className="-me-1 flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           {process.env.NODE_ENV === "development" && (
             <Button
               size="sm"
