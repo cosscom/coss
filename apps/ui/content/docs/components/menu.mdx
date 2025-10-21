@@ -181,39 +181,41 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Comparison Examples
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:onSelect]
-  <DropdownMenu>
-    <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <DropdownMenuItem
-        onSelect={() => {
-          console.log("Dashboard")
-        }}
-      >
-        Dashboard
-      </DropdownMenuItem>
-      <DropdownMenuItem>Settings</DropdownMenuItem>
-      <DropdownMenuItem>Sign out</DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:onSelect]
+<DropdownMenu>
+  <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuItem
+      onSelect={() => {
+        console.log("Dashboard")
+      }}
+    >
+      Dashboard
+    </DropdownMenuItem>
+    <DropdownMenuItem>Settings</DropdownMenuItem>
+    <DropdownMenuItem>Sign out</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:onClick]
-  <Menu>
-    <MenuTrigger>Open menu</MenuTrigger>
-    <MenuPopup>
-      <MenuItem
-        onClick={() => {
-          console.log("Dashboard")
-        }}
-      >
-        Dashboard
-      </MenuItem>
-      <MenuItem>Settings</MenuItem>
-      <MenuItem>Sign out</MenuItem>
-    </MenuPopup>
-  </Menu>
-  ```
+```tsx title="coss ui"
+// [!code word:onClick]
+<Menu>
+  <MenuTrigger>Open menu</MenuTrigger>
+  <MenuPopup>
+    <MenuItem
+      onClick={() => {
+        console.log("Dashboard")
+      }}
+    >
+      Dashboard
+    </MenuItem>
+    <MenuItem>Settings</MenuItem>
+    <MenuItem>Sign out</MenuItem>
+  </MenuPopup>
+</Menu>
+```
 </span>

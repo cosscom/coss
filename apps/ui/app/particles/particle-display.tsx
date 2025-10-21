@@ -86,10 +86,10 @@ export async function ParticleDisplay({
                   <h2 className="mb-4 font-heading text-xl">Installation</h2>
                   <figure data-rehype-pretty-code-figure>
                     <CodeBlockCommand
-                      __npm__={`npx shadcn@latest add ${cossuiUrl}/r/${name}.json`}
-                      __yarn__={`yarn dlx shadcn@latest add ${cossuiUrl}/r/${name}.json`}
-                      __pnpm__={`pnpm dlx shadcn@latest add ${cossuiUrl}/r/${name}.json`}
-                      __bun__={`bunx --bun shadcn@latest add ${cossuiUrl}/r/${name}.json`}
+                      __npm__={`npx shadcn@latest add @coss/${name}`}
+                      __yarn__={`yarn dlx shadcn@latest add @coss/${name}`}
+                      __pnpm__={`pnpm dlx shadcn@latest add @coss/${name}`}
+                      __bun__={`bunx --bun shadcn@latest add @coss/${name}`}
                     />
                   </figure>
                 </div>

@@ -93,41 +93,43 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Comparison Example
 
 <span data-lib="radix-ui">
-  ```tsx title="shadcn/ui" // [!code word:asChild]
-  <Sheet>
-    <SheetTrigger asChild>
-      <Button variant="outline">Show Sheet</Button>
-    </SheetTrigger>
-    <SheetContent>
-      <SheetHeader>
-        <SheetTitle>Sheet Title</SheetTitle>
-        <SheetDescription>Sheet Description</SheetDescription>
-      </SheetHeader>
-      <SheetFooter>
-        <SheetClose asChild>
-          <Button variant="ghost">Cancel</Button>
-        </SheetClose>
-      </SheetFooter>
-    </SheetContent>
-  </Sheet>
-  ```
+```tsx title="shadcn/ui"
+// [!code word:asChild]
+<Sheet>
+  <SheetTrigger asChild>
+    <Button variant="outline">Show Sheet</Button>
+  </SheetTrigger>
+  <SheetContent>
+    <SheetHeader>
+      <SheetTitle>Sheet Title</SheetTitle>
+      <SheetDescription>Sheet Description</SheetDescription>
+    </SheetHeader>
+    <SheetFooter>
+      <SheetClose asChild>
+        <Button variant="ghost">Cancel</Button>
+      </SheetClose>
+    </SheetFooter>
+  </SheetContent>
+</Sheet>
+```
 </span>
 
 <span data-lib="base-ui">
-  ```tsx title="coss ui" // [!code word:render]
-  <Sheet>
-    <SheetTrigger render={<Button variant="outline" />}>
-      Show Sheet
-    </SheetTrigger>
-    <SheetPopup>
-      <SheetHeader>
-        <SheetTitle>Sheet Title</SheetTitle>
-        <SheetDescription>Sheet Description</SheetDescription>
-      </SheetHeader>
-      <SheetFooter>
-        <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
-      </SheetFooter>
-    </SheetPopup>
-  </Sheet>
-  ```
+```tsx title="coss ui"
+// [!code word:render]
+<Sheet>
+  <SheetTrigger render={<Button variant="outline" />}>
+    Show Sheet
+  </SheetTrigger>
+  <SheetPopup>
+    <SheetHeader>
+      <SheetTitle>Sheet Title</SheetTitle>
+      <SheetDescription>Sheet Description</SheetDescription>
+    </SheetHeader>
+    <SheetFooter>
+      <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
+    </SheetFooter>
+  </SheetPopup>
+</Sheet>
+```
 </span>
