@@ -7,7 +7,7 @@ import {
 
 import { Button } from "@/registry/default/ui/button"
 
-export default function Component() {
+export default function Particle() {
   return (
     <div className="inline-flex flex-wrap gap-2">
       <Button variant="outline" aria-label="Login with Google" size="icon">

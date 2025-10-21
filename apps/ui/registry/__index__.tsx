@@ -4632,180 +4632,180 @@ export const Index: Record<string, any> = {
     categories: ["tooltip","toggle group","toggle"],
     meta: undefined,
   },
-  "comp-bu-1": {
-    name: "comp-bu-1",
+  "particle-bu-1": {
+    name: "particle-bu-1",
     description: "Back link button with chevron",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-1.tsx",
+      path: "registry/default/particles/particle-bu-1.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-1.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-1.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-2": {
-    name: "comp-bu-2",
+  "particle-bu-2": {
+    name: "particle-bu-2",
     description: "Card-style button with heading and description",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-2.tsx",
+      path: "registry/default/particles/particle-bu-2.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-2.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-2.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-3": {
-    name: "comp-bu-3",
+  "particle-bu-3": {
+    name: "particle-bu-3",
     description: "Directional pad control buttons",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-3.tsx",
+      path: "registry/default/particles/particle-bu-3.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-3.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-3.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-4": {
-    name: "comp-bu-4",
+  "particle-bu-4": {
+    name: "particle-bu-4",
     description: "Outline like button with count",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-4.tsx",
+      path: "registry/default/particles/particle-bu-4.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-4.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-4.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-5": {
-    name: "comp-bu-5",
+  "particle-bu-5": {
+    name: "particle-bu-5",
     description: "Social login icon buttons",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-5.tsx",
+      path: "registry/default/particles/particle-bu-5.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-5.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-5.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-6": {
-    name: "comp-bu-6",
+  "particle-bu-6": {
+    name: "particle-bu-6",
     description: "Expandable show more/less toggle button",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-6.tsx",
+      path: "registry/default/particles/particle-bu-6.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-6.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-6.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-bu-7": {
-    name: "comp-bu-7",
+  "particle-bu-7": {
+    name: "particle-bu-7",
     description: "Star button with count badge",
     type: "registry:block",
     registryDependencies: ["@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-bu-7.tsx",
+      path: "registry/default/particles/particle-bu-7.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-bu-7.tsx")
+      const mod = await import("@/registry/default/particles/particle-bu-7.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button"],
     meta: undefined,
   },
-  "comp-fr-1": {
-    name: "comp-fr-1",
+  "particle-fr-1": {
+    name: "particle-fr-1",
     description: "Frame with collapsible content and delete button",
     type: "registry:example",
     registryDependencies: ["@coss/frame","@coss/collapsible","@coss/button"],
     files: [{
-      path: "registry/default/particles/comp-fr-1.tsx",
+      path: "registry/default/particles/particle-fr-1.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-fr-1.tsx")
+      const mod = await import("@/registry/default/particles/particle-fr-1.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["frame","collapsible"],
     meta: undefined,
   },
-  "comp-pa-1": {
-    name: "comp-pa-1",
+  "particle-pa-1": {
+    name: "particle-pa-1",
     description: "Pagination with previous and next buttons only",
     type: "registry:block",
     registryDependencies: ["@coss/pagination"],
     files: [{
-      path: "registry/default/particles/comp-pa-1.tsx",
+      path: "registry/default/particles/particle-pa-1.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-pa-1.tsx")
+      const mod = await import("@/registry/default/particles/particle-pa-1.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["pagination"],
     meta: undefined,
   },
-  "comp-pa-2": {
-    name: "comp-pa-2",
+  "particle-pa-2": {
+    name: "particle-pa-2",
     description: "Pagination with select, and previous and next buttons",
     type: "registry:block",
     registryDependencies: ["@coss/pagination","@coss/select"],
     files: [{
-      path: "registry/default/particles/comp-pa-2.tsx",
+      path: "registry/default/particles/particle-pa-2.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/comp-pa-2.tsx")
+      const mod = await import("@/registry/default/particles/particle-pa-2.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

@@ -7,13 +7,13 @@ This guide explains the end‑to‑end steps for adding a new component under `@
 ## 1) Create the component file
 
 - Location: `apps/ui/registry/default/particles/`
-- Naming: `comp-{category_shortcode}-{N}.tsx`
+- Naming: `particle-{category_shortcode}-{N}.tsx`
   - **category_shortcode**: two-letter key for the component category. Examples: `bu` = button, `in` = input, `to` = toggle, `tg` = toggle group, `tt` = tooltip, `ta` = table, `tb` = tabs, `te` = textarea, `ts` = toast.
   - **N**: progressive number within the category (e.g. `1`, `2`, `3`).
 - Export as a functional component:
 
 ```tsx
-export default function Component() {
+export default function Particle() {
   // ...
 }
 ```
@@ -28,9 +28,9 @@ Notes:
 Edit: `apps/ui/registry/default/particles/index.tsx`
 
 Actions:
-- Import your new component file: `import CompIn6 from "./comp-in-6"`
+- Import your new component file: `import Particle from "./particle-in-6"`
 - Add an entry to `particles` array with:
-  - **id**: same as filename without extension (e.g. `comp-in-6`).
+  - **id**: same as filename without extension (e.g. `particle-in-6`).
   - **component**: the imported component.
   - **category**: array of big categories used by this particle. Use the slugs of the UI dependencies from `@ui/` that the component uses (e.g. `["input"]`, `["input", "button"]`).
   - **className** (optional): wrapper utility. For example, for inputs and forms we use:
@@ -40,8 +40,8 @@ Example entry:
 
 ```tsx
 {
-  id: "comp-in-6",
-  component: CompIn6,
+  id: "particle-in-6",
+  component: ParticleIn6,
   category: ["input"],
   className:
     "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
@@ -53,7 +53,7 @@ Example entry:
 Edit: `apps/ui/registry/registry-particles.ts`
 
 For each new particle, add an object with the following fields:
-- **name**: the particle id (e.g. `comp-in-6`).
+- **name**: the particle id (e.g. `particle-in-6`).
 - **description**: concise, ≤ 15 words, clear to end users.
   - Example: `"Ghost button with left arrow icon and hover animation"`.
 - **type**: `"registry:block"`.
@@ -61,7 +61,7 @@ For each new particle, add an object with the following fields:
   - For our particles, reference our hosted registry items such as `https://coss.com/r/input.json`, `https://coss.com/r/button.json`, `https://coss.com/r/label.json`, etc.
 - **dependencies**: npm package dependencies if needed (often empty for simple particles).
 - **files**: include exactly one file pointing to the particle source:
-  - `path`: `"particles/comp-in-6.tsx"`
+  - `path`: `"particles/particle-in-6.tsx"`
   - `type`: `"registry:block"`
 - **categories**: treat as tags (not big category). Use only from the approved list below.
 
@@ -69,7 +69,7 @@ Example entry:
 
 ```ts
 {
-  name: "comp-in-6",
+  name: "particle-in-6",
   description: "Input with helper label",
   type: "registry:block",
   registryDependencies: [
@@ -77,7 +77,7 @@ Example entry:
     "https://coss.com/r/label.json",
   ],
   files: [
-    { path: "particles/comp-in-6.tsx", type: "registry:block" },
+    { path: "particles/particle-in-6.tsx", type: "registry:block" },
   ],
   categories: ["input", "label"],
 }
@@ -108,7 +108,7 @@ accordion, alert, avatar, badge, banner, breadcrumb, button, calendar, checkbox,
 
 ## Quick checklist
 
-- Create `registry/default/particles/comp-{category_shortcode}-{N}.tsx` with `export default function Component()`.
+- Create `registry/default/particles/particle-{category_shortcode}-{N}.tsx` with `export default function Particle()`.
 - Import and add it to `registry/default/particles/index.tsx` with correct `id`, `category`, and optional `className`.
 - Add an item to `registry/registry-particles.ts` with `name`, `description`, `type`, `registryDependencies`, optional `dependencies`, `files`, and `categories` (tags).
 - Run `pnpm registry:build` from `apps/ui`

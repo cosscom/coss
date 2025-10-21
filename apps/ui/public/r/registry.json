@@ -4673,7 +4673,7 @@
       ]
     },
     {
-      "name": "comp-bu-1",
+      "name": "particle-bu-1",
       "description": "Back link button with chevron",
       "type": "registry:block",
       "registryDependencies": [
@@ -4684,7 +4684,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-1.tsx",
+          "path": "registry/default/particles/particle-bu-1.tsx",
           "type": "registry:block"
         }
       ],
@@ -4693,7 +4693,7 @@
       ]
     },
     {
-      "name": "comp-bu-2",
+      "name": "particle-bu-2",
       "description": "Card-style button with heading and description",
       "type": "registry:block",
       "registryDependencies": [
@@ -4704,7 +4704,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-2.tsx",
+          "path": "registry/default/particles/particle-bu-2.tsx",
           "type": "registry:block"
         }
       ],
@@ -4713,7 +4713,7 @@
       ]
     },
     {
-      "name": "comp-bu-3",
+      "name": "particle-bu-3",
       "description": "Directional pad control buttons",
       "type": "registry:block",
       "registryDependencies": [
@@ -4724,7 +4724,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-3.tsx",
+          "path": "registry/default/particles/particle-bu-3.tsx",
           "type": "registry:block"
         }
       ],
@@ -4733,7 +4733,7 @@
       ]
     },
     {
-      "name": "comp-bu-4",
+      "name": "particle-bu-4",
       "description": "Outline like button with count",
       "type": "registry:block",
       "registryDependencies": [
@@ -4744,7 +4744,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-4.tsx",
+          "path": "registry/default/particles/particle-bu-4.tsx",
           "type": "registry:block"
         }
       ],
@@ -4753,7 +4753,7 @@
       ]
     },
     {
-      "name": "comp-bu-5",
+      "name": "particle-bu-5",
       "description": "Social login icon buttons",
       "type": "registry:block",
       "registryDependencies": [
@@ -4764,7 +4764,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-5.tsx",
+          "path": "registry/default/particles/particle-bu-5.tsx",
           "type": "registry:block"
         }
       ],
@@ -4773,7 +4773,7 @@
       ]
     },
     {
-      "name": "comp-bu-6",
+      "name": "particle-bu-6",
       "description": "Expandable show more/less toggle button",
       "type": "registry:block",
       "registryDependencies": [
@@ -4784,7 +4784,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-6.tsx",
+          "path": "registry/default/particles/particle-bu-6.tsx",
           "type": "registry:block"
         }
       ],
@@ -4793,7 +4793,7 @@
       ]
     },
     {
-      "name": "comp-bu-7",
+      "name": "particle-bu-7",
       "description": "Star button with count badge",
       "type": "registry:block",
       "registryDependencies": [
@@ -4804,7 +4804,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-bu-7.tsx",
+          "path": "registry/default/particles/particle-bu-7.tsx",
           "type": "registry:block"
         }
       ],
@@ -4813,7 +4813,7 @@
       ]
     },
     {
-      "name": "comp-fr-1",
+      "name": "particle-fr-1",
       "description": "Frame with collapsible content and delete button",
       "type": "registry:example",
       "registryDependencies": [
@@ -4826,7 +4826,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-fr-1.tsx",
+          "path": "registry/default/particles/particle-fr-1.tsx",
           "type": "registry:block"
         }
       ],
@@ -4836,7 +4836,7 @@
       ]
     },
     {
-      "name": "comp-pa-1",
+      "name": "particle-pa-1",
       "description": "Pagination with previous and next buttons only",
       "type": "registry:block",
       "registryDependencies": [
@@ -4844,7 +4844,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-pa-1.tsx",
+          "path": "registry/default/particles/particle-pa-1.tsx",
           "type": "registry:block"
         }
       ],
@@ -4853,7 +4853,7 @@
       ]
     },
     {
-      "name": "comp-pa-2",
+      "name": "particle-pa-2",
       "description": "Pagination with select, and previous and next buttons",
       "type": "registry:block",
       "registryDependencies": [
@@ -4862,7 +4862,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/particles/comp-pa-2.tsx",
+          "path": "registry/default/particles/particle-pa-2.tsx",
           "type": "registry:block"
         }
       ],

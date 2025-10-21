@@ -214,16 +214,16 @@ import ToggleWithIcon from "@/registry/default/examples/toggle-with-icon"
 import ToolbarDemo from "@/registry/default/examples/toolbar-demo"
 import TooltipDemo from "@/registry/default/examples/tooltip-demo"
 import TooltipGrouped from "@/registry/default/examples/tooltip-grouped"
-import CompB1 from "@/registry/default/particles/comp-bu-1"
-import CompB2 from "@/registry/default/particles/comp-bu-2"
-import CompB3 from "@/registry/default/particles/comp-bu-3"
-import CompB4 from "@/registry/default/particles/comp-bu-4"
-import CompB5 from "@/registry/default/particles/comp-bu-5"
-import CompB6 from "@/registry/default/particles/comp-bu-6"
-import CompB7 from "@/registry/default/particles/comp-bu-7"
-import CompFr1 from "@/registry/default/particles/comp-fr-1"
-import CompPa1 from "@/registry/default/particles/comp-pa-1"
-import CompPa2 from "@/registry/default/particles/comp-pa-2"
+import ParticleBu1 from "@/registry/default/particles/particle-bu-1"
+import ParticleBu2 from "@/registry/default/particles/particle-bu-2"
+import ParticleBu3 from "@/registry/default/particles/particle-bu-3"
+import ParticleBu4 from "@/registry/default/particles/particle-bu-4"
+import ParticleBu5 from "@/registry/default/particles/particle-bu-5"
+import ParticleBu6 from "@/registry/default/particles/particle-bu-6"
+import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
+import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
+import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
+import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
 
 type ParticleComponent = React.ComponentType<any>
 
@@ -826,43 +826,43 @@ export const particles: ParticleItem[] = [
     category: ["group", "button", "input"],
   },
   {
-    id: "comp-bu-1",
-    component: CompB1,
+    id: "particle-bu-1",
+    component: ParticleBu1,
     category: ["button"],
   },
   {
-    id: "comp-bu-2",
-    component: CompB2,
+    id: "particle-bu-2",
+    component: ParticleBu2,
     category: ["button"],
   },
   {
-    id: "comp-bu-3",
-    component: CompB3,
+    id: "particle-bu-3",
+    component: ParticleBu3,
     category: ["button"],
   },
   {
-    id: "comp-bu-4",
-    component: CompB4,
+    id: "particle-bu-4",
+    component: ParticleBu4,
     category: ["button"],
   },
   {
-    id: "comp-bu-5",
-    component: CompB5,
+    id: "particle-bu-5",
+    component: ParticleBu5,
     category: ["button"],
   },
   {
-    id: "comp-bu-6",
-    component: CompB6,
+    id: "particle-bu-6",
+    component: ParticleBu6,
     category: ["button"],
   },
   {
-    id: "comp-bu-7",
-    component: CompB7,
+    id: "particle-bu-7",
+    component: ParticleBu7,
     category: ["button"],
   },
   {
-    id: "comp-fr-1",
-    component: CompFr1,
+    id: "particle-fr-1",
+    component: ParticleFr1,
     category: ["frame", "collapsible"],
     className: "**:data-[slot=particle-wrapper]:w-full",
   },
@@ -1538,14 +1538,14 @@ export const particles: ParticleItem[] = [
     category: ["pagination"],
   },
   {
-    id: "comp-pa-1",
-    component: CompPa1,
+    id: "particle-pa-1",
+    component: ParticlePa1,
     category: ["pagination"],
     className: "**:data-[slot=particle-wrapper]:w-full",
   },
   {
-    id: "comp-pa-2",
-    component: CompPa2,
+    id: "particle-pa-2",
+    component: ParticlePa2,
     category: ["pagination", "select"],
     className: "**:data-[slot=particle-wrapper]:w-full",
   },

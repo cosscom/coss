@@ -8,7 +8,7 @@ import {
 
 import { Button } from "@/registry/default/ui/button"
 
-export default function Component() {
+export default function Particle() {
   return (
     <div className="inline-grid w-fit grid-cols-3 gap-1">
       <Button

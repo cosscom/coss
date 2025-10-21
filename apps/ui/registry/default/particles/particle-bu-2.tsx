@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
 
-export default function Component() {
+export default function Particle() {
   return (
     <Button
       className="group h-auto gap-4 px-4 py-3 text-left"
