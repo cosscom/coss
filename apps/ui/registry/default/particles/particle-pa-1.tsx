@@ -12,10 +12,7 @@ type PaginationProps = {
   totalPages: number
 }
 
-export default function Component({
-  currentPage,
-  totalPages,
-}: PaginationProps) {
+export default function Particle({ currentPage, totalPages }: PaginationProps) {
   return (
     <Pagination>
       <PaginationContent className="w-full justify-between gap-2">
