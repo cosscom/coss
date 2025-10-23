@@ -3,7 +3,7 @@
   "name": "pagination",
   "type": "registry:ui",
   "registryDependencies": [
-    "button"
+    "https://coss.com/origin/r/button.json"
   ],
   "files": [
     {
