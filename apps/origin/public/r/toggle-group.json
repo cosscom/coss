@@ -6,7 +6,7 @@
     "radix-ui"
   ],
   "registryDependencies": [
-    "toggle"
+    "https://coss.com/origin/r/toggle.json"
   ],
   "files": [
     {

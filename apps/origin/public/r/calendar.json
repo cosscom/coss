@@ -7,7 +7,7 @@
     "date-fns"
   ],
   "registryDependencies": [
-    "button"
+    "https://coss.com/origin/r/button.json"
   ],
   "files": [
     {

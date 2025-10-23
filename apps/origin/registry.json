@@ -104,7 +104,7 @@
       "name": "calendar",
       "type": "registry:ui",
       "dependencies": ["react-day-picker", "date-fns"],
-      "registryDependencies": ["button"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/ui/calendar.tsx",
@@ -159,7 +159,7 @@
       "name": "command",
       "type": "registry:ui",
       "dependencies": ["cmdk"],
-      "registryDependencies": ["dialog"],
+      "registryDependencies": ["https://coss.com/origin/r/dialog.json"],
       "files": [
         {
           "path": "registry/default/ui/command.tsx",
@@ -267,7 +267,7 @@
     {
       "name": "pagination",
       "type": "registry:ui",
-      "registryDependencies": ["button"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/ui/pagination.tsx",
@@ -461,7 +461,7 @@
       "name": "toggle-group",
       "type": "registry:ui",
       "dependencies": ["radix-ui"],
-      "registryDependencies": ["toggle"],
+      "registryDependencies": ["https://coss.com/origin/r/toggle.json"],
       "files": [
         {
           "path": "registry/default/ui/toggle-group.tsx",
@@ -2104,7 +2104,7 @@
     {
       "name": "comp-95",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json"],
+      "registryDependencies": ["https://coss.com/origin/r/avatar.json", "https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-95.tsx",
@@ -7647,7 +7647,7 @@
     {
       "name": "comp-423",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/badge.json"],
+      "registryDependencies": ["https://coss.com/origin/r/badge.json", "https://coss.com/origin/r/checkbox.json"],
       "files": [
         {
           "path": "registry/default/components/comp-423.tsx",
@@ -7662,6 +7662,7 @@
     {
       "name": "comp-424",
       "type": "registry:component",
+      "registryDependencies": ["https://coss.com/origin/r/badge.json"],
       "files": [
         {
           "path": "registry/default/components/comp-424.tsx",
@@ -7915,7 +7916,7 @@
     {
       "name": "comp-439",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tabs.json"],
+      "registryDependencies": ["https://coss.com/origin/r/badge.json", "https://coss.com/origin/r/tabs.json"],
       "files": [
         {
           "path": "registry/default/components/comp-439.tsx",
@@ -7932,6 +7933,7 @@
       "name": "comp-440",
       "type": "registry:component",
       "registryDependencies": [
+        "https://coss.com/origin/r/badge.json",
         "https://coss.com/origin/r/tabs.json",
         "https://coss.com/origin/r/tooltip.json"
       ],
@@ -7951,6 +7953,7 @@
       "name": "comp-441",
       "type": "registry:component",
       "registryDependencies": [
+        "https://coss.com/origin/r/badge.json",
         "https://coss.com/origin/r/tabs.json",
         "https://coss.com/origin/r/tooltip.json"
       ],
@@ -9307,7 +9310,7 @@
     {
       "name": "comp-516",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-516.tsx",
@@ -9322,7 +9325,7 @@
     {
       "name": "comp-517",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-517.tsx",
@@ -9367,7 +9370,7 @@
     {
       "name": "comp-520",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-520.tsx",
@@ -9382,7 +9385,7 @@
     {
       "name": "comp-521",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-521.tsx",
@@ -9472,7 +9475,7 @@
     {
       "name": "comp-527",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-527.tsx",
@@ -10026,7 +10029,6 @@
         "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/cropper.json",
         "https://coss.com/origin/r/dialog.json",
-        "https://coss.com/origin/r/select.json",
         "https://coss.com/origin/r/slider.json"
       ],      
       "files": [
@@ -10202,6 +10204,7 @@
       "name": "comp-564",
       "type": "registry:component",
       "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/cropper.json"
       ],      
       "files": [

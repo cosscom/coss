@@ -6,7 +6,7 @@
     "cmdk"
   ],
   "registryDependencies": [
-    "dialog"
+    "https://coss.com/origin/r/dialog.json"
   ],
   "files": [
     {
