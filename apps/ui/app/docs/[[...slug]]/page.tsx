@@ -7,7 +7,7 @@ import {
   LinkSquare02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { findNeighbour } from "fumadocs-core/server"
+import { findNeighbour } from "fumadocs-core/page-tree"
 
 import { source } from "@/lib/source"
 import { absoluteUrl } from "@/lib/utils"
@@ -97,7 +97,7 @@ export default async function Page(props: {
                       }
                     />
                   )}
-                  <DocsCopyPage page={doc.content} />
+                  <DocsCopyPage page={`# ${doc.title}\n\n`} />
                 </div>
               </div>
               <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">

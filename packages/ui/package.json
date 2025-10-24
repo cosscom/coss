@@ -8,8 +8,8 @@
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {
-    "next": "^15.0.0",
-    "react": "^19"
+    "next": "^16.0.0",
+    "react": "^19.2.0"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-beta.4",
@@ -29,7 +29,7 @@
     "@turbo/gen": "^2.5.5",
     "@types/next": "^9.0.0",
     "@types/node": "^20.19.9",
-    "@types/react": "^19.1.9",
+    "@types/react": "^19.2.0",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.36.0",
