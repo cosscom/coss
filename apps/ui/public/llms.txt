@@ -24,6 +24,7 @@
 - [Collapsible](https://coss.com/ui/docs/components/collapsible.md): A component that toggles visibility of content sections.
 - [Combobox](https://coss.com/ui/docs/components/combobox.md): An input combined with a list of predefined items to select.
 - [Dialog](https://coss.com/ui/docs/components/dialog.md): A modal overlay for displaying content that requires user interaction.
+- [Empty](https://coss.com/ui/docs/components/empty.md): A container for displaying empty state information.
 - [Field](https://coss.com/ui/docs/components/field.md): A wrapper component for form inputs with labels and validation.
 - [Fieldset](https://coss.com/ui/docs/components/fieldset.md): A group of related form fields with a common label.
 - [Form](https://coss.com/ui/docs/components/form.md): A complete form implementation with validation and submission handling.
