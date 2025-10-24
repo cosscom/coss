@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation"
 import { Menu09Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { PAGES_NEW } from "@/lib/docs"
 import { source } from "@/lib/source"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/registry/default/ui/badge"
 import { Button } from "@/registry/default/ui/button"
 import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet"
 
@@ -71,6 +73,9 @@ export function MobileNav({
                               onOpenChange={setOpen}
                             >
                               {item.name}
+                              {PAGES_NEW.includes(item.url) && (
+                                <Badge variant="info">New</Badge>
+                              )}
                             </MobileLink>
                           )
                         }
@@ -106,7 +111,10 @@ function MobileLink({
         router.push(href.toString())
         onOpenChange?.(false)
       }}
-      className={cn("py-1.5 text-muted-foreground", className)}
+      className={cn(
+        "flex items-center gap-2 py-1.5 text-muted-foreground",
+        className
+      )}
       {...props}
     >
       {children}

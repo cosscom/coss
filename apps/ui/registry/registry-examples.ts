@@ -1311,6 +1311,14 @@ export const examples: Registry["items"] = [
     categories: ["form", "field", "button", "validation", "label", "zod"],
   },
   {
+    name: "empty-demo",
+    description: "Basic empty state with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/empty", "@coss/button"],
+    files: [{ path: "examples/empty-demo.tsx", type: "registry:example" }],
+    categories: ["empty"],
+  },
+  {
     name: "input-demo",
     description: "Basic input component without label",
     type: "registry:example",

@@ -15,6 +15,7 @@
     "collapsible",
     "combobox",
     "dialog",
+    "empty",
     "field",
     "fieldset",
     "form",
