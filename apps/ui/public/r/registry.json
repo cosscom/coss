@@ -236,6 +236,16 @@
       ]
     },
     {
+      "name": "empty",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/empty.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "dependencies": [
@@ -2784,6 +2794,24 @@
         "validation",
         "label",
         "zod"
+      ]
+    },
+    {
+      "name": "empty-demo",
+      "description": "Basic empty state with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/empty",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/empty-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "empty"
       ]
     },
     {
