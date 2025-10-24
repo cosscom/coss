@@ -25,7 +25,7 @@ type PaginationProps = {
   resultsPerPage?: number
 }
 
-export default function Component({
+export default function Particle({
   currentPage: initialPage = 1,
   totalPages = 10,
   totalResults,
