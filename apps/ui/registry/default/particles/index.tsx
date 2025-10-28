@@ -90,6 +90,7 @@ import DialogCloseConfirmation from "@/registry/default/examples/dialog-close-co
 import DialogDemo from "@/registry/default/examples/dialog-demo"
 import DialogFromMenu from "@/registry/default/examples/dialog-from-menu"
 import DialogNested from "@/registry/default/examples/dialog-nested"
+import EmptyDemo from "@/registry/default/examples/empty-demo"
 import FieldAutocomplete from "@/registry/default/examples/field-autocomplete"
 import FieldCheckbox from "@/registry/default/examples/field-checkbox"
 import FieldCheckboxGroup from "@/registry/default/examples/field-checkbox-group"
@@ -1548,5 +1549,10 @@ export const particles: ParticleItem[] = [
     component: ParticlePa2,
     category: ["pagination", "select"],
     className: "**:data-[slot=particle-wrapper]:w-full",
+  },
+  {
+    id: "empty-demo",
+    component: EmptyDemo,
+    category: ["empty"],
   },
 ]

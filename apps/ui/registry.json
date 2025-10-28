@@ -236,6 +236,16 @@
       ]
     },
     {
+      "name": "empty",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/empty.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "dependencies": [
@@ -503,6 +513,28 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "--animate-skeleton": "skeleton 2s -1s infinite linear"
+        }
+      },
+      "css": {
+        "@keyframes skeleton": {
+          "to": {
+            "background-position": "-200% 0"
+          }
+        }
+      }
     },
     {
       "name": "slider",
@@ -2787,6 +2819,24 @@
       ]
     },
     {
+      "name": "empty-demo",
+      "description": "Basic empty state with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/empty",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/empty-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "empty"
+      ]
+    },
+    {
       "name": "input-demo",
       "description": "Basic input component without label",
       "type": "registry:example",
@@ -3810,6 +3860,42 @@
       ],
       "categories": [
         "separator"
+      ]
+    },
+    {
+      "name": "skeleton-demo",
+      "description": "Skeleton demo",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/button",
+        "@coss/skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/skeleton-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "skeleton"
+      ]
+    },
+    {
+      "name": "skeleton-only",
+      "description": "Skeleton only",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/skeleton-only.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "skeleton"
       ]
     },
     {

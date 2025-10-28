@@ -548,7 +548,7 @@ const uploadInChunks = (file: File, chunkSize = 1024 * 1024) => {
 
 ## More Examples
 
-For more examples and live demos of the `useFileUpload` hook in action, visit the [File Uploader page](https://coss.com/origin/file-upload).
+For more examples and live demos of the `useFileUpload` hook in action, visit the [File upload page](https://coss.com/origin/file-upload).
 
 The documentation site includes various implementations and use cases, including:
 

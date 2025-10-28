@@ -1311,6 +1311,14 @@ export const examples: Registry["items"] = [
     categories: ["form", "field", "button", "validation", "label", "zod"],
   },
   {
+    name: "empty-demo",
+    description: "Basic empty state with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/empty", "@coss/button"],
+    files: [{ path: "examples/empty-demo.tsx", type: "registry:example" }],
+    categories: ["empty"],
+  },
+  {
     name: "input-demo",
     description: "Basic input component without label",
     type: "registry:example",
@@ -1897,6 +1905,22 @@ export const examples: Registry["items"] = [
     registryDependencies: ["@coss/separator"],
     files: [{ path: "examples/separator-demo.tsx", type: "registry:example" }],
     categories: ["separator"],
+  },
+  {
+    name: "skeleton-demo",
+    description: "Skeleton demo",
+    type: "registry:example",
+    registryDependencies: ["@coss/avatar", "@coss/button", "@coss/skeleton"],
+    files: [{ path: "examples/skeleton-demo.tsx", type: "registry:example" }],
+    categories: ["skeleton"],
+  },
+  {
+    name: "skeleton-only",
+    description: "Skeleton only",
+    type: "registry:example",
+    registryDependencies: ["@coss/skeleton"],
+    files: [{ path: "examples/skeleton-only.tsx", type: "registry:example" }],
+    categories: ["skeleton"],
   },
   {
     name: "slider-demo",
