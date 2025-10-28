@@ -44,6 +44,7 @@
 - [Select](https://coss.com/ui/docs/components/select.md): A common form component for choosing a predefined value in a dropdown menu.
 - [Separator](https://coss.com/ui/docs/components/separator.md): A visual divider for separating content sections.
 - [Sheet](https://coss.com/ui/docs/components/sheet.md): A flyout that opens from the side of the screen, based on the dialog component.
+- [Skeleton](https://coss.com/ui/docs/components/skeleton.md): A placeholder for loading content.
 - [Slider](https://coss.com/ui/docs/components/slider.md): A draggable control for selecting values from a continuous range.
 - [Switch](https://coss.com/ui/docs/components/switch.md): A toggle control for binary on/off states.
 - [Table](https://coss.com/ui/docs/components/table.md): A structured data display component with rows and columns.

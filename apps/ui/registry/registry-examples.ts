@@ -1907,6 +1907,22 @@ export const examples: Registry["items"] = [
     categories: ["separator"],
   },
   {
+    name: "skeleton-demo",
+    description: "Skeleton demo",
+    type: "registry:example",
+    registryDependencies: ["@coss/avatar", "@coss/button", "@coss/skeleton"],
+    files: [{ path: "examples/skeleton-demo.tsx", type: "registry:example" }],
+    categories: ["skeleton"],
+  },
+  {
+    name: "skeleton-only",
+    description: "Skeleton only",
+    type: "registry:example",
+    registryDependencies: ["@coss/skeleton"],
+    files: [{ path: "examples/skeleton-only.tsx", type: "registry:example" }],
+    categories: ["skeleton"],
+  },
+  {
     name: "slider-demo",
     description: "Basic slider",
     type: "registry:example",

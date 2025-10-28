@@ -442,6 +442,28 @@ export const ui: Registry["items"] = [
     ],
   },
   {
+    name: "skeleton",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/skeleton.tsx",
+        type: "registry:ui",
+      },
+    ],
+    cssVars: {
+      theme: {
+        "--animate-skeleton": "skeleton 2s -1s infinite linear",
+      },
+    },
+    css: {
+      "@keyframes skeleton": {
+        to: {
+          "background-position": "-200% 0",
+        },
+      },
+    },
+  },
+  {
     name: "slider",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
