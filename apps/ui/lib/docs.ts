@@ -1,1 +1,1 @@
-export const PAGES_NEW = ["/docs/components/empty"]
+export const PAGES_NEW = ["/docs/components/empty", "/docs/components/skeleton"]

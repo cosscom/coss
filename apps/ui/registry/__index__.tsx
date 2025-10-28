@@ -618,6 +618,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "skeleton": {
+    name: "skeleton",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/ui/skeleton.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/skeleton.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "slider": {
     name: "slider",
     description: "",
@@ -3838,6 +3856,42 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["separator"],
+    meta: undefined,
+  },
+  "skeleton-demo": {
+    name: "skeleton-demo",
+    description: "Skeleton demo",
+    type: "registry:example",
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/skeleton"],
+    files: [{
+      path: "registry/default/examples/skeleton-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/skeleton-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["skeleton"],
+    meta: undefined,
+  },
+  "skeleton-only": {
+    name: "skeleton-only",
+    description: "Skeleton only",
+    type: "registry:example",
+    registryDependencies: ["@coss/skeleton"],
+    files: [{
+      path: "registry/default/examples/skeleton-only.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/skeleton-only.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["skeleton"],
     meta: undefined,
   },
   "slider-demo": {
