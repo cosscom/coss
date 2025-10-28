@@ -1,4 +1,6 @@
-import { Suspense } from "react"
+"use client"
+
+import { useEffect, useState } from "react"
 import { UserRoundPlusIcon, UsersRoundIcon } from "lucide-react"
 
 import {
@@ -39,14 +41,20 @@ const users = [
   },
 ]
 
-async function UserCardContent({
-  delay,
-  user,
-}: {
-  delay: number
-  user: (typeof users)[0]
-}) {
-  await new Promise((resolve) => setTimeout(resolve, delay))
+function UserCard({ delay, user }: { delay: number; user: (typeof users)[0] }) {
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true)
+    }, delay)
+
+    return () => clearTimeout(timer)
+  }, [delay])
+
+  if (!isLoaded) {
+    return <UserCardSkeleton />
+  }
 
   return (
     <>
@@ -96,9 +104,7 @@ export default function SkeletonDemo() {
     <div className="flex w-full max-w-92 flex-col gap-6">
       {users.map((user) => (
         <div key={user.fallback} className="flex items-center gap-4">
-          <Suspense key={user.fallback} fallback={<UserCardSkeleton />}>
-            <UserCardContent delay={user.delay} user={user} />
-          </Suspense>
+          <UserCard delay={user.delay} user={user} />
         </div>
       ))}
     </div>
