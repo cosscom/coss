@@ -40,7 +40,7 @@ NEXT_PUBLIC_COSS_UI_URL=http://localhost:4000/ui
   }
 ];
 
-console.log('Setting up COSS project environment files...\n');
+console.log('Setting up coss project environment files...\n');
 
 let success = 0;
 let failed = 0;
