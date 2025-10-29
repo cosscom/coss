@@ -31,6 +31,8 @@ This monorepo contains multiple Next.js applications that are designed to link t
 
 For local development, create a `.env.local` file in each of the app directories with the corresponding variables.
 
+> **Quick Setup**: Run `pnpm setup:env` to automatically create all environment files, or create them manually as shown below.
+
 1.  **`www` app**
 
     This app needs to know the URLs of the other apps. Create a file at `apps/www/.env.local`:
