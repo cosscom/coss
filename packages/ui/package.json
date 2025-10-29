@@ -5,7 +5,8 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "lint": "eslint src --max-warnings 0"
+    "lint": "eslint src --max-warnings 0",
+    "clean": "rm -rf node_modules"
   },
   "peerDependencies": {
     "next": "^16.0.0",
