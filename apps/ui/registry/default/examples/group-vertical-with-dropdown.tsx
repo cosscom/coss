@@ -26,7 +26,7 @@ const categoryItems = [
 
 export default function GroupVerticalWithDropdown() {
   return (
-    <Group orientation="horizontal">
+    <Group orientation="vertical">
       <GroupItem
         render={
           <Select items={statusItems} defaultValue="all">

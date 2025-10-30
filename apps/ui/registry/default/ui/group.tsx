@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Separator } from "@/registry/default/ui/separator"
 
 const groupVariants = cva(
-  "group flex w-fit [--clip-end:-1rem] [--clip-start:-1rem] *:pointer-coarse:after:min-w-auto",
+  "group flex w-fit [--clip-end:-1rem] [--clip-start:-1rem] *:pointer-coarse:after:min-w-auto [&>*]:focus-visible:z-10",
   {
     variants: {
       orientation: {
@@ -51,24 +51,9 @@ function GroupItem({
   render,
   ...props
 }: useRender.ComponentProps<"div">) {
-  const baseStyles =
-    "border-x-0 first:border-s last:border-e focus-visible:z-10 has-focus-visible:z-10"
-
-  const beforeStyles =
-    "before:[clip-path:inset(-1rem_var(--clip-end)_-1rem_var(--clip-start))] not-first:before:-start-0.5 not-first:before:rounded-s-none not-first:before:[--clip-start:2px] not-last:before:-end-0.5 not-last:before:rounded-e-none not-last:before:[--clip-end:2px]"
-
-  const separatorStyles =
-    "not-last:has-[+[data-slot=separator]]:before:[--clip-end:1.5px] [[data-slot=separator]+&]:before:[--clip-start:1.5px]"
-
-  const verticalStyles =
-    "group-data-[orientation=vertical]:border-x group-data-[orientation=vertical]:border-t-0 group-data-[orientation=vertical]:border-b-0 group-data-[orientation=vertical]:not-first:before:-top-0.5 group-data-[orientation=vertical]:not-first:before:rounded-t-none group-data-[orientation=vertical]:not-last:before:-bottom-0.5 group-data-[orientation=vertical]:not-last:before:rounded-b-none group-data-[orientation=vertical]:first:border-t group-data-[orientation=vertical]:last:border-b"
-
   const defaultProps = {
     className: cn(
-      baseStyles,
-      beforeStyles,
-      separatorStyles,
-      verticalStyles,
+      "border-x-0 group-data-[orientation=vertical]:border-x group-data-[orientation=vertical]:border-t-0 group-data-[orientation=vertical]:border-b-0 before:[clip-path:inset(-1rem_var(--clip-end)_-1rem_var(--clip-start))] not-first:before:-start-0.5 not-first:before:rounded-s-none not-first:before:[--clip-start:2px] not-last:before:-end-0.5 not-last:before:rounded-e-none not-last:before:[--clip-end:2px] group-data-[orientation=vertical]:not-first:before:-top-0.5 group-data-[orientation=vertical]:not-first:before:rounded-t-none group-data-[orientation=vertical]:not-last:before:-bottom-0.5 group-data-[orientation=vertical]:not-last:before:rounded-b-none first:border-s group-data-[orientation=vertical]:first:border-t last:border-e group-data-[orientation=vertical]:last:border-b focus-visible:z-10 has-focus-visible:z-10 not-last:has-[+[data-slot=separator]]:before:[--clip-end:1.5px] [[data-slot=separator]+&]:before:[--clip-start:1.5px]",
       className
     ),
   }
@@ -85,23 +70,12 @@ function GroupSeparator({
   ...props
 }: {
   className?: string
-  orientation?: "horizontal" | "vertical"
 } & React.ComponentProps<typeof Separator>) {
-  const baseStyles = "relative z-20"
-
-  const horizontalFocusStyles =
-    "has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible,+[data-slot=button]:focus-visible+*]:translate-x-px has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible,+[data-slot=button]:focus-visible+*]:bg-ring [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=button]:focus-visible+*+&]:-translate-x-px [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=button]:focus-visible+*+&]:bg-ring"
-
-  const verticalFocusStyles =
-    "group-data-[orientation=vertical]:has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible,+[data-slot=button]:focus-visible+*]:translate-x-0 group-data-[orientation=vertical]:has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible,+[data-slot=button]:focus-visible+*]:translate-y-px [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=button]:focus-visible+*+&]:group-data-[orientation=vertical]:translate-x-0 [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=button]:focus-visible+*+&]:group-data-[orientation=vertical]:-translate-y-px"
-
   return (
     <Separator
       orientation={orientation}
       className={cn(
-        baseStyles,
-        horizontalFocusStyles,
-        verticalFocusStyles,
+        "relative z-20 has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*]:translate-x-px has-[+[data-slot=input-control]:focus-within,+[data-slot=field-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*]:bg-ring [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&]:-translate-x-px [[data-slot=input-control]:focus-within+&,[data-slot=field-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&]:bg-ring",
         className
       )}
       {...props}
