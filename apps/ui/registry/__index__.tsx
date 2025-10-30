@@ -2922,6 +2922,42 @@ export const Index: Record<string, any> = {
     categories: ["group"],
     meta: undefined,
   },
+  "group-vertical": {
+    name: "group-vertical",
+    description: "Vertical group",
+    type: "registry:example",
+    registryDependencies: ["@coss/group","@coss/button"],
+    files: [{
+      path: "registry/default/examples/group-vertical.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/group-vertical.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group"],
+    meta: undefined,
+  },
+  "group-vertical-with-dropdown": {
+    name: "group-vertical-with-dropdown",
+    description: "Vertical group with dropdown",
+    type: "registry:example",
+    registryDependencies: ["@coss/group","@coss/button","@coss/select"],
+    files: [{
+      path: "registry/default/examples/group-vertical-with-dropdown.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/group-vertical-with-dropdown.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group"],
+    meta: undefined,
+  },
   "input-sm": {
     name: "input-sm",
     description: "Small input",
