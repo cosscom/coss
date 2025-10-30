@@ -38,7 +38,7 @@ function MenuPopup({
           <MenuPrimitive.Popup
             data-slot="menu-popup"
             className={cn(
-              "max-h-(--available-height) min-w-32 overflow-y-auto p-1",
+              "max-h-(--available-height) not-[class*='w-']:min-w-32 overflow-y-auto p-1",
               className
             )}
             {...props}

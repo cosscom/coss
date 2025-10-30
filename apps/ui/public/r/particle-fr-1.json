@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "particle-fr-1",
-  "type": "registry:example",
+  "type": "registry:block",
   "description": "Frame with collapsible content and delete button",
   "dependencies": [
     "lucide-react"

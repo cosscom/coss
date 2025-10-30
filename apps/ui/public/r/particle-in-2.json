@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "particle-in-2",
+  "type": "registry:block",
+  "description": "Input with start inline add-on",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/input"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/particle-in-2.tsx",
+      "content": "import { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <Input\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss.com\"\n        aria-label=\"Enter your domain\"\n      />\n      <InputGroupAddon>https://</InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input"
+  ]
+}

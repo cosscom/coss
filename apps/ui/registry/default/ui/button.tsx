@@ -31,8 +31,10 @@ const buttonVariants = cva(
         lg: "min-h-9 px-[calc(--spacing(3.5)-1px)] py-[calc(--spacing(2)-1px)]",
         xl: "min-h-10 px-[calc(--spacing(4)-1px)] py-[calc(--spacing(2)-1px)] text-base [&_svg:not([class*='size-'])]:size-4.5",
         icon: "size-8",
+        "icon-xs": "size-6 rounded-md before:rounded-[calc(var(--radius-md)-1px)]",
         "icon-sm": "size-7",
         "icon-lg": "size-9",
+        "icon-xl": "size-10 [&_svg:not([class*='size-'])]:size-4.5",
       },
     },
     defaultVariants: {

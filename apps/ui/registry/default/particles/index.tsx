@@ -223,6 +223,8 @@ import ParticleBu5 from "@/registry/default/particles/particle-bu-5"
 import ParticleBu6 from "@/registry/default/particles/particle-bu-6"
 import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
 import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
+import ParticleIn1 from "@/registry/default/particles/particle-in-1"
+import ParticleIn2 from "@/registry/default/particles/particle-in-2"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
 
@@ -283,6 +285,20 @@ export const particles: ParticleItem[] = [
     id: "input-with-button",
     component: InputWithButton,
     category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-1",
+    component: ParticleIn1,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-2",
+    component: ParticleIn2,
+    category: ["input"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },

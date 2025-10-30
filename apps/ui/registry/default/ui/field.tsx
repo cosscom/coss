@@ -32,7 +32,7 @@ function FieldControl({
   size?: "sm" | "default" | "lg" | number
 }) {
   if (props.render) {
-    return <FieldPrimitive.Control data-slot="field-control" {...props} />
+    return <FieldPrimitive.Control data-slot="field" {...props} />
   }
 
   return (
@@ -44,7 +44,7 @@ function FieldControl({
       )}
     >
       <FieldPrimitive.Control
-        data-slot="field-control"
+        data-slot="field"
         className={cn(
           "w-full min-w-0 rounded-[inherit] px-[calc(--spacing(3)-1px)] py-[calc(--spacing(1.5)-1px)] outline-none placeholder:text-muted-foreground/64",
           size === "sm" &&

@@ -312,7 +312,7 @@ function ComboboxChip({ children, ...props }: ComboboxPrimitive.Chip.Props) {
   return (
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
-      className="flex items-center rounded-md bg-accent ps-2 text-xs font-medium text-accent-foreground outline-none"
+      className="flex items-center rounded-[calc(var(--radius-md)-1px)] bg-accent ps-2 text-xs font-medium text-accent-foreground outline-none"
       {...props}
     >
       {children}

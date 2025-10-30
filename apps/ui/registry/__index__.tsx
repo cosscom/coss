@@ -4851,7 +4851,7 @@ export const Index: Record<string, any> = {
   "particle-fr-1": {
     name: "particle-fr-1",
     description: "Frame with collapsible content and delete button",
-    type: "registry:example",
+    type: "registry:block",
     registryDependencies: ["@coss/frame","@coss/collapsible","@coss/button"],
     files: [{
       path: "registry/default/particles/particle-fr-1.tsx",
@@ -4864,6 +4864,42 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["frame","collapsible"],
+    meta: undefined,
+  },
+  "particle-in-1": {
+    name: "particle-in-1",
+    description: "Input with start icon",
+    type: "registry:block",
+    registryDependencies: ["@coss/input"],
+    files: [{
+      path: "registry/default/particles/particle-in-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/particle-in-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input"],
+    meta: undefined,
+  },
+  "particle-in-2": {
+    name: "particle-in-2",
+    description: "Input with start inline add-on",
+    type: "registry:block",
+    registryDependencies: ["@coss/input"],
+    files: [{
+      path: "registry/default/particles/particle-in-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/particle-in-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input"],
     meta: undefined,
   },
   "particle-pa-1": {
