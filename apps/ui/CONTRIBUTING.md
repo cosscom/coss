@@ -199,13 +199,13 @@ After adding your component, run these scripts in sequence:
 
 ```bash
 # Format code and sort imports
-pnpm format:write
+bun run format:write
 
 # Build registry JSON files
-pnpm registry:build
+bun run registry:build
 
 # Propagate UI changes to packages (only needed for UI components, not particles)
-pnpm ui:propagate
+bun run ui:propagate
 ```
 
 ## Guidelines

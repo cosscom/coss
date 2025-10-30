@@ -79,15 +79,15 @@ This Turborepo has some additional tools already setup for you:
 To build all apps and packages:
 
 ```sh
-pnpm build
+bun run build
 ```
 
 To build a specific app:
 
 ```sh
-pnpm build --filter=www
-pnpm build --filter=ui
-pnpm build --filter=origin
+bun run build --filter=www
+bun run build --filter=ui
+bun run build --filter=origin
 ```
 
 #### Develop
@@ -95,15 +95,15 @@ pnpm build --filter=origin
 To develop all apps and packages:
 
 ```sh
-pnpm dev
+bun run dev
 ```
 
 To develop a specific app:
 
 ```sh
-pnpm dev --filter=www
-pnpm dev --filter=ui
-pnpm dev --filter=origin
+bun run dev --filter=www
+bun run dev --filter=ui
+bun run dev --filter=origin
 ```
 
 ## coss ui
