@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui-components/react/input"
 
 import { cn } from "@/lib/utils"
@@ -8,7 +9,10 @@ function Input({
   className,
   size = "default",
   ...props
-}: Omit<InputPrimitive.Props, "size"> & {
+}: Omit<
+  InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,
+  "size"
+> & {
   size?: "sm" | "default" | "lg" | number
 }) {
   return (

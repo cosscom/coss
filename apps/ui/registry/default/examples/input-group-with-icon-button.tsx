@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { CheckIcon, CopyIcon } from "lucide-react"
 
 import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard"
@@ -14,12 +15,14 @@ import {
 
 export default function InputGroupWithIconButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   return (
     <InputGroup>
       <Input
+        ref={inputRef}
         type="text"
-        placeholder="https:/coss.com"
+        defaultValue="https://coss.com"
         aria-label="Url"
         readOnly
       />
@@ -33,7 +36,9 @@ export default function InputGroupWithIconButton() {
                 title="Copy"
                 size="icon-xs"
                 onClick={() => {
-                  copyToClipboard("https://x.com/shadcn")
+                  if (inputRef.current) {
+                    copyToClipboard(inputRef.current.value)
+                  }
                 }}
               />
             }

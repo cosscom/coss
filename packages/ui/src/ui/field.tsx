@@ -28,7 +28,10 @@ function FieldControl({
   className,
   size = "default",
   ...props
-}: Omit<FieldPrimitive.Control.Props, "size"> & {
+}: Omit<
+  FieldPrimitive.Control.Props & React.RefAttributes<HTMLInputElement>,
+  "size"
+> & {
   size?: "sm" | "default" | "lg" | number
 }) {
   if (props.render) {
