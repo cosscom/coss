@@ -1,4 +1,9 @@
-import { nextJsConfig } from "@workspace/eslint-config/next-js";
+import { nextJsConfig } from "@coss/eslint-config/next";
 
 /** @type {import("eslint").Linter.Config} */
-export default nextJsConfig;
+export default [
+  ...nextJsConfig,
+  {
+    ignores: [".source"]
+  }
+];

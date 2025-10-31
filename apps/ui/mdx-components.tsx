@@ -3,8 +3,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { InfoIcon } from "lucide-react"
 
-import { CopyButton } from "@workspace/ui/components/copy-button"
-import { getIconForLanguageExtension } from "@workspace/ui/components/icons"
+import { CopyButton } from "@coss/ui/components/copy-button"
+import { getIconForLanguageExtension } from "@coss/ui/components/icons"
 
 import { cn } from "@/lib/utils"
 import { CodeBlockCommand } from "@/components/code-block-command"
@@ -160,7 +160,6 @@ export const mdxComponents = {
     />
   ),
   img: ({ className, alt, ...props }: React.ComponentProps<"img">) => (
-    // eslint-disable-next-line @next/next/no-img-element
     <img className={cn("rounded-md", className)} alt={alt} {...props} />
   ),
   hr: ({ ...props }: React.ComponentProps<"hr">) => (

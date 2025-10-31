@@ -25,7 +25,7 @@ async function submitForm(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault()
 
   const formData = new FormData(event.currentTarget)
-  const result = schema.safeParse(Object.fromEntries(formData as any))
+  const result = schema.safeParse(Object.fromEntries(formData))
 
   if (!result.success) {
     const { fieldErrors } = z.flattenError(result.error)

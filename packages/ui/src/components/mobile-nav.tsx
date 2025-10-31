@@ -1,27 +1,41 @@
-"use client"
+"use client";
 
-import * as React from "react"
-// @ts-ignore - Next types are supplied by consuming app via peerDependencies
-import Link, { LinkProps } from "next/link"
-// @ts-ignore - Next types are supplied by consuming app via peerDependencies
-import { useRouter } from "next/navigation"
-import { Menu09Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import * as React from "react";
+import Link, { LinkProps } from "next/link";
+import { useRouter } from "next/navigation";
+import { Menu09Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
-import { cn } from "@workspace/ui/lib/utils"
-import { Button } from "@workspace/ui/ui/button"
-import { Sheet, SheetPopup, SheetTrigger } from "@workspace/ui/ui/sheet"
+import { cn } from "@coss/ui/lib/utils";
+import { Button } from "@coss/ui/ui/button";
+import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/ui/sheet";
+
+export type PageNode = {
+  type: "page";
+  name: string;
+  url: string;
+};
+
+export type FolderNode = {
+  type: "folder";
+  name: string;
+  children: (PageNode | FolderNode)[];
+};
+
+export type NavTree = {
+  children: FolderNode[];
+};
 
 export function MobileNav({
   tree,
   items,
   className,
 }: {
-  tree?: any
-  items: { href: string; label: string }[]
-  className?: string
+  tree?: NavTree;
+  items: { href: string; label: string }[];
+  className?: string;
 }) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -30,10 +44,7 @@ export function MobileNav({
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              "relative -ms-1.5 size-8",
-              className
-            )}
+            className={cn("relative -ms-1.5 size-8", className)}
           >
             <HugeiconsIcon
               icon={Menu09Icon}
@@ -59,40 +70,38 @@ export function MobileNav({
               ))}
             </div>
           </div>
-          {
-            tree ? (
-              <div className="flex flex-col gap-8">
-                {tree?.children?.map((group: any, index: number) => {
-                  if (group.type === "folder") {
-                    return (
-                      <div key={index} className="flex flex-col gap-3">
-                        <div className="text-sm font-medium">{group.name}</div>
-                        <div className="flex flex-col gap-2">
-                          {group.children.map((item: any) => {
-                            if (item.type === "page") {
-                              return (
-                                <MobileLink
-                                  key={`${item.url}-${index}`}
-                                  href={item.url}
-                                  onOpenChange={setOpen}
-                                >
-                                  {item.name}
-                                </MobileLink>
-                              )
-                            }
-                          })}
-                        </div>
+          {tree ? (
+            <div className="flex flex-col gap-8">
+              {tree?.children?.map((group: FolderNode, index: number) => {
+                if (group.type === "folder") {
+                  return (
+                    <div key={index} className="flex flex-col gap-3">
+                      <div className="text-sm font-medium">{group.name}</div>
+                      <div className="flex flex-col gap-2">
+                        {group.children.map((item) => {
+                          if (item.type === "page") {
+                            return (
+                              <MobileLink
+                                key={`${item.url}-${index}`}
+                                href={item.url}
+                                onOpenChange={setOpen}
+                              >
+                                {item.name}
+                              </MobileLink>
+                            );
+                          }
+                        })}
                       </div>
-                    )
-                  }
-                })}
-              </div>
-            ) : null
-          }
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          ) : null}
         </div>
       </SheetPopup>
     </Sheet>
-  )
+  );
 }
 
 function MobileLink({
@@ -102,22 +111,22 @@ function MobileLink({
   children,
   ...props
 }: LinkProps & {
-  onOpenChange?: (open: boolean) => void
-  children: React.ReactNode
-  className?: string
+  onOpenChange?: (open: boolean) => void;
+  children: React.ReactNode;
+  className?: string;
 }) {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <Link
       href={href}
       onClick={() => {
-        router.push(href.toString())
-        onOpenChange?.(false)
+        router.push(href.toString());
+        onOpenChange?.(false);
       }}
       className={cn("text-muted-foreground", className)}
       {...props}
     >
       {children}
     </Link>
-  )
+  );
 }

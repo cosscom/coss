@@ -1,12 +1,11 @@
-import * as React from "react"
-// @ts-ignore - Next types are supplied by consuming app via peerDependencies
-import Link from "next/link"
-import { GithubIcon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import * as React from "react";
+import Link from "next/link";
+import { GithubIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
-import { siteConfig } from "@workspace/ui/lib/config"
-import { Skeleton } from "@workspace/ui/ui/skeleton"
-import { Button } from "@workspace/ui/ui/button"
+import { siteConfig } from "@coss/ui/lib/config";
+import { Skeleton } from "@coss/ui/ui/skeleton";
+import { Button } from "@coss/ui/ui/button";
 
 export function GitHubLink() {
   return (
@@ -25,28 +24,24 @@ export function GitHubLink() {
         </Link>
       }
     />
-  )
+  );
 }
 
 export async function StarsCount() {
   try {
-    const data = await fetch(
-      "https://api.github.com/repos/cosscom/coss",
-      {
-        // @ts-ignore - Next types are supplied by consuming app via peerDependencies
-        next: { revalidate: 86400 }, // Cache for 1 day (86400 seconds)
-      }
-    )
-    
-    if (!data.ok) {
-      throw new Error(`GitHub API error: ${data.status}`)
-    }
-    
-    const json = await data.json()
-    const starsCount = json.stargazers_count
+    const data = await fetch("https://api.github.com/repos/cosscom/coss", {
+      next: { revalidate: 86400 }, // Cache for 1 day (86400 seconds)
+    });
 
-    if (typeof starsCount !== 'number' || starsCount < 0) {
-      throw new Error('Invalid stars count')
+    if (!data.ok) {
+      throw new Error(`GitHub API error: ${data.status}`);
+    }
+
+    const json = await data.json();
+    const starsCount = json.stargazers_count;
+
+    if (typeof starsCount !== "number" || starsCount < 0) {
+      throw new Error("Invalid stars count");
     }
 
     return (
@@ -55,9 +50,9 @@ export async function StarsCount() {
           ? `${(starsCount / 1000).toFixed(1)}k`
           : starsCount.toLocaleString()}
       </span>
-    )
-  } catch (error) {
+    );
+  } catch {
     // Return nothing when GitHub API is unavailable or repo doesn't exist
-    return null
+    return null;
   }
 }

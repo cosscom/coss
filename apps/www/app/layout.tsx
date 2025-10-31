@@ -3,11 +3,11 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google"
 
-import { ThemeProvider } from "@workspace/ui/components/theme-provider"
+import { ThemeProvider } from "@coss/ui/components/theme-provider"
 
-import { SiteHeader } from "@workspace/ui/components/site-header"
-import { SiteFooter } from "@workspace/ui/components/site-footer"
-import { SiteCta } from "@workspace/ui/components/site-cta"
+import { SiteHeader } from "@coss/ui/components/site-header"
+import { SiteFooter } from "@coss/ui/components/site-footer"
+import { SiteCta } from "@coss/ui/components/site-cta"
 
 const fontSans = FontSans({
   subsets: ["latin"],
