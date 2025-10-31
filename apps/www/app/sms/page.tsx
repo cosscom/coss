@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { CodeBlock } from "@workspace/ui/components/code-block";
+import { CodeBlock } from "@coss/ui/components/code-block";
 
 export const metadata: Metadata = {
   title: "coss.com sms",

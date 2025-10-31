@@ -6,8 +6,8 @@ import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@workspace/ui/components/page-header"
-import { Button } from "@workspace/ui/ui/button"
+} from "@coss/ui/components/page-header"
+import { Button } from "@coss/ui/ui/button"
 
 export const metadata: Metadata = {
   title: "Page Not Found",

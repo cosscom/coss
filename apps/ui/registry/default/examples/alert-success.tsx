@@ -5,7 +5,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/registry/default/ui/alert"
-import { Button } from "@/registry/default/ui/button"
 
 export default function AlertSuccess() {
   return (

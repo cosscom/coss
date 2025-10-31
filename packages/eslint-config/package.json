@@ -1,14 +1,13 @@
 {
-  "name": "@workspace/eslint-config",
+  "name": "@coss/eslint-config",
   "version": "0.0.0",
   "type": "module",
-  "private": true,
   "scripts": {
     "clean": "rm -rf node_modules"
   },
   "exports": {
     "./base": "./base.js",
-    "./next-js": "./next.js",
+    "./next": "./next.js",
     "./react-internal": "./react-internal.js"
   },
   "devDependencies": {

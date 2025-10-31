@@ -47,9 +47,9 @@ async function getAllFiles(dir: string): Promise<string[]> {
 function rewriteImports(code: string): string {
   let result = code
   // Rewrite paths according to rules
-  // "@/lib/*"        → "@workspace/ui/lib/*"
-  // "@/hooks/*"      → "@workspace/ui/hooks/*"
-  // "@/registry/default/ui/*" → "@workspace/ui/ui/*"
+  // "@/lib/*"        → "@coss/ui/lib/*"
+  // "@/hooks/*"      → "@coss/ui/hooks/*"
+  // "@/registry/default/ui/*" → "@coss/ui/ui/*"
   result = result.replace(/(["'])@\/lib\//g, "$1@workspace/ui/lib/")
   result = result.replace(/(["'])@\/hooks\//g, "$1@workspace/ui/hooks/")
   result = result.replace(

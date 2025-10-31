@@ -5,6 +5,23 @@ import { rimraf } from "rimraf"
 
 import { registry } from "../registry/index.js"
 
+type RegistryFile = {
+  path: string
+  type: string
+  target?: string
+}
+
+type RegistryItem = {
+  name: string
+  description?: string
+  type: string
+  registryDependencies?: string[]
+  files?: RegistryFile[]
+  categories?: string[]
+  meta?: Record<string, unknown>
+}
+
+
 async function buildRegistryIndex() {
   let index = `/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -16,7 +33,7 @@ import * as React from "react"
 export const Index: Record<string, any> = {`
   for (const item of registry.items) {
     const resolveFiles = item.files?.map(
-      (file: any) => `registry/default/${file.path}`
+      (file: RegistryFile) => `registry/default/${file.path}`
     )
     if (!resolveFiles) {
       continue
@@ -32,7 +49,7 @@ export const Index: Record<string, any> = {`
     description: "${item.description ?? ""}",
     type: "${item.type}",
     registryDependencies: ${JSON.stringify(item.registryDependencies)},
-    files: [${item.files?.map((file: any) => {
+    files: [${item.files?.map((file: RegistryFile) => {
       const filePath = `registry/default/${typeof file === "string" ? file : file.path}`
       const resolvedFilePath = path.resolve(filePath)
       return typeof file === "string"
@@ -71,8 +88,8 @@ async function buildRegistryJsonFile() {
   // 1. Fix the path for registry items.
   const fixedRegistry = {
     ...registry,
-    items: registry.items.map((item: any) => {
-      const files = item.files?.map((file: any) => {
+    items: registry.items.map((item: RegistryItem) => {
+      const files = item.files?.map((file: RegistryFile) => {
         return {
           ...file,
           path: `registry/default/${file.path}`,

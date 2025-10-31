@@ -1,5 +1,5 @@
 {
-  "extends": "@workspace/typescript-config/nextjs.json",
+  "extends": "@coss/typescript-config/nextjs.json",
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
@@ -11,7 +11,7 @@
       "@source/*": [
         "./.source/*"
       ],
-      "@workspace/ui/*": [
+      "@coss/ui/*": [
         "../../packages/ui/src/*"
       ]
     }

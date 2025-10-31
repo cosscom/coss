@@ -6,7 +6,7 @@ import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@workspace/ui/components/page-header"
+} from "@coss/ui/components/page-header"
 
 import { Button } from "@/registry/default/ui/button"
 
