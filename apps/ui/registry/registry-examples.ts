@@ -1358,6 +1358,27 @@ export const examples: Registry["items"] = [
     categories: ["group"],
   },
   {
+    name: "group-vertical",
+    description: "Vertical group",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button"],
+    files: [{ path: "examples/group-vertical.tsx", type: "registry:example" }],
+    categories: ["group"],
+  },
+  {
+    name: "group-vertical-with-dropdown",
+    description: "Vertical group with dropdown",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/select"],
+    files: [
+      {
+        path: "examples/group-vertical-with-dropdown.tsx",
+        type: "registry:example",
+      },
+    ],
+    categories: ["group"],
+  },
+  {
     name: "input-sm",
     description: "Small input",
     type: "registry:example",
