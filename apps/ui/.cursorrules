@@ -91,7 +91,7 @@ Schema reference: see `registry-item.json` specification at
 Run from repo root:
 
 ```bash
-pnpm registry:build
+bun run registry:build
 ```
 
 This updates the built registry JSON in `apps/ui/public/ui/r/`.
@@ -111,6 +111,6 @@ accordion, alert, avatar, badge, banner, breadcrumb, button, calendar, checkbox,
 - Create `registry/default/particles/particle-{category_shortcode}-{N}.tsx` with `export default function Particle()`.
 - Import and add it to `registry/default/particles/index.tsx` with correct `id`, `category`, and optional `className`.
 - Add an item to `registry/registry-particles.ts` with `name`, `description`, `type`, `registryDependencies`, optional `dependencies`, `files`, and `categories` (tags).
-- Run `pnpm registry:build` from `apps/ui`
+- Run `bun run registry:build` from `apps/ui`
 
 

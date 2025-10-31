@@ -71,7 +71,7 @@ bun run typecheck
 Build shadcn/ui registry:
 
 ```sh
-bun run build:registry
+bun run registry:build
 ```
 
 This build script compiles all the registry items into a json file that is compatible with both v0 and the shadcn/ui cli. Read the [documentation](https://ui.shadcn.com/docs/registry) for further details.
