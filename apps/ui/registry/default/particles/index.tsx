@@ -974,12 +974,12 @@ export const particles: ParticleItem[] = [
   {
     id: "button-with-kbd",
     component: ButtonWithKbd,
-    category: ["button"],
+    category: ["button", "kbd"],
   },
   {
     id: "button-loading",
     component: ButtonLoading,
-    category: ["button"],
+    category: ["button", "loading"],
   },
   {
     id: "group-demo",
