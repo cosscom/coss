@@ -25,6 +25,7 @@
     "@coss/group",
     "@coss/input",
     "@coss/input-group",
+    "@coss/kbd",
     "@coss/label",
     "@coss/menu",
     "@coss/meter",

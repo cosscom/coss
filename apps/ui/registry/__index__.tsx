@@ -402,6 +402,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "kbd": {
+    name: "kbd",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/ui/kbd.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/kbd.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "label": {
     name: "label",
     description: "",
@@ -1950,6 +1968,24 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "button-with-kbd": {
+    name: "button-with-kbd",
+    description: "Button with keyboard shortcut",
+    type: "registry:example",
+    registryDependencies: ["@coss/button","@coss/kbd"],
+    files: [{
+      path: "registry/default/examples/button-with-kbd.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/button-with-kbd.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","kbd"],
+    meta: undefined,
+  },
   "button-loading": {
     name: "button-loading",
     description: "Loading button",
@@ -3316,6 +3352,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group"],
+    meta: undefined,
+  },
+  "kbd-demo": {
+    name: "kbd-demo",
+    description: "Keyboard shortcuts",
+    type: "registry:example",
+    registryDependencies: ["@coss/kbd"],
+    files: [{
+      path: "registry/default/examples/kbd-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/kbd-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["kbd"],
     meta: undefined,
   },
   "menu-checkbox": {

@@ -28,6 +28,7 @@
         "@coss/group",
         "@coss/input",
         "@coss/input-group",
+        "@coss/kbd",
         "@coss/label",
         "@coss/menu",
         "@coss/meter",
@@ -390,6 +391,16 @@
       "files": [
         {
           "path": "registry/default/ui/input-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/kbd.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1820,6 +1831,25 @@
       ],
       "categories": [
         "button"
+      ]
+    },
+    {
+      "name": "button-with-kbd",
+      "description": "Button with keyboard shortcut",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/kbd"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/button-with-kbd.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "button",
+        "kbd"
       ]
     },
     {
@@ -3384,6 +3414,23 @@
       "categories": [
         "input",
         "input group"
+      ]
+    },
+    {
+      "name": "kbd-demo",
+      "description": "Keyboard shortcuts",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/kbd"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/kbd-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "kbd"
       ]
     },
     {
