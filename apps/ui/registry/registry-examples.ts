@@ -2178,6 +2178,14 @@ export const examples: Registry["items"] = [
     categories: ["slider", "form", "field", "button", "helper", "hint"],
   },
   {
+    name: "spinner-demo",
+    description: "Spinner demo",
+    type: "registry:example",
+    registryDependencies: ["@coss/spinner"],
+    files: [{ path: "examples/spinner-demo.tsx", type: "registry:example" }],
+    categories: ["spinner", "loading"],
+  },
+  {
     name: "switch-demo",
     description: "Basic switch",
     type: "registry:example",

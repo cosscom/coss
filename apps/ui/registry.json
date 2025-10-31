@@ -43,6 +43,7 @@
         "@coss/sheet",
         "@coss/skeleton",
         "@coss/slider",
+        "@coss/spinner",
         "@coss/switch",
         "@coss/table",
         "@coss/tabs",
@@ -607,6 +608,16 @@
       "files": [
         {
           "path": "registry/default/ui/slider.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/spinner.tsx",
           "type": "registry:ui"
         }
       ]
@@ -4353,6 +4364,24 @@
         "button",
         "helper",
         "hint"
+      ]
+    },
+    {
+      "name": "spinner-demo",
+      "description": "Spinner demo",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/spinner-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "spinner",
+        "loading"
       ]
     },
     {

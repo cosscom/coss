@@ -40,6 +40,7 @@
     "@coss/sheet",
     "@coss/skeleton",
     "@coss/slider",
+    "@coss/spinner",
     "@coss/switch",
     "@coss/table",
     "@coss/tabs",

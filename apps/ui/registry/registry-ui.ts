@@ -42,6 +42,7 @@ export const ui: Registry["items"] = [
       "@coss/sheet",
       "@coss/skeleton",
       "@coss/slider",
+      "@coss/spinner",
       "@coss/switch",
       "@coss/table",
       "@coss/tabs",
@@ -532,6 +533,16 @@ export const ui: Registry["items"] = [
     files: [
       {
         path: "ui/slider.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "spinner",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/spinner.tsx",
         type: "registry:ui",
       },
     ],
