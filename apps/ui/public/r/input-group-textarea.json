@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-textarea",
+  "type": "registry:example",
+  "description": "Input group with textarea",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/textarea",
+    "@coss/button",
+    "@coss/menu",
+    "@coss/tooltip"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-textarea.tsx",
+      "content": "\"use client\"\n\nimport { ArrowUpIcon, PlusIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\"\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\"\nimport { Textarea } from \"@/registry/default/ui/textarea\"\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\"\n\nexport default function InputGroupTextarea() {\n  return (\n    <InputGroup>\n      <Textarea placeholder=\"Ask, Search or Chat…\" />\n      <InputGroupAddon align=\"block-end\">\n        <Menu>\n          <Tooltip>\n            <TooltipTrigger\n              render={\n                <MenuTrigger\n                  render={\n                    <Button\n                      variant=\"ghost\"\n                      size=\"icon-sm\"\n                      className=\"rounded-full\"\n                      aria-label=\"Add files\"\n                    />\n                  }\n                >\n                  <PlusIcon />\n                </MenuTrigger>\n              }\n            />\n            <TooltipPopup>Add files and more</TooltipPopup>\n          </Tooltip>\n          <MenuPopup align=\"start\">\n            <MenuItem>Add photos &amp; files</MenuItem>\n            <MenuItem>Create image</MenuItem>\n            <MenuItem>Thinking</MenuItem>\n            <MenuItem>Deep research</MenuItem>\n          </MenuPopup>\n        </Menu>\n        <InputGroupText className=\"ml-auto\">78% used</InputGroupText>\n        <Tooltip>\n          <TooltipTrigger\n            render={\n              <Button\n                variant=\"default\"\n                className=\"rounded-full\"\n                size=\"icon-sm\"\n                aria-label=\"Send\"\n              >\n                <ArrowUpIcon />\n              </Button>\n            }\n          />\n          <TooltipPopup>Send</TooltipPopup>\n        </Tooltip>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input group",
+    "textarea",
+    "button",
+    "menu",
+    "tooltip"
+  ]
+}

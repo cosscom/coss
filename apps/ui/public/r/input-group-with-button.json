@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-with-button",
+  "type": "registry:example",
+  "description": "Input group with button",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/input",
+    "@coss/button"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-with-button.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\"\nimport { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithButton() {\n  return (\n    <InputGroup>\n      <Input type=\"search\" placeholder=\"Type to search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Button variant=\"secondary\" size=\"xs\">\n          Search\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "button"
+  ]
+}

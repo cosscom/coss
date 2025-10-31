@@ -24,6 +24,7 @@
     "@coss/frame",
     "@coss/group",
     "@coss/input",
+    "@coss/input-group",
     "@coss/label",
     "@coss/menu",
     "@coss/meter",

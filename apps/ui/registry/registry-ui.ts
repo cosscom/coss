@@ -26,6 +26,7 @@ export const ui: Registry["items"] = [
       "@coss/frame",
       "@coss/group",
       "@coss/input",
+      "@coss/input-group",
       "@coss/label",
       "@coss/menu",
       "@coss/meter",
@@ -335,6 +336,16 @@ export const ui: Registry["items"] = [
     files: [
       {
         path: "ui/input.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "input-group",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/input-group.tsx",
         type: "registry:ui",
       },
     ],

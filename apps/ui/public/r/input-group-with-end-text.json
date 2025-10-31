@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-with-end-text",
+  "type": "registry:example",
+  "description": "Input group with end text",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/input"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-with-end-text.tsx",
+      "content": "import { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithEndText() {\n  return (\n    <InputGroup>\n      <Input\n        type=\"text\"\n        placeholder=\"Choose a username\"\n        aria-label=\"Choose a username\"\n      />\n      <InputGroupAddon align=\"inline-end\">@coss.com</InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group"
+  ]
+}

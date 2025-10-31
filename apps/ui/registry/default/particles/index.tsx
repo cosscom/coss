@@ -117,6 +117,20 @@ import GroupWithInput from "@/registry/default/examples/group-with-input"
 import InputDemo from "@/registry/default/examples/input-demo"
 import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
+import InputGroupDemo from "@/registry/default/examples/input-group-demo"
+import InputGroupLoading from "@/registry/default/examples/input-group-loading"
+import InputGroupTextarea from "@/registry/default/examples/input-group-textarea"
+import InputGroupWithBadge from "@/registry/default/examples/input-group-with-badge"
+import InputGroupWithButton from "@/registry/default/examples/input-group-with-button"
+import InputGroupWithEndIcon from "@/registry/default/examples/input-group-with-end-icon"
+import InputGroupWithEndText from "@/registry/default/examples/input-group-with-end-text"
+import InputGroupWithEndTooltip from "@/registry/default/examples/input-group-with-end-tooltip"
+import InputGroupWithIconButton from "@/registry/default/examples/input-group-with-icon-button"
+import InputGroupWithInnerLabel from "@/registry/default/examples/input-group-with-inner-label"
+import InputGroupWithKbd from "@/registry/default/examples/input-group-with-kbd"
+import InputGroupWithNumberField from "@/registry/default/examples/input-group-with-number-field"
+import InputGroupWithStartEndText from "@/registry/default/examples/input-group-with-start-end-text"
+import InputGroupWithStartText from "@/registry/default/examples/input-group-with-start-text"
 import InputLg from "@/registry/default/examples/input-lg"
 import InputSm from "@/registry/default/examples/input-sm"
 import InputWithButton from "@/registry/default/examples/input-with-button"
@@ -225,6 +239,9 @@ import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
 import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
 import ParticleIn1 from "@/registry/default/particles/particle-in-1"
 import ParticleIn2 from "@/registry/default/particles/particle-in-2"
+import ParticleIn3 from "@/registry/default/particles/particle-in-3"
+import ParticleIn4 from "@/registry/default/particles/particle-in-4"
+import ParticleIn5 from "@/registry/default/particles/particle-in-5"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
 
@@ -289,9 +306,128 @@ export const particles: ParticleItem[] = [
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
   {
+    id: "input-group-demo",
+    component: InputGroupDemo,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-icon",
+    component: InputGroupWithEndIcon,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-start-text",
+    component: InputGroupWithStartText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-text",
+    component: InputGroupWithEndText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-start-end-text",
+    component: InputGroupWithStartEndText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
     id: "particle-in-1",
     component: ParticleIn1,
     category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-tooltip",
+    component: InputGroupWithEndTooltip,
+    category: ["input", "button", "popover", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-number-field",
+    component: InputGroupWithNumberField,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-icon-button",
+    component: InputGroupWithIconButton,
+    category: ["input", "button", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-2",
+    component: ParticleIn2,
+    category: ["input", "button", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-3",
+    component: ParticleIn3,
+    category: ["input", "button", "popover", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-button",
+    component: InputGroupWithButton,
+    category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-badge",
+    component: InputGroupWithBadge,
+    category: ["input", "badge"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-kbd",
+    component: InputGroupWithKbd,
+    category: ["input", "kbd"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-4",
+    component: ParticleIn4,
+    category: ["input", "kbd"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-loading",
+    component: InputGroupLoading,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-5",
+    component: ParticleIn5,
+    category: ["input", "spinner"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-inner-label",
+    component: InputGroupWithInnerLabel,
+    category: ["input", "button", "label", "popover", "tooltip"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
@@ -405,6 +541,13 @@ export const particles: ParticleItem[] = [
     category: ["textarea"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-textarea",
+    component: InputGroupTextarea,
+    category: ["textarea", "button", "menu", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-80",
   },
   {
     id: "select-demo",

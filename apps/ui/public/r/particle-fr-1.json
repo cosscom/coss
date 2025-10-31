@@ -3,9 +3,6 @@
   "name": "particle-fr-1",
   "type": "registry:block",
   "description": "Frame with collapsible content and delete button",
-  "dependencies": [
-    "lucide-react"
-  ],
   "registryDependencies": [
     "@coss/frame",
     "@coss/collapsible",

@@ -1,0 +1,161 @@
+---
+title: Input Group
+description: A flexible component for grouping inputs with addons, buttons, and other elements.
+---
+
+<ComponentPreview
+  name="input-group-demo"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTab value="cli">CLI</TabsTab>
+  <TabsTab value="manual">Manual</TabsTab>
+</TabsList>
+<TabsPanel value="cli">
+
+```bash
+npx shadcn@latest add @coss/input-group
+```
+
+</TabsPanel>
+
+<TabsPanel value="manual">
+
+<Steps>
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @base-ui-components/react
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="input-group" title="components/ui/input-group.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsPanel>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/components/ui/input-group"
+```
+
+```tsx
+<InputGroup>
+  <Input type="email" placeholder="Email" />
+  <InputGroupAddon>
+    <MailIcon />
+  </InputGroupAddon>
+</InputGroup>
+```
+
+## Examples
+
+### With End Icon
+
+<ComponentPreview
+  name="input-group-with-end-icon"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Start Text
+
+<ComponentPreview
+  name="input-group-with-start-text"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With End Tooltip
+
+<ComponentPreview
+  name="input-group-with-end-tooltip"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Start and End Text
+
+<ComponentPreview
+  name="input-group-with-start-end-text"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With End Text
+
+<ComponentPreview
+  name="input-group-with-end-text"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Number Field
+
+<ComponentPreview
+  name="input-group-with-number-field"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Icon Button
+
+<ComponentPreview
+  name="input-group-with-icon-button"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Button
+
+<ComponentPreview
+  name="input-group-with-button"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Badge
+
+<ComponentPreview
+  name="input-group-with-badge"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Keyboard Shortcut
+
+<ComponentPreview
+  name="input-group-with-kbd"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Inner Label
+
+<ComponentPreview
+  name="input-group-with-inner-label"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### Loading State
+
+<ComponentPreview
+  name="input-group-loading"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
+/>
+
+### With Textarea
+
+<ComponentPreview
+  name="input-group-textarea"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-80"
+/>
+
