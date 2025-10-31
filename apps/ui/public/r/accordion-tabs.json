@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "accordion-tabs",
+  "type": "registry:example",
+  "description": "Accordion with tabs like layout",
+  "registryDependencies": [
+    "https://coss.com/ui/r/accordion.json"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/accordion-tabs.tsx",
+      "content": "import {\n  Accordion,\n  AccordionItem,\n  AccordionPanel,\n  AccordionTrigger,\n} from \"@/registry/default/ui/accordion\"\n\nexport default function AccordionTabsDemo() {\n  return (\n    <Accordion className=\"w-full space-y-2\" multiple={true}>\n      <AccordionItem value=\"item-1\" className=\"rounded-lg border last:border-b\">\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          What is Base UI?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Base UI is a library of high-quality unstyled React components for\n          design systems and web apps.\n        </AccordionPanel>\n      </AccordionItem>\n      <AccordionItem value=\"item-2\" className=\"rounded-lg border last:border-b\">\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          How do I get started?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Head to the \"Quick start\" guide in the docs. If you've used unstyled\n          libraries before, you'll feel at home.\n        </AccordionPanel>\n      </AccordionItem>\n      <AccordionItem value=\"item-3\" className=\"rounded-lg border last:border-b\">\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          Can I use it for my project?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Of course! Base UI is free and open source.\n        </AccordionPanel>\n      </AccordionItem>\n    </Accordion>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "accordion"
+  ]
+}
