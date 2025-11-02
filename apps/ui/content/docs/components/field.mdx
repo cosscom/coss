@@ -58,18 +58,18 @@ npm install @base-ui-components/react
 ```tsx
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
   FieldValidity,
 } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 ```
 
 ```tsx
 <Field>
   <FieldLabel>Name</FieldLabel>
-  <FieldControl type="text" placeholder="Enter your name" />
+  <Input type="text" placeholder="Enter your name" />
   <FieldDescription>Visible on your profile</FieldDescription>
   <FieldError>Please enter a valid name</FieldError>
   <FieldValidity>
@@ -78,6 +78,36 @@ import {
     )}
   </FieldValidity>
 </Field>
+```
+
+### FieldControl usage
+
+For components that Base UI doesn't provide—like `Textarea`—use `FieldControl` with the `render` prop to integrate them with the field's validation and accessibility features.
+
+```tsx
+import {
+  Field,
+  FieldControl,
+  FieldDescription,
+  FieldLabel,
+} from "@/components/ui/field"
+import { Textarea } from "@/components/ui/textarea"
+
+export default function TextareaField() {
+  return (
+    <Field>
+      <FieldLabel>Bio</FieldLabel>
+      <FieldControl
+        render={(props) => (
+          <Textarea placeholder="Tell us about yourself…" {...props} />
+        )}
+      />
+      <FieldDescription>
+        Write a short bio. Maximum 500 characters.
+      </FieldDescription>
+    </Field>
+  )
+}
 ```
 
 ## Examples
@@ -134,6 +164,8 @@ Enter an invalid email address and press enter to see the error.
 />
 
 ### Textarea Field
+
+When using the custom Textarea component, use `FieldControl` with a render prop to ensure proper field integration:
 
 <ComponentPreview
   name="field-textarea"
