@@ -15,8 +15,8 @@ import {
 export default function InputGroupWithInnerLabel() {
   return (
     <InputGroup>
-      <Input id="email-1" type="email" placeholder="team@coss.com"  />
-      <InputGroupAddon align="block-start" className="border-b">
+      <Input id="email-1" type="email" placeholder="team@coss.com" />
+      <InputGroupAddon align="block-start">
         <Label htmlFor="email-1" className="text-foreground">
           Email
         </Label>
