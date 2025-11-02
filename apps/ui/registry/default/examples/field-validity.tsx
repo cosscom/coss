@@ -1,17 +1,13 @@
 "use client"
 
-import {
-  Field,
-  FieldControl,
-  FieldLabel,
-  FieldValidity,
-} from "@/registry/default/ui/field"
+import { Field, FieldLabel, FieldValidity } from "@/registry/default/ui/field"
+import { Input } from "@/registry/default/ui/input"
 
 export default function FieldWithValidityDemo() {
   return (
     <Field>
       <FieldLabel>Email</FieldLabel>
-      <FieldControl type="email" placeholder="Enter your email" required />
+      <Input type="email" placeholder="Enter your email" required />
       <FieldValidity>
         {(validity) => (
           <div className="flex w-full flex-col gap-2">

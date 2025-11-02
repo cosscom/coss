@@ -1884,7 +1884,8 @@
         "@coss/button",
         "@coss/select",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2394,7 +2395,8 @@
         "@coss/dialog",
         "@coss/button",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2437,7 +2439,8 @@
       "registryDependencies": [
         "@coss/dialog",
         "@coss/button",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2459,7 +2462,8 @@
         "@coss/sheet",
         "@coss/button",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2543,6 +2547,7 @@
         "@coss/select",
         "@coss/checkbox",
         "@coss/form",
+        "@coss/input",
         "@coss/button"
       ],
       "files": [
@@ -2567,7 +2572,8 @@
       "description": "Field with description",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2587,7 +2593,8 @@
       "description": "Field in disabled state",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2608,7 +2615,8 @@
       "description": "Field showing validation error",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2738,7 +2746,8 @@
       "description": "Field with required indicator",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2843,7 +2852,8 @@
       "description": "Show field validity state",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2861,7 +2871,8 @@
       "type": "registry:example",
       "registryDependencies": [
         "@coss/fieldset",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2884,7 +2895,8 @@
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
-        "@coss/button"
+        "@coss/button",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2906,7 +2918,8 @@
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
-        "@coss/button"
+        "@coss/button",
+        "@coss/input"
       ],
       "dependencies": [
         "zod"

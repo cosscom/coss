@@ -2008,7 +2008,7 @@ export const Index: Record<string, any> = {
     name: "card-demo",
     description: "Card example with form",
     type: "registry:example",
-    registryDependencies: ["@coss/card","@coss/button","@coss/select","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/card","@coss/button","@coss/select","@coss/form","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/card-demo.tsx",
       type: "registry:example",
@@ -2458,7 +2458,7 @@ export const Index: Record<string, any> = {
     name: "dialog-demo",
     description: "Basic dialog",
     type: "registry:example",
-    registryDependencies: ["@coss/dialog","@coss/button","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/dialog","@coss/button","@coss/form","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/dialog-demo.tsx",
       type: "registry:example",
@@ -2494,7 +2494,7 @@ export const Index: Record<string, any> = {
     name: "dialog-nested",
     description: "Dialog with a nested dialog",
     type: "registry:example",
-    registryDependencies: ["@coss/dialog","@coss/button","@coss/field"],
+    registryDependencies: ["@coss/dialog","@coss/button","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/dialog-nested.tsx",
       type: "registry:example",
@@ -2512,7 +2512,7 @@ export const Index: Record<string, any> = {
     name: "sheet-demo",
     description: "Basic sheet",
     type: "registry:example",
-    registryDependencies: ["@coss/sheet","@coss/button","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/sheet","@coss/button","@coss/form","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/sheet-demo.tsx",
       type: "registry:example",
@@ -2584,7 +2584,7 @@ export const Index: Record<string, any> = {
     name: "field-complete-form",
     description: "Complete form built with field",
     type: "registry:example",
-    registryDependencies: ["@coss/field","@coss/select","@coss/checkbox","@coss/form","@coss/button"],
+    registryDependencies: ["@coss/field","@coss/select","@coss/checkbox","@coss/form","@coss/input","@coss/button"],
     files: [{
       path: "registry/default/examples/field-complete-form.tsx",
       type: "registry:example",
@@ -2602,7 +2602,7 @@ export const Index: Record<string, any> = {
     name: "field-demo",
     description: "Field with description",
     type: "registry:example",
-    registryDependencies: ["@coss/field"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/field-demo.tsx",
       type: "registry:example",
@@ -2620,7 +2620,7 @@ export const Index: Record<string, any> = {
     name: "field-disabled",
     description: "Field in disabled state",
     type: "registry:example",
-    registryDependencies: ["@coss/field"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/field-disabled.tsx",
       type: "registry:example",
@@ -2638,7 +2638,7 @@ export const Index: Record<string, any> = {
     name: "field-error",
     description: "Field showing validation error",
     type: "registry:example",
-    registryDependencies: ["@coss/field"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/field-error.tsx",
       type: "registry:example",
@@ -2746,7 +2746,7 @@ export const Index: Record<string, any> = {
     name: "field-required",
     description: "Field with required indicator",
     type: "registry:example",
-    registryDependencies: ["@coss/field"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/field-required.tsx",
       type: "registry:example",
@@ -2836,7 +2836,7 @@ export const Index: Record<string, any> = {
     name: "field-validity",
     description: "Show field validity state",
     type: "registry:example",
-    registryDependencies: ["@coss/field"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/field-validity.tsx",
       type: "registry:example",
@@ -2854,7 +2854,7 @@ export const Index: Record<string, any> = {
     name: "fieldset-demo",
     description: "Fieldset with legend and labeled fields",
     type: "registry:example",
-    registryDependencies: ["@coss/fieldset","@coss/field"],
+    registryDependencies: ["@coss/fieldset","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/examples/fieldset-demo.tsx",
       type: "registry:example",
@@ -2872,7 +2872,7 @@ export const Index: Record<string, any> = {
     name: "form-demo",
     description: "Input in a form",
     type: "registry:example",
-    registryDependencies: ["@coss/form","@coss/field","@coss/button"],
+    registryDependencies: ["@coss/form","@coss/field","@coss/button","@coss/input"],
     files: [{
       path: "registry/default/examples/form-demo.tsx",
       type: "registry:example",
@@ -2890,7 +2890,7 @@ export const Index: Record<string, any> = {
     name: "form-zod",
     description: "Form with zod validation",
     type: "registry:example",
-    registryDependencies: ["@coss/form","@coss/field","@coss/button"],
+    registryDependencies: ["@coss/form","@coss/field","@coss/button","@coss/input"],
     files: [{
       path: "registry/default/examples/form-zod.tsx",
       type: "registry:example",
