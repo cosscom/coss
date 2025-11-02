@@ -5,14 +5,13 @@
   "description": "Input group with end tooltip",
   "registryDependencies": [
     "@coss/input-group",
-    "@coss/input",
     "@coss/button",
     "@coss/popover"
   ],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-end-tooltip.tsx",
-      "content": "\"use client\"\n\nimport { InfoIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\"\n\nexport default function InputGroupWithEndTooltip() {\n  return (\n    <InputGroup>\n      <Input type=\"password\" placeholder=\"Password\" aria-label=\"Password\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Popover openOnHover>\n          <PopoverTrigger render={<Button variant=\"ghost\" size=\"icon-xs\" />}>\n            <InfoIcon />\n          </PopoverTrigger>\n          <PopoverPopup tooltipStyle side=\"top\">\n            <p>Min. 8 characters</p>\n          </PopoverPopup>\n        </Popover>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "\"use client\"\n\nimport { InfoIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\"\n\nexport default function InputGroupWithEndTooltip() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"password\"\n        placeholder=\"Password\"\n        aria-label=\"Password\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Popover openOnHover>\n          <PopoverTrigger render={<Button variant=\"ghost\" size=\"icon-xs\" />}>\n            <InfoIcon />\n          </PopoverTrigger>\n          <PopoverPopup tooltipStyle side=\"top\">\n            <p>Min. 8 characters</p>\n          </PopoverPopup>\n        </Popover>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],

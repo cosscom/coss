@@ -120,7 +120,7 @@ import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
 import InputGroupDemo from "@/registry/default/examples/input-group-demo"
 import InputGroupLoading from "@/registry/default/examples/input-group-loading"
-import InputGroupTextarea from "@/registry/default/examples/input-group-textarea"
+import InputGroupWithTextarea from "@/registry/default/examples/input-group-textarea"
 import InputGroupWithBadge from "@/registry/default/examples/input-group-with-badge"
 import InputGroupWithButton from "@/registry/default/examples/input-group-with-button"
 import InputGroupWithEndIcon from "@/registry/default/examples/input-group-with-end-icon"
@@ -545,7 +545,7 @@ export const particles: ParticleItem[] = [
   },
   {
     id: "input-group-textarea",
-    component: InputGroupTextarea,
+    component: InputGroupWithTextarea,
     category: ["textarea", "button", "menu", "tooltip"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-80",

@@ -4,8 +4,11 @@ import { useState } from "react"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { InputGroup, InputGroupAddon } from "@/registry/default/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/registry/default/ui/input-group"
 import {
   Tooltip,
   TooltipPopup,
@@ -17,7 +20,7 @@ export default function Particle() {
 
   return (
     <InputGroup>
-      <Input
+      <InputGroupInput
         type={showPassword ? "text" : "password"}
         placeholder="Enter your password"
         aria-label="Password with toggle visibility"

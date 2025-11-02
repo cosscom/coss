@@ -4,14 +4,13 @@
   "type": "registry:block",
   "description": "Input group with keyboard shortcut",
   "registryDependencies": [
-    "@coss/input",
     "@coss/input-group",
     "@coss/kbd"
   ],
   "files": [
     {
       "path": "registry/default/particles/particle-in-4.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\nimport { Kbd } from \"@/registry/default/ui/kbd\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <Input type=\"search\" placeholder=\"Search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Kbd } from \"@/registry/default/ui/kbd\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:block"
     }
   ],

@@ -5,13 +5,12 @@
   "description": "Input group with end loading state",
   "registryDependencies": [
     "@coss/input-group",
-    "@coss/input",
     "@coss/spinner"
   ],
   "files": [
     {
       "path": "registry/default/examples/input-group-loading.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\nimport { Spinner } from \"@/registry/default/ui/spinner\"\n\nexport default function InputGroupLoading() {\n  return (\n    <InputGroup>\n      <Input type=\"search\" placeholder=\"Searching…\" disabled />\n      <InputGroupAddon align=\"inline-end\">\n        <Spinner />\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Spinner } from \"@/registry/default/ui/spinner\"\n\nexport default function InputGroupLoading() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Searching…\" disabled />\n      <InputGroupAddon align=\"inline-end\">\n        <Spinner />\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],

@@ -5,8 +5,11 @@ import { CheckIcon, CopyIcon } from "lucide-react"
 
 import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard"
 import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { InputGroup, InputGroupAddon } from "@/registry/default/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/registry/default/ui/input-group"
 import {
   Tooltip,
   TooltipPopup,
@@ -19,7 +22,7 @@ export default function InputGroupWithIconButton() {
 
   return (
     <InputGroup>
-      <Input
+      <InputGroupInput
         ref={inputRef}
         type="text"
         defaultValue="https://coss.com"

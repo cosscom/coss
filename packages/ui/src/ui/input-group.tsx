@@ -4,6 +4,12 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@workspace/ui/lib/utils"
+import {
+  FieldControl,
+  type FieldControlProps,
+} from "@workspace/ui/ui/field"
+import { Input, type InputProps } from "@workspace/ui/ui/input"
+import { Textarea, type TextareaProps } from "@workspace/ui/ui/textarea"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -88,4 +94,23 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
-export { InputGroup, InputGroupAddon, InputGroupText }
+function InputGroupInput({ className, ...props }: InputProps) {
+  return <Input className={className} unstyled {...props} />
+}
+
+function InputGroupField({ className, ...props }: FieldControlProps) {
+  return <FieldControl className={className} unstyled {...props} />
+}
+
+function InputGroupTextarea({ className, ...props }: TextareaProps) {
+  return <Textarea className={className} unstyled {...props} />
+}
+
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupField,
+  InputGroupTextarea,
+}

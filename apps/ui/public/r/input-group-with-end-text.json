@@ -4,13 +4,12 @@
   "type": "registry:example",
   "description": "Input group with end text",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input"
+    "@coss/input-group"
   ],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-end-text.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithEndText() {\n  return (\n    <InputGroup>\n      <Input\n        type=\"text\"\n        placeholder=\"Choose a username\"\n        aria-label=\"Choose a username\"\n      />\n      <InputGroupAddon align=\"inline-end\">@coss.com</InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithEndText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"text\"\n        placeholder=\"Choose a username\"\n        aria-label=\"Choose a username\"\n      />\n      <InputGroupAddon align=\"inline-end\">@coss.com</InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],

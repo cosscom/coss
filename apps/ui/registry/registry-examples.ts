@@ -1437,7 +1437,7 @@ export const examples: Registry["items"] = [
     name: "input-group-demo",
     description: "Basic input group with search icon",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [
       {
         path: "examples/input-group-demo.tsx",
@@ -1450,7 +1450,7 @@ export const examples: Registry["items"] = [
     name: "input-group-loading",
     description: "Input group with end loading state",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input", "@coss/spinner"],
+    registryDependencies: ["@coss/input-group", "@coss/spinner"],
     files: [
       {
         path: "examples/input-group-loading.tsx",
@@ -1465,7 +1465,6 @@ export const examples: Registry["items"] = [
     type: "registry:example",
     registryDependencies: [
       "@coss/input-group",
-      "@coss/textarea",
       "@coss/button",
       "@coss/menu",
       "@coss/tooltip",
@@ -1482,7 +1481,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-badge",
     description: "Input group with badge",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input", "@coss/badge"],
+    registryDependencies: ["@coss/input-group", "@coss/badge"],
     files: [
       {
         path: "examples/input-group-with-badge.tsx",
@@ -1495,7 +1494,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-button",
     description: "Input group with button",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input", "@coss/button"],
+    registryDependencies: ["@coss/input-group", "@coss/button"],
     files: [
       {
         path: "examples/input-group-with-button.tsx",
@@ -1508,7 +1507,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-end-icon",
     description: "Input group with end icon",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [
       {
         path: "examples/input-group-with-end-icon.tsx",
@@ -1521,7 +1520,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-end-text",
     description: "Input group with end text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [
       {
         path: "examples/input-group-with-end-text.tsx",
@@ -1536,7 +1535,6 @@ export const examples: Registry["items"] = [
     type: "registry:example",
     registryDependencies: [
       "@coss/input-group",
-      "@coss/input",
       "@coss/button",
       "@coss/popover",
     ],
@@ -1555,7 +1553,6 @@ export const examples: Registry["items"] = [
     registryDependencies: [
       "@coss/use-copy-to-clipboard",
       "@coss/input-group",
-      "@coss/input",
       "@coss/button",
       "@coss/tooltip",
     ],
@@ -1573,7 +1570,6 @@ export const examples: Registry["items"] = [
     type: "registry:example",
     registryDependencies: [
       "@coss/input-group",
-      "@coss/input",
       "@coss/button",
       "@coss/label",
       "@coss/popover",
@@ -1590,7 +1586,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-kbd",
     description: "Input group with keyboard shortcut",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input", "@coss/kbd"],
+    registryDependencies: ["@coss/input-group", "@coss/kbd"],
     files: [
       {
         path: "examples/input-group-with-kbd.tsx",
@@ -1616,7 +1612,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-start-end-text",
     description: "Input group with start and end text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [
       {
         path: "examples/input-group-with-start-end-text.tsx",
@@ -1629,7 +1625,7 @@ export const examples: Registry["items"] = [
     name: "input-group-with-start-text",
     description: "Input group with start text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group", "@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [
       {
         path: "examples/input-group-with-start-text.tsx",

@@ -388,7 +388,7 @@ export const Index: Record<string, any> = {
     name: "input-group",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/input","@coss/field","@coss/textarea"],
     files: [{
       path: "registry/default/ui/input-group.tsx",
       type: "registry:ui",
@@ -3106,7 +3106,7 @@ export const Index: Record<string, any> = {
     name: "input-group-demo",
     description: "Basic input group with search icon",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/examples/input-group-demo.tsx",
       type: "registry:example",
@@ -3124,7 +3124,7 @@ export const Index: Record<string, any> = {
     name: "input-group-loading",
     description: "Input group with end loading state",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/spinner"],
+    registryDependencies: ["@coss/input-group","@coss/spinner"],
     files: [{
       path: "registry/default/examples/input-group-loading.tsx",
       type: "registry:example",
@@ -3142,7 +3142,7 @@ export const Index: Record<string, any> = {
     name: "input-group-textarea",
     description: "Input group with textarea",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/textarea","@coss/button","@coss/menu","@coss/tooltip"],
+    registryDependencies: ["@coss/input-group","@coss/button","@coss/menu","@coss/tooltip"],
     files: [{
       path: "registry/default/examples/input-group-textarea.tsx",
       type: "registry:example",
@@ -3160,7 +3160,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-badge",
     description: "Input group with badge",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/badge"],
+    registryDependencies: ["@coss/input-group","@coss/badge"],
     files: [{
       path: "registry/default/examples/input-group-with-badge.tsx",
       type: "registry:example",
@@ -3178,7 +3178,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-button",
     description: "Input group with button",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/button"],
+    registryDependencies: ["@coss/input-group","@coss/button"],
     files: [{
       path: "registry/default/examples/input-group-with-button.tsx",
       type: "registry:example",
@@ -3196,7 +3196,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-end-icon",
     description: "Input group with end icon",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/examples/input-group-with-end-icon.tsx",
       type: "registry:example",
@@ -3214,7 +3214,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-end-text",
     description: "Input group with end text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/examples/input-group-with-end-text.tsx",
       type: "registry:example",
@@ -3232,7 +3232,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-end-tooltip",
     description: "Input group with end tooltip",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/button","@coss/popover"],
+    registryDependencies: ["@coss/input-group","@coss/button","@coss/popover"],
     files: [{
       path: "registry/default/examples/input-group-with-end-tooltip.tsx",
       type: "registry:example",
@@ -3250,7 +3250,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-icon-button",
     description: "Input group with copy button",
     type: "registry:example",
-    registryDependencies: ["@coss/use-copy-to-clipboard","@coss/input-group","@coss/input","@coss/button","@coss/tooltip"],
+    registryDependencies: ["@coss/use-copy-to-clipboard","@coss/input-group","@coss/button","@coss/tooltip"],
     files: [{
       path: "registry/default/examples/input-group-with-icon-button.tsx",
       type: "registry:example",
@@ -3268,7 +3268,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-inner-label",
     description: "Input group with inner label",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/button","@coss/label","@coss/popover"],
+    registryDependencies: ["@coss/input-group","@coss/button","@coss/label","@coss/popover"],
     files: [{
       path: "registry/default/examples/input-group-with-inner-label.tsx",
       type: "registry:example",
@@ -3286,7 +3286,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-kbd",
     description: "Input group with keyboard shortcut",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/kbd"],
+    registryDependencies: ["@coss/input-group","@coss/kbd"],
     files: [{
       path: "registry/default/examples/input-group-with-kbd.tsx",
       type: "registry:example",
@@ -3322,7 +3322,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-start-end-text",
     description: "Input group with start and end text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/examples/input-group-with-start-end-text.tsx",
       type: "registry:example",
@@ -3340,7 +3340,7 @@ export const Index: Record<string, any> = {
     name: "input-group-with-start-text",
     description: "Input group with start text",
     type: "registry:example",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/examples/input-group-with-start-text.tsx",
       type: "registry:example",
@@ -5230,7 +5230,7 @@ export const Index: Record<string, any> = {
     name: "particle-in-1",
     description: "Input with start text and end tooltip",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/input-group","@coss/popover"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/popover"],
     files: [{
       path: "registry/default/particles/particle-in-1.tsx",
       type: "registry:block",
@@ -5248,7 +5248,7 @@ export const Index: Record<string, any> = {
     name: "particle-in-2",
     description: "Password input with toggle visibility",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/input-group","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/particle-in-2.tsx",
       type: "registry:block",
@@ -5266,7 +5266,7 @@ export const Index: Record<string, any> = {
     name: "particle-in-3",
     description: "Input group mimicking a URL bar",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/input-group","@coss/popover"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/popover"],
     files: [{
       path: "registry/default/particles/particle-in-3.tsx",
       type: "registry:block",
@@ -5284,7 +5284,7 @@ export const Index: Record<string, any> = {
     name: "particle-in-4",
     description: "Input group with keyboard shortcut",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/input-group","@coss/kbd"],
+    registryDependencies: ["@coss/input-group","@coss/kbd"],
     files: [{
       path: "registry/default/particles/particle-in-4.tsx",
       type: "registry:block",
@@ -5302,7 +5302,7 @@ export const Index: Record<string, any> = {
     name: "particle-in-5",
     description: "Input group with start loading spinner",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/input-group","@coss/spinner"],
+    registryDependencies: ["@coss/input-group","@coss/spinner"],
     files: [{
       path: "registry/default/particles/particle-in-5.tsx",
       type: "registry:block",

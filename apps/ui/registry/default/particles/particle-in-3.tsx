@@ -4,8 +4,11 @@ import { useState } from "react"
 import { InfoIcon, StarIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { InputGroup, InputGroupAddon } from "@/registry/default/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/registry/default/ui/input-group"
 import {
   Popover,
   PopoverDescription,
@@ -44,7 +47,11 @@ export default function Particle() {
       <InputGroupAddon className="pl-1.5 text-muted-foreground">
         https://
       </InputGroupAddon>
-      <Input type="text" className="*:[input]:ps-1!" aria-label="Url" />
+      <InputGroupInput
+        type="text"
+        className="*:[input]:ps-1!"
+        aria-label="Url"
+      />
       <InputGroupAddon align="inline-end">
         <Button
           variant="ghost"

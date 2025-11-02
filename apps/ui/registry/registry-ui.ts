@@ -345,6 +345,7 @@ export const ui: Registry["items"] = [
   {
     name: "input-group",
     type: "registry:ui",
+    registryDependencies: ["@coss/input", "@coss/field", "@coss/textarea"],
     files: [
       {
         path: "ui/input-group.tsx",

@@ -7,6 +7,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
+  InputGroupTextarea,
 } from "@/registry/default/ui/input-group"
 import {
   Menu,
@@ -14,17 +15,16 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@/registry/default/ui/menu"
-import { Textarea } from "@/registry/default/ui/textarea"
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip"
 
-export default function InputGroupTextarea() {
+export default function InputGroupWithTextarea() {
   return (
     <InputGroup>
-      <Textarea placeholder="Ask, Search or Chat…" />
+      <InputGroupTextarea placeholder="Ask, Search or Chat…" />
       <InputGroupAddon align="block-end">
         <Menu>
           <Tooltip>

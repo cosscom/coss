@@ -5,13 +5,12 @@
   "description": "Input group with badge",
   "registryDependencies": [
     "@coss/input-group",
-    "@coss/input",
     "@coss/badge"
   ],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-badge.tsx",
-      "content": "import { Badge } from \"@/registry/default/ui/badge\"\nimport { Input } from \"@/registry/default/ui/input\"\nimport { InputGroup, InputGroupAddon } from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithBadge() {\n  return (\n    <InputGroup>\n      <Input type=\"search\" placeholder=\"Type to search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Badge variant=\"info\">Badge</Badge>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithBadge() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Type to search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Badge variant=\"info\">Badge</Badge>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],

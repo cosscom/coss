@@ -3,8 +3,11 @@
 import { InfoIcon } from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { InputGroup, InputGroupAddon } from "@/registry/default/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/registry/default/ui/input-group"
 import { Label } from "@/registry/default/ui/label"
 import {
   Popover,
@@ -15,7 +18,7 @@ import {
 export default function InputGroupWithInnerLabel() {
   return (
     <InputGroup>
-      <Input id="email-1" type="email" placeholder="team@coss.com" />
+      <InputGroupInput id="email-1" type="email" placeholder="team@coss.com" />
       <InputGroupAddon align="block-start">
         <Label htmlFor="email-1" className="text-foreground">
           Email

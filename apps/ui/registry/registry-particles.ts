@@ -87,7 +87,6 @@ export const particles: Registry["items"] = [
     type: "registry:block",
     registryDependencies: [
       "@coss/button",
-      "@coss/input",
       "@coss/input-group",
       "@coss/popover",
     ],
@@ -100,7 +99,6 @@ export const particles: Registry["items"] = [
     type: "registry:block",
     registryDependencies: [
       "@coss/button",
-      "@coss/input",
       "@coss/input-group",
       "@coss/tooltip",
     ],
@@ -113,7 +111,6 @@ export const particles: Registry["items"] = [
     type: "registry:block",
     registryDependencies: [
       "@coss/button",
-      "@coss/input",
       "@coss/input-group",
       "@coss/popover",
     ],
@@ -124,7 +121,7 @@ export const particles: Registry["items"] = [
     name: "particle-in-4",
     description: "Input group with keyboard shortcut",
     type: "registry:block",
-    registryDependencies: ["@coss/input", "@coss/input-group", "@coss/kbd"],
+    registryDependencies: ["@coss/input-group", "@coss/kbd"],
     files: [{ path: "particles/particle-in-4.tsx", type: "registry:block" }],
     categories: ["input", "input group", "kbd", "search"],
   },
@@ -132,7 +129,7 @@ export const particles: Registry["items"] = [
     name: "particle-in-5",
     description: "Input group with start loading spinner",
     type: "registry:block",
-    registryDependencies: ["@coss/input", "@coss/input-group", "@coss/spinner"],
+    registryDependencies: ["@coss/input-group", "@coss/spinner"],
     files: [{ path: "particles/particle-in-5.tsx", type: "registry:block" }],
     categories: ["input", "input group", "loading", "spinner"],
   },
