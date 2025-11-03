@@ -80,36 +80,6 @@ import { Input } from "@/components/ui/input"
 </Field>
 ```
 
-### FieldControl usage
-
-For components that Base UI doesn't provide—like `Textarea`—use `FieldControl` with the `render` prop to integrate them with the field's validation and accessibility features.
-
-```tsx
-import {
-  Field,
-  FieldControl,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
-
-export default function TextareaField() {
-  return (
-    <Field>
-      <FieldLabel>Bio</FieldLabel>
-      <FieldControl
-        render={(props) => (
-          <Textarea placeholder="Tell us about yourself…" {...props} />
-        )}
-      />
-      <FieldDescription>
-        Write a short bio. Maximum 500 characters.
-      </FieldDescription>
-    </Field>
-  )
-}
-```
-
 ## Examples
 
 ### Required Field
