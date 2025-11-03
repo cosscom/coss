@@ -40,7 +40,7 @@ function Textarea({
               size === "lg" &&
                 "min-h-18.5 py-[calc(--spacing(2)-1px)] max-sm:min-h-21.5"
             )}
-            {...mergeProps(controlProps, props)}
+            {...mergeProps(props, controlProps)}
           />
         )}
       />
