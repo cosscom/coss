@@ -1,10 +1,9 @@
 import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { InfoIcon } from "lucide-react"
-
 import { CopyButton } from "@coss/ui/components/copy-button"
 import { getIconForLanguageExtension } from "@coss/ui/components/icons"
+import { InfoIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { CodeBlockCommand } from "@/components/code-block-command"

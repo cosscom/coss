@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Popover as PopoverPrimitive } from "@base-ui-components/react/popover";
+import { Popover as PopoverPrimitive } from "@base-ui-components/react/popover"
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
-const Popover = PopoverPrimitive.Root;
+const Popover = PopoverPrimitive.Root
 
 function PopoverTrigger(props: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
 function PopoverPopup({
@@ -18,9 +18,9 @@ function PopoverPopup({
   sideOffset = 4,
   ...props
 }: PopoverPrimitive.Popup.Props & {
-  side?: PopoverPrimitive.Positioner.Props["side"];
-  align?: PopoverPrimitive.Positioner.Props["align"];
-  sideOffset?: PopoverPrimitive.Positioner.Props["sideOffset"];
+  side?: PopoverPrimitive.Positioner.Props["side"]
+  align?: PopoverPrimitive.Positioner.Props["align"]
+  sideOffset?: PopoverPrimitive.Positioner.Props["sideOffset"]
 }) {
   return (
     <PopoverPrimitive.Portal>
@@ -36,7 +36,7 @@ function PopoverPopup({
             data-slot="popover-content"
             className={cn(
               "max-h-(--available-height) min-w-80 overflow-y-auto p-4",
-              className,
+              className
             )}
             {...props}
           >
@@ -45,11 +45,11 @@ function PopoverPopup({
         </span>
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
-  );
+  )
 }
 
 function PopoverClose({ ...props }: PopoverPrimitive.Close.Props) {
-  return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
+  return <PopoverPrimitive.Close data-slot="popover-close" {...props} />
 }
 
 function PopoverTitle({ className, ...props }: PopoverPrimitive.Title.Props) {
@@ -59,7 +59,7 @@ function PopoverTitle({ className, ...props }: PopoverPrimitive.Title.Props) {
       className={cn("text-lg leading-none font-semibold", className)}
       {...props}
     />
-  );
+  )
 }
 
 function PopoverDescription({
@@ -72,7 +72,7 @@ function PopoverDescription({
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -83,4 +83,4 @@ export {
   PopoverTitle,
   PopoverDescription,
   PopoverClose,
-};
+}

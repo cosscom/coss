@@ -50,11 +50,11 @@ function rewriteImports(code: string): string {
   // "@/lib/*"        → "@coss/ui/lib/*"
   // "@/hooks/*"      → "@coss/ui/hooks/*"
   // "@/registry/default/ui/*" → "@coss/ui/ui/*"
-  result = result.replace(/(["'])@\/lib\//g, "$1@workspace/ui/lib/")
-  result = result.replace(/(["'])@\/hooks\//g, "$1@workspace/ui/hooks/")
+  result = result.replace(/(["'])@\/lib\//g, "$1@coss/ui/lib/")
+  result = result.replace(/(["'])@\/hooks\//g, "$1@coss/ui/hooks/")
   result = result.replace(
     /(["'])@\/registry\/default\/ui\//g,
-    "$1@workspace/ui/ui/"
+    "$1@coss/ui/ui/"
   )
   return result
 }

@@ -62,7 +62,7 @@ export default function AutocompleteAsync() {
       try {
         const results = await searchMovies(searchValue, contains)
         if (!ignore) setSearchResults(results)
-      } catch  {
+      } catch {
         if (!ignore) {
           setError("Failed to fetch movies. Please try again.")
           setSearchResults([])

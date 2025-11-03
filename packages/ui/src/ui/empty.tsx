@@ -1,6 +1,6 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
 function Empty({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -8,11 +8,11 @@ function Empty({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="empty"
       className={cn(
         "flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-xl border-dashed p-6 text-center text-balance md:p-12",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function EmptyHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -21,11 +21,11 @@ function EmptyHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="empty-header"
       className={cn(
         "flex max-w-sm flex-col items-center text-center",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 const emptyMediaVariants = cva(
@@ -40,8 +40,8 @@ const emptyMediaVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
-);
+  }
+)
 
 function EmptyMedia({
   className,
@@ -60,14 +60,14 @@ function EmptyMedia({
           <div
             className={cn(
               emptyMediaVariants({ variant, className }),
-              "pointer-events-none absolute bottom-px origin-bottom-left -translate-x-0.5 scale-84 -rotate-10 shadow-none",
+              "pointer-events-none absolute bottom-px origin-bottom-left -translate-x-0.5 scale-84 -rotate-10 shadow-none"
             )}
             aria-hidden="true"
           />
           <div
             className={cn(
               emptyMediaVariants({ variant, className }),
-              "pointer-events-none absolute bottom-px origin-bottom-right translate-x-0.5 scale-84 rotate-10 shadow-none",
+              "pointer-events-none absolute bottom-px origin-bottom-right translate-x-0.5 scale-84 rotate-10 shadow-none"
             )}
             aria-hidden="true"
           />
@@ -78,7 +78,7 @@ function EmptyMedia({
         {...props}
       />
     </div>
-  );
+  )
 }
 
 function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
@@ -88,7 +88,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("font-heading text-xl leading-none", className)}
       {...props}
     />
-  );
+  )
 }
 
 function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
@@ -97,11 +97,11 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
       data-slot="empty-description"
       className={cn(
         "text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary [[data-slot=empty-title]+&]:mt-1",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -110,11 +110,11 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="empty-content"
       className={cn(
         "flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm text-balance",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -124,4 +124,4 @@ export {
   EmptyDescription,
   EmptyContent,
   EmptyMedia,
-};
+}

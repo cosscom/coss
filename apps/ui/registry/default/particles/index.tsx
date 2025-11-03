@@ -226,7 +226,7 @@ import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
 
-type ParticleComponent = React.ComponentType<object>
+type ParticleComponent = React.ComponentType<any>
 
 interface ParticleItem {
   id: string

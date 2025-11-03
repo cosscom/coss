@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { Checkbox as CheckboxPrimitive } from "@base-ui-components/react/checkbox";
+import { Checkbox as CheckboxPrimitive } from "@base-ui-components/react/checkbox"
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
 function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   return (
@@ -10,7 +10,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
       data-slot="checkbox"
       className={cn(
         "relative inline-flex size-4 shrink-0 items-center justify-center rounded-[0.25rem] border border-input bg-background bg-clip-padding shadow-xs ring-ring transition-shadow outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(0.25rem-1px)] not-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-64 aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/48 dark:bg-clip-border dark:not-data-checked:bg-input/32 dark:not-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] dark:aria-invalid:ring-destructive/24 [&:is(:disabled,[data-checked],[aria-invalid])]:shadow-none",
-        className,
+        className
       )}
       {...props}
     >
@@ -54,7 +54,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
         )}
       />
     </CheckboxPrimitive.Root>
-  );
+  )
 }
 
-export { Checkbox };
+export { Checkbox }

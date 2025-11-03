@@ -1,11 +1,10 @@
 import * as React from "react"
+import { Icons } from "@coss/ui/components/icons"
+import { highlightCode } from "@coss/ui/lib/highlight-code"
 import { InformationCircleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { registryItemSchema } from "shadcn/schema"
 import { z } from "zod"
-
-import { Icons } from "@coss/ui/components/icons"
-import { highlightCode } from "@coss/ui/lib/highlight-code"
 
 import { getRegistryItem } from "@/lib/registry"
 import { cn } from "@/lib/utils"

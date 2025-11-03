@@ -2,7 +2,6 @@ import "./globals.css"
 
 import type { Metadata } from "next"
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google"
-
 import { ThemeProvider } from "@coss/ui/components/theme-provider"
 
 import { SiteHeader } from "@/components/site-header"

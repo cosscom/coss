@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { Toolbar as ToolbarPrimitive } from "@base-ui-components/react/toolbar";
+import { Toolbar as ToolbarPrimitive } from "@base-ui-components/react/toolbar"
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
 function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
   return (
@@ -10,11 +10,11 @@ function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
       data-slot="toolbar"
       className={cn(
         "relative flex gap-2 rounded-xl border bg-card bg-clip-padding p-1 text-card-foreground",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function ToolbarButton({ className, ...props }: ToolbarPrimitive.Button.Props) {
@@ -24,7 +24,7 @@ function ToolbarButton({ className, ...props }: ToolbarPrimitive.Button.Props) {
       className={cn(className)}
       {...props}
     />
-  );
+  )
 }
 
 function ToolbarLink({ className, ...props }: ToolbarPrimitive.Link.Props) {
@@ -34,7 +34,7 @@ function ToolbarLink({ className, ...props }: ToolbarPrimitive.Link.Props) {
       className={cn(className)}
       {...props}
     />
-  );
+  )
 }
 
 function ToolbarInput({ className, ...props }: ToolbarPrimitive.Input.Props) {
@@ -44,7 +44,7 @@ function ToolbarInput({ className, ...props }: ToolbarPrimitive.Input.Props) {
       className={cn(className)}
       {...props}
     />
-  );
+  )
 }
 
 function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
@@ -54,7 +54,7 @@ function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
       className={cn("flex items-center gap-1", className)}
       {...props}
     />
-  );
+  )
 }
 
 function ToolbarSeparator({
@@ -66,11 +66,11 @@ function ToolbarSeparator({
       data-slot="toolbar-separator"
       className={cn(
         "shrink-0 bg-border data-[orientation=horizontal]:my-0.5 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:my-1.5 data-[orientation=vertical]:w-px data-[orientation=vertical]:not-[[class^='h-']]:not-[[class*='_h-']]:self-stretch",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -80,4 +80,4 @@ export {
   ToolbarButton,
   ToolbarLink,
   ToolbarInput,
-};
+}

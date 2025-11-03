@@ -3,6 +3,7 @@
 import * as React from "react"
 import type { ComponentProps } from "react"
 import { useRouter } from "next/navigation"
+import { copyToClipboard } from "@coss/ui/components/copy-button"
 import {
   ArrowTurnBackwardIcon,
   Atom01Icon,
@@ -10,8 +11,6 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-
-import { copyToClipboard } from "@coss/ui/components/copy-button"
 
 import { source } from "@/lib/source"
 import { cn } from "@/lib/utils"

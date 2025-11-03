@@ -1,24 +1,24 @@
-"use client";
+"use client"
 
-import { Dialog as SheetPrimitive } from "@base-ui-components/react/dialog";
-import { XIcon } from "lucide-react";
+import { Dialog as SheetPrimitive } from "@base-ui-components/react/dialog"
+import { XIcon } from "lucide-react"
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
 function Sheet(props: SheetPrimitive.Root.Props) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />;
+  return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
 function SheetTrigger(props: SheetPrimitive.Trigger.Props) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
+  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
 }
 
 function SheetPortal(props: SheetPrimitive.Portal.Props) {
-  return <SheetPrimitive.Portal {...props} />;
+  return <SheetPrimitive.Portal {...props} />
 }
 
 function SheetClose(props: SheetPrimitive.Close.Props) {
-  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
+  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
 function SheetBackdrop({ className, ...props }: SheetPrimitive.Backdrop.Props) {
@@ -27,11 +27,11 @@ function SheetBackdrop({ className, ...props }: SheetPrimitive.Backdrop.Props) {
       data-slot="sheet-backdrop"
       className={cn(
         "fixed inset-0 z-50 bg-black/32 backdrop-blur-sm transition-all duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0",
-        className,
+        className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function SheetPopup({
@@ -41,8 +41,8 @@ function SheetPopup({
   side = "right",
   ...props
 }: SheetPrimitive.Popup.Props & {
-  showCloseButton?: boolean;
-  side?: "top" | "right" | "bottom" | "left";
+  showCloseButton?: boolean
+  side?: "top" | "right" | "bottom" | "left"
 }) {
   return (
     <SheetPortal>
@@ -59,7 +59,7 @@ function SheetPopup({
             "inset-x-0 top-0 h-auto data-ending-style:-translate-y-full data-starting-style:-translate-y-full",
           side === "bottom" &&
             "inset-x-0 bottom-0 h-auto data-ending-style:translate-y-full data-starting-style:translate-y-full",
-          className,
+          className
         )}
         {...props}
       >
@@ -72,7 +72,7 @@ function SheetPopup({
         )}
       </SheetPrimitive.Popup>
     </SheetPortal>
-  );
+  )
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -82,7 +82,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex flex-col gap-1.5 p-4", className)}
       {...props}
     />
-  );
+  )
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -92,7 +92,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("mt-auto flex flex-col gap-2 p-4", className)}
       {...props}
     />
-  );
+  )
 }
 
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
@@ -102,7 +102,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
       className={cn("font-semibold", className)}
       {...props}
     />
-  );
+  )
 }
 
 function SheetDescription({
@@ -115,7 +115,7 @@ function SheetDescription({
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
-  );
+  )
 }
 
 export {
@@ -131,4 +131,4 @@ export {
   SheetFooter,
   SheetTitle,
   SheetDescription,
-};
+}
