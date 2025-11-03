@@ -3,12 +3,7 @@
 import * as React from "react"
 
 import { Button } from "@/registry/default/ui/button"
-import {
-  Field,
-  FieldControl,
-  FieldError,
-  FieldLabel,
-} from "@/registry/default/ui/field"
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
 import { Textarea } from "@/registry/default/ui/textarea"
 
@@ -27,12 +22,11 @@ export default function TextareaForm() {
     <Form onSubmit={onSubmit} className="max-w-64">
       <Field>
         <FieldLabel>Message</FieldLabel>
-        <FieldControl
+        <Textarea
           name="message"
           placeholder="Type your message here"
           disabled={loading}
           required
-          render={(props) => <Textarea {...props} />}
         />
         <FieldError>This field is required.</FieldError>
       </Field>
