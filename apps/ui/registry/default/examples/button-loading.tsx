@@ -1,11 +1,10 @@
-import { LoaderCircleIcon } from "lucide-react"
-
 import { Button } from "@/registry/default/ui/button"
+import { Spinner } from "@/registry/default/ui/spinner"
 
 export default function ButtonLoading() {
   return (
     <Button disabled>
-      <LoaderCircleIcon className="animate-spin" />
+      <Spinner />
       Loading...
     </Button>
   )

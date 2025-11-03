@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button-with-kbd",
+  "type": "registry:example",
+  "description": "Button with keyboard shortcut",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/kbd"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/button-with-kbd.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\"\nimport { Kbd } from \"@/registry/default/ui/kbd\"\n\nexport default function ButtonWithKbd() {\n  return (\n    <Button variant=\"outline\" className=\"pe-[calc(--spacing(1.5)-1px)]\">\n      Search\n      <Kbd>⌘K</Kbd>\n    </Button>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "button",
+    "kbd"
+  ]
+}

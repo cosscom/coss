@@ -3,9 +3,6 @@
   "name": "particle-bu-6",
   "type": "registry:block",
   "description": "Expandable show more/less toggle button",
-  "dependencies": [
-    "lucide-react"
-  ],
   "registryDependencies": [
     "@coss/button"
   ],

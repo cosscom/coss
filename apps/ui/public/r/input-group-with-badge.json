@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-with-badge",
+  "type": "registry:example",
+  "description": "Input group with badge",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/badge"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-with-badge.tsx",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithBadge() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Type to search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Badge variant=\"info\">Badge</Badge>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "badge"
+  ]
+}

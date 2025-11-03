@@ -26,6 +26,8 @@ export const ui: Registry["items"] = [
       "@coss/frame",
       "@coss/group",
       "@coss/input",
+      "@coss/input-group",
+      "@coss/kbd",
       "@coss/label",
       "@coss/menu",
       "@coss/meter",
@@ -41,6 +43,7 @@ export const ui: Registry["items"] = [
       "@coss/sheet",
       "@coss/skeleton",
       "@coss/slider",
+      "@coss/spinner",
       "@coss/switch",
       "@coss/table",
       "@coss/tabs",
@@ -340,6 +343,27 @@ export const ui: Registry["items"] = [
     ],
   },
   {
+    name: "input-group",
+    type: "registry:ui",
+    registryDependencies: ["@coss/input", "@coss/field", "@coss/textarea"],
+    files: [
+      {
+        path: "ui/input-group.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "kbd",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/kbd.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "label",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
@@ -521,6 +545,16 @@ export const ui: Registry["items"] = [
     files: [
       {
         path: "ui/slider.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "spinner",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/spinner.tsx",
         type: "registry:ui",
       },
     ],

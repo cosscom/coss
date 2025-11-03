@@ -25,6 +25,7 @@ import {
   AlertTitle,
 } from "@/registry/default/ui/alert"
 import { Button } from "@/registry/default/ui/button"
+import { ScrollArea } from "@/registry/default/ui/scroll-area"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs"
 
 export const mdxComponents = {
@@ -167,15 +168,15 @@ export const mdxComponents = {
     <hr className="my-4 md:my-8" {...props} />
   ),
   table: ({ className, ...props }: React.ComponentProps<"table">) => (
-    <div className="my-6 w-full overflow-y-auto">
+    <ScrollArea
+      className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5"
+      orientation="horizontal"
+    >
       <table
-        className={cn(
-          "relative w-full overflow-hidden border-none text-sm",
-          className
-        )}
+        className={cn("relative w-full border-none text-sm", className)}
         {...props}
       />
-    </div>
+    </ScrollArea>
   ),
   tr: ({ className, ...props }: React.ComponentProps<"tr">) => (
     <tr
@@ -195,7 +196,7 @@ export const mdxComponents = {
   td: ({ className, ...props }: React.ComponentProps<"td">) => (
     <td
       className={cn(
-        "px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
+        "px-4 py-2 text-left whitespace-nowrap [&[align=center]]:text-center [&[align=right]]:text-right",
         className
       )}
       {...props}

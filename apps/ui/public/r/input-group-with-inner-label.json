@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-with-inner-label",
+  "type": "registry:example",
+  "description": "Input group with inner label",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/button",
+    "@coss/label",
+    "@coss/popover"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-with-inner-label.tsx",
+      "content": "\"use client\"\n\nimport { InfoIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Label } from \"@/registry/default/ui/label\"\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\"\n\nexport default function InputGroupWithInnerLabel() {\n  return (\n    <InputGroup>\n      <InputGroupInput id=\"email-1\" type=\"email\" placeholder=\"team@coss.com\" />\n      <InputGroupAddon align=\"block-start\">\n        <Label htmlFor=\"email-1\" className=\"text-foreground\">\n          Email\n        </Label>\n        <Popover openOnHover>\n          <PopoverTrigger\n            className=\"ml-auto\"\n            render={<Button variant=\"ghost\" size=\"icon-xs\" className=\"-m-1\" />}\n          >\n            <InfoIcon />\n          </PopoverTrigger>\n          <PopoverPopup tooltipStyle side=\"top\">\n            <p>We&apos;ll use this to send you notifications</p>\n          </PopoverPopup>\n        </Popover>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "label",
+    "popover",
+    "tooltip"
+  ]
+}

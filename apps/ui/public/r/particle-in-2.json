@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "particle-in-2",
+  "type": "registry:block",
+  "description": "Password input with toggle visibility",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/input-group",
+    "@coss/tooltip"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/particle-in-2.tsx",
+      "content": "\"use client\"\n\nimport { useState } from \"react\"\nimport { EyeIcon, EyeOffIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\"\n\nexport default function Particle() {\n  const [showPassword, setShowPassword] = useState(false)\n\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type={showPassword ? \"text\" : \"password\"}\n        placeholder=\"Enter your password\"\n        aria-label=\"Password with toggle visibility\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Tooltip>\n          <TooltipTrigger\n            render={\n              <Button\n                variant=\"ghost\"\n                size=\"icon-xs\"\n                onClick={() => setShowPassword(!showPassword)}\n                aria-label={showPassword ? \"Hide password\" : \"Show password\"}\n              />\n            }\n          >\n            {showPassword ? <EyeOffIcon /> : <EyeIcon />}\n          </TooltipTrigger>\n          <TooltipPopup>\n            {showPassword ? \"Hide password\" : \"Show password\"}\n          </TooltipPopup>\n        </Tooltip>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "button",
+    "tooltip"
+  ]
+}

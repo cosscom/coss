@@ -56,7 +56,7 @@ export default async function Page(props: {
   }
 
   const doc = page.data
-  const rawContent = await page.data.getText("raw");
+  const rawContent = await page.data.getText("raw")
   const MDX = doc.body
   const neighbours = await findNeighbour(source.pageTree, page.url)
 

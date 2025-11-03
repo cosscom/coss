@@ -12,11 +12,7 @@ export default function FieldTextareaDemo() {
   return (
     <Field>
       <FieldLabel>Bio</FieldLabel>
-      <FieldControl
-        render={(props) => (
-          <Textarea placeholder="Tell us about yourself…" {...props} />
-        )}
-      />
+      <Textarea placeholder="Tell us about yourself…" />
       <FieldDescription>
         Write a short bio. Maximum 500 characters.
       </FieldDescription>

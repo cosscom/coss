@@ -1,6 +1,7 @@
 import { Button } from "@/registry/default/ui/button"
-import { Field, FieldControl, FieldLabel } from "@/registry/default/ui/field"
+import { Field, FieldLabel } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
 import {
   Sheet,
   SheetClose,
@@ -30,11 +31,11 @@ export default function DialogDemo() {
           <div className="flex flex-col gap-4 px-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
-              <FieldControl type="text" defaultValue="Margaret Welsh" />
+              <Input type="text" defaultValue="Margaret Welsh" />
             </Field>
             <Field>
               <FieldLabel>Username</FieldLabel>
-              <FieldControl type="text" defaultValue="@maggie.welsh" />
+              <Input type="text" defaultValue="@maggie.welsh" />
             </Field>
           </div>
           <SheetFooter>

@@ -7,8 +7,9 @@ import {
   CardPanel,
   CardTitle,
 } from "@/registry/default/ui/card"
-import { Field, FieldControl, FieldLabel } from "@/registry/default/ui/field"
+import { Field, FieldLabel } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
 import {
   Select,
   SelectItem,
@@ -36,7 +37,7 @@ export default function CardDemo() {
           <div className="flex flex-col gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
-              <FieldControl type="text" placeholder="Name of your project" />
+              <Input type="text" placeholder="Name of your project" />
             </Field>
             <Field>
               <FieldLabel>Framework</FieldLabel>
