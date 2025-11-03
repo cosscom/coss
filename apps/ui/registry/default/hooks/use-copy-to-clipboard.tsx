@@ -19,12 +19,10 @@ export function useCopyToClipboard({
 
     if (!value) return
 
-    // Clear any existing timeout
-    if (timeoutIdRef.current) {
-      clearTimeout(timeoutIdRef.current)
-    }
-
     navigator.clipboard.writeText(value).then(() => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current)
+      }
       setIsCopied(true)
 
       if (onCopy) {
