@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@coss/*": ["packages/*"]
+      "@coss/ui/*": ["packages/ui/src/*"]
     },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true

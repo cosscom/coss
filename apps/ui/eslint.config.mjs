@@ -4,6 +4,13 @@ import { nextJsConfig } from "@coss/eslint-config/next";
 export default [
   ...nextJsConfig,
   {
-    ignores: [".source"]
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      ".source/**",      
+    ]
   }
 ];

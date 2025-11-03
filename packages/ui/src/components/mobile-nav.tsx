@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link, { LinkProps } from "next/link";
-import { useRouter } from "next/navigation";
 import { Menu09Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
@@ -115,12 +114,10 @@ function MobileLink({
   children: React.ReactNode;
   className?: string;
 }) {
-  const router = useRouter();
   return (
     <Link
       href={href}
       onClick={() => {
-        router.push(href.toString());
         onOpenChange?.(false);
       }}
       className={cn("text-muted-foreground", className)}
