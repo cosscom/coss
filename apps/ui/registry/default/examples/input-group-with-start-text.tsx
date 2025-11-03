@@ -2,6 +2,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupText,
 } from "@/registry/default/ui/input-group"
 
 export default function InputGroupWithStartText() {
@@ -13,7 +14,9 @@ export default function InputGroupWithStartText() {
         placeholder="coss"
         aria-label="Set your URL"
       />
-      <InputGroupAddon>i.cal.com/</InputGroupAddon>
+      <InputGroupAddon>
+        <InputGroupText>i.cal.com/</InputGroupText>
+      </InputGroupAddon>
     </InputGroup>
   )
 }

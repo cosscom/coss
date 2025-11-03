@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/examples/input-group-with-start-text.tsx",
-      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithStartText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"search\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss\"\n        aria-label=\"Set your URL\"\n      />\n      <InputGroupAddon>i.cal.com/</InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithStartText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"search\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss\"\n        aria-label=\"Set your URL\"\n      />\n      <InputGroupAddon>\n        <InputGroupText>i.cal.com/</InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],

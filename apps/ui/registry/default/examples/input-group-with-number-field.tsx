@@ -1,4 +1,8 @@
-import { InputGroup, InputGroupAddon } from "@/registry/default/ui/input-group"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/registry/default/ui/input-group"
 import {
   NumberField,
   NumberFieldInput,
@@ -10,8 +14,12 @@ export default function InputGroupWithNumberField() {
       <NumberField defaultValue={10} aria-label="Enter the amount">
         <NumberFieldInput className="text-left" />
       </NumberField>
-      <InputGroupAddon>€</InputGroupAddon>
-      <InputGroupAddon align="inline-end">EUR</InputGroupAddon>
+      <InputGroupAddon>
+        <InputGroupText>€</InputGroupText>
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-end">
+        <InputGroupText>EUR</InputGroupText>
+      </InputGroupAddon>
     </InputGroup>
   )
 }

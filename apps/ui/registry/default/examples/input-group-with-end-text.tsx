@@ -2,6 +2,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupText,
 } from "@/registry/default/ui/input-group"
 
 export default function InputGroupWithEndText() {
@@ -12,7 +13,9 @@ export default function InputGroupWithEndText() {
         placeholder="Choose a username"
         aria-label="Choose a username"
       />
-      <InputGroupAddon align="inline-end">@coss.com</InputGroupAddon>
+      <InputGroupAddon align="inline-end">
+        <InputGroupText>@coss.com</InputGroupText>
+      </InputGroupAddon>
     </InputGroup>
   )
 }

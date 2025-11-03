@@ -2,6 +2,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupText,
 } from "@/registry/default/ui/input-group"
 
 export default function InputGroupWithStartEndText() {
@@ -13,8 +14,12 @@ export default function InputGroupWithStartEndText() {
         placeholder="coss"
         aria-label="Enter your domain"
       />
-      <InputGroupAddon>https://</InputGroupAddon>
-      <InputGroupAddon align="inline-end">.com</InputGroupAddon>
+      <InputGroupAddon>
+        <InputGroupText>https://</InputGroupText>
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-end">
+        <InputGroupText>.com</InputGroupText>
+      </InputGroupAddon>
     </InputGroup>
   )
 }
