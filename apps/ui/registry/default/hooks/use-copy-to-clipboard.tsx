@@ -10,6 +10,7 @@ export function useCopyToClipboard({
   onCopy?: () => void
 } = {}) {
   const [isCopied, setIsCopied] = React.useState(false)
+  const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const copyToClipboard = (value: string) => {
     if (typeof window === "undefined" || !navigator.clipboard.writeText) {
@@ -17,6 +18,11 @@ export function useCopyToClipboard({
     }
 
     if (!value) return
+
+    // Clear any existing timeout
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current)
+    }
 
     navigator.clipboard.writeText(value).then(() => {
       setIsCopied(true)
@@ -26,12 +32,22 @@ export function useCopyToClipboard({
       }
 
       if (timeout !== 0) {
-        setTimeout(() => {
+        timeoutIdRef.current = setTimeout(() => {
           setIsCopied(false)
+          timeoutIdRef.current = null
         }, timeout)
       }
     }, console.error)
   }
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current)
+      }
+    }
+  }, [])
 
   return { isCopied, copyToClipboard }
 }
