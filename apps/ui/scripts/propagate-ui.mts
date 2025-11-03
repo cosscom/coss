@@ -3,31 +3,49 @@ import path from "path"
 
 async function resolvePaths() {
   const cwd = process.cwd()
-  const sourceDir = path.join(cwd, "registry/default/ui")
-  // From apps/ui → ../../packages/ui/src/ui
-  const targetDir = path.resolve(cwd, "../../packages/ui/src/ui")
-  return { sourceDir, targetDir }
+  const sourceRoot = path.join(cwd, "registry/default")
+  const sourceDirs = {
+    ui: path.join(sourceRoot, "ui"),
+    hooks: path.join(sourceRoot, "hooks"),
+    lib: path.join(sourceRoot, "lib"),
+  }
+  // From apps/ui → ../../packages/ui/src/*
+  const targetRoot = path.resolve(cwd, "../../packages/ui/src")
+  const targetDirs = {
+    ui: path.join(targetRoot, "ui"),
+    hooks: path.join(targetRoot, "hooks"),
+    lib: path.join(targetRoot, "lib"),
+  }
+  return { sourceRoot, sourceDirs, targetRoot, targetDirs }
 }
 
 async function ensureDirExists(dir: string) {
   await fs.mkdir(dir, { recursive: true })
 }
 
-async function copyUiPrimitives() {
-  const { sourceDir, targetDir } = await resolvePaths()
+async function copyRegistryTrees() {
+  const { sourceRoot, sourceDirs, targetDirs } = await resolvePaths()
 
-  // Validate source exists
+  // Validate root exists
   try {
-    await fs.access(sourceDir)
+    await fs.access(sourceRoot)
   } catch {
-    throw new Error(`Source directory not found: ${sourceDir}`)
+    throw new Error(`Source root not found: ${sourceRoot}`)
   }
 
-  // Ensure target directory exists
-  await ensureDirExists(targetDir)
-
-  // Copy and overwrite files (do not delete extras in target)
-  await fs.cp(sourceDir, targetDir, { recursive: true, force: true })
+  // For each subtree (ui, hooks, lib), copy if present
+  for (const key of Object.keys(sourceDirs) as (keyof typeof sourceDirs)[]) {
+    const from = sourceDirs[key]
+    const to = targetDirs[key]
+    try {
+      await fs.access(from)
+    } catch {
+      // Skip silently if the subtree doesn't exist
+      continue
+    }
+    await ensureDirExists(to)
+    await fs.cp(from, to, { recursive: true, force: true })
+  }
 }
 
 async function getAllFiles(dir: string): Promise<string[]> {
@@ -56,6 +74,14 @@ function rewriteImports(code: string): string {
     /(["'])@\/registry\/default\/ui\//g,
     "$1@workspace/ui/ui/"
   )
+  result = result.replace(
+    /(["'])@\/registry\/default\/hooks\//g,
+    "$1@workspace/ui/hooks/"
+  )
+  result = result.replace(
+    /(["'])@\/registry\/default\/lib\//g,
+    "$1@workspace/ui/lib/"
+  )
   return result
 }
 
@@ -75,13 +101,16 @@ async function rewriteImportsInDir(dir: string): Promise<{ updated: number }> {
 }
 
 try {
-  console.log("📦 Propagating UI primitives → packages/ui/src/ui …")
-  const { sourceDir, targetDir } = await resolvePaths()
-  console.log(`├─ Source: ${sourceDir}`)
-  console.log(`└─ Target: ${targetDir}`)
+  console.log("📦 Propagating registry primitives → packages/ui/src …")
+  const { sourceDirs, targetRoot } = await resolvePaths()
+  console.log(`├─ Sources:`)
+  console.log(`│  ├─ UI:    ${sourceDirs.ui}`)
+  console.log(`│  ├─ Hooks: ${sourceDirs.hooks}`)
+  console.log(`│  └─ Lib:   ${sourceDirs.lib}`)
+  console.log(`└─ Target root: ${targetRoot}`)
 
-  await copyUiPrimitives()
-  const { updated } = await rewriteImportsInDir(targetDir)
+  await copyRegistryTrees()
+  const { updated } = await rewriteImportsInDir(targetRoot)
 
   console.log(
     `✅ UI primitives propagated successfully! (${updated} file(s) updated with rewritten imports)`
@@ -90,5 +119,3 @@ try {
   console.error(error)
   process.exit(1)
 }
-
-

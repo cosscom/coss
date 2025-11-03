@@ -5448,12 +5448,12 @@ export const Index: Record<string, any> = {
     type: "registry:hook",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/hooks/use-mobile.tsx",
+      path: "registry/default/hooks/use-mobile.ts",
       type: "registry:hook",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/hooks/use-mobile.tsx")
+      const mod = await import("@/registry/default/hooks/use-mobile.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -5466,12 +5466,12 @@ export const Index: Record<string, any> = {
     type: "registry:hook",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/hooks/use-copy-to-clipboard.tsx",
+      path: "registry/default/hooks/use-copy-to-clipboard.ts",
       type: "registry:hook",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/hooks/use-copy-to-clipboard.tsx")
+      const mod = await import("@/registry/default/hooks/use-copy-to-clipboard.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
