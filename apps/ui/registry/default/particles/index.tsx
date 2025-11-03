@@ -465,13 +465,6 @@ export const particles: ParticleItem[] = [
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
   {
-    id: "particle-in-2",
-    component: ParticleIn2,
-    category: ["input"],
-    className:
-      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
-  },
-  {
     id: "field-demo",
     component: FieldDemo,
     category: ["input"],

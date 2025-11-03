@@ -24,7 +24,11 @@ export default function Particle() {
       <InputGroupAddon>https://</InputGroupAddon>
       <InputGroupAddon align="inline-end">
         <Popover openOnHover>
-          <PopoverTrigger render={<Button variant="ghost" size="icon-xs" />}>
+          <PopoverTrigger
+            render={
+              <Button variant="ghost" size="icon-xs" aria-label="More info" />
+            }
+          >
             <InfoIcon />
           </PopoverTrigger>
           <PopoverPopup tooltipStyle side="top">

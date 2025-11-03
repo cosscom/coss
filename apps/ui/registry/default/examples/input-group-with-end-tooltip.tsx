@@ -24,7 +24,15 @@ export default function InputGroupWithEndTooltip() {
       />
       <InputGroupAddon align="inline-end">
         <Popover openOnHover>
-          <PopoverTrigger render={<Button variant="ghost" size="icon-xs" />}>
+          <PopoverTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Password requirements"
+              />
+            }
+          >
             <InfoIcon />
           </PopoverTrigger>
           <PopoverPopup tooltipStyle side="top">

@@ -8,7 +8,11 @@ import { Kbd } from "@/registry/default/ui/kbd"
 export default function Particle() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Search…" />
+      <InputGroupInput
+        type="search"
+        placeholder="Search…"
+        aria-label="Search"
+      />
       <InputGroupAddon align="inline-end">
         <Kbd>/</Kbd>
       </InputGroupAddon>
