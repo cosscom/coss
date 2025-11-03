@@ -3120,6 +3120,78 @@ export const Index: Record<string, any> = {
     categories: ["input","input group"],
     meta: undefined,
   },
+  "input-group-sm": {
+    name: "input-group-sm",
+    description: "Small input group",
+    type: "registry:example",
+    registryDependencies: ["@coss/input-group"],
+    files: [{
+      path: "registry/default/examples/input-group-sm.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/input-group-sm.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group"],
+    meta: undefined,
+  },
+  "input-group-lg": {
+    name: "input-group-lg",
+    description: "Large input group",
+    type: "registry:example",
+    registryDependencies: ["@coss/input-group"],
+    files: [{
+      path: "registry/default/examples/input-group-lg.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/input-group-lg.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group"],
+    meta: undefined,
+  },
+  "input-group-disabled": {
+    name: "input-group-disabled",
+    description: "Input group with disabled state",
+    type: "registry:example",
+    registryDependencies: ["@coss/button","@coss/input-group"],
+    files: [{
+      path: "registry/default/examples/input-group-disabled.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/input-group-disabled.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group","disabled","button"],
+    meta: undefined,
+  },
+  "field-input-group": {
+    name: "field-input-group",
+    description: "Input group with field",
+    type: "registry:example",
+    registryDependencies: ["@coss/field","@coss/button","@coss/input-group"],
+    files: [{
+      path: "registry/default/examples/field-input-group.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/field-input-group.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group","field","button"],
+    meta: undefined,
+  },
   "input-group-loading": {
     name: "input-group-loading",
     description: "Input group with end loading state",

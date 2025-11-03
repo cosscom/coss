@@ -101,6 +101,7 @@ import FieldCompleteForm from "@/registry/default/examples/field-complete-form"
 import FieldDemo from "@/registry/default/examples/field-demo"
 import FieldDisabled from "@/registry/default/examples/field-disabled"
 import FieldError from "@/registry/default/examples/field-error"
+import FieldInputGroup from "@/registry/default/examples/field-input-group"
 import FieldNumberField from "@/registry/default/examples/field-number-field"
 import FieldRadio from "@/registry/default/examples/field-radio"
 import FieldRequired from "@/registry/default/examples/field-required"
@@ -119,7 +120,10 @@ import InputDemo from "@/registry/default/examples/input-demo"
 import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
 import InputGroupDemo from "@/registry/default/examples/input-group-demo"
+import InputGroupDisabled from "@/registry/default/examples/input-group-disabled"
+import InputGroupLg from "@/registry/default/examples/input-group-lg"
 import InputGroupLoading from "@/registry/default/examples/input-group-loading"
+import InputGroupSm from "@/registry/default/examples/input-group-sm"
 import InputGroupWithTextarea from "@/registry/default/examples/input-group-textarea"
 import InputGroupWithBadge from "@/registry/default/examples/input-group-with-badge"
 import InputGroupWithButton from "@/registry/default/examples/input-group-with-button"
@@ -377,6 +381,13 @@ export const particles: ParticleItem[] = [
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
   {
+    id: "field-input-group",
+    component: FieldInputGroup,
+    category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
     id: "particle-in-3",
     component: ParticleIn3,
     category: ["input", "button", "popover", "tooltip"],
@@ -408,6 +419,27 @@ export const particles: ParticleItem[] = [
     id: "particle-in-4",
     component: ParticleIn4,
     category: ["input", "kbd"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-sm",
+    component: InputGroupSm,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-lg",
+    component: InputGroupLg,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-disabled",
+    component: InputGroupDisabled,
+    category: ["input"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },

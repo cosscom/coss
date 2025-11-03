@@ -36,7 +36,6 @@ export default function InputGroupWithIconButton() {
               <Button
                 variant="ghost"
                 aria-label="Copy"
-                title="Copy"
                 size="icon-xs"
                 onClick={() => {
                   if (inputRef.current) {

@@ -3155,6 +3155,85 @@
       ]
     },
     {
+      "name": "input-group-sm",
+      "description": "Small input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-sm.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-lg",
+      "description": "Large input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-lg.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-disabled",
+      "description": "Input group with disabled state",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-disabled.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "disabled",
+        "button"
+      ]
+    },
+    {
+      "name": "field-input-group",
+      "description": "Input group with field",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/field-input-group.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "field",
+        "button"
+      ]
+    },
+    {
       "name": "input-group-loading",
       "description": "Input group with end loading state",
       "type": "registry:example",
