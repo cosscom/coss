@@ -54,9 +54,9 @@ function InputGroupAddon({
       className={cn(inputGroupAddonVariants({ align }), className)}
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
       onMouseDown={(e) => {
-        if ((e.target as HTMLElement).closest("button")) {
-          return
-        }
+        const target = e.target as HTMLElement
+        const isInteractive = target.closest("button, a")
+        if (isInteractive) return
         e.preventDefault()
         const parent = e.currentTarget.parentElement
         const input = parent?.querySelector<
