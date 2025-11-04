@@ -8,5 +8,6 @@ The following directory and their subdirectories are licensed under their origin
 
 ```
 apps/origin/
+apps/ui/
 ```
 
