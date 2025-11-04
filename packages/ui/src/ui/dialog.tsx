@@ -3,7 +3,7 @@
 import { Dialog as DialogPrimitive } from "@base-ui-components/react/dialog"
 import { XIcon } from "lucide-react"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 

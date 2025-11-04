@@ -2,8 +2,8 @@ import * as React from "react"
 import { mergeProps } from "@base-ui-components/react/merge-props"
 import { useRender } from "@base-ui-components/react/use-render"
 
-import { cn } from "@workspace/ui/lib/utils"
-import { Separator } from "@workspace/ui/ui/separator"
+import { cn } from "@coss/ui/lib/utils"
+import { Separator } from "@coss/ui/ui/separator"
 
 function Group({
   className,

@@ -1,8 +1,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import * as React from "react"
-
-import { CodeBlock } from "@workspace/ui/components/code-block"
+import { CodeBlock } from "@coss/ui/components/code-block"
 
 import { getRegistryItem } from "@/lib/registry"
 import { cn } from "@/lib/utils"

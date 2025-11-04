@@ -2,7 +2,7 @@
 
 import { Tooltip as TooltipPrimitive } from "@base-ui-components/react/tooltip"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 const TooltipProvider = TooltipPrimitive.Provider
 

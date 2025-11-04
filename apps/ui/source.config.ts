@@ -1,3 +1,4 @@
+import { transformers } from "@coss/ui/lib/highlight-code"
 import {
   defineConfig,
   defineDocs,
@@ -5,8 +6,6 @@ import {
 } from "fumadocs-mdx/config"
 import rehypePrettyCode from "rehype-pretty-code"
 import { z } from "zod"
-
-import { transformers } from "@workspace/ui/lib/highlight-code"
 
 export default defineConfig({
   mdxOptions: {
