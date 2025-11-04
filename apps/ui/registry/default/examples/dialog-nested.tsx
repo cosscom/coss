@@ -9,7 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/registry/default/ui/dialog"
-import { Field, FieldControl, FieldLabel } from "@/registry/default/ui/field"
+import { Field, FieldLabel } from "@/registry/default/ui/field"
+import { Input } from "@/registry/default/ui/input"
 
 export default function DialogNestedDemo() {
   return (
@@ -49,11 +50,11 @@ export default function DialogNestedDemo() {
               <div className="flex flex-col gap-4">
                 <Field>
                   <FieldLabel>Name</FieldLabel>
-                  <FieldControl type="text" defaultValue="Bora Baloglu" />
+                  <Input type="text" defaultValue="Bora Baloglu" />
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
-                  <FieldControl type="text" defaultValue="bora@example.com" />
+                  <Input type="text" defaultValue="bora@example.com" />
                 </Field>
               </div>
               <DialogFooter>

@@ -9,7 +9,8 @@
   "registryDependencies": [
     "@coss/form",
     "@coss/field",
-    "@coss/button"
+    "@coss/button",
+    "@coss/input"
   ],
   "files": [
     {

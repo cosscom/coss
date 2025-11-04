@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "particle-in-5",
+  "type": "registry:block",
+  "description": "Input group with start loading spinner",
+  "registryDependencies": [
+    "@coss/input-group",
+    "@coss/spinner"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/particle-in-5.tsx",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Spinner } from \"@/registry/default/ui/spinner\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Processing…\" disabled />\n      <InputGroupAddon>\n        <Spinner />\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "loading",
+    "spinner"
+  ]
+}

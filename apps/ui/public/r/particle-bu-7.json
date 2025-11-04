@@ -3,9 +3,6 @@
   "name": "particle-bu-7",
   "type": "registry:block",
   "description": "Star button with count badge",
-  "dependencies": [
-    "lucide-react"
-  ],
   "registryDependencies": [
     "@coss/button"
   ],

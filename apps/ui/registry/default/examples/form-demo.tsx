@@ -3,13 +3,9 @@
 import * as React from "react"
 
 import { Button } from "@/registry/default/ui/button"
-import {
-  Field,
-  FieldControl,
-  FieldError,
-  FieldLabel,
-} from "@/registry/default/ui/field"
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
 
 export default function FormDemo() {
   const [loading, setLoading] = React.useState(false)
@@ -26,7 +22,7 @@ export default function FormDemo() {
     <Form onSubmit={onSubmit} className="max-w-64">
       <Field>
         <FieldLabel>Email</FieldLabel>
-        <FieldControl
+        <Input
           name="email"
           type="email"
           placeholder="you@example.com"

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-disabled",
+  "type": "registry:example",
+  "description": "Input group with disabled state",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/input-group"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-disabled.tsx",
+      "content": "import { ArrowRightIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupDisabled() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"email\"\n        placeholder=\"Your best email\"\n        aria-label=\"Subscribe to our newsletter\"\n        disabled\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Button variant=\"ghost\" aria-label=\"Subscribe\" size=\"icon-xs\" disabled>\n          <ArrowRightIcon />\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "disabled",
+    "button"
+  ]
+}

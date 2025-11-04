@@ -3,9 +3,6 @@
   "name": "particle-bu-2",
   "type": "registry:block",
   "description": "Card-style button with heading and description",
-  "dependencies": [
-    "lucide-react"
-  ],
   "registryDependencies": [
     "@coss/button"
   ],

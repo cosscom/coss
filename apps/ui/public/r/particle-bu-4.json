@@ -3,9 +3,6 @@
   "name": "particle-bu-4",
   "type": "registry:block",
   "description": "Outline like button with count",
-  "dependencies": [
-    "lucide-react"
-  ],
   "registryDependencies": [
     "@coss/button"
   ],
