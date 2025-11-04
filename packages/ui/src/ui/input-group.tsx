@@ -3,9 +3,9 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from "@workspace/ui/lib/utils"
-import { Input, type InputProps } from "@workspace/ui/ui/input"
-import { Textarea, type TextareaProps } from "@workspace/ui/ui/textarea"
+import { cn } from "@coss/ui/lib/utils"
+import { Input, type InputProps } from "@coss/ui/ui/input"
+import { Textarea, type TextareaProps } from "@coss/ui/ui/textarea"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
