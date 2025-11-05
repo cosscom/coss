@@ -2978,9 +2978,9 @@ export const Index: Record<string, any> = {
   },
   "group-with-input": {
     name: "group-with-input",
-    description: "Group with input",
+    description: "Group with input and copy button",
     type: "registry:example",
-    registryDependencies: ["@coss/group","@coss/button","@coss/input"],
+    registryDependencies: ["@coss/group","@coss/button","@coss/input","@coss/tooltip"],
     files: [{
       path: "registry/default/examples/group-with-input.tsx",
       type: "registry:example",
@@ -2991,7 +2991,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group"],
+    categories: ["group","input","copy","button","tooltip"],
     meta: undefined,
   },
   "input-sm": {

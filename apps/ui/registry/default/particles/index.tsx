@@ -1014,7 +1014,7 @@ export const particles: ParticleItem[] = [
   {
     id: "group-with-input",
     component: GroupWithInput,
-    category: ["group", "button", "input"],
+    category: ["group", "button", "input", "copy"],
   },
   {
     id: "particle-bu-1",

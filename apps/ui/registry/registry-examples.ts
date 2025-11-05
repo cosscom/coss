@@ -1376,13 +1376,18 @@ export const examples: Registry["items"] = [
   },
   {
     name: "group-with-input",
-    description: "Group with input",
+    description: "Group with input and copy button",
     type: "registry:example",
-    registryDependencies: ["@coss/group", "@coss/button", "@coss/input"],
+    registryDependencies: [
+      "@coss/group",
+      "@coss/button",
+      "@coss/input",
+      "@coss/tooltip",
+    ],
     files: [
       { path: "examples/group-with-input.tsx", type: "registry:example" },
     ],
-    categories: ["group"],
+    categories: ["group", "input", "copy", "button", "tooltip"],
   },
   {
     name: "input-sm",

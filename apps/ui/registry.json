@@ -3011,12 +3011,13 @@
     },
     {
       "name": "group-with-input",
-      "description": "Group with input",
+      "description": "Group with input and copy button",
       "type": "registry:example",
       "registryDependencies": [
         "@coss/group",
         "@coss/button",
-        "@coss/input"
+        "@coss/input",
+        "@coss/tooltip"
       ],
       "files": [
         {
@@ -3025,7 +3026,11 @@
         }
       ],
       "categories": [
-        "group"
+        "group",
+        "input",
+        "copy",
+        "button",
+        "tooltip"
       ]
     },
     {

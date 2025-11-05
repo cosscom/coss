@@ -2,20 +2,25 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "group-with-input",
   "type": "registry:example",
-  "description": "Group with input",
+  "description": "Group with input and copy button",
   "registryDependencies": [
     "@coss/group",
     "@coss/button",
-    "@coss/input"
+    "@coss/input",
+    "@coss/tooltip"
   ],
   "files": [
     {
       "path": "registry/default/examples/group-with-input.tsx",
-      "content": "import { CopyIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\nimport { Input } from \"@/registry/default/ui/input\"\n\nexport default function GroupWithInput() {\n  return (\n    <Group>\n      <Input type=\"text\" defaultValue=\"https://coss.com\" />\n      <GroupSeparator />\n      <Button variant=\"outline\" size=\"icon\" aria-label=\"Copy\">\n        <CopyIcon />\n      </Button>\n    </Group>\n  )\n}\n",
+      "content": "\"use client\"\n\nimport { useRef } from \"react\"\nimport { CheckIcon, CopyIcon } from \"lucide-react\"\n\nimport { useCopyToClipboard } from \"@/registry/default/hooks/use-copy-to-clipboard\"\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\nimport { Input } from \"@/registry/default/ui/input\"\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\"\n\nexport default function GroupWithInput() {\n  const { copyToClipboard, isCopied } = useCopyToClipboard()\n  const inputRef = useRef<HTMLInputElement>(null)\n\n  return (\n    <Group>\n      <Input\n        ref={inputRef}\n        type=\"text\"\n        defaultValue=\"https://coss.com\"\n        aria-label=\"Url\"\n      />\n      <GroupSeparator />\n      <Tooltip>\n        <TooltipTrigger\n          render={\n            <Button\n              variant=\"outline\"\n              size=\"icon\"\n              aria-label=\"Copy\"\n              onClick={() => {\n                if (inputRef.current) {\n                  copyToClipboard(inputRef.current.value)\n                }\n              }}\n            />\n          }\n        >\n          {isCopied ? <CheckIcon /> : <CopyIcon />}\n        </TooltipTrigger>\n        <TooltipPopup>\n          <p>Copy to clipboard</p>\n        </TooltipPopup>\n      </Tooltip>\n    </Group>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
   "categories": [
-    "group"
+    "group",
+    "input",
+    "copy",
+    "button",
+    "tooltip"
   ]
 }
