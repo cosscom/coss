@@ -223,7 +223,7 @@ import ToggleGroupDisabled from "@/registry/default/examples/toggle-group-disabl
 import ToggleGroupLg from "@/registry/default/examples/toggle-group-lg"
 import ToggleGroupMultiple from "@/registry/default/examples/toggle-group-multiple"
 import ToggleGroupOutline from "@/registry/default/examples/toggle-group-outline"
-import ToggleGroupOutlineWithSeparator from "@/registry/default/examples/toggle-group-outline-with-separator"
+import ToggleGroupOutlineVertical from "@/registry/default/examples/toggle-group-outline-vertical"
 import ToggleGroupSm from "@/registry/default/examples/toggle-group-sm"
 import ToggleGroupWithDisabledItem from "@/registry/default/examples/toggle-group-with-disabled-item"
 import ToggleIconGroup from "@/registry/default/examples/toggle-icon-group"
@@ -1684,8 +1684,8 @@ export const particles: ParticleItem[] = [
     category: ["toggle"],
   },
   {
-    id: "toggle-group-outline-with-separator",
-    component: ToggleGroupOutlineWithSeparator,
+    id: "toggle-group-outline-vertical",
+    component: ToggleGroupOutlineVertical,
     category: ["toggle"],
   },
   {

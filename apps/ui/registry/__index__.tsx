@@ -4938,22 +4938,22 @@ export const Index: Record<string, any> = {
     categories: ["toggle group","toggle"],
     meta: undefined,
   },
-  "toggle-group-outline-with-separator": {
-    name: "toggle-group-outline-with-separator",
-    description: "Toggle group with outline toggles and separator",
+  "toggle-group-outline-vertical": {
+    name: "toggle-group-outline-vertical",
+    description: "Toggle group with outline toggles and vertical layout",
     type: "registry:example",
     registryDependencies: ["@coss/toggle-group"],
     files: [{
-      path: "registry/default/examples/toggle-group-outline-with-separator.tsx",
+      path: "registry/default/examples/toggle-group-outline-vertical.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/examples/toggle-group-outline-with-separator.tsx")
+      const mod = await import("@/registry/default/examples/toggle-group-outline-vertical.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["toggle group","toggle"],
+    categories: ["toggle group","toggle","vertical"],
     meta: undefined,
   },
   "toggle-group-disabled": {

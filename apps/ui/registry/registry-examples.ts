@@ -2533,17 +2533,17 @@ export const examples: Registry["items"] = [
     categories: ["toggle group", "toggle"],
   },
   {
-    name: "toggle-group-outline-with-separator",
-    description: "Toggle group with outline toggles and separator",
+    name: "toggle-group-outline-vertical",
+    description: "Toggle group with outline toggles and vertical layout",
     type: "registry:example",
     registryDependencies: ["@coss/toggle-group"],
     files: [
       {
-        path: "examples/toggle-group-outline-with-separator.tsx",
+        path: "examples/toggle-group-outline-vertical.tsx",
         type: "registry:example",
       },
     ],
-    categories: ["toggle group", "toggle"],
+    categories: ["toggle group", "toggle", "vertical"],
   },
   {
     name: "toggle-group-disabled",
