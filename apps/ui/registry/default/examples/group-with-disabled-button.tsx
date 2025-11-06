@@ -17,7 +17,7 @@ import {
   MenuTrigger,
 } from "@/registry/default/ui/menu"
 
-export default function GroupDemo() {
+export default function GroupWithDisabledButton() {
   return (
     <Group aria-label="File actions">
       <Button variant="outline">
@@ -25,7 +25,7 @@ export default function GroupDemo() {
         Files
       </Button>
       <GroupSeparator />
-      <Button variant="outline">
+      <Button variant="outline" disabled>
         <FilmIcon />
         Media
       </Button>

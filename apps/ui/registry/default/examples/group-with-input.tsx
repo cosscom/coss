@@ -18,7 +18,7 @@ export default function GroupWithInput() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <Group>
+    <Group aria-label="Url input">
       <Input
         ref={inputRef}
         type="text"

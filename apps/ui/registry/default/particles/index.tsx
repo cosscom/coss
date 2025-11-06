@@ -114,8 +114,19 @@ import FieldsetDemo from "@/registry/default/examples/fieldset-demo"
 import FormDemo from "@/registry/default/examples/form-demo"
 import FormZod from "@/registry/default/examples/form-zod"
 import FrameDemo from "@/registry/default/examples/frame-demo"
+import GroupDefaultButton from "@/registry/default/examples/group-default-button"
 import GroupDemo from "@/registry/default/examples/group-demo"
+import GroupInputGroup from "@/registry/default/examples/group-input-group"
+import GroupLg from "@/registry/default/examples/group-lg"
+import GroupMenu from "@/registry/default/examples/group-menu"
+import GroupNested from "@/registry/default/examples/group-nested"
+import GroupPopup from "@/registry/default/examples/group-popup"
+import GroupSelect from "@/registry/default/examples/group-select"
+import GroupSm from "@/registry/default/examples/group-sm"
+import GroupVertical from "@/registry/default/examples/group-vertical"
+import GroupWithEndText from "@/registry/default/examples/group-with-end-text"
 import GroupWithInput from "@/registry/default/examples/group-with-input"
+import GroupWithText from "@/registry/default/examples/group-with-text"
 import InputDemo from "@/registry/default/examples/input-demo"
 import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
@@ -242,6 +253,7 @@ import ParticleBu5 from "@/registry/default/particles/particle-bu-5"
 import ParticleBu6 from "@/registry/default/particles/particle-bu-6"
 import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
 import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
+import ParticleGr1 from "@/registry/default/particles/particle-gr-1"
 import ParticleIn1 from "@/registry/default/particles/particle-in-1"
 import ParticleIn2 from "@/registry/default/particles/particle-in-2"
 import ParticleIn3 from "@/registry/default/particles/particle-in-3"
@@ -249,6 +261,8 @@ import ParticleIn4 from "@/registry/default/particles/particle-in-4"
 import ParticleIn5 from "@/registry/default/particles/particle-in-5"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
+
+import GroupWithDisabledButton from "../examples/group-with-disabled-button"
 
 type ParticleComponent = React.ComponentType<any>
 
@@ -1009,12 +1023,77 @@ export const particles: ParticleItem[] = [
   {
     id: "group-demo",
     component: GroupDemo,
-    category: ["group", "button"],
+    category: ["group", "button", "menu"],
   },
   {
     id: "group-with-input",
     component: GroupWithInput,
-    category: ["group", "button", "input", "copy"],
+    category: ["group", "button", "input"],
+  },
+  {
+    id: "group-sm",
+    component: GroupSm,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-lg",
+    component: GroupLg,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-with-disabled-button",
+    component: GroupWithDisabledButton,
+    category: ["group", "button", "menu", "disabled"],
+  },
+  {
+    id: "group-default-button",
+    component: GroupDefaultButton,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "particle-gr-1",
+    component: ParticleGr1,
+    category: ["group", "select", "input", "button"],
+  },
+  {
+    id: "group-with-text",
+    component: GroupWithText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-with-end-text",
+    component: GroupWithEndText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-vertical",
+    component: GroupVertical,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-nested",
+    component: GroupNested,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-popup",
+    component: GroupPopup,
+    category: ["group", "button", "popover", "badge"],
+  },
+  {
+    id: "group-input-group",
+    component: GroupInputGroup,
+    category: ["group", "button", "input", "tooltip"],
+  },
+  {
+    id: "group-menu",
+    component: GroupMenu,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-select",
+    component: GroupSelect,
+    category: ["group", "select", "number field", "button"],
   },
   {
     id: "particle-bu-1",
