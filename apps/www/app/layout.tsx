@@ -38,8 +38,8 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <div className="relative flex min-h-svh flex-col [--header-height:4rem] before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:bg-sidebar overflow-clip">
-            <div className="absolute inset-0 z-60 pointer-events-none container before:absolute before:inset-y-0 before:-left-3 before:w-px before:bg-border/50 after:absolute after:inset-y-0 after:-right-3 after:w-px after:bg-border/50" aria-hidden="true"></div>
-            <div className="fixed inset-0 pointer-events-none z-6 container before:absolute before:top-[calc(var(--header-height)-4.5px)] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:bg-popover before:border before:border-border before:shadow-xs before:bg-clip-padding after:absolute after:-right-[11.5px] after:top-[calc(var(--header-height)-4.5px)] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:bg-background after:border after:border-border after:shadow-xs after:bg-clip-padding" aria-hidden="true"></div>              
+            <div className="absolute inset-0 z-45 pointer-events-none container before:absolute before:inset-y-0 before:-left-3 before:w-px before:bg-border/50 after:absolute after:inset-y-0 after:-right-3 after:w-px after:bg-border/50" aria-hidden="true"></div>
+            <div className="fixed inset-0 pointer-events-none z-45 container before:absolute before:top-[calc(var(--header-height)-4.5px)] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:bg-popover before:border before:border-border before:shadow-xs before:bg-clip-padding after:absolute after:-right-[11.5px] after:top-[calc(var(--header-height)-4.5px)] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:bg-background after:border after:border-border after:shadow-xs after:bg-clip-padding" aria-hidden="true"></div>              
             <SiteHeader />
             {children}
             <SiteCta />
