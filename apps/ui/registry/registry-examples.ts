@@ -2293,6 +2293,42 @@ export const examples: Registry["items"] = [
     categories: ["select"],
   },
   {
+    name: "select-with-icon",
+    description: "Select with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      { path: "examples/select-with-icon.tsx", type: "registry:example" },
+    ],
+    categories: ["select"],
+  },
+  {
+    name: "select-options-with-icon",
+    description: "Select options with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      {
+        path: "examples/select-options-with-icon.tsx",
+        type: "registry:example",
+      },
+    ],
+    categories: ["select"],
+  },
+  {
+    name: "select-with-object-values",
+    description: "Select with object values",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      {
+        path: "examples/select-with-object-values.tsx",
+        type: "registry:example",
+      },
+    ],
+    categories: ["select"],
+  },
+  {
     name: "select-form",
     description: "Select in a form",
     type: "registry:example",

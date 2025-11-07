@@ -4434,6 +4434,60 @@ export const Index: Record<string, any> = {
     categories: ["select"],
     meta: undefined,
   },
+  "select-with-icon": {
+    name: "select-with-icon",
+    description: "Select with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/examples/select-with-icon.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/select-with-icon.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
+  "select-options-with-icon": {
+    name: "select-options-with-icon",
+    description: "Select options with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/examples/select-options-with-icon.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/select-options-with-icon.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
+  "select-with-object-values": {
+    name: "select-with-object-values",
+    description: "Select with object values",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/examples/select-with-object-values.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/select-with-object-values.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
   "select-form": {
     name: "select-form",
     description: "Select in a form",

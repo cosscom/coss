@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "select-with-object-values",
+  "type": "registry:example",
+  "description": "Select with object values",
+  "registryDependencies": [
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/select-with-object-values.tsx",
+      "content": "\"use client\"\n\nimport {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\"\n\nconst items = [\n  { label: \"Next.js\", value: \"next\", description: \"npx create-next-app\" },\n  { label: \"Vite\", value: \"vite\", description: \"npm create vite@latest\" },\n  { label: \"Astro\", value: \"astro\", description: \"npm create astro@latest\" },\n  { label: \"Remix\", value: \"remix\", description: \"npx create-remix\" },\n]\n\nexport default function SelectWithObjectValues() {\n  return (\n    <Select\n      defaultValue={items[0]}\n      itemToStringValue={(item) => item.value}\n      aria-label=\"Select framework with command\"\n    >\n      <SelectTrigger>\n        <SelectValue>\n          {(item) => (\n            <span className=\"flex flex-col\">\n              <span className=\"truncate\">{item.label}</span>\n              <span className=\"truncate text-xs text-muted-foreground\">\n                {item.description}\n              </span>\n            </span>\n          )}\n        </SelectValue>\n      </SelectTrigger>\n      <SelectPopup>\n        {items.map((item) => (\n          <SelectItem key={item.value} value={item}>\n            <span className=\"flex flex-col\">\n              <span className=\"truncate\">{item.label}</span>\n              <span className=\"truncate text-xs text-muted-foreground\">\n                {item.description}\n              </span>\n            </span>\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "select"
+  ]
+}

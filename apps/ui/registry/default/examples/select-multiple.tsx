@@ -38,7 +38,11 @@ function renderValue(value: Language[]) {
 
 export default function SelectMultiple() {
   return (
-    <Select multiple defaultValue={["javascript", "typescript"]}>
+    <Select
+      multiple
+      defaultValue={["javascript", "typescript"]}
+      aria-label="Select languages"
+    >
       <SelectTrigger>
         <SelectValue>{renderValue}</SelectValue>
       </SelectTrigger>

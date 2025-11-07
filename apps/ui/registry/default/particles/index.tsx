@@ -192,8 +192,11 @@ import SelectDisabled from "@/registry/default/examples/select-disabled"
 import SelectForm from "@/registry/default/examples/select-form"
 import SelectLg from "@/registry/default/examples/select-lg"
 import SelectMultiple from "@/registry/default/examples/select-multiple"
+import SelectOptionsWithIcon from "@/registry/default/examples/select-options-with-icon"
 import SelectSm from "@/registry/default/examples/select-sm"
 import SelectWithGroups from "@/registry/default/examples/select-with-groups"
+import SelectWithIcon from "@/registry/default/examples/select-with-icon"
+import SelectWithObjectValues from "@/registry/default/examples/select-with-object-values"
 import SelectWithoutAlignment from "@/registry/default/examples/select-without-alignment"
 import SeparatorDemo from "@/registry/default/examples/separator-demo"
 import SheetDemo from "@/registry/default/examples/sheet-demo"
@@ -633,6 +636,27 @@ export const particles: ParticleItem[] = [
   {
     id: "select-multiple",
     component: SelectMultiple,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-icon",
+    component: SelectWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-options-with-icon",
+    component: SelectOptionsWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-object-values",
+    component: SelectWithObjectValues,
     category: ["select"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",

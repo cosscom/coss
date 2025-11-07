@@ -1,3 +1,5 @@
+import { ClockIcon } from "lucide-react"
+
 import {
   Select,
   SelectItem,
@@ -13,13 +15,18 @@ const items = [
   { label: "Astro", value: "astro" },
 ]
 
-export default function SelectDisabled() {
+export default function SelectWithIcon() {
   return (
-    <Select items={items} aria-label="Select framework">
-      <SelectTrigger disabled>
+    <Select
+      items={items}
+      defaultValue="next"
+      aria-label="Select framework with icon"
+    >
+      <SelectTrigger>
+        <ClockIcon />
         <SelectValue />
       </SelectTrigger>
-      <SelectPopup>
+      <SelectPopup alignItemWithTrigger={false}>
         {items.map(({ label, value }) => (
           <SelectItem key={value} value={value}>
             {label}
