@@ -15,7 +15,7 @@ const items = [
 
 export default function SelectWithoutAlignment() {
   return (
-    <Select items={items}>
+    <Select items={items} aria-label="Select framework">
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
