@@ -1839,25 +1839,6 @@
       ]
     },
     {
-      "name": "button-with-kbd",
-      "description": "Button with keyboard shortcut",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/kbd"
-      ],
-      "files": [
-        {
-          "path": "registry/default/examples/button-with-kbd.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": [
-        "button",
-        "kbd"
-      ]
-    },
-    {
       "name": "button-loading",
       "description": "Loading button",
       "type": "registry:example",
@@ -3011,12 +2992,13 @@
     },
     {
       "name": "group-with-input",
-      "description": "Group with input",
+      "description": "Group with input and copy button",
       "type": "registry:example",
       "registryDependencies": [
         "@coss/group",
         "@coss/button",
-        "@coss/input"
+        "@coss/input",
+        "@coss/tooltip"
       ],
       "files": [
         {
@@ -3025,7 +3007,264 @@
         }
       ],
       "categories": [
-        "group"
+        "group",
+        "input",
+        "copy",
+        "button",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "group-sm",
+      "description": "Group with small buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-sm.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-lg",
+      "description": "Group with large buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-lg.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-with-disabled-button",
+      "description": "Group with disabled button",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-disabled-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-default-button",
+      "description": "Group with default style buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-default-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-with-text",
+      "description": "Group with start labeled text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input",
+        "@coss/label"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "input",
+        "label"
+      ]
+    },
+    {
+      "name": "group-with-end-text",
+      "description": "Group with end text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-end-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "input"
+      ]
+    },
+    {
+      "name": "group-vertical",
+      "description": "Vertical group of buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-vertical.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button"
+      ]
+    },
+    {
+      "name": "group-nested",
+      "description": "Pagination example made with nested groups",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-nested.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button"
+      ]
+    },
+    {
+      "name": "group-popup",
+      "description": "Group with button and popup",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/popover",
+        "@coss/badge"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-popup.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "popover",
+        "badge"
+      ]
+    },
+    {
+      "name": "group-input-group",
+      "description": "Nested groups with input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-input-group.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "input",
+        "input group",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "group-menu",
+      "description": "Group with button and menu",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-menu.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-select",
+      "description": "Group with select and number field",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/select",
+        "@coss/number-field",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-select.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "select",
+        "number field",
+        "button"
       ]
     },
     {
@@ -5056,21 +5295,22 @@
       ]
     },
     {
-      "name": "toggle-group-outline-with-separator",
-      "description": "Toggle group with outline toggles and separator",
+      "name": "toggle-group-outline-vertical",
+      "description": "Toggle group with outline toggles and vertical layout",
       "type": "registry:example",
       "registryDependencies": [
         "@coss/toggle-group"
       ],
       "files": [
         {
-          "path": "registry/default/examples/toggle-group-outline-with-separator.tsx",
+          "path": "registry/default/examples/toggle-group-outline-vertical.tsx",
           "type": "registry:example"
         }
       ],
       "categories": [
         "toggle group",
-        "toggle"
+        "toggle",
+        "vertical"
       ]
     },
     {

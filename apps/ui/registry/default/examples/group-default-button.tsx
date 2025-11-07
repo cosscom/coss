@@ -17,23 +17,21 @@ import {
   MenuTrigger,
 } from "@/registry/default/ui/menu"
 
-export default function GroupDemo() {
+export default function GroupDefaultButton() {
   return (
     <Group aria-label="File actions">
-      <Button variant="outline">
+      <Button>
         <FilesIcon />
         Files
       </Button>
-      <GroupSeparator />
-      <Button variant="outline">
+      <GroupSeparator className="bg-primary/72" />
+      <Button>
         <FilmIcon />
         Media
       </Button>
-      <GroupSeparator />
+      <GroupSeparator className="bg-primary/72" />
       <Menu>
-        <MenuTrigger
-          render={<Button variant="outline" size="icon" aria-label="Menu" />}
-        >
+        <MenuTrigger render={<Button size="icon" aria-label="Menu" />}>
           <EllipsisIcon className="size-4" />
         </MenuTrigger>
         <MenuPopup align="end">
