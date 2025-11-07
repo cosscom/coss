@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/registry/default/ui/button"
 import { Field } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
