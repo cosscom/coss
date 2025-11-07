@@ -32,6 +32,7 @@ function ToggleGroup({
       data-slot="toggle-group"
       data-variant={variant}
       data-size={size}
+      orientation={orientation}
       className={cn(
         "flex w-fit *:focus-visible:z-10",
         orientation === "horizontal"

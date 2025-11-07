@@ -20,7 +20,7 @@ export default function GroupInputGroup() {
       aria-label="Message composer"
     >
       <Group aria-label="Attachments">
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" aria-label="Attach file">
           <PaperclipIcon />
         </Button>
       </Group>
