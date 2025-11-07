@@ -59,7 +59,6 @@ import ButtonOutline from "@/registry/default/examples/button-outline"
 import ButtonSecondary from "@/registry/default/examples/button-secondary"
 import ButtonSm from "@/registry/default/examples/button-sm"
 import ButtonWithIcon from "@/registry/default/examples/button-with-icon"
-import ButtonWithKbd from "@/registry/default/examples/button-with-kbd"
 import ButtonWithLink from "@/registry/default/examples/button-with-link"
 import ButtonXl from "@/registry/default/examples/button-xl"
 import ButtonXs from "@/registry/default/examples/button-xs"
@@ -1009,11 +1008,6 @@ export const particles: ParticleItem[] = [
     id: "button-with-link",
     component: ButtonWithLink,
     category: ["button"],
-  },
-  {
-    id: "button-with-kbd",
-    component: ButtonWithKbd,
-    category: ["button", "kbd"],
   },
   {
     id: "button-loading",

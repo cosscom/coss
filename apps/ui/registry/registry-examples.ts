@@ -729,14 +729,6 @@ export const examples: Registry["items"] = [
     categories: ["button"],
   },
   {
-    name: "button-with-kbd",
-    description: "Button with keyboard shortcut",
-    type: "registry:example",
-    registryDependencies: ["@coss/button", "@coss/kbd"],
-    files: [{ path: "examples/button-with-kbd.tsx", type: "registry:example" }],
-    categories: ["button", "kbd"],
-  },
-  {
     name: "button-loading",
     description: "Loading button",
     type: "registry:example",

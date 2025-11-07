@@ -1968,24 +1968,6 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
-  "button-with-kbd": {
-    name: "button-with-kbd",
-    description: "Button with keyboard shortcut",
-    type: "registry:example",
-    registryDependencies: ["@coss/button","@coss/kbd"],
-    files: [{
-      path: "registry/default/examples/button-with-kbd.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/examples/button-with-kbd.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","kbd"],
-    meta: undefined,
-  },
   "button-loading": {
     name: "button-loading",
     description: "Loading button",

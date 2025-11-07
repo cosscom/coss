@@ -1839,25 +1839,6 @@
       ]
     },
     {
-      "name": "button-with-kbd",
-      "description": "Button with keyboard shortcut",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/kbd"
-      ],
-      "files": [
-        {
-          "path": "registry/default/examples/button-with-kbd.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": [
-        "button",
-        "kbd"
-      ]
-    },
-    {
       "name": "button-loading",
       "description": "Loading button",
       "type": "registry:example",
