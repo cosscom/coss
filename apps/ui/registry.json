@@ -5934,7 +5934,7 @@
       "type": "registry:hook",
       "files": [
         {
-          "path": "registry/default/hooks/use-mobile.tsx",
+          "path": "registry/default/hooks/use-mobile.ts",
           "type": "registry:hook"
         }
       ]
@@ -5944,7 +5944,7 @@
       "type": "registry:hook",
       "files": [
         {
-          "path": "registry/default/hooks/use-copy-to-clipboard.tsx",
+          "path": "registry/default/hooks/use-copy-to-clipboard.ts",
           "type": "registry:hook"
         }
       ]
