@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input-group-with-icon-button",
+  "type": "registry:example",
+  "description": "Input group with copy button",
+  "registryDependencies": [
+    "@coss/use-copy-to-clipboard",
+    "@coss/input-group",
+    "@coss/button",
+    "@coss/tooltip"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/input-group-with-icon-button.tsx",
+      "content": "\"use client\"\n\nimport { useRef } from \"react\"\nimport { CheckIcon, CopyIcon } from \"lucide-react\"\n\nimport { useCopyToClipboard } from \"@/registry/default/hooks/use-copy-to-clipboard\"\nimport { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\"\n\nexport default function InputGroupWithIconButton() {\n  const { copyToClipboard, isCopied } = useCopyToClipboard()\n  const inputRef = useRef<HTMLInputElement>(null)\n\n  return (\n    <InputGroup>\n      <InputGroupInput\n        ref={inputRef}\n        type=\"text\"\n        defaultValue=\"https://coss.com\"\n        aria-label=\"Url\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Tooltip>\n          <TooltipTrigger\n            render={\n              <Button\n                variant=\"ghost\"\n                aria-label=\"Copy\"\n                size=\"icon-xs\"\n                onClick={() => {\n                  if (inputRef.current) {\n                    copyToClipboard(inputRef.current.value)\n                  }\n                }}\n              />\n            }\n          >\n            {isCopied ? <CheckIcon /> : <CopyIcon />}\n          </TooltipTrigger>\n          <TooltipPopup>\n            <p>Copy to clipboard</p>\n          </TooltipPopup>\n        </Tooltip>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "input",
+    "input group",
+    "button",
+    "tooltip"
+  ]
+}

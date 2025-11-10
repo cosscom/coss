@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Autocomplete as AutocompletePrimitive } from "@base-ui-components/react/autocomplete"
-import { LoaderCircleIcon } from "lucide-react"
 
 import {
   Autocomplete,
@@ -12,6 +11,7 @@ import {
   AutocompletePopup,
   AutocompleteStatus,
 } from "@/registry/default/ui/autocomplete"
+import { Spinner } from "@/registry/default/ui/spinner"
 
 type Movie = { id: string; title: string; year: number }
 const top100Movies: Movie[] = [
@@ -62,7 +62,7 @@ export default function AutocompleteAsync() {
       try {
         const results = await searchMovies(searchValue, contains)
         if (!ignore) setSearchResults(results)
-      } catch (err) {
+      } catch {
         if (!ignore) {
           setError("Failed to fetch movies. Please try again.")
           setSearchResults([])
@@ -83,7 +83,7 @@ export default function AutocompleteAsync() {
     status = (
       <span className="flex items-center justify-between gap-2 text-muted-foreground">
         Searching...
-        <LoaderCircleIcon className="size-4 animate-spin" aria-hidden />
+        <Spinner />
       </span>
     )
   } else if (error) {
@@ -116,7 +116,7 @@ export default function AutocompleteAsync() {
           </AutocompleteStatus>
           <AutocompleteList>
             {(movie: Movie) => (
-              <AutocompleteItem key={movie.id} value={movie as any}>
+              <AutocompleteItem key={movie.id} value={movie}>
                 <div className="flex w-full flex-col gap-1">
                   <div className="font-medium">{movie.title}</div>
                   <div className="text-xs text-muted-foreground">

@@ -1,10 +1,10 @@
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldLabel,
 } from "@/registry/default/ui/field"
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset"
+import { Input } from "@/registry/default/ui/input"
 
 export default function FieldsetDemo() {
   return (
@@ -12,7 +12,7 @@ export default function FieldsetDemo() {
       <FieldsetLegend>Billing Details</FieldsetLegend>
       <Field>
         <FieldLabel>Company</FieldLabel>
-        <FieldControl type="text" placeholder="Enter company name" />
+        <Input type="text" placeholder="Enter company name" />
         <FieldDescription>
           The name that will appear on invoices.
         </FieldDescription>
@@ -20,10 +20,7 @@ export default function FieldsetDemo() {
 
       <Field>
         <FieldLabel>Tax ID</FieldLabel>
-        <FieldControl
-          type="text"
-          placeholder="Enter tax identification number"
-        />
+        <Input type="text" placeholder="Enter tax identification number" />
         <FieldDescription>
           Your business tax identification number.
         </FieldDescription>

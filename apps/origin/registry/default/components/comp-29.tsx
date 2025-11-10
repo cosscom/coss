@@ -17,7 +17,7 @@ export default function Component() {
         <Label className="text-sm font-medium text-foreground">
           Number input with chevrons
         </Label>
-        <Group className="doutline-none relative inline-flex h-9 w-full items-center overflow-hidden rounded-md border border-input text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] data-disabled:opacity-50 data-focus-within:border-ring data-focus-within:ring-[3px] data-focus-within:ring-ring/50 data-focus-within:has-aria-invalid:border-destructive data-focus-within:has-aria-invalid:ring-destructive/20 dark:data-focus-within:has-aria-invalid:ring-destructive/40">
+        <Group className="relative inline-flex h-9 w-full items-center overflow-hidden rounded-md border border-input text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none data-disabled:opacity-50 data-focus-within:border-ring data-focus-within:ring-[3px] data-focus-within:ring-ring/50 data-focus-within:has-aria-invalid:border-destructive data-focus-within:has-aria-invalid:ring-destructive/20 dark:data-focus-within:has-aria-invalid:ring-destructive/40">
           <Input className="flex-1 bg-background px-3 py-2 text-foreground tabular-nums" />
           <div className="flex h-[calc(100%+2px)] flex-col">
             <Button
@@ -43,7 +43,7 @@ export default function Component() {
         Built with{" "}
         <a
           className="underline hover:text-foreground"
-          href="https://react-spectrum.adobe.com/react-aria/DateField.html"
+          href="https://react-spectrum.adobe.com/react-aria/NumberField.html"
           target="_blank"
           rel="noopener nofollow"
         >

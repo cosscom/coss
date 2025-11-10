@@ -2,6 +2,60 @@ import { type Registry } from "shadcn/schema"
 
 export const ui: Registry["items"] = [
   {
+    name: "ui",
+    type: "registry:ui",
+    registryDependencies: [
+      "@coss/accordion",
+      "@coss/alert",
+      "@coss/alert-dialog",
+      "@coss/autocomplete",
+      "@coss/avatar",
+      "@coss/badge",
+      "@coss/breadcrumb",
+      "@coss/button",
+      "@coss/card",
+      "@coss/checkbox",
+      "@coss/checkbox-group",
+      "@coss/collapsible",
+      "@coss/combobox",
+      "@coss/dialog",
+      "@coss/empty",
+      "@coss/field",
+      "@coss/fieldset",
+      "@coss/form",
+      "@coss/frame",
+      "@coss/group",
+      "@coss/input",
+      "@coss/input-group",
+      "@coss/kbd",
+      "@coss/label",
+      "@coss/menu",
+      "@coss/meter",
+      "@coss/number-field",
+      "@coss/pagination",
+      "@coss/popover",
+      "@coss/preview-card",
+      "@coss/progress",
+      "@coss/radio-group",
+      "@coss/scroll-area",
+      "@coss/select",
+      "@coss/separator",
+      "@coss/sheet",
+      "@coss/skeleton",
+      "@coss/slider",
+      "@coss/spinner",
+      "@coss/switch",
+      "@coss/table",
+      "@coss/tabs",
+      "@coss/textarea",
+      "@coss/toast",
+      "@coss/toggle",
+      "@coss/toggle-group",
+      "@coss/toolbar",
+      "@coss/tooltip",
+    ],
+  },
+  {
     name: "accordion",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
@@ -205,6 +259,16 @@ export const ui: Registry["items"] = [
     ],
   },
   {
+    name: "empty",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/empty.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
     name: "field",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
@@ -274,6 +338,27 @@ export const ui: Registry["items"] = [
     files: [
       {
         path: "ui/input.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "input-group",
+    type: "registry:ui",
+    registryDependencies: ["@coss/input", "@coss/field", "@coss/textarea"],
+    files: [
+      {
+        path: "ui/input-group.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "kbd",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/kbd.tsx",
         type: "registry:ui",
       },
     ],
@@ -432,12 +517,44 @@ export const ui: Registry["items"] = [
     ],
   },
   {
+    name: "skeleton",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/skeleton.tsx",
+        type: "registry:ui",
+      },
+    ],
+    cssVars: {
+      theme: {
+        "--animate-skeleton": "skeleton 2s -1s infinite linear",
+      },
+    },
+    css: {
+      "@keyframes skeleton": {
+        to: {
+          "background-position": "-200% 0",
+        },
+      },
+    },
+  },
+  {
     name: "slider",
     type: "registry:ui",
     dependencies: ["@base-ui-components/react"],
     files: [
       {
         path: "ui/slider.tsx",
+        type: "registry:ui",
+      },
+    ],
+  },
+  {
+    name: "spinner",
+    type: "registry:ui",
+    files: [
+      {
+        path: "ui/spinner.tsx",
         type: "registry:ui",
       },
     ],

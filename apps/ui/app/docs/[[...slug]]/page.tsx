@@ -7,10 +7,9 @@ import {
   LinkSquare02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { findNeighbour } from "fumadocs-core/server"
+import { findNeighbour } from "fumadocs-core/page-tree"
 
 import { source } from "@/lib/source"
-import { absoluteUrl } from "@/lib/utils"
 import { DocsCopyPage } from "@/components/docs-copy-page"
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { SiteFooter } from "@/components/site-footer"
@@ -56,6 +55,7 @@ export default async function Page(props: {
   }
 
   const doc = page.data
+  const rawContent = await page.data.getText("raw")
   const MDX = doc.body
   const neighbours = await findNeighbour(source.pageTree, page.url)
 
@@ -97,7 +97,7 @@ export default async function Page(props: {
                       }
                     />
                   )}
-                  <DocsCopyPage page={doc.content} />
+                  <DocsCopyPage page={rawContent} />
                 </div>
               </div>
               <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">

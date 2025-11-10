@@ -47,14 +47,14 @@ npm install @base-ui-components/react
 
 ```tsx
 import { Button } from "@/components/ui/button"
-import { Group, GroupItem, GroupSeparator } from "@/components/ui/group"
+import { Group, GroupSeparator } from "@/components/ui/group"
 ```
 
 ```tsx
 <Group>
-  <GroupItem render={<Button />}>Button</GroupItem>
+  <Button>Button</Button>
   <GroupSeparator />
-  <GroupItem render={<Button />}>Button</GroupItem>
+  <Button>Button</Button>
 </Group>
 ```
 
@@ -63,3 +63,161 @@ import { Group, GroupItem, GroupSeparator } from "@/components/ui/group"
 ### With Input
 
 <ComponentPreview name="group-with-input" />
+
+### Small Size
+
+<ComponentPreview name="group-sm" />
+
+### Large Size
+
+<ComponentPreview name="group-lg" />
+
+### With Disabled Button
+
+<ComponentPreview name="group-with-disabled-button" />
+
+### With Default Buttons
+
+<ComponentPreview name="group-default-button" />
+
+### With Start Labeled Text
+
+<ComponentPreview name="group-with-text" />
+
+### With End Text
+
+<ComponentPreview name="group-with-end-text" />
+
+### Vertical
+
+<ComponentPreview name="group-vertical" />
+
+### Nested Groups
+
+<ComponentPreview name="group-nested" />
+
+### With Popup
+
+<ComponentPreview name="group-popup" />
+
+### With Input Group
+
+<ComponentPreview name="group-input-group" />
+
+### With Menu
+
+<ComponentPreview name="group-menu" />
+
+### With Select
+
+<ComponentPreview name="group-select" />
+
+## Accessibility
+
+- The `Group` component has the `role` attribute set to `group`.
+- Use `Tab` to navigate between the controls in the group.
+- Use `aria-label` or `aria-labelledby` to label the group.
+
+```tsx showLineNumbers
+<Group aria-label="Media controls">
+  <Button variant="outline">Play</Button>
+  <GroupSeparator />
+  <Button variant="outline">Pause</Button>
+</Group>
+```
+
+### Group vs ToggleGroup
+
+- Use the `Group` component when you want to group controls that perform an action.
+- Use the `ToggleGroup` component when you want to group controls that toggle a state.
+
+## API Reference
+
+### Group
+
+The `Group` component is a container that visually groups a series of related controls together with consistent styling.
+
+| Prop          | Type                         | Default        |
+| ------------- | ---------------------------- | -------------- |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` |
+
+```tsx
+<Group>
+  <Button>Button 1</Button>
+  <GroupSeparator />
+  <Button>Button 2</Button>
+</Group>
+```
+
+Nest multiple groups to create complex layouts with spacing. See the [nested groups](#nested-groups) example for more details.
+
+```tsx
+<Group>
+  <Group>
+    <Button>1</Button>
+    <GroupSeparator />
+    <Button>2</Button>
+  </Group>
+  <Group>
+    <Button>Previous</Button>
+    <GroupSeparator />
+    <Button>Next</Button>
+  </Group>
+</Group>
+```
+
+### GroupSeparator
+
+The `GroupSeparator` component visually divides controls within a group.
+
+| Prop          | Type                         | Default      |
+| ------------- | ---------------------------- | ------------ |
+| `orientation` | `"horizontal" \| "vertical"` | `"vertical"` |
+
+```tsx
+<Group>
+  <Button>Button 1</Button>
+  <GroupSeparator />
+  <Button>Button 2</Button>
+</Group>
+```
+
+**Note:** Unlike shadcn's ButtonGroup, `GroupSeparator` is required between all controls, including outline buttons. This ensures consistent visual hierarchy and focus states.
+
+### GroupText
+
+Use this component to display text within a group, such as labels or prefixes.
+
+| Prop     | Type                       | Default |
+| -------- | -------------------------- | ------- |
+| `render` | `React.ReactNode \| null` | `null`  |
+
+```tsx
+<Group>
+  <GroupText>https://</GroupText>
+  <GroupSeparator />
+  <Input placeholder="example.com" />
+</Group>
+```
+
+Use the `render` prop to render a custom component as the text, for example a label.
+
+```tsx
+<Group>
+  <GroupText render={<Label htmlFor="domain" aria-label="Domain" />}>
+    https://
+  </GroupText>
+  <GroupSeparator />
+  <Input id="domain" placeholder="example.com" />
+</Group>
+```
+
+## Comparing with shadcn
+
+If you're already familiar with shadcn's ButtonGroup, this guide highlights the small differences and similarities so you can get started with **coss ui** quickly.
+
+### Quick Checklist
+
+- Prefer `Group*` component names; `ButtonGroup*` remain for compatibility
+- `GroupSeparator` is **always required** between controls, including outline buttons (unlike shadcn where separators are optional for outline buttons). This ensures consistent focus state handling and better accessibility
+- If you used `asChild` on `ButtonGroupText`, switch to the `render` prop for custom components

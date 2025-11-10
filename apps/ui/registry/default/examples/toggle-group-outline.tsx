@@ -1,6 +1,10 @@
 import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react"
 
-import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group"
+import {
+  Toggle,
+  ToggleGroup,
+  ToggleGroupSeparator,
+} from "@/registry/default/ui/toggle-group"
 
 export default function ToggleGroupOutline() {
   return (
@@ -8,9 +12,11 @@ export default function ToggleGroupOutline() {
       <Toggle value="bold" aria-label="Toggle bold">
         <BoldIcon />
       </Toggle>
+      <ToggleGroupSeparator />
       <Toggle value="italic" aria-label="Toggle italic">
         <ItalicIcon />
       </Toggle>
+      <ToggleGroupSeparator />
       <Toggle value="underline" aria-label="Toggle underline">
         <UnderlineIcon />
       </Toggle>

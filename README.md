@@ -79,15 +79,15 @@ This Turborepo has some additional tools already setup for you:
 To build all apps and packages:
 
 ```sh
-pnpm build
+bun run build
 ```
 
 To build a specific app:
 
 ```sh
-pnpm build --filter=www
-pnpm build --filter=ui
-pnpm build --filter=origin
+bun run build --filter=www
+bun run build --filter=ui
+bun run build --filter=origin
 ```
 
 #### Develop
@@ -95,15 +95,15 @@ pnpm build --filter=origin
 To develop all apps and packages:
 
 ```sh
-pnpm dev
+bun run dev
 ```
 
 To develop a specific app:
 
 ```sh
-pnpm dev --filter=www
-pnpm dev --filter=ui
-pnpm dev --filter=origin
+bun run dev --filter=www
+bun run dev --filter=ui
+bun run dev --filter=origin
 ```
 
 ## coss ui
@@ -128,7 +128,7 @@ Please see our [Contributing Guidelines](apps/ui/CONTRIBUTING.md) for more infor
 
 This repository uses a mixed licensing approach. The default license for this project is [AGPLv3.0](LICENSE).
 
-- **MIT**: The `apps/origin/` directory is licensed under its original MIT license
+- **MIT**: The `apps/origin/` and `apps/ui/` directories are licensed under its original MIT license
 - **AGPLv3**: All other directories are licensed under the GNU Affero General Public License v3.0
 
 For detailed information, see our [Licensing documentation](LICENSING.md).

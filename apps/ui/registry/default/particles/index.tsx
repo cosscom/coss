@@ -90,6 +90,7 @@ import DialogCloseConfirmation from "@/registry/default/examples/dialog-close-co
 import DialogDemo from "@/registry/default/examples/dialog-demo"
 import DialogFromMenu from "@/registry/default/examples/dialog-from-menu"
 import DialogNested from "@/registry/default/examples/dialog-nested"
+import EmptyDemo from "@/registry/default/examples/empty-demo"
 import FieldAutocomplete from "@/registry/default/examples/field-autocomplete"
 import FieldCheckbox from "@/registry/default/examples/field-checkbox"
 import FieldCheckboxGroup from "@/registry/default/examples/field-checkbox-group"
@@ -99,6 +100,7 @@ import FieldCompleteForm from "@/registry/default/examples/field-complete-form"
 import FieldDemo from "@/registry/default/examples/field-demo"
 import FieldDisabled from "@/registry/default/examples/field-disabled"
 import FieldError from "@/registry/default/examples/field-error"
+import FieldInputGroup from "@/registry/default/examples/field-input-group"
 import FieldNumberField from "@/registry/default/examples/field-number-field"
 import FieldRadio from "@/registry/default/examples/field-radio"
 import FieldRequired from "@/registry/default/examples/field-required"
@@ -111,11 +113,39 @@ import FieldsetDemo from "@/registry/default/examples/fieldset-demo"
 import FormDemo from "@/registry/default/examples/form-demo"
 import FormZod from "@/registry/default/examples/form-zod"
 import FrameDemo from "@/registry/default/examples/frame-demo"
+import GroupDefaultButton from "@/registry/default/examples/group-default-button"
 import GroupDemo from "@/registry/default/examples/group-demo"
+import GroupInputGroup from "@/registry/default/examples/group-input-group"
+import GroupLg from "@/registry/default/examples/group-lg"
+import GroupMenu from "@/registry/default/examples/group-menu"
+import GroupNested from "@/registry/default/examples/group-nested"
+import GroupPopup from "@/registry/default/examples/group-popup"
+import GroupSelect from "@/registry/default/examples/group-select"
+import GroupSm from "@/registry/default/examples/group-sm"
+import GroupVertical from "@/registry/default/examples/group-vertical"
+import GroupWithEndText from "@/registry/default/examples/group-with-end-text"
 import GroupWithInput from "@/registry/default/examples/group-with-input"
+import GroupWithText from "@/registry/default/examples/group-with-text"
 import InputDemo from "@/registry/default/examples/input-demo"
 import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
+import InputGroupDemo from "@/registry/default/examples/input-group-demo"
+import InputGroupDisabled from "@/registry/default/examples/input-group-disabled"
+import InputGroupLg from "@/registry/default/examples/input-group-lg"
+import InputGroupLoading from "@/registry/default/examples/input-group-loading"
+import InputGroupSm from "@/registry/default/examples/input-group-sm"
+import InputGroupWithTextarea from "@/registry/default/examples/input-group-textarea"
+import InputGroupWithBadge from "@/registry/default/examples/input-group-with-badge"
+import InputGroupWithButton from "@/registry/default/examples/input-group-with-button"
+import InputGroupWithEndIcon from "@/registry/default/examples/input-group-with-end-icon"
+import InputGroupWithEndText from "@/registry/default/examples/input-group-with-end-text"
+import InputGroupWithEndTooltip from "@/registry/default/examples/input-group-with-end-tooltip"
+import InputGroupWithIconButton from "@/registry/default/examples/input-group-with-icon-button"
+import InputGroupWithInnerLabel from "@/registry/default/examples/input-group-with-inner-label"
+import InputGroupWithKbd from "@/registry/default/examples/input-group-with-kbd"
+import InputGroupWithNumberField from "@/registry/default/examples/input-group-with-number-field"
+import InputGroupWithStartEndText from "@/registry/default/examples/input-group-with-start-end-text"
+import InputGroupWithStartText from "@/registry/default/examples/input-group-with-start-text"
 import InputLg from "@/registry/default/examples/input-lg"
 import InputSm from "@/registry/default/examples/input-sm"
 import InputWithButton from "@/registry/default/examples/input-with-button"
@@ -162,8 +192,11 @@ import SelectDisabled from "@/registry/default/examples/select-disabled"
 import SelectForm from "@/registry/default/examples/select-form"
 import SelectLg from "@/registry/default/examples/select-lg"
 import SelectMultiple from "@/registry/default/examples/select-multiple"
+import SelectOptionsWithIcon from "@/registry/default/examples/select-options-with-icon"
 import SelectSm from "@/registry/default/examples/select-sm"
 import SelectWithGroups from "@/registry/default/examples/select-with-groups"
+import SelectWithIcon from "@/registry/default/examples/select-with-icon"
+import SelectWithObjectValues from "@/registry/default/examples/select-with-object-values"
 import SelectWithoutAlignment from "@/registry/default/examples/select-without-alignment"
 import SeparatorDemo from "@/registry/default/examples/separator-demo"
 import SheetDemo from "@/registry/default/examples/sheet-demo"
@@ -203,7 +236,7 @@ import ToggleGroupDisabled from "@/registry/default/examples/toggle-group-disabl
 import ToggleGroupLg from "@/registry/default/examples/toggle-group-lg"
 import ToggleGroupMultiple from "@/registry/default/examples/toggle-group-multiple"
 import ToggleGroupOutline from "@/registry/default/examples/toggle-group-outline"
-import ToggleGroupOutlineWithSeparator from "@/registry/default/examples/toggle-group-outline-with-separator"
+import ToggleGroupOutlineVertical from "@/registry/default/examples/toggle-group-outline-vertical"
 import ToggleGroupSm from "@/registry/default/examples/toggle-group-sm"
 import ToggleGroupWithDisabledItem from "@/registry/default/examples/toggle-group-with-disabled-item"
 import ToggleIconGroup from "@/registry/default/examples/toggle-icon-group"
@@ -222,8 +255,16 @@ import ParticleBu5 from "@/registry/default/particles/particle-bu-5"
 import ParticleBu6 from "@/registry/default/particles/particle-bu-6"
 import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
 import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
+import ParticleGr1 from "@/registry/default/particles/particle-gr-1"
+import ParticleIn1 from "@/registry/default/particles/particle-in-1"
+import ParticleIn2 from "@/registry/default/particles/particle-in-2"
+import ParticleIn3 from "@/registry/default/particles/particle-in-3"
+import ParticleIn4 from "@/registry/default/particles/particle-in-4"
+import ParticleIn5 from "@/registry/default/particles/particle-in-5"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
+
+import GroupWithDisabledButton from "../examples/group-with-disabled-button"
 
 type ParticleComponent = React.ComponentType<any>
 
@@ -282,6 +323,160 @@ export const particles: ParticleItem[] = [
     id: "input-with-button",
     component: InputWithButton,
     category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-demo",
+    component: InputGroupDemo,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-icon",
+    component: InputGroupWithEndIcon,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-start-text",
+    component: InputGroupWithStartText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-text",
+    component: InputGroupWithEndText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-start-end-text",
+    component: InputGroupWithStartEndText,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-1",
+    component: ParticleIn1,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-end-tooltip",
+    component: InputGroupWithEndTooltip,
+    category: ["input", "button", "popover", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-number-field",
+    component: InputGroupWithNumberField,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-icon-button",
+    component: InputGroupWithIconButton,
+    category: ["input", "button", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-2",
+    component: ParticleIn2,
+    category: ["input", "button", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "field-input-group",
+    component: FieldInputGroup,
+    category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-3",
+    component: ParticleIn3,
+    category: ["input", "button", "popover", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-button",
+    component: InputGroupWithButton,
+    category: ["input", "button"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-badge",
+    component: InputGroupWithBadge,
+    category: ["input", "badge"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-kbd",
+    component: InputGroupWithKbd,
+    category: ["input", "kbd"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-4",
+    component: ParticleIn4,
+    category: ["input", "kbd"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-sm",
+    component: InputGroupSm,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-lg",
+    component: InputGroupLg,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-disabled",
+    component: InputGroupDisabled,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-loading",
+    component: InputGroupLoading,
+    category: ["input"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "particle-in-5",
+    component: ParticleIn5,
+    category: ["input", "spinner"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "input-group-with-inner-label",
+    component: InputGroupWithInnerLabel,
+    category: ["input", "button", "label", "popover", "tooltip"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
@@ -390,6 +585,13 @@ export const particles: ParticleItem[] = [
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
   },
   {
+    id: "input-group-textarea",
+    component: InputGroupWithTextarea,
+    category: ["textarea", "button", "menu", "tooltip"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-80",
+  },
+  {
     id: "select-demo",
     component: SelectDemo,
     category: ["select"],
@@ -434,6 +636,27 @@ export const particles: ParticleItem[] = [
   {
     id: "select-multiple",
     component: SelectMultiple,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-icon",
+    component: SelectWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-options-with-icon",
+    component: SelectOptionsWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-object-values",
+    component: SelectWithObjectValues,
     category: ["select"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
@@ -813,17 +1036,82 @@ export const particles: ParticleItem[] = [
   {
     id: "button-loading",
     component: ButtonLoading,
-    category: ["button"],
+    category: ["button", "loading"],
   },
   {
     id: "group-demo",
     component: GroupDemo,
-    category: ["group", "button"],
+    category: ["group", "button", "menu"],
   },
   {
     id: "group-with-input",
     component: GroupWithInput,
     category: ["group", "button", "input"],
+  },
+  {
+    id: "group-sm",
+    component: GroupSm,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-lg",
+    component: GroupLg,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-with-disabled-button",
+    component: GroupWithDisabledButton,
+    category: ["group", "button", "menu", "disabled"],
+  },
+  {
+    id: "group-default-button",
+    component: GroupDefaultButton,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "particle-gr-1",
+    component: ParticleGr1,
+    category: ["group", "select", "input", "button"],
+  },
+  {
+    id: "group-with-text",
+    component: GroupWithText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-with-end-text",
+    component: GroupWithEndText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-vertical",
+    component: GroupVertical,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-nested",
+    component: GroupNested,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-popup",
+    component: GroupPopup,
+    category: ["group", "button", "popover", "badge"],
+  },
+  {
+    id: "group-input-group",
+    component: GroupInputGroup,
+    category: ["group", "button", "input", "tooltip"],
+  },
+  {
+    id: "group-menu",
+    component: GroupMenu,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-select",
+    component: GroupSelect,
+    category: ["group", "select", "number field", "button"],
   },
   {
     id: "particle-bu-1",
@@ -1493,8 +1781,8 @@ export const particles: ParticleItem[] = [
     category: ["toggle"],
   },
   {
-    id: "toggle-group-outline-with-separator",
-    component: ToggleGroupOutlineWithSeparator,
+    id: "toggle-group-outline-vertical",
+    component: ToggleGroupOutlineVertical,
     category: ["toggle"],
   },
   {
@@ -1548,5 +1836,10 @@ export const particles: ParticleItem[] = [
     component: ParticlePa2,
     category: ["pagination", "select"],
     className: "**:data-[slot=particle-wrapper]:w-full",
+  },
+  {
+    id: "empty-demo",
+    component: EmptyDemo,
+    category: ["empty"],
   },
 ]

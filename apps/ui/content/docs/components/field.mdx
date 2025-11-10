@@ -58,18 +58,18 @@ npm install @base-ui-components/react
 ```tsx
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
   FieldValidity,
 } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 ```
 
 ```tsx
 <Field>
   <FieldLabel>Name</FieldLabel>
-  <FieldControl type="text" placeholder="Enter your name" />
+  <Input type="text" placeholder="Enter your name" />
   <FieldDescription>Visible on your profile</FieldDescription>
   <FieldError>Please enter a valid name</FieldError>
   <FieldValidity>
@@ -110,6 +110,13 @@ Enter an invalid email address and press enter to see the error.
 <ComponentPreview
   name="field-validity"
   className="[&_.preview>*]:w-full [&_.preview>*]:max-w-80"
+/>
+
+### Input Group
+
+<ComponentPreview
+  name="field-input-group"
+  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-64"
 />
 
 ### Autocomplete Field

@@ -1,10 +1,9 @@
 import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { CopyButton } from "@coss/ui/components/copy-button"
+import { getIconForLanguageExtension } from "@coss/ui/components/icons"
 import { InfoIcon } from "lucide-react"
-
-import { CopyButton } from "@workspace/ui/components/copy-button"
-import { getIconForLanguageExtension } from "@workspace/ui/components/icons"
 
 import { cn } from "@/lib/utils"
 import { CodeBlockCommand } from "@/components/code-block-command"
@@ -25,6 +24,7 @@ import {
   AlertTitle,
 } from "@/registry/default/ui/alert"
 import { Button } from "@/registry/default/ui/button"
+import { ScrollArea } from "@/registry/default/ui/scroll-area"
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs"
 
 export const mdxComponents = {
@@ -160,22 +160,21 @@ export const mdxComponents = {
     />
   ),
   img: ({ className, alt, ...props }: React.ComponentProps<"img">) => (
-    // eslint-disable-next-line @next/next/no-img-element
     <img className={cn("rounded-md", className)} alt={alt} {...props} />
   ),
   hr: ({ ...props }: React.ComponentProps<"hr">) => (
     <hr className="my-4 md:my-8" {...props} />
   ),
   table: ({ className, ...props }: React.ComponentProps<"table">) => (
-    <div className="my-6 w-full overflow-y-auto">
+    <ScrollArea
+      className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5"
+      orientation="horizontal"
+    >
       <table
-        className={cn(
-          "relative w-full overflow-hidden border-none text-sm",
-          className
-        )}
+        className={cn("relative w-full border-none text-sm", className)}
         {...props}
       />
-    </div>
+    </ScrollArea>
   ),
   tr: ({ className, ...props }: React.ComponentProps<"tr">) => (
     <tr
@@ -195,7 +194,7 @@ export const mdxComponents = {
   td: ({ className, ...props }: React.ComponentProps<"td">) => (
     <td
       className={cn(
-        "px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
+        "px-4 py-2 text-left whitespace-nowrap [&[align=center]]:text-center [&[align=right]]:text-right",
         className
       )}
       {...props}

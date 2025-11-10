@@ -3,6 +3,60 @@
   "homepage": "https://ui.shadcn.com",
   "items": [
     {
+      "name": "ui",
+      "type": "registry:ui",
+      "registryDependencies": [
+        "@coss/accordion",
+        "@coss/alert",
+        "@coss/alert-dialog",
+        "@coss/autocomplete",
+        "@coss/avatar",
+        "@coss/badge",
+        "@coss/breadcrumb",
+        "@coss/button",
+        "@coss/card",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/collapsible",
+        "@coss/combobox",
+        "@coss/dialog",
+        "@coss/empty",
+        "@coss/field",
+        "@coss/fieldset",
+        "@coss/form",
+        "@coss/frame",
+        "@coss/group",
+        "@coss/input",
+        "@coss/input-group",
+        "@coss/kbd",
+        "@coss/label",
+        "@coss/menu",
+        "@coss/meter",
+        "@coss/number-field",
+        "@coss/pagination",
+        "@coss/popover",
+        "@coss/preview-card",
+        "@coss/progress",
+        "@coss/radio-group",
+        "@coss/scroll-area",
+        "@coss/select",
+        "@coss/separator",
+        "@coss/sheet",
+        "@coss/skeleton",
+        "@coss/slider",
+        "@coss/spinner",
+        "@coss/switch",
+        "@coss/table",
+        "@coss/tabs",
+        "@coss/textarea",
+        "@coss/toast",
+        "@coss/toggle",
+        "@coss/toggle-group",
+        "@coss/toolbar",
+        "@coss/tooltip"
+      ]
+    },
+    {
       "name": "accordion",
       "type": "registry:ui",
       "dependencies": [
@@ -236,6 +290,16 @@
       ]
     },
     {
+      "name": "empty",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/empty.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "field",
       "type": "registry:ui",
       "dependencies": [
@@ -317,6 +381,31 @@
       "files": [
         {
           "path": "registry/default/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/field",
+        "@coss/textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/input-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/kbd.tsx",
           "type": "registry:ui"
         }
       ]
@@ -505,6 +594,28 @@
       ]
     },
     {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "--animate-skeleton": "skeleton 2s -1s infinite linear"
+        }
+      },
+      "css": {
+        "@keyframes skeleton": {
+          "to": {
+            "background-position": "-200% 0"
+          }
+        }
+      }
+    },
+    {
       "name": "slider",
       "type": "registry:ui",
       "dependencies": [
@@ -513,6 +624,16 @@
       "files": [
         {
           "path": "registry/default/ui/slider.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "files": [
+        {
+          "path": "registry/default/ui/spinner.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1744,7 +1865,8 @@
         "@coss/button",
         "@coss/select",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2254,7 +2376,8 @@
         "@coss/dialog",
         "@coss/button",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2297,7 +2420,8 @@
       "registryDependencies": [
         "@coss/dialog",
         "@coss/button",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2319,7 +2443,8 @@
         "@coss/sheet",
         "@coss/button",
         "@coss/form",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2403,6 +2528,7 @@
         "@coss/select",
         "@coss/checkbox",
         "@coss/form",
+        "@coss/input",
         "@coss/button"
       ],
       "files": [
@@ -2427,7 +2553,8 @@
       "description": "Field with description",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2447,7 +2574,8 @@
       "description": "Field in disabled state",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2468,7 +2596,8 @@
       "description": "Field showing validation error",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2598,7 +2727,8 @@
       "description": "Field with required indicator",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2703,7 +2833,8 @@
       "description": "Show field validity state",
       "type": "registry:example",
       "registryDependencies": [
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2721,7 +2852,8 @@
       "type": "registry:example",
       "registryDependencies": [
         "@coss/fieldset",
-        "@coss/field"
+        "@coss/field",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2744,7 +2876,8 @@
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
-        "@coss/button"
+        "@coss/button",
+        "@coss/input"
       ],
       "files": [
         {
@@ -2766,7 +2899,8 @@
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
-        "@coss/button"
+        "@coss/button",
+        "@coss/input"
       ],
       "dependencies": [
         "zod"
@@ -2784,6 +2918,24 @@
         "validation",
         "label",
         "zod"
+      ]
+    },
+    {
+      "name": "empty-demo",
+      "description": "Basic empty state with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/empty",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/empty-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "empty"
       ]
     },
     {
@@ -2840,12 +2992,13 @@
     },
     {
       "name": "group-with-input",
-      "description": "Group with input",
+      "description": "Group with input and copy button",
       "type": "registry:example",
       "registryDependencies": [
         "@coss/group",
         "@coss/button",
-        "@coss/input"
+        "@coss/input",
+        "@coss/tooltip"
       ],
       "files": [
         {
@@ -2854,7 +3007,264 @@
         }
       ],
       "categories": [
-        "group"
+        "group",
+        "input",
+        "copy",
+        "button",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "group-sm",
+      "description": "Group with small buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-sm.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-lg",
+      "description": "Group with large buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-lg.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-with-disabled-button",
+      "description": "Group with disabled button",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-disabled-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-default-button",
+      "description": "Group with default style buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-default-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-with-text",
+      "description": "Group with start labeled text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input",
+        "@coss/label"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "input",
+        "label"
+      ]
+    },
+    {
+      "name": "group-with-end-text",
+      "description": "Group with end text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-with-end-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "input"
+      ]
+    },
+    {
+      "name": "group-vertical",
+      "description": "Vertical group of buttons",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-vertical.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button"
+      ]
+    },
+    {
+      "name": "group-nested",
+      "description": "Pagination example made with nested groups",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-nested.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button"
+      ]
+    },
+    {
+      "name": "group-popup",
+      "description": "Group with button and popup",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/popover",
+        "@coss/badge"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-popup.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "popover",
+        "badge"
+      ]
+    },
+    {
+      "name": "group-input-group",
+      "description": "Nested groups with input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-input-group.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "input",
+        "input group",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "group-menu",
+      "description": "Group with button and menu",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-menu.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "button",
+        "menu"
+      ]
+    },
+    {
+      "name": "group-select",
+      "description": "Group with select and number field",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/select",
+        "@coss/number-field",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/group-select.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "group",
+        "select",
+        "number field",
+        "button"
       ]
     },
     {
@@ -2963,6 +3373,387 @@
       "categories": [
         "input",
         "button"
+      ]
+    },
+    {
+      "name": "input-group-demo",
+      "description": "Basic input group with search icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-sm",
+      "description": "Small input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-sm.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-lg",
+      "description": "Large input group",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-lg.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-disabled",
+      "description": "Input group with disabled state",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-disabled.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "disabled",
+        "button"
+      ]
+    },
+    {
+      "name": "field-input-group",
+      "description": "Input group with field",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/field-input-group.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "field",
+        "button"
+      ]
+    },
+    {
+      "name": "input-group-loading",
+      "description": "Input group with end loading state",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-loading.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "loading",
+        "spinner"
+      ]
+    },
+    {
+      "name": "input-group-textarea",
+      "description": "Input group with textarea",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/menu",
+        "@coss/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-textarea.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input group",
+        "textarea",
+        "button",
+        "menu",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "input-group-with-badge",
+      "description": "Input group with badge",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/badge"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-badge.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "badge"
+      ]
+    },
+    {
+      "name": "input-group-with-button",
+      "description": "Input group with button",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "button"
+      ]
+    },
+    {
+      "name": "input-group-with-end-icon",
+      "description": "Input group with end icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-end-icon.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-with-end-text",
+      "description": "Input group with end text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-end-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-with-end-tooltip",
+      "description": "Input group with end tooltip",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/popover"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-end-tooltip.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "popover",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "input-group-with-icon-button",
+      "description": "Input group with copy button",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/use-copy-to-clipboard",
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-icon-button.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "input-group-with-inner-label",
+      "description": "Input group with inner label",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/label",
+        "@coss/popover"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-inner-label.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "label",
+        "popover",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "input-group-with-kbd",
+      "description": "Input group with keyboard shortcut",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/kbd"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-kbd.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "kbd",
+        "search"
+      ]
+    },
+    {
+      "name": "input-group-with-number-field",
+      "description": "Input group with number field",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/number-field"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-number-field.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "number field"
+      ]
+    },
+    {
+      "name": "input-group-with-start-end-text",
+      "description": "Input group with start and end text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-start-end-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "input-group-with-start-text",
+      "description": "Input group with start text",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/input-group"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/input-group-with-start-text.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group"
+      ]
+    },
+    {
+      "name": "kbd-demo",
+      "description": "Keyboard shortcuts",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/kbd"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/kbd-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "kbd"
       ]
     },
     {
@@ -3772,6 +4563,57 @@
       ]
     },
     {
+      "name": "select-with-icon",
+      "description": "Select with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/select"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/select-with-icon.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "select"
+      ]
+    },
+    {
+      "name": "select-options-with-icon",
+      "description": "Select options with icon",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/select"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/select-options-with-icon.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "select"
+      ]
+    },
+    {
+      "name": "select-with-object-values",
+      "description": "Select with object values",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/select"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/select-with-object-values.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "select"
+      ]
+    },
+    {
       "name": "select-form",
       "description": "Select in a form",
       "type": "registry:example",
@@ -3810,6 +4652,42 @@
       ],
       "categories": [
         "separator"
+      ]
+    },
+    {
+      "name": "skeleton-demo",
+      "description": "Skeleton demo",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/button",
+        "@coss/skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/skeleton-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "skeleton"
+      ]
+    },
+    {
+      "name": "skeleton-only",
+      "description": "Skeleton only",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/skeleton-only.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "skeleton"
       ]
     },
     {
@@ -3907,6 +4785,24 @@
         "button",
         "helper",
         "hint"
+      ]
+    },
+    {
+      "name": "spinner-demo",
+      "description": "Spinner demo",
+      "type": "registry:example",
+      "registryDependencies": [
+        "@coss/spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/default/examples/spinner-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "categories": [
+        "spinner",
+        "loading"
       ]
     },
     {
@@ -4450,21 +5346,22 @@
       ]
     },
     {
-      "name": "toggle-group-outline-with-separator",
-      "description": "Toggle group with outline toggles and separator",
+      "name": "toggle-group-outline-vertical",
+      "description": "Toggle group with outline toggles and vertical layout",
       "type": "registry:example",
       "registryDependencies": [
         "@coss/toggle-group"
       ],
       "files": [
         {
-          "path": "registry/default/examples/toggle-group-outline-with-separator.tsx",
+          "path": "registry/default/examples/toggle-group-outline-vertical.tsx",
           "type": "registry:example"
         }
       ],
       "categories": [
         "toggle group",
-        "toggle"
+        "toggle",
+        "vertical"
       ]
     },
     {
@@ -4679,9 +5576,6 @@
       "registryDependencies": [
         "@coss/button"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-1.tsx",
@@ -4698,9 +5592,6 @@
       "type": "registry:block",
       "registryDependencies": [
         "@coss/button"
-      ],
-      "dependencies": [
-        "lucide-react"
       ],
       "files": [
         {
@@ -4719,9 +5610,6 @@
       "registryDependencies": [
         "@coss/button"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-3.tsx",
@@ -4738,9 +5626,6 @@
       "type": "registry:block",
       "registryDependencies": [
         "@coss/button"
-      ],
-      "dependencies": [
-        "lucide-react"
       ],
       "files": [
         {
@@ -4779,9 +5664,6 @@
       "registryDependencies": [
         "@coss/button"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-6.tsx",
@@ -4799,9 +5681,6 @@
       "registryDependencies": [
         "@coss/button"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-7.tsx",
@@ -4815,14 +5694,11 @@
     {
       "name": "particle-fr-1",
       "description": "Frame with collapsible content and delete button",
-      "type": "registry:example",
+      "type": "registry:block",
       "registryDependencies": [
         "@coss/frame",
         "@coss/collapsible",
         "@coss/button"
-      ],
-      "dependencies": [
-        "lucide-react"
       ],
       "files": [
         {
@@ -4833,6 +5709,114 @@
       "categories": [
         "frame",
         "collapsible"
+      ]
+    },
+    {
+      "name": "particle-in-1",
+      "description": "Input with start text and end tooltip",
+      "type": "registry:block",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/popover"
+      ],
+      "files": [
+        {
+          "path": "registry/default/particles/particle-in-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "popover"
+      ]
+    },
+    {
+      "name": "particle-in-2",
+      "description": "Password input with toggle visibility",
+      "type": "registry:block",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/default/particles/particle-in-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "tooltip"
+      ]
+    },
+    {
+      "name": "particle-in-3",
+      "description": "Input group mimicking a URL bar",
+      "type": "registry:block",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/popover"
+      ],
+      "files": [
+        {
+          "path": "registry/default/particles/particle-in-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "popover"
+      ]
+    },
+    {
+      "name": "particle-in-4",
+      "description": "Input group with keyboard shortcut",
+      "type": "registry:block",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/kbd"
+      ],
+      "files": [
+        {
+          "path": "registry/default/particles/particle-in-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "kbd",
+        "search"
+      ]
+    },
+    {
+      "name": "particle-in-5",
+      "description": "Input group with start loading spinner",
+      "type": "registry:block",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/default/particles/particle-in-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "categories": [
+        "input",
+        "input group",
+        "loading",
+        "spinner"
       ]
     },
     {
@@ -4930,6 +5914,40 @@
           "ring": "oklch(0.552 0.016 285.938)"
         }
       }
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "registry/default/lib/utils.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "use-mobile",
+      "type": "registry:hook",
+      "files": [
+        {
+          "path": "registry/default/hooks/use-mobile.tsx",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-copy-to-clipboard",
+      "type": "registry:hook",
+      "files": [
+        {
+          "path": "registry/default/hooks/use-copy-to-clipboard.tsx",
+          "type": "registry:hook"
+        }
+      ]
     }
   ]
 }

@@ -1,11 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { Icons } from "@coss/ui/components/icons"
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard"
 import { Tick02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-
-import { Icons } from "@workspace/ui/components/icons"
-import { useCopyToClipboard } from "@workspace/ui/hooks/use-copy-to-clipboard"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/registry/default/ui/button"

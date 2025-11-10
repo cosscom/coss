@@ -4,13 +4,9 @@ import * as React from "react"
 import { z } from "zod"
 
 import { Button } from "@/registry/default/ui/button"
-import {
-  Field,
-  FieldControl,
-  FieldError,
-  FieldLabel,
-} from "@/registry/default/ui/field"
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
 
 const schema = z.object({
   name: z.string().min(1, { message: "Please enter a name." }),
@@ -25,7 +21,7 @@ async function submitForm(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault()
 
   const formData = new FormData(event.currentTarget)
-  const result = schema.safeParse(Object.fromEntries(formData as any))
+  const result = schema.safeParse(Object.fromEntries(formData))
 
   if (!result.success) {
     const { fieldErrors } = z.flattenError(result.error)
@@ -68,12 +64,12 @@ export default function FormZodDemo() {
     >
       <Field name="name">
         <FieldLabel>Name</FieldLabel>
-        <FieldControl placeholder="Enter name" disabled={loading} />
+        <Input placeholder="Enter name" disabled={loading} />
         <FieldError />
       </Field>
       <Field name="age">
         <FieldLabel>Age</FieldLabel>
-        <FieldControl placeholder="Enter age" disabled={loading} />
+        <Input placeholder="Enter age" disabled={loading} />
         <FieldError />
       </Field>
       <Button type="submit" disabled={loading}>

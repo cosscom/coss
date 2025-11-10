@@ -2,7 +2,7 @@
 
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui-components/react/preview-card"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 const PreviewCard = PreviewCardPrimitive.Root
 

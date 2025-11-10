@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 function Frame({ className, ...props }: React.ComponentProps<"div">) {
   return (

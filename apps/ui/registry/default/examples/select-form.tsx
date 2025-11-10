@@ -40,7 +40,13 @@ export default function SelectForm() {
     <Form onSubmit={onSubmit} className="max-w-64">
       <Field>
         <FieldLabel>Framework</FieldLabel>
-        <Select name="framework" items={items} disabled={loading} required>
+        <Select
+          name="framework"
+          items={items}
+          disabled={loading}
+          required
+          aria-label="Select framework"
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

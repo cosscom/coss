@@ -1,5 +1,5 @@
-import { PageHeader, PageHeaderHeading } from "@workspace/ui/components/page-header";
-import { CodeBlock } from "@workspace/ui/components/code-block";
+import { PageHeader, PageHeaderHeading } from "@coss/ui/components/page-header";
+import { CodeBlock } from "@coss/ui/components/code-block";
 
 export default async function Page() {
   const code = `"dependencies": {
@@ -14,7 +14,7 @@ export default async function Page() {
   return (
     <main className="container w-full flex-1 mb-16 lg:mb-20">
       <PageHeader>
-        <PageHeaderHeading>the <span className="relative z-10 before:absolute before:inset-y-0 before:-inset-x-1 before:bg-gradient-to-r before:from-blue-500 before:to-orange-500 before:via-purple-500 before:opacity-16 before:-rotate-1 before:pointer-events-none before:z-10 before:mix-blend-hard-ligt">everything but AI</span> company.</PageHeaderHeading>
+        <PageHeaderHeading>the <span className="relative z-4 before:absolute before:inset-y-0 before:-inset-x-1 before:bg-gradient-to-r before:from-blue-500 before:to-orange-500 before:via-purple-500 before:opacity-16 before:-rotate-1 before:pointer-events-none before:z-4 before:mix-blend-hard-ligt">everything but AI</span> company.</PageHeaderHeading>
       </PageHeader>
       <div className="max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">dear friend,</p>

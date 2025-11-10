@@ -17,7 +17,7 @@ Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information o
 Run development server:
 
 ```sh
-pnpm run dev
+bun run dev
 ```
 
 Open http://localhost:4000 with your browser to see the result.
@@ -29,13 +29,13 @@ Open http://localhost:4000 with your browser to see the result.
 Check for linting errors:
 
 ```sh
-pnpm run lint
+bun run lint
 ```
 
 Fix linting errors automatically:
 
 ```sh
-pnpm run lint:fix
+bun run lint:fix
 ```
 
 ### Formatting
@@ -43,13 +43,13 @@ pnpm run lint:fix
 Check code formatting:
 
 ```sh
-pnpm run format:check
+bun run format:check
 ```
 
 Format code automatically:
 
 ```sh
-pnpm run format:write
+bun run format:write
 ```
 
 ### Type Checking
@@ -57,7 +57,7 @@ pnpm run format:write
 Run TypeScript type checking:
 
 ```sh
-pnpm run typecheck
+bun run typecheck
 ```
 
 ## Resources
@@ -71,7 +71,7 @@ pnpm run typecheck
 Build shadcn/ui registry:
 
 ```sh
-pnpm run build:registry
+bun run registry:build
 ```
 
 This build script compiles all the registry items into a json file that is compatible with both v0 and the shadcn/ui cli. Read the [documentation](https://ui.shadcn.com/docs/registry) for further details.

@@ -6,12 +6,12 @@ import { Button } from "@/registry/default/ui/button"
 import { Checkbox } from "@/registry/default/ui/checkbox"
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/registry/default/ui/field"
 import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
 import {
   Select,
   SelectItem,
@@ -46,7 +46,7 @@ export default function FieldCompleteFormDemo() {
         <FieldLabel>
           Full Name <span className="text-destructive">*</span>
         </FieldLabel>
-        <FieldControl
+        <Input
           name="fullName"
           type="text"
           placeholder="John Doe"
@@ -60,7 +60,7 @@ export default function FieldCompleteFormDemo() {
         <FieldLabel>
           Email <span className="text-destructive">*</span>
         </FieldLabel>
-        <FieldControl
+        <Input
           name="email"
           type="email"
           placeholder="john@example.com"

@@ -1,9 +1,14 @@
 {
-  "extends": "@workspace/typescript-config/react-library.json",
+  "extends": "@coss/typescript-config/react-library.json",
   "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["next", "react", "node"],
     "baseUrl": ".",
     "paths": {
-      "@workspace/ui/*": ["./src/*"]
+      "@coss/ui/*": ["./src/*"]
     }
   },
   "include": ["."],
