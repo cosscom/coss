@@ -2,7 +2,6 @@
 
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldLabel,
 } from "@/registry/default/ui/field"
