@@ -1,13 +1,11 @@
 import type { NextConfig } from "next"
 import { createMDX } from "fumadocs-mdx/next"
 
-const { NEXT_PUBLIC_ORIGIN_URL } = process.env
-
 const withMDX = createMDX()
 
 const nextConfig: NextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "/ui",
-  transpilePackages: ["@workspace/ui"],
+  transpilePackages: ["@coss/ui"],
   async redirects() {
     return [
       {

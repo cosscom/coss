@@ -4,7 +4,7 @@ import * as React from "react"
 import { Field as FieldPrimitive } from "@base-ui-components/react/field"
 import { mergeProps } from "@base-ui-components/react/merge-props"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 type TextareaProps = React.ComponentProps<"textarea"> & {
   size?: "sm" | "default" | "lg" | number
@@ -30,7 +30,7 @@ function Textarea({
       }
     >
       <FieldPrimitive.Control
-        render={(controlProps) => (
+        render={(defaultProps) => (
           <textarea
             data-slot="textarea"
             className={cn(
@@ -40,7 +40,7 @@ function Textarea({
               size === "lg" &&
                 "min-h-18.5 py-[calc(--spacing(2)-1px)] max-sm:min-h-21.5"
             )}
-            {...mergeProps(props, controlProps)}
+            {...mergeProps(defaultProps, props)}
           />
         )}
       />

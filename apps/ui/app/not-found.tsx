@@ -1,12 +1,11 @@
 import { Metadata } from "next"
 import Link from "next/link"
-import { RiArrowLeftLine } from "@remixicon/react"
-
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@workspace/ui/components/page-header"
+} from "@coss/ui/components/page-header"
+import { RiArrowLeftLine } from "@remixicon/react"
 
 import { Button } from "@/registry/default/ui/button"
 

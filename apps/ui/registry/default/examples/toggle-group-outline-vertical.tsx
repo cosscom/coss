@@ -6,17 +6,21 @@ import {
   ToggleGroupSeparator,
 } from "@/registry/default/ui/toggle-group"
 
-export default function ToggleGroupOutlineWithSeparator() {
+export default function ToggleGroupOutline() {
   return (
-    <ToggleGroup variant="outline" defaultValue={["bold"]}>
+    <ToggleGroup
+      orientation="vertical"
+      variant="outline"
+      defaultValue={["bold"]}
+    >
       <Toggle value="bold" aria-label="Toggle bold">
         <BoldIcon />
       </Toggle>
-      <ToggleGroupSeparator />
+      <ToggleGroupSeparator orientation="horizontal" />
       <Toggle value="italic" aria-label="Toggle italic">
         <ItalicIcon />
       </Toggle>
-      <ToggleGroupSeparator />
+      <ToggleGroupSeparator orientation="horizontal" />
       <Toggle value="underline" aria-label="Toggle underline">
         <UnderlineIcon />
       </Toggle>

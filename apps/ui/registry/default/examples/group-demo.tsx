@@ -1,26 +1,60 @@
-import { EllipsisIcon, FilesIcon, FilmIcon } from "lucide-react"
+import {
+  ArchiveIcon,
+  EditIcon,
+  EllipsisIcon,
+  FilesIcon,
+  FilmIcon,
+  ShareIcon,
+  TrashIcon,
+} from "lucide-react"
 
 import { Button } from "@/registry/default/ui/button"
-import { Group, GroupItem, GroupSeparator } from "@/registry/default/ui/group"
+import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import {
+  Menu,
+  MenuItem,
+  MenuPopup,
+  MenuTrigger,
+} from "@/registry/default/ui/menu"
 
 export default function GroupDemo() {
   return (
-    <Group>
-      <GroupItem render={<Button variant="outline" />}>
+    <Group aria-label="File actions">
+      <Button variant="outline">
         <FilesIcon />
         Files
-      </GroupItem>
+      </Button>
       <GroupSeparator />
-      <GroupItem render={<Button variant="outline" />}>
+      <Button variant="outline">
         <FilmIcon />
         Media
-      </GroupItem>
+      </Button>
       <GroupSeparator />
-      <GroupItem
-        render={<Button variant="outline" size="icon" aria-label="Menu" />}
-      >
-        <EllipsisIcon />
-      </GroupItem>
+      <Menu>
+        <MenuTrigger
+          render={<Button variant="outline" size="icon" aria-label="Menu" />}
+        >
+          <EllipsisIcon className="size-4" />
+        </MenuTrigger>
+        <MenuPopup align="end">
+          <MenuItem>
+            <EditIcon />
+            Edit
+          </MenuItem>
+          <MenuItem>
+            <ArchiveIcon />
+            Archive
+          </MenuItem>
+          <MenuItem>
+            <ShareIcon />
+            Share
+          </MenuItem>
+          <MenuItem variant="destructive">
+            <TrashIcon />
+            Delete
+          </MenuItem>
+        </MenuPopup>
+      </Menu>
     </Group>
   )
 }

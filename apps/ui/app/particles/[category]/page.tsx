@@ -1,12 +1,11 @@
 import * as React from "react"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@workspace/ui/components/page-header"
+} from "@coss/ui/components/page-header"
 
 import { getUniqueParticleCategories } from "@/lib/particle-categories"
 import { cn } from "@/lib/utils"

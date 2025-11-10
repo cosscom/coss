@@ -59,7 +59,6 @@ import ButtonOutline from "@/registry/default/examples/button-outline"
 import ButtonSecondary from "@/registry/default/examples/button-secondary"
 import ButtonSm from "@/registry/default/examples/button-sm"
 import ButtonWithIcon from "@/registry/default/examples/button-with-icon"
-import ButtonWithKbd from "@/registry/default/examples/button-with-kbd"
 import ButtonWithLink from "@/registry/default/examples/button-with-link"
 import ButtonXl from "@/registry/default/examples/button-xl"
 import ButtonXs from "@/registry/default/examples/button-xs"
@@ -114,8 +113,19 @@ import FieldsetDemo from "@/registry/default/examples/fieldset-demo"
 import FormDemo from "@/registry/default/examples/form-demo"
 import FormZod from "@/registry/default/examples/form-zod"
 import FrameDemo from "@/registry/default/examples/frame-demo"
+import GroupDefaultButton from "@/registry/default/examples/group-default-button"
 import GroupDemo from "@/registry/default/examples/group-demo"
+import GroupInputGroup from "@/registry/default/examples/group-input-group"
+import GroupLg from "@/registry/default/examples/group-lg"
+import GroupMenu from "@/registry/default/examples/group-menu"
+import GroupNested from "@/registry/default/examples/group-nested"
+import GroupPopup from "@/registry/default/examples/group-popup"
+import GroupSelect from "@/registry/default/examples/group-select"
+import GroupSm from "@/registry/default/examples/group-sm"
+import GroupVertical from "@/registry/default/examples/group-vertical"
+import GroupWithEndText from "@/registry/default/examples/group-with-end-text"
 import GroupWithInput from "@/registry/default/examples/group-with-input"
+import GroupWithText from "@/registry/default/examples/group-with-text"
 import InputDemo from "@/registry/default/examples/input-demo"
 import InputDisabled from "@/registry/default/examples/input-disabled"
 import InputFile from "@/registry/default/examples/input-file"
@@ -182,8 +192,11 @@ import SelectDisabled from "@/registry/default/examples/select-disabled"
 import SelectForm from "@/registry/default/examples/select-form"
 import SelectLg from "@/registry/default/examples/select-lg"
 import SelectMultiple from "@/registry/default/examples/select-multiple"
+import SelectOptionsWithIcon from "@/registry/default/examples/select-options-with-icon"
 import SelectSm from "@/registry/default/examples/select-sm"
 import SelectWithGroups from "@/registry/default/examples/select-with-groups"
+import SelectWithIcon from "@/registry/default/examples/select-with-icon"
+import SelectWithObjectValues from "@/registry/default/examples/select-with-object-values"
 import SelectWithoutAlignment from "@/registry/default/examples/select-without-alignment"
 import SeparatorDemo from "@/registry/default/examples/separator-demo"
 import SheetDemo from "@/registry/default/examples/sheet-demo"
@@ -223,7 +236,7 @@ import ToggleGroupDisabled from "@/registry/default/examples/toggle-group-disabl
 import ToggleGroupLg from "@/registry/default/examples/toggle-group-lg"
 import ToggleGroupMultiple from "@/registry/default/examples/toggle-group-multiple"
 import ToggleGroupOutline from "@/registry/default/examples/toggle-group-outline"
-import ToggleGroupOutlineWithSeparator from "@/registry/default/examples/toggle-group-outline-with-separator"
+import ToggleGroupOutlineVertical from "@/registry/default/examples/toggle-group-outline-vertical"
 import ToggleGroupSm from "@/registry/default/examples/toggle-group-sm"
 import ToggleGroupWithDisabledItem from "@/registry/default/examples/toggle-group-with-disabled-item"
 import ToggleIconGroup from "@/registry/default/examples/toggle-icon-group"
@@ -242,6 +255,7 @@ import ParticleBu5 from "@/registry/default/particles/particle-bu-5"
 import ParticleBu6 from "@/registry/default/particles/particle-bu-6"
 import ParticleBu7 from "@/registry/default/particles/particle-bu-7"
 import ParticleFr1 from "@/registry/default/particles/particle-fr-1"
+import ParticleGr1 from "@/registry/default/particles/particle-gr-1"
 import ParticleIn1 from "@/registry/default/particles/particle-in-1"
 import ParticleIn2 from "@/registry/default/particles/particle-in-2"
 import ParticleIn3 from "@/registry/default/particles/particle-in-3"
@@ -249,6 +263,8 @@ import ParticleIn4 from "@/registry/default/particles/particle-in-4"
 import ParticleIn5 from "@/registry/default/particles/particle-in-5"
 import ParticlePa1 from "@/registry/default/particles/particle-pa-1"
 import ParticlePa2 from "@/registry/default/particles/particle-pa-2"
+
+import GroupWithDisabledButton from "../examples/group-with-disabled-button"
 
 type ParticleComponent = React.ComponentType<any>
 
@@ -620,6 +636,27 @@ export const particles: ParticleItem[] = [
   {
     id: "select-multiple",
     component: SelectMultiple,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-icon",
+    component: SelectWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-options-with-icon",
+    component: SelectOptionsWithIcon,
+    category: ["select"],
+    className:
+      "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
+  },
+  {
+    id: "select-with-object-values",
+    component: SelectWithObjectValues,
     category: ["select"],
     className:
       "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64",
@@ -997,11 +1034,6 @@ export const particles: ParticleItem[] = [
     category: ["button"],
   },
   {
-    id: "button-with-kbd",
-    component: ButtonWithKbd,
-    category: ["button", "kbd"],
-  },
-  {
     id: "button-loading",
     component: ButtonLoading,
     category: ["button", "loading"],
@@ -1009,12 +1041,77 @@ export const particles: ParticleItem[] = [
   {
     id: "group-demo",
     component: GroupDemo,
-    category: ["group", "button"],
+    category: ["group", "button", "menu"],
   },
   {
     id: "group-with-input",
     component: GroupWithInput,
     category: ["group", "button", "input"],
+  },
+  {
+    id: "group-sm",
+    component: GroupSm,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-lg",
+    component: GroupLg,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-with-disabled-button",
+    component: GroupWithDisabledButton,
+    category: ["group", "button", "menu", "disabled"],
+  },
+  {
+    id: "group-default-button",
+    component: GroupDefaultButton,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "particle-gr-1",
+    component: ParticleGr1,
+    category: ["group", "select", "input", "button"],
+  },
+  {
+    id: "group-with-text",
+    component: GroupWithText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-with-end-text",
+    component: GroupWithEndText,
+    category: ["group", "input"],
+  },
+  {
+    id: "group-vertical",
+    component: GroupVertical,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-nested",
+    component: GroupNested,
+    category: ["group", "button"],
+  },
+  {
+    id: "group-popup",
+    component: GroupPopup,
+    category: ["group", "button", "popover", "badge"],
+  },
+  {
+    id: "group-input-group",
+    component: GroupInputGroup,
+    category: ["group", "button", "input", "tooltip"],
+  },
+  {
+    id: "group-menu",
+    component: GroupMenu,
+    category: ["group", "button", "menu"],
+  },
+  {
+    id: "group-select",
+    component: GroupSelect,
+    category: ["group", "select", "number field", "button"],
   },
   {
     id: "particle-bu-1",
@@ -1684,8 +1781,8 @@ export const particles: ParticleItem[] = [
     category: ["toggle"],
   },
   {
-    id: "toggle-group-outline-with-separator",
-    component: ToggleGroupOutlineWithSeparator,
+    id: "toggle-group-outline-vertical",
+    component: ToggleGroupOutlineVertical,
     category: ["toggle"],
   },
   {

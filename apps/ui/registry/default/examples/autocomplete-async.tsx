@@ -62,7 +62,7 @@ export default function AutocompleteAsync() {
       try {
         const results = await searchMovies(searchValue, contains)
         if (!ignore) setSearchResults(results)
-      } catch (err) {
+      } catch {
         if (!ignore) {
           setError("Failed to fetch movies. Please try again.")
           setSearchResults([])
@@ -116,7 +116,7 @@ export default function AutocompleteAsync() {
           </AutocompleteStatus>
           <AutocompleteList>
             {(movie: Movie) => (
-              <AutocompleteItem key={movie.id} value={movie as any}>
+              <AutocompleteItem key={movie.id} value={movie}>
                 <div className="flex w-full flex-col gap-1">
                   <div className="font-medium">{movie.title}</div>
                   <div className="text-xs text-muted-foreground">

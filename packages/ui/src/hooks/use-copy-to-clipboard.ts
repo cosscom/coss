@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
 export function useCopyToClipboard({
   timeout = 2000,
   onCopy,
 }: {
-  timeout?: number
-  onCopy?: () => void
+  timeout?: number;
+  onCopy?: () => void;
 } = {}) {
   const [isCopied, setIsCopied] = React.useState(false)
   const timeoutIdRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const copyToClipboard = (value: string) => {
     if (typeof window === "undefined" || !navigator.clipboard.writeText) {
-      return
+      return;
     }
 
-    if (!value) return
+    if (!value) return;
 
     navigator.clipboard.writeText(value).then(() => {
       if (timeoutIdRef.current) {
@@ -26,7 +26,7 @@ export function useCopyToClipboard({
       setIsCopied(true)
 
       if (onCopy) {
-        onCopy()
+        onCopy();
       }
 
       if (timeout !== 0) {
@@ -47,5 +47,5 @@ export function useCopyToClipboard({
     }
   }, [])
 
-  return { isCopied, copyToClipboard }
+  return { isCopied, copyToClipboard };
 }

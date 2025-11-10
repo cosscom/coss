@@ -2,7 +2,7 @@
 
 import { Popover as PopoverPrimitive } from "@base-ui-components/react/popover"
 
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils"
 
 const Popover = PopoverPrimitive.Root
 
