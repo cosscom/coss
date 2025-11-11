@@ -4090,9 +4090,6 @@
         "@coss/number-field",
         "@coss/label"
       ],
-      "dependencies": [
-        "@radix-ui/react-label"
-      ],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-label.tsx",

@@ -1,6 +1,6 @@
 import { source } from "@/lib/source"
-import { SidebarProvider } from "@/components/ui/sidebar"
 import { DocsSidebar } from "@/components/docs-sidebar"
+import { SidebarProvider } from "@/registry/default/ui/sidebar"
 
 export default function DocsLayout({
   children,

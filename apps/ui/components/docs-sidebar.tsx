@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 
 import { PAGES_NEW } from "@/lib/docs"
 import type { source } from "@/lib/source"
+import { Badge } from "@/registry/default/ui/badge"
 import {
   Sidebar,
   SidebarContent,
@@ -14,8 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Badge } from "@/registry/default/ui/badge"
+} from "@/registry/default/ui/sidebar"
 
 export function DocsSidebar({
   tree,
@@ -44,16 +44,14 @@ export function DocsSidebar({
                       item.type === "page" && (
                         <SidebarMenuItem key={item.url}>
                           <SidebarMenuButton
-                            asChild
+                            render={<Link href={item.url} />}
                             isActive={item.url === pathname}
                             className="from-secondary to-secondary/64 ps-3.5 text-sidebar-foreground/64 hover:bg-transparent active:bg-transparent data-[active=true]:bg-gradient-to-tr"
                           >
-                            <Link href={item.url}>
-                              {item.name}
-                              {PAGES_NEW.includes(item.url) && (
-                                <Badge variant="info">New</Badge>
-                              )}
-                            </Link>
+                            {item.name}
+                            {PAGES_NEW.includes(item.url) && (
+                              <Badge variant="info">New</Badge>
+                            )}
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
