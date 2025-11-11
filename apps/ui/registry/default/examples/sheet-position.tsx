@@ -8,7 +8,7 @@ import {
   SheetTrigger,
 } from "@/registry/default/ui/sheet"
 
-export default function DialogDemo() {
+export default function SheetPosition() {
   return (
     <div className="flex flex-wrap gap-2">
       <Sheet>

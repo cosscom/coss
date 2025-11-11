@@ -5,9 +5,7 @@ import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-function Sheet(props: SheetPrimitive.Root.Props) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
-}
+const Sheet = SheetPrimitive.Root
 
 function SheetTrigger(props: SheetPrimitive.Trigger.Props) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
@@ -39,10 +37,12 @@ function SheetPopup({
   children,
   showCloseButton = true,
   side = "right",
+  inset,
   ...props
 }: SheetPrimitive.Popup.Props & {
   showCloseButton?: boolean
   side?: "top" | "right" | "bottom" | "left"
+  inset?: boolean
 }) {
   return (
     <SheetPortal>
@@ -50,15 +50,16 @@ function SheetPopup({
       <SheetPrimitive.Popup
         data-slot="sheet-popup"
         className={cn(
-          "fixed z-50 flex h-[100dvh] flex-col gap-4 bg-popover text-popover-foreground shadow-lg transition-[opacity,translate] duration-300 ease-in-out will-change-transform",
+          inset && "sm:rounded-xl sm:[--sheet-inset:1rem]",
+          "fixed z-50 flex flex-col gap-4 overflow-y-auto bg-popover text-popover-foreground shadow-lg transition-[opacity,translate] duration-300 ease-in-out will-change-transform [--sheet-inset:0px] data-ending-style:opacity-0 data-starting-style:opacity-0",
           side === "right" &&
-            "inset-y-0 right-0 h-full w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:translate-x-full data-starting-style:translate-x-full",
+            "inset-y-[var(--sheet-inset)] right-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:translate-x-12 data-starting-style:translate-x-12 sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
           side === "left" &&
-            "inset-y-0 left-0 h-full w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:-translate-x-full data-starting-style:-translate-x-full",
+            "inset-y-[var(--sheet-inset)] left-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:-translate-x-12 data-starting-style:-translate-x-12 sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
           side === "top" &&
-            "inset-x-0 top-0 h-auto data-ending-style:-translate-y-full data-starting-style:-translate-y-full",
+            "inset-x-[var(--sheet-inset)] top-[var(--sheet-inset)] h-auto max-h-[calc(100dvh-var(--sheet-inset)*2)] data-ending-style:-translate-y-12 data-starting-style:-translate-y-12",
           side === "bottom" &&
-            "inset-x-0 bottom-0 h-auto data-ending-style:translate-y-full data-starting-style:translate-y-full",
+            "inset-x-[var(--sheet-inset)] bottom-[var(--sheet-inset)] h-auto max-h-[calc(100dvh-var(--sheet-inset)*2)] data-ending-style:translate-y-12 data-starting-style:translate-y-12",
           className
         )}
         {...props}
