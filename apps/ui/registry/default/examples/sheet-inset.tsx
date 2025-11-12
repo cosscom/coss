@@ -13,13 +13,13 @@ import {
   SheetTrigger,
 } from "@/registry/default/ui/sheet"
 
-export default function SheetDemo() {
+export default function SheetInset() {
   return (
     <Sheet>
       <SheetTrigger render={<Button variant="outline" />}>
         Open Sheet
       </SheetTrigger>
-      <SheetPopup>
+      <SheetPopup inset>
         <Form className="flex-1">
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>

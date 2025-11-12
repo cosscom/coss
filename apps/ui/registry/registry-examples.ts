@@ -1108,6 +1108,20 @@ export const examples: Registry["items"] = [
     categories: ["sheet", "dialog"],
   },
   {
+    name: "sheet-inset",
+    description: "Sheet inset",
+    type: "registry:example",
+    registryDependencies: [
+      "@coss/sheet",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/input",
+    ],
+    files: [{ path: "examples/sheet-inset.tsx", type: "registry:example" }],
+    categories: ["sheet"],
+  },
+  {
     name: "sheet-position",
     description: "Sheet position",
     type: "registry:example",

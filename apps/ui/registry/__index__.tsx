@@ -2508,6 +2508,24 @@ export const Index: Record<string, any> = {
     categories: ["sheet","dialog"],
     meta: undefined,
   },
+  "sheet-inset": {
+    name: "sheet-inset",
+    description: "Sheet inset",
+    type: "registry:example",
+    registryDependencies: ["@coss/sheet","@coss/button","@coss/form","@coss/field","@coss/input"],
+    files: [{
+      path: "registry/default/examples/sheet-inset.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/examples/sheet-inset.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["sheet"],
+    meta: undefined,
+  },
   "sheet-position": {
     name: "sheet-position",
     description: "Sheet position",

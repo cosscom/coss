@@ -200,6 +200,7 @@ import SelectWithObjectValues from "@/registry/default/examples/select-with-obje
 import SelectWithoutAlignment from "@/registry/default/examples/select-without-alignment"
 import SeparatorDemo from "@/registry/default/examples/separator-demo"
 import SheetDemo from "@/registry/default/examples/sheet-demo"
+import SheetInset from "@/registry/default/examples/sheet-inset"
 import SheetPosition from "@/registry/default/examples/sheet-position"
 import SliderDemo from "@/registry/default/examples/slider-demo"
 import SliderForm from "@/registry/default/examples/slider-form"
@@ -1397,6 +1398,11 @@ export const particles: ParticleItem[] = [
     id: "sheet-demo",
     component: SheetDemo,
     category: ["sheet", "dialog"],
+  },
+  {
+    id: "sheet-inset",
+    component: SheetInset,
+    category: ["sheet"],
   },
   {
     id: "sheet-position",
