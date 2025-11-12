@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "accordion-table",
+  "type": "registry:example",
+  "description": "Accordion with table like layout",
+  "registryDependencies": [
+    "https://coss.com/ui/r/accordion.json"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/accordion-table.tsx",
+      "content": "import {\n  Accordion,\n  AccordionItem,\n  AccordionPanel,\n  AccordionTrigger,\n} from \"@/registry/default/ui/accordion\"\n\nexport default function AccordionTableDemo() {\n  return (\n    <Accordion className=\"w-full\" multiple={true}>\n      <AccordionItem\n        value=\"item-1\"\n        className=\"border border-b-0 first:rounded-t-lg last:rounded-b-lg last:border-b\"\n      >\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          What is Base UI?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Base UI is a library of high-quality unstyled React components for\n          design systems and web apps.\n        </AccordionPanel>\n      </AccordionItem>\n      <AccordionItem\n        value=\"item-2\"\n        className=\"border border-b-0 first:rounded-t-lg last:rounded-b-lg last:border-b\"\n      >\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          How do I get started?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Head to the \"Quick start\" guide in the docs. If you've used unstyled\n          libraries before, you'll feel at home.\n        </AccordionPanel>\n      </AccordionItem>\n      <AccordionItem\n        value=\"item-3\"\n        className=\"border border-b-0 first:rounded-t-lg last:rounded-b-lg last:border-b\"\n      >\n        <AccordionTrigger className=\"border-none px-4 py-3\">\n          Can I use it for my project?\n        </AccordionTrigger>\n        <AccordionPanel className=\"px-4\">\n          Of course! Base UI is free and open source.\n        </AccordionPanel>\n      </AccordionItem>\n    </Accordion>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "accordion"
+  ]
+}
