@@ -3,9 +3,6 @@
   "name": "number-field-with-label",
   "type": "registry:example",
   "description": "A number field with an external label",
-  "dependencies": [
-    "@radix-ui/react-label"
-  ],
   "registryDependencies": [
     "@coss/number-field",
     "@coss/label"

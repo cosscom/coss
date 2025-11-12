@@ -2010,7 +2010,6 @@ export const examples: Registry["items"] = [
     description: "A number field with an external label",
     type: "registry:example",
     registryDependencies: ["@coss/number-field", "@coss/label"],
-    dependencies: ["@radix-ui/react-label"],
     files: [
       {
         path: "examples/number-field-with-label.tsx",
