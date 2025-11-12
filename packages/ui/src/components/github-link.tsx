@@ -17,7 +17,7 @@ export function GitHubLink() {
         <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
           <HugeiconsIcon icon={GithubIcon} className="size-4" strokeWidth={2} />
           <span className="max-sm:sr-only">
-            <React.Suspense fallback={<Skeleton className="h-4 w-8" />}>
+            <React.Suspense fallback={<Skeleton className="h-4 w-[25.5px]" />}>
               <StarsCount />
             </React.Suspense>
           </span>
