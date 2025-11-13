@@ -25,7 +25,7 @@ export default function DialogNestedDemo() {
             View and manage a user in your team.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
+        <div className="grid gap-4 px-6">
           <div className="grid gap-1">
             <p className="text-sm text-muted-foreground">Name</p>
             <p className="text-sm font-medium">Bora Baloglu</p>
@@ -47,7 +47,7 @@ export default function DialogNestedDemo() {
                   Make changes to the member&apos;s information.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 px-6">
                 <Field>
                   <FieldLabel>Name</FieldLabel>
                   <Input type="text" defaultValue="Bora Baloglu" />

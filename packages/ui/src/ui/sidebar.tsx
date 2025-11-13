@@ -519,7 +519,6 @@ function SidebarMenuButton({
 
   const buttonProps = mergeProps<"button">(defaultProps, props)
 
-   
   const buttonElement = useRender({
     defaultTagName: "button",
     render,
