@@ -3,10 +3,10 @@ import {
   Folder01Icon,
   ThirdBracketIcon,
   Typescript02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
-type IconProps = React.HTMLAttributes<SVGElement>;
+type IconProps = React.HTMLAttributes<SVGElement>
 
 export const Icons = {
   logo: (props: IconProps) => (
@@ -187,21 +187,21 @@ export const Icons = {
       <path d="M9.657 3.135a.549.549 0 0 0 0-.786.575.575 0 0 0-.803 0L4.108 7.003a2.743 2.743 0 0 0 0 3.934 2.876 2.876 0 0 0 4.01 0l4.747-4.655a.548.548 0 0 0 0-.787.575.575 0 0 0-.802 0L7.317 10.15a1.725 1.725 0 0 1-2.407 0 1.647 1.647 0 0 1 0-2.36l4.747-4.655Z" />
     </svg>
   ),
-};
+}
 
 export function getIconForLanguageExtension(language: string) {
   switch (language) {
     case "json":
-      return <HugeiconsIcon icon={ThirdBracketIcon} strokeWidth={2} />;
+      return <HugeiconsIcon icon={ThirdBracketIcon} strokeWidth={2} />
     case "css":
-      return <HugeiconsIcon icon={CssFile01Icon} strokeWidth={2} />;
+      return <HugeiconsIcon icon={CssFile01Icon} strokeWidth={2} />
     case "js":
     case "jsx":
     case "ts":
     case "tsx":
     case "typescript":
-      return <HugeiconsIcon icon={Typescript02Icon} strokeWidth={2} />;
+      return <HugeiconsIcon icon={Typescript02Icon} strokeWidth={2} />
     default:
-      return <HugeiconsIcon icon={Folder01Icon} strokeWidth={2} />;
+      return <HugeiconsIcon icon={Folder01Icon} strokeWidth={2} />
   }
 }

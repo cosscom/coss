@@ -53,4 +53,4 @@ export const siteConfig = {
       upcoming: true,
     },
   ],
-};
+}

@@ -3,9 +3,7 @@
   "name": "autocomplete-inline",
   "type": "registry:example",
   "description": "Autocomplete autofilling the input with the highlighted item",
-  "registryDependencies": [
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-inline.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input"
-  ]
+  "categories": ["autocomplete", "input"]
 }

@@ -3,11 +3,7 @@
   "name": "dialog-from-menu",
   "type": "registry:example",
   "description": "Open dialog from a menu item",
-  "registryDependencies": [
-    "@coss/dialog",
-    "@coss/menu",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/dialog", "@coss/menu", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/dialog-from-menu.tsx",
@@ -15,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "dialog",
-    "menu",
-    "button"
-  ]
+  "categories": ["dialog", "menu", "button"]
 }

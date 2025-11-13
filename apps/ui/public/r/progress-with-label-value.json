@@ -3,9 +3,7 @@
   "name": "progress-with-label-value",
   "type": "registry:example",
   "description": "Progress with label and value",
-  "registryDependencies": [
-    "@coss/progress"
-  ],
+  "registryDependencies": ["@coss/progress"],
   "files": [
     {
       "path": "registry/default/examples/progress-with-label-value.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "progress",
-    "label"
-  ]
+  "categories": ["progress", "label"]
 }

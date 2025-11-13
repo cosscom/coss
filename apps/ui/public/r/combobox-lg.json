@@ -3,9 +3,7 @@
   "name": "combobox-lg",
   "type": "registry:example",
   "description": "Large combobox",
-  "registryDependencies": [
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/combobox-lg.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input"
-  ]
+  "categories": ["combobox", "input"]
 }

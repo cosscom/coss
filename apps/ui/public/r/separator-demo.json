@@ -3,9 +3,7 @@
   "name": "separator-demo",
   "type": "registry:example",
   "description": "Separator with horizontal and vertical orientations",
-  "registryDependencies": [
-    "@coss/separator"
-  ],
+  "registryDependencies": ["@coss/separator"],
   "files": [
     {
       "path": "registry/default/examples/separator-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "separator"
-  ]
+  "categories": ["separator"]
 }

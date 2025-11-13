@@ -3,9 +3,7 @@
   "name": "toast-with-status",
   "type": "registry:example",
   "description": "Success toast",
-  "registryDependencies": [
-    "@coss/toast"
-  ],
+  "registryDependencies": ["@coss/toast"],
   "files": [
     {
       "path": "registry/default/examples/toast-with-status.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toast",
-    "button"
-  ]
+  "categories": ["toast", "button"]
 }

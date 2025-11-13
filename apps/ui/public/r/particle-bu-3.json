@@ -3,9 +3,7 @@
   "name": "particle-bu-3",
   "type": "registry:block",
   "description": "Directional pad control buttons",
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/particles/particle-bu-3.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

@@ -3,10 +3,7 @@
   "name": "field-combobox-multiple",
   "type": "registry:example",
   "description": "Field with multiple selection combobox",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/field-combobox-multiple.tsx",
@@ -14,11 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "input",
-    "combobox",
-    "label",
-    "multiple"
-  ]
+  "categories": ["field", "input", "combobox", "label", "multiple"]
 }

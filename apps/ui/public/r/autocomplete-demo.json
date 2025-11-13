@@ -3,9 +3,7 @@
   "name": "autocomplete-demo",
   "type": "registry:example",
   "description": "Basic autocomplete",
-  "registryDependencies": [
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-demo.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input"
-  ]
+  "categories": ["autocomplete", "input"]
 }

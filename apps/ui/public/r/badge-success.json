@@ -3,9 +3,7 @@
   "name": "badge-success",
   "type": "registry:example",
   "description": "Success badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-success.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge",
-    "success"
-  ]
+  "categories": ["badge", "success"]
 }

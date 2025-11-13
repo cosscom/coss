@@ -17,11 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "popover",
-    "button",
-    "textarea",
-    "form",
-    "field"
-  ]
+  "categories": ["popover", "button", "textarea", "form", "field"]
 }

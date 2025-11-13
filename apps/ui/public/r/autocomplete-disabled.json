@@ -3,9 +3,7 @@
   "name": "autocomplete-disabled",
   "type": "registry:example",
   "description": "Disabled autocomplete",
-  "registryDependencies": [
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-disabled.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input",
-    "disabled"
-  ]
+  "categories": ["autocomplete", "input", "disabled"]
 }

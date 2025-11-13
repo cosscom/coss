@@ -3,11 +3,7 @@
   "name": "skeleton-demo",
   "type": "registry:example",
   "description": "Skeleton demo",
-  "registryDependencies": [
-    "@coss/avatar",
-    "@coss/button",
-    "@coss/skeleton"
-  ],
+  "registryDependencies": ["@coss/avatar", "@coss/button", "@coss/skeleton"],
   "files": [
     {
       "path": "registry/default/examples/skeleton-demo.tsx",
@@ -15,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "skeleton"
-  ]
+  "categories": ["skeleton"]
 }

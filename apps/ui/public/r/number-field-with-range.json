@@ -3,9 +3,7 @@
   "name": "number-field-with-range",
   "type": "registry:example",
   "description": "A number field with min/max constraints",
-  "registryDependencies": [
-    "@coss/number-field"
-  ],
+  "registryDependencies": ["@coss/number-field"],
   "files": [
     {
       "path": "registry/default/examples/number-field-with-range.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "number field",
-    "range"
-  ]
+  "categories": ["number field", "range"]
 }

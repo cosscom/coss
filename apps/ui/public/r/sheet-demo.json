@@ -17,8 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "sheet",
-    "dialog"
-  ]
+  "categories": ["sheet", "dialog"]
 }

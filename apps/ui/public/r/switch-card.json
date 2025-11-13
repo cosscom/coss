@@ -3,10 +3,7 @@
   "name": "switch-card",
   "type": "registry:example",
   "description": "Card-style switch",
-  "registryDependencies": [
-    "@coss/switch",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/switch", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/switch-card.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "switch",
-    "label",
-    "card"
-  ]
+  "categories": ["switch", "label", "card"]
 }

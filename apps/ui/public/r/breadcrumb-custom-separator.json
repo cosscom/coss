@@ -3,9 +3,7 @@
   "name": "breadcrumb-custom-separator",
   "type": "registry:example",
   "description": "Breadcrumb with custom separator",
-  "registryDependencies": [
-    "@coss/breadcrumb"
-  ],
+  "registryDependencies": ["@coss/breadcrumb"],
   "files": [
     {
       "path": "registry/default/examples/breadcrumb-custom-separator.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "breadcrumb"
-  ]
+  "categories": ["breadcrumb"]
 }

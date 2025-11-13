@@ -3,9 +3,7 @@
   "name": "toggle-group-disabled",
   "type": "registry:example",
   "description": "Disabled toggle group",
-  "registryDependencies": [
-    "@coss/toggle-group"
-  ],
+  "registryDependencies": ["@coss/toggle-group"],
   "files": [
     {
       "path": "registry/default/examples/toggle-group-disabled.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle group",
-    "toggle",
-    "disabled"
-  ]
+  "categories": ["toggle group", "toggle", "disabled"]
 }

@@ -16,12 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "slider",
-    "form",
-    "field",
-    "button",
-    "helper",
-    "hint"
-  ]
+  "categories": ["slider", "form", "field", "button", "helper", "hint"]
 }

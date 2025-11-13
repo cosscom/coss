@@ -3,9 +3,7 @@
   "name": "slider-range",
   "type": "registry:example",
   "description": "Two-thumb range slider",
-  "registryDependencies": [
-    "@coss/slider"
-  ],
+  "registryDependencies": ["@coss/slider"],
   "files": [
     {
       "path": "registry/default/examples/slider-range.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "slider",
-    "range slider"
-  ]
+  "categories": ["slider", "range slider"]
 }

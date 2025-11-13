@@ -3,9 +3,7 @@
   "name": "avatar-demo",
   "type": "registry:example",
   "description": "Avatar with image and fallback",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
+  "registryDependencies": ["@coss/avatar"],
   "files": [
     {
       "path": "registry/default/examples/avatar-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar"
-  ]
+  "categories": ["avatar"]
 }

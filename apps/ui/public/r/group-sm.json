@@ -3,11 +3,7 @@
   "name": "group-sm",
   "type": "registry:example",
   "description": "Group with small buttons",
-  "registryDependencies": [
-    "@coss/group",
-    "@coss/button",
-    "@coss/menu"
-  ],
+  "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
   "files": [
     {
       "path": "registry/default/examples/group-sm.tsx",
@@ -15,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "button",
-    "menu"
-  ]
+  "categories": ["group", "button", "menu"]
 }

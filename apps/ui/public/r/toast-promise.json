@@ -3,9 +3,7 @@
   "name": "toast-promise",
   "type": "registry:example",
   "description": "Drive toasts from promise states",
-  "registryDependencies": [
-    "@coss/toast"
-  ],
+  "registryDependencies": ["@coss/toast"],
   "files": [
     {
       "path": "registry/default/examples/toast-promise.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toast",
-    "button"
-  ]
+  "categories": ["toast", "button"]
 }

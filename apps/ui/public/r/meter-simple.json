@@ -3,9 +3,7 @@
   "name": "meter-simple",
   "type": "registry:example",
   "description": "Meter without label and value",
-  "registryDependencies": [
-    "@coss/meter"
-  ],
+  "registryDependencies": ["@coss/meter"],
   "files": [
     {
       "path": "registry/default/examples/meter-simple.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "meter"
-  ]
+  "categories": ["meter"]
 }

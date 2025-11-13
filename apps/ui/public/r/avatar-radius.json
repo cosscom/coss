@@ -3,9 +3,7 @@
   "name": "avatar-radius",
   "type": "registry:example",
   "description": "Avatars with different radii",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
+  "registryDependencies": ["@coss/avatar"],
   "files": [
     {
       "path": "registry/default/examples/avatar-radius.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar"
-  ]
+  "categories": ["avatar"]
 }

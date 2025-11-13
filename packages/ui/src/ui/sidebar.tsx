@@ -1,13 +1,11 @@
 "use client"
 
-import * as React from "react"
 import { mergeProps } from "@base-ui-components/react/merge-props"
 import { useRender } from "@base-ui-components/react/use-render"
-import { cva, VariantProps } from "class-variance-authority"
+import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
+import * as React from "react"
 
-import { useIsMobile } from "@workspace/ui/hooks/use-mobile"
-import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@coss/ui/ui/button"
 import { Input } from "@coss/ui/ui/input"
 import { Separator } from "@coss/ui/ui/separator"
@@ -19,11 +17,9 @@ import {
   SheetTitle,
 } from "@coss/ui/ui/sheet"
 import { Skeleton } from "@coss/ui/ui/skeleton"
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/ui/tooltip"
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@coss/ui/ui/tooltip"
+import { useIsMobile } from "@workspace/ui/hooks/use-mobile"
+import { cn } from "@workspace/ui/lib/utils"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -519,7 +515,6 @@ function SidebarMenuButton({
 
   const buttonProps = mergeProps<"button">(defaultProps, props)
 
-   
   const buttonElement = useRender({
     defaultTagName: "button",
     render,

@@ -3,9 +3,7 @@
   "name": "select-with-object-values",
   "type": "registry:example",
   "description": "Select with object values",
-  "registryDependencies": [
-    "@coss/select"
-  ],
+  "registryDependencies": ["@coss/select"],
   "files": [
     {
       "path": "registry/default/examples/select-with-object-values.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "select"
-  ]
+  "categories": ["select"]
 }

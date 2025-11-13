@@ -3,9 +3,7 @@
   "name": "tabs-demo",
   "type": "registry:example",
   "description": "Tabs with default indicator",
-  "registryDependencies": [
-    "@coss/tabs"
-  ],
+  "registryDependencies": ["@coss/tabs"],
   "files": [
     {
       "path": "registry/default/examples/tabs-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "tabs"
-  ]
+  "categories": ["tabs"]
 }

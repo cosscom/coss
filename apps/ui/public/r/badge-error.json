@@ -3,9 +3,7 @@
   "name": "badge-error",
   "type": "registry:example",
   "description": "Error badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-error.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge",
-    "error"
-  ]
+  "categories": ["badge", "error"]
 }

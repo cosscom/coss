@@ -3,10 +3,7 @@
   "name": "accordion-controlled",
   "type": "registry:example",
   "description": "Controlled accordion",
-  "registryDependencies": [
-    "@coss/accordion",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/accordion", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/accordion-controlled.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "accordion"
-  ]
+  "categories": ["accordion"]
 }

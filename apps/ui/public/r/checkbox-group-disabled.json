@@ -15,9 +15,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox group",
-    "checkbox",
-    "disabled"
-  ]
+  "categories": ["checkbox group", "checkbox", "disabled"]
 }

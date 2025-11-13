@@ -3,10 +3,7 @@
   "name": "menu-link",
   "type": "registry:example",
   "description": "Menu items as links",
-  "registryDependencies": [
-    "@coss/menu",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/menu", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/menu-link.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "menu",
-    "link"
-  ]
+  "categories": ["menu", "link"]
 }

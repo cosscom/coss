@@ -17,10 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "dialog",
-    "form",
-    "field",
-    "button"
-  ]
+  "categories": ["dialog", "form", "field", "button"]
 }

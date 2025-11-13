@@ -3,9 +3,7 @@
   "name": "alert-with-icon",
   "type": "registry:example",
   "description": "Alert with icon",
-  "registryDependencies": [
-    "@coss/alert"
-  ],
+  "registryDependencies": ["@coss/alert"],
   "files": [
     {
       "path": "registry/default/examples/alert-with-icon.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "alert"
-  ]
+  "categories": ["alert"]
 }

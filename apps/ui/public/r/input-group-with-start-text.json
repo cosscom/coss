@@ -3,9 +3,7 @@
   "name": "input-group-with-start-text",
   "type": "registry:example",
   "description": "Input group with start text",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-start-text.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "categories": ["input", "input group"]
 }

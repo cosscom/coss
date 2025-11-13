@@ -17,11 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toolbar",
-    "button",
-    "select",
-    "toggle",
-    "tooltip"
-  ]
+  "categories": ["toolbar", "button", "select", "toggle", "tooltip"]
 }

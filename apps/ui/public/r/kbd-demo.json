@@ -3,9 +3,7 @@
   "name": "kbd-demo",
   "type": "registry:example",
   "description": "Keyboard shortcuts",
-  "registryDependencies": [
-    "@coss/kbd"
-  ],
+  "registryDependencies": ["@coss/kbd"],
   "files": [
     {
       "path": "registry/default/examples/kbd-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "kbd"
-  ]
+  "categories": ["kbd"]
 }

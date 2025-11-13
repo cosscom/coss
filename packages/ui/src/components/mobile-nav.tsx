@@ -1,40 +1,40 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link, { LinkProps } from "next/link";
-import { Menu09Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Menu09Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import Link, { LinkProps } from "next/link"
+import * as React from "react"
 
-import { cn } from "@coss/ui/lib/utils";
-import { Button } from "@coss/ui/ui/button";
-import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/ui/sheet";
+import { cn } from "@coss/ui/lib/utils"
+import { Button } from "@coss/ui/ui/button"
+import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/ui/sheet"
 
 export type PageNode = {
-  type: "page";
-  name: string;
-  url: string;
-};
+  type: "page"
+  name: string
+  url: string
+}
 
 export type FolderNode = {
-  type: "folder";
-  name: string;
-  children: (PageNode | FolderNode)[];
-};
+  type: "folder"
+  name: string
+  children: (PageNode | FolderNode)[]
+}
 
 export type NavTree = {
-  children: FolderNode[];
-};
+  children: FolderNode[]
+}
 
 export function MobileNav({
   tree,
   items,
   className,
 }: {
-  tree?: NavTree;
-  items: { href: string; label: string }[];
-  className?: string;
+  tree?: NavTree
+  items: { href: string; label: string }[]
+  className?: string
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -87,12 +87,12 @@ export function MobileNav({
                               >
                                 {item.name}
                               </MobileLink>
-                            );
+                            )
                           }
                         })}
                       </div>
                     </div>
-                  );
+                  )
                 }
               })}
             </div>
@@ -100,7 +100,7 @@ export function MobileNav({
         </div>
       </SheetPopup>
     </Sheet>
-  );
+  )
 }
 
 function MobileLink({
@@ -110,20 +110,20 @@ function MobileLink({
   children,
   ...props
 }: LinkProps & {
-  onOpenChange?: (open: boolean) => void;
-  children: React.ReactNode;
-  className?: string;
+  onOpenChange?: (open: boolean) => void
+  children: React.ReactNode
+  className?: string
 }) {
   return (
     <Link
       href={href}
       onClick={() => {
-        onOpenChange?.(false);
+        onOpenChange?.(false)
       }}
       className={cn("text-muted-foreground", className)}
       {...props}
     >
       {children}
     </Link>
-  );
+  )
 }

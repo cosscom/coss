@@ -3,9 +3,7 @@
   "name": "progress-demo",
   "type": "registry:example",
   "description": "Animated progress bar",
-  "registryDependencies": [
-    "@coss/progress"
-  ],
+  "registryDependencies": ["@coss/progress"],
   "files": [
     {
       "path": "registry/default/examples/progress-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "progress"
-  ]
+  "categories": ["progress"]
 }

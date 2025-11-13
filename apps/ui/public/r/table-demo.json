@@ -3,10 +3,7 @@
   "name": "table-demo",
   "type": "registry:example",
   "description": "Basic table",
-  "registryDependencies": [
-    "@coss/table",
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/table", "@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/table-demo.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "table",
-    "badge"
-  ]
+  "categories": ["table", "badge"]
 }

@@ -3,9 +3,7 @@
   "name": "particle-bu-2",
   "type": "registry:block",
   "description": "Card-style button with heading and description",
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/particles/particle-bu-2.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

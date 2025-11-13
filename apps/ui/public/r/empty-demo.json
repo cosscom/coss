@@ -3,10 +3,7 @@
   "name": "empty-demo",
   "type": "registry:example",
   "description": "Basic empty state with icon",
-  "registryDependencies": [
-    "@coss/empty",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/empty", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/empty-demo.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "empty"
-  ]
+  "categories": ["empty"]
 }

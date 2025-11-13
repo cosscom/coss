@@ -3,9 +3,7 @@
   "name": "textarea-disabled",
   "type": "registry:example",
   "description": "Disabled textarea",
-  "registryDependencies": [
-    "@coss/textarea"
-  ],
+  "registryDependencies": ["@coss/textarea"],
   "files": [
     {
       "path": "registry/default/examples/textarea-disabled.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "textarea",
-    "disabled"
-  ]
+  "categories": ["textarea", "disabled"]
 }

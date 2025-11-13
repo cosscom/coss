@@ -1,23 +1,23 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { siteConfig } from "@coss/ui/lib/config";
-import { GitHubLink } from "@coss/ui/components/github-link";
-import { ModeSwitcher } from "@coss/ui/components/mode-switcher";
-import { ProductLabel } from "@coss/ui/components/product-label";
-import { ProductsDropdown } from "@coss/ui/components/products-dropdown";
+import { GitHubLink } from "@coss/ui/components/github-link"
+import { ModeSwitcher } from "@coss/ui/components/mode-switcher"
+import { ProductLabel } from "@coss/ui/components/product-label"
+import { ProductsDropdown } from "@coss/ui/components/products-dropdown"
+import { siteConfig } from "@coss/ui/lib/config"
 
 export function SiteHeader({
   mobileNav,
   children,
   currentProduct,
 }: {
-  mobileNav?: React.ReactNode;
-  children?: React.ReactNode;
-  currentProduct?: string;
+  mobileNav?: React.ReactNode
+  children?: React.ReactNode
+  currentProduct?: string
 }) {
-  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_URL || "";
-  const gatewayHome = gatewayOrigin ? `${gatewayOrigin}/` : "/";
-  const isExternal = !!gatewayOrigin;
+  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_URL || ""
+  const gatewayHome = gatewayOrigin ? `${gatewayOrigin}/` : "/"
+  const isExternal = !!gatewayOrigin
 
   return (
     <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/50">
@@ -46,5 +46,5 @@ export function SiteHeader({
         </div>
       </div>
     </header>
-  );
+  )
 }

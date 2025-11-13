@@ -3,9 +3,7 @@
   "name": "frame-demo",
   "type": "registry:example",
   "description": "Frame example",
-  "registryDependencies": [
-    "@coss/frame"
-  ],
+  "registryDependencies": ["@coss/frame"],
   "files": [
     {
       "path": "registry/default/examples/frame-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "frame"
-  ]
+  "categories": ["frame"]
 }

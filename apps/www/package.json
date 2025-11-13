@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf .next"
   },
@@ -25,12 +25,8 @@
     "@types/node": "^20",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@coss/eslint-config": "workspace:^",
     "@coss/typescript-config": "workspace:*",
     "tailwindcss": "^4",
     "typescript": "^5.9.2"
-  },
-  "peerDependencies": {
-    "eslint": "*"
   }
 }

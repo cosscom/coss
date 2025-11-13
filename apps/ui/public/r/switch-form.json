@@ -16,10 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "switch",
-    "form",
-    "field",
-    "button"
-  ]
+  "categories": ["switch", "form", "field", "button"]
 }

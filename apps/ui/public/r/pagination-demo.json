@@ -3,9 +3,7 @@
   "name": "pagination-demo",
   "type": "registry:example",
   "description": "Pagination example",
-  "registryDependencies": [
-    "@coss/pagination"
-  ],
+  "registryDependencies": ["@coss/pagination"],
   "files": [
     {
       "path": "registry/default/examples/pagination-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "pagination"
-  ]
+  "categories": ["pagination"]
 }

@@ -3,10 +3,7 @@
   "name": "preview-card-demo",
   "type": "registry:example",
   "description": "Preview card example",
-  "registryDependencies": [
-    "@coss/preview-card",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/preview-card", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/preview-card-demo.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "preview card",
-    "button"
-  ]
+  "categories": ["preview card", "button"]
 }

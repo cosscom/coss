@@ -3,9 +3,7 @@
   "name": "particle-bu-1",
   "type": "registry:block",
   "description": "Back link button with chevron",
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/particles/particle-bu-1.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

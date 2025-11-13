@@ -3,10 +3,7 @@
   "name": "field-combobox",
   "type": "registry:example",
   "description": "Field with combobox",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/field-combobox.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "input",
-    "combobox",
-    "label"
-  ]
+  "categories": ["field", "input", "combobox", "label"]
 }

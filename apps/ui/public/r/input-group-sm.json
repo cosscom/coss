@@ -3,9 +3,7 @@
   "name": "input-group-sm",
   "type": "registry:example",
   "description": "Small input group",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-sm.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "categories": ["input", "input group"]
 }

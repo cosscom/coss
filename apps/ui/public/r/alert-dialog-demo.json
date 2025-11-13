@@ -3,10 +3,7 @@
   "name": "alert-dialog-demo",
   "type": "registry:example",
   "description": "Alert dialog",
-  "registryDependencies": [
-    "@coss/alert-dialog",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/alert-dialog-demo.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "dialog"
-  ]
+  "categories": ["dialog"]
 }

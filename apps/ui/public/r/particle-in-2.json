@@ -15,10 +15,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "button",
-    "tooltip"
-  ]
+  "categories": ["input", "input group", "button", "tooltip"]
 }

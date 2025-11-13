@@ -3,10 +3,7 @@
   "name": "menu-hover",
   "type": "registry:example",
   "description": "Open the menu on hover",
-  "registryDependencies": [
-    "@coss/menu",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/menu", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/menu-hover.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "menu"
-  ]
+  "categories": ["menu"]
 }

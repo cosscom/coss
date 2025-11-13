@@ -3,11 +3,7 @@
   "name": "fieldset-demo",
   "type": "registry:example",
   "description": "Fieldset with legend and labeled fields",
-  "registryDependencies": [
-    "@coss/fieldset",
-    "@coss/field",
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/fieldset-demo.tsx",
@@ -15,11 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "fieldset",
-    "field",
-    "label",
-    "input",
-    "helper"
-  ]
+  "categories": ["fieldset", "field", "label", "input", "helper"]
 }

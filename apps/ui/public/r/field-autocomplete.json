@@ -3,10 +3,7 @@
   "name": "field-autocomplete",
   "type": "registry:example",
   "description": "Field with autocomplete",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/field-autocomplete.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "input",
-    "autocomplete",
-    "label"
-  ]
+  "categories": ["field", "input", "autocomplete", "label"]
 }

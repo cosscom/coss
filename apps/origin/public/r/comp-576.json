@@ -2,9 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comp-576",
   "type": "registry:component",
-  "registryDependencies": [
-    "https://coss.com/origin/r/tree.json"
-  ],
+  "registryDependencies": ["https://coss.com/origin/r/tree.json"],
   "files": [
     {
       "path": "registry/default/components/comp-576.tsx",
@@ -13,9 +11,6 @@
     }
   ],
   "meta": {
-    "tags": [
-      "tree",
-      "menu"
-    ]
+    "tags": ["tree", "menu"]
   }
 }

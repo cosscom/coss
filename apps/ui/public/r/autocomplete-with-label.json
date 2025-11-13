@@ -3,10 +3,7 @@
   "name": "autocomplete-with-label",
   "type": "registry:example",
   "description": "Autocomplete with label",
-  "registryDependencies": [
-    "@coss/autocomplete",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/autocomplete", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-with-label.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input"
-  ]
+  "categories": ["autocomplete", "input"]
 }

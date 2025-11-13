@@ -3,9 +3,7 @@
   "name": "badge-secondary",
   "type": "registry:example",
   "description": "Secondary badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-secondary.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge"
-  ]
+  "categories": ["badge"]
 }

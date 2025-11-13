@@ -3,10 +3,7 @@
   "name": "textarea-with-label",
   "type": "registry:example",
   "description": "Textarea labelled with Field",
-  "registryDependencies": [
-    "@coss/textarea",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/textarea", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/textarea-with-label.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "textarea",
-    "field",
-    "label"
-  ]
+  "categories": ["textarea", "field", "label"]
 }

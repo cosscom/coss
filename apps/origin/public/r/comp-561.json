@@ -14,12 +14,7 @@
     }
   ],
   "meta": {
-    "tags": [
-      "image",
-      "crop",
-      "zoom",
-      "slider"
-    ],
+    "tags": ["image", "crop", "zoom", "slider"],
     "colSpan": 2
   }
 }

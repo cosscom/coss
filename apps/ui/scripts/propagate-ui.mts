@@ -70,10 +70,7 @@ function rewriteImports(code: string): string {
   // "@/registry/default/ui/*" → "@coss/ui/ui/*"
   result = result.replace(/(["'])@\/lib\//g, "$1@coss/ui/lib/")
   result = result.replace(/(["'])@\/hooks\//g, "$1@coss/ui/hooks/")
-  result = result.replace(
-    /(["'])@\/registry\/default\/ui\//g,
-    "$1@coss/ui/ui/"
-  )
+  result = result.replace(/(["'])@\/registry\/default\/ui\//g, "$1@coss/ui/ui/")
   result = result.replace(
     /(["'])@\/registry\/default\/hooks\//g,
     "$1@workspace/ui/hooks/"

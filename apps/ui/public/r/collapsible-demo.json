@@ -3,9 +3,7 @@
   "name": "collapsible-demo",
   "type": "registry:example",
   "description": "Basic collapsible",
-  "registryDependencies": [
-    "@coss/collapsible"
-  ],
+  "registryDependencies": ["@coss/collapsible"],
   "files": [
     {
       "path": "registry/default/examples/collapsible-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "collapsible"
-  ]
+  "categories": ["collapsible"]
 }

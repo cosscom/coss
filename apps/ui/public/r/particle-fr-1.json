@@ -3,11 +3,7 @@
   "name": "particle-fr-1",
   "type": "registry:block",
   "description": "Frame with collapsible content and delete button",
-  "registryDependencies": [
-    "@coss/frame",
-    "@coss/collapsible",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/frame", "@coss/collapsible", "@coss/button"],
   "files": [
     {
       "path": "registry/default/particles/particle-fr-1.tsx",
@@ -15,8 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "frame",
-    "collapsible"
-  ]
+  "categories": ["frame", "collapsible"]
 }

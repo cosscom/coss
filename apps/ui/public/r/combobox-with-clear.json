@@ -3,9 +3,7 @@
   "name": "combobox-with-clear",
   "type": "registry:example",
   "description": "Combobox with clear button",
-  "registryDependencies": [
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/combobox-with-clear.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input"
-  ]
+  "categories": ["combobox", "input"]
 }

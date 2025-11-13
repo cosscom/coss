@@ -3,9 +3,7 @@
   "name": "button-sm",
   "type": "registry:example",
   "description": "Small button",
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/button-sm.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

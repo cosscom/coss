@@ -3,9 +3,7 @@
   "name": "avatar-size",
   "type": "registry:example",
   "description": "Avatars with different sizes",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
+  "registryDependencies": ["@coss/avatar"],
   "files": [
     {
       "path": "registry/default/examples/avatar-size.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar"
-  ]
+  "categories": ["avatar"]
 }

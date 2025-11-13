@@ -3,9 +3,7 @@
   "name": "badge-destructive",
   "type": "registry:example",
   "description": "Destructive badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-destructive.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge",
-    "destructive",
-    "error"
-  ]
+  "categories": ["badge", "destructive", "error"]
 }

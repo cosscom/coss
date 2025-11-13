@@ -3,10 +3,7 @@
   "name": "checkbox-with-description",
   "type": "registry:example",
   "description": "Checkbox with helper text",
-  "registryDependencies": [
-    "@coss/checkbox",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/checkbox", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/checkbox-with-description.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox",
-    "label",
-    "helper",
-    "hint"
-  ]
+  "categories": ["checkbox", "label", "helper", "hint"]
 }

@@ -2,9 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comp-552",
   "type": "registry:component",
-  "registryDependencies": [
-    "https://coss.com/origin/r/button.json"
-  ],
+  "registryDependencies": ["https://coss.com/origin/r/button.json"],
   "files": [
     {
       "path": "registry/default/components/comp-552.tsx",
@@ -18,12 +16,7 @@
     }
   ],
   "meta": {
-    "tags": [
-      "upload",
-      "file",
-      "image",
-      "drag and drop"
-    ],
+    "tags": ["upload", "file", "image", "drag and drop"],
     "colSpan": 2
   }
 }

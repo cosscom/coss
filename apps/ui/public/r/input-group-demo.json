@@ -3,9 +3,7 @@
   "name": "input-group-demo",
   "type": "registry:example",
   "description": "Basic input group with search icon",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-demo.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "categories": ["input", "input group"]
 }

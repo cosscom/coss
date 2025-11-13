@@ -3,9 +3,7 @@
   "name": "badge-outline",
   "type": "registry:example",
   "description": "Outline badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-outline.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge"
-  ]
+  "categories": ["badge"]
 }

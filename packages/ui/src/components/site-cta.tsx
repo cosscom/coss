@@ -1,6 +1,6 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { Button } from "@coss/ui/ui/button";
+import { Button } from "@coss/ui/ui/button"
 
 export function SiteCta() {
   return (
@@ -22,5 +22,5 @@ export function SiteCta() {
         </Button>
       </div>
     </section>
-  );
+  )
 }

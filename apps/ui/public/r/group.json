@@ -2,12 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "group",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
-  "registryDependencies": [
-    "@coss/separator"
-  ],
+  "dependencies": ["@base-ui-components/react"],
+  "registryDependencies": ["@coss/separator"],
   "files": [
     {
       "path": "registry/default/ui/group.tsx",

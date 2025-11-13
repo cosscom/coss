@@ -17,11 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "radio",
-    "field",
-    "fieldset",
-    "form",
-    "button"
-  ]
+  "categories": ["radio", "field", "fieldset", "form", "button"]
 }

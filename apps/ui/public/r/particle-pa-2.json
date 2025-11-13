@@ -3,10 +3,7 @@
   "name": "particle-pa-2",
   "type": "registry:block",
   "description": "Pagination with select, and previous and next buttons",
-  "registryDependencies": [
-    "@coss/pagination",
-    "@coss/select"
-  ],
+  "registryDependencies": ["@coss/pagination", "@coss/select"],
   "files": [
     {
       "path": "registry/default/particles/particle-pa-2.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "pagination",
-    "select"
-  ]
+  "categories": ["pagination", "select"]
 }

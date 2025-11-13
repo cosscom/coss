@@ -19,12 +19,7 @@
     }
   ],
   "meta": {
-    "tags": [
-      "upload",
-      "file",
-      "image",
-      "drag and drop"
-    ],
+    "tags": ["upload", "file", "image", "drag and drop"],
     "colSpan": 2
   }
 }

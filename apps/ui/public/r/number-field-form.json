@@ -16,10 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "number field",
-    "field",
-    "form",
-    "button"
-  ]
+  "categories": ["number field", "field", "form", "button"]
 }

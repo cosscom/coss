@@ -3,9 +3,7 @@
   "name": "avatar-group",
   "type": "registry:example",
   "description": "Overlapping avatar group",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
+  "registryDependencies": ["@coss/avatar"],
   "files": [
     {
       "path": "registry/default/examples/avatar-group.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar",
-    "avatar group"
-  ]
+  "categories": ["avatar", "avatar group"]
 }

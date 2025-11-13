@@ -3,10 +3,7 @@
   "name": "switch-demo",
   "type": "registry:example",
   "description": "Basic switch",
-  "registryDependencies": [
-    "@coss/switch",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/switch", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/switch-demo.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "switch",
-    "label"
-  ]
+  "categories": ["switch", "label"]
 }

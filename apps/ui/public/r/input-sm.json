@@ -3,9 +3,7 @@
   "name": "input-sm",
   "type": "registry:example",
   "description": "Small input",
-  "registryDependencies": [
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/input-sm.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input"
-  ]
+  "categories": ["input"]
 }

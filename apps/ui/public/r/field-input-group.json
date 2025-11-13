@@ -3,11 +3,7 @@
   "name": "field-input-group",
   "type": "registry:example",
   "description": "Input group with field",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/button",
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/button", "@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/field-input-group.tsx",
@@ -15,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "field",
-    "button"
-  ]
+  "categories": ["input", "input group", "field", "button"]
 }

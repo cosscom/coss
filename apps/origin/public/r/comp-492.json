@@ -2,9 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comp-492",
   "type": "registry:component",
-  "registryDependencies": [
-    "https://coss.com/origin/r/calendar.json"
-  ],
+  "registryDependencies": ["https://coss.com/origin/r/calendar.json"],
   "files": [
     {
       "path": "registry/default/components/comp-492.tsx",

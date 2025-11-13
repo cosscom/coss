@@ -3,9 +3,7 @@
   "name": "toggle-demo",
   "type": "registry:example",
   "description": "Basic toggle",
-  "registryDependencies": [
-    "@coss/toggle"
-  ],
+  "registryDependencies": ["@coss/toggle"],
   "files": [
     {
       "path": "registry/default/examples/toggle-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle"
-  ]
+  "categories": ["toggle"]
 }

@@ -18,12 +18,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "card",
-    "button",
-    "input",
-    "select",
-    "form",
-    "field"
-  ]
+  "categories": ["card", "button", "input", "select", "form", "field"]
 }

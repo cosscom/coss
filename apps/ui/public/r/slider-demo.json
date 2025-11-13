@@ -3,9 +3,7 @@
   "name": "slider-demo",
   "type": "registry:example",
   "description": "Basic slider",
-  "registryDependencies": [
-    "@coss/slider"
-  ],
+  "registryDependencies": ["@coss/slider"],
   "files": [
     {
       "path": "registry/default/examples/slider-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "slider"
-  ]
+  "categories": ["slider"]
 }

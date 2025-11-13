@@ -1,6 +1,6 @@
-import { CopyButton } from "@coss/ui/components/copy-button";
-import { getIconForLanguageExtension } from "@coss/ui/components/icons";
-import { highlightCode } from "@coss/ui/lib/highlight-code";
+import { CopyButton } from "@coss/ui/components/copy-button"
+import { getIconForLanguageExtension } from "@coss/ui/components/icons"
+import { highlightCode } from "@coss/ui/lib/highlight-code"
 
 export async function CodeBlock({
   code,
@@ -9,15 +9,15 @@ export async function CodeBlock({
   copyButton = true,
   showLineNumbers = true,
 }: {
-  code: string;
-  language: string;
-  title?: string | undefined;
-  copyButton?: boolean;
-  showLineNumbers?: boolean;
+  code: string
+  language: string
+  title?: string | undefined
+  copyButton?: boolean
+  showLineNumbers?: boolean
 }) {
   const highlightedCode = await highlightCode(code, language, {
     showLineNumbers,
-  });
+  })
 
   return (
     <figure data-rehype-pretty-code-figure="">
@@ -34,5 +34,5 @@ export async function CodeBlock({
       {copyButton && <CopyButton value={code} />}
       <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
     </figure>
-  );
+  )
 }

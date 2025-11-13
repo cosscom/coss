@@ -3,10 +3,7 @@
   "name": "tooltip-grouped",
   "type": "registry:example",
   "description": "Toggle group with grouped tooltips",
-  "registryDependencies": [
-    "@coss/tooltip",
-    "@coss/toggle-group"
-  ],
+  "registryDependencies": ["@coss/tooltip", "@coss/toggle-group"],
   "files": [
     {
       "path": "registry/default/examples/tooltip-grouped.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "tooltip",
-    "toggle group",
-    "toggle"
-  ]
+  "categories": ["tooltip", "toggle group", "toggle"]
 }

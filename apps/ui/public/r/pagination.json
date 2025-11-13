@@ -2,12 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "pagination",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "dependencies": ["@base-ui-components/react"],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/ui/pagination.tsx",

@@ -3,9 +3,7 @@
   "name": "toggle-group-sm",
   "type": "registry:example",
   "description": "Toggle group with small toggles",
-  "registryDependencies": [
-    "@coss/toggle-group"
-  ],
+  "registryDependencies": ["@coss/toggle-group"],
   "files": [
     {
       "path": "registry/default/examples/toggle-group-sm.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle group",
-    "toggle"
-  ]
+  "categories": ["toggle group", "toggle"]
 }

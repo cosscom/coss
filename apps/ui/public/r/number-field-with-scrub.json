@@ -3,9 +3,7 @@
   "name": "number-field-with-scrub",
   "type": "registry:example",
   "description": "A number field with a scrub area",
-  "registryDependencies": [
-    "@coss/number-field"
-  ],
+  "registryDependencies": ["@coss/number-field"],
   "files": [
     {
       "path": "registry/default/examples/number-field-with-scrub.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "number field"
-  ]
+  "categories": ["number field"]
 }

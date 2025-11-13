@@ -2,12 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comp-329",
   "type": "registry:component",
-  "dependencies": [
-    "react-payment-inputs"
-  ],
-  "devDependencies": [
-    "@types/react-payment-inputs"
-  ],
+  "dependencies": ["react-payment-inputs"],
+  "devDependencies": ["@types/react-payment-inputs"],
   "registryDependencies": [
     "https://coss.com/origin/r/badge.json",
     "https://coss.com/origin/r/button.json",

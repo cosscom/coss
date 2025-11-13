@@ -3,9 +3,7 @@
   "name": "slider-vertical",
   "type": "registry:example",
   "description": "Vertical slider",
-  "registryDependencies": [
-    "@coss/slider"
-  ],
+  "registryDependencies": ["@coss/slider"],
   "files": [
     {
       "path": "registry/default/examples/slider-vertical.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "slider",
-    "vertical slider"
-  ]
+  "categories": ["slider", "vertical slider"]
 }

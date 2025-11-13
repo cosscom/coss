@@ -16,10 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox",
-    "form",
-    "button",
-    "label"
-  ]
+  "categories": ["checkbox", "form", "button", "label"]
 }

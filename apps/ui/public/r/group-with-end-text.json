@@ -3,10 +3,7 @@
   "name": "group-with-end-text",
   "type": "registry:example",
   "description": "Group with end text",
-  "registryDependencies": [
-    "@coss/group",
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/group", "@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/group-with-end-text.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "input"
-  ]
+  "categories": ["group", "input"]
 }

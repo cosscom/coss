@@ -3,9 +3,7 @@
   "name": "accordion-demo",
   "type": "registry:example",
   "description": "Basic accordion",
-  "registryDependencies": [
-    "@coss/accordion"
-  ],
+  "registryDependencies": ["@coss/accordion"],
   "files": [
     {
       "path": "registry/default/examples/accordion-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "accordion"
-  ]
+  "categories": ["accordion"]
 }

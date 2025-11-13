@@ -3,11 +3,7 @@
   "name": "group-with-text",
   "type": "registry:example",
   "description": "Group with start labeled text",
-  "registryDependencies": [
-    "@coss/group",
-    "@coss/input",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/group", "@coss/input", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/group-with-text.tsx",
@@ -15,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "input",
-    "label"
-  ]
+  "categories": ["group", "input", "label"]
 }

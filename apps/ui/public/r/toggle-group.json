@@ -2,13 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "toggle-group",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
-  "registryDependencies": [
-    "@coss/separator",
-    "@coss/toggle"
-  ],
+  "dependencies": ["@base-ui-components/react"],
+  "registryDependencies": ["@coss/separator", "@coss/toggle"],
   "files": [
     {
       "path": "registry/default/ui/toggle-group.tsx",

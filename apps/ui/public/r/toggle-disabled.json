@@ -3,9 +3,7 @@
   "name": "toggle-disabled",
   "type": "registry:example",
   "description": "Disabled toggle",
-  "registryDependencies": [
-    "@coss/toggle"
-  ],
+  "registryDependencies": ["@coss/toggle"],
   "files": [
     {
       "path": "registry/default/examples/toggle-disabled.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle",
-    "disabled"
-  ]
+  "categories": ["toggle", "disabled"]
 }

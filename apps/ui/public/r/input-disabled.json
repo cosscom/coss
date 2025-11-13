@@ -3,9 +3,7 @@
   "name": "input-disabled",
   "type": "registry:example",
   "description": "Input with disabled state",
-  "registryDependencies": [
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/input-disabled.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "disabled"
-  ]
+  "categories": ["input", "disabled"]
 }

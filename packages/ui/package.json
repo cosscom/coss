@@ -4,7 +4,7 @@
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
+    "lint": "biome lint src",
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
@@ -25,9 +25,7 @@
     "@turbo/gen": "^2.5.5",
     "@types/node": "^20.19.9",
     "@types/react": "^19.2.0",
-    "@coss/eslint-config": "workspace:*",
     "@coss/typescript-config": "workspace:*",
-    "eslint": "^9.36.0",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2",
     "next": "^16.0.0",

@@ -3,11 +3,7 @@
   "name": "group-with-disabled-button",
   "type": "registry:example",
   "description": "Group with disabled button",
-  "registryDependencies": [
-    "@coss/group",
-    "@coss/button",
-    "@coss/menu"
-  ],
+  "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
   "files": [
     {
       "path": "registry/default/examples/group-with-disabled-button.tsx",
@@ -15,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "button",
-    "menu"
-  ]
+  "categories": ["group", "button", "menu"]
 }

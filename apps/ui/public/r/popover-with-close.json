@@ -3,10 +3,7 @@
   "name": "popover-with-close",
   "type": "registry:example",
   "description": "Popover with close button",
-  "registryDependencies": [
-    "@coss/popover",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/popover", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/popover-with-close.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "popover",
-    "button"
-  ]
+  "categories": ["popover", "button"]
 }

@@ -3,10 +3,7 @@
   "name": "input-group-disabled",
   "type": "registry:example",
   "description": "Input group with disabled state",
-  "registryDependencies": [
-    "@coss/button",
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/button", "@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-disabled.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "disabled",
-    "button"
-  ]
+  "categories": ["input", "input group", "disabled", "button"]
 }

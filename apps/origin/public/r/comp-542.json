@@ -116,9 +116,7 @@
     }
   ],
   "meta": {
-    "tags": [
-      "calendar"
-    ],
+    "tags": ["calendar"],
     "colSpan": 3
   }
 }

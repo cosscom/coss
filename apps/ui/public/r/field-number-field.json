@@ -3,10 +3,7 @@
   "name": "field-number-field",
   "type": "registry:example",
   "description": "Field with number field",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/number-field"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/number-field"],
   "files": [
     {
       "path": "registry/default/examples/field-number-field.tsx",
@@ -14,12 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "input",
-    "label",
-    "number",
-    "helper",
-    "hint"
-  ]
+  "categories": ["field", "input", "label", "number", "helper", "hint"]
 }

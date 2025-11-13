@@ -3,9 +3,7 @@
   "name": "tabs-vertical",
   "type": "registry:example",
   "description": "Tabs with vertical layout",
-  "registryDependencies": [
-    "@coss/tabs"
-  ],
+  "registryDependencies": ["@coss/tabs"],
   "files": [
     {
       "path": "registry/default/examples/tabs-vertical.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "tabs",
-    "vertical tabs"
-  ]
+  "categories": ["tabs", "vertical tabs"]
 }

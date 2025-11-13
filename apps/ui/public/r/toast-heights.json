@@ -3,9 +3,7 @@
   "name": "toast-heights",
   "type": "registry:example",
   "description": "Toast with varying heights",
-  "registryDependencies": [
-    "@coss/toast"
-  ],
+  "registryDependencies": ["@coss/toast"],
   "files": [
     {
       "path": "registry/default/examples/toast-heights.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toast"
-  ]
+  "categories": ["toast"]
 }

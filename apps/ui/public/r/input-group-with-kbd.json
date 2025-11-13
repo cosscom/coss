@@ -3,10 +3,7 @@
   "name": "input-group-with-kbd",
   "type": "registry:example",
   "description": "Input group with keyboard shortcut",
-  "registryDependencies": [
-    "@coss/input-group",
-    "@coss/kbd"
-  ],
+  "registryDependencies": ["@coss/input-group", "@coss/kbd"],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-kbd.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "kbd",
-    "search"
-  ]
+  "categories": ["input", "input group", "kbd", "search"]
 }

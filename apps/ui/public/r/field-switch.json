@@ -3,10 +3,7 @@
   "name": "field-switch",
   "type": "registry:example",
   "description": "Field with toggle switch",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/switch"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/switch"],
   "files": [
     {
       "path": "registry/default/examples/field-switch.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "switch",
-    "label"
-  ]
+  "categories": ["field", "switch", "label"]
 }

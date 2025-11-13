@@ -1,4 +1,4 @@
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@coss/ui/lib/utils"
 
 function PageHeader({
   className,
@@ -13,7 +13,7 @@ function PageHeader({
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function PageHeaderHeading({
@@ -25,7 +25,7 @@ function PageHeaderHeading({
       className={cn("font-heading text-4xl lg:text-5xl", className)}
       {...props}
     />
-  );
+  )
 }
 
 function PageHeaderDescription({
@@ -37,7 +37,7 @@ function PageHeaderDescription({
       className={cn("text-muted-foreground lg:text-lg", className)}
       {...props}
     />
-  );
+  )
 }
 
-export { PageHeader, PageHeaderDescription, PageHeaderHeading };
+export { PageHeader, PageHeaderDescription, PageHeaderHeading }

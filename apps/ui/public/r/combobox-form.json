@@ -16,9 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input",
-    "form"
-  ]
+  "categories": ["combobox", "input", "form"]
 }

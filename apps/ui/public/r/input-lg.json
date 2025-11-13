@@ -3,9 +3,7 @@
   "name": "input-lg",
   "type": "registry:example",
   "description": "Large input",
-  "registryDependencies": [
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/input-lg.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input"
-  ]
+  "categories": ["input"]
 }

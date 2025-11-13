@@ -3,9 +3,7 @@
   "name": "input-group-with-end-icon",
   "type": "registry:example",
   "description": "Input group with end icon",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-end-icon.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "categories": ["input", "input group"]
 }

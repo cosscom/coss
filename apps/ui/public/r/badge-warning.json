@@ -3,9 +3,7 @@
   "name": "badge-warning",
   "type": "registry:example",
   "description": "Warning badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-warning.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge",
-    "warning"
-  ]
+  "categories": ["badge", "warning"]
 }

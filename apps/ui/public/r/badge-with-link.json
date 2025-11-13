@@ -3,9 +3,7 @@
   "name": "badge-with-link",
   "type": "registry:example",
   "description": "Badge with link",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
+  "registryDependencies": ["@coss/badge"],
   "files": [
     {
       "path": "registry/default/examples/badge-with-link.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge"
-  ]
+  "categories": ["badge"]
 }

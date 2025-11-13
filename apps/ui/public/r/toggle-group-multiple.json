@@ -3,9 +3,7 @@
   "name": "toggle-group-multiple",
   "type": "registry:example",
   "description": "Toggle group with multiple selection",
-  "registryDependencies": [
-    "@coss/toggle-group"
-  ],
+  "registryDependencies": ["@coss/toggle-group"],
   "files": [
     {
       "path": "registry/default/examples/toggle-group-multiple.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle group",
-    "toggle"
-  ]
+  "categories": ["toggle group", "toggle"]
 }

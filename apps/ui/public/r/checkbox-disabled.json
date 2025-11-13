@@ -3,10 +3,7 @@
   "name": "checkbox-disabled",
   "type": "registry:example",
   "description": "Disabled checkbox",
-  "registryDependencies": [
-    "@coss/checkbox",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/checkbox", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/checkbox-disabled.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox",
-    "disabled",
-    "label"
-  ]
+  "categories": ["checkbox", "disabled", "label"]
 }

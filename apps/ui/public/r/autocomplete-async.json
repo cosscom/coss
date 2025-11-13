@@ -3,9 +3,7 @@
   "name": "autocomplete-async",
   "type": "registry:example",
   "description": "Autocomplete with async items loading",
-  "registryDependencies": [
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-async.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input",
-    "async"
-  ]
+  "categories": ["autocomplete", "input", "async"]
 }

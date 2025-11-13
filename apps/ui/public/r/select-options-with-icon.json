@@ -3,9 +3,7 @@
   "name": "select-options-with-icon",
   "type": "registry:example",
   "description": "Select options with icon",
-  "registryDependencies": [
-    "@coss/select"
-  ],
+  "registryDependencies": ["@coss/select"],
   "files": [
     {
       "path": "registry/default/examples/select-options-with-icon.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "select"
-  ]
+  "categories": ["select"]
 }

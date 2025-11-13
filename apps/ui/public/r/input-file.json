@@ -3,9 +3,7 @@
   "name": "input-file",
   "type": "registry:example",
   "description": "Input type set to file",
-  "registryDependencies": [
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/input-file.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "file"
-  ]
+  "categories": ["input", "file"]
 }

@@ -2,13 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "combobox",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
-  "registryDependencies": [
-    "@coss/input",
-    "@coss/scroll-area"
-  ],
+  "dependencies": ["@base-ui-components/react"],
+  "registryDependencies": ["@coss/input", "@coss/scroll-area"],
   "files": [
     {
       "path": "registry/default/ui/combobox.tsx",

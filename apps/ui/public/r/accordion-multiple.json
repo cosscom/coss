@@ -3,9 +3,7 @@
   "name": "accordion-multiple",
   "type": "registry:example",
   "description": "Accordion allowing multiple panels open",
-  "registryDependencies": [
-    "@coss/accordion"
-  ],
+  "registryDependencies": ["@coss/accordion"],
   "files": [
     {
       "path": "registry/default/examples/accordion-multiple.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "accordion"
-  ]
+  "categories": ["accordion"]
 }

@@ -21,7 +21,6 @@ type RegistryItem = {
   meta?: Record<string, unknown>
 }
 
-
 async function buildRegistryIndex() {
   let index = `/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -113,10 +112,7 @@ async function buildRegistryJsonFile() {
   // 3. Copy the registry.json to the public/r directory.
   await fs.cp(
     path.join(process.cwd(), "registry.json"),
-    path.join(
-      process.cwd(),
-      "public/r/registry.json"
-    ),
+    path.join(process.cwd(), "public/r/registry.json"),
     { recursive: true }
   )
 }
@@ -136,8 +132,6 @@ async function buildRegistry() {
     })
   })
 }
-
-
 
 try {
   console.log("🗂️ Building registry/__index__.tsx...")

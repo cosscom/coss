@@ -3,10 +3,7 @@
   "name": "switch-disabled",
   "type": "registry:example",
   "description": "Disabled switch",
-  "registryDependencies": [
-    "@coss/switch",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/switch", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/switch-disabled.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "switch",
-    "label",
-    "disabled"
-  ]
+  "categories": ["switch", "label", "disabled"]
 }

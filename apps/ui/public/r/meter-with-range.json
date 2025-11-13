@@ -3,9 +3,7 @@
   "name": "meter-with-range",
   "type": "registry:example",
   "description": "Meter with min and max values",
-  "registryDependencies": [
-    "@coss/meter"
-  ],
+  "registryDependencies": ["@coss/meter"],
   "files": [
     {
       "path": "registry/default/examples/meter-with-range.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "meter"
-  ]
+  "categories": ["meter"]
 }

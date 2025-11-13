@@ -177,7 +177,7 @@
           "type": "registry:ui"
         }
       ]
-    },    
+    },
     {
       "name": "datefield-rac",
       "type": "registry:ui",
@@ -483,7 +483,11 @@
     {
       "name": "tree",
       "type": "registry:component",
-      "dependencies": ["@headless-tree/core", "@headless-tree/react", "radix-ui"],
+      "dependencies": [
+        "@headless-tree/core",
+        "@headless-tree/react",
+        "radix-ui"
+      ],
       "files": [
         {
           "path": "registry/default/ui/tree.tsx",
@@ -1245,7 +1249,15 @@
         }
       ],
       "meta": {
-        "tags": ["input", "label", "date", "calendar", "range calendar", "picker", "react aria"]
+        "tags": [
+          "input",
+          "label",
+          "date",
+          "calendar",
+          "range calendar",
+          "picker",
+          "react aria"
+        ]
       }
     },
     {
@@ -1255,7 +1267,11 @@
         "https://coss.com/origin/r/calendar-rac.json",
         "https://coss.com/origin/r/datefield-rac.json"
       ],
-      "dependencies": ["react-aria-components", "react-aria", "@internationalized/date"],
+      "dependencies": [
+        "react-aria-components",
+        "react-aria",
+        "@internationalized/date"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-43.tsx",
@@ -1263,7 +1279,15 @@
         }
       ],
       "meta": {
-        "tags": ["input", "label", "date", "calendar", "range calendar", "picker", "react aria"]
+        "tags": [
+          "input",
+          "label",
+          "date",
+          "calendar",
+          "range calendar",
+          "picker",
+          "react aria"
+        ]
       }
     },
     {
@@ -2104,7 +2128,10 @@
     {
       "name": "comp-95",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/avatar.json", "https://coss.com/origin/r/button.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/avatar.json",
+        "https://coss.com/origin/r/button.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-95.tsx",
@@ -4827,7 +4854,15 @@
         }
       ],
       "meta": {
-        "tags": ["slider", "label", "button", "input", "tooltip", "reset", "radix"]
+        "tags": [
+          "slider",
+          "label",
+          "button",
+          "input",
+          "tooltip",
+          "reset",
+          "radix"
+        ]
       }
     },
     {
@@ -6012,7 +6047,14 @@
         }
       ],
       "meta": {
-        "tags": ["dialog", "modal", "signup", "authentication", "form", "radix"],
+        "tags": [
+          "dialog",
+          "modal",
+          "signup",
+          "authentication",
+          "form",
+          "radix"
+        ],
         "style": 1
       }
     },
@@ -6077,7 +6119,15 @@
         }
       ],
       "meta": {
-        "tags": ["dialog", "modal", "checkout", "payment", "credit card", "form", "radix"],
+        "tags": [
+          "dialog",
+          "modal",
+          "checkout",
+          "payment",
+          "credit card",
+          "form",
+          "radix"
+        ],
         "style": 1
       }
     },
@@ -6101,7 +6151,15 @@
         }
       ],
       "meta": {
-        "tags": ["dialog", "modal", "checkout", "payment", "credit card", "form", "radix"],
+        "tags": [
+          "dialog",
+          "modal",
+          "checkout",
+          "payment",
+          "credit card",
+          "form",
+          "radix"
+        ],
         "style": 1
       }
     },
@@ -6150,7 +6208,16 @@
         }
       ],
       "meta": {
-        "tags": ["dialog", "modal", "user", "profile", "image", "avatar", "form", "radix"],
+        "tags": [
+          "dialog",
+          "modal",
+          "user",
+          "profile",
+          "image",
+          "avatar",
+          "form",
+          "radix"
+        ],
         "style": 1
       }
     },
@@ -7647,7 +7714,10 @@
     {
       "name": "comp-423",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/badge.json", "https://coss.com/origin/r/checkbox.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/badge.json",
+        "https://coss.com/origin/r/checkbox.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-423.tsx",
@@ -7916,7 +7986,10 @@
     {
       "name": "comp-439",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/badge.json", "https://coss.com/origin/r/tabs.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/badge.json",
+        "https://coss.com/origin/r/tabs.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-439.tsx",
@@ -8709,7 +8782,15 @@
         }
       ],
       "meta": {
-        "tags": ["table", "tanstack", "checkbox", "collapsible", "flag", "badge", "chip"],
+        "tags": [
+          "table",
+          "tanstack",
+          "checkbox",
+          "collapsible",
+          "flag",
+          "badge",
+          "chip"
+        ],
         "colSpan": 3
       }
     },
@@ -8733,7 +8814,16 @@
         }
       ],
       "meta": {
-        "tags": ["table", "tanstack", "checkbox", "sort", "flag", "badge", "chip", "pagination"],
+        "tags": [
+          "table",
+          "tanstack",
+          "checkbox",
+          "sort",
+          "flag",
+          "badge",
+          "chip",
+          "pagination"
+        ],
         "colSpan": 3
       }
     },
@@ -8760,7 +8850,16 @@
         }
       ],
       "meta": {
-        "tags": ["table", "tanstack", "checkbox", "sort", "flag", "badge", "chip", "pagination"],
+        "tags": [
+          "table",
+          "tanstack",
+          "checkbox",
+          "sort",
+          "flag",
+          "badge",
+          "chip",
+          "pagination"
+        ],
         "colSpan": 3
       }
     },
@@ -8864,7 +8963,13 @@
         }
       ],
       "meta": {
-        "tags": ["calendar", "range calendar", "date", "disabled", "react aria"],
+        "tags": [
+          "calendar",
+          "range calendar",
+          "date",
+          "disabled",
+          "react aria"
+        ],
         "style": 1
       }
     },
@@ -8909,7 +9014,13 @@
         }
       ],
       "meta": {
-        "tags": ["calendar", "range calendar", "date", "disabled", "react daypicker"],
+        "tags": [
+          "calendar",
+          "range calendar",
+          "date",
+          "disabled",
+          "react daypicker"
+        ],
         "style": 1
       }
     },
@@ -9171,7 +9282,13 @@
         }
       ],
       "meta": {
-        "tags": ["calendar", "range calendar", "date", "button", "react daypicker"],
+        "tags": [
+          "calendar",
+          "range calendar",
+          "date",
+          "button",
+          "react daypicker"
+        ],
         "colSpan": 3,
         "style": 1
       }
@@ -9310,7 +9427,10 @@
     {
       "name": "comp-516",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
+        "https://coss.com/origin/r/stepper.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-516.tsx",
@@ -9325,7 +9445,10 @@
     {
       "name": "comp-517",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
+        "https://coss.com/origin/r/stepper.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-517.tsx",
@@ -9370,7 +9493,10 @@
     {
       "name": "comp-520",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
+        "https://coss.com/origin/r/stepper.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-520.tsx",
@@ -9385,7 +9511,10 @@
     {
       "name": "comp-521",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
+        "https://coss.com/origin/r/stepper.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-521.tsx",
@@ -9475,7 +9604,10 @@
     {
       "name": "comp-527",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/button.json", "https://coss.com/origin/r/stepper.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/button.json",
+        "https://coss.com/origin/r/stepper.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-527.tsx",
@@ -9700,7 +9832,13 @@
     {
       "name": "comp-542",
       "type": "registry:component",
-      "dependencies": ["date-fns", "@dnd-kit/core", "@dnd-kit/modifiers", "@dnd-kit/utilities", "@remixicon/react"],
+      "dependencies": [
+        "date-fns",
+        "@dnd-kit/core",
+        "@dnd-kit/modifiers",
+        "@dnd-kit/utilities",
+        "@remixicon/react"
+      ],
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/calendar.json",
@@ -9797,9 +9935,7 @@
     {
       "name": "comp-543",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-543.tsx",
@@ -9808,12 +9944,12 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop", "avatar"]
       }
-    },    
+    },
     {
       "name": "comp-544",
       "type": "registry:component",
@@ -9825,7 +9961,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9835,9 +9971,7 @@
     {
       "name": "comp-545",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-545.tsx",
@@ -9846,7 +9980,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9856,9 +9990,7 @@
     {
       "name": "comp-546",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-546.tsx",
@@ -9867,7 +9999,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9877,9 +10009,7 @@
     {
       "name": "comp-547",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-547.tsx",
@@ -9888,7 +10018,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9898,9 +10028,7 @@
     {
       "name": "comp-548",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-548.tsx",
@@ -9909,7 +10037,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9919,9 +10047,7 @@
     {
       "name": "comp-549",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-549.tsx",
@@ -9930,7 +10056,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9940,9 +10066,7 @@
     {
       "name": "comp-550",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-550.tsx",
@@ -9951,7 +10075,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -9964,7 +10088,7 @@
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/table.json"
-      ],      
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-551.tsx",
@@ -9973,19 +10097,17 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
         "colSpan": 2
       }
-    },   
+    },
     {
       "name": "comp-552",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-552.tsx",
@@ -9994,7 +10116,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -10004,9 +10126,7 @@
     {
       "name": "comp-553",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/button.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/button.json"],
       "files": [
         {
           "path": "registry/default/components/comp-553.tsx",
@@ -10015,7 +10135,7 @@
         {
           "path": "registry/default/hooks/use-file-upload.ts",
           "type": "registry:hook"
-        }        
+        }
       ],
       "meta": {
         "tags": ["upload", "file", "image", "drag and drop"],
@@ -10030,7 +10150,7 @@
         "https://coss.com/origin/r/cropper.json",
         "https://coss.com/origin/r/dialog.json",
         "https://coss.com/origin/r/slider.json"
-      ],      
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-554.tsx",
@@ -10042,16 +10162,23 @@
         }
       ],
       "meta": {
-        "tags": ["upload", "file", "image", "drag and drop", "crop", "dialog", "slider", "zoom"],
+        "tags": [
+          "upload",
+          "file",
+          "image",
+          "drag and drop",
+          "crop",
+          "dialog",
+          "slider",
+          "zoom"
+        ],
         "colSpan": 3
       }
     },
     {
       "name": "comp-555",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-555.tsx",
@@ -10060,15 +10187,13 @@
       ],
       "meta": {
         "tags": ["image", "crop", "zoom"],
-        "colSpan": 2  
+        "colSpan": 2
       }
     },
     {
       "name": "comp-556",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-556.tsx",
@@ -10077,15 +10202,13 @@
       ],
       "meta": {
         "tags": ["image", "crop", "zoom"],
-        "colSpan": 2 
+        "colSpan": 2
       }
     },
     {
       "name": "comp-557",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-557.tsx",
@@ -10100,9 +10223,7 @@
     {
       "name": "comp-558",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-558.tsx",
@@ -10117,9 +10238,7 @@
     {
       "name": "comp-559",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-559.tsx",
@@ -10134,9 +10253,7 @@
     {
       "name": "comp-560",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-560.tsx",
@@ -10154,7 +10271,7 @@
       "registryDependencies": [
         "https://coss.com/origin/r/cropper.json",
         "https://coss.com/origin/r/select.json"
-      ],      
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-561.tsx",
@@ -10169,9 +10286,7 @@
     {
       "name": "comp-562",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-562.tsx",
@@ -10186,9 +10301,7 @@
     {
       "name": "comp-563",
       "type": "registry:component",
-      "registryDependencies": [
-        "https://coss.com/origin/r/cropper.json"
-      ],      
+      "registryDependencies": ["https://coss.com/origin/r/cropper.json"],
       "files": [
         {
           "path": "registry/default/components/comp-563.tsx",
@@ -10206,7 +10319,7 @@
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/cropper.json"
-      ],      
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-564.tsx",
@@ -10226,7 +10339,7 @@
         {
           "path": "registry/default/components/comp-565.tsx",
           "type": "registry:component"
-        } 
+        }
       ],
       "meta": {
         "tags": ["tree"]
@@ -10289,7 +10402,7 @@
       }
     },
     {
-      "name": "comp-570", 
+      "name": "comp-570",
       "type": "registry:component",
       "registryDependencies": ["https://coss.com/origin/r/tree.json"],
       "files": [
@@ -10303,9 +10416,12 @@
       }
     },
     {
-      "name": "comp-571", 
+      "name": "comp-571",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/input.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/input.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-571.tsx",
@@ -10317,9 +10433,12 @@
       }
     },
     {
-      "name": "comp-572", 
+      "name": "comp-572",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/input.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/input.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-572.tsx",
@@ -10331,7 +10450,7 @@
       }
     },
     {
-      "name": "comp-573", 
+      "name": "comp-573",
       "type": "registry:component",
       "registryDependencies": ["https://coss.com/origin/r/tree.json"],
       "files": [
@@ -10345,9 +10464,12 @@
       }
     },
     {
-      "name": "comp-574", 
+      "name": "comp-574",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/button.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/button.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-574.tsx",
@@ -10359,7 +10481,7 @@
       }
     },
     {
-      "name": "comp-575", 
+      "name": "comp-575",
       "type": "registry:component",
       "registryDependencies": ["https://coss.com/origin/r/tree.json"],
       "files": [
@@ -10373,7 +10495,7 @@
       }
     },
     {
-      "name": "comp-576", 
+      "name": "comp-576",
       "type": "registry:component",
       "registryDependencies": ["https://coss.com/origin/r/tree.json"],
       "files": [
@@ -10387,7 +10509,7 @@
       }
     },
     {
-      "name": "comp-577", 
+      "name": "comp-577",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10406,13 +10528,13 @@
       }
     },
     {
-      "name": "comp-578", 
+      "name": "comp-578",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
         "https://coss.com/origin/r/navigation-menu.json",
         "https://coss.com/origin/r/popover.json"
-      ],      
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-578.tsx",
@@ -10429,7 +10551,7 @@
       }
     },
     {
-      "name": "comp-579", 
+      "name": "comp-579",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10452,7 +10574,7 @@
       }
     },
     {
-      "name": "comp-580", 
+      "name": "comp-580",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10476,7 +10598,7 @@
       }
     },
     {
-      "name": "comp-581", 
+      "name": "comp-581",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10513,7 +10635,7 @@
       }
     },
     {
-      "name": "comp-582", 
+      "name": "comp-582",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10546,9 +10668,9 @@
         "tags": ["navbar, navigation"],
         "colSpan": 3
       }
-    },    
+    },
     {
-      "name": "comp-583", 
+      "name": "comp-583",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10582,7 +10704,7 @@
       }
     },
     {
-      "name": "comp-584", 
+      "name": "comp-584",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10616,7 +10738,7 @@
       }
     },
     {
-      "name": "comp-585", 
+      "name": "comp-585",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10650,7 +10772,7 @@
       }
     },
     {
-      "name": "comp-586", 
+      "name": "comp-586",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10678,7 +10800,7 @@
       }
     },
     {
-      "name": "comp-587", 
+      "name": "comp-587",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10702,7 +10824,7 @@
       }
     },
     {
-      "name": "comp-588", 
+      "name": "comp-588",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10729,7 +10851,7 @@
       }
     },
     {
-      "name": "comp-589", 
+      "name": "comp-589",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10760,7 +10882,7 @@
       }
     },
     {
-      "name": "comp-590", 
+      "name": "comp-590",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10793,7 +10915,7 @@
       }
     },
     {
-      "name": "comp-591", 
+      "name": "comp-591",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10815,9 +10937,9 @@
         "tags": ["navbar, navigation"],
         "colSpan": 3
       }
-    },    
+    },
     {
-      "name": "comp-592", 
+      "name": "comp-592",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10851,7 +10973,7 @@
       }
     },
     {
-      "name": "comp-593", 
+      "name": "comp-593",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/breadcrumb.json",
@@ -10881,7 +11003,7 @@
       }
     },
     {
-      "name": "comp-594", 
+      "name": "comp-594",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/button.json",
@@ -10908,7 +11030,7 @@
       }
     },
     {
-      "name": "comp-595", 
+      "name": "comp-595",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/avatar.json",
@@ -10926,7 +11048,7 @@
       }
     },
     {
-      "name": "comp-596", 
+      "name": "comp-596",
       "type": "registry:component",
       "registryDependencies": [
         "https://coss.com/origin/r/badge.json",
@@ -10950,12 +11072,15 @@
     {
       "name": "comp-597",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/checkbox.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/checkbox.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-597.tsx",
           "type": "registry:component"
-        } 
+        }
       ],
       "meta": {
         "tags": ["tree", "checkbox"]
@@ -10964,12 +11089,15 @@
     {
       "name": "comp-598",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/checkbox.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/checkbox.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-598.tsx",
           "type": "registry:component"
-        } 
+        }
       ],
       "meta": {
         "tags": ["tree", "checkbox"]
@@ -10978,16 +11106,19 @@
     {
       "name": "comp-599",
       "type": "registry:component",
-      "registryDependencies": ["https://coss.com/origin/r/tree.json", "https://coss.com/origin/r/checkbox.json"],
+      "registryDependencies": [
+        "https://coss.com/origin/r/tree.json",
+        "https://coss.com/origin/r/checkbox.json"
+      ],
       "files": [
         {
           "path": "registry/default/components/comp-599.tsx",
           "type": "registry:component"
-        } 
+        }
       ],
       "meta": {
         "tags": ["tree", "checkbox"]
       }
-    }        
+    }
   ]
 }

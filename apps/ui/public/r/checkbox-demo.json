@@ -3,10 +3,7 @@
   "name": "checkbox-demo",
   "type": "registry:example",
   "description": "Basic checkbox",
-  "registryDependencies": [
-    "@coss/checkbox",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/checkbox", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/checkbox-demo.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox",
-    "label"
-  ]
+  "categories": ["checkbox", "label"]
 }

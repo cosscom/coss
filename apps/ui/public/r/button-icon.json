@@ -3,9 +3,7 @@
   "name": "button-icon",
   "type": "registry:example",
   "description": "Icon button",
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/button-icon.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

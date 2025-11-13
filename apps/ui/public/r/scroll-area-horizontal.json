@@ -3,9 +3,7 @@
   "name": "scroll-area-horizontal",
   "type": "registry:example",
   "description": "Scroll area - horizontal",
-  "registryDependencies": [
-    "@coss/scroll-area"
-  ],
+  "registryDependencies": ["@coss/scroll-area"],
   "files": [
     {
       "path": "registry/default/examples/scroll-area-horizontal.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "scroll area"
-  ]
+  "categories": ["scroll area"]
 }

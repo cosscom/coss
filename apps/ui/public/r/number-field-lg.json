@@ -3,9 +3,7 @@
   "name": "number-field-lg",
   "type": "registry:example",
   "description": "Large number field",
-  "registryDependencies": [
-    "@coss/number-field"
-  ],
+  "registryDependencies": ["@coss/number-field"],
   "files": [
     {
       "path": "registry/default/examples/number-field-lg.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "number field"
-  ]
+  "categories": ["number field"]
 }

@@ -3,10 +3,7 @@
   "name": "combobox-with-label",
   "type": "registry:example",
   "description": "Combobox with label",
-  "registryDependencies": [
-    "@coss/combobox",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/combobox", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/combobox-with-label.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input"
-  ]
+  "categories": ["combobox", "input"]
 }

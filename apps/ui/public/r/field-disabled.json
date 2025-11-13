@@ -3,10 +3,7 @@
   "name": "field-disabled",
   "type": "registry:example",
   "description": "Field in disabled state",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/field-disabled.tsx",
@@ -14,11 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "label",
-    "disabled",
-    "helper",
-    "hint"
-  ]
+  "categories": ["field", "label", "disabled", "helper", "hint"]
 }

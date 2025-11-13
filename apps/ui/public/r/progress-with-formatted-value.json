@@ -3,9 +3,7 @@
   "name": "progress-with-formatted-value",
   "type": "registry:example",
   "description": "Progress with a custom formatted value",
-  "registryDependencies": [
-    "@coss/progress"
-  ],
+  "registryDependencies": ["@coss/progress"],
   "files": [
     {
       "path": "registry/default/examples/progress-with-formatted-value.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "progress"
-  ]
+  "categories": ["progress"]
 }

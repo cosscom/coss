@@ -16,11 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input group",
-    "textarea",
-    "button",
-    "menu",
-    "tooltip"
-  ]
+  "categories": ["input group", "textarea", "button", "menu", "tooltip"]
 }

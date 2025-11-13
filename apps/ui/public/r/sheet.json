@@ -2,12 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "sheet",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
-  "registryDependencies": [
-    "@coss/dialog"
-  ],
+  "dependencies": ["@base-ui-components/react"],
+  "registryDependencies": ["@coss/dialog"],
   "files": [
     {
       "path": "registry/default/ui/sheet.tsx",

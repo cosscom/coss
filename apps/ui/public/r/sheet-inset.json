@@ -17,7 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "sheet"
-  ]
+  "categories": ["sheet"]
 }

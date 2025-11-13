@@ -16,10 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "textarea",
-    "form",
-    "field",
-    "button"
-  ]
+  "categories": ["textarea", "form", "field", "button"]
 }

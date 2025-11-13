@@ -3,9 +3,7 @@
   "name": "combobox-grouped",
   "type": "registry:example",
   "description": "Combobox with grouped items",
-  "registryDependencies": [
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/combobox-grouped.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input"
-  ]
+  "categories": ["combobox", "input"]
 }

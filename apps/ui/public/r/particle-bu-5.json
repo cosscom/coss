@@ -3,12 +3,8 @@
   "name": "particle-bu-5",
   "type": "registry:block",
   "description": "Social login icon buttons",
-  "dependencies": [
-    "@remixicon/react"
-  ],
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "dependencies": ["@remixicon/react"],
+  "registryDependencies": ["@coss/button"],
   "files": [
     {
       "path": "registry/default/particles/particle-bu-5.tsx",
@@ -16,7 +12,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "categories": ["button"]
 }

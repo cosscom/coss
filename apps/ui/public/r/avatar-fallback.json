@@ -3,9 +3,7 @@
   "name": "avatar-fallback",
   "type": "registry:example",
   "description": "Fallback-only avatar",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
+  "registryDependencies": ["@coss/avatar"],
   "files": [
     {
       "path": "registry/default/examples/avatar-fallback.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar"
-  ]
+  "categories": ["avatar"]
 }

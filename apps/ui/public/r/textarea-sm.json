@@ -3,9 +3,7 @@
   "name": "textarea-sm",
   "type": "registry:example",
   "description": "Small textarea",
-  "registryDependencies": [
-    "@coss/textarea"
-  ],
+  "registryDependencies": ["@coss/textarea"],
   "files": [
     {
       "path": "registry/default/examples/textarea-sm.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "textarea"
-  ]
+  "categories": ["textarea"]
 }

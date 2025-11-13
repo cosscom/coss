@@ -3,9 +3,7 @@
   "name": "combobox-sm",
   "type": "registry:example",
   "description": "Small combobox",
-  "registryDependencies": [
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/combobox-sm.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input"
-  ]
+  "categories": ["combobox", "input"]
 }

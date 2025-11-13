@@ -3,9 +3,7 @@
   "name": "meter-with-formatted-value",
   "type": "registry:example",
   "description": "Meter with a custom formatted value",
-  "registryDependencies": [
-    "@coss/meter"
-  ],
+  "registryDependencies": ["@coss/meter"],
   "files": [
     {
       "path": "registry/default/examples/meter-with-formatted-value.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "meter"
-  ]
+  "categories": ["meter"]
 }

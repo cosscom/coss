@@ -15,12 +15,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "radio",
-    "label",
-    "fieldset",
-    "helper",
-    "hint"
-  ]
+  "categories": ["field", "radio", "label", "fieldset", "helper", "hint"]
 }

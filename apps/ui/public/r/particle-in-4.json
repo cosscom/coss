@@ -3,10 +3,7 @@
   "name": "particle-in-4",
   "type": "registry:block",
   "description": "Input group with keyboard shortcut",
-  "registryDependencies": [
-    "@coss/input-group",
-    "@coss/kbd"
-  ],
+  "registryDependencies": ["@coss/input-group", "@coss/kbd"],
   "files": [
     {
       "path": "registry/default/particles/particle-in-4.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "kbd",
-    "search"
-  ]
+  "categories": ["input", "input group", "kbd", "search"]
 }

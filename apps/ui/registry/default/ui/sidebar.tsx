@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
 import { mergeProps } from "@base-ui-components/react/merge-props"
 import { useRender } from "@base-ui-components/react/use-render"
-import { cva, VariantProps } from "class-variance-authority"
+import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
+import * as React from "react"
 
 import { useIsMobile } from "@/registry/default/hooks/use-mobile"
 import { cn } from "@/registry/default/lib/utils"
@@ -519,7 +519,6 @@ function SidebarMenuButton({
 
   const buttonProps = mergeProps<"button">(defaultProps, props)
 
-   
   const buttonElement = useRender({
     defaultTagName: "button",
     render,

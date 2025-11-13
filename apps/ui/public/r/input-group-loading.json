@@ -3,10 +3,7 @@
   "name": "input-group-loading",
   "type": "registry:example",
   "description": "Input group with end loading state",
-  "registryDependencies": [
-    "@coss/input-group",
-    "@coss/spinner"
-  ],
+  "registryDependencies": ["@coss/input-group", "@coss/spinner"],
   "files": [
     {
       "path": "registry/default/examples/input-group-loading.tsx",
@@ -14,10 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group",
-    "loading",
-    "spinner"
-  ]
+  "categories": ["input", "input group", "loading", "spinner"]
 }

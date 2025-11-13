@@ -3,9 +3,7 @@
   "name": "autocomplete-with-trigger-clear",
   "type": "registry:example",
   "description": "Autocomplete with trigger and clear buttons",
-  "registryDependencies": [
-    "@coss/autocomplete"
-  ],
+  "registryDependencies": ["@coss/autocomplete"],
   "files": [
     {
       "path": "registry/default/examples/autocomplete-with-trigger-clear.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "autocomplete",
-    "input"
-  ]
+  "categories": ["autocomplete", "input"]
 }

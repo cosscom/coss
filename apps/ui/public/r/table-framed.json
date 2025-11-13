@@ -3,11 +3,7 @@
   "name": "table-framed",
   "type": "registry:example",
   "description": "Framed table",
-  "registryDependencies": [
-    "@coss/table",
-    "@coss/badge",
-    "@coss/frame"
-  ],
+  "registryDependencies": ["@coss/table", "@coss/badge", "@coss/frame"],
   "files": [
     {
       "path": "registry/default/examples/table-framed.tsx",
@@ -15,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "table",
-    "badge",
-    "frame"
-  ]
+  "categories": ["table", "badge", "frame"]
 }

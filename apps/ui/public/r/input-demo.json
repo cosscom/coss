@@ -3,9 +3,7 @@
   "name": "input-demo",
   "type": "registry:example",
   "description": "Basic input component without label",
-  "registryDependencies": [
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/input-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input"
-  ]
+  "categories": ["input"]
 }

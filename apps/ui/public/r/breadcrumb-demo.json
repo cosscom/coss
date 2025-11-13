@@ -3,10 +3,7 @@
   "name": "breadcrumb-demo",
   "type": "registry:example",
   "description": "Breadcrumb with menu example",
-  "registryDependencies": [
-    "@coss/breadcrumb",
-    "@coss/menu"
-  ],
+  "registryDependencies": ["@coss/breadcrumb", "@coss/menu"],
   "files": [
     {
       "path": "registry/default/examples/breadcrumb-demo.tsx",
@@ -14,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "breadcrumb",
-    "menu"
-  ]
+  "categories": ["breadcrumb", "menu"]
 }

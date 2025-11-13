@@ -3,9 +3,7 @@
   "name": "spinner-demo",
   "type": "registry:example",
   "description": "Spinner demo",
-  "registryDependencies": [
-    "@coss/spinner"
-  ],
+  "registryDependencies": ["@coss/spinner"],
   "files": [
     {
       "path": "registry/default/examples/spinner-demo.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "spinner",
-    "loading"
-  ]
+  "categories": ["spinner", "loading"]
 }

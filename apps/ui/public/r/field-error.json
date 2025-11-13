@@ -3,10 +3,7 @@
   "name": "field-error",
   "type": "registry:example",
   "description": "Field showing validation error",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/field-error.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "label",
-    "error"
-  ]
+  "categories": ["field", "label", "error"]
 }

@@ -2,11 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "tree",
   "type": "registry:component",
-  "dependencies": [
-    "@headless-tree/core",
-    "@headless-tree/react",
-    "radix-ui"
-  ],
+  "dependencies": ["@headless-tree/core", "@headless-tree/react", "radix-ui"],
   "files": [
     {
       "path": "registry/default/ui/tree.tsx",

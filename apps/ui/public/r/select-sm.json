@@ -3,9 +3,7 @@
   "name": "select-sm",
   "type": "registry:example",
   "description": "A select with small size",
-  "registryDependencies": [
-    "@coss/select"
-  ],
+  "registryDependencies": ["@coss/select"],
   "files": [
     {
       "path": "registry/default/examples/select-sm.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "select"
-  ]
+  "categories": ["select"]
 }

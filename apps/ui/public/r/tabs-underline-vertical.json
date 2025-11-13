@@ -3,9 +3,7 @@
   "name": "tabs-underline-vertical",
   "type": "registry:example",
   "description": "Underline tabs with vertical layout",
-  "registryDependencies": [
-    "@coss/tabs"
-  ],
+  "registryDependencies": ["@coss/tabs"],
   "files": [
     {
       "path": "registry/default/examples/tabs-underline-vertical.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "tabs",
-    "vertical tabs"
-  ]
+  "categories": ["tabs", "vertical tabs"]
 }

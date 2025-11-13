@@ -3,9 +3,7 @@
   "name": "alert-success",
   "type": "registry:example",
   "description": "Success alert",
-  "registryDependencies": [
-    "@coss/alert"
-  ],
+  "registryDependencies": ["@coss/alert"],
   "files": [
     {
       "path": "registry/default/examples/alert-success.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "alert",
-    "success"
-  ]
+  "categories": ["alert", "success"]
 }

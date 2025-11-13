@@ -14,10 +14,6 @@
     }
   ],
   "meta": {
-    "tags": [
-      "tree",
-      "filter",
-      "search"
-    ]
+    "tags": ["tree", "filter", "search"]
   }
 }

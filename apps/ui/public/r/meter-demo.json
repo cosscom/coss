@@ -3,9 +3,7 @@
   "name": "meter-demo",
   "type": "registry:example",
   "description": "Basic meter",
-  "registryDependencies": [
-    "@coss/meter"
-  ],
+  "registryDependencies": ["@coss/meter"],
   "files": [
     {
       "path": "registry/default/examples/meter-demo.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "meter"
-  ]
+  "categories": ["meter"]
 }

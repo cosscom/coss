@@ -16,10 +16,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "button",
-    "popover",
-    "badge"
-  ]
+  "categories": ["group", "button", "popover", "badge"]
 }

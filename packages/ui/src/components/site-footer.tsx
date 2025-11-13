@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next/link"
 
 export function SiteFooter() {
   return (
@@ -17,5 +17,5 @@ export function SiteFooter() {
         </p>
       </div>
     </footer>
-  );
+  )
 }

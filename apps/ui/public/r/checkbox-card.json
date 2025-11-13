@@ -3,10 +3,7 @@
   "name": "checkbox-card",
   "type": "registry:example",
   "description": "Card-style checkbox",
-  "registryDependencies": [
-    "@coss/checkbox",
-    "@coss/label"
-  ],
+  "registryDependencies": ["@coss/checkbox", "@coss/label"],
   "files": [
     {
       "path": "registry/default/examples/checkbox-card.tsx",
@@ -14,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "checkbox",
-    "card",
-    "label"
-  ]
+  "categories": ["checkbox", "card", "label"]
 }

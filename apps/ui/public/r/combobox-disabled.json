@@ -3,9 +3,7 @@
   "name": "combobox-disabled",
   "type": "registry:example",
   "description": "Disabled combobox",
-  "registryDependencies": [
-    "@coss/combobox"
-  ],
+  "registryDependencies": ["@coss/combobox"],
   "files": [
     {
       "path": "registry/default/examples/combobox-disabled.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "combobox",
-    "input",
-    "disabled"
-  ]
+  "categories": ["combobox", "input", "disabled"]
 }

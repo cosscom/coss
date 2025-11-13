@@ -3,9 +3,7 @@
   "name": "alert-info",
   "type": "registry:example",
   "description": "Info alert",
-  "registryDependencies": [
-    "@coss/alert"
-  ],
+  "registryDependencies": ["@coss/alert"],
   "files": [
     {
       "path": "registry/default/examples/alert-info.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "alert",
-    "info"
-  ]
+  "categories": ["alert", "info"]
 }

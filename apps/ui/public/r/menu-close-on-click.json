@@ -3,10 +3,7 @@
   "name": "menu-close-on-click",
   "type": "registry:example",
   "description": "Close menu when items are clicked",
-  "registryDependencies": [
-    "@coss/menu",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/menu", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/menu-close-on-click.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "menu"
-  ]
+  "categories": ["menu"]
 }

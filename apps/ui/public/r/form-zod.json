@@ -3,9 +3,7 @@
   "name": "form-zod",
   "type": "registry:example",
   "description": "Form with zod validation",
-  "dependencies": [
-    "zod"
-  ],
+  "dependencies": ["zod"],
   "registryDependencies": [
     "@coss/form",
     "@coss/field",
@@ -19,12 +17,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "form",
-    "field",
-    "button",
-    "validation",
-    "label",
-    "zod"
-  ]
+  "categories": ["form", "field", "button", "validation", "label", "zod"]
 }

@@ -3,9 +3,7 @@
   "name": "input-group-with-end-text",
   "type": "registry:example",
   "description": "Input group with end text",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
+  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
       "path": "registry/default/examples/input-group-with-end-text.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "categories": ["input", "input group"]
 }

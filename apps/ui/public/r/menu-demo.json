@@ -3,10 +3,7 @@
   "name": "menu-demo",
   "type": "registry:example",
   "description": "Basic menu",
-  "registryDependencies": [
-    "@coss/menu",
-    "@coss/button"
-  ],
+  "registryDependencies": ["@coss/menu", "@coss/button"],
   "files": [
     {
       "path": "registry/default/examples/menu-demo.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "menu"
-  ]
+  "categories": ["menu"]
 }

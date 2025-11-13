@@ -3,9 +3,7 @@
   "name": "tabs-underline",
   "type": "registry:example",
   "description": "Tabs with underline indicator",
-  "registryDependencies": [
-    "@coss/tabs"
-  ],
+  "registryDependencies": ["@coss/tabs"],
   "files": [
     {
       "path": "registry/default/examples/tabs-underline.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "tabs"
-  ]
+  "categories": ["tabs"]
 }

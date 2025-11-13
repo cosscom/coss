@@ -3,10 +3,7 @@
   "name": "field-validity",
   "type": "registry:example",
   "description": "Show field validity state",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/input"
-  ],
+  "registryDependencies": ["@coss/field", "@coss/input"],
   "files": [
     {
       "path": "registry/default/examples/field-validity.tsx",
@@ -14,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field"
-  ]
+  "categories": ["field"]
 }

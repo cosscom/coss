@@ -3,9 +3,7 @@
   "name": "select-disabled",
   "type": "registry:example",
   "description": "A disabled select",
-  "registryDependencies": [
-    "@coss/select"
-  ],
+  "registryDependencies": ["@coss/select"],
   "files": [
     {
       "path": "registry/default/examples/select-disabled.tsx",
@@ -13,8 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "select",
-    "disabled"
-  ]
+  "categories": ["select", "disabled"]
 }

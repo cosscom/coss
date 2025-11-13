@@ -9,10 +9,10 @@
     "build": "bun run --bun format:write && next build",
     "registry:build": "shadcn build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "biome lint .",
     "check-types": "tsc --noEmit",
-    "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
-    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
+    "format:write": "biome format --write .",
+    "format:check": "biome format --check .",
     "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf .next"
   },
   "dependencies": {
@@ -58,65 +58,16 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "^4.6.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^24.2.1",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/react-payment-inputs": "^1.1.4",
-    "@coss/eslint-config": "workspace:*",
-    "eslint": "^9.33.0",
-    "eslint-config-next": "15.4.6",
     "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
     "rimraf": "^6.0.1",
     "shiki": "^3.9.2",
     "tailwindcss": "^4.1.11",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.2"
-  },
-  "prettier": {
-    "endOfLine": "lf",
-    "semi": false,
-    "singleQuote": false,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "importOrder": [
-      "^(react/(.*)$)|^(react$)",
-      "^(next/(.*)$)|^(next$)",
-      "<THIRD_PARTY_MODULES>",
-      "",
-      "^@workspace/(.*)$",
-      "",
-      "^types$",
-      "^@/types/(.*)$",
-      "^@/config/(.*)$",
-      "^@/lib/(.*)$",
-      "^@/hooks/(.*)$",
-      "^@/components/ui/(.*)$",
-      "^@/components/(.*)$",
-      "^@/registry/(.*)$",
-      "^@/styles/(.*)$",
-      "^@/app/(.*)$",
-      "^@/www/(.*)$",
-      "",
-      "^[./]"
-    ],
-    "importOrderParserPlugins": [
-      "typescript",
-      "jsx",
-      "decorators-legacy"
-    ],
-    "plugins": [
-      "@ianvs/prettier-plugin-sort-imports",
-      "prettier-plugin-tailwindcss"
-    ],
-    "tailwindFunctions": [
-      "cva",
-      "cn",
-      "clsx"
-    ],
-    "tailwindStylesheet": "./app/globals.css"
   }
 }

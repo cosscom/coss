@@ -3,9 +3,7 @@
   "name": "skeleton-only",
   "type": "registry:example",
   "description": "Skeleton only",
-  "registryDependencies": [
-    "@coss/skeleton"
-  ],
+  "registryDependencies": ["@coss/skeleton"],
   "files": [
     {
       "path": "registry/default/examples/skeleton-only.tsx",
@@ -13,7 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "skeleton"
-  ]
+  "categories": ["skeleton"]
 }

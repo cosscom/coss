@@ -3,9 +3,7 @@
   "name": "toggle-group-outline-vertical",
   "type": "registry:example",
   "description": "Toggle group with outline toggles and vertical layout",
-  "registryDependencies": [
-    "@coss/toggle-group"
-  ],
+  "registryDependencies": ["@coss/toggle-group"],
   "files": [
     {
       "path": "registry/default/examples/toggle-group-outline-vertical.tsx",
@@ -13,9 +11,5 @@
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle group",
-    "toggle",
-    "vertical"
-  ]
+  "categories": ["toggle group", "toggle", "vertical"]
 }
