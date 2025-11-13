@@ -1,5 +1,7 @@
 import { type Registry } from "shadcn/schema"
 
+import type { RegistryCategory } from "./registry-categories"
+
 export const examples: Registry["items"] = [
   {
     name: "accordion-controlled",

@@ -5296,7 +5296,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["frame","collapsible"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full"},
   },
   "particle-in-1": {
     name: "particle-in-1",
@@ -5314,7 +5314,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","button","popover"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"},
   },
   "particle-in-2": {
     name: "particle-in-2",
@@ -5332,7 +5332,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","button","tooltip"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"},
   },
   "particle-in-3": {
     name: "particle-in-3",
@@ -5350,7 +5350,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","button","popover"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"},
   },
   "particle-in-4": {
     name: "particle-in-4",
@@ -5368,7 +5368,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","kbd","search"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"},
   },
   "particle-in-5": {
     name: "particle-in-5",
@@ -5386,7 +5386,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","loading","spinner"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"},
   },
   "particle-pa-1": {
     name: "particle-pa-1",
@@ -5404,7 +5404,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["pagination"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full"},
   },
   "particle-pa-2": {
     name: "particle-pa-2",
@@ -5422,7 +5422,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["pagination","select"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=particle-wrapper]:w-full"},
   },
   "utils": {
     name: "utils",

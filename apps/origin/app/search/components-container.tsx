@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import type { RegistryItem } from "shadcn/registry"
 
 import { getComponents } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import ComponentCard from "@/components/component-card"
 import ComponentDetails from "@/components/component-details"
 import ComponentLoader from "@/components/component-loader-client"
@@ -45,16 +46,27 @@ export default function ComponentsContainer() {
     <div className="space-y-4">
       <SearchField selectedTags={tags} onTagChange={updateTags} />
       <PageGrid>
-        {filtered.map((component: RegistryItem) => (
-          <ComponentCard
-            key={component.name}
-            component={component}
-            isSearchPage
-          >
-            <ComponentLoader component={component} />
-            <ComponentDetails component={component} />
-          </ComponentCard>
-        ))}
+        {filtered.map((component: RegistryItem) => {
+          const className = component.meta?.className as string | undefined
+          return (
+            <ComponentCard
+              key={component.name}
+              component={component}
+              isSearchPage
+            >
+              <div
+                className={cn(
+                  className && "flex min-w-0 flex-1 flex-col flex-wrap items-center justify-center overflow-x-auto p-6 lg:px-8 lg:py-12",
+                  className
+                )}
+                data-slot="particle-wrapper"
+              >
+                <ComponentLoader component={component} />
+              </div>
+              <ComponentDetails component={component} />
+            </ComponentCard>
+          )
+        })}
         {tags.length > 0 && filtered.length === 0 && (
           <div className="col-span-full py-8 text-center">
             <p className="text-muted-foreground">

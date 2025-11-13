@@ -5418,7 +5418,10 @@
       "categories": [
         "frame",
         "collapsible"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      }
     },
     {
       "name": "particle-in-1",
@@ -5440,7 +5443,10 @@
         "input group",
         "button",
         "popover"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      }
     },
     {
       "name": "particle-in-2",
@@ -5462,7 +5468,10 @@
         "input group",
         "button",
         "tooltip"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      }
     },
     {
       "name": "particle-in-3",
@@ -5484,7 +5493,10 @@
         "input group",
         "button",
         "popover"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      }
     },
     {
       "name": "particle-in-4",
@@ -5505,7 +5517,10 @@
         "input group",
         "kbd",
         "search"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      }
     },
     {
       "name": "particle-in-5",
@@ -5526,7 +5541,10 @@
         "input group",
         "loading",
         "spinner"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      }
     },
     {
       "name": "particle-pa-1",
@@ -5543,7 +5561,10 @@
       ],
       "categories": [
         "pagination"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      }
     },
     {
       "name": "particle-pa-2",
@@ -5562,7 +5583,10 @@
       "categories": [
         "pagination",
         "select"
-      ]
+      ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      }
     },
     {
       "name": "colors-zinc",

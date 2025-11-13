@@ -7,10 +7,8 @@ function PageHeader({
 }: React.ComponentProps<"section">) {
   return (
     <section className={className} {...props}>
-      <div className="container-wrapper">
-        <div className="container flex flex-col items-center gap-2 px-0 py-8 text-center md:py-12 lg:py-16 xl:gap-4">
-          {children}
-        </div>
+      <div className="container flex flex-col items-center gap-2 px-0 py-8 text-center md:py-12 lg:py-16 xl:gap-4">
+        {children}
       </div>
     </section>
   );

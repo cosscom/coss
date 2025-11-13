@@ -13,9 +13,5 @@ export const appConfig = {
       href: "/particles",
       label: "Particles",
     },
-    {
-      href: "/search",
-      label: "Search",
-    },
   ],
 }
