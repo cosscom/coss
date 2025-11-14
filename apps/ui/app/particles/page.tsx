@@ -6,6 +6,7 @@ import {
   PageHeaderHeading,
 } from "@coss/ui/components/page-header"
 
+import { ParticlesDisplay } from "./particles-display"
 import SearchContainer from "./search-container"
 
 const description =
@@ -13,10 +14,27 @@ const description =
 
 export const metadata: Metadata = {
   title: "Search components",
-  description: description,
+  description,
 }
 
-export default function Page() {
+async function ParticlesDisplayServer({
+  searchParams,
+}: {
+  searchParams: Promise<{ tags?: string }>
+}) {
+  const params = await searchParams
+  const selectedCategories = params.tags?.split(",").filter(Boolean) || []
+
+  if (selectedCategories.length === 0) return null
+
+  return <ParticlesDisplay selectedCategories={selectedCategories} />
+}
+
+export default function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ tags?: string }>
+}) {
   return (
     <div className="container w-full">
       <PageHeader className="*:pb-8!">
@@ -27,6 +45,9 @@ export default function Page() {
       </PageHeader>
       <Suspense>
         <SearchContainer />
+      </Suspense>
+      <Suspense>
+        <ParticlesDisplayServer searchParams={searchParams} />
       </Suspense>
     </div>
   )

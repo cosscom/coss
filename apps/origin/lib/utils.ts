@@ -13,8 +13,7 @@ export const getComponents = (
   return selectedTags.length
     ? components.filter((component) =>
         selectedTags.every(
-          (tag) =>
-            component.categories?.includes(tag) ?? false
+          (tag) => component.meta?.tags?.includes(tag) ?? false
         )
       )
     : components
@@ -35,17 +34,13 @@ export const getAvailableTags = (
 
   // Get all components that have all the selected tags
   const matchingComponents = components.filter((component) =>
-    selectedTags.every(
-      (tag) =>
-        component.categories?.includes(tag) ?? false
-    )
+    selectedTags.every((tag) => component.meta?.tags?.includes(tag) ?? false)
   )
 
   // Get all unique tags from the matching components
   const availableTags = new Set<RegistryTag>()
   matchingComponents.forEach((component) => {
-    const tags = component.categories ?? []
-    tags.forEach((tag: RegistryTag) => {
+    component.meta?.tags?.forEach((tag: RegistryTag) => {
       if (!selectedTags.includes(tag)) {
         availableTags.add(tag)
       }

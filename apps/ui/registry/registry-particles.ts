@@ -4,11 +4,11 @@ import type { RegistryCategory } from "./registry-categories"
 
 // Type helper to enforce RegistryCategory[] for categories field
 type ParticleItem = Omit<Registry["items"][number], "categories"> & {
-  categories?: readonly RegistryCategory[]
+  categories?: RegistryCategory[]
 }
 
 // Helper function to ensure categories are valid RegistryCategory values
-function categories<T extends readonly RegistryCategory[]>(
+function categories<T extends RegistryCategory[]>(
   ...categories: T
 ): T {
   return categories
