@@ -1,6 +1,14 @@
 ![coss.com](https://github.com/user-attachments/assets/56dfe7f7-85b7-44ee-b89a-1c30c5c4a156)
 <h3 align="center">coss.com (formerly Origin UI)</h3>
 <p align="center">The <strong>everything but AI</strong> company.</p>
+<p align="center">
+  <a href="https://github.com/cosscom/coss/actions/workflows/ci.yml">
+    <img src="https://github.com/cosscom/coss/actions/workflows/ci.yml/badge.svg" alt="CI status" />
+  </a>
+  <a href="https://github.com/cosscom/coss/actions/workflows/publish.yml">
+    <img src="https://github.com/cosscom/coss/actions/workflows/publish.yml/badge.svg" alt="Publish status" />
+  </a>
+</p>
 
 ## About the Project
 

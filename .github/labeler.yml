@@ -1,0 +1,30 @@
+area:apps/origin:
+  - "apps/origin/**"
+
+area:apps/ui:
+  - "apps/ui/**"
+
+area:apps/www:
+  - "apps/www/**"
+
+pkg:ui:
+  - "packages/ui/**"
+
+pkg:tsconfig:
+  - "packages/typescript-config/**"
+
+area:config:
+  - ".github/**"
+  - "biome.json"
+  - "turbo.json"
+  - "tsconfig.json"
+  - "bunfig.toml"
+  - "lint-staged.config.mjs"
+
+docs:
+  - "**/*.md"
+
+deps:
+  - "package.json"
+  - "bun.lock"
+  - "packages/**/package.json"

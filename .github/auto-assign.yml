@@ -1,0 +1,15 @@
+addReviewers: true
+addAssignees: true
+
+# todo to be replaced with teams
+reviewers:
+  - volnei
+
+# todo to be replaced with teams
+assignees:
+  - volnei
+
+numberOfReviewers: 1
+skipKeywords:
+  - "WIP"
+  - "DO NOT MERGE"

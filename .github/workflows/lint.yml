@@ -30,4 +30,21 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run lint
+        id: lint
         run: bun run lint
+
+      - name: Lint summary
+        if: always()
+        env:
+          STEP_STATUS: ${{ steps.lint.outcome }}
+          LOG_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          STATUS=$(echo "${STEP_STATUS}" | tr '[:lower:]' '[:upper:]')
+          {
+            echo "## Lint"
+            echo ""
+            echo "- Status: ${STATUS}"
+            if [ "${STEP_STATUS}" != "success" ]; then
+              echo "- Logs: ${LOG_URL}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
