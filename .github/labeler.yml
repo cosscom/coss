@@ -1,30 +1,38 @@
-area:apps/origin:
-  - "apps/origin/**"
+"area:apps/origin":
+  - changed-files:
+      - any-glob-to-any-file: "apps/origin/**"
 
-area:apps/ui:
-  - "apps/ui/**"
+"area:apps/ui":
+  - changed-files:
+      - any-glob-to-any-file: "apps/ui/**"
 
-area:apps/www:
-  - "apps/www/**"
+"area:apps/www":
+  - changed-files:
+      - any-glob-to-any-file: "apps/www/**"
 
-pkg:ui:
-  - "packages/ui/**"
+"pkg:ui":
+  - changed-files:
+      - any-glob-to-any-file: "packages/ui/**"
 
-pkg:tsconfig:
-  - "packages/typescript-config/**"
+"pkg:tsconfig":
+  - changed-files:
+      - any-glob-to-any-file: "packages/typescript-config/**"
 
-area:config:
-  - ".github/**"
-  - "biome.json"
-  - "turbo.json"
-  - "tsconfig.json"
-  - "bunfig.toml"
-  - "lint-staged.config.mjs"
+"area:config":
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+      - any-glob-to-any-file: "biome.json"
+      - any-glob-to-any-file: "turbo.json"
+      - any-glob-to-any-file: "tsconfig.json"
+      - any-glob-to-any-file: "bunfig.toml"
+      - any-glob-to-any-file: "lint-staged.config.mjs"
 
-docs:
-  - "**/*.md"
+"docs":
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"
 
-deps:
-  - "package.json"
-  - "bun.lock"
-  - "packages/**/package.json"
+"deps":
+  - changed-files:
+      - any-glob-to-any-file: "package.json"
+      - any-glob-to-any-file: "bun.lock"
+      - any-glob-to-any-file: "packages/**/package.json"
