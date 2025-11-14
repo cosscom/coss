@@ -8,11 +8,7 @@ env:
 
 jobs:
   format:
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +30,4 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Verify formatting
-        run: |
-          bun run format
-          git diff --exit-code
+        run: bunx biome check --linter-enabled=false --organize-imports-enabled=false .
