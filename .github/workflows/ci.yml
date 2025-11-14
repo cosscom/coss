@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    uses: ./.github/workflows/format.yml
+    secrets: inherit
+
+  lint:
+    needs: format
+    uses: ./.github/workflows/lint.yml
+    secrets: inherit
+
+  test:
+    needs: lint
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  build:
+    needs: [lint, test]
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
