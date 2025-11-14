@@ -1,6 +1,6 @@
-import { RadioIcon, XIcon } from "lucide-react"
+import { RadioIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,8 +15,8 @@ export default function Component() {
         </div>
         <div className="flex grow items-center gap-12">
           <div className="space-y-1">
-            <p className="text-sm font-medium">Live in 27 hours</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-medium text-sm">Live in 27 hours</p>
+            <p className="text-muted-foreground text-xs">
               November 20 at 8:00 PM.
             </p>
           </div>
@@ -35,5 +35,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

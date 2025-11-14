@@ -1,11 +1,11 @@
-import { PlusIcon } from "lucide-react"
-import { Accordion as AccordionPrimitive } from "radix-ui"
+import { PlusIcon } from "lucide-react";
+import { Accordion as AccordionPrimitive } from "radix-ui";
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
@@ -32,12 +32,12 @@ const items = [
     content:
       "All components follow WAI-ARIA standards, featuring proper ARIA attributes, keyboard navigation, and screen reader support. Regular testing ensures compatibility with NVDA, VoiceOver, and JAWS.",
   },
-]
+];
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Tabs w/ plus-minus</h2>
+      <h2 className="font-bold text-xl">Tabs w/ plus-minus</h2>
       <Accordion
         type="single"
         collapsible
@@ -51,7 +51,7 @@ export default function Component() {
             className="rounded-md border bg-background px-4 py-1 outline-none last:border-b has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
           >
             <AccordionPrimitive.Header className="flex">
-              <AccordionPrimitive.Trigger className="ocus-visible:ring-0 flex flex-1 items-center justify-between rounded-md py-2 text-left text-[15px] leading-6 font-semibold transition-all outline-none [&>svg>path:last-child]:origin-center [&>svg>path:last-child]:transition-all [&>svg>path:last-child]:duration-200 [&[data-state=open]>svg]:rotate-180 [&[data-state=open]>svg>path:last-child]:rotate-90 [&[data-state=open]>svg>path:last-child]:opacity-0">
+              <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between rounded-md py-2 text-left font-semibold text-[15px] leading-6 outline-none ocus-visible:ring-0 transition-all [&>svg>path:last-child]:origin-center [&>svg>path:last-child]:transition-all [&>svg>path:last-child]:duration-200 [&[data-state=open]>svg>path:last-child]:rotate-90 [&[data-state=open]>svg>path:last-child]:opacity-0 [&[data-state=open]>svg]:rotate-180">
                 {item.title}
                 <PlusIcon
                   size={16}
@@ -67,5 +67,5 @@ export default function Component() {
         ))}
       </Accordion>
     </div>
-  )
+  );
 }

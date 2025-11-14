@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react"
 import {
   ArrowLeftIcon,
   CircleUserRoundIcon,
   XIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 import {
   Cropper,
   CropperCropArea,
   CropperDescription,
   CropperImage,
-} from "@/registry/default/ui/cropper"
+} from "@/registry/default/ui/cropper";
 import {
   Dialog,
   DialogContent,
@@ -24,40 +24,40 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/registry/default/ui/dialog"
-import { Slider } from "@/registry/default/ui/slider"
+} from "@/registry/default/ui/dialog";
+import { Slider } from "@/registry/default/ui/slider";
 
 // Define type for pixel crop area
-type Area = { x: number; y: number; width: number; height: number }
+type Area = { x: number; y: number; width: number; height: number };
 
 // Helper function to create a cropped image blob
 const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
-    const image = new Image()
-    image.addEventListener("load", () => resolve(image))
-    image.addEventListener("error", (error) => reject(error))
-    image.setAttribute("crossOrigin", "anonymous") // Needed for canvas Tainted check
-    image.src = url
-  })
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous"); // Needed for canvas Tainted check
+    image.src = url;
+  });
 
 async function getCroppedImg(
   imageSrc: string,
   pixelCrop: Area,
   outputWidth: number = pixelCrop.width, // Optional: specify output size
-  outputHeight: number = pixelCrop.height
+  outputHeight: number = pixelCrop.height,
 ): Promise<Blob | null> {
   try {
-    const image = await createImage(imageSrc)
-    const canvas = document.createElement("canvas")
-    const ctx = canvas.getContext("2d")
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (!ctx) {
-      return null
+      return null;
     }
 
     // Set canvas size to desired output size
-    canvas.width = outputWidth
-    canvas.height = outputHeight
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
     // Draw the cropped image onto the canvas
     ctx.drawImage(
@@ -69,18 +69,18 @@ async function getCroppedImg(
       0,
       0,
       outputWidth, // Draw onto the output size
-      outputHeight
-    )
+      outputHeight,
+    );
 
     // Convert canvas to blob
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
-        resolve(blob)
-      }, "image/jpeg") // Specify format and quality if needed
-    })
+        resolve(blob);
+      }, "image/jpeg"); // Specify format and quality if needed
+    });
   } catch (error) {
-    console.error("Error in getCroppedImg:", error)
-    return null
+    console.error("Error in getCroppedImg:", error);
+    return null;
   }
 }
 
@@ -98,27 +98,27 @@ export default function Component() {
     },
   ] = useFileUpload({
     accept: "image/*",
-  })
+  });
 
-  const previewUrl = files[0]?.preview || null
-  const fileId = files[0]?.id
+  const previewUrl = files[0]?.preview || null;
+  const fileId = files[0]?.id;
 
-  const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [finalImageUrl, setFinalImageUrl] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Ref to track the previous file ID to detect new uploads
-  const previousFileIdRef = useRef<string | undefined | null>(null)
+  const previousFileIdRef = useRef<string | undefined | null>(null);
 
   // State to store the desired crop area in pixels
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   // State for zoom level
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useState(1);
 
   // Callback for Cropper to provide crop data - Wrap with useCallback
   const handleCropChange = useCallback((pixels: Area | null) => {
-    setCroppedAreaPixels(pixels)
-  }, [])
+    setCroppedAreaPixels(pixels);
+  }, []);
 
   const handleApply = async () => {
     // Check if we have the necessary data
@@ -127,78 +127,79 @@ export default function Component() {
         previewUrl,
         fileId,
         croppedAreaPixels,
-      })
+      });
       // Remove file if apply is clicked without crop data?
       if (fileId) {
-        removeFile(fileId)
-        setCroppedAreaPixels(null)
+        removeFile(fileId);
+        setCroppedAreaPixels(null);
       }
-      return
+      return;
     }
 
     try {
       // 1. Get the cropped image blob using the helper
-      const croppedBlob = await getCroppedImg(previewUrl, croppedAreaPixels)
+      const croppedBlob = await getCroppedImg(previewUrl, croppedAreaPixels);
 
       if (!croppedBlob) {
-        throw new Error("Failed to generate cropped image blob.")
+        throw new Error("Failed to generate cropped image blob.");
       }
 
       // 2. Create a NEW object URL from the cropped blob
-      const newFinalUrl = URL.createObjectURL(croppedBlob)
+      const newFinalUrl = URL.createObjectURL(croppedBlob);
 
       // 3. Revoke the OLD finalImageUrl if it exists
       if (finalImageUrl) {
-        URL.revokeObjectURL(finalImageUrl)
+        URL.revokeObjectURL(finalImageUrl);
       }
 
       // 4. Set the final avatar state to the NEW URL
-      setFinalImageUrl(newFinalUrl)
+      setFinalImageUrl(newFinalUrl);
 
       // 5. Close the dialog (don't remove the file yet)
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     } catch (error) {
-      console.error("Error during apply:", error)
+      console.error("Error during apply:", error);
       // Close the dialog even if cropping fails
-      setIsDialogOpen(false)
+      setIsDialogOpen(false);
     }
-  }
+  };
 
   const handleRemoveFinalImage = () => {
     if (finalImageUrl) {
-      URL.revokeObjectURL(finalImageUrl)
+      URL.revokeObjectURL(finalImageUrl);
     }
-    setFinalImageUrl(null)
-  }
+    setFinalImageUrl(null);
+  };
 
   useEffect(() => {
-    const currentFinalUrl = finalImageUrl
+    const currentFinalUrl = finalImageUrl;
     // Cleanup function
     return () => {
-      if (currentFinalUrl && currentFinalUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(currentFinalUrl)
+      if (currentFinalUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(currentFinalUrl);
       }
-    }
-  }, [finalImageUrl])
+    };
+  }, [finalImageUrl]);
 
   // Effect to open dialog when a *new* file is ready
   useEffect(() => {
     // Check if fileId exists and is different from the previous one
     if (fileId && fileId !== previousFileIdRef.current) {
-      setIsDialogOpen(true) // Open dialog for the new file
-      setCroppedAreaPixels(null) // Reset crop area for the new file
-      setZoom(1) // Reset zoom for the new file
+      setIsDialogOpen(true); // Open dialog for the new file
+      setCroppedAreaPixels(null); // Reset crop area for the new file
+      setZoom(1); // Reset zoom for the new file
     }
     // Update the ref to the current fileId for the next render
-    previousFileIdRef.current = fileId
-  }, [fileId]) // Depend only on fileId
+    previousFileIdRef.current = fileId;
+  }, [fileId]); // Depend only on fileId
 
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative inline-flex">
         {/* Drop area - uses finalImageUrl */}
         <button
-          className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-dashed border-input transition-colors outline-none hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none data-[dragging=true]:bg-accent/50"
+          type="button"
+          className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-input border-dashed outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-[img]:border-none has-disabled:opacity-50 data-[dragging=true]:bg-accent/50"
           onClick={openFileDialog}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -227,7 +228,7 @@ export default function Component() {
           <Button
             onClick={handleRemoveFinalImage}
             size="icon"
-            className="absolute -top-1 -right-1 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+            className="-top-1 -right-1 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             aria-label="Remove image"
           >
             <XIcon className="size-3.5" />
@@ -314,13 +315,14 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Avatar{" "}
         <a
           href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
           target="_blank"
+          rel="noreferrer"
         >
           uploader
         </a>{" "}
@@ -329,10 +331,11 @@ export default function Component() {
           href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
           target="_blank"
+          rel="noreferrer"
         >
           cropper
         </a>
       </p>
     </div>
-  )
+  );
 }

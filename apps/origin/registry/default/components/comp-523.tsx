@@ -5,7 +5,7 @@ import {
   StepperSeparator,
   StepperTitle,
   StepperTrigger,
-} from "@/registry/default/ui/stepper"
+} from "@/registry/default/ui/stepper";
 
 const steps = [
   {
@@ -20,7 +20,7 @@ const steps = [
     step: 3,
     title: "Step Three",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -45,12 +45,12 @@ export default function Component() {
         ))}
       </Stepper>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
         Stepper with inline titles
       </p>
     </div>
-  )
+  );
 }

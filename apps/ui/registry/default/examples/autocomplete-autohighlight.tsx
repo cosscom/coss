@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Autocomplete,
@@ -7,7 +7,7 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompletePopup,
-} from "@/registry/default/ui/autocomplete"
+} from "@/registry/default/ui/autocomplete";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -20,7 +20,7 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function AutocompleteAutohighlight() {
   return (
@@ -40,5 +40,5 @@ export default function AutocompleteAutohighlight() {
         </AutocompleteList>
       </AutocompletePopup>
     </Autocomplete>
-  )
+  );
 }

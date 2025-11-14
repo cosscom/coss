@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 const items = [
   {
@@ -49,7 +49,7 @@ const items = [
     status: "Active",
     balance: "-$1,000.00",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -64,7 +64,7 @@ export default function Component() {
             <TableHead className="text-right">Balance</TableHead>
           </TableRow>
         </TableHeader>
-        <tbody aria-hidden="true" className="table-row h-2"></tbody>
+        <tbody aria-hidden="true" className="table-row h-2" />
         <TableBody className="[&_td:first-child]:rounded-l-lg [&_td:last-child]:rounded-r-lg">
           {items.map((item) => (
             <TableRow
@@ -81,7 +81,7 @@ export default function Component() {
             </TableRow>
           ))}
         </TableBody>
-        <tbody aria-hidden="true" className="table-row h-2"></tbody>
+        <tbody aria-hidden="true" className="table-row h-2" />
         <TableFooter className="bg-transparent">
           <TableRow className="hover:bg-transparent">
             <TableCell colSpan={4}>Total</TableCell>
@@ -89,9 +89,9 @@ export default function Component() {
           </TableRow>
         </TableFooter>
       </Table>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Striped table
       </p>
     </div>
-  )
+  );
 }

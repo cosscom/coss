@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { CircleCheckIcon, XIcon } from "lucide-react"
-import { toast } from "sonner"
+import { CircleCheckIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -21,13 +21,17 @@ export default function Component() {
                 />
                 <div className="flex grow justify-between gap-12">
                   <p className="text-sm">Message sent</p>
-                  <div className="text-sm whitespace-nowrap">
-                    <button className="text-sm font-medium hover:underline">
+                  <div className="whitespace-nowrap text-sm">
+                    <button
+                      type="button"
+                      className="font-medium text-sm hover:underline"
+                    >
                       View
                     </button>{" "}
                     <span className="mx-1 text-muted-foreground">·</span>{" "}
                     <button
-                      className="text-sm font-medium hover:underline"
+                      type="button"
+                      className="font-medium text-sm hover:underline"
                       onClick={() => toast.dismiss(t)}
                     >
                       Undo
@@ -49,10 +53,10 @@ export default function Component() {
               </Button>
             </div>
           </div>
-        ))
+        ));
       }}
     >
       Custom sonner
     </Button>
-  )
+  );
 }

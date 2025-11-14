@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
-import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const maxLength = 50
+  const id = useId();
+  const maxLength = 50;
   const {
     value,
     characterCount,
     handleChange,
     maxLength: limit,
-  } = useCharacterLimit({ maxLength })
+  } = useCharacterLimit({ maxLength });
 
   return (
     <div className="*:not-first:mt-2">
@@ -31,7 +31,7 @@ export default function Component() {
         />
         <div
           id={`${id}-description`}
-          className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-xs text-muted-foreground tabular-nums peer-disabled:opacity-50"
+          className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground text-xs tabular-nums peer-disabled:opacity-50"
           aria-live="polite"
           role="status"
         >
@@ -39,5 +39,5 @@ export default function Component() {
         </div>
       </div>
     </div>
-  )
+  );
 }

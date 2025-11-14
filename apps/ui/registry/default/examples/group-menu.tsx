@@ -3,16 +3,16 @@ import {
   DownloadIcon,
   EditIcon,
   ShareIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function GroupMenu() {
   return (
@@ -39,5 +39,5 @@ export default function GroupMenu() {
         </MenuPopup>
       </Menu>
     </Group>
-  )
+  );
 }

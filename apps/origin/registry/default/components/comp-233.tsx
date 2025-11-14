@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
 import {
   BlocksIcon,
   BrainIcon,
@@ -13,9 +12,10 @@ import {
   NetworkIcon,
   SearchIcon,
   ServerIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useId, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -23,13 +23,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/registry/default/ui/command"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/command";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const items = [
   {
@@ -92,12 +92,12 @@ const items = [
     icon: LayoutIcon,
     number: 123,
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [open, setOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<string>("")
+  const id = useId();
+  const [open, setOpen] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
 
   return (
     <div className="*:not-first:mt-2">
@@ -109,19 +109,19 @@ export default function Component() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between border-input bg-background px-3 font-normal outline-offset-0 outline-none hover:bg-background focus-visible:outline-[3px]"
+            className="w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
           >
             {value ? (
               <span className="flex min-w-0 items-center gap-2">
                 {(() => {
                   const selectedItem = items.find(
-                    (item) => item.value === value
-                  )
+                    (item) => item.value === value,
+                  );
                   if (selectedItem) {
-                    const Icon = selectedItem.icon
-                    return <Icon className="size-4 text-muted-foreground" />
+                    const Icon = selectedItem.icon;
+                    return <Icon className="size-4 text-muted-foreground" />;
                   }
-                  return null
+                  return null;
                 })()}
                 <span className="truncate">
                   {items.find((item) => item.value === value)?.label}
@@ -153,8 +153,8 @@ export default function Component() {
                     key={item.value}
                     value={item.value}
                     onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue)
-                      setOpen(false)
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
                     }}
                     className="flex items-center justify-between"
                   >
@@ -162,7 +162,7 @@ export default function Component() {
                       <item.icon className="size-4 text-muted-foreground" />
                       {item.label}
                     </div>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {item.number.toLocaleString()}
                     </span>
                   </CommandItem>
@@ -173,5 +173,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

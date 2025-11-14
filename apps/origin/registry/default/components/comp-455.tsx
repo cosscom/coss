@@ -1,16 +1,16 @@
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-}
+  currentPage: number;
+  totalPages: number;
+};
 
 export default function Component({
   currentPage,
@@ -27,7 +27,7 @@ export default function Component({
             role={currentPage === 1 ? "link" : undefined}
           >
             <ArrowLeftIcon
-              className="-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5"
+              className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
               size={16}
               aria-hidden="true"
             />
@@ -51,5 +51,5 @@ export default function Component({
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

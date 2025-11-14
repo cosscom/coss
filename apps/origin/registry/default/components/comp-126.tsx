@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { CircleUserRoundIcon, XIcon } from "lucide-react"
+import { CircleUserRoundIcon, XIcon } from "lucide-react";
 
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   const [{ files }, { removeFile, openFileDialog, getInputProps }] =
     useFileUpload({
       accept: "image/*",
-    })
+    });
 
-  const previewUrl = files[0]?.preview || null
-  const fileName = files[0]?.file.name || null
+  const previewUrl = files[0]?.preview || null;
+  const fileName = files[0]?.file.name || null;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -27,7 +27,7 @@ export default function Component() {
             <img
               className="size-full object-cover"
               src={previewUrl}
-              alt="Preview of uploaded image"
+              alt="Upload preview"
               width={64}
               height={64}
               style={{ objectFit: "cover" }}
@@ -42,7 +42,7 @@ export default function Component() {
           <Button
             onClick={() => removeFile(files[0]?.id)}
             size="icon"
-            className="absolute -top-2 -right-2 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+            className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             aria-label="Remove image"
           >
             <XIcon className="size-3.5" />
@@ -55,14 +55,14 @@ export default function Component() {
           tabIndex={-1}
         />
       </div>
-      {fileName && <p className="text-xs text-muted-foreground">{fileName}</p>}
+      {fileName && <p className="text-muted-foreground text-xs">{fileName}</p>}
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Avatar upload button
       </p>
     </div>
-  )
+  );
 }

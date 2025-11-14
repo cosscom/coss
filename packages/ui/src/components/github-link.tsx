@@ -1,11 +1,10 @@
-import { GithubIcon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import Link from "next/link"
-import * as React from "react"
-
-import { siteConfig } from "@coss/ui/lib/config"
-import { Button } from "@coss/ui/ui/button"
-import { Skeleton } from "@coss/ui/ui/skeleton"
+import { siteConfig } from "@coss/ui/lib/config";
+import { Button } from "@coss/ui/ui/button";
+import { Skeleton } from "@coss/ui/ui/skeleton";
+import { GithubIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
+import * as React from "react";
 
 export function GitHubLink() {
   return (
@@ -24,35 +23,35 @@ export function GitHubLink() {
         </Link>
       }
     />
-  )
+  );
 }
 
 export async function StarsCount() {
   try {
     const data = await fetch("https://api.github.com/repos/cosscom/coss", {
       next: { revalidate: 86400 }, // Cache for 1 day (86400 seconds)
-    })
+    });
 
     if (!data.ok) {
-      throw new Error(`GitHub API error: ${data.status}`)
+      throw new Error(`GitHub API error: ${data.status}`);
     }
 
-    const json = await data.json()
-    const starsCount = json.stargazers_count
+    const json = await data.json();
+    const starsCount = json.stargazers_count;
 
     if (typeof starsCount !== "number" || starsCount < 0) {
-      throw new Error("Invalid stars count")
+      throw new Error("Invalid stars count");
     }
 
     return (
-      <span className="w-8 text-xs text-muted-foreground tabular-nums">
+      <span className="w-8 text-muted-foreground text-xs tabular-nums">
         {starsCount >= 1000
           ? `${(starsCount / 1000).toFixed(1)}k`
           : starsCount.toLocaleString()}
       </span>
-    )
+    );
   } catch {
     // Return nothing when GitHub API is unavailable or repo doesn't exist
-    return null
+    return null;
   }
 }

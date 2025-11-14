@@ -3,7 +3,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithStartEndText() {
   return (
@@ -21,5 +21,5 @@ export default function InputGroupWithStartEndText() {
         <InputGroupText>.com</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

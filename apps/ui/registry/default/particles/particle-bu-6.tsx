@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false)
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const toggleExpand = () => {
-    setIsExpanded((prevState) => !prevState)
-  }
+    setIsExpanded((prevState) => !prevState);
+  };
 
   return (
     <Button
@@ -27,5 +27,5 @@ export default function Particle() {
         <ChevronDownIcon className="-me-1" aria-hidden="true" />
       )}
     </Button>
-  )
+  );
 }

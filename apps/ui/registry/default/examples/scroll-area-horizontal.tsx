@@ -1,4 +1,4 @@
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function ScrollAreaHorizontal() {
   return (
@@ -6,13 +6,13 @@ export default function ScrollAreaHorizontal() {
       <div className="flex w-max gap-4 p-4">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
-            key={i}
+            key={String(i)}
             className="flex h-20 w-32 shrink-0 items-center justify-center rounded-md bg-muted"
           >
-            <span className="text-sm font-medium">Item {i + 1}</span>
+            <span className="font-medium text-sm">Item {i + 1}</span>
           </div>
         ))}
       </div>
     </ScrollArea>
-  )
+  );
 }

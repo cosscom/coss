@@ -1,40 +1,40 @@
-import { useId } from "react"
 import {
   FileTextIcon,
   GlobeIcon,
   HomeIcon,
   LayersIcon,
   UsersIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useId } from "react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 // Navigation links with icons for desktop icon-only navigation
 const navigationLinks = [
@@ -42,7 +42,7 @@ const navigationLinks = [
   { href: "#", label: "Projects", icon: LayersIcon },
   { href: "#", label: "Documentation", icon: FileTextIcon },
   { href: "#", label: "Team", icon: UsersIcon },
-]
+];
 
 // Language options
 const languages = [
@@ -51,10 +51,10 @@ const languages = [
   { value: "fr", label: "Fr" },
   { value: "de", label: "De" },
   { value: "ja", label: "Ja" },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   return (
     <header className="border-b px-4 md:px-6">
@@ -83,7 +83,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -99,10 +99,10 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    const Icon = link.icon
+                  {navigationLinks.map((link, _index) => {
+                    const Icon = link.icon;
                     return (
-                      <NavigationMenuItem key={index} className="w-full">
+                      <NavigationMenuItem key={link.label} className="w-full">
                         <NavigationMenuLink
                           href={link.href}
                           className="flex-row items-center gap-2 py-1.5"
@@ -116,7 +116,7 @@ export default function Component() {
                           <span>{link.label}</span>
                         </NavigationMenuLink>
                       </NavigationMenuItem>
-                    )
+                    );
                   })}
                 </NavigationMenuList>
               </NavigationMenu>
@@ -171,7 +171,7 @@ export default function Component() {
               <GlobeIcon size={16} aria-hidden="true" />
               <SelectValue className="hidden sm:inline-flex" />
             </SelectTrigger>
-            <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2">
+            <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
               {languages.map((lang) => (
                 <SelectItem key={lang.value} value={lang.value}>
                   <span className="flex items-center gap-2">
@@ -186,5 +186,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

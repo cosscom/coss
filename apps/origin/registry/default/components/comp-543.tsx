@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { CircleUserRoundIcon, XIcon } from "lucide-react"
+import { CircleUserRoundIcon, XIcon } from "lucide-react";
 
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   const [
@@ -19,16 +19,17 @@ export default function Component() {
     },
   ] = useFileUpload({
     accept: "image/*",
-  })
+  });
 
-  const previewUrl = files[0]?.preview || null
+  const previewUrl = files[0]?.preview || null;
 
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative inline-flex">
         {/* Drop area */}
         <button
-          className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-dashed border-input transition-colors outline-none hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none data-[dragging=true]:bg-accent/50"
+          type="button"
+          className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-input border-dashed outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-[img]:border-none has-disabled:opacity-50 data-[dragging=true]:bg-accent/50"
           onClick={openFileDialog}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -56,7 +57,7 @@ export default function Component() {
           <Button
             onClick={() => removeFile(files[0]?.id)}
             size="icon"
-            className="absolute -top-1 -right-1 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+            className="-top-1 -right-1 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             aria-label="Remove image"
           >
             <XIcon className="size-3.5" />
@@ -72,7 +73,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Avatar uploader with droppable area ∙{" "}
         <a
@@ -83,5 +84,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

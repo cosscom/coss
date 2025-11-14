@@ -1,35 +1,35 @@
-import { useId } from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useId } from "react";
 
-import { usePagination } from "@/registry/default/hooks/use-pagination"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { usePagination } from "@/registry/default/hooks/use-pagination";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-  paginationItemsToDisplay?: number
-}
+  currentPage: number;
+  totalPages: number;
+  paginationItemsToDisplay?: number;
+};
 
 export default function Component({
   currentPage,
   totalPages,
   paginationItemsToDisplay = 5,
 }: PaginationProps) {
-  const id = useId()
+  const id = useId();
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage,
     totalPages,
     paginationItemsToDisplay,
-  })
+  });
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -111,5 +111,5 @@ export default function Component({
         />
       </div>
     </div>
-  )
+  );
 }

@@ -3,16 +3,16 @@ import {
   InfoIcon,
   LifeBuoyIcon,
   MessageCircleMoreIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function InfoMenu() {
   return (
@@ -66,5 +66,5 @@ export default function InfoMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

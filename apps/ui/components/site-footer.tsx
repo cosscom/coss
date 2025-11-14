@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "next/link";
 
 export function SiteFooter() {
   return (
@@ -8,7 +8,7 @@ export function SiteFooter() {
           coss.com <span className="text-muted-foreground/64">ui</span>
         </Link>
       </p>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Built by and for the team of{" "}
         <a
           className="font-medium underline-offset-4 hover:underline"
@@ -22,5 +22,5 @@ export function SiteFooter() {
         (&ldquo;coss&rdquo;).
       </p>
     </footer>
-  )
+  );
 }

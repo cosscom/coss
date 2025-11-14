@@ -1,9 +1,9 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function Component() {
   return (
@@ -14,8 +14,8 @@ export default function Component() {
       <PopoverContent className="max-w-[280px] py-3 shadow-none" side="top">
         <div className="space-y-3">
           <div className="space-y-1">
-            <p className="text-[13px] font-medium">Popover with button</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-medium text-[13px]">Popover with button</p>
+            <p className="text-muted-foreground text-xs">
               I am a popover that would like to look like a tooltip. I
               can&lsquo;t be a tooltip because of the interactive element inside
               me.
@@ -27,5 +27,5 @@ export default function Component() {
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

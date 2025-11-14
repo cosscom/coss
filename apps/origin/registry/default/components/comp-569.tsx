@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
 import {
   createOnDropHandler,
   dragAndDropFeature,
@@ -8,20 +7,21 @@ import {
   keyboardDragAndDropFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { AssistiveTreeDescription, useTree } from "@headless-tree/react"
-import { FolderIcon, FolderOpenIcon } from "lucide-react"
+} from "@headless-tree/core";
+import { AssistiveTreeDescription, useTree } from "@headless-tree/react";
+import { FolderIcon, FolderOpenIcon } from "lucide-react";
+import { useState } from "react";
 
 import {
   Tree,
   TreeDragLine,
   TreeItem,
   TreeItemLabel,
-} from "@/registry/default/ui/tree"
+} from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const initialItems: Record<string, Item> = {
@@ -52,12 +52,12 @@ const initialItems: Record<string, Item> = {
   operations: { name: "Operations", children: ["hr", "finance"] },
   hr: { name: "HR" },
   finance: { name: "Finance" },
-}
+};
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
-  const [items, setItems] = useState(initialItems)
+  const [items, setItems] = useState(initialItems);
 
   const tree = useTree<Item>({
     initialState: {
@@ -76,7 +76,7 @@ export default function Component() {
           ...prevItems[parentItem.getId()],
           children: newChildrenIds,
         },
-      }))
+      }));
     }),
     dataLoader: {
       getItem: (itemId) => items[itemId],
@@ -89,7 +89,7 @@ export default function Component() {
       dragAndDropFeature,
       keyboardDragAndDropFeature,
     ],
-  })
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
@@ -110,7 +110,7 @@ export default function Component() {
                 </span>
               </TreeItemLabel>
             </TreeItem>
-          )
+          );
         })}
         <TreeDragLine />
       </Tree>
@@ -118,7 +118,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Tree with multi-select and drag and drop ∙{" "}
         <a
@@ -131,5 +131,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

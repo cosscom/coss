@@ -1,10 +1,10 @@
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "lucide-react";
 
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupSm() {
   return (
@@ -19,5 +19,5 @@ export default function InputGroupSm() {
         <SearchIcon />
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

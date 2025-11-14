@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { EclipseIcon, XIcon } from "lucide-react"
+import { EclipseIcon, XIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <div className="dark bg-muted px-4 py-3 text-foreground md:py-2">
@@ -48,5 +48,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

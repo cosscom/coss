@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Select,
@@ -6,14 +6,14 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Next.js", value: "next", description: "npx create-next-app" },
   { label: "Vite", value: "vite", description: "npm create vite@latest" },
   { label: "Astro", value: "astro", description: "npm create astro@latest" },
   { label: "Remix", value: "remix", description: "npx create-remix" },
-]
+];
 
 export default function SelectWithObjectValues() {
   return (
@@ -27,7 +27,7 @@ export default function SelectWithObjectValues() {
           {(item) => (
             <span className="flex flex-col">
               <span className="truncate">{item.label}</span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate text-muted-foreground text-xs">
                 {item.description}
               </span>
             </span>
@@ -39,7 +39,7 @@ export default function SelectWithObjectValues() {
           <SelectItem key={item.value} value={item}>
             <span className="flex flex-col">
               <span className="truncate">{item.label}</span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate text-muted-foreground text-xs">
                 {item.description}
               </span>
             </span>
@@ -47,5 +47,5 @@ export default function SelectWithObjectValues() {
         ))}
       </SelectPopup>
     </Select>
-  )
+  );
 }

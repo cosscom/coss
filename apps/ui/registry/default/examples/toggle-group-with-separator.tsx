@@ -1,10 +1,10 @@
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react"
+import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 
 import {
   Toggle,
   ToggleGroup,
   ToggleGroupSeparator,
-} from "@/registry/default/ui/toggle-group"
+} from "@/registry/default/ui/toggle-group";
 
 export default function ToggleGroupWithSeparator() {
   return (
@@ -21,5 +21,5 @@ export default function ToggleGroupWithSeparator() {
         <UnderlineIcon />
       </Toggle>
     </ToggleGroup>
-  )
+  );
 }

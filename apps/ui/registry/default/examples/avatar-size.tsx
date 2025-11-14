@@ -2,7 +2,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
+} from "@/registry/default/ui/avatar";
 
 export default function AvatarSizeDemo() {
   return (
@@ -29,5 +29,5 @@ export default function AvatarSizeDemo() {
         <AvatarFallback>AV</AvatarFallback>
       </Avatar>
     </div>
-  )
+  );
 }

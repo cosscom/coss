@@ -7,15 +7,15 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
-const placeholder = [{ label: "Select framework", value: null }]
+const placeholder = [{ label: "Select framework", value: null }];
 
 const frontend = [
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
-]
+];
 
 const backend = [
   { label: "Express", value: "express" },
@@ -24,7 +24,7 @@ const backend = [
   { label: "Django", value: "django" },
   { label: "Flask", value: "flask" },
   { label: "Rails", value: "rails" },
-]
+];
 
 export default function SelectWithGroups() {
   return (
@@ -55,5 +55,5 @@ export default function SelectWithGroups() {
         </SelectGroup>
       </SelectPopup>
     </Select>
-  )
+  );
 }

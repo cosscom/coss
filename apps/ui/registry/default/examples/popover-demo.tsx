@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { Button } from "@/registry/default/ui/button"
-import { Field } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
+import { Button } from "@/registry/default/ui/button";
+import { Field } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
 import {
   Popover,
   PopoverDescription,
   PopoverPopup,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
-import { Textarea } from "@/registry/default/ui/textarea"
+} from "@/registry/default/ui/popover";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function PopoverDemo() {
   return (
@@ -37,5 +37,5 @@ export default function PopoverDemo() {
         </Form>
       </PopoverPopup>
     </Popover>
-  )
+  );
 }

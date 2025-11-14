@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
@@ -30,12 +30,12 @@ const items = [
     content:
       "All components follow WAI-ARIA standards, featuring proper ARIA attributes, keyboard navigation, and screen reader support. Regular testing ensures compatibility with NVDA, VoiceOver, and JAWS.",
   },
-]
+];
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">W/ chevron</h2>
+      <h2 className="font-bold text-xl">W/ chevron</h2>
       <Accordion type="single" collapsible className="w-full" defaultValue="3">
         {items.map((item) => (
           <AccordionItem value={item.id} key={item.id} className="py-2">
@@ -49,5 +49,5 @@ export default function Component() {
         ))}
       </Accordion>
     </div>
-  )
+  );
 }

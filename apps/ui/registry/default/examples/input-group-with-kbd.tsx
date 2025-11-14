@@ -2,8 +2,8 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
-import { Kbd } from "@/registry/default/ui/kbd"
+} from "@/registry/default/ui/input-group";
+import { Kbd } from "@/registry/default/ui/kbd";
 
 export default function InputGroupWithKbd() {
   return (
@@ -13,5 +13,5 @@ export default function InputGroupWithKbd() {
         <Kbd>⌘K</Kbd>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

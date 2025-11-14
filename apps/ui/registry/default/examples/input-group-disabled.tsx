@@ -1,11 +1,11 @@
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupDisabled() {
   return (
@@ -22,5 +22,5 @@ export default function InputGroupDisabled() {
         </Button>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

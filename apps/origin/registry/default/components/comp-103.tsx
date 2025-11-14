@@ -1,10 +1,10 @@
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <div className="inline-flex -space-x-px rounded-full shadow-xs rtl:space-x-reverse">
+    <div className="-space-x-px inline-flex rounded-full shadow-xs rtl:space-x-reverse">
       <Button
         className="rounded-none shadow-none first:rounded-s-full last:rounded-e-full focus-visible:z-10"
         size="icon"
@@ -12,7 +12,7 @@ export default function Component() {
       >
         <ChevronUpIcon size={16} aria-hidden="true" />
       </Button>
-      <span className="flex items-center bg-primary px-1 text-sm font-medium text-primary-foreground">
+      <span className="flex items-center bg-primary px-1 font-medium text-primary-foreground text-sm">
         235
       </span>
       <Button
@@ -23,5 +23,5 @@ export default function Component() {
         <ChevronDownIcon size={16} aria-hidden="true" />
       </Button>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { RefreshCwIcon, XIcon } from "lucide-react"
+import { RefreshCwIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,8 +15,8 @@ export default function Component() {
         </div>
         <div className="flex grow flex-col gap-3">
           <div className="space-y-1">
-            <p className="text-sm font-medium">Version 1.4 is now available!</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-sm">Version 1.4 is now available!</p>
+            <p className="text-muted-foreground text-sm">
               This update contains several bug fixes and performance
               improvements.
             </p>
@@ -41,5 +41,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

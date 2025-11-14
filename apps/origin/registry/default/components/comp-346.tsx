@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
@@ -30,12 +30,12 @@ const items = [
     content:
       "All components follow WAI-ARIA standards, featuring proper ARIA attributes, keyboard navigation, and screen reader support. Regular testing ensures compatibility with NVDA, VoiceOver, and JAWS.",
   },
-]
+];
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Tabs w/ left chevron</h2>
+      <h2 className="font-bold text-xl">Tabs w/ left chevron</h2>
       <Accordion
         type="single"
         collapsible
@@ -48,7 +48,7 @@ export default function Component() {
             key={item.id}
             className="rounded-md border bg-background px-4 py-1 outline-none last:border-b has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
           >
-            <AccordionTrigger className="justify-start gap-3 py-2 text-[15px] leading-6 hover:no-underline focus-visible:ring-0 [&>svg]:-order-1">
+            <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 py-2 text-[15px] leading-6 hover:no-underline focus-visible:ring-0">
               {item.title}
             </AccordionTrigger>
             <AccordionContent className="ps-7 pb-2 text-muted-foreground">
@@ -58,5 +58,5 @@ export default function Component() {
         ))}
       </Accordion>
     </div>
-  )
+  );
 }

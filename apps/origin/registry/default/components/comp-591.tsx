@@ -1,7 +1,7 @@
-import { BotMessageSquareIcon, MessageCircleDashedIcon } from "lucide-react"
+import { BotMessageSquareIcon, MessageCircleDashedIcon } from "lucide-react";
 
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function Component() {
   return (
@@ -23,13 +23,13 @@ export default function Component() {
               <BotMessageSquareIcon size={16} aria-hidden="true" />
               <SelectValue placeholder="Choose an AI model" />
             </SelectTrigger>
-            <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+            <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
               <SelectGroup>
                 <SelectLabel className="ps-2">Models</SelectLabel>
                 <SelectItem value="orion-alpha-45">
                   Orion-Alpha 4.5
                   <span
-                    className="mt-1 block text-xs text-muted-foreground"
+                    className="mt-1 block text-muted-foreground text-xs"
                     data-desc
                   >
                     Balanced performance and creativity
@@ -38,7 +38,7 @@ export default function Component() {
                 <SelectItem value="orion-code-4">
                   Orion-Code 4
                   <span
-                    className="mt-1 block text-xs text-muted-foreground"
+                    className="mt-1 block text-muted-foreground text-xs"
                     data-desc
                   >
                     Optimized for code generation and understanding
@@ -47,7 +47,7 @@ export default function Component() {
                 <SelectItem value="nova-chat-4">
                   Nova-Chat 4
                   <span
-                    className="mt-1 block text-xs text-muted-foreground"
+                    className="mt-1 block text-muted-foreground text-xs"
                     data-desc
                   >
                     Excels at natural, engaging conversations
@@ -56,7 +56,7 @@ export default function Component() {
                 <SelectItem value="galaxy-max-4">
                   Galaxy-Max 4
                   <span
-                    className="mt-1 block text-xs text-muted-foreground"
+                    className="mt-1 block text-muted-foreground text-xs"
                     data-desc
                   >
                     Most powerful model for complex tasks
@@ -83,5 +83,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

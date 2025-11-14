@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { withMask } from "use-mask-input"
+import { useId } from "react";
+import { withMask } from "use-mask-input";
 
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with mask</Label>
@@ -20,12 +20,12 @@ export default function Component() {
             withMask("AA99 AAA", {
               placeholder: "",
               showMaskOnHover: false,
-            })(input)
+            })(input);
           }
         }}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -34,11 +34,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://github.com/eduardoborges/use-mask-input"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           use-mask-input
         </a>
       </p>
     </div>
-  )
+  );
 }

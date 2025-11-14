@@ -1,4 +1,4 @@
-import { GitCompare, GitFork, GitMerge, GitPullRequest } from "lucide-react"
+import { GitCompare, GitFork, GitMerge, GitPullRequest } from "lucide-react";
 
 import {
   Timeline,
@@ -9,7 +9,7 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
@@ -43,7 +43,7 @@ const items = [
       "Merged the feature branch into the main branch. Ready for deployment.",
     icon: GitMerge,
   },
-]
+];
 
 export default function Component() {
   return (
@@ -57,7 +57,7 @@ export default function Component() {
           <TimelineHeader>
             <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-6.5" />
             <TimelineTitle className="mt-0.5">{item.title}</TimelineTitle>
-            <TimelineIndicator className="flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7">
+            <TimelineIndicator className="group-data-[orientation=vertical]/timeline:-left-7 flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground">
               <item.icon size={14} />
             </TimelineIndicator>
           </TimelineHeader>
@@ -68,5 +68,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

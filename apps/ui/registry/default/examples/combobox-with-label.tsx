@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
 import {
   Combobox,
@@ -9,8 +9,8 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/combobox";
+import { Label } from "@/registry/default/ui/label";
 
 const items = [
   { value: "apple", label: "Apple" },
@@ -23,10 +23,10 @@ const items = [
   { value: "kiwi", label: "Kiwi" },
   { value: "peach", label: "Peach" },
   { value: "pear", label: "Pear" },
-]
+];
 
 export default function ComboboxWithLabel() {
-  const id = useId()
+  const id = useId();
   return (
     <Combobox items={items}>
       <div className="flex flex-col items-start gap-2">
@@ -48,5 +48,5 @@ export default function ComboboxWithLabel() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

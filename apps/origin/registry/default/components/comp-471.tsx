@@ -5,7 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 const programmingLanguages = [
   {
@@ -63,7 +63,7 @@ const programmingLanguages = [
     latestVersion: "3.0",
     popularity: "Low",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -100,9 +100,9 @@ export default function Component() {
           </TableBody>
         </Table>
       </div>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Dense table
       </p>
     </div>
-  )
+  );
 }

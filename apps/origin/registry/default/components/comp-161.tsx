@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+import { Label } from "@/registry/default/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <RadioGroup className="gap-2" defaultValue="1">
       {/* Radio card #1 */}
@@ -70,13 +70,13 @@ export default function Component() {
           <div className="grid grow gap-2">
             <Label htmlFor={`${id}-1`}>
               Label{" "}
-              <span className="text-xs leading-[inherit] font-normal text-muted-foreground">
+              <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
                 (Sublabel)
               </span>
             </Label>
             <p
               id={`${id}-1-description`}
-              className="text-xs text-muted-foreground"
+              className="text-muted-foreground text-xs"
             >
               You can use this card with a label and a description.
             </p>
@@ -110,13 +110,13 @@ export default function Component() {
           <div className="grid grow gap-2">
             <Label htmlFor={`${id}-2`}>
               Label{" "}
-              <span className="text-xs leading-[inherit] font-normal text-muted-foreground">
+              <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
                 (Sublabel)
               </span>
             </Label>
             <p
               id={`${id}-2-description`}
-              className="text-xs text-muted-foreground"
+              className="text-muted-foreground text-xs"
             >
               You can use this card with a label and a description.
             </p>
@@ -124,5 +124,5 @@ export default function Component() {
         </div>
       </div>
     </RadioGroup>
-  )
+  );
 }

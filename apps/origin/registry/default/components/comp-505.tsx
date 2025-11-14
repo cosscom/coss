@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
+import { format } from "date-fns";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
+import { Button } from "@/registry/default/ui/button";
+import { Calendar } from "@/registry/default/ui/calendar";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function Component() {
-  const today = new Date()
-  const [date, setDate] = useState<Date>(today)
-  const [time, setTime] = useState<string | null>(null)
+  const today = new Date();
+  const [date, setDate] = useState<Date>(today);
+  const [time, setTime] = useState<string | null>(null);
 
   // Mock time slots data
   const timeSlots = [
@@ -32,7 +32,7 @@ export default function Component() {
     { time: "16:30", available: true },
     { time: "17:00", available: true },
     { time: "17:30", available: true },
-  ]
+  ];
 
   return (
     <div>
@@ -43,8 +43,8 @@ export default function Component() {
             selected={date}
             onSelect={(newDate) => {
               if (newDate) {
-                setDate(newDate)
-                setTime(null)
+                setDate(newDate);
+                setTime(null);
               }
             }}
             className="p-2 sm:pe-5"
@@ -57,7 +57,7 @@ export default function Component() {
               <ScrollArea className="h-full sm:border-s">
                 <div className="space-y-3">
                   <div className="flex h-5 shrink-0 items-center px-5">
-                    <p className="text-sm font-medium">
+                    <p className="font-medium text-sm">
                       {format(date, "EEEE, d")}
                     </p>
                   </div>
@@ -82,7 +82,7 @@ export default function Component() {
         </div>
       </div>
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
+        className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -91,11 +91,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

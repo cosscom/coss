@@ -1,25 +1,26 @@
-"use client"
+"use client";
 
-import { useConfig } from "@/hooks/use-config"
-import CopyButton from "@/components/copy-button"
+import CopyButton from "@/components/copy-button";
+import { useConfig } from "@/hooks/use-config";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/tabs";
 
 export default function CliCommands({ name }: { name: string }) {
-  const originUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/origin"
-  const [config, setConfig] = useConfig()
-  const packageManager = config.packageManager || "pnpm"
+  const originUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/origin";
+  const [config, setConfig] = useConfig();
+  const packageManager = config.packageManager || "pnpm";
 
   const commands = {
     pnpm: `pnpm dlx shadcn@latest add ${originUrl}/r/${name}.json`,
     npm: `npx shadcn@latest add ${originUrl}/r/${name}.json`,
     yarn: `yarn dlx shadcn@latest add ${originUrl}/r/${name}.json`,
     bun: `bunx --bun shadcn@latest add ${originUrl}/r/${name}.json`,
-  }
+  };
 
   return (
     <div className="relative">
@@ -29,7 +30,7 @@ export default function CliCommands({ name }: { name: string }) {
           setConfig({
             ...config,
             packageManager: value as "pnpm" | "npm" | "yarn" | "bun",
-          })
+          });
         }}
         className="rounded-md bg-zinc-950 dark:bg-zinc-900"
       >
@@ -72,5 +73,5 @@ export default function CliCommands({ name }: { name: string }) {
         className="top-1"
       />
     </div>
-  )
+  );
 }

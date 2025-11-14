@@ -1,21 +1,21 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
-import { usePagination } from "@/registry/default/hooks/use-pagination"
-import { cn } from "@/registry/default/lib/utils"
-import { buttonVariants } from "@/registry/default/ui/button"
+import { usePagination } from "@/registry/default/hooks/use-pagination";
+import { cn } from "@/registry/default/lib/utils";
+import { buttonVariants } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-  paginationItemsToDisplay?: number
-}
+  currentPage: number;
+  totalPages: number;
+  paginationItemsToDisplay?: number;
+};
 
 export default function Component({
   currentPage,
@@ -26,11 +26,11 @@ export default function Component({
     currentPage,
     totalPages,
     paginationItemsToDisplay,
-  })
+  });
 
   return (
     <Pagination>
-      <PaginationContent className="inline-flex gap-0 -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
+      <PaginationContent className="-space-x-px inline-flex gap-0 rounded-md shadow-xs rtl:space-x-reverse">
         {/* Previous page button */}
         <PaginationItem className="[&:first-child>a]:rounded-s-md [&:last-child>a]:rounded-e-md">
           <PaginationLink
@@ -38,7 +38,7 @@ export default function Component({
               buttonVariants({
                 variant: "outline",
               }),
-              "rounded-none shadow-none focus-visible:z-10 aria-disabled:pointer-events-none [&[aria-disabled]>svg]:opacity-50"
+              "rounded-none shadow-none focus-visible:z-10 aria-disabled:pointer-events-none [&[aria-disabled]>svg]:opacity-50",
             )}
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
             aria-label="Go to previous page"
@@ -65,7 +65,7 @@ export default function Component({
                   variant: "outline",
                 }),
                 "rounded-none shadow-none focus-visible:z-10",
-                page === currentPage && "bg-accent"
+                page === currentPage && "bg-accent",
               )}
               href={`#/page/${page}`}
               isActive={page === currentPage}
@@ -83,7 +83,7 @@ export default function Component({
                 buttonVariants({
                   variant: "outline",
                 }),
-                "pointer-events-none rounded-none shadow-none"
+                "pointer-events-none rounded-none shadow-none",
               )}
             />
           </PaginationItem>
@@ -96,7 +96,7 @@ export default function Component({
               buttonVariants({
                 variant: "outline",
               }),
-              "rounded-none shadow-none focus-visible:z-10 aria-disabled:pointer-events-none [&[aria-disabled]>svg]:opacity-50"
+              "rounded-none shadow-none focus-visible:z-10 aria-disabled:pointer-events-none [&[aria-disabled]>svg]:opacity-50",
             )}
             href={
               currentPage === totalPages
@@ -112,5 +112,5 @@ export default function Component({
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

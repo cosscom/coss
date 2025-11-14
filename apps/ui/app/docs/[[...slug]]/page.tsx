@@ -1,72 +1,71 @@
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { mdxComponents } from "@/mdx-components"
 import {
   ArrowLeft02Icon,
   ArrowRight02Icon,
   LinkSquare02Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { findNeighbour } from "fumadocs-core/page-tree"
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { findNeighbour } from "fumadocs-core/page-tree";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { DocsCopyPage } from "@/components/docs-copy-page";
+import { DocsTableOfContents } from "@/components/docs-toc";
+import { SiteFooter } from "@/components/site-footer";
+import { source } from "@/lib/source";
+import { mdxComponents } from "@/mdx-components";
+import { Button } from "@/registry/default/ui/button";
 
-import { source } from "@/lib/source"
-import { DocsCopyPage } from "@/components/docs-copy-page"
-import { DocsTableOfContents } from "@/components/docs-toc"
-import { SiteFooter } from "@/components/site-footer"
-import { Button } from "@/registry/default/ui/button"
-
-export const revalidate = false
-export const dynamic = "force-static"
-export const dynamicParams = false
+export const revalidate = false;
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return source.generateParams()
+  return source.generateParams();
 }
 
 export async function generateMetadata(props: {
-  params: Promise<{ slug?: string[] }>
+  params: Promise<{ slug?: string[] }>;
 }) {
-  const params = await props.params
-  const page = source.getPage(params.slug)
+  const params = await props.params;
+  const page = source.getPage(params.slug);
 
   if (!page) {
-    notFound()
+    notFound();
   }
 
-  const doc = page.data
+  const doc = page.data;
 
   if (!doc.title || !doc.description) {
-    notFound()
+    notFound();
   }
 
   return {
-    title: doc.title + " - coss ui",
+    title: `${doc.title} - coss ui`,
     description: doc.description,
-  }
+  };
 }
 
 export default async function Page(props: {
-  params: Promise<{ slug?: string[] }>
+  params: Promise<{ slug?: string[] }>;
 }) {
-  const params = await props.params
-  const page = source.getPage(params.slug)
+  const params = await props.params;
+  const page = source.getPage(params.slug);
   if (!page) {
-    notFound()
+    notFound();
   }
 
-  const doc = page.data
-  const rawContent = await page.data.getText("raw")
-  const MDX = doc.body
-  const neighbours = await findNeighbour(source.pageTree, page.url)
+  const doc = page.data;
+  const rawContent = await page.data.getText("raw");
+  const MDX = doc.body;
+  const neighbours = await findNeighbour(source.pageTree, page.url);
 
-  const links = doc.links
+  const links = doc.links;
 
   return (
     <div
       data-slot="docs"
       className="flex items-stretch sm:text-[.9375rem] xl:w-full"
     >
-      <div className="relative flex min-w-0 flex-1 flex-col bg-muted/50 bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_2px_1px_--theme(--color-black/4%)] after:pointer-events-none after:absolute after:-inset-[5px] after:-z-1 after:rounded-[calc(var(--radius-2xl)+4px)] after:border after:border-border/50 after:bg-clip-padding max-lg:before:hidden lg:mt-8 lg:mr-4 lg:mb-8 lg:rounded-2xl lg:border dark:after:bg-background/72">
+      <div className="after:-inset-[5px] after:-z-1 relative flex min-w-0 flex-1 flex-col bg-muted/50 bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_2px_1px_--theme(--color-black/4%)] after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-2xl)+4px)] after:border after:border-border/50 after:bg-clip-padding max-lg:before:hidden lg:mt-8 lg:mr-4 lg:mb-8 lg:rounded-2xl lg:border dark:after:bg-background/72">
         <div className="-m-px border bg-background px-4 py-6 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] sm:px-6 lg:rounded-t-2xl lg:rounded-b-xl lg:p-8 dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
           <div className="mx-auto w-full max-w-3xl">
             <div className="flex min-w-0 flex-1 flex-col gap-8">
@@ -143,5 +142,5 @@ export default async function Page(props: {
         </div>
       </div>
     </div>
-  )
+  );
 }

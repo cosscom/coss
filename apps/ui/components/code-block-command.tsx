@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard"
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
 import {
   ComputerTerminal02Icon,
   Copy01Icon,
   Tick02Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import * as React from "react";
 
-import { useConfig } from "@/hooks/use-config"
-import { Button } from "@/registry/default/ui/button"
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs"
+import { useConfig } from "@/hooks/use-config";
+import { Button } from "@/registry/default/ui/button";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export function CodeBlockCommand({
   __npm__,
@@ -24,33 +24,33 @@ export function CodeBlockCommand({
   __pnpm__,
   __bun__,
 }: React.ComponentProps<"pre"> & {
-  __npm__?: string
-  __yarn__?: string
-  __pnpm__?: string
-  __bun__?: string
+  __npm__?: string;
+  __yarn__?: string;
+  __pnpm__?: string;
+  __bun__?: string;
 }) {
-  const [config, setConfig] = useConfig()
-  const { isCopied, copyToClipboard } = useCopyToClipboard()
+  const [config, setConfig] = useConfig();
+  const { isCopied, copyToClipboard } = useCopyToClipboard();
 
-  const packageManager = config.packageManager || "pnpm"
+  const packageManager = config.packageManager || "pnpm";
   const tabs = React.useMemo(() => {
     return {
       pnpm: __pnpm__,
       npm: __npm__,
       yarn: __yarn__,
       bun: __bun__,
-    }
-  }, [__npm__, __pnpm__, __yarn__, __bun__])
+    };
+  }, [__npm__, __pnpm__, __yarn__, __bun__]);
 
   const copyCommand = React.useCallback(() => {
-    const command = tabs[packageManager]
+    const command = tabs[packageManager];
 
     if (!command) {
-      return
+      return;
     }
 
-    copyToClipboard(command)
-  }, [packageManager, tabs, copyToClipboard])
+    copyToClipboard(command);
+  }, [packageManager, tabs, copyToClipboard]);
 
   return (
     <div className="overflow-x-auto">
@@ -60,11 +60,11 @@ export function CodeBlockCommand({
           setConfig({
             ...config,
             packageManager: value as "pnpm" | "npm" | "yarn" | "bun",
-          })
+          });
         }}
         className="gap-0"
       >
-        <div className="flex items-center gap-2 border-b border-border/64 px-4 py-1 font-mono">
+        <div className="flex items-center gap-2 border-border/64 border-b px-4 py-1 font-mono">
           <HugeiconsIcon
             icon={ComputerTerminal02Icon}
             strokeWidth={2}
@@ -76,7 +76,7 @@ export function CodeBlockCommand({
                 <TabsTab key={key} value={key} className="rounded-lg">
                   {key}
                 </TabsTab>
-              )
+              );
             })}
           </TabsList>
         </div>
@@ -93,7 +93,7 @@ export function CodeBlockCommand({
                   </code>
                 </pre>
               </TabsPanel>
-            )
+            );
           })}
         </div>
       </Tabs>
@@ -119,5 +119,5 @@ export function CodeBlockCommand({
         <TooltipPopup>{isCopied ? "Copied" : "Copy to Clipboard"}</TooltipPopup>
       </Tooltip>
     </div>
-  )
+  );
 }

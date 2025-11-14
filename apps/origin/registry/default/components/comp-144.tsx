@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="relative flex w-full items-start gap-2 rounded-md border border-input p-4 shadow-xs outline-none has-data-[state=checked]:border-primary/50">
       <Checkbox
@@ -15,14 +15,14 @@ export default function Component() {
       <div className="grid grow gap-2">
         <Label htmlFor={id}>
           Label{" "}
-          <span className="text-xs leading-[inherit] font-normal text-muted-foreground">
+          <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
             (Sublabel)
           </span>
         </Label>
-        <p id={`${id}-description`} className="text-xs text-muted-foreground">
+        <p id={`${id}-description`} className="text-muted-foreground text-xs">
           A short description goes here.
         </p>
       </div>
     </div>
-  )
+  );
 }

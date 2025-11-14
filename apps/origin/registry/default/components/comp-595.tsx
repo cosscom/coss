@@ -3,14 +3,14 @@ import {
   HistoryIcon,
   MessageSquareText,
   UserRoundPlus,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/avatar";
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -29,7 +29,7 @@ export default function Component() {
               <ChevronLeftIcon />
             </a>
           </Button>
-          <h1 className="text-sm font-medium">Basic UI</h1>
+          <h1 className="font-medium text-sm">Basic UI</h1>
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export default function Component() {
                 <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-emerald-500">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-emerald-500">
                 <span className="sr-only">Online</span>
               </span>
             </div>
@@ -79,7 +79,7 @@ export default function Component() {
                 />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>
@@ -88,13 +88,13 @@ export default function Component() {
                 <AvatarImage src="/origin/avatar-80-05.jpg" alt="Linda Green" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>
             <Button
               variant="secondary"
-              className="flex size-8 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground ring-background hover:bg-secondary hover:text-foreground"
+              className="flex size-8 items-center justify-center rounded-full bg-secondary text-muted-foreground text-xs ring-background hover:bg-secondary hover:text-foreground"
               size="icon"
             >
               +3
@@ -103,5 +103,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

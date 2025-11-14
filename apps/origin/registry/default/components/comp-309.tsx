@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { RocketIcon, XIcon } from "lucide-react"
+import { RocketIcon, XIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <div className="dark bg-muted px-4 py-3 text-foreground">
@@ -22,10 +22,10 @@ export default function Component() {
           </div>
           <div className="flex grow flex-col justify-between gap-3 md:flex-row md:items-center">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 Boost your experience with coss.com
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 The new feature is live! Try it out and let us know what you
                 think.
               </p>
@@ -51,5 +51,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

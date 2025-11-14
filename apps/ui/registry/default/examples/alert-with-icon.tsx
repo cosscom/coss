@@ -1,10 +1,10 @@
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "lucide-react";
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
+} from "@/registry/default/ui/alert";
 
 export default function AlertWithIcon() {
   return (
@@ -15,5 +15,5 @@ export default function AlertWithIcon() {
         Describe what can be done about it here.
       </AlertDescription>
     </Alert>
-  )
+  );
 }

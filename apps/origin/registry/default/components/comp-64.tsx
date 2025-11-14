@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { Textarea } from "@/registry/default/ui/textarea"
+import { Label } from "@/registry/default/ui/label";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with error</Label>
@@ -15,12 +15,12 @@ export default function Component() {
         aria-invalid
       />
       <p
-        className="mt-2 text-xs text-destructive"
+        className="mt-2 text-destructive text-xs"
         role="alert"
         aria-live="polite"
       >
         Message should be at least 10 characters
       </p>
     </div>
-  )
+  );
 }

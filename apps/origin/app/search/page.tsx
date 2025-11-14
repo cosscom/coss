@@ -1,14 +1,14 @@
-import { Suspense } from "react"
-import type { Metadata } from "next"
+import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import PageHeader from "@/components/page-header"
+import PageHeader from "@/components/page-header";
 
-import ComponentsContainer from "./components-container"
+import ComponentsContainer from "./components-container";
 
 export const metadata: Metadata = {
   title: "Search a UI component",
   description: "Search for components in the UI library.",
-}
+};
 
 export default function Page() {
   return (
@@ -21,5 +21,5 @@ export default function Page() {
         <ComponentsContainer />
       </Suspense>
     </>
-  )
+  );
 }

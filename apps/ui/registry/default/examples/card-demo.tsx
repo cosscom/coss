@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Card,
   CardDescription,
@@ -6,24 +6,24 @@ import {
   CardHeader,
   CardPanel,
   CardTitle,
-} from "@/registry/default/ui/card"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/card";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Input } from "@/registry/default/ui/input";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const frameworkOptions = [
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Remix", value: "remix" },
   { label: "Astro", value: "astro" },
-]
+];
 
 export default function CardDemo() {
   return (
@@ -63,5 +63,5 @@ export default function CardDemo() {
         </CardFooter>
       </Form>
     </Card>
-  )
+  );
 }

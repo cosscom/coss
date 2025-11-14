@@ -2,8 +2,8 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/field";
+import { Input } from "@/registry/default/ui/input";
 
 export default function FieldDisabledDemo() {
   return (
@@ -12,5 +12,5 @@ export default function FieldDisabledDemo() {
       <Input type="email" placeholder="Enter your email" disabled />
       <FieldDescription>This field is currently disabled.</FieldDescription>
     </Field>
-  )
+  );
 }

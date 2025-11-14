@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Button } from "@/registry/default/ui/button"
-import { toastManager } from "@/registry/default/ui/toast"
+import { Button } from "@/registry/default/ui/button";
+import { toastManager } from "@/registry/default/ui/toast";
 
 export default function ToastWithStatus() {
   return (
@@ -13,7 +13,7 @@ export default function ToastWithStatus() {
             title: "Success!",
             description: "Your changes have been saved.",
             type: "success",
-          })
+          });
         }}
       >
         Success Toast
@@ -25,7 +25,7 @@ export default function ToastWithStatus() {
             title: "Uh oh! Something went wrong.",
             description: "There was a problem with your request.",
             type: "error",
-          })
+          });
         }}
       >
         Error Toast
@@ -37,7 +37,7 @@ export default function ToastWithStatus() {
             title: "Heads up!",
             description: "You can add components to your app using the cli.",
             type: "info",
-          })
+          });
         }}
       >
         Info Toast
@@ -49,11 +49,11 @@ export default function ToastWithStatus() {
             title: "Warning!",
             description: "Your session is about to expire.",
             type: "warning",
-          })
+          });
         }}
       >
         Warning Toast
       </Button>
     </div>
-  )
+  );
 }

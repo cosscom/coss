@@ -1,8 +1,8 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <div className="flex -space-x-3">
+    <div className="-space-x-3 flex">
       <img
         className="rounded-full ring-2 ring-background"
         src="/origin/avatar-80-03.jpg"
@@ -33,11 +33,11 @@ export default function Component() {
       />
       <Button
         variant="secondary"
-        className="flex size-10 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground ring-2 ring-background hover:bg-secondary hover:text-foreground"
+        className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground text-xs ring-2 ring-background hover:bg-secondary hover:text-foreground"
         size="icon"
       >
         +3
       </Button>
     </div>
-  )
+  );
 }

@@ -1,23 +1,22 @@
-import { ArrowLeftIcon } from "lucide-react"
-import { Metadata } from "next"
-import Link from "next/link"
-
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header"
-import { Button } from "@coss/ui/ui/button"
+} from "@coss/ui/components/page-header";
+import { Button } from "@coss/ui/ui/button";
+import { ArrowLeftIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Page Not Found",
   description:
     "The page you're looking for doesn't exist or may have been moved.",
-}
+};
 
 export default function NotFound() {
   return (
-    <div className="container w-full flex-1 mb-16 lg:mb-20">
+    <div className="container mb-16 w-full flex-1 lg:mb-20">
       <PageHeader>
         <PageHeaderHeading>Page Not Found</PageHeaderHeading>
         <PageHeaderDescription>
@@ -31,7 +30,7 @@ export default function NotFound() {
             render={
               <Link href="/">
                 <ArrowLeftIcon
-                  className="-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5"
+                  className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
                   aria-hidden="true"
                 />
                 Back to Home
@@ -41,5 +40,5 @@ export default function NotFound() {
         </div>
       </PageHeader>
     </div>
-  )
+  );
 }

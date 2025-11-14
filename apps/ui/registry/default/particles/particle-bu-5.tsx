@@ -3,9 +3,9 @@ import {
   RiGithubFill,
   RiGoogleFill,
   RiTwitterXFill,
-} from "@remixicon/react"
+} from "@remixicon/react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (
@@ -23,5 +23,5 @@ export default function Particle() {
         <RiGithubFill className="opacity-72" aria-hidden="true" />
       </Button>
     </div>
-  )
+  );
 }

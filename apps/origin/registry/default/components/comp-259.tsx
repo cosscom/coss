@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { MinusIcon, PlusIcon } from "lucide-react"
+import { MinusIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Button } from "@/registry/default/ui/button";
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
-  const minValue = 0
-  const maxValue = 200
-  const steps = 5
-  const [value, setValue] = useState([100])
+  const minValue = 0;
+  const maxValue = 200;
+  const steps = 5;
+  const [value, setValue] = useState([100]);
 
   const decreaseValue = () =>
-    setValue((prev) => [Math.max(minValue, prev[0] - steps)])
+    setValue((prev) => [Math.max(minValue, prev[0] - steps)]);
   const increaseValue = () =>
-    setValue((prev) => [Math.min(maxValue, prev[0] + steps)])
+    setValue((prev) => [Math.min(maxValue, prev[0] + steps)]);
 
   return (
     <div className="*:not-first:mt-3">
@@ -57,5 +57,5 @@ export default function Component() {
         </div>
       </div>
     </div>
-  )
+  );
 }

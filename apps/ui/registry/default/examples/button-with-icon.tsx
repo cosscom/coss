@@ -1,6 +1,6 @@
-import { DownloadIcon } from "lucide-react"
+import { DownloadIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function ButtonWithIcon() {
   return (
@@ -8,5 +8,5 @@ export default function ButtonWithIcon() {
       <DownloadIcon />
       Download
     </Button>
-  )
+  );
 }

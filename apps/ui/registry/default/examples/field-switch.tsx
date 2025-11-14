@@ -1,5 +1,5 @@
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Switch } from "@/registry/default/ui/switch"
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function FieldSwitchDemo() {
   return (
@@ -9,5 +9,5 @@ export default function FieldSwitchDemo() {
         Email notifications
       </FieldLabel>
     </Field>
-  )
+  );
 }

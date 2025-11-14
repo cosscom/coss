@@ -1,19 +1,19 @@
-import { useId } from "react"
-import { CheckIcon, MinusIcon } from "lucide-react"
+import { CheckIcon, MinusIcon } from "lucide-react";
+import { useId } from "react";
 
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 const items = [
   { value: "1", label: "Light", image: "/origin/ui-light.png" },
   { value: "2", label: "Dark", image: "/origin/ui-dark.png" },
   { value: "3", label: "System", image: "/origin/ui-system.png" },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <fieldset className="space-y-4">
-      <legend className="text-sm leading-none font-medium text-foreground">
+      <legend className="font-medium text-foreground text-sm leading-none">
         Choose a theme
       </legend>
       <RadioGroup className="flex gap-3" defaultValue="1">
@@ -29,7 +29,7 @@ export default function Component() {
               alt={item.label}
               width={88}
               height={70}
-              className="relative cursor-pointer overflow-hidden rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-data-disabled:cursor-not-allowed peer-data-disabled:opacity-50 peer-data-[state=checked]:border-ring peer-data-[state=checked]:bg-accent"
+              className="relative cursor-pointer overflow-hidden rounded-md border border-input shadow-xs outline-none transition-[color,box-shadow] peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-data-disabled:cursor-not-allowed peer-data-[state=checked]:border-ring peer-data-[state=checked]:bg-accent peer-data-disabled:opacity-50"
             />
             <span className="group mt-2 flex items-center gap-1 peer-data-[state=unchecked]:text-muted-foreground/70">
               <CheckIcon
@@ -42,11 +42,11 @@ export default function Component() {
                 className="group-peer-data-[state=checked]:hidden"
                 aria-hidden="true"
               />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="font-medium text-xs">{item.label}</span>
             </span>
           </label>
         ))}
       </RadioGroup>
     </fieldset>
-  )
+  );
 }

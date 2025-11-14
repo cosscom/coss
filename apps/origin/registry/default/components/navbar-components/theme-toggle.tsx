@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { MoonIcon, SunIcon } from "lucide-react"
+import { MoonIcon, SunIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Toggle } from "@/registry/default/ui/toggle"
+import { Toggle } from "@/registry/default/ui/toggle";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<string>("light")
+  const [theme, setTheme] = useState<string>("light");
 
   return (
     <div>
@@ -32,5 +32,5 @@ export default function ThemeToggle() {
         />
       </Toggle>
     </div>
-  )
+  );
 }

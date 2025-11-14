@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 import {
   Cropper,
   CropperCropArea,
   CropperDescription,
   CropperImage,
-} from "@/registry/default/ui/cropper"
-import { Slider } from "@/registry/default/ui/slider"
+} from "@/registry/default/ui/cropper";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useState(1);
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -36,8 +36,8 @@ export default function Component() {
             onValueChange={(value) => setZoom(value[0])}
             aria-label="Zoom slider"
           />
-          <output className="block w-10 shrink-0 text-right text-sm font-medium tabular-nums">
-            {parseFloat(zoom.toFixed(1))}x
+          <output className="block w-10 shrink-0 text-right font-medium text-sm tabular-nums">
+            {Number.parseFloat(zoom.toFixed(1))}x
           </output>
         </div>
       </div>
@@ -45,17 +45,18 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Cropper with zoom slider ∙{" "}
         <a
           href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
           target="_blank"
+          rel="noreferrer"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

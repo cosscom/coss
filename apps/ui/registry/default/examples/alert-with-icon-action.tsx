@@ -1,12 +1,12 @@
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "lucide-react";
 
 import {
   Alert,
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/alert";
+import { Button } from "@/registry/default/ui/button";
 
 export default function AlertWithIconAction() {
   return (
@@ -23,5 +23,5 @@ export default function AlertWithIconAction() {
         <Button size="xs">Ok</Button>
       </AlertAction>
     </Alert>
-  )
+  );
 }

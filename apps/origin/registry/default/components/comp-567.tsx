@@ -1,15 +1,14 @@
-"use client"
+"use client";
 
-import React from "react"
-import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
-import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react"
+import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
+import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
@@ -40,9 +39,9 @@ const items: Record<string, Item> = {
   operations: { name: "Operations", children: ["hr", "finance"] },
   hr: { name: "HR" },
   finance: { name: "Finance" },
-}
+};
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
   const tree = useTree<Item>({
@@ -58,20 +57,20 @@ export default function Component() {
       getChildren: (itemId) => items[itemId].children ?? [],
     },
     features: [syncDataLoaderFeature, hotkeysCoreFeature],
-  })
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
       <div>
         <Tree
-          className="relative before:absolute before:inset-0 before:-ms-1 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
+          className="before:-ms-1 relative before:absolute before:inset-0 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
           indent={indent}
           tree={tree}
         >
           {tree.getItems().map((item) => {
             return (
               <TreeItem key={item.getId()} item={item}>
-                <TreeItemLabel className="relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10 before:bg-background">
+                <TreeItemLabel className="before:-inset-y-0.5 before:-z-10 relative before:absolute before:inset-x-0 before:bg-background">
                   <span className="flex items-center gap-2">
                     {item.isFolder() ? (
                       item.isExpanded() ? (
@@ -86,7 +85,7 @@ export default function Component() {
                   </span>
                 </TreeItemLabel>
               </TreeItem>
-            )
+            );
           })}
         </Tree>
       </div>
@@ -94,7 +93,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Basic tree with icons ∙{" "}
         <a
@@ -107,5 +106,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

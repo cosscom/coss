@@ -1,26 +1,25 @@
-"use client"
+"use client";
 
-import { ChevronDown } from "lucide-react"
-import Link from "next/link"
-
-import { Badge } from "@coss/ui/ui/badge"
-import { Button } from "@coss/ui/ui/button"
-import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@coss/ui/ui/menu"
+import { Badge } from "@coss/ui/ui/badge";
+import { Button } from "@coss/ui/ui/button";
+import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@coss/ui/ui/menu";
+import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 
 interface ProductsDropdownProps {
-  items: { href: string; label: string; upcoming?: boolean }[]
+  items: { href: string; label: string; upcoming?: boolean }[];
 }
 
 export function ProductsDropdown({ items }: ProductsDropdownProps) {
-  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_URL || ""
-  const uiGatewayOrigin = process.env.NEXT_PUBLIC_COSS_UI_URL || ""
+  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_URL || "";
+  const uiGatewayOrigin = process.env.NEXT_PUBLIC_COSS_UI_URL || "";
 
   const getLinkProps = (item: {
-    href: string
-    label: string
-    upcoming?: boolean
+    href: string;
+    label: string;
+    upcoming?: boolean;
   }) => {
-    const isHomePage = item.href === "/"
+    const isHomePage = item.href === "/";
 
     // Determine if this should be an external link and construct the URL
     if (gatewayOrigin && !isHomePage) {
@@ -28,7 +27,7 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
       return {
         href: `${gatewayOrigin}${item.href}`,
         isExternal: true,
-      }
+      };
     }
 
     if (uiGatewayOrigin && isHomePage) {
@@ -36,15 +35,15 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
       return {
         href: uiGatewayOrigin,
         isExternal: true,
-      }
+      };
     }
 
     // Default: internal link
     return {
       href: item.href,
       isExternal: false,
-    }
-  }
+    };
+  };
 
   return (
     <Menu>
@@ -54,30 +53,31 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
       </MenuTrigger>
       <MenuPopup align="center" sideOffset={4}>
         {items.map((item) => {
-          const { href, isExternal } = getLinkProps(item)
+          const { href, isExternal } = getLinkProps(item);
 
           return (
             <MenuItem
               key={item.href}
               className="group justify-between"
+              // biome-ignore lint/a11y/useAnchorContent: This is intentional
               render={isExternal ? <a href={href} /> : <Link href={href} />}
             >
-              <span className="font-heading text-muted-foreground in-data-highlighted:text-foreground">
+              <span className="font-heading in-data-highlighted:text-foreground text-muted-foreground">
                 {item.label}
               </span>
               {item.upcoming && (
                 <Badge
                   variant="info"
                   size="sm"
-                  className="-me-0.5 opacity-0 group-hover:opacity-100 font-medium"
+                  className="-me-0.5 font-medium opacity-0 group-hover:opacity-100"
                 >
                   Upcoming
                 </Badge>
               )}
             </MenuItem>
-          )
+          );
         })}
       </MenuPopup>
     </Menu>
-  )
+  );
 }

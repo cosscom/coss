@@ -4,15 +4,15 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   CircleIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
   return (
@@ -31,7 +31,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent side="top" className="px-2 py-1 text-xs">
             Pan top
-            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘T
             </kbd>
           </TooltipContent>
@@ -51,7 +51,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent side="left" className="px-2 py-1 text-xs">
             Pan left
-            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘L
             </kbd>
           </TooltipContent>
@@ -69,7 +69,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent side="right" className="px-2 py-1 text-xs">
             Pan right
-            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘R
             </kbd>
           </TooltipContent>
@@ -89,12 +89,12 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent side="bottom" className="px-2 py-1 text-xs">
             Pan bottom
-            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘B
             </kbd>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>
-  )
+  );
 }

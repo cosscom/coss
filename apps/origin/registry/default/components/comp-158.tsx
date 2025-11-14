@@ -1,9 +1,9 @@
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
   return (
     <fieldset className="space-y-4">
-      <legend className="text-sm leading-none font-medium text-foreground">
+      <legend className="font-medium text-foreground text-sm leading-none">
         Choose a color
       </legend>
       <RadioGroup className="flex gap-1.5" defaultValue="blue">
@@ -44,5 +44,5 @@ export default function Component() {
         />
       </RadioGroup>
     </fieldset>
-  )
+  );
 }

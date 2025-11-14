@@ -1,10 +1,10 @@
-import { CircleCheckIcon } from "lucide-react"
+import { CircleCheckIcon } from "lucide-react";
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
+} from "@/registry/default/ui/alert";
 
 export default function AlertSuccess() {
   return (
@@ -15,5 +15,5 @@ export default function AlertSuccess() {
         Describe what can be done about it here.
       </AlertDescription>
     </Alert>
-  )
+  );
 }

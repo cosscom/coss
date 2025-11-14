@@ -1,5 +1,7 @@
-import { Label } from "@/registry/default/ui/label"
-import MultipleSelector, { Option } from "@/registry/default/ui/multiselect"
+import { Label } from "@/registry/default/ui/label";
+import MultipleSelector, {
+  type Option,
+} from "@/registry/default/ui/multiselect";
 
 const frameworks: Option[] = [
   {
@@ -66,7 +68,7 @@ const frameworks: Option[] = [
     value: "lit",
     label: "Lit",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -81,7 +83,7 @@ export default function Component() {
         emptyIndicator={<p className="text-center text-sm">No results found</p>}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -90,11 +92,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://shadcnui-expansions.typeart.cc/docs/multiple-selector"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           shadcn/ui expansions
         </a>
       </p>
     </div>
-  )
+  );
 }

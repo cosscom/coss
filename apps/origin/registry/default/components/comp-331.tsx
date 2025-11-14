@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { CheckIcon, ImagePlusIcon, XIcon } from "lucide-react"
+import { CheckIcon, ImagePlusIcon, XIcon } from "lucide-react";
+import { useId } from "react";
 
-import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit"
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit";
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -15,10 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
-import { Textarea } from "@/registry/default/ui/textarea"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 // Pretend we have initial image files
 const initialBgImage = [
@@ -29,7 +29,7 @@ const initialBgImage = [
     url: "/origin/profile-bg.jpg",
     id: "profile-bg-123456789",
   },
-]
+];
 
 const initialAvatarImage = [
   {
@@ -39,12 +39,12 @@ const initialAvatarImage = [
     url: "/origin/avatar-72-01.jpg",
     id: "avatar-123456789",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
-  const maxLength = 180
+  const maxLength = 180;
   const {
     value,
     characterCount,
@@ -54,7 +54,7 @@ export default function Component() {
     maxLength,
     initialValue:
       "Hey, I am Margaret, a web developer who loves turning ideas into amazing websites!",
-  })
+  });
 
   return (
     <Dialog>
@@ -121,7 +121,7 @@ export default function Component() {
               <div className="*:not-first:mt-2">
                 <Label htmlFor={`${id}-website`}>Website</Label>
                 <div className="flex rounded-md shadow-xs">
-                  <span className="-z-10 inline-flex items-center rounded-s-md border border-input bg-background px-3 text-sm text-muted-foreground">
+                  <span className="-z-10 inline-flex items-center rounded-s-md border border-input bg-background px-3 text-muted-foreground text-sm">
                     https://
                   </span>
                   <Input
@@ -145,7 +145,7 @@ export default function Component() {
                 />
                 <p
                   id={`${id}-description`}
-                  className="mt-2 text-right text-xs text-muted-foreground"
+                  className="mt-2 text-right text-muted-foreground text-xs"
                   role="status"
                   aria-live="polite"
                 >
@@ -168,7 +168,7 @@ export default function Component() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function ProfileBg() {
@@ -176,9 +176,9 @@ function ProfileBg() {
     useFileUpload({
       accept: "image/*",
       initialFiles: initialBgImage,
-    })
+    });
 
-  const currentImage = files[0]?.preview || null
+  const currentImage = files[0]?.preview || null;
 
   return (
     <div className="h-32">
@@ -189,7 +189,7 @@ function ProfileBg() {
             src={currentImage}
             alt={
               files[0]?.preview
-                ? "Preview of uploaded image"
+                ? "Upload preview"
                 : "Default profile background"
             }
             width={512}
@@ -199,7 +199,7 @@ function ProfileBg() {
         <div className="absolute inset-0 flex items-center justify-center gap-2">
           <button
             type="button"
-            className="z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white outline-none transition-[color,box-shadow] hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             onClick={openFileDialog}
             aria-label={currentImage ? "Change image" : "Upload image"}
           >
@@ -208,7 +208,7 @@ function ProfileBg() {
           {currentImage && (
             <button
               type="button"
-              className="z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="z-50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white outline-none transition-[color,box-shadow] hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               onClick={() => removeFile(files[0]?.id)}
               aria-label="Remove image"
             >
@@ -223,32 +223,32 @@ function ProfileBg() {
         aria-label="Upload image file"
       />
     </div>
-  )
+  );
 }
 
 function Avatar() {
   const [{ files }, { openFileDialog, getInputProps }] = useFileUpload({
     accept: "image/*",
     initialFiles: initialAvatarImage,
-  })
+  });
 
-  const currentImage = files[0]?.preview || null
+  const currentImage = files[0]?.preview || null;
 
   return (
     <div className="-mt-10 px-6">
-      <div className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-muted shadow-xs shadow-black/10">
+      <div className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-muted shadow-black/10 shadow-xs">
         {currentImage && (
           <img
             src={currentImage}
             className="size-full object-cover"
             width={80}
             height={80}
-            alt="Profile image"
+            alt="Profile"
           />
         )}
         <button
           type="button"
-          className="absolute flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="absolute flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white outline-none transition-[color,box-shadow] hover:bg-black/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           onClick={openFileDialog}
           aria-label="Change profile picture"
         >
@@ -261,5 +261,5 @@ function Avatar() {
         />
       </div>
     </div>
-  )
+  );
 }

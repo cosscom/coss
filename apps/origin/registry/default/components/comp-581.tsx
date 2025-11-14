@@ -1,19 +1,19 @@
-import InfoMenu from "@/registry/default/components/navbar-components/info-menu"
-import Logo from "@/registry/default/components/navbar-components/logo"
-import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import InfoMenu from "@/registry/default/components/navbar-components/info-menu";
+import Logo from "@/registry/default/components/navbar-components/logo";
+import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -21,7 +21,7 @@ const navigationLinks = [
   { href: "#", label: "Features" },
   { href: "#", label: "Pricing" },
   { href: "#", label: "About" },
-]
+];
 
 export default function Component() {
   return (
@@ -51,7 +51,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -68,7 +68,7 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
+                    <NavigationMenuItem key={String(index)} className="w-full">
                       <NavigationMenuLink href={link.href} className="py-1.5">
                         {link.label}
                       </NavigationMenuLink>
@@ -87,7 +87,7 @@ export default function Component() {
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
                 {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
+                  <NavigationMenuItem key={String(index)}>
                     <NavigationMenuLink
                       href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
@@ -113,5 +113,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { Tag, TagInput } from "emblor"
+import { type Tag, TagInput } from "emblor";
+import { useId, useState } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 
 const tags = [
   {
     id: "1",
     text: "Red",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [exampleTags, setExampleTags] = useState<Tag[]>(tags)
-  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null)
+  const id = useId();
+  const [exampleTags, setExampleTags] = useState<Tag[]>(tags);
+  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
 
   return (
     <div className="*:not-first:mt-2">
@@ -24,7 +24,7 @@ export default function Component() {
         id={id}
         tags={exampleTags}
         setTags={(newTags) => {
-          setExampleTags(newTags)
+          setExampleTags(newTags);
         }}
         placeholder="Add a tag"
         styleClasses={{
@@ -41,7 +41,7 @@ export default function Component() {
         setActiveTagIndex={setActiveTagIndex}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -50,11 +50,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://github.com/JaleelB/emblor"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           emblor
         </a>
       </p>
     </div>
-  )
+  );
 }

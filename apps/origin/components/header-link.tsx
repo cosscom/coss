@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { RiArrowRightUpLine } from "@remixicon/react"
+import { RiArrowRightUpLine } from "@remixicon/react";
+import Link from "next/link";
 
-import { cn } from "@/registry/default/lib/utils"
+import { cn } from "@/registry/default/lib/utils";
 
 export default function HeaderLink({
   text,
@@ -10,11 +10,11 @@ export default function HeaderLink({
   className,
   isNew = false,
 }: {
-  text: string
-  href: string
-  external?: boolean
-  className?: string
-  isNew?: boolean
+  text: string;
+  href: string;
+  external?: boolean;
+  className?: string;
+  isNew?: boolean;
 }) {
   return (
     <div className="flex items-start gap-1.5">
@@ -22,10 +22,11 @@ export default function HeaderLink({
         <a
           className={cn(
             "inline-flex gap-0.5 text-sm hover:underline",
-            className
+            className,
           )}
           href={href}
           target="_blank"
+          rel="noreferrer"
         >
           {text}
           <span className="hidden sm:inline">
@@ -43,18 +44,18 @@ export default function HeaderLink({
             href={href}
             className={cn(
               "inline-flex gap-0.5 text-sm hover:underline",
-              className
+              className,
             )}
           >
             {text}
           </Link>
           {isNew && (
-            <span className="text-xs text-[10px] font-medium text-muted-foreground/80 uppercase">
+            <span className="font-medium text-[10px] text-muted-foreground/80 text-xs uppercase">
               New
             </span>
           )}
         </>
       )}
     </div>
-  )
+  );
 }

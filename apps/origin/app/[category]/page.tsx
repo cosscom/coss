@@ -1,32 +1,32 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
-import { categories, getCategory } from "@/config/components"
-import { getComponentsByNames } from "@/lib/utils"
-import ComponentCard from "@/components/component-card"
-import ComponentDetails from "@/components/component-details"
-import ComponentLoader from "@/components/component-loader-server"
-import Cta from "@/components/cta"
-import PageGrid from "@/components/page-grid"
-import PageHeader from "@/components/page-header"
+import ComponentCard from "@/components/component-card";
+import ComponentDetails from "@/components/component-details";
+import ComponentLoader from "@/components/component-loader-server";
+import Cta from "@/components/cta";
+import PageGrid from "@/components/page-grid";
+import PageHeader from "@/components/page-header";
+import { categories, getCategory } from "@/config/components";
+import { getComponentsByNames } from "@/lib/utils";
 
 type Props = {
-  params: Promise<{ category: string }>
-}
+  params: Promise<{ category: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const category = getCategory((await params).category)
+  const category = getCategory((await params).category);
 
   if (!category) {
-    return {}
+    return {};
   }
 
   // Get components to check count
   const components = getComponentsByNames(
-    category.components.map((item) => item.name)
-  )
+    category.components.map((item) => item.name),
+  );
 
-  const isSingleComponent = components.length === 1
+  const isSingleComponent = components.length === 1;
 
   // Custom title and description for event-calendar
   if (category.slug === "event-calendar") {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         "Event calendar component built with React and Tailwind CSS - coss.com origin",
       description:
         "An event calendar component built with React and Tailwind CSS. Originally built in v0 and currently in early alpha stage.",
-    }
+    };
   }
 
   return {
@@ -45,25 +45,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: isSingleComponent
       ? `A beautiful and accessible ${category.name.toLowerCase()} component built with React and Tailwind CSS.`
       : `A collection of beautiful and accessible ${category.name.toLowerCase()} components built with React and Tailwind CSS.`,
-  }
+  };
 }
 
 export async function generateStaticParams() {
   return categories.map((category) => ({
     category: category.slug,
-  }))
+  }));
 }
 
 export default async function Page({ params }: Props) {
-  const category = getCategory((await params).category)
+  const category = getCategory((await params).category);
 
   if (!category) {
-    notFound()
+    notFound();
   }
 
   const components = getComponentsByNames(
-    category.components.map((item) => item.name)
-  )
+    category.components.map((item) => item.name),
+  );
 
   // Determine the description text based on category
   const getDescriptionText = () => {
@@ -99,14 +99,14 @@ export default async function Page({ params }: Props) {
             </svg>
           </a>
         </span>
-      )
+      );
     }
 
     // Default case based on component count
     return components.length === 1
       ? `A ${category.name.toLowerCase()} component built with React and Tailwind CSS.`
-      : `A growing collection of ${components.length} ${category.name.toLowerCase()} components built with React and Tailwind CSS.`
-  }
+      : `A growing collection of ${components.length} ${category.name.toLowerCase()} components built with React and Tailwind CSS.`;
+  };
 
   return (
     <>
@@ -125,5 +125,5 @@ export default async function Page({ params }: Props) {
       </PageGrid>
       <Cta />
     </>
-  )
+  );
 }

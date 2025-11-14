@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -7,7 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 
 const items = [
   { value: "apple", label: "Apple" },
@@ -20,7 +20,7 @@ const items = [
   { value: "kiwi", label: "Kiwi" },
   { value: "peach", label: "Peach" },
   { value: "pear", label: "Pear" },
-]
+];
 
 export default function ComboboxSm() {
   return (
@@ -41,5 +41,5 @@ export default function ComboboxSm() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

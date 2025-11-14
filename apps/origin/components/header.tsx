@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { RiGithubFill, RiTwitterXFill } from "@remixicon/react"
+import { RiGithubFill, RiTwitterXFill } from "@remixicon/react";
+import Link from "next/link";
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import HeaderLink from "@/components/header-link"
-import ThemeToggle from "@/components/theme-toggle"
+import HeaderLink from "@/components/header-link";
+import ThemeToggle from "@/components/theme-toggle";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const links = [{ text: "Easing Classes", href: "/easings" }]
+const links = [{ text: "Easing Classes", href: "/easings" }];
 
 export default function Header() {
-  const isMobile = useIsMobile()
-  const cossHomeUrl = process.env.NEXT_PUBLIC_COSS_URL || ""
+  const isMobile = useIsMobile();
+  const cossHomeUrl = process.env.NEXT_PUBLIC_COSS_URL || "";
 
   return (
-    <header className="relative mb-14 before:absolute before:-inset-x-32 before:bottom-0 before:h-px before:bg-[linear-gradient(to_right,--theme(--color-border/.3),--theme(--color-border)_200px,--theme(--color-border)_calc(100%-200px),--theme(--color-border/.3))]">
+    <header className="before:-inset-x-32 relative mb-14 before:absolute before:bottom-0 before:h-px before:bg-[linear-gradient(to_right,--theme(--color-border/.3),--theme(--color-border)_200px,--theme(--color-border)_calc(100%-200px),--theme(--color-border/.3))]">
       <div
-        className="before:absolute before:-bottom-px before:-left-12 before:z-10 before:-ml-px before:size-[3px] before:bg-ring/50 after:absolute after:-right-12 after:-bottom-px after:z-10 after:-mr-px after:size-[3px] after:bg-ring/50"
+        className="before:-bottom-px before:-left-12 before:-ml-px after:-right-12 after:-bottom-px after:-mr-px before:absolute before:z-10 before:size-[3px] before:bg-ring/50 after:absolute after:z-10 after:size-[3px] after:bg-ring/50"
         aria-hidden="true"
-      ></div>
+      />
       <div className="mx-auto flex h-[72px] w-full max-w-6xl items-center justify-between gap-3">
         <div className="-mt-0.5 flex shrink-0 items-start gap-1.5 font-heading text-2xl sm:text-[1.625em]">
           <a href={cossHomeUrl} aria-label="Home">
@@ -47,7 +47,7 @@ export default function Header() {
               <div
                 className="ms-4 me-4 h-5 w-px bg-input md:ms-10"
                 aria-hidden="true"
-              ></div>
+              />
             </>
           )}
           <div className="flex items-center gap-1">
@@ -74,5 +74,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

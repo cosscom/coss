@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react"
+import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react";
 
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 
 // Create some dummy initial files
 const initialFiles = [
@@ -35,12 +35,12 @@ const initialFiles = [
     url: "https://picsum.photos/1000/800?grayscale&random=4",
     id: "image-04-123456789",
   },
-]
+];
 
 export default function Component() {
-  const maxSizeMB = 5
-  const maxSize = maxSizeMB * 1024 * 1024 // 5MB default
-  const maxFiles = 6
+  const maxSizeMB = 5;
+  const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
+  const maxFiles = 6;
 
   const [
     { files, isDragging, errors },
@@ -59,11 +59,12 @@ export default function Component() {
     multiple: true,
     maxFiles,
     initialFiles,
-  })
+  });
 
   return (
     <div className="flex flex-col gap-2">
       {/* Drop area */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -71,7 +72,7 @@ export default function Component() {
         onDrop={handleDrop}
         data-dragging={isDragging || undefined}
         data-files={files.length > 0 || undefined}
-        className="relative flex min-h-52 flex-col items-center overflow-hidden rounded-xl border border-dashed border-input p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
@@ -81,7 +82,7 @@ export default function Component() {
         {files.length > 0 ? (
           <div className="flex w-full flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="truncate text-sm font-medium">
+              <h3 className="truncate font-medium text-sm">
                 Uploaded Files ({files.length})
               </h3>
               <Button
@@ -112,7 +113,7 @@ export default function Component() {
                   <Button
                     onClick={() => removeFile(file.id)}
                     size="icon"
-                    className="absolute -top-2 -right-2 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+                    className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
                     aria-label="Remove image"
                   >
                     <XIcon className="size-3.5" />
@@ -129,8 +130,8 @@ export default function Component() {
             >
               <ImageIcon className="size-4 opacity-60" />
             </div>
-            <p className="mb-1.5 text-sm font-medium">Drop your images here</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="mb-1.5 font-medium text-sm">Drop your images here</p>
+            <p className="text-muted-foreground text-xs">
               SVG, PNG, JPG or GIF (max. {maxSizeMB}MB)
             </p>
             <Button variant="outline" className="mt-4" onClick={openFileDialog}>
@@ -143,7 +144,7 @@ export default function Component() {
 
       {errors.length > 0 && (
         <div
-          className="flex items-center gap-1 text-xs text-destructive"
+          className="flex items-center gap-1 text-destructive text-xs"
           role="alert"
         >
           <AlertCircleIcon className="size-3 shrink-0" />
@@ -154,7 +155,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-center text-xs text-muted-foreground"
+        className="mt-2 text-center text-muted-foreground text-xs"
       >
         Multiple image uploader w/ image grid ∙{" "}
         <a
@@ -165,5 +166,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

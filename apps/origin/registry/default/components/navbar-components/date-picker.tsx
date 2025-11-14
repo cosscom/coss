@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function DatePicker() {
-  const [date, setDate] = useState<DateRange | undefined>()
+  const [date, setDate] = useState<DateRange | undefined>();
 
   return (
     <Popover>
@@ -23,7 +23,7 @@ export default function DatePicker() {
         <Button
           variant="outline"
           size="sm"
-          className="group w-full justify-between border-input bg-background px-3 text-sm font-normal outline-offset-0 outline-none focus-visible:outline-[3px]"
+          className="group w-full justify-between border-input bg-background px-3 font-normal text-sm outline-none outline-offset-0 focus-visible:outline-[3px]"
         >
           <CalendarIcon
             size={16}
@@ -50,5 +50,5 @@ export default function DatePicker() {
         <Calendar mode="range" selected={date} onSelect={setDate} />
       </PopoverContent>
     </Popover>
-  )
+  );
 }

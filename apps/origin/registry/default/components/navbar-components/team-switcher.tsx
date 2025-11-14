@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronsUpDown } from "lucide-react"
+import { ChevronsUpDown } from "lucide-react";
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function TeamSwitcher({
   teams,
   defaultTeam,
 }: {
-  teams: string[]
-  defaultTeam: string
+  teams: string[];
+  defaultTeam: string;
 }) {
-  const [selectedProject, setSelectedProject] = React.useState(defaultTeam)
+  const [selectedProject, setSelectedProject] = React.useState(defaultTeam);
 
   return (
     <DropdownMenu>
@@ -44,5 +44,5 @@ export default function TeamSwitcher({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

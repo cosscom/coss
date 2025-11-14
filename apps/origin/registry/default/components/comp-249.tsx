@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
   return (
@@ -7,7 +7,7 @@ export default function Component() {
       <Label>Slider with labels and tooltip</Label>
       <div>
         <span
-          className="mb-3 flex w-full items-center justify-between gap-2 text-xs font-medium text-muted-foreground"
+          className="mb-3 flex w-full items-center justify-between gap-2 font-medium text-muted-foreground text-xs"
           aria-hidden="true"
         >
           <span>Low</span>
@@ -21,5 +21,5 @@ export default function Component() {
         />
       </div>
     </div>
-  )
+  );
 }

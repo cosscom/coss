@@ -1,16 +1,16 @@
-import * as React from "react"
+import * as React from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 import {
   NumberField,
   NumberFieldDecrement,
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function NumberFieldWithLabel() {
-  const id = React.useId()
+  const id = React.useId();
   return (
     <div className="flex flex-col items-start gap-2">
       <Label htmlFor={id}>Quantity</Label>
@@ -22,5 +22,5 @@ export default function NumberFieldWithLabel() {
         </NumberFieldGroup>
       </NumberField>
     </div>
-  )
+  );
 }

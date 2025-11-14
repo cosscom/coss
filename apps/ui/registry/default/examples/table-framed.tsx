@@ -1,5 +1,5 @@
-import { Badge } from "@/registry/default/ui/badge"
-import { Frame, FramePanel } from "@/registry/default/ui/frame"
+import { Badge } from "@/registry/default/ui/badge";
+import { Frame, FramePanel } from "@/registry/default/ui/frame";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 export default function TableFramed() {
   return (
@@ -118,5 +118,5 @@ export default function TableFramed() {
         </Table>
       </FramePanel>
     </Frame>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -7,7 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -20,7 +20,7 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function ComboboxDisabled() {
   return (
@@ -40,5 +40,5 @@ export default function ComboboxDisabled() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

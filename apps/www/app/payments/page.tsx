@@ -1,10 +1,10 @@
-import { CodeBlock } from "@coss/ui/components/code-block"
-import { Metadata } from "next"
+import { CodeBlock } from "@coss/ui/components/code-block";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "coss.com payments",
   description: "open source is the foundation of all modern software",
-}
+};
 
 export default function Page() {
   const initialization = `import { coss } from '@coss';
@@ -12,7 +12,7 @@ export default function Page() {
 coss.payments.init({
   apiKey: process.env.COSS_KEY,
   environment: 'production', // or 'sandbox'
-});`
+});`;
 
   const products = `// Create a product
 await coss.payments.products.create({
@@ -32,7 +32,7 @@ await coss.payments.products.update('prod_abc123', {
 });
 
 // Delete a product
-await coss.payments.products.delete('prod_abc123');`
+await coss.payments.products.delete('prod_abc123');`;
 
   const prices = `// Create a price for a product
 await coss.payments.prices.create({
@@ -43,7 +43,7 @@ await coss.payments.prices.create({
 });
 
 // List prices
-await coss.payments.prices.list();`
+await coss.payments.prices.list();`;
 
   const customers = `// Create a customer
 await coss.payments.customers.create({
@@ -52,7 +52,7 @@ await coss.payments.customers.create({
 });
 
 // Retrieve a customer
-await coss.payments.customers.retrieve('cus_abc123');`
+await coss.payments.customers.retrieve('cus_abc123');`;
 
   const subscriptions = `// Create a subscription
 await coss.payments.subscriptions.create({
@@ -69,7 +69,7 @@ await coss.payments.subscriptions.update('sub_abc123', {
 });
 
 // Cancel a subscription
-await coss.payments.subscriptions.cancel('sub_abc123');`
+await coss.payments.subscriptions.cancel('sub_abc123');`;
 
   const invoices = `// Create an invoice manually
 await coss.payments.invoices.create({
@@ -83,7 +83,7 @@ await coss.payments.invoices.create({
 await coss.payments.invoices.finalize('inv_abc123');
 
 // Pay an invoice
-await coss.payments.invoices.pay('inv_abc123');`
+await coss.payments.invoices.pay('inv_abc123');`;
 
   const webhooks = `// Webhook events
 coss.payments.webhooks.on('invoice.paid', (event) => {
@@ -92,51 +92,51 @@ coss.payments.webhooks.on('invoice.paid', (event) => {
 
 coss.payments.webhooks.on('subscription.created', (event) => {
   console.log('Subscription created:', event.data);
-});`
+});`;
 
   const utilities = `// Validate webhook signature
 const isValid = coss.payments.utils.verifySignature({
   payload: req.body,
   signature: req.headers['coss-payments-signature'],
   secret: 'whsec_payments_123',
-});`
+});`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">
-      <div className="mt-12 lg:mt-16 max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
+      <div className="mx-auto mt-12 max-w-2xl text-muted-foreground lg:mt-16 [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
         <CodeBlock code={initialization} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Products
         </h2>
         <CodeBlock code={products} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Prices
         </h2>
         <CodeBlock code={prices} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Customers
         </h2>
         <CodeBlock code={customers} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Subscriptions
         </h2>
         <CodeBlock code={subscriptions} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Invoices
         </h2>
         <CodeBlock code={invoices} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
         <CodeBlock code={webhooks} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
         <CodeBlock code={utilities} language="tsx" copyButton={false} />
       </div>
     </main>
-  )
+  );
 }

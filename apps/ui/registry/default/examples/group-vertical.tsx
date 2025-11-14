@@ -1,7 +1,7 @@
-import { ZoomInIcon, ZoomOutIcon } from "lucide-react"
+import { ZoomInIcon, ZoomOutIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 
 export default function GroupVertical() {
   return (
@@ -14,5 +14,5 @@ export default function GroupVertical() {
         <ZoomOutIcon />
       </Button>
     </Group>
-  )
+  );
 }

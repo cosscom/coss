@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Calendar } from "@/registry/default/ui/calendar"
+import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <div>
@@ -16,7 +16,7 @@ export default function Component() {
         className="rounded-md border p-2"
       />
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
+        className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -25,11 +25,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

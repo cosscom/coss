@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DropdownNavProps, DropdownProps } from "react-day-picker"
+import { useState } from "react";
+import type { DropdownNavProps, DropdownProps } from "react-day-picker";
 
-import { Calendar } from "@/registry/default/ui/calendar"
+import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function Component() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   const handleCalendarChange = (
     _value: string | number,
-    _e: React.ChangeEventHandler<HTMLSelectElement>
+    _e: React.ChangeEventHandler<HTMLSelectElement>,
   ) => {
     const _event = {
       target: {
         value: String(_value),
       },
-    } as React.ChangeEvent<HTMLSelectElement>
-    _e(_event)
-  }
+    } as React.ChangeEvent<HTMLSelectElement>;
+    _e(_event);
+  };
 
   return (
     <div>
@@ -40,10 +40,10 @@ export default function Component() {
         components={{
           DropdownNav: (props: DropdownNavProps) => {
             return (
-              <div className="flex w-full items-center justify-center gap-3 [&>span]:text-sm [&>span]:font-medium">
+              <div className="flex w-full items-center justify-center gap-3 [&>span]:font-medium [&>span]:text-sm">
                 {props.children}
               </div>
-            )
+            );
           },
           YearsDropdown: (props: DropdownProps) => {
             return (
@@ -51,7 +51,7 @@ export default function Component() {
                 value={String(props.value)}
                 onValueChange={(value) => {
                   if (props.onChange) {
-                    handleCalendarChange(value, props.onChange)
+                    handleCalendarChange(value, props.onChange);
                   }
                 }}
               >
@@ -70,12 +70,12 @@ export default function Component() {
                   ))}
                 </SelectContent>
               </Select>
-            )
+            );
           },
         }}
       />
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
+        className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -84,11 +84,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

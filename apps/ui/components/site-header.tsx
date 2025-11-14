@@ -1,14 +1,14 @@
-import { SiteHeader as WorkspaceSiteHeader } from "@coss/ui/components/site-header"
-import { Separator } from "@coss/ui/ui/separator"
+import { SiteHeader as WorkspaceSiteHeader } from "@coss/ui/components/site-header";
+import { Separator } from "@coss/ui/ui/separator";
 
-import { appConfig } from "@/lib/config"
-import { source } from "@/lib/source"
-import { CommandMenu } from "@/components/command-menu"
-import { MainNav } from "@/components/main-nav"
-import { MobileNav } from "@/components/mobile-nav"
+import { CommandMenu } from "@/components/command-menu";
+import { MainNav } from "@/components/main-nav";
+import { MobileNav } from "@/components/mobile-nav";
+import { appConfig } from "@/lib/config";
+import { source } from "@/lib/source";
 
 export function SiteHeader() {
-  const pageTree = source.pageTree
+  const pageTree = source.pageTree;
 
   return (
     <WorkspaceSiteHeader
@@ -27,5 +27,5 @@ export function SiteHeader() {
       </div>
       <Separator orientation="vertical" className="h-5 max-md:hidden" />
     </WorkspaceSiteHeader>
-  )
+  );
 }

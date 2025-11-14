@@ -1,11 +1,11 @@
-import { EclipseIcon } from "lucide-react"
+import { EclipseIcon } from "lucide-react";
 
 export default function Component() {
   return (
     <div className="dark bg-muted px-4 py-3 text-foreground">
       <p className="text-center text-sm">
         <EclipseIcon
-          className="me-3 -mt-0.5 inline-flex opacity-60"
+          className="-mt-0.5 me-3 inline-flex opacity-60"
           size={16}
           aria-hidden="true"
         />
@@ -16,5 +16,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

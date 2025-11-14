@@ -1,19 +1,18 @@
-import { transformers } from "@coss/ui/lib/highlight-code"
+import { transformers } from "@coss/ui/lib/highlight-code";
 import {
   defineConfig,
   defineDocs,
   frontmatterSchema,
-} from "fumadocs-mdx/config"
-import rehypePrettyCode from "rehype-pretty-code"
-import { z } from "zod"
+} from "fumadocs-mdx/config";
+import rehypePrettyCode from "rehype-pretty-code";
+import { z } from "zod";
 
 export default defineConfig({
   mdxOptions: {
     rehypePlugins: (plugins) => {
-      plugins.shift()
+      plugins.shift();
       plugins.push([
-        // TODO: fix the type.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: known
         rehypePrettyCode as any,
         {
           theme: {
@@ -22,12 +21,12 @@ export default defineConfig({
           },
           transformers,
         },
-      ])
+      ]);
 
-      return plugins
+      return plugins;
     },
   },
-})
+});
 
 export const docs = defineDocs({
   dir: "content/docs",
@@ -41,4 +40,4 @@ export const docs = defineDocs({
         .optional(),
     }),
   },
-})
+});

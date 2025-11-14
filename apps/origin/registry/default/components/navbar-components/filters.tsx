@@ -1,17 +1,17 @@
-import { useId } from "react"
-import { ListFilterIcon } from "lucide-react"
+import { ListFilterIcon } from "lucide-react";
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex flex-col gap-4">
       <Popover>
@@ -27,7 +27,7 @@ export default function Component() {
         </PopoverTrigger>
         <PopoverContent className="w-36 p-3">
           <div className="space-y-3">
-            <div className="text-xs font-medium">Filters</div>
+            <div className="font-medium text-xs">Filters</div>
             <form>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -56,10 +56,12 @@ export default function Component() {
                 </div>
               </div>
               <div
+                /* biome-ignore lint/a11y/useAriaPropsForRole: known */
                 role="separator"
                 aria-orientation="horizontal"
                 className="-mx-3 my-3 h-px bg-border"
-              ></div>
+                tabIndex={-1}
+              />
               <div className="flex justify-between gap-2">
                 <Button size="sm" variant="outline" className="h-7 px-2">
                   Clear
@@ -73,5 +75,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

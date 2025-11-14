@@ -1,10 +1,10 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuCloseOnClickDemo() {
   return (
@@ -16,5 +16,5 @@ export default function MenuCloseOnClickDemo() {
         <MenuItem closeOnClick>Log out</MenuItem>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

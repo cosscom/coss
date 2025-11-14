@@ -3,9 +3,9 @@ import {
   RiGithubFill,
   RiGoogleFill,
   RiTwitterXFill,
-} from "@remixicon/react"
+} from "@remixicon/react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -23,5 +23,5 @@ export default function Component() {
         <RiGithubFill size={16} aria-hidden="true" />
       </Button>
     </div>
-  )
+  );
 }

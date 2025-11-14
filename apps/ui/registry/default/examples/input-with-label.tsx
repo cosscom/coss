@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function InputWithLabel() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex flex-col items-start gap-2">
       <Label htmlFor={id}>Email</Label>
@@ -15,5 +15,5 @@ export default function InputWithLabel() {
         aria-label="Email"
       />
     </div>
-  )
+  );
 }

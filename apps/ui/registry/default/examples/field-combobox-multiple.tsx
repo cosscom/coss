@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -10,12 +10,12 @@ import {
   ComboboxList,
   ComboboxPopup,
   ComboboxValue,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
+} from "@/registry/default/ui/field";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -28,7 +28,7 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function FieldComboboxMultiple() {
   return (
@@ -65,5 +65,5 @@ export default function FieldComboboxMultiple() {
       </Combobox>
       <FieldDescription>Select multiple items.</FieldDescription>
     </Field>
-  )
+  );
 }

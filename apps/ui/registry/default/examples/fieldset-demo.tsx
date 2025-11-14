@@ -2,9 +2,9 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/field";
+import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
+import { Input } from "@/registry/default/ui/input";
 
 export default function FieldsetDemo() {
   return (
@@ -26,5 +26,5 @@ export default function FieldsetDemo() {
         </FieldDescription>
       </Field>
     </Fieldset>
-  )
+  );
 }

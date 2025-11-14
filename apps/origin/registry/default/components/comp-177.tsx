@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { Switch } from "@/registry/default/ui/switch"
+import { Label } from "@/registry/default/ui/label";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
@@ -15,5 +15,5 @@ export default function Component() {
         M2-style switch
       </Label>
     </div>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
     <div className="flex items-center rounded-full bg-muted p-0.5">
-      <div className="flex -space-x-3">
+      <div className="-space-x-3 flex">
         <img
           className="rounded-full ring-2 ring-muted"
           src="/origin/avatar-80-03.jpg"
@@ -35,10 +35,10 @@ export default function Component() {
       </div>
       <Button
         variant="secondary"
-        className="flex items-center justify-center rounded-full bg-transparent px-3 text-xs text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground"
+        className="flex items-center justify-center rounded-full bg-transparent px-3 text-muted-foreground text-xs shadow-none hover:bg-transparent hover:text-foreground"
       >
         +3
       </Button>
     </div>
-  )
+  );
 }

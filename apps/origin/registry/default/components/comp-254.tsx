@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { RotateCcwIcon } from "lucide-react"
+import { RotateCcwIcon } from "lucide-react";
 
-import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input"
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input";
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
-  const minValue = 0
-  const maxValue = 2
-  const initialValue = [1.25]
-  const defaultValue = [1]
+  const minValue = 0;
+  const maxValue = 2;
+  const initialValue = [1.25];
+  const defaultValue = [1];
 
   const {
     sliderValue,
@@ -29,7 +29,7 @@ export default function Component() {
     handleSliderChange,
     resetToDefault,
     showReset,
-  } = useSliderWithInput({ minValue, maxValue, initialValue, defaultValue })
+  } = useSliderWithInput({ minValue, maxValue, initialValue, defaultValue });
 
   return (
     <div className="space-y-3">
@@ -44,7 +44,7 @@ export default function Component() {
                   variant="ghost"
                   className={cn(
                     "size-7 transition-opacity",
-                    showReset ? "opacity-100" : "opacity-0"
+                    showReset ? "opacity-100" : "opacity-0",
                   )}
                   aria-label="Reset"
                   onClick={resetToDefault}
@@ -66,7 +66,7 @@ export default function Component() {
             onBlur={() => validateAndUpdateValue(inputValues[0] ?? "", 0)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                validateAndUpdateValue(inputValues[0] ?? "", 0)
+                validateAndUpdateValue(inputValues[0] ?? "", 0);
               }
             }}
             aria-label="Enter value"
@@ -85,5 +85,5 @@ export default function Component() {
         />
       </div>
     </div>
-  )
+  );
 }

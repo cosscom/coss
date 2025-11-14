@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -10,7 +10,7 @@ import {
   ComboboxList,
   ComboboxPopup,
   ComboboxValue,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -23,7 +23,7 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function ComboboxMultiple() {
   return (
@@ -56,5 +56,5 @@ export default function ComboboxMultiple() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

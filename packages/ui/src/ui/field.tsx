@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Field as FieldPrimitive } from "@base-ui-components/react/field"
+import { Field as FieldPrimitive } from "@base-ui-components/react/field";
 
-import { cn } from "@coss/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils";
 
 function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   return (
@@ -11,7 +11,7 @@ function Field({ className, ...props }: FieldPrimitive.Root.Props) {
       className={cn("flex flex-col items-start gap-2", className)}
       {...props}
     />
-  )
+  );
 }
 
 function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
@@ -21,7 +21,7 @@ function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
       className={cn("inline-flex items-center gap-2 text-sm/4", className)}
       {...props}
     />
-  )
+  );
 }
 
 function FieldDescription({
@@ -31,24 +31,24 @@ function FieldDescription({
   return (
     <FieldPrimitive.Description
       data-slot="field-description"
-      className={cn("text-xs text-muted-foreground", className)}
+      className={cn("text-muted-foreground text-xs", className)}
       {...props}
     />
-  )
+  );
 }
 
 function FieldError({ className, ...props }: FieldPrimitive.Error.Props) {
   return (
     <FieldPrimitive.Error
       data-slot="field-error"
-      className={cn("text-xs text-destructive-foreground", className)}
+      className={cn("text-destructive-foreground text-xs", className)}
       {...props}
     />
-  )
+  );
 }
 
-const FieldControl = FieldPrimitive.Control
-const FieldValidity = FieldPrimitive.Validity
+const FieldControl = FieldPrimitive.Control;
+const FieldValidity = FieldPrimitive.Validity;
 
 export {
   Field,
@@ -57,4 +57,4 @@ export {
   FieldError,
   FieldControl,
   FieldValidity,
-}
+};

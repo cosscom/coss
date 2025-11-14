@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { Tabs, TabsList, TabsTab } from "@/registry/default/ui/tabs"
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTab } from "@/registry/default/ui/tabs";
 
 export function ComponentPreviewTabs({
   className,
@@ -13,12 +13,12 @@ export function ComponentPreviewTabs({
   source,
   ...props
 }: React.ComponentProps<"div"> & {
-  align?: "center" | "start" | "end"
-  hideCode?: boolean
-  component: React.ReactNode
-  source: React.ReactNode
+  align?: "center" | "start" | "end";
+  hideCode?: boolean;
+  component: React.ReactNode;
+  source: React.ReactNode;
 }) {
-  const [tab, setTab] = React.useState("preview")
+  const [tab, setTab] = React.useState("preview");
 
   return (
     <div
@@ -51,7 +51,7 @@ export function ComponentPreviewTabs({
           <div
             data-align={align}
             className={cn(
-              "preview flex h-[450px] w-full justify-center overflow-y-auto p-10 data-[align=center]:items-center data-[align=end]:items-end data-[align=start]:items-start max-sm:px-6"
+              "preview flex h-[450px] w-full justify-center overflow-y-auto p-10 data-[align=start]:items-start data-[align=end]:items-end data-[align=center]:items-center max-sm:px-6",
             )}
           >
             {component}
@@ -60,11 +60,11 @@ export function ComponentPreviewTabs({
         <div
           data-slot="code"
           data-active={tab === "code"}
-          className="absolute inset-0 hidden overflow-hidden data-[active=true]:block **:[figure]:!m-0 **:[pre]:h-[450px]"
+          className="**:[figure]:!m-0 absolute inset-0 hidden overflow-hidden data-[active=true]:block **:[pre]:h-[450px]"
         >
           {source}
         </div>
       </div>
     </div>
-  )
+  );
 }

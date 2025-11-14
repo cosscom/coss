@@ -1,14 +1,14 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-}
+  currentPage: number;
+  totalPages: number;
+};
 
 export default function Component({
   currentPage,
@@ -16,7 +16,7 @@ export default function Component({
 }: PaginationProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <p className="grow text-sm text-muted-foreground" aria-live="polite">
+      <p className="grow text-muted-foreground text-sm" aria-live="polite">
         Page <span className="text-foreground">{currentPage}</span> of{" "}
         <span className="text-foreground">{totalPages}</span>
       </p>
@@ -61,5 +61,5 @@ export default function Component({
         </PaginationContent>
       </Pagination>
     </div>
-  )
+  );
 }

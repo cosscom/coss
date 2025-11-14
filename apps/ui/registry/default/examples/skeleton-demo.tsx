@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { UserRoundPlusIcon, UsersRoundIcon } from "lucide-react"
+import { UserRoundPlusIcon, UsersRoundIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
-import { Button } from "@/registry/default/ui/button"
-import { Skeleton } from "@/registry/default/ui/skeleton"
+} from "@/registry/default/ui/avatar";
+import { Button } from "@/registry/default/ui/button";
+import { Skeleton } from "@/registry/default/ui/skeleton";
 
 const users = [
   {
@@ -39,21 +39,21 @@ const users = [
     fallback: "AR",
     delay: 3400,
   },
-]
+];
 
 function UserCard({ delay, user }: { delay: number; user: (typeof users)[0] }) {
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoaded(true)
-    }, delay)
+      setIsLoaded(true);
+    }, delay);
 
-    return () => clearTimeout(timer)
-  }, [delay])
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   if (!isLoaded) {
-    return <UserCardSkeleton />
+    return <UserCardSkeleton />;
   }
 
   return (
@@ -63,8 +63,8 @@ function UserCard({ delay, user }: { delay: number; user: (typeof users)[0] }) {
         <AvatarFallback>{user.fallback}</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h4 className="line-clamp-1 text-sm font-medium">{user.name}</h4>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <h4 className="line-clamp-1 font-medium text-sm">{user.name}</h4>
+        <div className="flex items-center gap-3 text-muted-foreground text-xs">
           <span className="truncate">{user.role}</span>
           <div className="flex min-w-0 items-center gap-1">
             <UsersRoundIcon className="size-3 shrink-0" />
@@ -80,7 +80,7 @@ function UserCard({ delay, user }: { delay: number; user: (typeof users)[0] }) {
         Follow
       </Button>
     </>
-  )
+  );
 }
 
 function UserCardSkeleton() {
@@ -96,7 +96,7 @@ function UserCardSkeleton() {
       </div>
       <Skeleton className="h-6 w-17" />
     </>
-  )
+  );
 }
 
 export default function SkeletonDemo() {
@@ -108,5 +108,5 @@ export default function SkeletonDemo() {
         </div>
       ))}
     </div>
-  )
+  );
 }

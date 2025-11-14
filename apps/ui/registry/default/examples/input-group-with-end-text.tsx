@@ -3,7 +3,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithEndText() {
   return (
@@ -17,5 +17,5 @@ export default function InputGroupWithEndText() {
         <InputGroupText>@coss.com</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

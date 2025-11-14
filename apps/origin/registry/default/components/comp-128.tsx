@@ -1,13 +1,13 @@
-import { ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
     <Button className="group h-auto gap-4 py-3 text-left" variant="outline">
       <div className="space-y-1">
         <h3>Talent Agency</h3>
-        <p className="font-normal whitespace-break-spaces text-muted-foreground">
+        <p className="whitespace-break-spaces font-normal text-muted-foreground">
           Matches for your roster
         </p>
       </div>
@@ -17,5 +17,5 @@ export default function Component() {
         aria-hidden="true"
       />
     </Button>
-  )
+  );
 }

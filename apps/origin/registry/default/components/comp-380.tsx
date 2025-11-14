@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
+import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
-type Theme = "light" | "dark" | "system"
+type Theme = "light" | "dark" | "system";
 
 export default function Component() {
-  const [theme, setTheme] = useState<Theme>("system")
+  const [theme, setTheme] = useState<Theme>("system");
 
   // For demo purposes, we'll simulate system preference as "light"
-  const systemPreference = "light"
-  const displayTheme = theme === "system" ? systemPreference : theme
+  const systemPreference = "light";
+  const displayTheme = theme === "system" ? systemPreference : theme;
 
   return (
     <div>
@@ -49,5 +49,5 @@ export default function Component() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

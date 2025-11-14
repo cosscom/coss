@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { CheckboxGroup } from "@/registry/default/ui/checkbox-group"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
+import { Label } from "@/registry/default/ui/label";
 
 const frameworks = [
   { id: "next", name: "Next.js" },
   { id: "vite", name: "Vite" },
   { id: "astro", name: "Astro" },
-]
+];
 
 export default function CheckboxGroupParentDemo() {
-  const [value, setValue] = React.useState<string[]>([])
+  const [value, setValue] = React.useState<string[]>([]);
 
   return (
     <CheckboxGroup
@@ -34,5 +34,5 @@ export default function CheckboxGroupParentDemo() {
         </Label>
       ))}
     </CheckboxGroup>
-  )
+  );
 }

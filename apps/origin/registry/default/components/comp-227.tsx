@@ -1,7 +1,7 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Label } from "@/registry/default/ui/label"
+import { cn } from "@/registry/default/lib/utils";
+import { Label } from "@/registry/default/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,29 +10,29 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const Square = ({
   className,
   children,
 }: {
-  className?: string
-  children: React.ReactNode
+  className?: string;
+  children: React.ReactNode;
 }) => (
   <span
     data-square
     className={cn(
-      "flex size-5 items-center justify-center rounded bg-muted text-xs font-medium text-muted-foreground",
-      className
+      "flex size-5 items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
+      className,
     )}
     aria-hidden="true"
   >
     {children}
   </span>
-)
+);
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Options with placeholder avatar</Label>
@@ -43,7 +43,7 @@ export default function Component() {
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>
-        <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2">
+        <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
           <SelectGroup>
             <SelectLabel className="ps-2">Impersonate user</SelectLabel>
             <SelectItem value="1">
@@ -62,5 +62,5 @@ export default function Component() {
         </SelectContent>
       </Select>
     </div>
-  )
+  );
 }

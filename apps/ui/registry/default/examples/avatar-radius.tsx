@@ -2,7 +2,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
+} from "@/registry/default/ui/avatar";
 
 export default function AvatarRadiusDemo() {
   return (
@@ -29,5 +29,5 @@ export default function AvatarRadiusDemo() {
         <AvatarFallback>AV</AvatarFallback>
       </Avatar>
     </div>
-  )
+  );
 }

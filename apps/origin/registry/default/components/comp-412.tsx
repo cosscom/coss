@@ -1,7 +1,7 @@
 export default function Component() {
   return (
     <div className="flex items-center rounded-full border bg-background p-1 shadow-sm">
-      <div className="flex -space-x-1.5">
+      <div className="-space-x-1.5 flex">
         <img
           className="rounded-full ring-1 ring-background"
           src="/origin/avatar-80-03.jpg"
@@ -31,10 +31,10 @@ export default function Component() {
           alt="Avatar 04"
         />
       </div>
-      <p className="px-2 text-xs text-muted-foreground">
+      <p className="px-2 text-muted-foreground text-xs">
         Trusted by <strong className="font-medium text-foreground">60K+</strong>{" "}
         developers.
       </p>
     </div>
-  )
+  );
 }

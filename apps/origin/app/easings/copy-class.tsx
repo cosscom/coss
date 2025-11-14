@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 
 const CopyClass = ({ value }: { value: string }) => {
-  const [copied, setCopied] = useState<boolean>(false)
+  const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(value)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     } catch (err) {
-      console.error("Failed to copy text: ", err)
+      console.error("Failed to copy text: ", err);
     }
-  }
+  };
 
   return (
     <div>
       <Button
         variant="ghost"
-        className="h-7 max-w-full text-xs font-normal whitespace-normal text-muted-foreground/80 hover:bg-transparent hover:text-foreground disabled:opacity-100"
+        className="h-7 max-w-full whitespace-normal font-normal text-muted-foreground/80 text-xs hover:bg-transparent hover:text-foreground disabled:opacity-100"
         onClick={handleCopy}
         aria-label={copied ? "Copied" : "Copy Tailwind class"}
         disabled={copied}
@@ -38,7 +38,7 @@ const CopyClass = ({ value }: { value: string }) => {
           <div
             className={cn(
               "transition-all",
-              copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+              copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
             )}
           >
             <svg
@@ -56,8 +56,8 @@ const CopyClass = ({ value }: { value: string }) => {
           </div>
           <div
             className={cn(
-              "absolute -top-0.5 transition-all",
-              copied ? "scale-0 opacity-0" : "scale-100 opacity-80"
+              "-top-0.5 absolute transition-all",
+              copied ? "scale-0 opacity-0" : "scale-100 opacity-80",
             )}
           >
             <svg
@@ -74,7 +74,7 @@ const CopyClass = ({ value }: { value: string }) => {
         </div>
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default CopyClass
+export default CopyClass;

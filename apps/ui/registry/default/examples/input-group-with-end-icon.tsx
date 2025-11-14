@@ -1,10 +1,10 @@
-import { MailIcon } from "lucide-react"
+import { MailIcon } from "lucide-react";
 
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithEndIcon() {
   return (
@@ -14,5 +14,5 @@ export default function InputGroupWithEndIcon() {
         <MailIcon />
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

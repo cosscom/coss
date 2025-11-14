@@ -1,4 +1,4 @@
-import { CheckIcon, MonitorIcon, SmartphoneIcon, XIcon } from "lucide-react"
+import { CheckIcon, MonitorIcon, SmartphoneIcon, XIcon } from "lucide-react";
 
 import {
   Table,
@@ -7,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 const items = [
   {
@@ -61,14 +61,14 @@ const items = [
       { name: "Samsung Internet", supported: false, version: "No" },
     ],
   },
-]
+];
 
 export default function Component() {
   return (
     <Table>
       <TableHeader>
         <TableRow className="border-y-0 *:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-          <TableCell></TableCell>
+          <TableCell />
           <TableHead className="border-b text-center" colSpan={5}>
             <MonitorIcon className="inline-flex" size={16} aria-hidden="true" />
             <span className="sr-only">Desktop browsers</span>
@@ -85,13 +85,13 @@ export default function Component() {
       </TableHeader>
       <TableHeader>
         <TableRow className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-          <TableCell></TableCell>
+          <TableCell />
           {items[0].desktop.map((browser) => (
             <TableHead
               key={browser.name}
               className="h-auto py-3 align-bottom text-foreground"
             >
-              <span className="relative left-[calc(50%-.5rem)] block rotate-180 leading-4 whitespace-nowrap [text-orientation:sideways] [writing-mode:vertical-rl]">
+              <span className="relative left-[calc(50%-.5rem)] block rotate-180 whitespace-nowrap leading-4 [text-orientation:sideways] [writing-mode:vertical-rl]">
                 {browser.name}
               </span>
             </TableHead>
@@ -101,7 +101,7 @@ export default function Component() {
               key={browser.name}
               className="h-auto py-3 align-bottom text-foreground"
             >
-              <span className="relative left-[calc(50%-.5rem)] block rotate-180 leading-4 whitespace-nowrap [text-orientation:sideways] [writing-mode:vertical-rl]">
+              <span className="relative left-[calc(50%-.5rem)] block rotate-180 whitespace-nowrap leading-4 [text-orientation:sideways] [writing-mode:vertical-rl]">
                 {browser.name}
               </span>
             </TableHead>
@@ -138,7 +138,7 @@ export default function Component() {
                 <span className="sr-only">
                   {browser.supported ? "Supported" : "Not supported"}
                 </span>
-                <div className="text-xs font-medium text-muted-foreground">
+                <div className="font-medium text-muted-foreground text-xs">
                   {browser.version}
                 </div>
               </TableCell>
@@ -147,5 +147,5 @@ export default function Component() {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }

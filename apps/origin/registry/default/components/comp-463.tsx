@@ -1,36 +1,36 @@
-import { useId } from "react"
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-}
+  currentPage: number;
+  totalPages: number;
+};
 
 export default function Component({
   currentPage,
   totalPages,
 }: PaginationProps) {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex items-center justify-between gap-8">
       {/* Results per page */}
@@ -40,7 +40,7 @@ export default function Component({
           <SelectTrigger id={id} className="w-fit whitespace-nowrap">
             <SelectValue placeholder="Select number of results" />
           </SelectTrigger>
-          <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+          <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
             <SelectItem value="10">10</SelectItem>
             <SelectItem value="25">25</SelectItem>
             <SelectItem value="50">50</SelectItem>
@@ -50,9 +50,9 @@ export default function Component({
       </div>
 
       {/* Page number information */}
-      <div className="flex grow justify-end text-sm whitespace-nowrap text-muted-foreground">
+      <div className="flex grow justify-end whitespace-nowrap text-muted-foreground text-sm">
         <p
-          className="text-sm whitespace-nowrap text-muted-foreground"
+          className="whitespace-nowrap text-muted-foreground text-sm"
           aria-live="polite"
         >
           <span className="text-foreground">1-25</span> of{" "}
@@ -131,5 +131,5 @@ export default function Component({
         </Pagination>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { type Registry } from "shadcn/schema"
+import type { Registry } from "shadcn/schema";
 
 export const examples: Registry["items"] = [
   {
@@ -2820,4 +2820,4 @@ export const examples: Registry["items"] = [
     files: [{ path: "examples/tooltip-grouped.tsx", type: "registry:example" }],
     categories: ["tooltip", "toggle group", "toggle"],
   },
-]
+];

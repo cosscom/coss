@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { SelectNative } from "@/registry/default/ui/select-native"
+import { Label } from "@/registry/default/ui/label";
+import { SelectNative } from "@/registry/default/ui/select-native";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with helper text (native)</Label>
@@ -15,12 +15,12 @@ export default function Component() {
         <option value="4">Gatsby</option>
       </SelectNative>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
         Tell us what&lsquo;s your favorite Select framework
       </p>
     </div>
-  )
+  );
 }

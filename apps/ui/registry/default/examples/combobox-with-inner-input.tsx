@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { ChevronsUpDownIcon } from "lucide-react"
+import { ChevronsUpDownIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Combobox,
   ComboboxEmpty,
@@ -12,13 +12,13 @@ import {
   ComboboxPopup,
   ComboboxTrigger,
   ComboboxValue,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 
 interface Country {
-  code: string
-  value: string | null
-  continent: string
-  label: string
+  code: string;
+  value: string | null;
+  continent: string;
+  label: string;
 }
 
 const countries: Country[] = [
@@ -430,7 +430,7 @@ const countries: Country[] = [
   { code: "ye", value: "yemen", label: "Yemen", continent: "Asia" },
   { code: "zm", value: "zambia", label: "Zambia", continent: "Africa" },
   { code: "zw", value: "zimbabwe", label: "Zimbabwe", continent: "Africa" },
-]
+];
 
 export default function ComboboxWithInnerInput() {
   return (
@@ -466,5 +466,5 @@ export default function ComboboxWithInnerInput() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

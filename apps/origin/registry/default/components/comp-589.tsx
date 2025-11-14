@@ -1,39 +1,39 @@
-import { ChevronsUpDown } from "lucide-react"
-import { Select as SelectPrimitive } from "radix-ui"
+import { ChevronsUpDown } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
 
-import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
+import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/breadcrumb";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "#", label: "Dashboard" },
   { href: "#", label: "Docs" },
   { href: "#", label: "API reference" },
-]
+];
 
 export default function Component() {
   return (
@@ -63,7 +63,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -79,8 +79,8 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
+                  {navigationLinks.map((link) => (
+                    <NavigationMenuItem key={link.label} className="w-full">
                       <NavigationMenuLink href={link.href} className="py-1.5">
                         {link.label}
                       </NavigationMenuLink>
@@ -110,7 +110,7 @@ export default function Component() {
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="personal">Personal</SelectItem>
                     <SelectItem value="team">Team</SelectItem>
                     <SelectItem value="business">Business</SelectItem>
@@ -135,7 +135,7 @@ export default function Component() {
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="1">Main project</SelectItem>
                     <SelectItem value="2">Origin project</SelectItem>
                   </SelectContent>
@@ -150,8 +150,8 @@ export default function Component() {
             {/* Nav menu */}
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
-                {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
+                {navigationLinks.map((link) => (
+                  <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
                       href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
@@ -170,5 +170,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

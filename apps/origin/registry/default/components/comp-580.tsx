@@ -1,30 +1,30 @@
-import { useId } from "react"
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "lucide-react";
+import { useId } from "react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "#", label: "Products" },
   { href: "#", label: "Categories" },
   { href: "#", label: "Deals" },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   return (
     <header className="border-b px-4 md:px-6">
@@ -53,7 +53,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -69,8 +69,8 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
+                  {navigationLinks.map((link) => (
+                    <NavigationMenuItem key={link.label} className="w-full">
                       <NavigationMenuLink href={link.href} className="py-1.5">
                         {link.label}
                       </NavigationMenuLink>
@@ -82,10 +82,12 @@ export default function Component() {
                     aria-hidden="true"
                   >
                     <div
+                      /* biome-ignore lint/a11y/useAriaPropsForRole: known */
                       role="separator"
                       aria-orientation="horizontal"
                       className="-mx-1 my-1 h-px bg-border"
-                    ></div>
+                      tabIndex={-1}
+                    />
                   </NavigationMenuItem>
                   <NavigationMenuItem className="w-full">
                     <NavigationMenuLink href="#" className="py-1.5">
@@ -100,7 +102,7 @@ export default function Component() {
                     >
                       <span className="flex items-baseline gap-2">
                         Cart
-                        <span className="text-xs text-primary-foreground/60">
+                        <span className="text-primary-foreground/60 text-xs">
                           2
                         </span>
                       </span>
@@ -118,8 +120,8 @@ export default function Component() {
             {/* Navigation menu */}
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
-                {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
+                {navigationLinks.map((link) => (
+                  <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
                       href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
@@ -153,12 +155,12 @@ export default function Component() {
             <a href="#">
               <span className="flex items-baseline gap-2">
                 Cart
-                <span className="text-xs text-primary-foreground/60">2</span>
+                <span className="text-primary-foreground/60 text-xs">2</span>
               </span>
             </a>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

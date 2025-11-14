@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Progress,
@@ -6,7 +6,7 @@ import {
   ProgressLabel,
   ProgressTrack,
   ProgressValue,
-} from "@/registry/default/ui/progress"
+} from "@/registry/default/ui/progress";
 
 export default function ProgressWithFormattedValueDemo() {
   return (
@@ -19,5 +19,5 @@ export default function ProgressWithFormattedValueDemo() {
         <ProgressIndicator />
       </ProgressTrack>
     </Progress>
-  )
+  );
 }

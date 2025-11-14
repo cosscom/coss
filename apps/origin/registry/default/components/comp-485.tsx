@@ -1,22 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react"
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  FilterFn,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type FilterFn,
   flexRender,
   getCoreRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  PaginationState,
-  Row,
-  SortingState,
+  type PaginationState,
+  type SortingState,
   useReactTable,
-  VisibilityState,
-} from "@tanstack/react-table"
+  type VisibilityState,
+} from "@tanstack/react-table";
 import {
   ChevronDownIcon,
   ChevronFirstIcon,
@@ -32,9 +30,10 @@ import {
   ListFilterIcon,
   PlusIcon,
   TrashIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
+import { cn } from "@/registry/default/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,10 +44,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/registry/default/ui/alert-dialog"
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+} from "@/registry/default/ui/alert-dialog";
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -63,26 +62,26 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dropdown-menu";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 import {
   Table,
   TableBody,
@@ -90,35 +89,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 type Item = {
-  id: string
-  name: string
-  email: string
-  location: string
-  flag: string
-  status: "Active" | "Inactive" | "Pending"
-  balance: number
-}
+  id: string;
+  name: string;
+  email: string;
+  location: string;
+  flag: string;
+  status: "Active" | "Inactive" | "Pending";
+  balance: number;
+};
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<Item> = (row, _columnId, filterValue) => {
   const searchableRowContent =
-    `${row.original.name} ${row.original.email}`.toLowerCase()
-  const searchTerm = (filterValue ?? "").toLowerCase()
-  return searchableRowContent.includes(searchTerm)
-}
+    `${row.original.name} ${row.original.email}`.toLowerCase();
+  const searchTerm = (filterValue ?? "").toLowerCase();
+  return searchableRowContent.includes(searchTerm);
+};
 
 const statusFilterFn: FilterFn<Item> = (
   row,
   columnId,
-  filterValue: string[]
+  filterValue: string[],
 ) => {
-  if (!filterValue?.length) return true
-  const status = row.getValue(columnId) as string
-  return filterValue.includes(status)
-}
+  if (!filterValue?.length) return true;
+  const status = row.getValue(columnId) as string;
+  return filterValue.includes(status);
+};
 
 const columns: ColumnDef<Item>[] = [
   {
@@ -177,7 +176,7 @@ const columns: ColumnDef<Item>[] = [
       <Badge
         className={cn(
           row.getValue("status") === "Inactive" &&
-            "bg-muted-foreground/60 text-primary-foreground"
+            "bg-muted-foreground/60 text-primary-foreground",
         )}
       >
         {row.getValue("status")}
@@ -194,12 +193,12 @@ const columns: ColumnDef<Item>[] = [
     header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"))
+      const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount)
-      return formatted
+      }).format(amount);
+      return formatted;
     },
     size: 120,
   },
@@ -210,45 +209,45 @@ const columns: ColumnDef<Item>[] = [
     size: 60,
     enableHiding: false,
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const id = useId();
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
-  })
-  const inputRef = useRef<HTMLInputElement>(null)
+  });
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: "name",
       desc: false,
     },
-  ])
+  ]);
 
-  const [data, setData] = useState<Item[]>([])
+  const [data, setData] = useState<Item[]>([]);
   useEffect(() => {
     async function fetchPosts() {
       const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      )
-      const data = await res.json()
-      setData(data)
+        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json",
+      );
+      const data = await res.json();
+      setData(data);
     }
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const handleDeleteRows = () => {
-    const selectedRows = table.getSelectedRowModel().rows
+    const selectedRows = table.getSelectedRowModel().rows;
     const updatedData = data.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id)
-    )
-    setData(updatedData)
-    table.resetRowSelection()
-  }
+      (item) => !selectedRows.some((row) => row.original.id === item.id),
+    );
+    setData(updatedData);
+    table.resetRowSelection();
+  };
 
   const table = useReactTable({
     data,
@@ -269,48 +268,48 @@ export default function Component() {
       columnFilters,
       columnVisibility,
     },
-  })
+  });
 
   // Get unique status values
   const uniqueStatusValues = useMemo(() => {
-    const statusColumn = table.getColumn("status")
+    const statusColumn = table.getColumn("status");
 
-    if (!statusColumn) return []
+    if (!statusColumn) return [];
 
-    const values = Array.from(statusColumn.getFacetedUniqueValues().keys())
+    const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
 
-    return values.sort()
-  }, [table.getColumn("status")?.getFacetedUniqueValues()])
+    return values.sort();
+  }, [table.getColumn]);
 
   // Get counts for each status
   const statusCounts = useMemo(() => {
-    const statusColumn = table.getColumn("status")
-    if (!statusColumn) return new Map()
-    return statusColumn.getFacetedUniqueValues()
-  }, [table.getColumn("status")?.getFacetedUniqueValues()])
+    const statusColumn = table.getColumn("status");
+    if (!statusColumn) return new Map();
+    return statusColumn.getFacetedUniqueValues();
+  }, [table]);
 
   const selectedStatuses = useMemo(() => {
-    const filterValue = table.getColumn("status")?.getFilterValue() as string[]
-    return filterValue ?? []
-  }, [table.getColumn("status")?.getFilterValue()])
+    const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+    return filterValue ?? [];
+  }, [table]);
 
   const handleStatusChange = (checked: boolean, value: string) => {
-    const filterValue = table.getColumn("status")?.getFilterValue() as string[]
-    const newFilterValue = filterValue ? [...filterValue] : []
+    const filterValue = table.getColumn("status")?.getFilterValue() as string[];
+    const newFilterValue = filterValue ? [...filterValue] : [];
 
     if (checked) {
-      newFilterValue.push(value)
+      newFilterValue.push(value);
     } else {
-      const index = newFilterValue.indexOf(value)
+      const index = newFilterValue.indexOf(value);
       if (index > -1) {
-        newFilterValue.splice(index, 1)
+        newFilterValue.splice(index, 1);
       }
     }
 
     table
       .getColumn("status")
-      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined)
-  }
+      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+  };
 
   return (
     <div className="space-y-4">
@@ -324,7 +323,7 @@ export default function Component() {
               ref={inputRef}
               className={cn(
                 "peer min-w-60 ps-9",
-                Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9"
+                Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9",
               )}
               value={
                 (table.getColumn("name")?.getFilterValue() ?? "") as string
@@ -341,12 +340,13 @@ export default function Component() {
             </div>
             {Boolean(table.getColumn("name")?.getFilterValue()) && (
               <button
-                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Clear filter"
                 onClick={() => {
-                  table.getColumn("name")?.setFilterValue("")
+                  table.getColumn("name")?.setFilterValue("");
                   if (inputRef.current) {
-                    inputRef.current.focus()
+                    inputRef.current.focus();
                   }
                 }}
               >
@@ -365,7 +365,7 @@ export default function Component() {
                 />
                 Status
                 {selectedStatuses.length > 0 && (
-                  <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+                  <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
                     {selectedStatuses.length}
                   </span>
                 )}
@@ -373,7 +373,7 @@ export default function Component() {
             </PopoverTrigger>
             <PopoverContent className="w-auto min-w-36 p-3" align="start">
               <div className="space-y-3">
-                <div className="text-xs font-medium text-muted-foreground">
+                <div className="font-medium text-muted-foreground text-xs">
                   Filters
                 </div>
                 <div className="space-y-3">
@@ -391,7 +391,7 @@ export default function Component() {
                         className="flex grow justify-between gap-2 font-normal"
                       >
                         {value}{" "}
-                        <span className="ms-2 text-xs text-muted-foreground">
+                        <span className="ms-2 text-muted-foreground text-xs">
                           {statusCounts.get(value)}
                         </span>
                       </Label>
@@ -431,7 +431,7 @@ export default function Component() {
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -448,7 +448,7 @@ export default function Component() {
                     aria-hidden="true"
                   />
                   Delete
-                  <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+                  <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
                     {table.getSelectedRowModel().rows.length}
                   </span>
                 </Button>
@@ -510,10 +510,11 @@ export default function Component() {
                       className="h-11"
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                        /* biome-ignore lint/a11y/noStaticElementInteractions: known */
                         <div
                           className={cn(
                             header.column.getCanSort() &&
-                              "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                              "flex h-full cursor-pointer select-none items-center justify-between gap-2",
                           )}
                           onClick={header.column.getToggleSortingHandler()}
                           onKeyDown={(e) => {
@@ -522,15 +523,15 @@ export default function Component() {
                               header.column.getCanSort() &&
                               (e.key === "Enter" || e.key === " ")
                             ) {
-                              e.preventDefault()
-                              header.column.getToggleSortingHandler()?.(e)
+                              e.preventDefault();
+                              header.column.getToggleSortingHandler()?.(e);
                             }
                           }}
                           tabIndex={header.column.getCanSort() ? 0 : undefined}
                         >
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                           {{
                             asc: (
@@ -552,11 +553,11 @@ export default function Component() {
                       ) : (
                         flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )
                       )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -572,7 +573,7 @@ export default function Component() {
                     <TableCell key={cell.id} className="last:py-0">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -602,13 +603,13 @@ export default function Component() {
           <Select
             value={table.getState().pagination.pageSize.toString()}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger id={id} className="w-fit whitespace-nowrap">
               <SelectValue placeholder="Select number of results" />
             </SelectTrigger>
-            <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+            <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
               {[5, 10, 25, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={pageSize.toString()}>
                   {pageSize}
@@ -618,9 +619,9 @@ export default function Component() {
           </Select>
         </div>
         {/* Page number information */}
-        <div className="flex grow justify-end text-sm whitespace-nowrap text-muted-foreground">
+        <div className="flex grow justify-end whitespace-nowrap text-muted-foreground text-sm">
           <p
-            className="text-sm whitespace-nowrap text-muted-foreground"
+            className="whitespace-nowrap text-muted-foreground text-sm"
             aria-live="polite"
           >
             <span className="text-foreground">
@@ -633,9 +634,9 @@ export default function Component() {
                   table.getState().pagination.pageIndex *
                     table.getState().pagination.pageSize +
                     table.getState().pagination.pageSize,
-                  0
+                  0,
                 ),
-                table.getRowCount()
+                table.getRowCount(),
               )}
             </span>{" "}
             of{" "}
@@ -705,7 +706,7 @@ export default function Component() {
           </Pagination>
         </div>
       </div>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Example of a more complex table made with{" "}
         <a
           className="underline hover:text-foreground"
@@ -717,10 +718,10 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }
 
-function RowActions({ row }: { row: Row<Item> }) {
+function RowActions() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -776,5 +777,5 @@ function RowActions({ row }: { row: Row<Item> }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

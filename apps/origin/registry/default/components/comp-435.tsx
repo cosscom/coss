@@ -1,18 +1,18 @@
-import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react"
+import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react";
 
-import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area"
+import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/tabs";
 
 export default function Component() {
   return (
     <Tabs defaultValue="tab-1">
       <ScrollArea>
-        <TabsList className="mb-3 h-auto -space-x-px bg-background p-0 shadow-xs rtl:space-x-reverse">
+        <TabsList className="-space-x-px mb-3 h-auto bg-background p-0 shadow-xs rtl:space-x-reverse">
           <TabsTrigger
             value="tab-1"
             className="relative overflow-hidden rounded-none border py-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 first:rounded-s last:rounded-e data-[state=active]:bg-muted data-[state=active]:after:bg-primary"
@@ -50,20 +50,20 @@ export default function Component() {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
       <TabsContent value="tab-1">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 1
         </p>
       </TabsContent>
       <TabsContent value="tab-2">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 2
         </p>
       </TabsContent>
       <TabsContent value="tab-3">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 3
         </p>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

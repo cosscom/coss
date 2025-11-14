@@ -3,7 +3,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithStartText() {
   return (
@@ -18,5 +18,5 @@ export default function InputGroupWithStartText() {
         <InputGroupText>i.cal.com/</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

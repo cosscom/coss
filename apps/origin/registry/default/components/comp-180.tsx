@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
+import { useId, useState } from "react";
 
-import { Switch } from "@/registry/default/ui/switch"
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function Component() {
-  const id = useId()
-  const [checked, setChecked] = useState(false)
+  const id = useId();
+  const [checked, setChecked] = useState(false);
 
-  const toggleSwitch = () => setChecked((prev) => !prev)
+  const toggleSwitch = () => setChecked((prev) => !prev);
 
   return (
     <div
       className="group inline-flex items-center gap-2"
       data-state={checked ? "checked" : "unchecked"}
     >
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <span
         id={`${id}-off`}
-        className="flex-1 cursor-pointer text-right text-sm font-medium group-data-[state=checked]:text-muted-foreground/70"
+        className="flex-1 cursor-pointer text-right font-medium text-sm group-data-[state=checked]:text-muted-foreground/70"
         aria-controls={id}
         onClick={() => setChecked(false)}
       >
@@ -29,14 +30,15 @@ export default function Component() {
         onCheckedChange={toggleSwitch}
         aria-labelledby={`${id}-off ${id}-on`}
       />
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <span
         id={`${id}-on`}
-        className="flex-1 cursor-pointer text-left text-sm font-medium group-data-[state=unchecked]:text-muted-foreground/70"
+        className="flex-1 cursor-pointer text-left font-medium text-sm group-data-[state=unchecked]:text-muted-foreground/70"
         aria-controls={id}
         onClick={() => setChecked(true)}
       >
         On
       </span>
     </div>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { Label } from "react-aria-components"
+import { Label } from "react-aria-components";
 
-import { DateField, DateInput } from "@/registry/default/ui/datefield-rac"
+import { DateField, DateInput } from "@/registry/default/ui/datefield-rac";
 
 export default function Component() {
   return (
     <DateField className="*:not-first:mt-2">
-      <Label className="text-sm font-medium text-foreground">Date input</Label>
+      <Label className="font-medium text-foreground text-sm">Date input</Label>
       <DateInput />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -19,11 +19,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateField.html"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React Aria
         </a>
       </p>
     </DateField>
-  )
+  );
 }

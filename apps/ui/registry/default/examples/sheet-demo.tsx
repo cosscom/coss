@@ -1,7 +1,7 @@
-import { Button } from "@/registry/default/ui/button"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Input } from "@/registry/default/ui/input"
+import { Button } from "@/registry/default/ui/button";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Input } from "@/registry/default/ui/input";
 import {
   Sheet,
   SheetClose,
@@ -11,7 +11,7 @@ import {
   SheetPopup,
   SheetTitle,
   SheetTrigger,
-} from "@/registry/default/ui/sheet"
+} from "@/registry/default/ui/sheet";
 
 export default function SheetDemo() {
   return (
@@ -45,5 +45,5 @@ export default function SheetDemo() {
         </Form>
       </SheetPopup>
     </Sheet>
-  )
+  );
 }

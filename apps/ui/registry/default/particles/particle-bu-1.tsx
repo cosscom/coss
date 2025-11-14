@@ -1,6 +1,6 @@
-import { ChevronLeftIcon } from "lucide-react"
+import { ChevronLeftIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (
@@ -8,5 +8,5 @@ export default function Particle() {
       <ChevronLeftIcon className="opacity-72" aria-hidden="true" />
       Go back
     </Button>
-  )
+  );
 }

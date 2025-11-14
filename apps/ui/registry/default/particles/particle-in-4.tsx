@@ -2,8 +2,8 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
-import { Kbd } from "@/registry/default/ui/kbd"
+} from "@/registry/default/ui/input-group";
+import { Kbd } from "@/registry/default/ui/kbd";
 
 export default function Particle() {
   return (
@@ -17,5 +17,5 @@ export default function Particle() {
         <Kbd>/</Kbd>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

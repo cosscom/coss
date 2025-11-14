@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Code2Icon, GlobeIcon, LayersIcon, ZapIcon } from "lucide-react"
+import { Code2Icon, GlobeIcon, LayersIcon, ZapIcon } from "lucide-react";
 
 import {
   Select,
@@ -8,14 +8,14 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Components", value: "components", icon: LayersIcon },
   { label: "Performance", value: "performance", icon: ZapIcon },
   { label: "Network", value: "network", icon: GlobeIcon },
   { label: "Development", value: "development", icon: Code2Icon },
-]
+];
 
 export default function SelectOptionsWithIcon() {
   return (
@@ -45,5 +45,5 @@ export default function SelectOptionsWithIcon() {
         ))}
       </SelectPopup>
     </Select>
-  )
+  );
 }

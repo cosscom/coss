@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { RiStarFill } from "@remixicon/react"
+import { RiStarFill } from "@remixicon/react";
+import { useId, useState } from "react";
 
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const id = useId()
-  const [hoverRating, setHoverRating] = useState("")
-  const [currentRating, setCurrentRating] = useState("")
+  const id = useId();
+  const [hoverRating, setHoverRating] = useState("");
+  const [currentRating, setCurrentRating] = useState("");
 
   return (
     <fieldset className="space-y-4">
-      <legend className="text-sm leading-none font-medium text-foreground">
+      <legend className="font-medium text-foreground text-sm leading-none">
         Rate your experience
       </legend>
       <RadioGroup
@@ -46,5 +46,5 @@ export default function Component() {
         ))}
       </RadioGroup>
     </fieldset>
-  )
+  );
 }

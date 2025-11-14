@@ -1,6 +1,6 @@
-import { QrCodeIcon } from "lucide-react"
+import { QrCodeIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -16,5 +16,5 @@ export default function Component() {
         Sign in
       </Button>
     </div>
-  )
+  );
 }

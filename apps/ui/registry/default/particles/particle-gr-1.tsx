@@ -1,36 +1,36 @@
-"use client"
+"use client";
 
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
-import { Input } from "@/registry/default/ui/input"
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
+import { Input } from "@/registry/default/ui/input";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const protocols = [
   { label: "http", value: "http" },
   { label: "https", value: "https" },
   { label: "http + https", value: "both" },
-]
+];
 
 const subdomains = [
   { label: "Subdomains", value: null },
   { label: "www", value: "www" },
   { label: "api", value: "api" },
   { label: "cdn", value: "cdn" },
-]
+];
 
 export default function ParticleGr1() {
   return (
     <Group aria-label="URL search">
       <Select items={protocols} defaultValue="both">
-        <SelectTrigger className="min-w-none w-fit">
+        <SelectTrigger className="w-fit min-w-none">
           <SelectValue />
         </SelectTrigger>
         <SelectPopup>
@@ -50,7 +50,7 @@ export default function ParticleGr1() {
       />
       <GroupSeparator />
       <Select items={subdomains} defaultValue={null}>
-        <SelectTrigger className="min-w-none w-fit">
+        <SelectTrigger className="w-fit min-w-none">
           <SelectValue />
         </SelectTrigger>
         <SelectPopup>
@@ -66,5 +66,5 @@ export default function ParticleGr1() {
         <SearchIcon />
       </Button>
     </Group>
-  )
+  );
 }

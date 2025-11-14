@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
-import { Label } from "@/registry/default/ui/label"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Calendar } from "@/registry/default/ui/calendar";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function Component() {
-  const id = useId()
-  const [date, setDate] = useState<Date | undefined>()
+  const id = useId();
+  const [date, setDate] = useState<Date | undefined>();
 
   return (
     <div>
@@ -27,7 +27,7 @@ export default function Component() {
             <Button
               id={id}
               variant={"outline"}
-              className="group w-full justify-between border-input bg-background px-3 font-normal outline-offset-0 outline-none hover:bg-background focus-visible:outline-[3px]"
+              className="group w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
             >
               <span
                 className={cn("truncate", !date && "text-muted-foreground")}
@@ -47,7 +47,7 @@ export default function Component() {
         </Popover>
       </div>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -56,11 +56,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

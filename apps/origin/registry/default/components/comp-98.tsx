@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [open, setOpen] = useState<boolean>(false)
+  const [open, setOpen] = useState<boolean>(false);
 
   return (
     <Button
@@ -23,5 +23,5 @@ export default function Component() {
         aria-hidden="true"
       />
     </Button>
-  )
+  );
 }

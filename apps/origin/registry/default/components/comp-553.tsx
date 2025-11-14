@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import { useState } from "react"
 import {
   AlertCircleIcon,
   FileArchiveIcon,
@@ -13,14 +12,15 @@ import {
   UploadIcon,
   VideoIcon,
   XIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useState } from "react";
 
 import {
+  type FileWithPreview,
   formatBytes,
   useFileUpload,
-  type FileWithPreview,
-} from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 
 // Create some dummy initial files
 const initialFiles = [
@@ -45,11 +45,11 @@ const initialFiles = [
     url: "https://example.com/audio.mp3",
     id: "audio-123456789",
   },
-]
+];
 
 const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
-  const fileType = file.file instanceof File ? file.file.type : file.file.type
-  const fileName = file.file instanceof File ? file.file.name : file.file.name
+  const fileType = file.file instanceof File ? file.file.type : file.file.type;
+  const fileName = file.file instanceof File ? file.file.name : file.file.name;
 
   const iconMap = {
     pdf: {
@@ -88,22 +88,22 @@ const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
       icon: ImageIcon,
       conditions: (type: string) => type.startsWith("image/"),
     },
-  }
+  };
 
   for (const { icon: Icon, conditions } of Object.values(iconMap)) {
     if (conditions(fileType, fileName)) {
-      return <Icon className="size-5 opacity-60" />
+      return <Icon className="size-5 opacity-60" />;
     }
   }
 
-  return <FileIcon className="size-5 opacity-60" />
-}
+  return <FileIcon className="size-5 opacity-60" />;
+};
 
-const getFilePreview = (file: {
-  file: File | { type: string; name: string; url?: string }
+const _getFilePreview = (file: {
+  file: File | { type: string; name: string; url?: string };
 }) => {
-  const fileType = file.file instanceof File ? file.file.type : file.file.type
-  const fileName = file.file instanceof File ? file.file.name : file.file.name
+  const fileType = file.file instanceof File ? file.file.type : file.file.type;
+  const fileName = file.file instanceof File ? file.file.name : file.file.name;
 
   const renderImage = (src: string) => (
     <img
@@ -111,15 +111,15 @@ const getFilePreview = (file: {
       alt={fileName}
       className="size-full rounded-t-[inherit] object-cover"
     />
-  )
+  );
 
   return (
     <div className="flex aspect-square items-center justify-center overflow-hidden rounded-t-[inherit] bg-accent">
       {fileType.startsWith("image/") ? (
         file.file instanceof File ? (
           (() => {
-            const previewUrl = URL.createObjectURL(file.file)
-            return renderImage(previewUrl)
+            const previewUrl = URL.createObjectURL(file.file);
+            return renderImage(previewUrl);
           })()
         ) : file.file.url ? (
           renderImage(file.file.url)
@@ -130,128 +130,122 @@ const getFilePreview = (file: {
         getFileIcon(file)
       )}
     </div>
-  )
-}
+  );
+};
 
 // Type for tracking upload progress
 type UploadProgress = {
-  fileId: string
-  progress: number
-  completed: boolean
-}
+  fileId: string;
+  progress: number;
+  completed: boolean;
+};
 
 // Function to simulate file upload with more realistic timing and progress
 const simulateUpload = (
   totalBytes: number,
   onProgress: (progress: number) => void,
-  onComplete: () => void
+  onComplete: () => void,
 ) => {
-  let timeoutId: NodeJS.Timeout
-  let uploadedBytes = 0
-  let lastProgressReport = 0
+  let timeoutId: NodeJS.Timeout;
+  let uploadedBytes = 0;
+  let lastProgressReport = 0;
 
   const simulateChunk = () => {
     // Simulate variable network conditions with random chunk sizes
-    const chunkSize = Math.floor(Math.random() * 300000) + 2000
-    uploadedBytes = Math.min(totalBytes, uploadedBytes + chunkSize)
+    const chunkSize = Math.floor(Math.random() * 300000) + 2000;
+    uploadedBytes = Math.min(totalBytes, uploadedBytes + chunkSize);
 
     // Calculate progress percentage (0-100)
-    const progressPercent = Math.floor((uploadedBytes / totalBytes) * 100)
+    const progressPercent = Math.floor((uploadedBytes / totalBytes) * 100);
 
     // Only report progress if it's changed by at least 1%
     if (progressPercent > lastProgressReport) {
-      lastProgressReport = progressPercent
-      onProgress(progressPercent)
+      lastProgressReport = progressPercent;
+      onProgress(progressPercent);
     }
 
     // Continue simulation if not complete
     if (uploadedBytes < totalBytes) {
       // Variable delay between 50ms and 500ms to simulate network fluctuations (reduced for faster uploads)
-      const delay = Math.floor(Math.random() * 450) + 50
+      const delay = Math.floor(Math.random() * 450) + 50;
 
       // Occasionally add a longer pause to simulate network congestion (5% chance, shorter duration)
-      const extraDelay = Math.random() < 0.05 ? 500 : 0
+      const extraDelay = Math.random() < 0.05 ? 500 : 0;
 
-      timeoutId = setTimeout(simulateChunk, delay + extraDelay)
+      timeoutId = setTimeout(simulateChunk, delay + extraDelay);
     } else {
       // Upload complete
-      onComplete()
+      onComplete();
     }
-  }
+  };
 
   // Start the simulation
-  timeoutId = setTimeout(simulateChunk, 100)
+  timeoutId = setTimeout(simulateChunk, 100);
 
   // Return a cleanup function to cancel the simulation
   return () => {
     if (timeoutId) {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
     }
-  }
-}
+  };
+};
 
 export default function Component() {
-  const maxSizeMB = 5
-  const maxSize = maxSizeMB * 1024 * 1024 // 5MB default
-  const maxFiles = 6
+  const maxSizeMB = 5;
+  const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
+  const maxFiles = 6;
 
   // State to track upload progress for each file
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
 
   // Function to handle newly added files
   const handleFilesAdded = (addedFiles: FileWithPreview[]) => {
-    // Initialize progress tracking for each new file
     const newProgressItems = addedFiles.map((file) => ({
       fileId: file.id,
       progress: 0,
       completed: false,
-    }))
+    }));
 
-    // Add new progress items to state
-    setUploadProgress((prev) => [...prev, ...newProgressItems])
+    setUploadProgress((prev) => [...prev, ...newProgressItems]);
 
-    // Store cleanup functions
-    const cleanupFunctions: Array<() => void> = []
+    const cleanupFunctions: Array<() => void> = [];
 
-    // Start simulated upload for each file
-    addedFiles.forEach((file) => {
+    for (const file of addedFiles) {
       const fileSize =
-        file.file instanceof File ? file.file.size : file.file.size
+        file.file instanceof File ? file.file.size : file.file.size;
 
-      // Start the upload simulation and store the cleanup function
       const cleanup = simulateUpload(
         fileSize,
-        // Progress callback
         (progress) => {
           setUploadProgress((prev) =>
             prev.map((item) =>
-              item.fileId === file.id ? { ...item, progress } : item
-            )
-          )
+              item.fileId === file.id ? { ...item, progress } : item,
+            ),
+          );
         },
-        // Complete callback
         () => {
           setUploadProgress((prev) =>
             prev.map((item) =>
-              item.fileId === file.id ? { ...item, completed: true } : item
-            )
-          )
-        }
-      )
+              item.fileId === file.id ? { ...item, completed: true } : item,
+            ),
+          );
+        },
+      );
 
-      cleanupFunctions.push(cleanup)
-    })
-
-    // Return a cleanup function that cancels all animations
-    return () => {
-      cleanupFunctions.forEach((cleanup) => cleanup())
+      cleanupFunctions.push(cleanup);
     }
-  }
+
+    return () => {
+      for (const cleanup of cleanupFunctions) {
+        cleanup();
+      }
+    };
+  };
 
   // Remove the progress tracking for the file
   const handleFileRemoved = (fileId: string) => {
-    setUploadProgress((prev) => prev.filter((item) => item.fileId !== fileId))
-  }
+    setUploadProgress((prev) => prev.filter((item) => item.fileId !== fileId));
+  };
 
   const [
     { files, isDragging, errors },
@@ -271,11 +265,12 @@ export default function Component() {
     maxSize,
     initialFiles,
     onFilesAdded: handleFilesAdded,
-  })
+  });
 
   return (
     <div className="flex flex-col gap-2">
       {/* Drop area */}
+      {/*  biome-ignore lint/a11y/noStaticElementInteractions: known*/}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -283,7 +278,7 @@ export default function Component() {
         onDrop={handleDrop}
         data-dragging={isDragging || undefined}
         data-files={files.length > 0 || undefined}
-        className="relative flex min-h-52 flex-col items-center overflow-hidden rounded-xl border border-dashed border-input p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
@@ -293,7 +288,7 @@ export default function Component() {
         {files.length > 0 ? (
           <div className="flex w-full flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="truncate text-sm font-medium">
+              <h3 className="truncate font-medium text-sm">
                 Files ({files.length})
               </h3>
               <div className="flex gap-2">
@@ -309,8 +304,8 @@ export default function Component() {
                   size="sm"
                   onClick={() => {
                     // Clear all progress tracking
-                    setUploadProgress([])
-                    clearFiles()
+                    setUploadProgress([]);
+                    clearFiles();
                   }}
                 >
                   <Trash2Icon
@@ -326,9 +321,9 @@ export default function Component() {
               {files.map((file) => {
                 // Find the upload progress for this file once to avoid repeated lookups
                 const fileProgress = uploadProgress.find(
-                  (p) => p.fileId === file.id
-                )
-                const isUploading = fileProgress && !fileProgress.completed
+                  (p) => p.fileId === file.id,
+                );
+                const isUploading = fileProgress && !fileProgress.completed;
 
                 return (
                   <div
@@ -342,16 +337,16 @@ export default function Component() {
                           {getFileIcon(file)}
                         </div>
                         <div className="flex min-w-0 flex-col gap-0.5">
-                          <p className="truncate text-[13px] font-medium">
+                          <p className="truncate font-medium text-[13px]">
                             {file.file instanceof File
                               ? file.file.name
                               : file.file.name}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {formatBytes(
                               file.file instanceof File
                                 ? file.file.size
-                                : file.file.size
+                                : file.file.size,
                             )}
                           </p>
                         </div>
@@ -361,8 +356,8 @@ export default function Component() {
                         variant="ghost"
                         className="-me-2 size-8 text-muted-foreground/80 hover:bg-transparent hover:text-foreground"
                         onClick={() => {
-                          handleFileRemoved(file.id)
-                          removeFile(file.id)
+                          handleFileRemoved(file.id);
+                          removeFile(file.id);
                         }}
                         aria-label="Remove file"
                       >
@@ -373,10 +368,10 @@ export default function Component() {
                     {/* Upload progress bar */}
                     {fileProgress &&
                       (() => {
-                        const progress = fileProgress.progress || 0
-                        const completed = fileProgress.completed || false
+                        const progress = fileProgress.progress || 0;
+                        const completed = fileProgress.completed || false;
 
-                        if (completed) return null
+                        if (completed) return null;
 
                         return (
                           <div className="mt-1 flex items-center gap-2">
@@ -386,14 +381,14 @@ export default function Component() {
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
-                            <span className="w-10 text-xs text-muted-foreground tabular-nums">
+                            <span className="w-10 text-muted-foreground text-xs tabular-nums">
                               {progress}%
                             </span>
                           </div>
-                        )
+                        );
                       })()}
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -405,8 +400,8 @@ export default function Component() {
             >
               <ImageIcon className="size-4 opacity-60" />
             </div>
-            <p className="mb-1.5 text-sm font-medium">Drop your files here</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="mb-1.5 font-medium text-sm">Drop your files here</p>
+            <p className="text-muted-foreground text-xs">
               Max {maxFiles} files ∙ Up to {maxSizeMB}MB
             </p>
             <Button variant="outline" className="mt-4" onClick={openFileDialog}>
@@ -419,7 +414,7 @@ export default function Component() {
 
       {errors.length > 0 && (
         <div
-          className="flex items-center gap-1 text-xs text-destructive"
+          className="flex items-center gap-1 text-destructive text-xs"
           role="alert"
         >
           <AlertCircleIcon className="size-3 shrink-0" />
@@ -430,17 +425,18 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-center text-xs text-muted-foreground"
+        className="mt-2 text-center text-muted-foreground text-xs"
       >
         With simulated progress track ∙{" "}
         <a
           href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
           target="_blank"
+          rel="noreferrer"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

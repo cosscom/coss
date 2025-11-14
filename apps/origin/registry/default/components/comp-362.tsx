@@ -1,10 +1,10 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
   return (
@@ -17,7 +17,7 @@ export default function Component() {
         </TooltipTrigger>
         <TooltipContent className="py-2">
           <div className="space-y-2">
-            <div className="text-[13px] font-medium">Tuesday, Aug 13</div>
+            <div className="font-medium text-[13px]">Tuesday, Aug 13</div>
             <div className="flex items-center gap-2 text-xs">
               <svg
                 width="8"
@@ -28,7 +28,7 @@ export default function Component() {
                 className="shrink-0 text-indigo-500"
                 aria-hidden="true"
               >
-                <circle cx="4" cy="4" r="4"></circle>
+                <circle cx="4" cy="4" r="4" />
               </svg>
               <span className="flex grow gap-2">
                 Sales <span className="ml-auto">$40</span>
@@ -44,7 +44,7 @@ export default function Component() {
                 className="shrink-0 text-purple-500"
                 aria-hidden="true"
               >
-                <circle cx="4" cy="4" r="4"></circle>
+                <circle cx="4" cy="4" r="4" />
               </svg>
               <span className="flex grow gap-2">
                 Revenue <span className="ml-auto">$74</span>
@@ -60,7 +60,7 @@ export default function Component() {
                 className="shrink-0 text-rose-500"
                 aria-hidden="true"
               >
-                <circle cx="4" cy="4" r="4"></circle>
+                <circle cx="4" cy="4" r="4" />
               </svg>
               <span className="flex grow gap-2">
                 Costs <span className="ml-auto">$410</span>
@@ -70,5 +70,5 @@ export default function Component() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -82,12 +82,12 @@ export default function Component() {
         </form>
 
         <div className="flex items-center gap-3 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-          <span className="text-xs text-muted-foreground">Or</span>
+          <span className="text-muted-foreground text-xs">Or</span>
         </div>
 
         <Button variant="outline">Continue with Google</Button>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs">
           By signing up you agree to our{" "}
           <a className="underline hover:no-underline" href="#">
             Terms
@@ -96,5 +96,5 @@ export default function Component() {
         </p>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

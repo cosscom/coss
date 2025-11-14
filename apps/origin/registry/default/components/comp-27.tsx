@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useState } from "react"
-import { LoaderCircleIcon, MicIcon, SearchIcon } from "lucide-react"
+import { LoaderCircleIcon, MicIcon, SearchIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const [inputValue, setInputValue] = useState("")
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const id = useId();
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (inputValue) {
-      setIsLoading(true)
+      setIsLoading(true);
       const timer = setTimeout(() => {
-        setIsLoading(false)
-      }, 500)
-      return () => clearTimeout(timer)
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
     }
-    setIsLoading(false)
-  }, [inputValue])
+    setIsLoading(false);
+  }, [inputValue]);
 
   return (
     <div className="*:not-first:mt-2">
@@ -47,7 +47,7 @@ export default function Component() {
           )}
         </div>
         <button
-          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Press to speak"
           type="submit"
         >
@@ -55,5 +55,5 @@ export default function Component() {
         </button>
       </div>
     </div>
-  )
+  );
 }

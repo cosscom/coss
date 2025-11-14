@@ -1,9 +1,9 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithButton() {
   return (
@@ -15,5 +15,5 @@ export default function InputGroupWithButton() {
         </Button>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

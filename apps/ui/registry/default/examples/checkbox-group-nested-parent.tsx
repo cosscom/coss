@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { CheckboxGroup } from "@/registry/default/ui/checkbox-group"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
+import { Label } from "@/registry/default/ui/label";
 
 const mainPermissions = [
   { id: "view-dashboard", name: "View Dashboard" },
   { id: "manage-users", name: "Manage Users" },
   { id: "access-reports", name: "Access Reports" },
-]
+];
 
 const userManagementPermissions = [
   { id: "create-user", name: "Create User" },
   { id: "edit-user", name: "Edit User" },
   { id: "delete-user", name: "Delete User" },
   { id: "assign-roles", name: "Assign Roles" },
-]
+];
 
 export default function CheckboxGroupNestedParentDemo() {
-  const [mainValue, setMainValue] = React.useState<string[]>([])
-  const [managementValue, setManagementValue] = React.useState<string[]>([])
+  const [mainValue, setMainValue] = React.useState<string[]>([]);
+  const [managementValue, setManagementValue] = React.useState<string[]>([]);
 
   const managementIsPartial =
     managementValue.length > 0 &&
-    managementValue.length !== userManagementPermissions.length
+    managementValue.length !== userManagementPermissions.length;
 
   return (
     <CheckboxGroup
@@ -33,13 +33,13 @@ export default function CheckboxGroupNestedParentDemo() {
       value={mainValue}
       onValueChange={(value) => {
         if (value.includes("manage-users")) {
-          setManagementValue(userManagementPermissions.map((p) => p.id))
+          setManagementValue(userManagementPermissions.map((p) => p.id));
         } else if (
           managementValue.length === userManagementPermissions.length
         ) {
-          setManagementValue([])
+          setManagementValue([]);
         }
-        setMainValue(value)
+        setMainValue(value);
       }}
       allValues={mainPermissions.map((p) => p.id)}
     >
@@ -63,12 +63,12 @@ export default function CheckboxGroupNestedParentDemo() {
         onValueChange={(value) => {
           if (value.length === userManagementPermissions.length) {
             setMainValue((prev) =>
-              Array.from(new Set([...prev, "manage-users"]))
-            )
+              Array.from(new Set([...prev, "manage-users"])),
+            );
           } else {
-            setMainValue((prev) => prev.filter((v) => v !== "manage-users"))
+            setMainValue((prev) => prev.filter((v) => v !== "manage-users"));
           }
-          setManagementValue(value)
+          setManagementValue(value);
         }}
         allValues={userManagementPermissions.map((p) => p.id)}
         className="ms-4"
@@ -86,5 +86,5 @@ export default function CheckboxGroupNestedParentDemo() {
         ))}
       </CheckboxGroup>
     </CheckboxGroup>
-  )
+  );
 }

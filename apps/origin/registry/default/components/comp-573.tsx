@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import React from "react"
 import {
-  FeatureImplementation,
+  type FeatureImplementation,
   hotkeysCoreFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
-import { FolderIcon, FolderOpenIcon } from "lucide-react"
+} from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
+import { FolderIcon, FolderOpenIcon } from "lucide-react";
+import type React from "react";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
@@ -45,41 +45,41 @@ const items: Record<string, Item> = {
   operations: { name: "Operations", children: ["hr", "finance"] },
   hr: { name: "HR" },
   finance: { name: "Finance" },
-}
+};
 
-const indent = 20
+const indent = 20;
 
 const doubleClickExpandFeature: FeatureImplementation = {
   itemInstance: {
     getProps: ({ tree, item, prev }) => ({
       ...prev?.(),
-      onDoubleClick: (e: React.MouseEvent) => {
-        item.primaryAction()
+      onDoubleClick: (_e: React.MouseEvent) => {
+        item.primaryAction();
 
         if (!item.isFolder()) {
-          return
+          return;
         }
 
         if (item.isExpanded()) {
-          item.collapse()
+          item.collapse();
         } else {
-          item.expand()
+          item.expand();
         }
       },
       onClick: (e: React.MouseEvent) => {
         if (e.shiftKey) {
-          item.selectUpTo(e.ctrlKey || e.metaKey)
+          item.selectUpTo(e.ctrlKey || e.metaKey);
         } else if (e.ctrlKey || e.metaKey) {
-          item.toggleSelect()
+          item.toggleSelect();
         } else {
-          tree.setSelectedItems([item.getItemMeta().itemId])
+          tree.setSelectedItems([item.getItemMeta().itemId]);
         }
 
-        item.setFocused()
+        item.setFocused();
       },
     }),
   },
-}
+};
 
 export default function Component() {
   const tree = useTree<Item>({
@@ -101,7 +101,7 @@ export default function Component() {
       hotkeysCoreFeature,
       doubleClickExpandFeature,
     ],
-  })
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
@@ -121,14 +121,14 @@ export default function Component() {
                 </span>
               </TreeItemLabel>
             </TreeItem>
-          )
+          );
         })}
       </Tree>
 
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Tree with items expandable on double click ∙{" "}
         <a
@@ -141,5 +141,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

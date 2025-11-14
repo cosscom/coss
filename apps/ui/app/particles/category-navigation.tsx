@@ -1,12 +1,11 @@
-import * as React from "react"
-import Link from "next/link"
+import Link from "next/link";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 
 interface CategoryNavigationProps {
-  currentCategory?: string
-  categories?: Array<{ name: string; slug: string }>
+  currentCategory?: string;
+  categories?: Array<{ name: string; slug: string }>;
 }
 
 export function CategoryNavigation({
@@ -22,12 +21,12 @@ export function CategoryNavigation({
           className={cn(
             "rounded-md px-2 py-1",
             !currentCategory &&
-              "bg-accent !shadow-none before:!shadow-none dark:bg-input dark:hover:bg-input"
+              "!shadow-none before:!shadow-none bg-accent dark:bg-input dark:hover:bg-input",
           )}
           render={<Link href="/particles">All</Link>}
         />
         {categories?.map((cat) => {
-          const isActive = cat.slug === currentCategory
+          const isActive = cat.slug === currentCategory;
           return (
             <Button
               key={cat.slug}
@@ -36,15 +35,15 @@ export function CategoryNavigation({
               className={cn(
                 "rounded-md px-2 py-1 capitalize",
                 isActive &&
-                  "bg-accent !shadow-none before:!shadow-none dark:bg-input dark:hover:bg-input"
+                  "!shadow-none before:!shadow-none bg-accent dark:bg-input dark:hover:bg-input",
               )}
               render={<Link href={`/particles/${cat.slug}`} />}
             >
               {cat.name}
             </Button>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

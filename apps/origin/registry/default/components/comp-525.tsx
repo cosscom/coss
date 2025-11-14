@@ -6,7 +6,7 @@ import {
   StepperSeparator,
   StepperTitle,
   StepperTrigger,
-} from "@/registry/default/ui/stepper"
+} from "@/registry/default/ui/stepper";
 
 const steps = [
   {
@@ -24,7 +24,7 @@ const steps = [
     title: "Step Three",
     description: "Desc for step three",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -38,7 +38,7 @@ export default function Component() {
           >
             <StepperTrigger className="gap-4 rounded max-md:flex-col">
               <StepperIndicator />
-              <div className="text-center md:-order-1 md:text-left">
+              <div className="md:-order-1 text-center md:text-left">
                 <StepperTitle>{title}</StepperTitle>
                 <StepperDescription className="max-sm:hidden">
                   {description}
@@ -52,12 +52,12 @@ export default function Component() {
         ))}
       </Stepper>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
         Stepper with inline titles and descriptions
       </p>
     </div>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DownloadIcon, LoaderCircleIcon } from "lucide-react"
+import { DownloadIcon, LoaderCircleIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = () => {
-    setIsDownloading(true)
+    setIsDownloading(true);
     // Simulate download
     setTimeout(() => {
-      setIsDownloading(false)
-    }, 2000)
-  }
+      setIsDownloading(false);
+    }, 2000);
+  };
 
   return (
     <div className="bg-muted px-4 py-3 md:py-2">
@@ -49,5 +49,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

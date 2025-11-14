@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,9 +8,9 @@ import {
   DialogPopup,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/dialog";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Input } from "@/registry/default/ui/input";
 
 export default function DialogNestedDemo() {
   return (
@@ -27,12 +27,12 @@ export default function DialogNestedDemo() {
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-1">
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="text-sm font-medium">Bora Baloglu</p>
+            <p className="text-muted-foreground text-sm">Name</p>
+            <p className="font-medium text-sm">Bora Baloglu</p>
           </div>
           <div className="grid gap-1">
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p className="text-sm font-medium">bora@example.com</p>
+            <p className="text-muted-foreground text-sm">Email</p>
+            <p className="font-medium text-sm">bora@example.com</p>
           </div>
         </div>
         <DialogFooter>
@@ -68,5 +68,5 @@ export default function DialogNestedDemo() {
         </DialogFooter>
       </DialogPopup>
     </Dialog>
-  )
+  );
 }

@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { Fragment, useEffect, useState } from "react"
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ChevronDownIcon, ChevronUpIcon, InfoIcon } from "lucide-react"
+} from "@tanstack/react-table";
+import { ChevronDownIcon, ChevronUpIcon, InfoIcon } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { cn } from "@/registry/default/lib/utils";
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -21,18 +21,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 type Item = {
-  id: string
-  name: string
-  email: string
-  location: string
-  flag: string
-  status: "Active" | "Inactive" | "Pending"
-  balance: number
-  note?: string
-}
+  id: string;
+  name: string;
+  email: string;
+  location: string;
+  flag: string;
+  status: "Active" | "Inactive" | "Pending";
+  balance: number;
+  note?: string;
+};
 
 const columns: ColumnDef<Item>[] = [
   {
@@ -66,7 +66,7 @@ const columns: ColumnDef<Item>[] = [
             />
           )}
         </Button>
-      ) : undefined
+      ) : undefined;
     },
   },
   {
@@ -117,7 +117,7 @@ const columns: ColumnDef<Item>[] = [
       <Badge
         className={cn(
           row.getValue("status") === "Inactive" &&
-            "bg-muted-foreground/60 text-primary-foreground"
+            "bg-muted-foreground/60 text-primary-foreground",
         )}
       >
         {row.getValue("status")}
@@ -128,29 +128,29 @@ const columns: ColumnDef<Item>[] = [
     header: () => <div className="text-right">Balance</div>,
     accessorKey: "balance",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"))
+      const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount)
-      return <div className="text-right">{formatted}</div>
+      }).format(amount);
+      return <div className="text-right">{formatted}</div>;
     },
   },
-]
+];
 
 export default function Component() {
-  const [data, setData] = useState<Item[]>([])
+  const [data, setData] = useState<Item[]>([]);
 
   useEffect(() => {
     async function fetchPosts() {
       const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      )
-      const data = await res.json()
-      setData(data.slice(0, 5)) // Limit to 5 items
+        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json",
+      );
+      const data = await res.json();
+      setData(data.slice(0, 5)); // Limit to 5 items
     }
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const table = useReactTable({
     data,
@@ -158,7 +158,7 @@ export default function Component() {
     getRowCanExpand: (row) => Boolean(row.original.note),
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-  })
+  });
 
   return (
     <div>
@@ -173,10 +173,10 @@ export default function Component() {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
-                )
+                );
               })}
             </TableRow>
           ))}
@@ -196,7 +196,7 @@ export default function Component() {
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -227,7 +227,7 @@ export default function Component() {
           )}
         </TableBody>
       </Table>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Expanding sub-row made with{" "}
         <a
           className="underline hover:text-foreground"
@@ -239,5 +239,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

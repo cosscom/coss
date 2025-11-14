@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
 import {
   ArchiveRestoreIcon,
   ChevronDownIcon,
   PlusIcon,
   Share2Icon,
   TrashIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -25,12 +25,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function Component() {
-  const [framework, setFramework] = useState("nextjs")
-  const [emailNotifications, setEmailNotifications] = useState(false)
-  const [pushNotifications, setPushNotifications] = useState(true)
+  const [framework, setFramework] = useState("nextjs");
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState(true);
 
   return (
     <DropdownMenu>
@@ -121,5 +121,5 @@ export default function Component() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

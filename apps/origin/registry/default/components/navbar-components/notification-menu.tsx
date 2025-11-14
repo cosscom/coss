@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BellIcon } from "lucide-react"
+import { BellIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const initialNotifications = [
   {
@@ -59,7 +59,7 @@ const initialNotifications = [
     timestamp: "2 weeks ago",
     unread: false,
   },
-]
+];
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -74,31 +74,31 @@ function Dot({ className }: { className?: string }) {
     >
       <circle cx="3" cy="3" r="3" />
     </svg>
-  )
+  );
 }
 
 export default function NotificationMenu() {
-  const [notifications, setNotifications] = useState(initialNotifications)
-  const unreadCount = notifications.filter((n) => n.unread).length
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const handleMarkAllAsRead = () => {
     setNotifications(
       notifications.map((notification) => ({
         ...notification,
         unread: false,
-      }))
-    )
-  }
+      })),
+    );
+  };
 
   const handleNotificationClick = (id: number) => {
     setNotifications(
       notifications.map((notification) =>
         notification.id === id
           ? { ...notification, unread: false }
-          : notification
-      )
-    )
-  }
+          : notification,
+      ),
+    );
+  };
 
   return (
     <Popover>
@@ -120,10 +120,11 @@ export default function NotificationMenu() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-1">
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
-          <div className="text-sm font-semibold">Notifications</div>
+          <div className="font-semibold text-sm">Notifications</div>
           {unreadCount > 0 && (
             <button
-              className="text-xs font-medium hover:underline"
+              type="button"
+              className="font-medium text-xs hover:underline"
               onClick={handleMarkAllAsRead}
             >
               Mark all as read
@@ -131,10 +132,12 @@ export default function NotificationMenu() {
           )}
         </div>
         <div
+          /* biome-ignore lint/a11y/useAriaPropsForRole: known */
           role="separator"
           aria-orientation="horizontal"
           className="-mx-1 my-1 h-px bg-border"
-        ></div>
+          tabIndex={-1}
+        />
         {notifications.map((notification) => (
           <div
             key={notification.id}
@@ -143,6 +146,7 @@ export default function NotificationMenu() {
             <div className="relative flex items-start pe-3">
               <div className="flex-1 space-y-1">
                 <button
+                  type="button"
                   className="text-left text-foreground/80 after:absolute after:inset-0"
                   onClick={() => handleNotificationClick(notification.id)}
                 >
@@ -155,7 +159,7 @@ export default function NotificationMenu() {
                   </span>
                   .
                 </button>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {notification.timestamp}
                 </div>
               </div>
@@ -170,5 +174,5 @@ export default function NotificationMenu() {
         ))}
       </PopoverContent>
     </Popover>
-  )
+  );
 }

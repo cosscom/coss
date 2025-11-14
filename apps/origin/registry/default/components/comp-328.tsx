@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { CreditCardIcon, WalletIcon } from "lucide-react"
-import { usePaymentInputs } from "react-payment-inputs"
-import images, { type CardImages } from "react-payment-inputs/images"
+import { CreditCardIcon, WalletIcon } from "lucide-react";
+import { useId } from "react";
+import { usePaymentInputs } from "react-payment-inputs";
+import images, { type CardImages } from "react-payment-inputs/images";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -14,19 +14,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   const {
     meta,
     getCardNumberProps,
     getExpiryDateProps,
     getCVCProps,
     getCardImageProps,
-  } = usePaymentInputs()
+  } = usePaymentInputs();
 
   return (
     <Dialog>
@@ -112,5 +112,5 @@ export default function Component() {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

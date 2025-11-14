@@ -4,25 +4,25 @@ import {
   HouseIcon,
   PlusIcon,
   SearchIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu"
-import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
+import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
-const teams = ["Acme Inc.", "coss.com", "Junon"]
+const teams = ["Acme Inc.", "coss.com", "Junon"];
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -30,7 +30,7 @@ const navigationLinks = [
   { href: "#", label: "Explore", icon: CompassIcon },
   { href: "#", label: "Write", icon: FeatherIcon },
   { href: "#", label: "Search", icon: SearchIcon },
-]
+];
 
 export default function Component() {
   return (
@@ -60,7 +60,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -76,10 +76,10 @@ export default function Component() {
             <PopoverContent align="start" className="w-48 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    const Icon = link.icon
+                  {navigationLinks.map((link, _index) => {
+                    const Icon = link.icon;
                     return (
-                      <NavigationMenuItem key={index} className="w-full">
+                      <NavigationMenuItem key={link.label} className="w-full">
                         <NavigationMenuLink
                           href={link.href}
                           className="flex-row items-center gap-2 py-1.5"
@@ -92,7 +92,7 @@ export default function Component() {
                           <span>{link.label}</span>
                         </NavigationMenuLink>
                       </NavigationMenuItem>
-                    )
+                    );
                   })}
                 </NavigationMenuList>
               </NavigationMenu>
@@ -103,10 +103,10 @@ export default function Component() {
         {/* Middle area */}
         <NavigationMenu className="max-md:hidden">
           <NavigationMenuList className="gap-2">
-            {navigationLinks.map((link, index) => {
-              const Icon = link.icon
+            {navigationLinks.map((link, _index) => {
+              const Icon = link.icon;
               return (
-                <NavigationMenuItem key={index}>
+                <NavigationMenuItem key={link.label}>
                   <NavigationMenuLink
                     href={link.href}
                     className="flex size-8 items-center justify-center p-1.5"
@@ -116,7 +116,7 @@ export default function Component() {
                     <span className="sr-only">{link.label}</span>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
-              )
+              );
             })}
           </NavigationMenuList>
         </NavigationMenu>
@@ -124,7 +124,7 @@ export default function Component() {
         <div className="flex flex-1 items-center justify-end gap-4">
           <Button size="sm" className="text-sm max-sm:aspect-square max-sm:p-0">
             <PlusIcon
-              className="opacity-60 sm:-ms-1"
+              className="sm:-ms-1 opacity-60"
               size={16}
               aria-hidden="true"
             />
@@ -135,5 +135,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

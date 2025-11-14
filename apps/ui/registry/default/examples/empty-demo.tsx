@@ -1,6 +1,6 @@
-import { BookIcon, RouteIcon } from "lucide-react"
+import { BookIcon, RouteIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -8,7 +8,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/registry/default/ui/empty"
+} from "@/registry/default/ui/empty";
 
 export default function EmptyDemo() {
   return (
@@ -30,5 +30,5 @@ export default function EmptyDemo() {
         </div>
       </EmptyContent>
     </Empty>
-  )
+  );
 }

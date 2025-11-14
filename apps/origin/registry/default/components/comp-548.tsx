@@ -1,12 +1,17 @@
-"use client"
+"use client";
 
-import { AlertCircleIcon, PaperclipIcon, UploadIcon, XIcon } from "lucide-react"
+import {
+  AlertCircleIcon,
+  PaperclipIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
 
 import {
   formatBytes,
   useFileUpload,
-} from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 
 // Create some dummy initial files
 const initialFiles = [
@@ -17,10 +22,10 @@ const initialFiles = [
     url: "https://picsum.photos/1000/800?grayscale&random=1",
     id: "document.pdf-1744638436563-8u5xuls",
   },
-]
+];
 
 export default function Component() {
-  const maxSize = 10 * 1024 * 1024 // 10MB default
+  const maxSize = 10 * 1024 * 1024; // 10MB default
 
   const [
     { files, isDragging, errors },
@@ -36,9 +41,9 @@ export default function Component() {
   ] = useFileUpload({
     maxSize,
     initialFiles,
-  })
+  });
 
-  const file = files[0]
+  const file = files[0];
 
   return (
     <div className="flex flex-col gap-2">
@@ -51,7 +56,8 @@ export default function Component() {
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         data-dragging={isDragging || undefined}
-        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed border-input p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-disabled:opacity-50 has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-[input:focus]:border-ring has-disabled:opacity-50 has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        tabIndex={-1}
       >
         <input
           {...getInputProps()}
@@ -67,8 +73,8 @@ export default function Component() {
           >
             <UploadIcon className="size-4 opacity-60" />
           </div>
-          <p className="mb-1.5 text-sm font-medium">Upload file</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="mb-1.5 font-medium text-sm">Upload file</p>
+          <p className="text-muted-foreground text-xs">
             Drag & drop or click to browse (max. {formatBytes(maxSize)})
           </p>
         </div>
@@ -76,7 +82,7 @@ export default function Component() {
 
       {errors.length > 0 && (
         <div
-          className="flex items-center gap-1 text-xs text-destructive"
+          className="flex items-center gap-1 text-destructive text-xs"
           role="alert"
         >
           <AlertCircleIcon className="size-3 shrink-0" />
@@ -97,7 +103,7 @@ export default function Component() {
                 aria-hidden="true"
               />
               <div className="min-w-0">
-                <p className="truncate text-[13px] font-medium">
+                <p className="truncate font-medium text-[13px]">
                   {file.file.name}
                 </p>
               </div>
@@ -119,7 +125,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-center text-xs text-muted-foreground"
+        className="mt-2 text-center text-muted-foreground text-xs"
       >
         Single file uploader w/ max size ∙{" "}
         <a
@@ -130,5 +136,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

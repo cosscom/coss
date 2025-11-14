@@ -7,7 +7,7 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
@@ -45,7 +45,7 @@ const items = [
     description: "The issue has been fixed. Please review the changes.",
     image: "/origin/avatar-40-05.jpg",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -60,11 +60,11 @@ export default function Component() {
             <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-6.5" />
             <TimelineTitle className="mt-0.5">
               {item.title}{" "}
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="font-normal text-muted-foreground text-sm">
                 {item.action}
               </span>
             </TimelineTitle>
-            <TimelineIndicator className="flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7">
+            <TimelineIndicator className="group-data-[orientation=vertical]/timeline:-left-7 flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground">
               <img
                 src={item.image}
                 alt={item.title}
@@ -79,5 +79,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

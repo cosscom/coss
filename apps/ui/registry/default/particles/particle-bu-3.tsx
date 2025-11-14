@@ -4,9 +4,9 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   CircleIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (
@@ -42,5 +42,5 @@ export default function Particle() {
         <ChevronDownIcon aria-hidden="true" />
       </Button>
     </div>
-  )
+  );
 }

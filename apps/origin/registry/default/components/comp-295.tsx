@@ -1,6 +1,6 @@
-import { XIcon } from "lucide-react"
+import { XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -16,7 +16,7 @@ export default function Component() {
         />
         <div className="flex grow flex-col gap-3">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               <a
                 className="font-medium text-foreground hover:underline"
                 href="#"
@@ -32,7 +32,7 @@ export default function Component() {
               </a>
               .
             </p>
-            <p className="text-xs text-muted-foreground">2 min ago</p>
+            <p className="text-muted-foreground text-xs">2 min ago</p>
           </div>
           <div className="flex gap-2">
             <Button size="sm">Accept</Button>
@@ -54,5 +54,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

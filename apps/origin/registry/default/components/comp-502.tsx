@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
-import { Calendar } from "@/registry/default/ui/calendar"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Calendar } from "@/registry/default/ui/calendar";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const today = new Date()
-  const [month, setMonth] = useState(today)
-  const [date, setDate] = useState<Date | undefined>(today)
-  const [inputValue, setInputValue] = useState("")
+  const id = useId();
+  const today = new Date();
+  const [month, setMonth] = useState(today);
+  const [date, setDate] = useState<Date | undefined>(today);
+  const [inputValue, setInputValue] = useState("");
 
   const handleDayPickerSelect = (date: Date | undefined) => {
     if (!date) {
-      setInputValue("")
-      setDate(undefined)
+      setInputValue("");
+      setDate(undefined);
     } else {
-      setDate(date)
-      setMonth(date)
-      setInputValue(format(date, "yyyy-MM-dd"))
+      setDate(date);
+      setMonth(date);
+      setInputValue(format(date, "yyyy-MM-dd"));
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setInputValue(value)
+    const value = e.target.value;
+    setInputValue(value);
 
     if (value) {
-      const parsedDate = new Date(value)
-      setDate(parsedDate)
-      setMonth(parsedDate)
+      const parsedDate = new Date(value);
+      setDate(parsedDate);
+      setMonth(parsedDate);
     } else {
-      setDate(undefined)
+      setDate(undefined);
     }
-  }
+  };
 
   useEffect(() => {
-    setInputValue(format(today, "yyyy-MM-dd"))
-  }, [])
+    setInputValue(format(today, "yyyy-MM-dd"));
+  }, [today]);
 
   return (
     <div>
@@ -76,7 +76,7 @@ export default function Component() {
         </div>
       </div>
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
+        className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -85,11 +85,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

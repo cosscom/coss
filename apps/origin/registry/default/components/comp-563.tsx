@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
 import {
   Cropper,
   CropperCropArea,
   CropperDescription,
   CropperImage,
-} from "@/registry/default/ui/cropper"
+} from "@/registry/default/ui/cropper";
 
-type Area = { x: number; y: number; width: number; height: number }
+type Area = { x: number; y: number; width: number; height: number };
 
 export default function Component() {
-  const [cropData, setCropData] = React.useState<Area | null>(null)
+  const [cropData, setCropData] = React.useState<Area | null>(null);
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -29,7 +29,7 @@ export default function Component() {
         </Cropper>
 
         {cropData && (
-          <pre className="overflow-auto rounded-md border bg-muted px-4 py-3 font-mono text-xs text-foreground/80">
+          <pre className="overflow-auto rounded-md border bg-muted px-4 py-3 font-mono text-foreground/80 text-xs">
             <code>{JSON.stringify(cropData, null, 2)}</code>
           </pre>
         )}
@@ -38,7 +38,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Cropper with crop data output ∙{" "}
         <a
@@ -51,5 +51,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

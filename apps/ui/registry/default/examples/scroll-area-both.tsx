@@ -1,4 +1,4 @@
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function ScrollAreaBoth() {
   return (
@@ -20,5 +20,5 @@ export default function ScrollAreaBoth() {
         Alice.
       </p>
     </ScrollArea>
-  )
+  );
 }

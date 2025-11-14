@@ -1,5 +1,5 @@
-import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group"
-import { Input } from "@/registry/default/ui/input"
+import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group";
+import { Input } from "@/registry/default/ui/input";
 
 export default function GroupWithEndText() {
   return (
@@ -8,5 +8,5 @@ export default function GroupWithEndText() {
       <GroupSeparator />
       <GroupText>.com</GroupText>
     </Group>
-  )
+  );
 }

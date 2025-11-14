@@ -1,26 +1,25 @@
-"use client"
+"use client";
 
-import React from "react"
 import {
   expandAllFeature,
   hotkeysCoreFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
+} from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
 import {
   FolderIcon,
   FolderOpenIcon,
   ListCollapseIcon,
   ListTreeIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Button } from "@/registry/default/ui/button";
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
@@ -51,9 +50,9 @@ const items: Record<string, Item> = {
   operations: { name: "Operations", children: ["hr", "finance"] },
   hr: { name: "HR" },
   finance: { name: "Finance" },
-}
+};
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
   const tree = useTree<Item>({
@@ -75,7 +74,7 @@ export default function Component() {
       hotkeysCoreFeature,
       expandAllFeature,
     ],
-  })
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:nth-2:grow">
@@ -119,14 +118,14 @@ export default function Component() {
                 </span>
               </TreeItemLabel>
             </TreeItem>
-          )
+          );
         })}
       </Tree>
 
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Tree with expand/collapse all buttons ∙{" "}
         <a
@@ -139,5 +138,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

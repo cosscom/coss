@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { OTPInput, SlotProps } from "input-otp"
+import { OTPInput, type SlotProps } from "input-otp";
+import { useId } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Label } from "@/registry/default/ui/label"
+import { cn } from "@/registry/default/lib/utils";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>OTP input single</Label>
@@ -18,13 +18,13 @@ export default function Component() {
         render={({ slots }) => (
           <div className="flex">
             {slots.map((slot, idx) => (
-              <Slot key={idx} {...slot} />
+              <Slot key={String(idx)} {...slot} />
             ))}
           </div>
         )}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -33,24 +33,24 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://github.com/guilhermerodz/input-otp"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           Input OTP
         </a>
       </p>
     </div>
-  )
+  );
 }
 
 function Slot(props: SlotProps) {
   return (
     <div
       className={cn(
-        "relative -ms-px flex size-9 items-center justify-center border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow] first:ms-0 first:rounded-s-md last:rounded-e-md",
-        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive }
+        "-ms-px relative flex size-9 items-center justify-center border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow] first:ms-0 first:rounded-s-md last:rounded-e-md",
+        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive },
       )}
     >
       {props.char !== null && <div>{props.char}</div>}
     </div>
-  )
+  );
 }

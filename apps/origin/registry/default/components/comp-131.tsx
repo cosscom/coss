@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 const options = [
   {
@@ -28,10 +28,10 @@ const options = [
     description:
       "The 6 commits from this branch will be rebased and added to the base branch.",
   },
-]
+];
 
 export default function Component() {
-  const [selectedIndex, setSelectedIndex] = useState("0")
+  const [selectedIndex, setSelectedIndex] = useState("0");
 
   return (
     <div className="inline-flex divide-x divide-primary-foreground/30 rounded-md shadow-xs rtl:space-x-reverse">
@@ -65,8 +65,8 @@ export default function Component() {
                 className="items-start [&>span]:pt-1.5"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">{option.label}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="font-medium text-sm">{option.label}</span>
+                  <span className="text-muted-foreground text-xs">
                     {option.description}
                   </span>
                 </div>
@@ -76,5 +76,5 @@ export default function Component() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

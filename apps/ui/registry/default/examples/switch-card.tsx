@@ -1,10 +1,10 @@
-import * as React from "react"
+import * as React from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { Switch } from "@/registry/default/ui/switch"
+import { Label } from "@/registry/default/ui/label";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function SwitchCardDemo() {
-  const id = React.useId()
+  const id = React.useId();
 
   return (
     <Label
@@ -13,11 +13,11 @@ export default function SwitchCardDemo() {
     >
       <div className="flex flex-col gap-1">
         <p className="text-sm leading-4">Enable notifications</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           You can enable or disable notifications at any time.
         </p>
       </div>
       <Switch id={id} defaultChecked />
     </Label>
-  )
+  );
 }

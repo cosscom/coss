@@ -5,16 +5,16 @@ import {
   PlusIcon,
   TextQuoteIcon,
   TypeIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function Component() {
   return (
@@ -39,8 +39,8 @@ export default function Component() {
             <TypeIcon size={16} className="opacity-60" />
           </div>
           <div>
-            <div className="text-sm font-medium">Text</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-sm">Text</div>
+            <div className="text-muted-foreground text-xs">
               Start writing with plain text
             </div>
           </div>
@@ -53,8 +53,8 @@ export default function Component() {
             <TextQuoteIcon size={16} className="opacity-60" />
           </div>
           <div>
-            <div className="text-sm font-medium">Quote</div>
-            <div className="text-xs text-muted-foreground">Capture a quote</div>
+            <div className="font-medium text-sm">Quote</div>
+            <div className="text-muted-foreground text-xs">Capture a quote</div>
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem>
@@ -65,8 +65,8 @@ export default function Component() {
             <MinusIcon size={16} className="opacity-60" />
           </div>
           <div>
-            <div className="text-sm font-medium">Divider</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-sm">Divider</div>
+            <div className="text-muted-foreground text-xs">
               Visually divide blocks
             </div>
           </div>
@@ -79,8 +79,8 @@ export default function Component() {
             <Heading1Icon size={16} className="opacity-60" />
           </div>
           <div>
-            <div className="text-sm font-medium">Heading 1</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-sm">Heading 1</div>
+            <div className="text-muted-foreground text-xs">
               Big section heading
             </div>
           </div>
@@ -93,13 +93,13 @@ export default function Component() {
             <Heading2Icon size={16} className="opacity-60" />
           </div>
           <div>
-            <div className="text-sm font-medium">Heading 2</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="font-medium text-sm">Heading 2</div>
+            <div className="text-muted-foreground text-xs">
               Medium section subheading
             </div>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

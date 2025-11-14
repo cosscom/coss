@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { MoonIcon, SunIcon } from "lucide-react"
+import { MoonIcon, SunIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { Switch } from "@/registry/default/ui/switch"
+import { Label } from "@/registry/default/ui/label";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function Component() {
-  const id = useId()
-  const [checked, setChecked] = useState<boolean>(true)
+  const id = useId();
+  const [checked, setChecked] = useState<boolean>(true);
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -27,5 +27,5 @@ export default function Component() {
         )}
       </Label>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useId, useRef, useState } from "react"
-import { CheckIcon, CopyIcon, UserRoundPlusIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, UserRoundPlusIcon } from "lucide-react";
+import { useId, useRef, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,44 +12,44 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   const [emails, setEmails] = useState([
     "mark@yourcompany.com",
     "jane@yourcompany.com",
     "",
-  ])
-  const [copied, setCopied] = useState<boolean>(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const lastInputRef = useRef<HTMLInputElement>(null)
+  ]);
+  const [copied, setCopied] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const lastInputRef = useRef<HTMLInputElement>(null);
 
   const addEmail = () => {
-    setEmails([...emails, ""])
-  }
+    setEmails([...emails, ""]);
+  };
 
   const handleEmailChange = (index: number, value: string) => {
-    const newEmails = [...emails]
-    newEmails[index] = value
-    setEmails(newEmails)
-  }
+    const newEmails = [...emails];
+    newEmails[index] = value;
+    setEmails(newEmails);
+  };
 
   const handleCopy = () => {
     if (inputRef.current) {
-      navigator.clipboard.writeText(inputRef.current.value)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      navigator.clipboard.writeText(inputRef.current.value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
-  }
+  };
 
   return (
     <Dialog>
@@ -58,8 +58,8 @@ export default function Component() {
       </DialogTrigger>
       <DialogContent
         onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          lastInputRef.current?.focus()
+          e.preventDefault();
+          lastInputRef.current?.focus();
         }}
       >
         <div className="flex flex-col gap-2">
@@ -84,7 +84,7 @@ export default function Component() {
               <div className="space-y-3">
                 {emails.map((email, index) => (
                   <Input
-                    key={index}
+                    key={email}
                     id={`team-email-${index + 1}`}
                     placeholder="hi@yourcompany.com"
                     type="email"
@@ -125,15 +125,16 @@ export default function Component() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
+                    type="button"
                     onClick={handleCopy}
-                    className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed"
+                    className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed"
                     aria-label={copied ? "Copied" : "Copy to clipboard"}
                     disabled={copied}
                   >
                     <div
                       className={cn(
                         "transition-all",
-                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                       )}
                     >
                       <CheckIcon
@@ -145,7 +146,7 @@ export default function Component() {
                     <div
                       className={cn(
                         "absolute transition-all",
-                        copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                        copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
                       )}
                     >
                       <CopyIcon size={16} aria-hidden="true" />
@@ -161,5 +162,5 @@ export default function Component() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { CircleCheckIcon, XIcon } from "lucide-react"
+import { CircleCheckIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,8 +15,8 @@ export default function Component() {
           />
           <div className="flex grow flex-col gap-3">
             <div className="space-y-1">
-              <p className="text-sm font-medium">Your request was completed!</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-medium text-sm">Your request was completed!</p>
+              <p className="text-muted-foreground text-sm">
                 It demonstrates that the task or request has been processed.
               </p>
             </div>
@@ -38,5 +38,5 @@ export default function Component() {
         </div>
       </div>
     </div>
-  )
+  );
 }

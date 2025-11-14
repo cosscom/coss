@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BellIcon } from "lucide-react"
+import { BellIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const initialNotifications = [
   {
@@ -66,7 +66,7 @@ const initialNotifications = [
     timestamp: "2 weeks ago",
     unread: false,
   },
-]
+];
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -81,31 +81,31 @@ function Dot({ className }: { className?: string }) {
     >
       <circle cx="3" cy="3" r="3" />
     </svg>
-  )
+  );
 }
 
 export default function Component() {
-  const [notifications, setNotifications] = useState(initialNotifications)
-  const unreadCount = notifications.filter((n) => n.unread).length
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const handleMarkAllAsRead = () => {
     setNotifications(
       notifications.map((notification) => ({
         ...notification,
         unread: false,
-      }))
-    )
-  }
+      })),
+    );
+  };
 
   const handleNotificationClick = (id: number) => {
     setNotifications(
       notifications.map((notification) =>
         notification.id === id
           ? { ...notification, unread: false }
-          : notification
-      )
-    )
-  }
+          : notification,
+      ),
+    );
+  };
 
   return (
     <Popover>
@@ -118,7 +118,7 @@ export default function Component() {
         >
           <BellIcon size={16} aria-hidden="true" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 left-full min-w-5 -translate-x-1/2 px-1">
+            <Badge className="-top-2 -translate-x-1/2 absolute left-full min-w-5 px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
@@ -126,10 +126,11 @@ export default function Component() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-1">
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
-          <div className="text-sm font-semibold">Notifications</div>
+          <div className="font-semibold text-sm">Notifications</div>
           {unreadCount > 0 && (
             <button
-              className="text-xs font-medium hover:underline"
+              type="button"
+              className="font-medium text-xs hover:underline"
               onClick={handleMarkAllAsRead}
             >
               Mark all as read
@@ -137,10 +138,12 @@ export default function Component() {
           )}
         </div>
         <div
+          /* biome-ignore lint/a11y/useAriaPropsForRole: known */
           role="separator"
           aria-orientation="horizontal"
           className="-mx-1 my-1 h-px bg-border"
-        ></div>
+          tabIndex={-1}
+        />
         {notifications.map((notification) => (
           <div
             key={notification.id}
@@ -156,6 +159,7 @@ export default function Component() {
               />
               <div className="flex-1 space-y-1">
                 <button
+                  type="button"
                   className="text-left text-foreground/80 after:absolute after:inset-0"
                   onClick={() => handleNotificationClick(notification.id)}
                 >
@@ -168,7 +172,7 @@ export default function Component() {
                   </span>
                   .
                 </button>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {notification.timestamp}
                 </div>
               </div>
@@ -182,5 +186,5 @@ export default function Component() {
         ))}
       </PopoverContent>
     </Popover>
-  )
+  );
 }

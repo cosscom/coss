@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { OTPInput, SlotProps } from "input-otp"
+import { OTPInput, type SlotProps } from "input-otp";
+import { useEffect, useRef, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,34 +13,34 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 
-const CORRECT_CODE = "6548"
+const CORRECT_CODE = "6548";
 
 export default function Component() {
-  const [value, setValue] = useState("")
-  const [hasGuessed, setHasGuessed] = useState<undefined | boolean>(undefined)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const [value, setValue] = useState("");
+  const [hasGuessed, setHasGuessed] = useState<undefined | boolean>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (hasGuessed) {
-      closeButtonRef.current?.focus()
+      closeButtonRef.current?.focus();
     }
-  }, [hasGuessed])
+  }, [hasGuessed]);
 
   async function onSubmit(e?: React.FormEvent<HTMLFormElement>) {
-    e?.preventDefault?.()
+    e?.preventDefault?.();
 
-    inputRef.current?.select()
-    await new Promise((r) => setTimeout(r, 1_00))
+    inputRef.current?.select();
+    await new Promise((r) => setTimeout(r, 1_00));
 
-    setHasGuessed(value === CORRECT_CODE)
+    setHasGuessed(value === CORRECT_CODE);
 
-    setValue("")
+    setValue("");
     setTimeout(() => {
-      inputRef.current?.blur()
-    }, 20)
+      inputRef.current?.blur();
+    }, 20);
   }
 
   return (
@@ -99,7 +99,7 @@ export default function Component() {
                 render={({ slots }) => (
                   <div className="flex gap-2">
                     {slots.map((slot, idx) => (
-                      <Slot key={idx} {...slot} />
+                      <Slot key={String(idx)} {...slot} />
                     ))}
                   </div>
                 )}
@@ -108,7 +108,7 @@ export default function Component() {
             </div>
             {hasGuessed === false && (
               <p
-                className="text-center text-xs text-muted-foreground"
+                className="text-center text-muted-foreground text-xs"
                 role="alert"
                 aria-live="polite"
               >
@@ -124,7 +124,7 @@ export default function Component() {
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function Slot(props: SlotProps) {
@@ -132,10 +132,10 @@ function Slot(props: SlotProps) {
     <div
       className={cn(
         "flex size-9 items-center justify-center rounded-md border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow]",
-        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive }
+        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive },
       )}
     >
       {props.char !== null && <div>{props.char}</div>}
     </div>
-  )
+  );
 }

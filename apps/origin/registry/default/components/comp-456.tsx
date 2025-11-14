@@ -1,18 +1,18 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { buttonVariants } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { buttonVariants } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-}
+  currentPage: number;
+  totalPages: number;
+};
 
 export default function Component({
   currentPage,
@@ -27,7 +27,7 @@ export default function Component({
               "aria-disabled:pointer-events-none aria-disabled:opacity-50",
               buttonVariants({
                 variant: "outline",
-              })
+              }),
             )}
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
             aria-label="Go to previous page"
@@ -38,7 +38,7 @@ export default function Component({
           </PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <p className="text-sm text-muted-foreground" aria-live="polite">
+          <p className="text-muted-foreground text-sm" aria-live="polite">
             Page <span className="text-foreground">{currentPage}</span> of{" "}
             <span className="text-foreground">{totalPages}</span>
           </p>
@@ -49,7 +49,7 @@ export default function Component({
               "aria-disabled:pointer-events-none aria-disabled:opacity-50",
               buttonVariants({
                 variant: "outline",
-              })
+              }),
             )}
             href={
               currentPage === totalPages
@@ -65,5 +65,5 @@ export default function Component({
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

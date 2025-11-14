@@ -1,22 +1,22 @@
-import { useId } from "react"
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "lucide-react";
+import { useId } from "react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -24,10 +24,10 @@ const navigationLinks = [
   { href: "#", label: "Features" },
   { href: "#", label: "Pricing" },
   { href: "#", label: "About" },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   return (
     <header className="border-b px-4 md:px-6">
@@ -56,7 +56,7 @@ export default function Component() {
                 >
                   <path
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
                     d="M4 12H20"
@@ -72,8 +72,8 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
+                  {navigationLinks.map((link, _index) => (
+                    <NavigationMenuItem key={link.label} className="w-full">
                       <NavigationMenuLink
                         href={link.href}
                         className="py-1.5"
@@ -108,7 +108,7 @@ export default function Component() {
               <SearchIcon size={16} />
             </div>
             <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-2 text-muted-foreground">
-              <kbd className="inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
+              <kbd className="inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
                 ⌘K
               </kbd>
             </div>
@@ -127,8 +127,8 @@ export default function Component() {
         {/* Navigation menu */}
         <NavigationMenu>
           <NavigationMenuList className="gap-2">
-            {navigationLinks.map((link, index) => (
-              <NavigationMenuItem key={index}>
+            {navigationLinks.map((link, _index) => (
+              <NavigationMenuItem key={link.label}>
                 <NavigationMenuLink
                   active={link.active}
                   href={link.href}
@@ -142,5 +142,5 @@ export default function Component() {
         </NavigationMenu>
       </div>
     </header>
-  )
+  );
 }

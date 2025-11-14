@@ -1,12 +1,12 @@
-import { SettingsIcon } from "lucide-react"
+import { SettingsIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function SettingsMenu() {
   return (
@@ -31,5 +31,5 @@ export default function SettingsMenu() {
         <DropdownMenuItem>API Settings</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { type Registry } from "shadcn/schema"
+import type { Registry } from "shadcn/schema";
 
 export const particles: Registry["items"] = [
   {
@@ -149,4 +149,4 @@ export const particles: Registry["items"] = [
     files: [{ path: "particles/particle-pa-2.tsx", type: "registry:block" }],
     categories: ["pagination", "select"],
   },
-]
+];

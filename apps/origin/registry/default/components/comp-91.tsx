@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { LoaderCircleIcon } from "lucide-react"
+import { LoaderCircleIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleClick = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate an async operation
     setTimeout(() => {
-      setIsLoading(false)
-    }, 1000) // Reset after 1 second
-  }
+      setIsLoading(false);
+    }, 1000); // Reset after 1 second
+  };
 
   return (
     <Button
@@ -34,5 +34,5 @@ export default function Component() {
         </div>
       )}
     </Button>
-  )
+  );
 }

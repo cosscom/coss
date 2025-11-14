@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { ArrowUpIcon, PlusIcon } from "lucide-react"
+import { ArrowUpIcon, PlusIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   InputGroupTextarea,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function InputGroupWithTextarea() {
   return (
@@ -71,5 +71,5 @@ export default function InputGroupWithTextarea() {
         </Tooltip>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

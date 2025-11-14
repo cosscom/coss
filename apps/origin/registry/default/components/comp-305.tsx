@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ArrowRightIcon, Eclipse, XIcon } from "lucide-react"
+import { ArrowRightIcon, Eclipse, XIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <div className="dark bg-muted px-4 py-3 text-foreground">
@@ -24,10 +24,10 @@ export default function Component() {
               We just added something awesome to make your experience even
               better.
             </p>
-            <a href="#" className="group text-sm font-medium whitespace-nowrap">
+            <a href="#" className="group whitespace-nowrap font-medium text-sm">
               Learn more
               <ArrowRightIcon
-                className="ms-1 -mt-0.5 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
+                className="-mt-0.5 ms-1 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
                 size={16}
                 aria-hidden="true"
               />
@@ -48,5 +48,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

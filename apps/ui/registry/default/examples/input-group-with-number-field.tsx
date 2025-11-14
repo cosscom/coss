@@ -2,11 +2,11 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   NumberField,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function InputGroupWithNumberField() {
   return (
@@ -21,5 +21,5 @@ export default function InputGroupWithNumberField() {
         <InputGroupText>EUR</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

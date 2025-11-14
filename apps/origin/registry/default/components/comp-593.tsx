@@ -1,7 +1,7 @@
-import { BookmarkIcon, HomeIcon } from "lucide-react"
+import { BookmarkIcon, HomeIcon } from "lucide-react";
 
-import DatePicker from "@/registry/default/components/navbar-components/date-picker"
-import Filters from "@/registry/default/components/navbar-components/filters"
+import DatePicker from "@/registry/default/components/navbar-components/date-picker";
+import Filters from "@/registry/default/components/navbar-components/filters";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,8 +9,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/breadcrumb";
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -44,7 +44,7 @@ export default function Component() {
             className="text-sm max-sm:aspect-square max-sm:p-0"
           >
             <BookmarkIcon
-              className="text-muted-foreground/80 sm:-ms-1"
+              className="sm:-ms-1 text-muted-foreground/80"
               size={16}
               aria-hidden="true"
             />
@@ -53,5 +53,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

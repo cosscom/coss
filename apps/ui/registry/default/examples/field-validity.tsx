@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Field, FieldLabel, FieldValidity } from "@/registry/default/ui/field"
-import { Input } from "@/registry/default/ui/input"
+import { Field, FieldLabel, FieldValidity } from "@/registry/default/ui/field";
+import { Input } from "@/registry/default/ui/input";
 
 export default function FieldWithValidityDemo() {
   return (
@@ -12,7 +12,7 @@ export default function FieldWithValidityDemo() {
         {(validity) => (
           <div className="flex w-full flex-col gap-2">
             {validity.error && (
-              <p className="text-xs text-destructive-foreground">
+              <p className="text-destructive-foreground text-xs">
                 {validity.error}
               </p>
             )}
@@ -25,5 +25,5 @@ export default function FieldWithValidityDemo() {
         )}
       </FieldValidity>
     </Field>
-  )
+  );
 }

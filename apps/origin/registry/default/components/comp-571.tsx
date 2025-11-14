@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
 import {
   expandAllFeature,
   hotkeysCoreFeature,
   searchFeature,
   selectionFeature,
   syncDataLoaderFeature,
-  TreeState,
-} from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
-import { FolderIcon, FolderOpenIcon, SearchIcon } from "lucide-react"
+  type TreeState,
+} from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
+import { FolderIcon, FolderOpenIcon, SearchIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Input } from "@/registry/default/ui/input"
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Input } from "@/registry/default/ui/input";
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
@@ -48,14 +48,14 @@ const items: Record<string, Item> = {
   operations: { name: "Operations", children: ["hr", "finance"] },
   hr: { name: "HR" },
   finance: { name: "Finance" },
-}
+};
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
   // Store the initial expanded items to reset when search is cleared
-  const initialExpandedItems = ["engineering", "frontend", "design-system"]
-  const [state, setState] = useState<Partial<TreeState<Item>>>({})
+  const initialExpandedItems = ["engineering", "frontend", "design-system"];
+  const [state, setState] = useState<Partial<TreeState<Item>>>({});
 
   const tree = useTree<Item>({
     state,
@@ -78,7 +78,7 @@ export default function Component() {
       searchFeature,
       expandAllFeature,
     ],
-  })
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:nth-2:grow">
@@ -89,25 +89,25 @@ export default function Component() {
             ...tree.getSearchInputElementProps(),
             onChange: (e) => {
               // First call the original onChange handler from getSearchInputElementProps
-              const originalProps = tree.getSearchInputElementProps()
+              const originalProps = tree.getSearchInputElementProps();
               if (originalProps.onChange) {
-                originalProps.onChange(e)
+                originalProps.onChange(e);
               }
 
               // Then handle our custom logic
-              const value = e.target.value
+              const value = e.target.value;
 
               if (value.length > 0) {
                 // If input has at least one character, expand all items
-                tree.expandAll()
+                tree.expandAll();
               } else {
                 // If input is cleared, reset to initial expanded state
                 setState((prevState) => {
                   return {
                     ...prevState,
                     expandedItems: initialExpandedItems,
-                  }
-                })
+                  };
+                });
               }
             },
           }}
@@ -135,14 +135,14 @@ export default function Component() {
                 </span>
               </TreeItemLabel>
             </TreeItem>
-          )
+          );
         })}
       </Tree>
 
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Tree with search highlight ∙{" "}
         <a
@@ -155,5 +155,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

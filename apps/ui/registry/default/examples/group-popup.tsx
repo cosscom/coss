@@ -1,15 +1,15 @@
-import { ChevronDownIcon, GitForkIcon } from "lucide-react"
+import { ChevronDownIcon, GitForkIcon } from "lucide-react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 import {
   Popover,
   PopoverDescription,
   PopoverPopup,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function GroupPopup() {
   return (
@@ -36,5 +36,5 @@ export default function GroupPopup() {
         </PopoverPopup>
       </Popover>
     </Group>
-  )
+  );
 }

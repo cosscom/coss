@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { usePaymentInputs } from "react-payment-inputs"
+import { useId } from "react";
+import { usePaymentInputs } from "react-payment-inputs";
 
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const { getCVCProps } = usePaymentInputs()
+  const id = useId();
+  const { getCVCProps } = usePaymentInputs();
 
   return (
     <div className="*:not-first:mt-2">
@@ -19,7 +19,7 @@ export default function Component() {
         className="[direction:inherit]"
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -28,11 +28,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://github.com/medipass/react-payment-inputs"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React Payment Inputs
         </a>
       </p>
     </div>
-  )
+  );
 }

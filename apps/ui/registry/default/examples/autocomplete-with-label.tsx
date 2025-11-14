@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
 import {
   Autocomplete,
@@ -9,8 +9,8 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompletePopup,
-} from "@/registry/default/ui/autocomplete"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/autocomplete";
+import { Label } from "@/registry/default/ui/label";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -23,10 +23,10 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function AutocompleteWithLabel() {
-  const id = useId()
+  const id = useId();
   return (
     <Autocomplete items={items}>
       <div className="flex flex-col items-start gap-2">
@@ -48,5 +48,5 @@ export default function AutocompleteWithLabel() {
         </AutocompleteList>
       </AutocompletePopup>
     </Autocomplete>
-  )
+  );
 }

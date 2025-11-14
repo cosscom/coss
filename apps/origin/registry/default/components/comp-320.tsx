@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { CircleAlertIcon } from "lucide-react"
+import { CircleAlertIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,15 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
-const PROJECT_NAME = "coss-ui"
+const PROJECT_NAME = "coss-ui";
 
 export default function Component() {
-  const id = useId()
-  const [inputValue, setInputValue] = useState("")
+  const id = useId();
+  const [inputValue, setInputValue] = useState("");
 
   return (
     <Dialog>
@@ -75,5 +75,5 @@ export default function Component() {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

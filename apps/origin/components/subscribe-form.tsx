@@ -1,54 +1,54 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { RiLoader3Line, RiNavigationLine } from "@remixicon/react"
+import { RiLoader3Line, RiNavigationLine } from "@remixicon/react";
+import { useId, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
 
-import { subscribe } from "./subscribe-action"
+import { subscribe } from "./subscribe-action";
 
 // Add type for form state
-type FormStatus = "idle" | "loading" | "success" | "error"
+type FormStatus = "idle" | "loading" | "success" | "error";
 
 function Form() {
-  const id = useId()
+  const id = useId();
   const [formState, setFormState] = useState({
     email: "",
     status: "idle" as FormStatus,
     message: "",
-  })
+  });
 
-  const isLoading = formState.status === "loading"
+  const isLoading = formState.status === "loading";
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormState((prev) => ({ ...prev, status: "loading", message: "" }))
+    e.preventDefault();
+    setFormState((prev) => ({ ...prev, status: "loading", message: "" }));
 
     try {
-      const result = await subscribe(formState.email)
+      const result = await subscribe(formState.email);
       if (!result.success) {
         setFormState((prev) => ({
           ...prev,
           status: "error",
           message: result.error,
-        }))
+        }));
       } else {
         setFormState({
           email: "",
           status: "success",
           message: "Thanks for subscribing!",
-        })
+        });
       }
     } catch (error) {
       setFormState((prev) => ({
         ...prev,
         status: "error",
         message: error instanceof Error ? error.message : "Failed to subscribe",
-      }))
+      }));
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,7 +102,7 @@ function Form() {
               "absolute mt-2 text-xs",
               formState.status === "error"
                 ? "text-destructive"
-                : "text-muted-foreground"
+                : "text-muted-foreground",
             )}
             role="alert"
             aria-live="polite"
@@ -112,14 +112,14 @@ function Form() {
         )}
       </div>
     </form>
-  )
+  );
 }
 
 export function SubscribeBottom() {
   return (
     <div className="dark relative overflow-hidden rounded-xl bg-zinc-900 px-4 py-14 sm:px-8">
       <Illustration
-        className="absolute top-0 left-0 -translate-x-1/2"
+        className="-translate-x-1/2 absolute top-0 left-0"
         aria-hidden="true"
       />
       <Illustration
@@ -133,11 +133,11 @@ export function SubscribeBottom() {
         <Form />
       </div>
     </div>
-  )
+  );
 }
 
 function Illustration({ className }: { className?: string }) {
-  const id = useId()
+  const id = useId();
   return (
     <svg
       className={className}
@@ -173,5 +173,5 @@ function Illustration({ className }: { className?: string }) {
         </filter>
       </defs>
     </svg>
-  )
+  );
 }

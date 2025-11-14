@@ -4,14 +4,14 @@ import {
   LifeBuoyIcon,
   Link2Icon,
   ShieldCheckIcon,
-} from "lucide-react"
-import { Accordion as AccordionPrimitive } from "radix-ui"
+} from "lucide-react";
+import { Accordion as AccordionPrimitive } from "radix-ui";
 
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
@@ -46,17 +46,17 @@ const items = [
     content:
       "Our support team is available around the ClockIcon to assist you. For billing inquiries, technical issues, or general questions, you can reach us through live chat, email at support@example.com, or schedule a call with our technical team. Premium support is available for enterprise customers.",
   },
-]
+];
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">W/ icon, sub-header, and chevron</h2>
+      <h2 className="font-bold text-xl">W/ icon, sub-header, and chevron</h2>
       <Accordion type="single" collapsible className="w-full" defaultValue="3">
         {items.map((item) => (
           <AccordionItem value={item.id} key={item.id} className="py-2">
             <AccordionPrimitive.Header className="flex">
-              <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between rounded-md py-2 text-left text-[15px] leading-6 font-semibold transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [&[data-state=open]>svg]:rotate-180">
+              <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between rounded-md py-2 text-left font-semibold text-[15px] leading-6 outline-none transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [&[data-state=open]>svg]:rotate-180">
                 <span className="flex items-center gap-3">
                   <span
                     className="flex size-10 shrink-0 items-center justify-center rounded-full border"
@@ -67,7 +67,7 @@ export default function Component() {
                   <span className="flex flex-col space-y-1">
                     <span>{item.title}</span>
                     {item.sub && (
-                      <span className="text-sm font-normal">{item.sub}</span>
+                      <span className="font-normal text-sm">{item.sub}</span>
                     )}
                   </span>
                 </span>
@@ -85,5 +85,5 @@ export default function Component() {
         ))}
       </Accordion>
     </div>
-  )
+  );
 }

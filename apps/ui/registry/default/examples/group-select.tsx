@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 import {
   NumberField,
   NumberFieldGroup,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 interface Currency {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 const currencies: Currency[] = [
@@ -35,7 +35,7 @@ const currencies: Currency[] = [
     value: "£",
     label: "British Pound",
   },
-]
+];
 
 export default function GroupSelect() {
   return (
@@ -45,7 +45,7 @@ export default function GroupSelect() {
           defaultValue={currencies[0]}
           itemToStringValue={(currency) => currency.value}
         >
-          <SelectTrigger className="min-w-none w-fit">
+          <SelectTrigger className="w-fit min-w-none">
             <SelectValue>{(currency: Currency) => currency.value}</SelectValue>
           </SelectTrigger>
           <SelectPopup className="min-w-48">
@@ -72,5 +72,5 @@ export default function GroupSelect() {
         </Button>
       </Group>
     </Group>
-  )
+  );
 }

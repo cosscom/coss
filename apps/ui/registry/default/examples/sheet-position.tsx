@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Sheet,
   SheetDescription,
@@ -6,7 +6,7 @@ import {
   SheetPopup,
   SheetTitle,
   SheetTrigger,
-} from "@/registry/default/ui/sheet"
+} from "@/registry/default/ui/sheet";
 
 export default function SheetPosition() {
   return (
@@ -56,5 +56,5 @@ export default function SheetPosition() {
         </SheetPopup>
       </Sheet>
     </div>
-  )
+  );
 }

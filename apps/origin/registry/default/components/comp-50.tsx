@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useId } from "react"
-import { CreditCardIcon } from "lucide-react"
-import { usePaymentInputs } from "react-payment-inputs"
-import images, { type CardImages } from "react-payment-inputs/images"
+import { CreditCardIcon } from "lucide-react";
+import { useId } from "react";
+import { usePaymentInputs } from "react-payment-inputs";
+import images, { type CardImages } from "react-payment-inputs/images";
 
-import { Input } from "@/registry/default/ui/input"
+import { Input } from "@/registry/default/ui/input";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   const {
     meta,
     getCardNumberProps,
     getExpiryDateProps,
     getCVCProps,
     getCardImageProps,
-  } = usePaymentInputs()
+  } = usePaymentInputs();
 
   return (
     <div className="*:not-first:mt-2">
-      <legend className="text-sm font-medium text-foreground">
+      <legend className="font-medium text-foreground text-sm">
         Card Details
       </legend>
       <div className="rounded-md shadow-xs">
@@ -61,7 +61,7 @@ export default function Component() {
         </div>
       </div>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
@@ -70,11 +70,11 @@ export default function Component() {
           className="underline hover:text-foreground"
           href="https://github.com/medipass/react-payment-inputs"
           target="_blank"
-          rel="noopener nofollow"
+          rel="noreferrer noopener nofollow"
         >
           React Payment Inputs
         </a>
       </p>
     </div>
-  )
+  );
 }

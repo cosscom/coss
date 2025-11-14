@@ -1,6 +1,6 @@
-import { Info, XIcon } from "lucide-react"
+import { Info, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,10 +15,10 @@ export default function Component() {
           />
           <div className="flex grow flex-col gap-3">
             <div className="space-y-1">
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 Here is some helpful information!
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 It aims to provide clarity or support for better
                 decision-making.
               </p>
@@ -41,5 +41,5 @@ export default function Component() {
         </div>
       </div>
     </div>
-  )
+  );
 }

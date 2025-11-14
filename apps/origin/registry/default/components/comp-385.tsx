@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const tips = [
   {
@@ -25,18 +25,18 @@ const tips = [
     description:
       "Click the support icon in the top right corner to access our help center and documentation.",
   },
-]
+];
 
 export default function Component() {
-  const [currentTip, setCurrentTip] = useState(0)
+  const [currentTip, setCurrentTip] = useState(0);
 
   const handleNavigation = () => {
     if (currentTip === tips.length - 1) {
-      setCurrentTip(0)
+      setCurrentTip(0);
     } else {
-      setCurrentTip(currentTip + 1)
+      setCurrentTip(currentTip + 1);
     }
-  }
+  };
 
   return (
     <Popover>
@@ -46,17 +46,18 @@ export default function Component() {
       <PopoverContent className="max-w-[280px] py-3 shadow-none" side="top">
         <div className="space-y-3">
           <div className="space-y-1">
-            <p className="text-[13px] font-medium">{tips[currentTip].title}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-medium text-[13px]">{tips[currentTip].title}</p>
+            <p className="text-muted-foreground text-xs">
               {tips[currentTip].description}
             </p>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {currentTip + 1}/{tips.length}
             </span>
             <button
-              className="text-xs font-medium hover:underline"
+              type="button"
+              className="font-medium text-xs hover:underline"
               onClick={handleNavigation}
             >
               {currentTip === tips.length - 1 ? "Start over" : "Next"}
@@ -65,5 +66,5 @@ export default function Component() {
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

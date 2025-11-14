@@ -1,12 +1,12 @@
-import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react"
+import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react";
 
-import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area"
+import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/tabs";
 
 export default function Component() {
   return (
@@ -50,20 +50,20 @@ export default function Component() {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
       <TabsContent value="tab-1">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 1
         </p>
       </TabsContent>
       <TabsContent value="tab-2">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 2
         </p>
       </TabsContent>
       <TabsContent value="tab-3">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 3
         </p>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

@@ -3,7 +3,7 @@ import {
   AccordionItem,
   AccordionPanel,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
@@ -23,7 +23,7 @@ const items = [
     title: "Can I use it for my project?",
     content: "Of course! Base UI is free and open source.",
   },
-]
+];
 
 export default function AccordionDemo() {
   return (
@@ -35,5 +35,5 @@ export default function AccordionDemo() {
         </AccordionItem>
       ))}
     </Accordion>
-  )
+  );
 }

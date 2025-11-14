@@ -1,4 +1,4 @@
-import { usePagination } from "@/registry/default/hooks/use-pagination"
+import { usePagination } from "@/registry/default/hooks/use-pagination";
 import {
   Pagination,
   PaginationContent,
@@ -7,13 +7,13 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-  paginationItemsToDisplay?: number
-}
+  currentPage: number;
+  totalPages: number;
+  paginationItemsToDisplay?: number;
+};
 
 export default function Component({
   currentPage,
@@ -24,7 +24,7 @@ export default function Component({
     currentPage,
     totalPages,
     paginationItemsToDisplay,
-  })
+  });
 
   return (
     <Pagination>
@@ -80,5 +80,5 @@ export default function Component({
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

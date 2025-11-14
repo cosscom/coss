@@ -1,6 +1,6 @@
-import { CircleCheckIcon, XIcon } from "lucide-react"
+import { CircleCheckIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -9,7 +9,7 @@ export default function Component() {
       <div className="flex gap-2">
         <p className="grow text-sm">
           <CircleCheckIcon
-            className="me-3 -mt-0.5 inline-flex text-red-500"
+            className="-mt-0.5 me-3 inline-flex text-red-500"
             size={16}
             aria-hidden="true"
           />
@@ -28,5 +28,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

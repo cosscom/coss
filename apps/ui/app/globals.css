@@ -1,6 +1,7 @@
 @import "@coss/ui/globals.css";
 
 @layer base {
+  /*biome-ignore lint/a11y/useGenericFontNames: known */
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {
     [data-wrapper] {
       @apply min-[1800px]:border-t;

@@ -1,14 +1,14 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { SelectNative } from "@/registry/default/ui/select-native"
+import { SelectNative } from "@/registry/default/ui/select-native";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
-    <div className="relative rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-destructive/20 has-[select:disabled]:cursor-not-allowed has-[select:disabled]:opacity-50 has-[select:is(:disabled)_*]:pointer-events-none dark:has-aria-invalid:ring-destructive/40">
+    <div className="relative rounded-md border border-input bg-background shadow-xs outline-none transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-[select:is(:disabled)_*]:pointer-events-none has-[select:disabled]:cursor-not-allowed has-aria-invalid:border-destructive has-[select:disabled]:opacity-50 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40">
       <label
         htmlFor={id}
-        className="block px-3 pt-2 text-xs font-medium text-foreground"
+        className="block px-3 pt-2 font-medium text-foreground text-xs"
       >
         Select with inset label (native)
       </label>
@@ -26,5 +26,5 @@ export default function Component() {
         <option value="4">Gatsby</option>
       </SelectNative>
     </div>
-  )
+  );
 }

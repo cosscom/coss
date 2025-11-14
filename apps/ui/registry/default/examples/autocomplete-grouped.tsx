@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
 import {
   Autocomplete,
@@ -13,11 +13,11 @@ import {
   AutocompleteList,
   AutocompletePopup,
   AutocompleteSeparator,
-} from "@/registry/default/ui/autocomplete"
+} from "@/registry/default/ui/autocomplete";
 
 // Grouped items demo
-type Tag = { id: string; label: string; group: "Status" | "Priority" | "Team" }
-type TagGroup = { value: string; items: Tag[] }
+type Tag = { id: string; label: string; group: "Status" | "Priority" | "Team" };
+type TagGroup = { value: string; items: Tag[] };
 
 const tagsData: Tag[] = [
   // Status
@@ -65,18 +65,23 @@ const tagsData: Tag[] = [
   { id: "t-ux", label: "UX", group: "Team" },
   { id: "t-ui", label: "UI", group: "Team" },
   { id: "t-management", label: "Management", group: "Team" },
-]
+];
 
 function groupTags(tags: Tag[]): TagGroup[] {
-  const groups: Record<string, Tag[]> = {}
-  for (const t of tags) {
-    ;(groups[t.group] ??= []).push(t)
+  const groups: Record<string, Tag[]> = {};
+  for (const tag of tags) {
+    if (!groups[tag.group]) {
+      groups[tag.group] = [];
+    }
+    // biome-ignore lint/style/noNonNullAssertion: will never be null
+    groups[tag.group]!.push(tag);
   }
-  const order: Array<TagGroup["value"]> = ["Status", "Priority", "Team"]
-  return order.map((value) => ({ value, items: groups[value] ?? [] }))
+
+  const order: Array<TagGroup["value"]> = ["Status", "Priority", "Team"];
+  return order.map((value) => ({ value, items: groups[value] ?? [] }));
 }
 
-const groupedTags: TagGroup[] = groupTags(tagsData)
+const groupedTags: TagGroup[] = groupTags(tagsData);
 
 export default function AutocompleteGrouped() {
   return (
@@ -108,5 +113,5 @@ export default function AutocompleteGrouped() {
         </AutocompleteList>
       </AutocompletePopup>
     </Autocomplete>
-  )
+  );
 }

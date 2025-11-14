@@ -1,10 +1,10 @@
-import { CodeBlock } from "@coss/ui/components/code-block"
-import { Metadata } from "next"
+import { CodeBlock } from "@coss/ui/components/code-block";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "coss.com calendar",
   description: "open source is the foundation of all modern software",
-}
+};
 
 export default function Page() {
   const initialization = `import { coss } from '@coss';
@@ -12,7 +12,7 @@ export default function Page() {
 coss.calendar.init({
   apiKey: process.env.COSS_KEY,
   environment: 'production', // or 'sandbox'
-});`
+});`;
 
   const authorization = `// Generate an OAuth link for Google Calendar
 const authUrl = coss.calendar.auth.getAuthUrl({
@@ -25,7 +25,7 @@ await coss.calendar.auth.exchangeCode({
   provider: 'google',
   code: 'authorization_code_here',
   redirectUri: 'https://yourapp.com/callback',
-});`
+});`;
 
   const calendars = `// List calendars
 await coss.calendar.calendars.list({
@@ -36,7 +36,7 @@ await coss.calendar.calendars.list({
 await coss.calendar.calendars.retrieve({
   provider: 'google',
   calendarId: 'primary',
-});`
+});`;
 
   const events = `// Create an event
 await coss.calendar.events.create({
@@ -71,7 +71,7 @@ await coss.calendar.events.delete({
   provider: 'google',
   calendarId: 'primary',
   eventId: 'event_abc123',
-});`
+});`;
 
   const webhooks = `// Webhook events
 coss.calendar.webhooks.on('event.created', (event) => {
@@ -84,43 +84,43 @@ coss.calendar.webhooks.on('event.updated', (event) => {
 
 coss.calendar.webhooks.on('event.deleted', (event) => {
   console.log('Event deleted:', event.data);
-});`
+});`;
 
   const utilities = `// Validate webhook signature
 const isValid = coss.calendar.utils.verifySignature({
   payload: req.body,
   signature: req.headers['coss-calendar-signature'],
   secret: 'whsec_calendar_123',
-});`
+});`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">
-      <div className="mt-12 lg:mt-16 max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
+      <div className="mx-auto mt-12 max-w-2xl text-muted-foreground lg:mt-16 [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
         <CodeBlock code={initialization} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Authorization
         </h2>
         <CodeBlock code={authorization} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Calendars
         </h2>
         <CodeBlock code={calendars} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Events
         </h2>
         <CodeBlock code={events} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
         <CodeBlock code={webhooks} language="tsx" copyButton={false} />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
         <CodeBlock code={utilities} language="tsx" copyButton={false} />
       </div>
     </main>
-  )
+  );
 }

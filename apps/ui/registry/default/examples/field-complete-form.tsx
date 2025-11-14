@@ -1,45 +1,45 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Input } from "@/registry/default/ui/input";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function FieldCompleteFormDemo() {
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
     const data = {
       fullName: formData.get("fullName"),
       email: formData.get("email"),
       role: formData.get("role"),
       newsletter: formData.get("newsletter"),
-    }
+    };
     alert(
       `Full name: ${data.fullName || ""}\nEmail: ${data.email || ""}\nRole: ${
         data.role || ""
-      }\nNewsletter: ${data.newsletter}`
-    )
-  }
+      }\nNewsletter: ${data.newsletter}`,
+    );
+  };
   return (
     <Form onSubmit={onSubmit}>
       <Field>
@@ -109,5 +109,5 @@ export default function FieldCompleteFormDemo() {
         Submit
       </Button>
     </Form>
-  )
+  );
 }

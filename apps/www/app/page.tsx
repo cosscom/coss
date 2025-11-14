@@ -1,5 +1,5 @@
-import { CodeBlock } from "@coss/ui/components/code-block"
-import { PageHeader, PageHeaderHeading } from "@coss/ui/components/page-header"
+import { CodeBlock } from "@coss/ui/components/code-block";
+import { PageHeader, PageHeaderHeading } from "@coss/ui/components/page-header";
 
 export default async function Page() {
   const code = `"dependencies": {
@@ -9,20 +9,20 @@ export default async function Page() {
   "@coss/mail": "1.18.6",
   "@coss/sms": "1.18.6",
   "@coss/payments": "1.18.6"
-},`
+},`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
       <PageHeader>
         <PageHeaderHeading>
           the{" "}
-          <span className="relative z-4 before:absolute before:inset-y-0 before:-inset-x-1 before:bg-gradient-to-r before:from-blue-500 before:to-orange-500 before:via-purple-500 before:opacity-16 before:-rotate-1 before:pointer-events-none before:z-4 before:mix-blend-hard-ligt">
+          <span className="before:-inset-x-1 before:-rotate-1 before:mix-blend-hard-ligt relative z-4 before:pointer-events-none before:absolute before:inset-y-0 before:z-4 before:bg-gradient-to-r before:from-blue-500 before:via-purple-500 before:to-orange-500 before:opacity-16">
             everything but AI
           </span>{" "}
           company.
         </PageHeaderHeading>
       </PageHeader>
-      <div className="max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+      <div className="mx-auto max-w-2xl text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
           dear friend,
         </p>
@@ -64,7 +64,7 @@ export default async function Page() {
         </p>
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
           for developers we are building the coss stack, a one line{" "}
-          <code className="relative z-10 text-primary-foreground before:absolute before:inset-0 before:bg-primary before:-rotate-1 before:rounded-xs px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none before:pointer-events-none before:-z-10">
+          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
             npm install @coss
           </code>{" "}
           package that includes everything you need to build your application,
@@ -84,11 +84,11 @@ export default async function Page() {
           to achieve that, we are partnering up with the best-in-class coss
           companies in the space to offer a unified infrastructure API, react
           package and a single{" "}
-          <code className="relative z-10 before:absolute before:inset-0 before:bg-muted before:-rotate-1 before:rounded-xs px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none before:pointer-events-none before:-z-10">
+          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-muted">
             .env
           </code>{" "}
           environment key:{" "}
-          <code className="relative z-10 text-primary-foreground before:absolute before:inset-0 before:bg-primary before:-rotate-1 before:rounded-xs px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none before:pointer-events-none before:-z-10">
+          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
             COSS_KEY=ITSTIMETOBUILD
           </code>
         </p>
@@ -132,5 +132,5 @@ export default async function Page() {
         </p>
       </div>
     </main>
-  )
+  );
 }

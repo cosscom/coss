@@ -1,6 +1,6 @@
-import { MailIcon } from "lucide-react"
+import { MailIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Component() {
   return (
@@ -64,7 +64,7 @@ export default function Component() {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs">
           By subscribing you agree to our{" "}
           <a className="underline hover:no-underline" href="#">
             Privacy Policy
@@ -73,5 +73,5 @@ export default function Component() {
         </p>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,31 +1,31 @@
-import * as React from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { CopyButton } from "@coss/ui/components/copy-button"
-import { getIconForLanguageExtension } from "@coss/ui/components/icons"
-import { InfoIcon } from "lucide-react"
+import { CopyButton } from "@coss/ui/components/copy-button";
+import { getIconForLanguageExtension } from "@coss/ui/components/icons";
+import { InfoIcon } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { CodeBlockCommand } from "@/components/code-block-command"
-import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper"
-import { CodeTabs } from "@/components/code-tabs"
-import { ComponentPreview } from "@/components/component-preview"
-import { ComponentSource } from "@/components/component-source"
+import { CodeBlockCommand } from "@/components/code-block-command";
+import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper";
+import { CodeTabs } from "@/components/code-tabs";
+import { ComponentPreview } from "@/components/component-preview";
+import { ComponentSource } from "@/components/component-source";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionItem,
   AccordionPanel,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 import {
   Alert,
   AlertAction,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
-import { Button } from "@/registry/default/ui/button"
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
-import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/alert";
+import { Button } from "@/registry/default/ui/button";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 
 export const mdxComponents = {
   h1: ({ className, ...props }: React.ComponentProps<"h1">) => (
@@ -42,15 +42,15 @@ export const mdxComponents = {
         .replace(/ /g, "-")
         .replace(/'/g, "")
         .replace(/\?/g, "")
-        .toLowerCase()
+        .toLowerCase();
 
     return (
       <h2
         {...props}
         id={id}
         className={cn(
-          "mt-12 scroll-m-20 font-heading text-2xl first:mt-0 lg:mt-16 [&+p]:!mt-4 *:[code]:text-2xl",
-          className
+          "[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl first:mt-0 lg:mt-16 *:[code]:text-2xl",
+          className,
         )}
       >
         <a
@@ -60,7 +60,7 @@ export const mdxComponents = {
           {children}
         </a>
       </h2>
-    )
+    );
   },
   h3: ({ className, children, ...props }: React.ComponentProps<"h3">) => {
     const id =
@@ -70,15 +70,15 @@ export const mdxComponents = {
         .replace(/ /g, "-")
         .replace(/'/g, "")
         .replace(/\?/g, "")
-        .toLowerCase()
+        .toLowerCase();
 
     return (
       <h3
         {...props}
         id={id}
         className={cn(
-          "mt-8 scroll-m-20 text-lg font-semibold *:[code]:text-lg",
-          className
+          "mt-8 scroll-m-20 font-semibold text-lg *:[code]:text-lg",
+          className,
         )}
       >
         <a
@@ -88,7 +88,7 @@ export const mdxComponents = {
           {children}
         </a>
       </h3>
-    )
+    );
   },
   h4: ({ className, ...props }: React.ComponentProps<"h4">) => (
     <h4
@@ -99,8 +99,8 @@ export const mdxComponents = {
   h5: ({ className, ...props }: React.ComponentProps<"h5">) => (
     <h5
       className={cn(
-        "mt-8 scroll-m-20 text-lg font-medium tracking-tight",
-        className
+        "mt-8 scroll-m-20 font-medium text-lg tracking-tight",
+        className,
       )}
       {...props}
     />
@@ -108,8 +108,8 @@ export const mdxComponents = {
   h6: ({ className, ...props }: React.ComponentProps<"h6">) => (
     <h6
       className={cn(
-        "mt-8 scroll-m-20 text-base font-medium tracking-tight",
-        className
+        "mt-8 scroll-m-20 font-medium text-base tracking-tight",
+        className,
       )}
       {...props}
     />
@@ -118,7 +118,7 @@ export const mdxComponents = {
     <a
       className={cn(
         "font-medium text-foreground underline underline-offset-4",
-        className
+        className,
       )}
       {...props}
     />
@@ -126,8 +126,8 @@ export const mdxComponents = {
   p: ({ className, ...props }: React.ComponentProps<"p">) => (
     <p
       className={cn(
-        "leading-relaxed text-muted-foreground [&:not(:first-child)]:mt-6",
-        className
+        "text-muted-foreground leading-relaxed [&:not(:first-child)]:mt-6",
+        className,
       )}
       {...props}
     />
@@ -178,7 +178,7 @@ export const mdxComponents = {
   ),
   tr: ({ className, ...props }: React.ComponentProps<"tr">) => (
     <tr
-      className={cn("last:border-b-none m-0 border-b", className)}
+      className={cn("m-0 border-b last:border-b-none", className)}
       {...props}
     />
   ),
@@ -186,7 +186,7 @@ export const mdxComponents = {
     <th
       className={cn(
         "px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right",
-        className
+        className,
       )}
       {...props}
     />
@@ -194,8 +194,8 @@ export const mdxComponents = {
   td: ({ className, ...props }: React.ComponentProps<"td">) => (
     <td
       className={cn(
-        "px-4 py-2 text-left whitespace-nowrap [&[align=center]]:text-center [&[align=right]]:text-right",
-        className
+        "whitespace-nowrap px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right",
+        className,
       )}
       {...props}
     />
@@ -204,17 +204,17 @@ export const mdxComponents = {
     return (
       <pre
         className={cn(
-          "no-scrollbar min-w-0 overflow-x-auto px-4 py-3.5 text-[.8125rem] outline-none has-data-[highlighted-line]:px-0 has-data-[line-numbers]:px-0 has-data-[slot=tabs]:p-0",
-          className
+          "no-scrollbar min-w-0 overflow-x-auto px-4 py-3.5 text-[.8125rem] outline-none has-data-[slot=tabs]:p-0 has-data-[highlighted-line]:px-0 has-data-[line-numbers]:px-0",
+          className,
         )}
         {...props}
       >
         {children}
       </pre>
-    )
+    );
   },
   figure: ({ className, ...props }: React.ComponentProps<"figure">) => {
-    return <figure className={cn(className)} {...props} />
+    return <figure className={cn(className)} {...props} />;
   },
   figcaption: ({
     className,
@@ -224,20 +224,20 @@ export const mdxComponents = {
     const iconExtension =
       "data-language" in props && typeof props["data-language"] === "string"
         ? getIconForLanguageExtension(props["data-language"])
-        : null
+        : null;
 
     return (
       <figcaption
         className={cn(
           "flex items-center gap-2 text-code-foreground [&_svg]:size-5 [&_svg]:text-code-foreground [&_svg]:opacity-70 sm:[&_svg]:size-4",
-          className
+          className,
         )}
         {...props}
       >
         {iconExtension}
         {children}
       </figcaption>
-    )
+    );
   },
   code: ({
     className,
@@ -249,12 +249,12 @@ export const mdxComponents = {
     __bun__,
     ...props
   }: React.ComponentProps<"code"> & {
-    __raw__?: string
-    __src__?: string
-    __npm__?: string
-    __yarn__?: string
-    __pnpm__?: string
-    __bun__?: string
+    __raw__?: string;
+    __src__?: string;
+    __npm__?: string;
+    __yarn__?: string;
+    __pnpm__?: string;
+    __bun__?: string;
   }) => {
     // Inline Code.
     if (typeof props.children === "string") {
@@ -262,15 +262,15 @@ export const mdxComponents = {
         <code
           className={cn(
             "relative rounded-md bg-muted px-[0.3rem] py-[0.2rem] font-mono text-[0.8rem] outline-none",
-            className
+            className,
           )}
           {...props}
         />
-      )
+      );
     }
 
     // npm command.
-    const isNpmCommand = __npm__ && __yarn__ && __pnpm__ && __bun__
+    const isNpmCommand = __npm__ && __yarn__ && __pnpm__ && __bun__;
     if (isNpmCommand) {
       return (
         <CodeBlockCommand
@@ -279,7 +279,7 @@ export const mdxComponents = {
           __pnpm__={__pnpm__}
           __bun__={__bun__}
         />
-      )
+      );
     }
 
     // Default codeblock.
@@ -288,7 +288,7 @@ export const mdxComponents = {
         {__raw__ && <CopyButton value={__raw__} src={__src__} />}
         <code {...props} />
       </>
-    )
+    );
   },
   Step: ({ className, ...props }: React.ComponentProps<"h3">) => (
     <h3
@@ -298,7 +298,7 @@ export const mdxComponents = {
   ),
   Steps: ({ ...props }) => (
     <div
-      className="steps [&>h3]:step mb-12 [counter-reset:step] *:[h3]:first:!mt-0"
+      className="steps [&>h3]:step *:[h3]:first:!mt-0 mb-12 [counter-reset:step]"
       {...props}
     />
   ),
@@ -320,7 +320,7 @@ export const mdxComponents = {
     />
   ),
   Tabs: ({ className, ...props }: React.ComponentProps<typeof Tabs>) => {
-    return <Tabs className={cn(className)} {...props} />
+    return <Tabs className={cn(className)} {...props} />;
   },
   TabsList: ({
     className,
@@ -329,7 +329,7 @@ export const mdxComponents = {
     <TabsList
       className={cn(
         "bg-transparent p-0 *:data-[slot=tab-indicator]:rounded-lg *:data-[slot=tab-indicator]:bg-accent *:data-[slot=tab-indicator]:shadow-none",
-        className
+        className,
       )}
       {...props}
     />
@@ -343,8 +343,8 @@ export const mdxComponents = {
   }: React.ComponentProps<typeof TabsPanel>) => (
     <TabsPanel
       className={cn(
-        "relative [&_h3]:text-base [&_h3]:font-medium *:[figure]:first:mt-0 [&>.steps]:mt-6",
-        className
+        "relative [&>.steps]:mt-6 [&_h3]:font-medium [&_h3]:text-base *:[figure]:first:mt-0",
+        className,
       )}
       {...props}
     />
@@ -374,4 +374,4 @@ export const mdxComponents = {
       {...props}
     />
   ),
-}
+};

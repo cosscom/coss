@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   AlertCircleIcon,
@@ -13,13 +13,13 @@ import {
   UploadCloudIcon,
   UploadIcon,
   VideoIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   formatBytes,
   useFileUpload,
-} from "@/registry/default/hooks/use-file-upload"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/hooks/use-file-upload";
+import { Button } from "@/registry/default/ui/button";
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 // Create some dummy initial files
 const initialFiles = [
@@ -52,11 +52,11 @@ const initialFiles = [
     url: "https://coss.com/origin",
     id: "conclusion.xlsx-1744638436563-8u5xuls",
   },
-]
+];
 
 const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
-  const fileType = file.file instanceof File ? file.file.type : file.file.type
-  const fileName = file.file instanceof File ? file.file.name : file.file.name
+  const fileType = file.file instanceof File ? file.file.type : file.file.type;
+  const fileName = file.file instanceof File ? file.file.name : file.file.name;
 
   if (
     fileType.includes("pdf") ||
@@ -65,33 +65,38 @@ const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
     fileName.endsWith(".doc") ||
     fileName.endsWith(".docx")
   ) {
-    return <FileTextIcon className="size-4 opacity-60" />
-  } else if (
+    return <FileTextIcon className="size-4 opacity-60" />;
+  }
+  if (
     fileType.includes("zip") ||
     fileType.includes("archive") ||
     fileName.endsWith(".zip") ||
     fileName.endsWith(".rar")
   ) {
-    return <FileArchiveIcon className="size-4 opacity-60" />
-  } else if (
+    return <FileArchiveIcon className="size-4 opacity-60" />;
+  }
+  if (
     fileType.includes("excel") ||
     fileName.endsWith(".xls") ||
     fileName.endsWith(".xlsx")
   ) {
-    return <FileSpreadsheetIcon className="size-4 opacity-60" />
-  } else if (fileType.includes("video/")) {
-    return <VideoIcon className="size-4 opacity-60" />
-  } else if (fileType.includes("audio/")) {
-    return <HeadphonesIcon className="size-4 opacity-60" />
-  } else if (fileType.startsWith("image/")) {
-    return <ImageIcon className="size-4 opacity-60" />
+    return <FileSpreadsheetIcon className="size-4 opacity-60" />;
   }
-  return <FileIcon className="size-4 opacity-60" />
-}
+  if (fileType.includes("video/")) {
+    return <VideoIcon className="size-4 opacity-60" />;
+  }
+  if (fileType.includes("audio/")) {
+    return <HeadphonesIcon className="size-4 opacity-60" />;
+  }
+  if (fileType.startsWith("image/")) {
+    return <ImageIcon className="size-4 opacity-60" />;
+  }
+  return <FileIcon className="size-4 opacity-60" />;
+};
 
 export default function Component() {
-  const maxSize = 10 * 1024 * 1024 // 10MB default
-  const maxFiles = 10
+  const maxSize = 10 * 1024 * 1024; // 10MB default
+  const maxFiles = 10;
 
   const [
     { files, isDragging, errors },
@@ -110,11 +115,12 @@ export default function Component() {
     maxFiles,
     maxSize,
     initialFiles,
-  })
+  });
 
   return (
     <div className="flex flex-col gap-2">
       {/* Drop area */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -122,7 +128,7 @@ export default function Component() {
         onDrop={handleDrop}
         data-dragging={isDragging || undefined}
         data-files={files.length > 0 || undefined}
-        className="flex min-h-56 flex-col items-center rounded-xl border border-dashed border-input p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50 data-[files]:hidden"
+        className="flex min-h-56 flex-col items-center not-data-[files]:justify-center rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[files]:hidden data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
@@ -136,8 +142,8 @@ export default function Component() {
           >
             <FileIcon className="size-4 opacity-60" />
           </div>
-          <p className="mb-1.5 text-sm font-medium">Upload files</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="mb-1.5 font-medium text-sm">Upload files</p>
+          <p className="text-muted-foreground text-xs">
             Max {maxFiles} files ∙ Up to {formatBytes(maxSize)}
           </p>
           <Button variant="outline" className="mt-4" onClick={openFileDialog}>
@@ -150,7 +156,7 @@ export default function Component() {
         <>
           {/* Table with files */}
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-medium">Files ({files.length})</h3>
+            <h3 className="font-medium text-sm">Files ({files.length})</h3>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={openFileDialog}>
                 <UploadCloudIcon
@@ -195,7 +201,7 @@ export default function Component() {
                     <TableCell className="py-2 text-muted-foreground">
                       {formatBytes(file.file.size)}
                     </TableCell>
-                    <TableCell className="py-2 text-right whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-2 text-right">
                       <Button
                         size="icon"
                         variant="ghost"
@@ -225,7 +231,7 @@ export default function Component() {
 
       {errors.length > 0 && (
         <div
-          className="flex items-center gap-1 text-xs text-destructive"
+          className="flex items-center gap-1 text-destructive text-xs"
           role="alert"
         >
           <AlertCircleIcon className="size-3 shrink-0" />
@@ -236,7 +242,7 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-center text-xs text-muted-foreground"
+        className="mt-2 text-center text-muted-foreground text-xs"
       >
         Multiple files uploader w/ table ∙{" "}
         <a
@@ -247,5 +253,5 @@ export default function Component() {
         </a>
       </p>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { useId } from "react"
-import { CheckIcon, RefreshCcwIcon } from "lucide-react"
+import { CheckIcon, RefreshCcwIcon } from "lucide-react";
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,12 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Label } from "@/registry/default/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+} from "@/registry/default/ui/dialog";
+import { Label } from "@/registry/default/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -51,7 +51,7 @@ export default function Component() {
                 <Label htmlFor={`${id}-1`}>Essential</Label>
                 <p
                   id={`${id}-1-description`}
-                  className="text-xs text-muted-foreground"
+                  className="text-muted-foreground text-xs"
                 >
                   $4 per member/month
                 </p>
@@ -69,7 +69,7 @@ export default function Component() {
                 <Label htmlFor={`${id}-2`}>Standard</Label>
                 <p
                   id={`${id}-2-description`}
-                  className="text-xs text-muted-foreground"
+                  className="text-muted-foreground text-xs"
                 >
                   $19 per member/month
                 </p>
@@ -87,7 +87,7 @@ export default function Component() {
                 <Label htmlFor={`${id}-3`}>Enterprise</Label>
                 <p
                   id={`${id}-3-description`}
-                  className="text-xs text-muted-foreground"
+                  className="text-muted-foreground text-xs"
                 >
                   $32 per member/month
                 </p>
@@ -97,9 +97,9 @@ export default function Component() {
 
           <div className="space-y-3">
             <p>
-              <strong className="text-sm font-medium">Features include:</strong>
+              <strong className="font-medium text-sm">Features include:</strong>
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li className="flex gap-2">
                 <CheckIcon
                   size={16}
@@ -164,5 +164,5 @@ export default function Component() {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

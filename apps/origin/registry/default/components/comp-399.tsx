@@ -2,8 +2,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
-import { Badge } from "@/registry/default/ui/badge"
+} from "@/registry/default/ui/avatar";
+import { Badge } from "@/registry/default/ui/badge";
 
 export default function Component() {
   return (
@@ -12,9 +12,9 @@ export default function Component() {
         <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <Badge className="absolute -top-2 left-full min-w-5 -translate-x-3 border-background px-1">
+      <Badge className="-top-2 -translate-x-3 absolute left-full min-w-5 border-background px-1">
         6
       </Badge>
     </div>
-  )
+  );
 }

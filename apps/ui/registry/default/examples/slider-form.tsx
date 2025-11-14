@@ -1,29 +1,31 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Slider, SliderValue } from "@/registry/default/ui/slider"
+} from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Slider, SliderValue } from "@/registry/default/ui/slider";
 
 export default function SliderForm() {
-  const [loading, setLoading] = React.useState<boolean>(false)
-  const [value, setValue] = React.useState<number | readonly number[]>([25, 75])
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [value, setValue] = React.useState<number | readonly number[]>([
+    25, 75,
+  ]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
-    const volumes = formData.getAll("volume")
-    alert(`Volume: ${volumes.join(", ")}`)
-  }
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    const volumes = formData.getAll("volume");
+    alert(`Volume: ${volumes.join(", ")}`);
+  };
 
   return (
     <Form onSubmit={onSubmit}>
@@ -40,5 +42,5 @@ export default function SliderForm() {
         Submit
       </Button>
     </Form>
-  )
+  );
 }

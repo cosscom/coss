@@ -1,4 +1,4 @@
-import { Input } from "@/registry/default/ui/input"
+import { Input } from "@/registry/default/ui/input";
 
 export default function InputLg() {
   return (
@@ -8,5 +8,5 @@ export default function InputLg() {
       placeholder="Enter text"
       aria-label="Enter text"
     />
-  )
+  );
 }

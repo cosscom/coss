@@ -1,17 +1,17 @@
-import { MicIcon, PaperclipIcon } from "lucide-react"
+import { MicIcon, PaperclipIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group } from "@/registry/default/ui/group";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function GroupInputGroup() {
   return (
@@ -46,5 +46,5 @@ export default function GroupInputGroup() {
         </InputGroup>
       </Group>
     </Group>
-  )
+  );
 }

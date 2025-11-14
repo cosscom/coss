@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useCopy } from "@/hooks/use-copy"
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { useCopy } from "@/hooks/use-copy";
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 const CopyButton = ({ url }: { url: string | null }) => {
-  const { copied, copy } = useCopy()
+  const { copied, copy } = useCopy();
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -20,7 +20,7 @@ const CopyButton = ({ url }: { url: string | null }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-focus-within/item:opacity-100 lg:group-hover/item:opacity-100"
+            className="text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 lg:group-focus-within/item:opacity-100"
             onClick={() => copy(url || "")}
             aria-label={copied ? "Copied" : "Copy component source"}
             disabled={copied}
@@ -28,7 +28,7 @@ const CopyButton = ({ url }: { url: string | null }) => {
             <div
               className={cn(
                 "transition-all",
-                copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
               )}
             >
               <svg
@@ -47,7 +47,7 @@ const CopyButton = ({ url }: { url: string | null }) => {
             <div
               className={cn(
                 "absolute transition-all",
-                copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
               )}
             >
               <svg
@@ -64,12 +64,12 @@ const CopyButton = ({ url }: { url: string | null }) => {
             </div>
           </Button>
         </TooltipTrigger>
-        <TooltipContent className="px-2 py-1 text-xs text-muted-foreground">
+        <TooltipContent className="px-2 py-1 text-muted-foreground text-xs">
           Copy Registry URL
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
-}
+  );
+};
 
-export default CopyButton
+export default CopyButton;

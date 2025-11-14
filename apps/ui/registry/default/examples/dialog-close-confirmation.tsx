@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
 import {
   AlertDialog,
@@ -10,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogPopup,
   AlertDialogTitle,
-} from "@/registry/default/ui/alert-dialog"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/alert-dialog";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -21,24 +21,24 @@ import {
   DialogPopup,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Field } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Textarea } from "@/registry/default/ui/textarea"
+} from "@/registry/default/ui/dialog";
+import { Field } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function DialogCloseConfirmationDemo() {
-  const [dialogOpen, setDialogOpen] = React.useState(false)
-  const [confirmOpen, setConfirmOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
 
   return (
     <Dialog
       open={dialogOpen}
       onOpenChange={(o) => {
         if (!o && value) {
-          setConfirmOpen(true)
+          setConfirmOpen(true);
         } else {
-          setDialogOpen(o)
+          setDialogOpen(o);
         }
       }}
     >
@@ -52,9 +52,9 @@ export default function DialogCloseConfirmationDemo() {
         </DialogHeader>
         <Form
           onSubmit={(event) => {
-            event.preventDefault()
+            event.preventDefault();
             // Close the dialog when submitting
-            setDialogOpen(false)
+            setDialogOpen(false);
           }}
         >
           <Field>
@@ -69,8 +69,8 @@ export default function DialogCloseConfirmationDemo() {
             </DialogClose>
             <Button
               onClick={() => {
-                setValue("")
-                setDialogOpen(false)
+                setValue("");
+                setDialogOpen(false);
               }}
             >
               Send
@@ -94,9 +94,9 @@ export default function DialogCloseConfirmationDemo() {
             </AlertDialogClose>
             <Button
               onClick={() => {
-                setConfirmOpen(false)
-                setValue("")
-                setDialogOpen(false)
+                setConfirmOpen(false);
+                setValue("");
+                setDialogOpen(false);
               }}
             >
               Discard
@@ -105,5 +105,5 @@ export default function DialogCloseConfirmationDemo() {
         </AlertDialogPopup>
       </AlertDialog>
     </Dialog>
-  )
+  );
 }

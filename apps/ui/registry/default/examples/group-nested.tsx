@@ -1,7 +1,7 @@
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 
 export default function GroupNested() {
   return (
@@ -37,5 +37,5 @@ export default function GroupNested() {
         </Button>
       </Group>
     </Group>
-  )
+  );
 }

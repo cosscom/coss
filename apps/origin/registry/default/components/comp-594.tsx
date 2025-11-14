@@ -1,10 +1,10 @@
-import { SparklesIcon, UploadIcon } from "lucide-react"
+import { SparklesIcon, UploadIcon } from "lucide-react";
 
-import AppToggle from "@/registry/default/components/navbar-components/app-toggle"
-import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher"
-import { Button } from "@/registry/default/ui/button"
+import AppToggle from "@/registry/default/components/navbar-components/app-toggle";
+import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
+import { Button } from "@/registry/default/ui/button";
 
-const teams = ["Acme Inc.", "coss.com", "Junon"]
+const teams = ["Acme Inc.", "coss.com", "Junon"];
 
 export default function Component() {
   return (
@@ -24,7 +24,7 @@ export default function Component() {
             className="text-sm max-sm:aspect-square max-sm:p-0"
           >
             <UploadIcon
-              className="opacity-60 sm:-ms-1"
+              className="sm:-ms-1 opacity-60"
               size={16}
               aria-hidden="true"
             />
@@ -32,7 +32,7 @@ export default function Component() {
           </Button>
           <Button size="sm" className="text-sm max-sm:aspect-square max-sm:p-0">
             <SparklesIcon
-              className="opacity-60 sm:-ms-1"
+              className="sm:-ms-1 opacity-60"
               size={16}
               aria-hidden="true"
             />
@@ -41,5 +41,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

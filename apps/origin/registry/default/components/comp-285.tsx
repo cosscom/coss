@@ -1,6 +1,6 @@
-import { ArrowRightIcon, CircleCheckIcon, XIcon } from "lucide-react"
+import { ArrowRightIcon, CircleCheckIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,10 +15,10 @@ export default function Component() {
           />
           <div className="flex grow justify-between gap-12">
             <p className="text-sm">Completed successfully!</p>
-            <a href="#" className="group text-sm font-medium whitespace-nowrap">
+            <a href="#" className="group whitespace-nowrap font-medium text-sm">
               Link
               <ArrowRightIcon
-                className="ms-1 -mt-0.5 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
+                className="-mt-0.5 ms-1 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
                 size={16}
                 aria-hidden="true"
               />
@@ -38,5 +38,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

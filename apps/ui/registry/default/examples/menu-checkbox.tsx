@@ -1,10 +1,10 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuCheckboxItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuCheckboxDemo() {
   return (
@@ -15,5 +15,5 @@ export default function MenuCheckboxDemo() {
         <MenuCheckboxItem>Notifications</MenuCheckboxItem>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

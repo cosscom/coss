@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Stepper,
   StepperIndicator,
   StepperItem,
   StepperSeparator,
   StepperTrigger,
-} from "@/registry/default/ui/stepper"
+} from "@/registry/default/ui/stepper";
 
-const steps = [1, 2, 3, 4]
+const steps = [1, 2, 3, 4];
 
 export default function Component() {
-  const [currentStep, setCurrentStep] = useState(2)
-  const [isLoading, setIsLoading] = useState(false)
+  const [currentStep, setCurrentStep] = useState(2);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNextStep = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     setTimeout(() => {
-      setCurrentStep((prev) => prev + 1)
-      setIsLoading(false)
-    }, 1000)
-  }
+      setCurrentStep((prev) => prev + 1);
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
     <div className="mx-auto max-w-xl space-y-8 text-center">
@@ -61,12 +61,12 @@ export default function Component() {
         </Button>
       </div>
       <p
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
         aria-live="polite"
       >
         Controlled stepper with checkmarks and loading state
       </p>
     </div>
-  )
+  );
 }

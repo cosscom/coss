@@ -3,7 +3,7 @@ import {
   CropperCropArea,
   CropperDescription,
   CropperImage,
-} from "@/registry/default/ui/cropper"
+} from "@/registry/default/ui/cropper";
 
 export default function Component() {
   return (
@@ -21,17 +21,18 @@ export default function Component() {
       <p
         aria-live="polite"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
+        className="mt-2 text-muted-foreground text-xs"
       >
         Cropper with full size crop area ∙{" "}
         <a
           href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
           target="_blank"
+          rel="noreferrer"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

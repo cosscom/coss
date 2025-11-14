@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react";
 
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const radioId = useId()
-  const inputId = useId()
-  const [selectedValue, setSelectedValue] = useState("without-expansion")
-  const inputRef = useRef<HTMLInputElement>(null)
+  const radioId = useId();
+  const inputId = useId();
+  const [selectedValue, setSelectedValue] = useState("without-expansion");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (selectedValue === "with-expansion" && inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.focus();
     }
-  }, [selectedValue])
+  }, [selectedValue]);
 
   return (
     <RadioGroup
@@ -37,7 +37,7 @@ export default function Component() {
               <Label htmlFor={`${radioId}-1`}>Radio with expansion</Label>
               <p
                 id={`${radioId}-1-description`}
-                className="text-xs text-muted-foreground"
+                className="text-muted-foreground text-xs"
               >
                 You can use this radio with a label and a description.
               </p>
@@ -47,12 +47,12 @@ export default function Component() {
               role="region"
               id={inputId}
               aria-labelledby={`${radioId}-1`}
-              className="grid transition-all ease-in-out data-[state=collapsed]:grid-rows-[0fr] data-[state=collapsed]:opacity-0 data-[state=expanded]:grid-rows-[1fr] data-[state=expanded]:opacity-100"
+              className="grid transition-all ease-in-out data-[state=collapsed]:grid-rows-[0fr] data-[state=expanded]:grid-rows-[1fr] data-[state=collapsed]:opacity-0 data-[state=expanded]:opacity-100"
               data-state={
                 selectedValue === "with-expansion" ? "expanded" : "collapsed"
               }
             >
-              <div className="pointer-events-none -m-2 overflow-hidden p-2">
+              <div className="-m-2 pointer-events-none overflow-hidden p-2">
                 <div className="pointer-events-auto mt-3">
                   <Input
                     ref={inputRef}
@@ -79,12 +79,12 @@ export default function Component() {
           <Label htmlFor={`${radioId}-2`}>Radio without expansion</Label>
           <p
             id={`${radioId}-2-description`}
-            className="text-xs text-muted-foreground"
+            className="text-muted-foreground text-xs"
           >
             You can use this checkbox with a label and a description.
           </p>
         </div>
       </div>
     </RadioGroup>
-  )
+  );
 }

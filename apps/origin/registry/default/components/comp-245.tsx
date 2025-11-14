@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
   return (
@@ -13,7 +13,7 @@ export default function Component() {
           aria-label="Slider with reference labels"
         />
         <span
-          className="mt-4 flex w-full items-center justify-between gap-1 text-xs font-medium text-muted-foreground"
+          className="mt-4 flex w-full items-center justify-between gap-1 font-medium text-muted-foreground text-xs"
           aria-hidden="true"
         >
           <span>5 GB</span>
@@ -22,5 +22,5 @@ export default function Component() {
         </span>
       </div>
     </div>
-  )
+  );
 }

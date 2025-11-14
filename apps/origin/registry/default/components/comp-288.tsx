@@ -1,6 +1,6 @@
-import { CircleCheckIcon, XIcon } from "lucide-react"
+import { CircleCheckIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,12 +15,18 @@ export default function Component() {
           />
           <div className="flex grow justify-between gap-12">
             <p className="text-sm">Message sent</p>
-            <div className="text-sm whitespace-nowrap">
-              <button className="text-sm font-medium hover:underline">
+            <div className="whitespace-nowrap text-sm">
+              <button
+                type="button"
+                className="font-medium text-sm hover:underline"
+              >
                 View
               </button>{" "}
               <span className="mx-1 text-muted-foreground">·</span>{" "}
-              <button className="text-sm font-medium hover:underline">
+              <button
+                type="button"
+                className="font-medium text-sm hover:underline"
+              >
                 Undo
               </button>
             </div>
@@ -39,5 +45,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

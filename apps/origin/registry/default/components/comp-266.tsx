@@ -1,10 +1,10 @@
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <legend className="text-sm font-medium text-foreground">Equalizer</legend>
+      <legend className="font-medium text-foreground text-sm">Equalizer</legend>
       <div className="flex h-48 justify-center gap-8">
         <div className="flex flex-col items-center gap-2">
           <Slider
@@ -16,7 +16,7 @@ export default function Component() {
             aria-label="60 Hz"
             showTooltip
           />
-          <Label className="flex w-0 justify-center text-xs text-muted-foreground">
+          <Label className="flex w-0 justify-center text-muted-foreground text-xs">
             60
           </Label>
         </div>
@@ -30,7 +30,7 @@ export default function Component() {
             aria-label="250 Hz"
             showTooltip
           />
-          <Label className="flex w-0 justify-center text-xs text-muted-foreground">
+          <Label className="flex w-0 justify-center text-muted-foreground text-xs">
             250
           </Label>
         </div>
@@ -44,7 +44,7 @@ export default function Component() {
             aria-label="1k"
             showTooltip
           />
-          <Label className="flex w-0 justify-center text-xs text-muted-foreground">
+          <Label className="flex w-0 justify-center text-muted-foreground text-xs">
             1k
           </Label>
         </div>
@@ -58,7 +58,7 @@ export default function Component() {
             aria-label="4k"
             showTooltip
           />
-          <Label className="flex w-0 justify-center text-xs text-muted-foreground">
+          <Label className="flex w-0 justify-center text-muted-foreground text-xs">
             4k
           </Label>
         </div>
@@ -72,11 +72,11 @@ export default function Component() {
             aria-label="16k"
             showTooltip
           />
-          <Label className="flex w-0 justify-center text-xs text-muted-foreground">
+          <Label className="flex w-0 justify-center text-muted-foreground text-xs">
             16K
           </Label>
         </div>
       </div>
     </div>
-  )
+  );
 }

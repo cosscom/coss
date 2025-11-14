@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Meter,
@@ -6,7 +6,7 @@ import {
   MeterLabel,
   MeterTrack,
   MeterValue,
-} from "@/registry/default/ui/meter"
+} from "@/registry/default/ui/meter";
 
 export default function MeterWithRangeDemo() {
   return (
@@ -19,5 +19,5 @@ export default function MeterWithRangeDemo() {
         <MeterIndicator />
       </MeterTrack>
     </Meter>
-  )
+  );
 }

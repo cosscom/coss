@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex gap-6">
       <div className="flex items-center gap-2">
@@ -20,5 +20,5 @@ export default function Component() {
         <Label htmlFor={`${id}-c`}>Astro</Label>
       </div>
     </div>
-  )
+  );
 }

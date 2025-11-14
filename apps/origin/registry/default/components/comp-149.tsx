@@ -1,9 +1,9 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Checkbox } from "@/registry/default/ui/checkbox";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   const items = [
     { value: "1", label: "Monday", defaultChecked: true },
@@ -13,18 +13,18 @@ export default function Component() {
     { value: "5", label: "Friday", defaultChecked: true },
     { value: "6", label: "Saturday" },
     { value: "7", label: "Sunday", disabled: true },
-  ]
+  ];
 
   return (
     <fieldset className="space-y-4">
-      <legend className="text-sm leading-none font-medium text-foreground">
+      <legend className="font-medium text-foreground text-sm leading-none">
         Days of the week
       </legend>
       <div className="flex gap-1.5">
         {items.map((item) => (
           <label
             key={`${id}-${item.value}`}
-            className="relative flex size-9 cursor-pointer flex-col items-center justify-center gap-3 rounded-full border border-input text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary has-data-[state=checked]:text-primary-foreground"
+            className="relative flex size-9 cursor-pointer flex-col items-center justify-center gap-3 rounded-full border border-input text-center shadow-xs outline-none transition-[color,box-shadow] has-data-disabled:cursor-not-allowed has-data-[state=checked]:border-primary has-focus-visible:border-ring has-data-[state=checked]:bg-primary has-data-[state=checked]:text-primary-foreground has-data-disabled:opacity-50 has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
           >
             <Checkbox
               id={`${id}-${item.value}`}
@@ -33,7 +33,7 @@ export default function Component() {
               defaultChecked={item.defaultChecked}
               disabled={item.disabled}
             />
-            <span aria-hidden="true" className="text-sm font-medium">
+            <span aria-hidden="true" className="font-medium text-sm">
               {item.label[0]}
             </span>
             <span className="sr-only">{item.label}</span>
@@ -41,5 +41,5 @@ export default function Component() {
         ))}
       </div>
     </fieldset>
-  )
+  );
 }

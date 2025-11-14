@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Popover,
   PopoverPopup,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function InputGroupWithEndTooltip() {
   return (
@@ -41,5 +41,5 @@ export default function InputGroupWithEndTooltip() {
         </Popover>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

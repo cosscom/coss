@@ -2,11 +2,11 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
+} from "@/registry/default/ui/avatar";
 
 export default function AvatarGroupDemo() {
   return (
-    <div className="flex -space-x-[0.6rem]">
+    <div className="-space-x-[0.6rem] flex">
       <Avatar className="ring-2 ring-background">
         <AvatarImage
           src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=96&h=96&dpr=2&q=80"
@@ -29,5 +29,5 @@ export default function AvatarGroupDemo() {
         <AvatarFallback>U3</AvatarFallback>
       </Avatar>
     </div>
-  )
+  );
 }

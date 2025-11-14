@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -7,12 +7,12 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
+} from "@/registry/default/ui/field";
 
 const items = [
   { value: "apple", label: "Apple" },
@@ -25,7 +25,7 @@ const items = [
   { value: "kiwi", label: "Kiwi" },
   { value: "peach", label: "Peach" },
   { value: "pear", label: "Pear" },
-]
+];
 
 export default function FieldComboboxDemo() {
   return (
@@ -49,5 +49,5 @@ export default function FieldComboboxDemo() {
       </Combobox>
       <FieldDescription>Select a item.</FieldDescription>
     </Field>
-  )
+  );
 }

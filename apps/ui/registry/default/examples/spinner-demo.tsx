@@ -1,5 +1,5 @@
-import { Spinner } from "@/registry/default/ui/spinner"
+import { Spinner } from "@/registry/default/ui/spinner";
 
 export default function SpinnerDemo() {
-  return <Spinner />
+  return <Spinner />;
 }

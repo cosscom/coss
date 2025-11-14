@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { toast } from "sonner"
+import { toast } from "sonner";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -15,10 +15,10 @@ export default function Component() {
             label: "Undo",
             onClick: () => console.log("Undo"),
           },
-        })
+        });
       }}
     >
       Show sonner
     </Button>
-  )
+  );
 }

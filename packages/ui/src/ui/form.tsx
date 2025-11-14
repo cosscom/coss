@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Form as FormPrimitive } from "@base-ui-components/react/form"
+import { Form as FormPrimitive } from "@base-ui-components/react/form";
 
-import { cn } from "@coss/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils";
 
 function Form({ className, ...props }: FormPrimitive.Props) {
   return (
@@ -11,7 +11,7 @@ function Form({ className, ...props }: FormPrimitive.Props) {
       className={cn("flex w-full flex-col gap-4", className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Form }
+export { Form };

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Autocomplete,
@@ -7,12 +7,12 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompletePopup,
-} from "@/registry/default/ui/autocomplete"
+} from "@/registry/default/ui/autocomplete";
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
+} from "@/registry/default/ui/field";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -25,7 +25,7 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function FieldAutocompleteDemo() {
   return (
@@ -49,5 +49,5 @@ export default function FieldAutocompleteDemo() {
       </Autocomplete>
       <FieldDescription>Select a item.</FieldDescription>
     </Field>
-  )
+  );
 }

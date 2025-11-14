@@ -2,14 +2,14 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
+} from "@/registry/default/ui/field";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Select a country", value: null },
@@ -17,7 +17,7 @@ const items = [
   { label: "United Kingdom", value: "uk" },
   { label: "Canada", value: "ca" },
   { label: "Australia", value: "au" },
-]
+];
 
 export default function FieldSelectDemo() {
   return (
@@ -37,5 +37,5 @@ export default function FieldSelectDemo() {
       </Select>
       <FieldDescription>This is an optional field</FieldDescription>
     </Field>
-  )
+  );
 }
