@@ -24,6 +24,6 @@ jobs:
     secrets: inherit
 
   build:
-    needs: [lint, test]
+    needs: [lint, test, format]
     uses: ./.github/workflows/build.yml
     secrets: inherit
