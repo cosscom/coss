@@ -16,12 +16,10 @@ jobs:
     secrets: inherit
 
   lint:
-    needs: format
     uses: ./.github/workflows/lint.yml
     secrets: inherit
 
   test:
-    needs: lint
     uses: ./.github/workflows/test.yml
     secrets: inherit
 
