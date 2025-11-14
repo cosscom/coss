@@ -12,18 +12,22 @@ concurrency:
 
 jobs:
   format:
+    name: Format Check
     uses: ./.github/workflows/format.yml
     secrets: inherit
 
   lint:
+    name: Lint
     uses: ./.github/workflows/lint.yml
     secrets: inherit
 
   test:
+    name: Test
     uses: ./.github/workflows/test.yml
     secrets: inherit
 
   build:
+    name: Build
     needs: [lint, test, format]
     uses: ./.github/workflows/build.yml
     secrets: inherit
