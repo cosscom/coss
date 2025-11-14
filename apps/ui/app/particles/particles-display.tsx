@@ -2,8 +2,32 @@ import { Suspense } from "react"
 
 import { Index } from "@/registry/__index__"
 import type { RegistryCategory } from "@/registry/registry-categories"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import { ParticleCard } from "./particle-card"
+import { ParticleCardContainer } from "./particle-card-container"
+
+function ParticleCardSkeleton({ className }: { className?: string }) {
+  return (
+    <ParticleCardContainer
+      className={className}
+      footer={
+        <>
+          <div className="flex flex-1 gap-1">
+            <Skeleton className="size-4 shrink-0" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="size-7" />
+            <Skeleton className="h-7 w-20" />
+          </div>
+        </>
+      }
+    >
+      <Skeleton className="h-7 w-64" />
+    </ParticleCardContainer>
+  )
+}
 
 export async function ParticlesDisplay({
   selectedCategories,
@@ -42,11 +66,7 @@ export async function ParticlesDisplay({
         return (
           <Suspense
             key={particle.name}
-            fallback={
-              <div className="flex min-h-20 items-center justify-center rounded-xl border bg-muted/50">
-                Loading...
-              </div>
-            }
+            fallback={<ParticleCardSkeleton className={className} />}
           >
             <ParticleCard name={particle.name} className={className} />
           </Suspense>
