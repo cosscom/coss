@@ -1,16 +1,15 @@
 import { cache } from "react"
-
 import { Icons } from "@coss/ui/components/icons"
 import { InformationCircleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { getRegistryItem } from "@/lib/registry"
 import { CodeBlockCommand } from "@/components/code-block-command"
 import { ComponentSource } from "@/components/component-source"
 import { CopyRegistry } from "@/components/copy-registry"
-import { getRegistryItem } from "@/lib/registry"
+import { Index } from "@/registry/__index__"
 import { Button } from "@/registry/default/ui/button"
 import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet"
-import { Index } from "@/registry/__index__"
 
 import { ParticleCardContainer } from "./particle-card-container"
 
@@ -137,4 +136,3 @@ export async function ParticleCard({
     </ParticleCardContainer>
   )
 }
-

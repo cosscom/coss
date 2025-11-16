@@ -49,8 +49,11 @@ export default function SearchContainer() {
   const updateSelectedItems = useCallback(
     (items: { label: string; value: string; isComponent?: boolean }[]) => {
       startTransition(() => {
-        const tags = items.length > 0 ? items.map((item) => item.value).join(",") : ""
-        const newUrl = tags ? `${pathname}?tags=${encodeURIComponent(tags)}` : pathname
+        const tags =
+          items.length > 0 ? items.map((item) => item.value).join(",") : ""
+        const newUrl = tags
+          ? `${pathname}?tags=${encodeURIComponent(tags)}`
+          : pathname
         router.push(newUrl, { scroll: false })
       })
     },

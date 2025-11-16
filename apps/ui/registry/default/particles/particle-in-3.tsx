@@ -21,7 +21,7 @@ export default function Particle() {
   const [isFavorite, setIsFavorite] = useState(false)
 
   return (
-    <InputGroup className="[--radius-lg:9999px]">
+    <InputGroup className="[--radius-lg:9999px] [--radius:9999rem]">
       <Popover>
         <InputGroupAddon>
           <PopoverTrigger

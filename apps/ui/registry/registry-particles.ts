@@ -8,9 +8,7 @@ type ParticleItem = Omit<Registry["items"][number], "categories"> & {
 }
 
 // Helper function to ensure categories are valid RegistryCategory values
-function categories<T extends RegistryCategory[]>(
-  ...categories: T
-): T {
+function categories<T extends RegistryCategory[]>(...categories: T): T {
   return categories
 }
 

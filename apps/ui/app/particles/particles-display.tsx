@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 
 import { Index } from "@/registry/__index__"
+import { Skeleton } from "@/registry/default/ui/skeleton"
 import type { RegistryCategory } from "@/registry/registry-categories"
-import { Skeleton } from "@/components/ui/skeleton"
 
 import { ParticleCard } from "./particle-card"
 import { ParticleCardContainer } from "./particle-card-container"
@@ -75,4 +75,3 @@ export async function ParticlesDisplay({
     </div>
   )
 }
-
