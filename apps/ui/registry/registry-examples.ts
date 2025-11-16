@@ -1,7 +1,5 @@
 import { type Registry } from "shadcn/schema"
 
-import type { RegistryCategory } from "./registry-categories"
-
 export const examples: Registry["items"] = [
   {
     name: "accordion-controlled",
@@ -731,14 +729,6 @@ export const examples: Registry["items"] = [
     categories: ["button"],
   },
   {
-    name: "button-with-kbd",
-    description: "Button with keyboard shortcut",
-    type: "registry:example",
-    registryDependencies: ["@coss/button", "@coss/kbd"],
-    files: [{ path: "examples/button-with-kbd.tsx", type: "registry:example" }],
-    categories: ["button", "kbd"],
-  },
-  {
     name: "button-loading",
     description: "Loading button",
     type: "registry:example",
@@ -1118,6 +1108,20 @@ export const examples: Registry["items"] = [
     categories: ["sheet", "dialog"],
   },
   {
+    name: "sheet-inset",
+    description: "Sheet inset",
+    type: "registry:example",
+    registryDependencies: [
+      "@coss/sheet",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/input",
+    ],
+    files: [{ path: "examples/sheet-inset.tsx", type: "registry:example" }],
+    categories: ["sheet"],
+  },
+  {
     name: "sheet-position",
     description: "Sheet position",
     type: "registry:example",
@@ -1378,13 +1382,140 @@ export const examples: Registry["items"] = [
   },
   {
     name: "group-with-input",
-    description: "Group with input",
+    description: "Group with input and copy button",
     type: "registry:example",
-    registryDependencies: ["@coss/group", "@coss/button", "@coss/input"],
+    registryDependencies: [
+      "@coss/group",
+      "@coss/button",
+      "@coss/input",
+      "@coss/tooltip",
+    ],
     files: [
       { path: "examples/group-with-input.tsx", type: "registry:example" },
     ],
-    categories: ["group"],
+    categories: ["group", "input", "copy", "button", "tooltip"],
+  },
+  {
+    name: "group-sm",
+    description: "Group with small buttons",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/menu"],
+    files: [{ path: "examples/group-sm.tsx", type: "registry:example" }],
+    categories: ["group", "button", "menu"],
+  },
+  {
+    name: "group-lg",
+    description: "Group with large buttons",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/menu"],
+    files: [{ path: "examples/group-lg.tsx", type: "registry:example" }],
+    categories: ["group", "button", "menu"],
+  },
+  {
+    name: "group-with-disabled-button",
+    description: "Group with disabled button",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/menu"],
+    files: [
+      {
+        path: "examples/group-with-disabled-button.tsx",
+        type: "registry:example",
+      },
+    ],
+    categories: ["group", "button", "menu"],
+  },
+  {
+    name: "group-default-button",
+    description: "Group with default style buttons",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/menu"],
+    files: [
+      { path: "examples/group-default-button.tsx", type: "registry:example" },
+    ],
+    categories: ["group", "button", "menu"],
+  },
+  {
+    name: "group-with-text",
+    description: "Group with start labeled text",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
+    files: [{ path: "examples/group-with-text.tsx", type: "registry:example" }],
+    categories: ["group", "input", "label"],
+  },
+  {
+    name: "group-with-end-text",
+    description: "Group with end text",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/input"],
+    files: [
+      { path: "examples/group-with-end-text.tsx", type: "registry:example" },
+    ],
+    categories: ["group", "input"],
+  },
+  {
+    name: "group-vertical",
+    description: "Vertical group of buttons",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button"],
+    files: [{ path: "examples/group-vertical.tsx", type: "registry:example" }],
+    categories: ["group", "button"],
+  },
+  {
+    name: "group-nested",
+    description: "Pagination example made with nested groups",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button"],
+    files: [{ path: "examples/group-nested.tsx", type: "registry:example" }],
+    categories: ["group", "button"],
+  },
+  {
+    name: "group-popup",
+    description: "Group with button and popup",
+    type: "registry:example",
+    registryDependencies: [
+      "@coss/group",
+      "@coss/button",
+      "@coss/popover",
+      "@coss/badge",
+    ],
+    files: [{ path: "examples/group-popup.tsx", type: "registry:example" }],
+    categories: ["group", "button", "popover", "badge"],
+  },
+  {
+    name: "group-input-group",
+    description: "Nested groups with input group",
+    type: "registry:example",
+    registryDependencies: [
+      "@coss/group",
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    files: [
+      { path: "examples/group-input-group.tsx", type: "registry:example" },
+    ],
+    categories: ["group", "button", "input", "input group", "tooltip"],
+  },
+  {
+    name: "group-menu",
+    description: "Group with button and menu",
+    type: "registry:example",
+    registryDependencies: ["@coss/group", "@coss/button", "@coss/menu"],
+    files: [{ path: "examples/group-menu.tsx", type: "registry:example" }],
+    categories: ["group", "button", "menu"],
+  },
+  {
+    name: "group-select",
+    description: "Group with select and number field",
+    type: "registry:example",
+    registryDependencies: [
+      "@coss/group",
+      "@coss/select",
+      "@coss/number-field",
+      "@coss/button",
+    ],
+    files: [{ path: "examples/group-select.tsx", type: "registry:example" }],
+    categories: ["group", "select", "number field", "button"],
   },
   {
     name: "input-sm",
@@ -1893,7 +2024,6 @@ export const examples: Registry["items"] = [
     description: "A number field with an external label",
     type: "registry:example",
     registryDependencies: ["@coss/number-field", "@coss/label"],
-    dependencies: ["@radix-ui/react-label"],
     files: [
       {
         path: "examples/number-field-with-label.tsx",
@@ -2173,6 +2303,42 @@ export const examples: Registry["items"] = [
     type: "registry:example",
     registryDependencies: ["@coss/select"],
     files: [{ path: "examples/select-multiple.tsx", type: "registry:example" }],
+    categories: ["select"],
+  },
+  {
+    name: "select-with-icon",
+    description: "Select with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      { path: "examples/select-with-icon.tsx", type: "registry:example" },
+    ],
+    categories: ["select"],
+  },
+  {
+    name: "select-options-with-icon",
+    description: "Select options with icon",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      {
+        path: "examples/select-options-with-icon.tsx",
+        type: "registry:example",
+      },
+    ],
+    categories: ["select"],
+  },
+  {
+    name: "select-with-object-values",
+    description: "Select with object values",
+    type: "registry:example",
+    registryDependencies: ["@coss/select"],
+    files: [
+      {
+        path: "examples/select-with-object-values.tsx",
+        type: "registry:example",
+      },
+    ],
     categories: ["select"],
   },
   {
@@ -2535,17 +2701,17 @@ export const examples: Registry["items"] = [
     categories: ["toggle group", "toggle"],
   },
   {
-    name: "toggle-group-outline-with-separator",
-    description: "Toggle group with outline toggles and separator",
+    name: "toggle-group-outline-vertical",
+    description: "Toggle group with outline toggles and vertical layout",
     type: "registry:example",
     registryDependencies: ["@coss/toggle-group"],
     files: [
       {
-        path: "examples/toggle-group-outline-with-separator.tsx",
+        path: "examples/toggle-group-outline-vertical.tsx",
         type: "registry:example",
       },
     ],
-    categories: ["toggle group", "toggle"],
+    categories: ["toggle group", "toggle", "vertical"],
   },
   {
     name: "toggle-group-disabled",

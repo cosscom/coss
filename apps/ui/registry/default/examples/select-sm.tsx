@@ -15,7 +15,7 @@ const items = [
 
 export default function SelectSm() {
   return (
-    <Select items={items}>
+    <Select items={items} aria-label="Select framework">
       <SelectTrigger size="sm">
         <SelectValue />
       </SelectTrigger>

@@ -76,6 +76,10 @@ import {
 
 ## Examples
 
+### Sheet with Inset
+
+<ComponentPreview name="sheet-inset" />
+
 ### Side sheets
 
 <ComponentPreview name="sheet-position" />
@@ -89,6 +93,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 - Replace `asChild` → `render` on `SheetTrigger` and closing buttons
 - Prefer `SheetPopup`; `SheetContent` remains for legacy
 - If you used `asChild` on any other parts, switch to the `render` prop
+- `SheetPopup` supports an `inset` prop for adding internal padding
 
 ### Comparison Example
 

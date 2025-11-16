@@ -15,7 +15,7 @@ const items = [
 
 export default function SelectDisabled() {
   return (
-    <Select items={items}>
+    <Select items={items} aria-label="Select framework">
       <SelectTrigger disabled>
         <SelectValue />
       </SelectTrigger>

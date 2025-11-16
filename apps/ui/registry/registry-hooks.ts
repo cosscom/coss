@@ -6,7 +6,7 @@ export const hooks: Registry["items"] = [
     type: "registry:hook",
     files: [
       {
-        path: "hooks/use-mobile.tsx",
+        path: "hooks/use-mobile.ts",
         type: "registry:hook",
       },
     ],
@@ -16,7 +16,7 @@ export const hooks: Registry["items"] = [
     type: "registry:hook",
     files: [
       {
-        path: "hooks/use-copy-to-clipboard.tsx",
+        path: "hooks/use-copy-to-clipboard.ts",
         type: "registry:hook",
       },
     ],

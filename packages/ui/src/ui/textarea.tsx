@@ -30,7 +30,7 @@ function Textarea({
       }
     >
       <FieldPrimitive.Control
-        render={(controlProps) => (
+        render={(defaultProps) => (
           <textarea
             data-slot="textarea"
             className={cn(
@@ -40,7 +40,7 @@ function Textarea({
               size === "lg" &&
                 "min-h-18.5 py-[calc(--spacing(2)-1px)] max-sm:min-h-21.5"
             )}
-            {...mergeProps(props, controlProps)}
+            {...mergeProps(defaultProps, props)}
           />
         )}
       />

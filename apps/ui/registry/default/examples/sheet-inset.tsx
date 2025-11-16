@@ -1,0 +1,49 @@
+import { Button } from "@/registry/default/ui/button"
+import { Field, FieldLabel } from "@/registry/default/ui/field"
+import { Form } from "@/registry/default/ui/form"
+import { Input } from "@/registry/default/ui/input"
+import {
+  Sheet,
+  SheetClose,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetPopup,
+  SheetTitle,
+  SheetTrigger,
+} from "@/registry/default/ui/sheet"
+
+export default function SheetInset() {
+  return (
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>
+        Open Sheet
+      </SheetTrigger>
+      <SheetPopup inset>
+        <Form className="flex-1">
+          <SheetHeader>
+            <SheetTitle>Edit profile</SheetTitle>
+            <SheetDescription>
+              Make changes to your profile here. Click save when you&apos;re
+              done.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col gap-4 px-4">
+            <Field>
+              <FieldLabel>Name</FieldLabel>
+              <Input type="text" defaultValue="Margaret Welsh" />
+            </Field>
+            <Field>
+              <FieldLabel>Username</FieldLabel>
+              <Input type="text" defaultValue="@maggie.welsh" />
+            </Field>
+          </div>
+          <SheetFooter>
+            <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
+            <Button type="submit">Save</Button>
+          </SheetFooter>
+        </Form>
+      </SheetPopup>
+    </Sheet>
+  )
+}

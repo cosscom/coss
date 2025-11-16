@@ -27,7 +27,6 @@ export default function InputGroupWithIconButton() {
         type="text"
         defaultValue="https://coss.com"
         aria-label="Url"
-        readOnly
       />
       <InputGroupAddon align="inline-end">
         <Tooltip>

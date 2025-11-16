@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "select-options-with-icon",
+  "type": "registry:example",
+  "description": "Select options with icon",
+  "registryDependencies": [
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/examples/select-options-with-icon.tsx",
+      "content": "\"use client\"\n\nimport { Code2Icon, GlobeIcon, LayersIcon, ZapIcon } from \"lucide-react\"\n\nimport {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\"\n\nconst items = [\n  { label: \"Components\", value: \"components\", icon: LayersIcon },\n  { label: \"Performance\", value: \"performance\", icon: ZapIcon },\n  { label: \"Network\", value: \"network\", icon: GlobeIcon },\n  { label: \"Development\", value: \"development\", icon: Code2Icon },\n]\n\nexport default function SelectOptionsWithIcon() {\n  return (\n    <Select\n      defaultValue={items[0]}\n      itemToStringValue={(item) => item.value}\n      aria-label=\"Select category\"\n    >\n      <SelectTrigger>\n        <SelectValue>\n          {(item) => (\n            <span className=\"flex items-center gap-2\">\n              <item.icon className=\"size-4 opacity-72\" />\n              <span className=\"truncate\">{item.label}</span>\n            </span>\n          )}\n        </SelectValue>\n      </SelectTrigger>\n      <SelectPopup>\n        {items.map((item) => (\n          <SelectItem key={item.value} value={item}>\n            <span className=\"flex items-center gap-2\">\n              <item.icon className=\"size-4 opacity-72\" />\n              <span className=\"truncate\">{item.label}</span>\n            </span>\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  )\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "categories": [
+    "select"
+  ]
+}
