@@ -3,8 +3,10 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { appConfig } from "@/lib/config"
 import { PAGES_NEW } from "@/lib/docs"
 import type { source } from "@/lib/source"
+import { CommandMenu } from "@/components/command-menu"
 import { Badge } from "@/registry/default/ui/badge"
 import {
   Sidebar,
@@ -31,6 +33,9 @@ export function DocsSidebar({
     >
       <SidebarContent className="no-scrollbar px-4 py-2">
         <div className="h-(--top-spacing) shrink-0" />
+        <div className="mb-4">
+          <CommandMenu tree={tree} navItems={appConfig.navItems} />
+        </div>
         {tree.children.map((item) => (
           <SidebarGroup key={item.$id} className="gap-1">
             <SidebarGroupLabel className="h-7 px-0 text-sidebar-accent-foreground">
