@@ -331,7 +331,6 @@ export function WeekView({
           >
             {/* Positioned events */}
             {(processedDayEvents[dayIndex] ?? []).map((positionedEvent) => (
-              /* biome-ignore lint/a11y/noStaticElementInteractions: known */
               <div
                 key={positionedEvent.event.id}
                 className="absolute z-10 px-0.5"

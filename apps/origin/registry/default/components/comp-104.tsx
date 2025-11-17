@@ -52,7 +52,6 @@ export default function Component() {
         aria-live="polite"
       >
         <Icon className="opacity-60" size={16} aria-hidden="true" />
-        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: known */}
         <span className="ms-2" aria-label={`Current volume is ${volume}`}>
           {volume}
         </span>

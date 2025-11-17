@@ -2,7 +2,6 @@
 
 // Component exports
 
-/* biome-ignore lint/performance/noBarrelFile: known issue will be fixed */
 export { AgendaView } from "./agenda-view";
 export { CalendarDndProvider, useCalendarDnd } from "./calendar-dnd-context";
 // Constants and utility exports

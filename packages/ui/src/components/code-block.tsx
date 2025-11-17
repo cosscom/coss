@@ -32,7 +32,6 @@ export async function CodeBlock({
         </figcaption>
       )}
       {copyButton && <CopyButton value={code} />}
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: intentional */}
       <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
     </figure>
   );

@@ -15,7 +15,6 @@ export default function Component() {
       className="group inline-flex items-center gap-2"
       data-state={checked ? "checked" : "unchecked"}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <span
         id={`${id}-off`}
         className="flex-1 cursor-pointer text-right font-medium text-sm group-data-[state=checked]:text-muted-foreground/70"
@@ -30,7 +29,6 @@ export default function Component() {
         onCheckedChange={toggleSwitch}
         aria-labelledby={`${id}-off ${id}-on`}
       />
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <span
         id={`${id}-on`}
         className="flex-1 cursor-pointer text-left font-medium text-sm group-data-[state=unchecked]:text-muted-foreground/70"

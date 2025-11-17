@@ -31,7 +31,6 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       <div className="relative">
         {/* Drop area */}
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
         <div
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}

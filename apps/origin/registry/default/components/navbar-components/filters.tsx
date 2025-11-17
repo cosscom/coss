@@ -56,7 +56,7 @@ export default function Component() {
                 </div>
               </div>
               <div
-                /* biome-ignore lint/a11y/useAriaPropsForRole: known */
+                // biome-ignore lint(a11y/useAriaPropsForRole): known
                 role="separator"
                 aria-orientation="horizontal"
                 className="-mx-3 my-3 h-px bg-border"

@@ -147,7 +147,7 @@ export default function Component() {
                             navigationLinks[index + 1].submenu &&
                             link.type !== navigationLinks[index + 1].type)) && (
                           <div
-                            /* biome-ignore lint/a11y/useAriaPropsForRole: known*/
+                            // biome-ignore lint(a11y/useAriaPropsForRole): known
                             role="separator"
                             aria-orientation="horizontal"
                             className="-mx-1 my-1 h-px w-full bg-border"

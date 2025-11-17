@@ -272,7 +272,7 @@
     color: var(--shiki-light);
 
     @variant dark {
-      /* biome-ignore lint/suspicious/noDuplicateProperties: knwon */
+      /* biome-ignore lint(suspicious/noDuplicateProperties): knwon */
       color: var(--shiki-dark) !important;
     }
   }

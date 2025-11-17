@@ -118,7 +118,6 @@ export function EventsPopup({
             const isLastDay = isSameDay(date, eventEnd);
 
             return (
-              /* biome-ignore lint/a11y/noStaticElementInteractions: known */
               <div
                 key={event.id}
                 className="cursor-pointer"

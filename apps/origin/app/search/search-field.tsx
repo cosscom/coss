@@ -97,7 +97,6 @@ export default function SearchField({
           onChange={handleMultipleSelectorChange}
           className="w-full rounded-xl border-border bg-zinc-200/40 ps-[52px] dark:bg-zinc-900"
         />
-        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: known */}
         <div
           className="pointer-events-none absolute inset-y-0 start-0 flex items-start justify-center ps-4 pt-2.5 text-muted-foreground"
           aria-label="Search component"

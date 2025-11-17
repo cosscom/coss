@@ -3,18 +3,21 @@
   "files": {
     "includes": [
       "**",
-      "!**/node_modules",
       "!**/dist",
       "!**/build",
       "!**/coverage",
       "!**/*.log",
       "!**/.turbo",
-      "!**/.turbo",
-      "!**/.next",
       "!**/.next",
       "!**/apps/**/*/.next",
       "!**/apps/**/*/.source"
     ]
+  },
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "defaultBranch": "main",
+    "useIgnoreFile": false
   },
   "formatter": {
     "enabled": true,
@@ -22,30 +25,25 @@
     "indentWidth": 2,
     "lineWidth": 80
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "performance": {
-        "noBarrelFile": "warn",
-        "noImgElement": "off"
-      },
+      "recommended": true,
       "a11y": {
         "noSvgWithoutTitle": "off",
-        "useSemanticElements": "off",
         "noLabelWithoutControl": "off",
+        "useSemanticElements": "off",
         "useValidAnchor": "off",
-        "useKeyWithClickEvents": "off"
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off",
+        "useAriaPropsSupportedByRole": "off",
+        "useGenericFontNames": "off"
       },
-      "recommended": true,
-      "nursery": {
-        "useSortedClasses": {
-          "level": "warn",
-          "fix": "unsafe",
-          "options": {
-            "functions": ["clsx", "cn", "cva", "twMerge"]
-          }
-        }
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "performance": {
+        "noImgElement": "off"
       },
       "style": {
         "noParameterAssign": "error",
@@ -57,23 +55,22 @@
         "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
-        "noUselessElse": "error",
-        "useTrimStartEnd": "warn"
+        "noUselessElse": "error"
+      }
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
       }
     }
   },
   "javascript": {
     "formatter": {
       "quoteStyle": "double",
-      "jsxQuoteStyle": "double",
-      "trailingCommas": "all",
-      "semicolons": "always"
-    }
-  },
-  "json": {
-    "formatter": {
-      "indentStyle": "space",
-      "indentWidth": 2
+      "trailingCommas": "all"
     }
   }
 }

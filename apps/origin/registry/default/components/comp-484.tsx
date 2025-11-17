@@ -195,7 +195,6 @@ export default function Component() {
                       className="h-11"
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                        /* biome-ignore lint/a11y/noStaticElementInteractions: known */
                         <div
                           className={cn(
                             header.column.getCanSort() &&

@@ -41,7 +41,6 @@ export function DroppableCell({
       : null;
 
   return (
-    /* biome-ignore lint/a11y/noStaticElementInteractions: known */
     <div
       ref={setNodeRef}
       onClick={onClick}

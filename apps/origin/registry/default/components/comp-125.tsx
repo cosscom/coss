@@ -17,7 +17,6 @@ export default function Component() {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="inline-flex items-center gap-2 align-top">
-        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: known */}
         <div
           className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input"
           aria-label={previewUrl ? "Upload preview" : "Default user avatar"}
@@ -48,21 +47,21 @@ export default function Component() {
           />
         </div>
       </div>
-      {fileName && (
-        <div className="inline-flex gap-2 text-xs">
-          <p className="truncate text-muted-foreground" aria-live="polite">
-            {fileName}
-          </p>{" "}
-          <button
-            type="button"
-            onClick={() => removeFile(files[0]?.id)}
-            className="font-medium text-destructive hover:underline"
-            aria-label={`Remove ${fileName}`}
-          >
-            Remove
-          </button>
-        </div>
-      )}
+      fileName && (
+      <div className="inline-flex gap-2 text-xs">
+        <p className="truncate text-muted-foreground" aria-live="polite">
+          {fileName}
+        </p>{" "}
+        <button
+          type="button"
+          onClick={() => removeFile(files[0]?.id)}
+          className="font-medium text-destructive hover:underline"
+          aria-label={`Remove ${fileName}`}
+        >
+          Remove
+        </button>
+      </div>
+      )
       <p
         aria-live="polite"
         role="region"

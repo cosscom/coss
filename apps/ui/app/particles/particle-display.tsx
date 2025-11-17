@@ -98,7 +98,7 @@ export async function ParticleDisplay({
                     <Button
                       variant="outline"
                       render={
-                        /* biome-ignore lint/a11y/useAnchorContent: known */
+                        // biome-ignore lint(a11y/useAnchorContent): known
                         <a
                           href={`https://v0.dev/chat/api/open?url=${encodeURIComponent(`${cossuiUrl}/r/${name}.json`)}`}
                           target="_blank"

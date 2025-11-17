@@ -8,6 +8,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint --",
     "format": "biome format --write .",
+    "format:all": "biome check --write --unsafe --no-errors-on-unmatched",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
     "prepare": "husky"
   },

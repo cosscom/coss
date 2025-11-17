@@ -230,7 +230,6 @@ const MultipleSelector = ({
       const newOptions = selected.filter((s) => s.value !== option.value);
       setSelected(newOptions);
       onChange?.(newOptions);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       if (newOptions.length > 0) {
         setOpen(false);
         inputRef.current?.blur();
@@ -447,7 +446,6 @@ const MultipleSelector = ({
       } // When onSearch is provided, we don&lsquo;t want to filter the options. You can still override it.
       filter={commandFilter()}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: known */}
       <div
         className={cn(
           "relative min-h-[46px] rounded-md border border-input text-sm outline-none transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-aria-invalid:border-destructive has-disabled:opacity-50 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40",

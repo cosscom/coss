@@ -48,7 +48,6 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    /* biome-ignore lint/a11y/noStaticElementInteractions: known */
     <div
       data-slot="input-group-addon"
       data-align={align}
