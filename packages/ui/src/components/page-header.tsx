@@ -3,12 +3,11 @@ import { cn } from "@coss/ui/lib/utils";
 function PageHeader({
   className,
   children,
-  ...props
 }: React.ComponentProps<"section">) {
   return (
-    <section className={className} {...props}>
+    <section>
       <div className="container-wrapper">
-        <div className="container flex flex-col items-center gap-2 px-0 py-8 text-center md:py-12 lg:py-16 xl:gap-4">
+        <div className={cn("container flex flex-col items-center gap-2 px-0 py-8 text-center md:py-12 lg:py-16 xl:gap-4", className)}>
           {children}
         </div>
       </div>
@@ -18,25 +17,27 @@ function PageHeader({
 
 function PageHeaderHeading({
   className,
-  ...props
+  children,
 }: React.ComponentProps<"h1">) {
   return (
     <h1
       className={cn("font-heading text-4xl lg:text-5xl", className)}
-      {...props}
-    />
+    >
+      {children}
+    </h1>
   );
 }
 
 function PageHeaderDescription({
   className,
-  ...props
+  children,
 }: React.ComponentProps<"p">) {
   return (
     <p
       className={cn("text-muted-foreground lg:text-lg", className)}
-      {...props}
-    />
+    >
+      {children}
+    </p>
   );
 }
 
