@@ -7,7 +7,7 @@ export default function Component() {
   const id = useId();
   return (
     <div className="flex items-center gap-2">
-      <Checkbox id={id} disabled />
+      <Checkbox disabled id={id} />
       <Label htmlFor={id}>Disabled checkbox</Label>
     </div>
   );

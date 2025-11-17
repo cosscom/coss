@@ -74,27 +74,27 @@ const isValid = coss.email.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Sending Emails
         </h2>
-        <CodeBlock code={sendingEmails} language="tsx" copyButton={false} />
+        <CodeBlock code={sendingEmails} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Domains
         </h2>
-        <CodeBlock code={domains} language="tsx" copyButton={false} />
+        <CodeBlock code={domains} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Templates
         </h2>
-        <CodeBlock code={templates} language="tsx" copyButton={false} />
+        <CodeBlock code={templates} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
-        <CodeBlock code={webhooks} language="tsx" copyButton={false} />
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
-        <CodeBlock code={utilities} language="tsx" copyButton={false} />
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

@@ -38,15 +38,15 @@ export default function Component() {
   return (
     <>
       <button
-        type="button"
         className="inline-flex h-9 w-fit rounded-md border border-input bg-background px-3 py-2 text-foreground text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         onClick={() => setOpen(true)}
+        type="button"
       >
         <span className="flex grow items-center">
           <SearchIcon
+            aria-hidden="true"
             className="-ms-1 me-3 text-muted-foreground/80"
             size={16}
-            aria-hidden="true"
           />
           <span className="font-normal text-muted-foreground/70">Search</span>
         </span>
@@ -54,34 +54,34 @@ export default function Component() {
           ⌘K
         </kbd>
       </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog onOpenChange={setOpen} open={open}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Quick start">
             <CommandItem>
               <FolderPlusIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>New folder</span>
               <CommandShortcut className="justify-center">⌘N</CommandShortcut>
             </CommandItem>
             <CommandItem>
               <FileInputIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>Import document</span>
               <CommandShortcut className="justify-center">⌘I</CommandShortcut>
             </CommandItem>
             <CommandItem>
               <CircleFadingPlusIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>Add block</span>
               <CommandShortcut className="justify-center">⌘B</CommandShortcut>
@@ -91,25 +91,25 @@ export default function Component() {
           <CommandGroup heading="Navigation">
             <CommandItem>
               <ArrowUpRightIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>Go to dashboard</span>
             </CommandItem>
             <CommandItem>
               <ArrowUpRightIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>Go to apps</span>
             </CommandItem>
             <CommandItem>
               <ArrowUpRightIcon
-                size={16}
-                className="opacity-60"
                 aria-hidden="true"
+                className="opacity-60"
+                size={16}
               />
               <span>Go to connections</span>
             </CommandItem>

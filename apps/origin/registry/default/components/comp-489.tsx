@@ -30,16 +30,16 @@ export default function Component() {
         minValue={today(getLocalTimeZone())}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Disabled dates -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateRangePicker.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

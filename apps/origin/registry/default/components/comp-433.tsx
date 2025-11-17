@@ -16,17 +16,17 @@ export default function Component() {
         <TabsList className="mb-3">
           <TabsTrigger value="tab-1">
             <HouseIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="tab-2" className="group">
+          <TabsTrigger className="group" value="tab-2">
             <PanelsTopLeftIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Projects
             <Badge
@@ -36,11 +36,11 @@ export default function Component() {
               3
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="tab-3" className="group">
+          <TabsTrigger className="group" value="tab-3">
             <BoxIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Packages
             <Badge className="ms-1.5 transition-opacity group-data-[state=inactive]:opacity-50">

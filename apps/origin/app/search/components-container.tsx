@@ -43,13 +43,13 @@ export default function ComponentsContainer() {
 
   return (
     <div className="space-y-4">
-      <SearchField selectedTags={tags} onTagChange={updateTags} />
+      <SearchField onTagChange={updateTags} selectedTags={tags} />
       <PageGrid>
         {filtered.map((component: RegistryItem) => (
           <ComponentCard
-            key={component.name}
             component={component}
             isSearchPage
+            key={component.name}
           >
             <ComponentLoader component={component} />
             <ComponentDetails component={component} />

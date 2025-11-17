@@ -37,11 +37,11 @@ export default function CardDemo() {
           <div className="flex flex-col gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
-              <Input type="text" placeholder="Name of your project" />
+              <Input placeholder="Name of your project" type="text" />
             </Field>
             <Field>
               <FieldLabel>Framework</FieldLabel>
-              <Select items={frameworkOptions} defaultValue="next">
+              <Select defaultValue="next" items={frameworkOptions}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

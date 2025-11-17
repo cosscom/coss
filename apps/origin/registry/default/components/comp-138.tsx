@@ -13,8 +13,8 @@ export default function Component() {
         <a
           className="underline"
           href="https://coss.com/origin"
-          target="_blank"
           rel="noreferrer"
+          target="_blank"
         >
           terms of service
         </a>

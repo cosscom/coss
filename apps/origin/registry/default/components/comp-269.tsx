@@ -5,9 +5,9 @@ export default function Component() {
     <div className="rounded-md border px-4 py-3">
       <p className="text-sm">
         <CircleAlert
+          aria-hidden="true"
           className="-mt-0.5 me-3 inline-flex text-red-500"
           size={16}
-          aria-hidden="true"
         />
         An error occurred!
       </p>

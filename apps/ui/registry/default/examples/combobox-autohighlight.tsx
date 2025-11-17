@@ -24,10 +24,10 @@ const items = [
 
 export default function ComboboxAutohighlight() {
   return (
-    <Combobox items={items} autoHighlight>
+    <Combobox autoHighlight items={items}>
       <ComboboxInput
-        placeholder="Select an item..."
         aria-label="Select an item"
+        placeholder="Select an item..."
       />
       <ComboboxPopup>
         <ComboboxEmpty>No results found.</ComboboxEmpty>

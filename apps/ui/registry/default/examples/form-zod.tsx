@@ -64,15 +64,15 @@ export default function FormZodDemo() {
     >
       <Field name="name">
         <FieldLabel>Name</FieldLabel>
-        <Input placeholder="Enter name" disabled={loading} />
+        <Input disabled={loading} placeholder="Enter name" />
         <FieldError />
       </Field>
       <Field name="age">
         <FieldLabel>Age</FieldLabel>
-        <Input placeholder="Enter age" disabled={loading} />
+        <Input disabled={loading} placeholder="Enter age" />
         <FieldError />
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

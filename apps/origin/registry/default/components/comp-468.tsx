@@ -67,7 +67,7 @@ export default function Component() {
         <tbody aria-hidden="true" className="table-row h-2" />
         <TableBody className="[&_td:first-child]:rounded-l-lg [&_td:last-child]:rounded-r-lg">
           {items.map((item) => (
-            <TableRow key={item.id} className="border-none">
+            <TableRow className="border-none" key={item.id}>
               <TableCell className="py-2.5 font-medium">{item.name}</TableCell>
               <TableCell className="py-2.5">{item.email}</TableCell>
               <TableCell className="py-2.5">{item.location}</TableCell>

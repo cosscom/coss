@@ -19,19 +19,19 @@ export default function FormDemo() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Email</FieldLabel>
         <Input
-          name="email"
-          type="email"
-          placeholder="you@example.com"
           disabled={loading}
+          name="email"
+          placeholder="you@example.com"
           required
+          type="email"
         />
         <FieldError>Please enter a valid email.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

@@ -29,7 +29,7 @@ export default function AccordionDemo() {
   return (
     <Accordion className="w-full" defaultValue={["3"]}>
       {items.map((item) => (
-        <AccordionItem value={item.id} key={item.id}>
+        <AccordionItem key={item.id} value={item.id}>
           <AccordionTrigger>{item.title}</AccordionTrigger>
           <AccordionPanel>{item.content}</AccordionPanel>
         </AccordionItem>

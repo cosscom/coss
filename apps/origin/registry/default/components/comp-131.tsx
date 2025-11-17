@@ -41,28 +41,28 @@ export default function Component() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+            aria-label="Options"
             className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
             size="icon"
-            aria-label="Options"
           >
-            <ChevronDownIcon size={16} aria-hidden="true" />
+            <ChevronDownIcon aria-hidden="true" size={16} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
+          align="end"
           className="max-w-64 md:max-w-xs"
           side="bottom"
           sideOffset={4}
-          align="end"
         >
           <DropdownMenuRadioGroup
-            value={selectedIndex}
             onValueChange={setSelectedIndex}
+            value={selectedIndex}
           >
             {options.map((option, index) => (
               <DropdownMenuRadioItem
+                className="items-start [&>span]:pt-1.5"
                 key={option.label}
                 value={String(index)}
-                className="items-start [&>span]:pt-1.5"
               >
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{option.label}</span>

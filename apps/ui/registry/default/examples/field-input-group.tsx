@@ -13,9 +13,9 @@ export default function FieldInputGroup() {
     <Field>
       <FieldLabel>Subscribe</FieldLabel>
       <InputGroup>
-        <InputGroupInput type="email" placeholder="Your best email" />
+        <InputGroupInput placeholder="Your best email" type="email" />
         <InputGroupAddon align="inline-end">
-          <Button variant="ghost" aria-label="Subscribe" size="icon-xs">
+          <Button aria-label="Subscribe" size="icon-xs" variant="ghost">
             <ArrowRightIcon />
           </Button>
         </InputGroupAddon>

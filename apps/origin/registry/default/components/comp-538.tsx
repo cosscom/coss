@@ -33,7 +33,7 @@ export default function Component() {
   return (
     <Timeline className="divide-y rounded-lg border">
       {items.map((item) => (
-        <TimelineItem key={item.id} step={item.id} className="m-0! px-4! py-3!">
+        <TimelineItem className="m-0! px-4! py-3!" key={item.id} step={item.id}>
           <TimelineContent className="text-foreground">
             {item.description}
             <TimelineDate className="mt-1">

@@ -56,8 +56,6 @@ export default function Component() {
             <div className="h-full sm:border-e">
               <div className="flex flex-col px-2">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate({
@@ -66,83 +64,85 @@ export default function Component() {
                     });
                     setMonth(today);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Today
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(yesterday);
                     setMonth(yesterday.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Yesterday
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(last7Days);
                     setMonth(last7Days.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last 7 days
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(last30Days);
                     setMonth(last30Days.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last 30 days
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(monthToDate);
                     setMonth(monthToDate.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Month to date
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(lastMonth);
                     setMonth(lastMonth.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last month
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(yearToDate);
                     setMonth(yearToDate.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Year to date
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(lastYear);
                     setMonth(lastYear.to);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last year
                 </Button>
@@ -150,33 +150,33 @@ export default function Component() {
             </div>
           </div>
           <Calendar
+            className="p-2"
+            disabled={[
+              { after: today }, // Dates before today
+            ]}
             mode="range"
-            selected={date}
+            month={month}
+            onMonthChange={setMonth}
             onSelect={(newDate) => {
               if (newDate) {
                 setDate(newDate);
               }
             }}
-            month={month}
-            onMonthChange={setMonth}
-            className="p-2"
-            disabled={[
-              { after: today }, // Dates before today
-            ]}
+            selected={date}
           />
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Range calendar with presets -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

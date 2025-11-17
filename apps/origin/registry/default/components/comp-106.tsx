@@ -6,20 +6,20 @@ export default function Component() {
   return (
     <div className="-space-x-px inline-flex rounded-md shadow-xs rtl:space-x-reverse">
       <Button
-        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-        variant="outline"
-        size="icon"
         aria-label="Flip Horizontal"
+        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+        size="icon"
+        variant="outline"
       >
-        <FlipHorizontalIcon size={16} aria-hidden="true" />
+        <FlipHorizontalIcon aria-hidden="true" size={16} />
       </Button>
       <Button
-        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-        variant="outline"
-        size="icon"
         aria-label="Flip Vertical"
+        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+        size="icon"
+        variant="outline"
       >
-        <FlipVerticalIcon size={16} aria-hidden="true" />
+        <FlipVerticalIcon aria-hidden="true" size={16} />
       </Button>
     </div>
   );

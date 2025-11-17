@@ -24,17 +24,17 @@ export function SiteHeader({
         {mobileNav}
         <div className="-mt-0.5 flex shrink-0 items-center gap-1.5 font-heading text-2xl sm:text-[1.625em]">
           {isExternal ? (
-            <a href={gatewayHome} aria-label="Home">
+            <a aria-label="Home" href={gatewayHome}>
               coss.com
             </a>
           ) : (
-            <Link href={gatewayHome} aria-label="Home">
+            <Link aria-label="Home" href={gatewayHome}>
               coss.com
             </Link>
           )}
           <ProductLabel
-            items={siteConfig.products}
             currentProduct={currentProduct}
+            items={siteConfig.products}
           />
         </div>
         <div className="ms-auto flex items-center gap-2 md:flex-1 md:justify-end">

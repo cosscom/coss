@@ -31,7 +31,7 @@ export default function GroupDefaultButton() {
       </Button>
       <GroupSeparator className="bg-primary/72" />
       <Menu>
-        <MenuTrigger render={<Button size="icon" aria-label="Menu" />}>
+        <MenuTrigger render={<Button aria-label="Menu" size="icon" />}>
           <EllipsisIcon className="size-4" />
         </MenuTrigger>
         <MenuPopup align="end">

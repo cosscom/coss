@@ -9,11 +9,11 @@ export default function HoverCardDemo() {
     <HoverCard>
       <div className="flex items-center gap-3">
         <img
+          alt="Avatar"
           className="shrink-0 rounded-full"
+          height={40}
           src="/origin/avatar-40-05.jpg"
           width={40}
-          height={40}
-          alt="Avatar"
         />
         <div className="space-y-0.5">
           <HoverCardTrigger asChild>
@@ -30,11 +30,11 @@ export default function HoverCardDemo() {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <img
+              alt="Avatar"
               className="shrink-0 rounded-full"
+              height={40}
               src="/origin/avatar-40-05.jpg"
               width={40}
-              height={40}
-              alt="Avatar"
             />
             <div className="space-y-0.5">
               <p className="font-medium text-sm">Keith Kennedy</p>
@@ -49,25 +49,25 @@ export default function HoverCardDemo() {
           <div className="flex items-center gap-2">
             <div className="-space-x-1.5 flex">
               <img
+                alt="Friend 01"
                 className="rounded-full ring-1 ring-background"
+                height={20}
                 src="/origin/avatar-20-04.jpg"
                 width={20}
-                height={20}
-                alt="Friend 01"
               />
               <img
+                alt="Friend 02"
                 className="rounded-full ring-1 ring-background"
+                height={20}
                 src="/origin/avatar-20-05.jpg"
                 width={20}
-                height={20}
-                alt="Friend 02"
               />
               <img
+                alt="Friend 03"
                 className="rounded-full ring-1 ring-background"
+                height={20}
                 src="/origin/avatar-20-06.jpg"
                 width={20}
-                height={20}
-                alt="Friend 03"
               />
             </div>
             <div className="text-muted-foreground text-xs">

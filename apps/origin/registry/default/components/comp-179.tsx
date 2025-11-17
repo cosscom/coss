@@ -12,12 +12,12 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={setChecked}
         aria-label="Toggle switch"
+        checked={checked}
+        id={id}
+        onCheckedChange={setChecked}
       />
-      <Label htmlFor={id} className="font-medium text-sm">
+      <Label className="font-medium text-sm" htmlFor={id}>
         {checked ? "On" : "Off"}
       </Label>
     </div>

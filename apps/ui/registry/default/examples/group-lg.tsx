@@ -20,19 +20,19 @@ import {
 export default function GroupLg() {
   return (
     <Group aria-label="File actions">
-      <Button variant="outline" size="lg">
+      <Button size="lg" variant="outline">
         <FilesIcon />
         Files
       </Button>
       <GroupSeparator />
-      <Button variant="outline" size="lg">
+      <Button size="lg" variant="outline">
         <FilmIcon />
         Media
       </Button>
       <GroupSeparator />
       <Menu>
         <MenuTrigger
-          render={<Button variant="outline" size="icon-lg" aria-label="Menu" />}
+          render={<Button aria-label="Menu" size="icon-lg" variant="outline" />}
         >
           <EllipsisIcon className="size-4" />
         </MenuTrigger>

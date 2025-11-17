@@ -31,22 +31,22 @@ export default function Component() {
       <Label htmlFor={id}>Copy to clipboard</Label>
       <div className="relative">
         <Input
-          ref={inputRef}
-          id={id}
           className="pe-9"
-          type="text"
           defaultValue="pnpm install origin-ui"
+          id={id}
           readOnly
+          ref={inputRef}
+          type="text"
         />
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                type="button"
-                onClick={handleCopy}
-                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed"
                 aria-label={copied ? "Copied" : "Copy to clipboard"}
+                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed"
                 disabled={copied}
+                onClick={handleCopy}
+                type="button"
               >
                 <div
                   className={cn(
@@ -55,9 +55,9 @@ export default function Component() {
                   )}
                 >
                   <CheckIcon
+                    aria-hidden="true"
                     className="stroke-emerald-500"
                     size={16}
-                    aria-hidden="true"
                   />
                 </div>
                 <div
@@ -66,7 +66,7 @@ export default function Component() {
                     copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
                   )}
                 >
-                  <CopyIcon size={16} aria-hidden="true" />
+                  <CopyIcon aria-hidden="true" size={16} />
                 </div>
               </button>
             </TooltipTrigger>

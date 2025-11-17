@@ -15,7 +15,7 @@ const items = [
 
 export default function SelectDemo() {
   return (
-    <Select items={items} defaultValue="next">
+    <Select defaultValue="next" items={items}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>

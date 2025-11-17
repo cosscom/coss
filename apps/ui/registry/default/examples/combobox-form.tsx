@@ -42,10 +42,10 @@ export default function ComboboxForm() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Favorite item</FieldLabel>
-        <Combobox items={items} name="item" disabled={loading} required>
+        <Combobox disabled={loading} items={items} name="item" required>
           <ComboboxInput placeholder="Select an item..." />
           <ComboboxPopup>
             <ComboboxEmpty>No results found.</ComboboxEmpty>
@@ -60,7 +60,7 @@ export default function ComboboxForm() {
         </Combobox>
         <FieldError>Please select a item.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

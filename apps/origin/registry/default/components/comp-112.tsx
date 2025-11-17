@@ -12,12 +12,12 @@ export default function Component() {
         Preview
       </Button>
       <Button
-        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-        variant="outline"
-        size="icon"
         aria-label="Open link"
+        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+        size="icon"
+        variant="outline"
       >
-        <SquareArrowOutUpRightIcon size={16} aria-hidden="true" />
+        <SquareArrowOutUpRightIcon aria-hidden="true" size={16} />
       </Button>
     </div>
   );

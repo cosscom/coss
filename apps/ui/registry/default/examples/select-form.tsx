@@ -37,15 +37,15 @@ export default function SelectForm() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Framework</FieldLabel>
         <Select
-          name="framework"
-          items={items}
-          disabled={loading}
-          required
           aria-label="Select framework"
+          disabled={loading}
+          items={items}
+          name="framework"
+          required
         >
           <SelectTrigger>
             <SelectValue />
@@ -62,7 +62,7 @@ export default function SelectForm() {
         <FieldError>Please select a value.</FieldError>
       </Field>
 
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

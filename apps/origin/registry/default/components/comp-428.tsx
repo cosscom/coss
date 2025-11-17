@@ -7,23 +7,23 @@ import {
 
 export default function Component() {
   return (
-    <Tabs defaultValue="tab-1" className="items-center">
+    <Tabs className="items-center" defaultValue="tab-1">
       <TabsList className="gap-1 bg-transparent">
         <TabsTrigger
-          value="tab-1"
           className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+          value="tab-1"
         >
           Tab 1
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+          value="tab-2"
         >
           Tab 2
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+          value="tab-3"
         >
           Tab 3
         </TabsTrigger>

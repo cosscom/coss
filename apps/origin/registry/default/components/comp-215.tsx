@@ -19,11 +19,11 @@ export default function Component() {
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="1" disabled>
+          <SelectItem disabled value="1">
             React
           </SelectItem>
           <SelectItem value="2">Next.js</SelectItem>
-          <SelectItem value="3" disabled>
+          <SelectItem disabled value="3">
             Astro
           </SelectItem>
           <SelectItem value="4">Gatsby</SelectItem>

@@ -9,8 +9,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with no resize</Label>
       <Textarea
-        id={id}
         className="[resize:none]"
+        id={id}
         placeholder="Leave a comment"
       />
     </div>

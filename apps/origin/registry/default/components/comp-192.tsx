@@ -15,9 +15,9 @@ export default function Component() {
         <option value="4">Gatsby</option>
       </SelectNative>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Tell us what&lsquo;s your favorite Select framework
       </p>

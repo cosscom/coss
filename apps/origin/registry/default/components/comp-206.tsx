@@ -26,9 +26,9 @@ export default function Component() {
         </SelectContent>
       </Select>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Tell us what&lsquo;s your favorite Select framework
       </p>

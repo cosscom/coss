@@ -11,11 +11,11 @@ export default function HoverCardDemo() {
         <HoverCardTrigger asChild>
           <a className="flex size-16 overflow-hidden rounded-md" href="#">
             <img
+              alt="Content"
               className="size-full object-cover"
+              height={216}
               src="/origin/dialog-content.png"
               width={382}
-              height={216}
-              alt="Content"
             />
           </a>
         </HoverCardTrigger>

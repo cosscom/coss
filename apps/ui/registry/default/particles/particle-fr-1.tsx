@@ -14,13 +14,13 @@ export default function Particle() {
       <Collapsible>
         <FrameHeader className="flex-row items-center justify-between px-2 py-2">
           <CollapsibleTrigger
-            render={<Button variant="ghost" />}
             className="data-panel-open:[&_svg]:rotate-180"
+            render={<Button variant="ghost" />}
           >
             <ChevronDownIcon className="size-4" />
             Section header
           </CollapsibleTrigger>
-          <Button variant="ghost" size="icon" aria-label="Delete">
+          <Button aria-label="Delete" size="icon" variant="ghost">
             <TrashIcon />
           </Button>
         </FrameHeader>

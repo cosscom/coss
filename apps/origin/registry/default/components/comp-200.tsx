@@ -25,6 +25,7 @@ export default function Component() {
           label: `(${modifiedOffset}) ${timezone.replace(/_/g, " ")}`,
           numericOffset: Number.parseInt(
             offset.replace("GMT", "").replace("+", "") || "0",
+            10,
           ),
         };
       })
@@ -34,7 +35,7 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Timezone select (native)</Label>
-      <SelectNative id={id} defaultValue="Europe/London">
+      <SelectNative defaultValue="Europe/London" id={id}>
         {formattedTimezones.map(({ value, label }) => (
           <option key={value} value={value}>
             {label}

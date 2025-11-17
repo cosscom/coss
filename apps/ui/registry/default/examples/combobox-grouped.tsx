@@ -87,7 +87,7 @@ export default function ComboboxGrouped() {
   return (
     <Combobox items={groupedTags}>
       <div className="flex flex-col items-start gap-2">
-        <ComboboxInput placeholder="e.g. feature" aria-label="Search tags" />
+        <ComboboxInput aria-label="Search tags" placeholder="e.g. feature" />
       </div>
       <ComboboxPopup>
         <ComboboxEmpty>No tags found.</ComboboxEmpty>

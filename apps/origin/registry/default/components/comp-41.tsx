@@ -34,16 +34,16 @@ export default function Component() {
         </Dialog>
       </Popover>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DatePicker.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

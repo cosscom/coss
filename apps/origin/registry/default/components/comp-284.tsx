@@ -9,31 +9,31 @@ export default function Component() {
       <div className="flex gap-2">
         <div className="flex grow gap-3">
           <CircleAlert
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-red-500"
             size={16}
-            aria-hidden="true"
           />
           <div className="flex grow justify-between gap-12">
             <p className="text-sm">An error occurred!</p>
-            <a href="#" className="group whitespace-nowrap font-medium text-sm">
+            <a className="group whitespace-nowrap font-medium text-sm" href="#">
               Link
               <ArrowRightIcon
+                aria-hidden="true"
                 className="-mt-0.5 ms-1 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
                 size={16}
-                aria-hidden="true"
               />
             </a>
           </div>
         </div>
         <Button
-          variant="ghost"
-          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
           aria-label="Close banner"
+          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+          variant="ghost"
         >
           <XIcon
-            size={16}
-            className="opacity-60 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            size={16}
           />
         </Button>
       </div>

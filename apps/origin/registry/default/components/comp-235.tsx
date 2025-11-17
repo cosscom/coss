@@ -79,20 +79,20 @@ export default function Component() {
           label: "Select frameworks",
         }}
         defaultOptions={frameworks}
-        placeholder="Select frameworks"
         emptyIndicator={<p className="text-center text-sm">No results found</p>}
+        placeholder="Select frameworks"
       />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Inspired by{" "}
         <a
           className="underline hover:text-foreground"
           href="https://shadcnui-expansions.typeart.cc/docs/multiple-selector"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           shadcn/ui expansions
         </a>

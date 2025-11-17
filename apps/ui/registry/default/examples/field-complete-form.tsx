@@ -47,11 +47,11 @@ export default function FieldCompleteFormDemo() {
           Full Name <span className="text-destructive">*</span>
         </FieldLabel>
         <Input
-          name="fullName"
-          type="text"
-          placeholder="John Doe"
           disabled={loading}
+          name="fullName"
+          placeholder="John Doe"
           required
+          type="text"
         />
         <FieldError>Please enter a valid name.</FieldError>
       </Field>
@@ -61,11 +61,11 @@ export default function FieldCompleteFormDemo() {
           Email <span className="text-destructive">*</span>
         </FieldLabel>
         <Input
-          name="email"
-          type="email"
-          placeholder="john@example.com"
           disabled={loading}
+          name="email"
+          placeholder="john@example.com"
           required
+          type="email"
         />
         <FieldError>Please enter a valid email.</FieldError>
       </Field>
@@ -73,7 +73,7 @@ export default function FieldCompleteFormDemo() {
       <Field>
         <FieldLabel>Role</FieldLabel>
         <Select
-          name="role"
+          disabled={loading}
           items={[
             { label: "Select your role", value: null },
             { label: "Developer", value: "developer" },
@@ -81,7 +81,7 @@ export default function FieldCompleteFormDemo() {
             { label: "Product Manager", value: "manager" },
             { label: "Other", value: "other" },
           ]}
-          disabled={loading}
+          name="role"
         >
           <SelectTrigger>
             <SelectValue />
@@ -98,14 +98,14 @@ export default function FieldCompleteFormDemo() {
 
       <Field>
         <div className="flex items-center gap-2">
-          <Checkbox name="newsletter" disabled={loading} />
+          <Checkbox disabled={loading} name="newsletter" />
           <FieldLabel className="cursor-pointer">
             Subscribe to newsletter
           </FieldLabel>
         </div>
       </Field>
 
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

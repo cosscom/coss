@@ -79,8 +79,8 @@ export function DraggableEvent({
   if (isDragging || activeId === `${event.id}-${view}`) {
     return (
       <div
-        ref={setNodeRef}
         className="opacity-0"
+        ref={setNodeRef}
         style={{ height: height || "auto" }}
       />
     );
@@ -115,26 +115,26 @@ export function DraggableEvent({
 
   return (
     <div
+      className="touch-none"
       ref={(node) => {
         setNodeRef(node);
         if (elementRef) elementRef.current = node;
       }}
       style={style}
-      className="touch-none"
     >
       <EventItem
+        aria-hidden={ariaHidden}
+        dndAttributes={attributes}
+        dndListeners={listeners}
         event={event}
-        view={view}
-        showTime={showTime}
+        isDragging={isDragging}
         isFirstDay={isFirstDay}
         isLastDay={isLastDay}
-        isDragging={isDragging}
         onClick={onClick}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        dndListeners={listeners}
-        dndAttributes={attributes}
-        aria-hidden={ariaHidden}
+        showTime={showTime}
+        view={view}
       />
     </div>
   );

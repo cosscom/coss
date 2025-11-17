@@ -63,27 +63,27 @@ const isValid = coss.sms.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Sending Messages
         </h2>
-        <CodeBlock code={sendingMessages} language="tsx" copyButton={false} />
+        <CodeBlock code={sendingMessages} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Messages
         </h2>
-        <CodeBlock code={messages} language="tsx" copyButton={false} />
+        <CodeBlock code={messages} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Phone Numbers
         </h2>
-        <CodeBlock code={phoneNumbers} language="tsx" copyButton={false} />
+        <CodeBlock code={phoneNumbers} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
-        <CodeBlock code={webhooks} language="tsx" copyButton={false} />
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
-        <CodeBlock code={utilities} language="tsx" copyButton={false} />
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

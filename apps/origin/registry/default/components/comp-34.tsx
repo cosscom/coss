@@ -21,18 +21,18 @@ export default function Component() {
       <Label htmlFor={id}>Input with character limit</Label>
       <div className="relative">
         <Input
-          id={id}
+          aria-describedby={`${id}-description`}
           className="peer pe-14"
-          type="text"
-          value={value}
+          id={id}
           maxLength={maxLength}
           onChange={handleChange}
-          aria-describedby={`${id}-description`}
+          type="text"
+          value={value}
         />
         <div
-          id={`${id}-description`}
-          className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground text-xs tabular-nums peer-disabled:opacity-50"
           aria-live="polite"
+          className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground text-xs tabular-nums peer-disabled:opacity-50"
+          id={`${id}-description`}
           role="status"
         >
           {characterCount}/{limit}

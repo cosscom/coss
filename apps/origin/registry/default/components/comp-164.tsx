@@ -22,14 +22,14 @@ export default function Component() {
       <RadioGroup className="grid grid-cols-3 gap-2" defaultValue="1">
         {items.map((item) => (
           <label
-            key={`${id}-${item.value}`}
             className="relative flex cursor-pointer flex-col items-center gap-3 rounded-md border border-input px-2 py-3 text-center shadow-xs outline-none transition-[color,box-shadow] has-data-disabled:cursor-not-allowed has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-data-disabled:opacity-50 has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={`${id}-${item.value}`}
           >
             <RadioGroupItem
-              id={`${id}-${item.value}`}
-              value={item.value}
               className="sr-only after:absolute after:inset-0"
               disabled={item.disabled}
+              id={`${id}-${item.value}`}
+              value={item.value}
             />
             <p className="font-medium text-foreground text-sm leading-none">
               {item.label}

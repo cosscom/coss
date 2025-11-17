@@ -11,7 +11,7 @@ export default function Component() {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             Chart
           </Button>
         </TooltipTrigger>
@@ -20,13 +20,13 @@ export default function Component() {
             <div className="font-medium text-[13px]">Tuesday, Aug 13</div>
             <div className="flex items-center gap-2 text-xs">
               <svg
-                width="8"
-                height="8"
-                fill="currentColor"
-                viewBox="0 0 8 8"
-                xmlns="http://www.w3.org/2000/svg"
-                className="shrink-0 text-indigo-500"
                 aria-hidden="true"
+                className="shrink-0 text-indigo-500"
+                fill="currentColor"
+                height="8"
+                viewBox="0 0 8 8"
+                width="8"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <circle cx="4" cy="4" r="4" />
               </svg>
@@ -36,13 +36,13 @@ export default function Component() {
             </div>
             <div className="flex items-center gap-2 text-xs">
               <svg
-                width="8"
-                height="8"
-                fill="currentColor"
-                viewBox="0 0 8 8"
-                xmlns="http://www.w3.org/2000/svg"
-                className="shrink-0 text-purple-500"
                 aria-hidden="true"
+                className="shrink-0 text-purple-500"
+                fill="currentColor"
+                height="8"
+                viewBox="0 0 8 8"
+                width="8"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <circle cx="4" cy="4" r="4" />
               </svg>
@@ -52,13 +52,13 @@ export default function Component() {
             </div>
             <div className="flex items-center gap-2 text-xs">
               <svg
-                width="8"
-                height="8"
-                fill="currentColor"
-                viewBox="0 0 8 8"
-                xmlns="http://www.w3.org/2000/svg"
-                className="shrink-0 text-rose-500"
                 aria-hidden="true"
+                className="shrink-0 text-rose-500"
+                fill="currentColor"
+                height="8"
+                viewBox="0 0 8 8"
+                width="8"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <circle cx="4" cy="4" r="4" />
               </svg>

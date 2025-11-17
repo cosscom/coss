@@ -11,18 +11,18 @@ export default function Component() {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             W/ image
           </Button>
         </TooltipTrigger>
         <TooltipContent className="py-3">
           <div className="space-y-2">
             <img
+              alt="Content"
               className="w-full rounded"
+              height={216}
               src="/origin/dialog-content.png"
               width={382}
-              height={216}
-              alt="Content"
             />
             <div className="space-y-1">
               <p className="font-medium text-[13px]">

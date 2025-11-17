@@ -9,36 +9,36 @@ export default function Component() {
 
   return (
     <Button
-      className="group"
-      variant="outline"
-      size="icon"
-      onClick={() => setOpen((prevState) => !prevState)}
       aria-expanded={open}
       aria-label={open ? "Close menu" : "Open menu"}
+      className="group"
+      onClick={() => setOpen((prevState) => !prevState)}
+      size="icon"
+      variant="outline"
     >
       <svg
         className="pointer-events-none"
-        width={16}
-        height={16}
-        viewBox="0 0 24 24"
         fill="none"
+        height={16}
         stroke="currentColor"
-        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width={16}
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M4 12L20 12"
           className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+          d="M4 12L20 12"
         />
         <path
-          d="M4 12H20"
           className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+          d="M4 12H20"
         />
         <path
-          d="M4 12H20"
           className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+          d="M4 12H20"
         />
       </svg>
     </Button>

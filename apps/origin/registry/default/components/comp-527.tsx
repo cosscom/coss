@@ -18,12 +18,12 @@ export default function Component() {
   return (
     <div className="space-y-8 text-center">
       <Stepper
-        value={currentStep}
         onValueChange={setCurrentStep}
         orientation="vertical"
+        value={currentStep}
       >
         {steps.map((step) => (
-          <StepperItem key={step} step={step} className="not-last:flex-1">
+          <StepperItem className="not-last:flex-1" key={step} step={step}>
             <StepperTrigger asChild>
               <StepperIndicator />
             </StepperTrigger>
@@ -33,26 +33,26 @@ export default function Component() {
       </Stepper>
       <div className="flex justify-center space-x-4">
         <Button
-          variant="outline"
           className="w-32"
-          onClick={() => setCurrentStep((prev) => prev - 1)}
           disabled={currentStep === 1}
+          onClick={() => setCurrentStep((prev) => prev - 1)}
+          variant="outline"
         >
           Prev step
         </Button>
         <Button
-          variant="outline"
           className="w-32"
-          onClick={() => setCurrentStep((prev) => prev + 1)}
           disabled={currentStep > steps.length}
+          onClick={() => setCurrentStep((prev) => prev + 1)}
+          variant="outline"
         >
           Next step
         </Button>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Controlled vertical stepper with checkmarks
       </p>

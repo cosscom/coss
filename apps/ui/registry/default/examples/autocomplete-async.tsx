@@ -104,11 +104,11 @@ export default function AutocompleteAsync() {
 
   return (
     <Autocomplete
-      items={searchResults}
-      value={searchValue}
-      onValueChange={setSearchValue}
-      itemToStringValue={(item: unknown) => (item as Movie).title}
       filter={null}
+      items={searchResults}
+      itemToStringValue={(item: unknown) => (item as Movie).title}
+      onValueChange={setSearchValue}
+      value={searchValue}
     >
       <AutocompleteInput placeholder="e.g. Pulp Fiction or 1994" />
       {shouldRenderPopup && (

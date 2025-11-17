@@ -15,6 +15,7 @@ const OpenInV0 = ({ componentSource }: { componentSource: string }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <a
+            aria-label="Open in v0"
             className={cn(
               buttonVariants({
                 variant: "ghost",
@@ -23,16 +24,15 @@ const OpenInV0 = ({ componentSource }: { componentSource: string }) => {
               "text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 lg:group-focus-within/item:opacity-100",
             )}
             href={`https://v0.dev/chat/api/open?url=${encodeURIComponent(componentSource)}`}
-            target="_blank"
-            aria-label="Open in v0"
             rel="noreferrer"
+            target="_blank"
           >
             <svg
               height="16"
-              xmlns="http://www.w3.org/2000/svg"
               strokeLinejoin="round"
               viewBox="0 0 16 16"
               width="16"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 clipRule="evenodd"

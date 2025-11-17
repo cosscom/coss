@@ -21,10 +21,10 @@ export default function RadioGroupFormDemo() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-[160px]">
+    <Form className="max-w-[160px]" onSubmit={onSubmit}>
       <Field
-        name="frameworks"
         className="gap-4"
+        name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
         <FieldsetLegend className="font-medium text-sm">
@@ -32,17 +32,17 @@ export default function RadioGroupFormDemo() {
         </FieldsetLegend>
         <RadioGroup defaultValue="next">
           <FieldLabel>
-            <Radio value="next" disabled={loading} /> Next.js
+            <Radio disabled={loading} value="next" /> Next.js
           </FieldLabel>
           <FieldLabel>
-            <Radio value="vite" disabled={loading} /> Vite
+            <Radio disabled={loading} value="vite" /> Vite
           </FieldLabel>
           <FieldLabel>
-            <Radio value="astro" disabled={loading} /> Astro
+            <Radio disabled={loading} value="astro" /> Astro
           </FieldLabel>
         </RadioGroup>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

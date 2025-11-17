@@ -19,11 +19,11 @@ export default function Component() {
       <div className="flex items-center gap-2">
         <span className="text-2xl">😡</span>
         <Slider
-          value={value}
-          onValueChange={setValue}
-          min={1}
-          max={5}
           aria-label="Rate your experience"
+          max={5}
+          min={1}
+          onValueChange={setValue}
+          value={value}
         />
         <span className="text-2xl">😍</span>
       </div>

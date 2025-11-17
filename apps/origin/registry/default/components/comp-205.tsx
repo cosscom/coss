@@ -16,9 +16,9 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with icon</Label>
       <Select defaultValue="1">
-        <SelectTrigger id={id} className="relative ps-9">
+        <SelectTrigger className="relative ps-9" id={id}>
           <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
-            <ClockIcon size={16} aria-hidden="true" />
+            <ClockIcon aria-hidden="true" size={16} />
           </div>
           <SelectValue placeholder="Select time" />
         </SelectTrigger>

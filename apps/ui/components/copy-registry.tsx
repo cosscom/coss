@@ -34,19 +34,19 @@ export function CopyRegistry({
       <TooltipTrigger
         render={
           <Button
+            className={cn(className)}
             data-slot="copy-button"
+            onClick={() => copyToClipboard(value)}
             size="icon-sm"
             variant={variant}
-            className={cn(className)}
-            onClick={() => copyToClipboard(value)}
             {...props}
           >
             <span className="sr-only">Copy</span>
             {isCopied ? (
               <HugeiconsIcon
+                className="size-3.5"
                 icon={Tick02Icon}
                 strokeWidth={2}
-                className="size-3.5"
               />
             ) : (
               <Icons.mcp className="size-3.5" />

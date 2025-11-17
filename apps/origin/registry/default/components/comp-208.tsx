@@ -15,7 +15,7 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with error</Label>
       <Select defaultValue="1">
-        <SelectTrigger id={id} aria-invalid>
+        <SelectTrigger aria-invalid id={id}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -26,9 +26,9 @@ export default function Component() {
         </SelectContent>
       </Select>
       <p
+        aria-live="polite"
         className="mt-2 text-destructive text-xs"
         role="alert"
-        aria-live="polite"
       >
         Selected option is invalid
       </p>

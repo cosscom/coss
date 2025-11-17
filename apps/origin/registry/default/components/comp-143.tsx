@@ -8,9 +8,9 @@ export default function Component() {
   return (
     <div className="flex items-start gap-2">
       <Checkbox
-        id={id}
-        className="order-1"
         aria-describedby={`${id}-description`}
+        className="order-1"
+        id={id}
       />
       <div className="grid grow gap-2">
         <Label htmlFor={id}>
@@ -19,7 +19,7 @@ export default function Component() {
             (Sublabel)
           </span>
         </Label>
-        <p id={`${id}-description`} className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-xs" id={`${id}-description`}>
           You can use this checkbox with a label and a description.
         </p>
       </div>

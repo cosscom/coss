@@ -9,7 +9,7 @@ export default function FieldDemo() {
   return (
     <Field>
       <FieldLabel>Name</FieldLabel>
-      <Input type="text" placeholder="Enter your name" />
+      <Input placeholder="Enter your name" type="text" />
       <FieldDescription>Visible on your profile</FieldDescription>
     </Field>
   );

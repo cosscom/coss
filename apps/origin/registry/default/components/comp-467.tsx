@@ -73,11 +73,11 @@ export default function Component() {
               <TableCell>
                 <div className="flex items-center gap-3">
                   <img
+                    alt={item.name}
                     className="rounded-full"
+                    height={40}
                     src={item.image}
                     width={40}
-                    height={40}
-                    alt={item.name}
                   />
                   <div>
                     <div className="font-medium">{item.name}</div>

@@ -47,45 +47,45 @@ export default function Component() {
     <div>
       <div className="rounded-md border">
         <Calendar
-          mode="single"
           className="p-2"
-          selected={date}
-          onSelect={handleDayPickerSelect}
+          mode="single"
           month={month}
           onMonthChange={setMonth}
+          onSelect={handleDayPickerSelect}
+          selected={date}
         />
         <div className="border-t p-3">
           <div className="flex items-center gap-3">
-            <Label htmlFor={id} className="text-xs">
+            <Label className="text-xs" htmlFor={id}>
               Enter date
             </Label>
             <div className="relative grow">
               <Input
+                aria-label="Select date"
+                className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                 id={id}
+                onChange={handleInputChange}
                 type="date"
                 value={inputValue}
-                onChange={handleInputChange}
-                className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                aria-label="Select date"
               />
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-                <CalendarIcon size={16} aria-hidden="true" />
+                <CalendarIcon aria-hidden="true" size={16} />
               </div>
             </div>
           </div>
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Date input -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

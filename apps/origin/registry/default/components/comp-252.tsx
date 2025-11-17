@@ -17,19 +17,19 @@ export default function Component() {
       </div>
       <div className="flex items-center gap-2">
         <VolumeXIcon
+          aria-hidden="true"
           className="shrink-0 opacity-60"
           size={16}
-          aria-hidden="true"
         />
         <Slider
-          value={value}
-          onValueChange={setValue}
           aria-label="Volume slider"
+          onValueChange={setValue}
+          value={value}
         />
         <Volume2Icon
+          aria-hidden="true"
           className="shrink-0 opacity-60"
           size={16}
-          aria-hidden="true"
         />
       </div>
     </div>

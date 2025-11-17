@@ -6,7 +6,6 @@ import { toastManager } from "@/registry/default/ui/toast";
 export default function ToastWithAction() {
   return (
     <Button
-      variant="outline"
       onClick={() => {
         const id = toastManager.add({
           title: "Action performed",
@@ -26,6 +25,7 @@ export default function ToastWithAction() {
           timeout: 1000000,
         });
       }}
+      variant="outline"
     >
       Perform Action
     </Button>

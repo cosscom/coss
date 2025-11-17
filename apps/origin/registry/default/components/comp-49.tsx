@@ -15,20 +15,20 @@ export default function Component() {
       <Label htmlFor={`cvc-${id}`}>Code</Label>
       <Input
         {...getCVCProps()}
-        id={`cvc-${id}`}
         className="[direction:inherit]"
+        id={`cvc-${id}`}
       />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/medipass/react-payment-inputs"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Payment Inputs
         </a>

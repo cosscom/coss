@@ -51,18 +51,18 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <svg
+              aria-hidden="true"
               className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
               height="20"
               viewBox="0 0 32 32"
-              aria-hidden="true"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              <circle cx="16" cy="16" fill="none" r="12" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
@@ -80,7 +80,7 @@ export default function Component() {
         {hasGuessed ? (
           <div className="text-center">
             <DialogClose asChild>
-              <Button type="button" ref={closeButtonRef}>
+              <Button ref={closeButtonRef} type="button">
                 Close
               </Button>
             </DialogClose>
@@ -89,13 +89,13 @@ export default function Component() {
           <div className="space-y-4">
             <div className="flex justify-center">
               <OTPInput
-                id="cofirmation-code"
-                ref={inputRef}
-                value={value}
-                onChange={setValue}
                 containerClassName="flex items-center gap-3 has-disabled:opacity-50"
+                id="cofirmation-code"
                 maxLength={4}
+                onChange={setValue}
+                onComplete={onSubmit}
                 onFocus={() => setHasGuessed(undefined)}
+                ref={inputRef}
                 render={({ slots }) => (
                   <div className="flex gap-2">
                     {slots.map((slot, idx) => (
@@ -103,14 +103,14 @@ export default function Component() {
                     ))}
                   </div>
                 )}
-                onComplete={onSubmit}
+                value={value}
               />
             </div>
             {hasGuessed === false && (
               <p
+                aria-live="polite"
                 className="text-center text-muted-foreground text-xs"
                 role="alert"
-                aria-live="polite"
               >
                 Invalid code. Please try again.
               </p>

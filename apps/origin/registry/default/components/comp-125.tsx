@@ -18,16 +18,16 @@ export default function Component() {
     <div className="flex flex-col items-center gap-2">
       <div className="inline-flex items-center gap-2 align-top">
         <div
-          className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input"
           aria-label={previewUrl ? "Upload preview" : "Default user avatar"}
+          className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-input"
         >
           {previewUrl ? (
             <img
-              className="size-full object-cover"
-              src={previewUrl}
               alt="Upload preview"
-              width={32}
+              className="size-full object-cover"
               height={32}
+              src={previewUrl}
+              width={32}
             />
           ) : (
             <div aria-hidden="true">
@@ -36,27 +36,27 @@ export default function Component() {
           )}
         </div>
         <div className="relative inline-block">
-          <Button onClick={openFileDialog} aria-haspopup="dialog">
+          <Button aria-haspopup="dialog" onClick={openFileDialog}>
             {fileName ? "Change image" : "Upload image"}
           </Button>
           <input
             {...getInputProps()}
-            className="sr-only"
             aria-label="Upload image file"
+            className="sr-only"
             tabIndex={-1}
           />
         </div>
       </div>
       fileName && (
       <div className="inline-flex gap-2 text-xs">
-        <p className="truncate text-muted-foreground" aria-live="polite">
+        <p aria-live="polite" className="truncate text-muted-foreground">
           {fileName}
         </p>{" "}
         <button
-          type="button"
-          onClick={() => removeFile(files[0]?.id)}
-          className="font-medium text-destructive hover:underline"
           aria-label={`Remove ${fileName}`}
+          className="font-medium text-destructive hover:underline"
+          onClick={() => removeFile(files[0]?.id)}
+          type="button"
         >
           Remove
         </button>
@@ -64,13 +64,13 @@ export default function Component() {
       )
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Basic image uploader ∙{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
         >
           Docs
         </a>

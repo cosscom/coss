@@ -20,9 +20,9 @@ const items = [
 export default function SelectOptionsWithIcon() {
   return (
     <Select
+      aria-label="Select category"
       defaultValue={items[0]}
       itemToStringValue={(item) => item.value}
-      aria-label="Select category"
     >
       <SelectTrigger>
         <SelectValue>

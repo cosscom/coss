@@ -32,7 +32,7 @@ export function DocsSidebar({
       <SidebarContent className="no-scrollbar px-4 py-2">
         <div className="h-(--top-spacing) shrink-0" />
         {tree.children.map((item) => (
-          <SidebarGroup key={item.$id} className="gap-1">
+          <SidebarGroup className="gap-1" key={item.$id}>
             <SidebarGroupLabel className="h-7 px-0 text-sidebar-accent-foreground">
               {item.name}
             </SidebarGroupLabel>
@@ -44,9 +44,9 @@ export function DocsSidebar({
                       item.type === "page" && (
                         <SidebarMenuItem key={item.url}>
                           <SidebarMenuButton
-                            render={<Link href={item.url} />}
-                            isActive={item.url === pathname}
                             className="from-secondary to-secondary/64 ps-3.5 text-sidebar-foreground/64 hover:bg-transparent active:bg-transparent data-[active=true]:bg-gradient-to-tr"
+                            isActive={item.url === pathname}
+                            render={<Link href={item.url} />}
                           >
                             {item.name}
                             {PAGES_NEW.includes(item.url) && (

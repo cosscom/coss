@@ -9,7 +9,6 @@ export default function Component() {
 
   return (
     <Button
-      variant="outline"
       onClick={() => {
         toast({
           title: "We couldn't complete your request!",
@@ -17,6 +16,7 @@ export default function Component() {
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }}
+      variant="outline"
     >
       Show toast
     </Button>

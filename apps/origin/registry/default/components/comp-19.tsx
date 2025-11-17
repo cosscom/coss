@@ -10,13 +10,13 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with end inline button</Label>
       <div className="relative">
-        <Input id={id} className="pe-9" placeholder="Email" type="email" />
+        <Input className="pe-9" id={id} placeholder="Email" type="email" />
         <button
-          type="button"
-          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Subscribe"
+          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+          type="button"
         >
-          <SendIcon size={16} aria-hidden="true" />
+          <SendIcon aria-hidden="true" size={16} />
         </button>
       </div>
     </div>

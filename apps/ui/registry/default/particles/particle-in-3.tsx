@@ -25,16 +25,16 @@ export default function Particle() {
       <Popover>
         <InputGroupAddon>
           <PopoverTrigger
-            render={<Button variant="secondary" size="icon-xs" />}
+            render={<Button size="icon-xs" variant="secondary" />}
           >
             <InfoIcon />
           </PopoverTrigger>
         </InputGroupAddon>
         <PopoverPopup
           align="start"
-          sideOffset={6}
           alignOffset={-5}
           className="w-64"
+          sideOffset={6}
         >
           <PopoverTitle className="text-sm">
             Your connection is not secure.
@@ -48,19 +48,19 @@ export default function Particle() {
         https://
       </InputGroupAddon>
       <InputGroupInput
-        type="text"
-        className="*:[input]:ps-1!"
         aria-label="Url"
+        className="*:[input]:ps-1!"
+        type="text"
       />
       <InputGroupAddon align="inline-end">
         <Button
-          variant="ghost"
           onClick={() => setIsFavorite(!isFavorite)}
           size="icon-xs"
+          variant="ghost"
         >
           <StarIcon
-            data-favorite={isFavorite}
             className="data-[favorite=true]:fill-primary data-[favorite=true]:stroke-primary"
+            data-favorite={isFavorite}
           />
         </Button>
       </InputGroupAddon>

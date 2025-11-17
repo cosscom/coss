@@ -50,11 +50,11 @@ export default function DialogNestedDemo() {
               <div className="flex flex-col gap-4">
                 <Field>
                   <FieldLabel>Name</FieldLabel>
-                  <Input type="text" defaultValue="Bora Baloglu" />
+                  <Input defaultValue="Bora Baloglu" type="text" />
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
-                  <Input type="text" defaultValue="bora@example.com" />
+                  <Input defaultValue="bora@example.com" type="text" />
                 </Field>
               </div>
               <DialogFooter>

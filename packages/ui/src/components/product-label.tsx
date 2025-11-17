@@ -25,7 +25,7 @@ export function ProductLabel({ items, currentProduct }: ProductsDropdownProps) {
       <>
         <span className="text-muted-foreground/64">{matchingItem.label}</span>
         {matchingItem.upcoming && (
-          <Badge variant="info" className="-mt-1 ms-2 font-sans max-sm:hidden">
+          <Badge className="-mt-1 ms-2 font-sans max-sm:hidden" variant="info">
             Upcoming
           </Badge>
         )}
@@ -57,7 +57,7 @@ export function ProductLabel({ items, currentProduct }: ProductsDropdownProps) {
     <>
       <span className="text-muted-foreground/64">{matchingItem.label}</span>
       {matchingItem.upcoming && (
-        <Badge variant="info" className="-mt-1 ms-2 font-sans max-sm:hidden">
+        <Badge className="-mt-1 ms-2 font-sans max-sm:hidden" variant="info">
           Upcoming
         </Badge>
       )}

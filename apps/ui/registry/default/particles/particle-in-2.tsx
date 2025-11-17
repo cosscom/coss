@@ -21,19 +21,19 @@ export default function Particle() {
   return (
     <InputGroup>
       <InputGroupInput
-        type={showPassword ? "text" : "password"}
-        placeholder="Enter your password"
         aria-label="Password with toggle visibility"
+        placeholder="Enter your password"
+        type={showPassword ? "text" : "password"}
       />
       <InputGroupAddon align="inline-end">
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword(!showPassword)}
+                size="icon-xs"
+                variant="ghost"
               />
             }
           >

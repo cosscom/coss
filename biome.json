@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.6/schema.json",
   "files": {
     "includes": [
       "**",
@@ -12,6 +12,12 @@
       "!**/apps/**/*/.next",
       "!**/apps/**/*/.source"
     ]
+  },
+  "css": {
+    "parser": {
+      "allowWrongLineComments": true,
+      "tailwindDirectives": true
+    }
   },
   "vcs": {
     "enabled": false,
@@ -29,6 +35,15 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "nursery": {
+        "useSortedClasses": {
+          "level": "error",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "tw", "tw.*"]
+          }
+        }
+      },
       "a11y": {
         "noSvgWithoutTitle": "off",
         "noLabelWithoutControl": "off",
@@ -37,7 +52,8 @@
         "useKeyWithClickEvents": "off",
         "noStaticElementInteractions": "off",
         "useAriaPropsSupportedByRole": "off",
-        "useGenericFontNames": "off"
+        "useGenericFontNames": "off",
+        "useAriaPropsForRole": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -63,7 +79,8 @@
     "enabled": true,
     "actions": {
       "source": {
-        "organizeImports": "on"
+        "organizeImports": "on",
+        "useSortedAttributes": "on"
       }
     }
   },

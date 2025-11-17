@@ -18,19 +18,19 @@ export default function Component() {
     <div className="flex flex-col items-center gap-2">
       <div className="relative inline-flex">
         <Button
-          variant="outline"
+          aria-label={previewUrl ? "Change image" : "Upload image"}
           className="relative size-16 overflow-hidden p-0 shadow-none"
           onClick={openFileDialog}
-          aria-label={previewUrl ? "Change image" : "Upload image"}
+          variant="outline"
         >
           {previewUrl ? (
             <img
-              className="size-full object-cover"
-              src={previewUrl}
               alt="Upload preview"
-              width={64}
+              className="size-full object-cover"
               height={64}
+              src={previewUrl}
               style={{ objectFit: "cover" }}
+              width={64}
             />
           ) : (
             <div aria-hidden="true">
@@ -40,26 +40,26 @@ export default function Component() {
         </Button>
         {previewUrl && (
           <Button
+            aria-label="Remove image"
+            className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             onClick={() => removeFile(files[0]?.id)}
             size="icon"
-            className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
-            aria-label="Remove image"
           >
             <XIcon className="size-3.5" />
           </Button>
         )}
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload image file"
+          className="sr-only"
           tabIndex={-1}
         />
       </div>
       {fileName && <p className="text-muted-foreground text-xs">{fileName}</p>}
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Avatar upload button
       </p>

@@ -7,14 +7,14 @@ export default function Component() {
       <Label>Slider with reference labels</Label>
       <div>
         <Slider
-          defaultValue={[15]}
-          min={5}
-          max={35}
           aria-label="Slider with reference labels"
+          defaultValue={[15]}
+          max={35}
+          min={5}
         />
         <span
-          className="mt-4 flex w-full items-center justify-between gap-1 font-medium text-muted-foreground text-xs"
           aria-hidden="true"
+          className="mt-4 flex w-full items-center justify-between gap-1 font-medium text-muted-foreground text-xs"
         >
           <span>5 GB</span>
           <span>20 GB</span>

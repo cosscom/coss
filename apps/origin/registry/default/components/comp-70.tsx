@@ -10,7 +10,7 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with button</Label>
       <Textarea id={id} placeholder="Leave a comment" />
-      <Button variant="outline" className="w-full">
+      <Button className="w-full" variant="outline">
         Send
       </Button>
     </div>

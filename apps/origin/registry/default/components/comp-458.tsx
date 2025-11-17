@@ -16,7 +16,7 @@ export default function Component({
 }: PaginationProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <p className="grow text-muted-foreground text-sm" aria-live="polite">
+      <p aria-live="polite" className="grow text-muted-foreground text-sm">
         Page <span className="text-foreground">{currentPage}</span> of{" "}
         <span className="text-foreground">{totalPages}</span>
       </p>
@@ -24,11 +24,11 @@ export default function Component({
         <PaginationContent className="gap-3">
           <PaginationItem>
             <Button
-              variant="outline"
-              className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
               aria-disabled={currentPage === 1 ? true : undefined}
-              role={currentPage === 1 ? "link" : undefined}
               asChild
+              className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
+              role={currentPage === 1 ? "link" : undefined}
+              variant="outline"
             >
               <a
                 href={
@@ -41,11 +41,11 @@ export default function Component({
           </PaginationItem>
           <PaginationItem>
             <Button
-              variant="outline"
-              className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
               aria-disabled={currentPage === totalPages ? true : undefined}
-              role={currentPage === totalPages ? "link" : undefined}
               asChild
+              className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
+              role={currentPage === totalPages ? "link" : undefined}
+              variant="outline"
             >
               <a
                 href={

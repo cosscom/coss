@@ -13,12 +13,12 @@ export default function Component() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
-          <EllipsisIcon size={16} aria-hidden="true" />
+          <EllipsisIcon aria-hidden="true" size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

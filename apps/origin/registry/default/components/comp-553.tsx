@@ -107,9 +107,9 @@ const _getFilePreview = (file: {
 
   const renderImage = (src: string) => (
     <img
-      src={src}
       alt={fileName}
       className="size-full rounded-t-[inherit] object-cover"
+      src={src}
     />
   );
 
@@ -271,18 +271,18 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       {/* Drop area */}
       <div
+        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        data-dragging={isDragging || undefined}
+        data-files={files.length > 0 || undefined}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        data-dragging={isDragging || undefined}
-        data-files={files.length > 0 || undefined}
-        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload image file"
+          className="sr-only"
         />
         {files.length > 0 ? (
           <div className="flex w-full flex-col gap-3">
@@ -291,25 +291,25 @@ export default function Component() {
                 Files ({files.length})
               </h3>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={openFileDialog}>
+                <Button onClick={openFileDialog} size="sm" variant="outline">
                   <UploadIcon
-                    className="-ms-0.5 size-3.5 opacity-60"
                     aria-hidden="true"
+                    className="-ms-0.5 size-3.5 opacity-60"
                   />
                   Add files
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => {
                     // Clear all progress tracking
                     setUploadProgress([]);
                     clearFiles();
                   }}
+                  size="sm"
+                  variant="outline"
                 >
                   <Trash2Icon
-                    className="-ms-0.5 size-3.5 opacity-60"
                     aria-hidden="true"
+                    className="-ms-0.5 size-3.5 opacity-60"
                   />
                   Remove all
                 </Button>
@@ -326,9 +326,9 @@ export default function Component() {
 
                 return (
                   <div
-                    key={file.id}
-                    data-uploading={isUploading || undefined}
                     className="flex flex-col gap-1 rounded-lg border bg-background p-2 pe-3 transition-opacity duration-300"
+                    data-uploading={isUploading || undefined}
+                    key={file.id}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-3 overflow-hidden in-data-[uploading=true]:opacity-50">
@@ -351,16 +351,16 @@ export default function Component() {
                         </div>
                       </div>
                       <Button
-                        size="icon"
-                        variant="ghost"
+                        aria-label="Remove file"
                         className="-me-2 size-8 text-muted-foreground/80 hover:bg-transparent hover:text-foreground"
                         onClick={() => {
                           handleFileRemoved(file.id);
                           removeFile(file.id);
                         }}
-                        aria-label="Remove file"
+                        size="icon"
+                        variant="ghost"
                       >
-                        <XIcon className="size-4" aria-hidden="true" />
+                        <XIcon aria-hidden="true" className="size-4" />
                       </Button>
                     </div>
 
@@ -394,8 +394,8 @@ export default function Component() {
         ) : (
           <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
             <div
-              className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
               aria-hidden="true"
+              className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
             >
               <ImageIcon className="size-4 opacity-60" />
             </div>
@@ -403,8 +403,8 @@ export default function Component() {
             <p className="text-muted-foreground text-xs">
               Max {maxFiles} files ∙ Up to {maxSizeMB}MB
             </p>
-            <Button variant="outline" className="mt-4" onClick={openFileDialog}>
-              <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
+            <Button className="mt-4" onClick={openFileDialog} variant="outline">
+              <UploadIcon aria-hidden="true" className="-ms-1 opacity-60" />
               Select images
             </Button>
           </div>
@@ -423,15 +423,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-center text-muted-foreground text-xs"
+        role="region"
       >
         With simulated progress track ∙{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           rel="noreferrer"
+          target="_blank"
         >
           API
         </a>

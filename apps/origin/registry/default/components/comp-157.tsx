@@ -9,7 +9,7 @@ export default function Component() {
   return (
     <RadioGroup defaultValue="all">
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="all" id={`${id}-1`} />
+        <RadioGroupItem id={`${id}-1`} value="all" />
         <Label htmlFor={`${id}-1`}>
           All reviews{" "}
           <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
@@ -18,11 +18,11 @@ export default function Component() {
         </Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="5-stars" id={`${id}-2`} />
-        <Label htmlFor={`${id}-2`} className="inline-flex items-center gap-1">
+        <RadioGroupItem id={`${id}-2`} value="5-stars" />
+        <Label className="inline-flex items-center gap-1" htmlFor={`${id}-2`}>
           <span
-            className="inline-flex items-center text-amber-500"
             aria-hidden="true"
+            className="inline-flex items-center text-amber-500"
           >
             <RiStarFill size={16} />
             <RiStarFill size={16} />
@@ -37,17 +37,17 @@ export default function Component() {
         </Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="4-stars" id={`${id}-3`} />
-        <Label htmlFor={`${id}-3`} className="inline-flex items-center gap-1">
+        <RadioGroupItem id={`${id}-3`} value="4-stars" />
+        <Label className="inline-flex items-center gap-1" htmlFor={`${id}-3`}>
           <span
-            className="inline-flex items-center text-amber-500"
             aria-hidden="true"
+            className="inline-flex items-center text-amber-500"
           >
             <RiStarFill size={16} />
             <RiStarFill size={16} />
             <RiStarFill size={16} />
             <RiStarFill size={16} />
-            <RiStarFill size={16} className="opacity-30" />
+            <RiStarFill className="opacity-30" size={16} />
           </span>
           <span className="sr-only">4 stars</span>{" "}
           <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
@@ -56,17 +56,17 @@ export default function Component() {
         </Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="3-stars" id={`${id}-4`} />
-        <Label htmlFor={`${id}-4`} className="inline-flex items-center gap-1">
+        <RadioGroupItem id={`${id}-4`} value="3-stars" />
+        <Label className="inline-flex items-center gap-1" htmlFor={`${id}-4`}>
           <span
-            className="inline-flex items-center text-amber-500"
             aria-hidden="true"
+            className="inline-flex items-center text-amber-500"
           >
             <RiStarFill size={16} />
             <RiStarFill size={16} />
             <RiStarFill size={16} />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
           </span>
           <span className="sr-only">3 stars</span>{" "}
           <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
@@ -75,17 +75,17 @@ export default function Component() {
         </Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="2-stars" id={`${id}-5`} />
-        <Label htmlFor={`${id}-5`} className="inline-flex items-center gap-1">
+        <RadioGroupItem id={`${id}-5`} value="2-stars" />
+        <Label className="inline-flex items-center gap-1" htmlFor={`${id}-5`}>
           <span
-            className="inline-flex items-center text-amber-500"
             aria-hidden="true"
+            className="inline-flex items-center text-amber-500"
           >
             <RiStarFill size={16} />
             <RiStarFill size={16} />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
           </span>
           <span className="sr-only">2 stars</span>{" "}
           <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
@@ -94,17 +94,17 @@ export default function Component() {
         </Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem value="1-star" id={`${id}-6`} />
-        <Label htmlFor={`${id}-6`} className="inline-flex items-center gap-1">
+        <RadioGroupItem id={`${id}-6`} value="1-star" />
+        <Label className="inline-flex items-center gap-1" htmlFor={`${id}-6`}>
           <span
-            className="inline-flex items-center text-amber-500"
             aria-hidden="true"
+            className="inline-flex items-center text-amber-500"
           >
             <RiStarFill size={16} />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
-            <RiStarFill size={16} className="opacity-30" />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
+            <RiStarFill className="opacity-30" size={16} />
           </span>
           <span className="sr-only">1 star</span>{" "}
           <span className="font-normal text-muted-foreground text-xs leading-[inherit]">

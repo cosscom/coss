@@ -26,9 +26,9 @@ export default function AutocompleteSm() {
   return (
     <Autocomplete items={items}>
       <AutocompleteInput
-        size="sm"
-        placeholder="Search items…"
         aria-label="Search items"
+        placeholder="Search items…"
+        size="sm"
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>

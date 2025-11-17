@@ -45,14 +45,14 @@ export default function Particle({
       <div className="flex items-center gap-2 whitespace-nowrap">
         <p className="text-muted-foreground text-sm">Viewing</p>
         <Select
-          value={currentPage}
-          onValueChange={(value) => setCurrentPage(value as number)}
           items={resultRanges}
+          onValueChange={(value) => setCurrentPage(value as number)}
+          value={currentPage}
         >
           <SelectTrigger
+            aria-label="Select result range"
             className="w-fit min-w-none"
             size="sm"
-            aria-label="Select result range"
           >
             <SelectValue />
           </SelectTrigger>
@@ -82,12 +82,12 @@ export default function Particle({
                 className="sm:*:[svg]:hidden"
                 render={
                   <Button
-                    variant="outline"
-                    size="sm"
                     disabled={currentPage === 1 ? true : undefined}
                     onClick={() =>
                       currentPage > 1 && setCurrentPage(currentPage - 1)
                     }
+                    size="sm"
+                    variant="outline"
                   />
                 }
               />
@@ -97,13 +97,13 @@ export default function Particle({
                 className="sm:*:[svg]:hidden"
                 render={
                   <Button
-                    variant="outline"
-                    size="sm"
                     disabled={currentPage === totalPages ? true : undefined}
                     onClick={() =>
                       currentPage < totalPages &&
                       setCurrentPage(currentPage + 1)
                     }
+                    size="sm"
+                    variant="outline"
                   />
                 }
               />

@@ -17,9 +17,9 @@ export default function Component() {
           <h2 className="mb-2 font-semibold text-sm">Send us feedback</h2>
           <form className="space-y-3">
             <Textarea
+              aria-label="Send feedback"
               id="feedback"
               placeholder="How can we improve coss ui?"
-              aria-label="Send feedback"
             />
             <div className="flex flex-col sm:flex-row sm:justify-end">
               <Button size="sm">Send feedback</Button>

@@ -20,19 +20,19 @@ import {
 export default function GroupSm() {
   return (
     <Group aria-label="File actions">
-      <Button variant="outline" size="sm">
+      <Button size="sm" variant="outline">
         <FilesIcon />
         Files
       </Button>
       <GroupSeparator />
-      <Button variant="outline" size="sm">
+      <Button size="sm" variant="outline">
         <FilmIcon />
         Media
       </Button>
       <GroupSeparator />
       <Menu>
         <MenuTrigger
-          render={<Button variant="outline" size="icon-sm" aria-label="Menu" />}
+          render={<Button aria-label="Menu" size="icon-sm" variant="outline" />}
         >
           <EllipsisIcon className="size-4" />
         </MenuTrigger>

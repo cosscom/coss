@@ -32,9 +32,9 @@ export default function Component({
         {/* Previous page button */}
         <PaginationItem>
           <PaginationPrevious
+            aria-disabled={currentPage === 1 ? true : undefined}
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
-            aria-disabled={currentPage === 1 ? true : undefined}
             role={currentPage === 1 ? "link" : undefined}
           />
         </PaginationItem>
@@ -68,13 +68,13 @@ export default function Component({
         {/* Next page button */}
         <PaginationItem>
           <PaginationNext
+            aria-disabled={currentPage === totalPages ? true : undefined}
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={
               currentPage === totalPages
                 ? undefined
                 : `#/page/${currentPage + 1}`
             }
-            aria-disabled={currentPage === totalPages ? true : undefined}
             role={currentPage === totalPages ? "link" : undefined}
           />
         </PaginationItem>

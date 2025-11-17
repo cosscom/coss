@@ -26,8 +26,8 @@ export default function ComboboxWithClear() {
   return (
     <Combobox items={items}>
       <ComboboxInput
-        placeholder="Select a item…"
         aria-label="Select a item"
+        placeholder="Select a item…"
         showClear
       />
       <ComboboxPopup>

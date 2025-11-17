@@ -174,7 +174,7 @@ export default function Component() {
           <AssistiveTreeDescription tree={tree} />
           {tree.getItems().map((item) => {
             return (
-              <TreeItem key={item.getId()} item={item} className="pb-0!">
+              <TreeItem className="pb-0!" item={item} key={item.getId()}>
                 <TreeItemLabel className="rounded-none py-1">
                   <span className="flex items-center gap-2">
                     {!item.isFolder() &&
@@ -193,15 +193,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         File editor with drag and drop ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

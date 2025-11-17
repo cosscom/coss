@@ -7,7 +7,7 @@ export default function Component() {
     <Button className="relative pe-12">
       Next
       <span className="pointer-events-none absolute inset-y-0 end-0 flex w-9 items-center justify-center bg-primary-foreground/15">
-        <ChevronRightIcon className="opacity-60" size={16} aria-hidden="true" />
+        <ChevronRightIcon aria-hidden="true" className="opacity-60" size={16} />
       </span>
     </Button>
   );

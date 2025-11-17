@@ -10,9 +10,9 @@ export default function Component() {
       <Label htmlFor={id}>Input with helper text</Label>
       <Input id={id} placeholder="Email" type="email" />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         We won&lsquo;t share your email with anyone
       </p>

@@ -16,8 +16,8 @@ export default function Component() {
       <Label htmlFor={id}>Select with gray background</Label>
       <Select defaultValue="2">
         <SelectTrigger
-          id={id}
           className="border-transparent bg-muted shadow-none"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>

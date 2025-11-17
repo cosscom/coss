@@ -29,8 +29,8 @@ const backend = [
 export default function SelectWithGroups() {
   return (
     <Select
-      items={[...placeholder, ...frontend, ...backend]}
       aria-label="Select framework"
+      items={[...placeholder, ...frontend, ...backend]}
     >
       <SelectTrigger>
         <SelectValue />

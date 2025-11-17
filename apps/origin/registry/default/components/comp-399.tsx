@@ -9,7 +9,7 @@ export default function Component() {
   return (
     <div className="relative">
       <Avatar className="rounded-md">
-        <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
+        <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
       <Badge className="-top-2 -translate-x-3 absolute left-full min-w-5 border-background px-1">

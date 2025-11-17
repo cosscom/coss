@@ -17,20 +17,20 @@ export default function Component() {
     <div>
       <RangeCalendar
         className="rounded-md border p-2"
-        value={date}
         onChange={setDate}
+        value={date}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Range calendar -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateRangePicker.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

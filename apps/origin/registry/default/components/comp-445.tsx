@@ -8,26 +8,26 @@ import {
 export default function Component() {
   return (
     <Tabs
+      className="w-full flex-row"
       defaultValue="tab-1"
       orientation="vertical"
-      className="w-full flex-row"
     >
       <TabsList className="flex-col gap-1 bg-transparent py-0">
         <TabsTrigger
-          value="tab-1"
           className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-1"
         >
           Overview
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-2"
         >
           Projects
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="w-full justify-start data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-3"
         >
           Packages
         </TabsTrigger>

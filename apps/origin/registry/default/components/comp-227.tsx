@@ -20,12 +20,12 @@ const Square = ({
   children: React.ReactNode;
 }) => (
   <span
-    data-square
+    aria-hidden="true"
     className={cn(
       "flex size-5 items-center justify-center rounded bg-muted font-medium text-muted-foreground text-xs",
       className,
     )}
-    aria-hidden="true"
+    data-square
   >
     {children}
   </span>
@@ -38,8 +38,8 @@ export default function Component() {
       <Label htmlFor={id}>Options with placeholder avatar</Label>
       <Select defaultValue="1">
         <SelectTrigger
-          id={id}
           className="ps-2 [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_[data-square]]:shrink-0"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>

@@ -30,15 +30,15 @@ function CalendarHeader() {
   return (
     <header className="flex w-full items-center gap-1 pb-1">
       <Button
-        slot="previous"
         className="flex size-9 items-center justify-center rounded-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        slot="previous"
       >
         <ChevronLeftIcon size={16} />
       </Button>
       <HeadingRac className="grow text-center font-medium text-sm" />
       <Button
-        slot="next"
         className="flex size-9 items-center justify-center rounded-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        slot="next"
       >
         <ChevronRightIcon size={16} />
       </Button>
@@ -61,7 +61,6 @@ function CalendarGridComponent({ isRange = false }: { isRange?: boolean }) {
       <CalendarGridBodyRac className="[&_td]:px-0 [&_td]:py-px">
         {(date) => (
           <CalendarCellRac
-            date={date}
             className={cn(
               "relative flex size-9 items-center justify-center whitespace-nowrap rounded-md p-0 font-normal text-foreground text-sm outline-none duration-150 [transition-property:color,background-color,border-radius,box-shadow] data-disabled:pointer-events-none data-unavailable:pointer-events-none data-focus-visible:z-10 data-hovered:bg-accent data-selected:bg-primary data-hovered:text-foreground data-selected:text-primary-foreground data-unavailable:line-through data-disabled:opacity-30 data-unavailable:opacity-30 data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50",
               // Range-specific styles
@@ -76,6 +75,7 @@ function CalendarGridComponent({ isRange = false }: { isRange?: boolean }) {
                     : "data-selected:after:bg-background",
                 ),
             )}
+            date={date}
           />
         )}
       </CalendarGridBodyRac>

@@ -60,19 +60,19 @@ const columns: ColumnDef<Item>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all rows"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all rows"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
+        aria-label="Select row"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
       />
     ),
     size: 28,
@@ -186,13 +186,13 @@ export default function Component() {
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent" key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
+                      className="h-11"
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
-                      className="h-11"
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
                         <div
@@ -220,16 +220,16 @@ export default function Component() {
                           {{
                             asc: (
                               <ChevronUpIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                             desc: (
                               <ChevronDownIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                           }[header.column.getIsSorted() as string] ?? null}
@@ -250,8 +250,8 @@ export default function Component() {
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -266,8 +266,8 @@ export default function Component() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   No results.
                 </TableCell>
@@ -281,8 +281,8 @@ export default function Component() {
       <div className="flex items-center justify-between gap-3 max-sm:flex-col">
         {/* Page number information */}
         <p
-          className="flex-1 whitespace-nowrap text-muted-foreground text-sm"
           aria-live="polite"
+          className="flex-1 whitespace-nowrap text-muted-foreground text-sm"
         >
           Page{" "}
           <span className="text-foreground">
@@ -298,14 +298,14 @@ export default function Component() {
               {/* Previous page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to previous page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.previousPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  aria-label="Go to previous page"
                 >
-                  <ChevronLeftIcon size={16} aria-hidden="true" />
+                  <ChevronLeftIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
 
@@ -323,10 +323,10 @@ export default function Component() {
                 return (
                   <PaginationItem key={page}>
                     <Button
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => table.setPageIndex(page - 1)}
                       size="icon"
                       variant={`${isActive ? "outline" : "ghost"}`}
-                      onClick={() => table.setPageIndex(page - 1)}
-                      aria-current={isActive ? "page" : undefined}
                     >
                       {page}
                     </Button>
@@ -344,14 +344,14 @@ export default function Component() {
               {/* Next page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to next page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.nextPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  aria-label="Go to next page"
                 >
-                  <ChevronRightIcon size={16} aria-hidden="true" />
+                  <ChevronRightIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
             </PaginationContent>
@@ -361,15 +361,15 @@ export default function Component() {
         {/* Results per page */}
         <div className="flex flex-1 justify-end">
           <Select
-            value={table.getState().pagination.pageSize.toString()}
+            aria-label="Results per page"
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
-            aria-label="Results per page"
+            value={table.getState().pagination.pageSize.toString()}
           >
             <SelectTrigger
-              id="results-per-page"
               className="w-fit whitespace-nowrap"
+              id="results-per-page"
             >
               <SelectValue placeholder="Select number of results" />
             </SelectTrigger>
@@ -388,8 +388,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>

@@ -8,11 +8,11 @@ export default function Component() {
     <div className="z-50 max-w-[400px] rounded-md border bg-background p-4 shadow-lg">
       <div className="flex gap-3">
         <img
+          alt="Mary Palmer"
           className="size-9 rounded-full"
+          height={32}
           src="/origin/avatar-32-01.jpg"
           width={32}
-          height={32}
-          alt="Mary Palmer"
         />
         <div className="flex grow flex-col gap-3">
           <div className="space-y-1">
@@ -42,14 +42,14 @@ export default function Component() {
           </div>
         </div>
         <Button
-          variant="ghost"
-          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
           aria-label="Close notification"
+          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+          variant="ghost"
         >
           <XIcon
-            size={16}
-            className="opacity-60 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            size={16}
           />
         </Button>
       </div>

@@ -22,9 +22,9 @@ export default function Component() {
         <Button variant="outline">
           Rich menu
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>

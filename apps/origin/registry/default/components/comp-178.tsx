@@ -8,10 +8,10 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        id={id}
         className="data-[state=unchecked]:[&_span]:rtl:-translate-x-0.5 data-[state=unchecked]:border-input data-[state=unchecked]:bg-transparent [&_span]:transition-all data-[state=unchecked]:[&_span]:size-4 data-[state=unchecked]:[&_span]:translate-x-0.5 data-[state=unchecked]:[&_span]:bg-input data-[state=unchecked]:[&_span]:shadow-none"
+        id={id}
       />
-      <Label htmlFor={id} className="sr-only">
+      <Label className="sr-only" htmlFor={id}>
         M3-style switch
       </Label>
     </div>

@@ -20,11 +20,11 @@ function Command({
 }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
-      data-slot="command"
       className={cn(
         "flex size-full flex-col rounded-md bg-popover text-popover-foreground",
         className,
       )}
+      data-slot="command"
       {...props}
     />
   );
@@ -62,16 +62,16 @@ function CommandInput({
     <div className="relative">
       <div className="relative inline-flex w-full rounded-md bg-muted bg-clip-padding text-base/5 outline-none ring-ring/24 transition-[color,background-color,box-shadow,border-color] has-focus-visible:border-ring sm:text-sm dark:bg-input/32 dark:bg-clip-border">
         <CommandPrimitive.Input
-          data-slot="command-input-wrapper"
           className={cn(
             "w-full min-w-0 px-[calc(--spacing(3)-1px)] py-[calc(--spacing(2.5)-1px)] ps-9 outline-none placeholder:text-muted-foreground/64",
             className,
           )}
+          data-slot="command-input-wrapper"
           {...props}
         />
       </div>
       <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-[calc(--spacing(3)-1px)] text-muted-foreground">
-        <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="size-4" />
+        <HugeiconsIcon className="size-4" icon={Search01Icon} strokeWidth={2} />
       </div>
     </div>
   );
@@ -83,11 +83,11 @@ function CommandList({
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      data-slot="command-list"
       className={cn(
         "max-h-77.5 flex-1 overflow-y-auto overflow-x-hidden",
         className,
       )}
+      data-slot="command-list"
       {...props}
     />
   );
@@ -98,8 +98,8 @@ function CommandEmpty({
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
-      data-slot="command-empty"
       className="py-6 text-center text-sm"
+      data-slot="command-empty"
       {...props}
     />
   );
@@ -111,11 +111,11 @@ function CommandGroup({
 }: React.ComponentProps<typeof CommandPrimitive.Group>) {
   return (
     <CommandPrimitive.Group
-      data-slot="command-group"
       className={cn(
         "overflow-hidden p-2 text-foreground [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-xs",
         className,
       )}
+      data-slot="command-group"
       {...props}
     />
   );
@@ -127,8 +127,8 @@ function CommandSeparator({
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
     <CommandPrimitive.Separator
-      data-slot="command-separator"
       className={cn("-mx-1 h-px bg-border", className)}
+      data-slot="command-separator"
       {...props}
     />
   );
@@ -140,11 +140,11 @@ function CommandItem({
 }: React.ComponentProps<typeof CommandPrimitive.Item>) {
   return (
     <CommandPrimitive.Item
-      data-slot="command-item"
       className={cn(
         "relative flex cursor-default select-none items-center gap-2 rounded-md px-2 py-1.5 text-base outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 sm:text-sm [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
+      data-slot="command-item"
       {...props}
     />
   );
@@ -156,11 +156,11 @@ function CommandShortcut({
 }: React.ComponentProps<"span">) {
   return (
     <kbd
-      data-slot="command-shortcut"
       className={cn(
         "-me-1 ms-auto inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70",
         className,
       )}
+      data-slot="command-shortcut"
       {...props}
     />
   );

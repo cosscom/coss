@@ -23,57 +23,57 @@ export default function Component() {
             <div className="h-full sm:border-e">
               <div className="flex flex-col px-2">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(today);
                     setMonth(today);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Today
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(yesterday);
                     setMonth(yesterday);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Yesterday
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(lastWeek);
                     setMonth(lastWeek);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last week
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(lastMonth);
                     setMonth(lastMonth);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last month
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
                     setDate(lastYear);
                     setMonth(lastYear);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last year
                 </Button>
@@ -81,33 +81,33 @@ export default function Component() {
             </div>
           </div>
           <Calendar
+            className="p-2"
+            disabled={[
+              { after: today }, // Dates before today
+            ]}
             mode="single"
-            selected={date}
+            month={month}
+            onMonthChange={setMonth}
             onSelect={(newDate) => {
               if (newDate) {
                 setDate(newDate);
               }
             }}
-            month={month}
-            onMonthChange={setMonth}
-            className="p-2"
-            disabled={[
-              { after: today }, // Dates before today
-            ]}
+            selected={date}
           />
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Calendar with presets -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

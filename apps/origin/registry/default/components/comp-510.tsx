@@ -40,12 +40,6 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        numberOfMonths={2}
-        pagedNavigation
-        showOutsideDays={false}
         className="rounded-md border p-2"
         classNames={{
           months: "sm:flex-col md:flex-row gap-8",
@@ -61,18 +55,24 @@ export default function Component() {
           ),
         }}
         disabled={isDateDisabled}
+        mode="single"
+        numberOfMonths={2}
+        onSelect={setDate}
+        pagedNavigation
+        selected={date}
+        showOutsideDays={false}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Pricing calendar -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

@@ -32,9 +32,9 @@ export default function Component() {
       <Stepper defaultValue={2}>
         {steps.map(({ step, title, description }) => (
           <StepperItem
+            className="relative flex-1 flex-col!"
             key={step}
             step={step}
-            className="relative flex-1 flex-col!"
           >
             <StepperTrigger className="flex-col gap-3 rounded">
               <StepperIndicator />
@@ -52,9 +52,9 @@ export default function Component() {
         ))}
       </Stepper>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Stepper with titles and descriptions
       </p>

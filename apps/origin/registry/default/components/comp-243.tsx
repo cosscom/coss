@@ -6,9 +6,9 @@ export default function Component() {
     <div className="*:not-first:mt-4">
       <Label>Slider with solid thumb</Label>
       <Slider
-        defaultValue={[25]}
-        className="[&>:first-child>span]:opacity-70 [&>:last-child>span]:bg-primary"
         aria-label="Slider with solid thumb"
+        className="[&>:first-child>span]:opacity-70 [&>:last-child>span]:bg-primary"
+        defaultValue={[25]}
       />
     </div>
   );

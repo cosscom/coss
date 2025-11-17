@@ -54,15 +54,15 @@ const columns: ColumnDef<Item>[] = [
         >
           {row.getIsExpanded() ? (
             <ChevronUpIcon
+              aria-hidden="true"
               className="opacity-60"
               size={16}
-              aria-hidden="true"
             />
           ) : (
             <ChevronDownIcon
+              aria-hidden="true"
               className="opacity-60"
               size={16}
-              aria-hidden="true"
             />
           )}
         </Button>
@@ -73,19 +73,19 @@ const columns: ColumnDef<Item>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
+        aria-label="Select row"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
       />
     ),
   },
@@ -165,7 +165,7 @@ export default function Component() {
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow className="hover:bg-transparent" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id}>
@@ -186,13 +186,13 @@ export default function Component() {
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <TableRow
-                  key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
-                      key={cell.id}
                       className="whitespace-nowrap [&:has([aria-expanded])]:w-px [&:has([aria-expanded])]:py-0 [&:has([aria-expanded])]:pr-0"
+                      key={cell.id}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -206,8 +206,8 @@ export default function Component() {
                     <TableCell colSpan={row.getVisibleCells().length}>
                       <div className="flex items-start py-2 text-primary/80">
                         <span
-                          className="me-3 mt-0.5 flex w-7 shrink-0 justify-center"
                           aria-hidden="true"
+                          className="me-3 mt-0.5 flex w-7 shrink-0 justify-center"
                         >
                           <InfoIcon className="opacity-60" size={16} />
                         </span>
@@ -220,7 +220,7 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
@@ -232,8 +232,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>

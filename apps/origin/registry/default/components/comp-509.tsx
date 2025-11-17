@@ -16,30 +16,30 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="range"
-        selected={date}
-        onSelect={setDate}
-        numberOfMonths={3}
-        pagedNavigation
-        showOutsideDays={false}
         className="rounded-md border p-2"
         classNames={{
           months: "sm:flex-col md:flex-row gap-8",
           month:
             "relative first-of-type:before:hidden before:absolute max-md:before:inset-x-2 max-md:before:h-px max-md:before:-top-4 md:before:inset-y-2 md:before:w-px before:bg-border md:before:-left-4",
         }}
+        mode="range"
+        numberOfMonths={3}
+        onSelect={setDate}
+        pagedNavigation
+        selected={date}
+        showOutsideDays={false}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Three months calendar -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

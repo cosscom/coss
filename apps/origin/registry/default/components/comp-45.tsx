@@ -13,8 +13,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>OTP input double</Label>
       <OTPInput
-        id={id}
         containerClassName="flex items-center gap-3 has-disabled:opacity-50"
+        id={id}
         maxLength={6}
         render={({ slots }) => (
           <>
@@ -25,7 +25,7 @@ export default function Component() {
             </div>
 
             <div className="text-muted-foreground/80">
-              <MinusIcon size={16} aria-hidden="true" />
+              <MinusIcon aria-hidden="true" size={16} />
             </div>
 
             <div className="flex">
@@ -37,16 +37,16 @@ export default function Component() {
         )}
       />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/guilhermerodz/input-otp"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           Input OTP
         </a>

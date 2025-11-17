@@ -29,8 +29,8 @@ export default function CheckboxGroupNestedParentDemo() {
 
   return (
     <CheckboxGroup
+      allValues={mainPermissions.map((p) => p.id)}
       aria-labelledby="user-permissions-caption"
-      value={mainValue}
       onValueChange={(value) => {
         if (value.includes("manage-users")) {
           setManagementValue(userManagementPermissions.map((p) => p.id));
@@ -41,25 +41,26 @@ export default function CheckboxGroupNestedParentDemo() {
         }
         setMainValue(value);
       }}
-      allValues={mainPermissions.map((p) => p.id)}
+      value={mainValue}
     >
       <Label id="user-permissions-caption">
-        <Checkbox parent indeterminate={managementIsPartial} />
+        <Checkbox indeterminate={managementIsPartial} parent />
         User Permissions
       </Label>
 
       {mainPermissions
         .filter((p) => p.id !== "manage-users")
         .map((p) => (
-          <Label key={p.id} className="ms-4">
+          <Label className="ms-4" key={p.id}>
             <Checkbox value={p.id} />
             {p.name}
           </Label>
         ))}
 
       <CheckboxGroup
+        allValues={userManagementPermissions.map((p) => p.id)}
         aria-labelledby="manage-users-caption"
-        value={managementValue}
+        className="ms-4"
         onValueChange={(value) => {
           if (value.length === userManagementPermissions.length) {
             setMainValue((prev) =>
@@ -70,8 +71,7 @@ export default function CheckboxGroupNestedParentDemo() {
           }
           setManagementValue(value);
         }}
-        allValues={userManagementPermissions.map((p) => p.id)}
-        className="ms-4"
+        value={managementValue}
       >
         <Label id="manage-users-caption">
           <Checkbox parent />
@@ -79,7 +79,7 @@ export default function CheckboxGroupNestedParentDemo() {
         </Label>
 
         {userManagementPermissions.map((p) => (
-          <Label key={p.id} className="ms-4">
+          <Label className="ms-4" key={p.id}>
             <Checkbox value={p.id} />
             {p.name}
           </Label>

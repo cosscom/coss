@@ -69,8 +69,8 @@ function Slider({
   const renderThumb = (value: number) => {
     const thumb = (
       <SliderPrimitive.Thumb
-        data-slot="slider-thumb"
         className="block size-4 shrink-0 rounded-full border border-primary bg-background shadow-sm outline-none ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50"
+        data-slot="slider-thumb"
         onPointerDown={handlePointerDown}
       />
     );
@@ -83,8 +83,8 @@ function Slider({
           <TooltipTrigger asChild>{thumb}</TooltipTrigger>
           <TooltipContent
             className="px-2 py-1 text-xs"
-            sideOffset={8}
             side={props.orientation === "vertical" ? "right" : "top"}
+            sideOffset={8}
           >
             <p>{tooltipContent ? tooltipContent(value) : value}</p>
           </TooltipContent>
@@ -95,29 +95,29 @@ function Slider({
 
   return (
     <SliderPrimitive.Root
-      data-slot="slider"
-      defaultValue={defaultValue}
-      value={value}
-      min={min}
-      max={max}
       className={cn(
         "relative flex w-full touch-none select-none items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col data-[disabled]:opacity-50",
         className,
       )}
+      data-slot="slider"
+      defaultValue={defaultValue}
+      max={max}
+      min={min}
       onValueChange={handleValueChange}
+      value={value}
       {...props}
     >
       <SliderPrimitive.Track
-        data-slot="slider-track"
         className={cn(
           "relative grow overflow-hidden rounded-full bg-muted data-[orientation=horizontal]:h-1.5 data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-1.5",
         )}
+        data-slot="slider-track"
       >
         <SliderPrimitive.Range
-          data-slot="slider-range"
           className={cn(
             "absolute bg-primary data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
           )}
+          data-slot="slider-range"
         />
       </SliderPrimitive.Track>
       {Array.from({ length: internalValues.length }, (_, index) => (

@@ -94,14 +94,14 @@ export default function Component() {
         {tree.getItems().map((item) => {
           return (
             <TreeItem
-              key={item.getId()}
-              item={item}
               asChild={!!item.getItemData()?.href}
+              item={item}
+              key={item.getId()}
             >
               {item.getItemData()?.href ? (
                 <a
-                  href={item.getItemData().href}
                   data-current={item.getItemData().current}
+                  href={item.getItemData().href}
                 >
                   <TreeItemLabel className="in-data-[current=true]:bg-accent in-data-[current=true]:text-accent-foreground" />
                 </a>
@@ -115,15 +115,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Menu navigation tree ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

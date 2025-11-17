@@ -99,27 +99,27 @@ const isValid = coss.calendar.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Authorization
         </h2>
-        <CodeBlock code={authorization} language="tsx" copyButton={false} />
+        <CodeBlock code={authorization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Calendars
         </h2>
-        <CodeBlock code={calendars} language="tsx" copyButton={false} />
+        <CodeBlock code={calendars} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Events
         </h2>
-        <CodeBlock code={events} language="tsx" copyButton={false} />
+        <CodeBlock code={events} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
-        <CodeBlock code={webhooks} language="tsx" copyButton={false} />
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
-        <CodeBlock code={utilities} language="tsx" copyButton={false} />
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

@@ -59,8 +59,8 @@ export default function GroupSelect() {
         </Select>
         <GroupSeparator />
         <NumberField
-          defaultValue={10}
           aria-label="Enter the amount"
+          defaultValue={10}
           render={<NumberFieldGroup />}
         >
           <NumberFieldInput className="text-left" />

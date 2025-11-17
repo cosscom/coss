@@ -21,13 +21,13 @@ export default function Component() {
       <RadioGroup className="flex gap-1.5" defaultValue="3">
         {items.map((item) => (
           <label
-            key={`${id}-${item.value}`}
             className="relative flex size-9 cursor-pointer flex-col items-center justify-center rounded-full border border-input text-center text-xl shadow-xs outline-none transition-[color,box-shadow] has-data-disabled:cursor-not-allowed has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-data-disabled:opacity-50 has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={`${id}-${item.value}`}
           >
             <RadioGroupItem
+              className="sr-only after:absolute after:inset-0"
               id={`${id}-${item.value}`}
               value={item.value}
-              className="sr-only after:absolute after:inset-0"
             />
             {item.icon}
           </label>

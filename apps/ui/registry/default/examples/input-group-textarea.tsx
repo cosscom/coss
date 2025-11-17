@@ -33,10 +33,10 @@ export default function InputGroupWithTextarea() {
                 <MenuTrigger
                   render={
                     <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="rounded-full"
                       aria-label="Add files"
+                      className="rounded-full"
+                      size="icon-sm"
+                      variant="ghost"
                     />
                   }
                 >
@@ -58,10 +58,10 @@ export default function InputGroupWithTextarea() {
           <TooltipTrigger
             render={
               <Button
-                variant="default"
+                aria-label="Send"
                 className="rounded-full"
                 size="icon-sm"
-                aria-label="Send"
+                variant="default"
               >
                 <ArrowUpIcon />
               </Button>

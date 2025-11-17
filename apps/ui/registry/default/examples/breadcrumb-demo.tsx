@@ -29,7 +29,7 @@ export default function BreadcrumbDemo() {
           <Menu>
             <MenuTrigger
               render={
-                <Button size="icon-sm" variant="ghost" className="-m-1.5" />
+                <Button className="-m-1.5" size="icon-sm" variant="ghost" />
               }
             >
               <BreadcrumbEllipsis />

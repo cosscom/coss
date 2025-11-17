@@ -10,9 +10,9 @@ export default function Component() {
     <div className="flex flex-col items-center gap-2">
       <Cropper
         className="h-80"
-        minZoom={2}
-        maxZoom={10}
         image="https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/cropper-08_wneftq.jpg"
+        maxZoom={10}
+        minZoom={2}
       >
         <CropperDescription />
         <CropperImage />
@@ -21,15 +21,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Cropper with custom zoom limits ∙{" "}
         <a
-          href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/origin-space/image-cropper"
           rel="noreferrer"
+          target="_blank"
         >
           API
         </a>

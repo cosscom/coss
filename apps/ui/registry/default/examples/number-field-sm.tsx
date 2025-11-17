@@ -8,7 +8,7 @@ import {
 
 export default function NumberFieldSm() {
   return (
-    <NumberField size="sm" defaultValue={0}>
+    <NumberField defaultValue={0} size="sm">
       <NumberFieldGroup>
         <NumberFieldDecrement />
         <NumberFieldInput />

@@ -97,7 +97,7 @@ export default function Component() {
         <AssistiveTreeDescription tree={tree} />
         {tree.getItems().map((item) => {
           return (
-            <TreeItem key={item.getId()} item={item}>
+            <TreeItem item={item} key={item.getId()}>
               <TreeItemLabel>
                 <span className="flex items-center gap-2">
                   {item.isFolder() &&
@@ -117,15 +117,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Tree with multi-select and drag and drop ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

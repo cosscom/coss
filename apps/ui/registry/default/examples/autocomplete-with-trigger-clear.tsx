@@ -26,10 +26,10 @@ export default function AutocompleteWithTriggerClear() {
   return (
     <Autocomplete items={items}>
       <AutocompleteInput
-        placeholder="Search items…"
         aria-label="Search items"
-        showTrigger
+        placeholder="Search items…"
         showClear
+        showTrigger
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>

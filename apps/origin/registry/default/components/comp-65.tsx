@@ -9,8 +9,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with gray background</Label>
       <Textarea
-        id={id}
         className="border-transparent bg-muted shadow-none"
+        id={id}
         placeholder="Leave a comment"
       />
     </div>

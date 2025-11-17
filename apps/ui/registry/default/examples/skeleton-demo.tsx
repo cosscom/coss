@@ -59,7 +59,7 @@ function UserCard({ delay, user }: { delay: number; user: (typeof users)[0] }) {
   return (
     <>
       <Avatar className="size-10">
-        <AvatarImage src={user.image} alt={user.name} />
+        <AvatarImage alt={user.name} src={user.image} />
         <AvatarFallback>{user.fallback}</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -103,7 +103,7 @@ export default function SkeletonDemo() {
   return (
     <div className="flex w-full max-w-92 flex-col gap-6">
       {users.map((user) => (
-        <div key={user.fallback} className="flex items-center gap-4">
+        <div className="flex items-center gap-4" key={user.fallback}>
           <UserCard delay={user.delay} user={user} />
         </div>
       ))}

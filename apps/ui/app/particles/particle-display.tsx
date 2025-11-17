@@ -46,20 +46,20 @@ export async function ParticleDisplay({
       <div className="flex items-center gap-3 rounded-b-xl p-2">
         <p className="flex flex-1 gap-1 truncate text-muted-foreground text-xs">
           <HugeiconsIcon
+            className="size-3 h-[1lh] shrink-0"
             icon={InformationCircleIcon}
             strokeWidth={2}
-            className="size-3 h-[1lh] shrink-0"
           />
           <span className="truncate">{particle.description}</span>
         </p>
         <div className="flex items-center gap-1.5">
           {process.env.NODE_ENV === "development" && (
             <Button
-              size="sm"
-              variant="outline"
               className="text-xs"
               disabled
+              size="sm"
               title="Particle name"
+              variant="outline"
             >
               {particle.name}
             </Button>
@@ -71,7 +71,7 @@ export async function ParticleDisplay({
           <Sheet>
             <SheetTrigger
               render={
-                <Button size="sm" className="text-xs" variant="outline" />
+                <Button className="text-xs" size="sm" variant="outline" />
               }
             >
               View code
@@ -85,10 +85,10 @@ export async function ParticleDisplay({
                   <h2 className="mb-4 font-heading text-xl">Installation</h2>
                   <figure data-rehype-pretty-code-figure>
                     <CodeBlockCommand
-                      __npm__={`npx shadcn@latest add @coss/${name}`}
-                      __yarn__={`yarn dlx shadcn@latest add @coss/${name}`}
-                      __pnpm__={`pnpm dlx shadcn@latest add @coss/${name}`}
                       __bun__={`bunx --bun shadcn@latest add @coss/${name}`}
+                      __npm__={`npx shadcn@latest add @coss/${name}`}
+                      __pnpm__={`pnpm dlx shadcn@latest add @coss/${name}`}
+                      __yarn__={`yarn dlx shadcn@latest add @coss/${name}`}
                     />
                   </figure>
                 </div>
@@ -96,24 +96,24 @@ export async function ParticleDisplay({
                   <div className="flex items-center justify-between gap-2">
                     <h2 className="mt-6 mb-4 font-heading text-xl">Code</h2>
                     <Button
-                      variant="outline"
                       render={
                         // biome-ignore lint(a11y/useAnchorContent): known
                         <a
                           href={`https://v0.dev/chat/api/open?url=${encodeURIComponent(`${cossuiUrl}/r/${name}.json`)}`}
-                          target="_blank"
                           rel="noopener noreferrer"
+                          target="_blank"
                         />
                       }
+                      variant="outline"
                     >
                       Open in<span className="sr-only">v0</span>
                       <Icons.v0 className="size-5" />
                     </Button>
                   </div>
                   <ComponentSource
-                    name={name}
-                    collapsible={false}
                     className="*:data-rehype-pretty-code-figure:no-scrollbar h-full overflow-hidden *:data-rehype-pretty-code-figure:mt-0 *:data-rehype-pretty-code-figure:max-h-full *:data-rehype-pretty-code-figure:overflow-y-auto"
+                    collapsible={false}
+                    name={name}
                   />
                 </div>
               </div>

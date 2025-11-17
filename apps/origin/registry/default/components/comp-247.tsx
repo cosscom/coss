@@ -15,9 +15,9 @@ export default function Component() {
         <output className="font-medium text-sm tabular-nums">{value[0]}</output>
       </div>
       <Slider
-        value={value}
-        onValueChange={setValue}
         aria-label="Slider with output"
+        onValueChange={setValue}
+        value={value}
       />
     </div>
   );

@@ -235,10 +235,10 @@ export function EventCalendar({
     if (view === "day") {
       return (
         <>
-          <span className="min-[480px]:hidden" aria-hidden="true">
+          <span aria-hidden="true" className="min-[480px]:hidden">
             {format(currentDate, "MMM d, yyyy")}
           </span>
-          <span className="max-[479px]:hidden min-md:hidden" aria-hidden="true">
+          <span aria-hidden="true" className="max-[479px]:hidden min-md:hidden">
             {format(currentDate, "MMMM d, yyyy")}
           </span>
           <span className="max-md:hidden">
@@ -280,33 +280,33 @@ export function EventCalendar({
         >
           <div className="flex items-center gap-1 sm:gap-4">
             <Button
-              variant="outline"
               className="max-[479px]:aspect-square max-[479px]:p-0!"
               onClick={handleToday}
+              variant="outline"
             >
               <RiCalendarCheckLine
+                aria-hidden="true"
                 className="min-[480px]:hidden"
                 size={16}
-                aria-hidden="true"
               />
               <span className="max-[479px]:sr-only">Today</span>
             </Button>
             <div className="flex items-center sm:gap-2">
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrevious}
                 aria-label="Previous"
+                onClick={handlePrevious}
+                size="icon"
+                variant="ghost"
               >
-                <ChevronLeftIcon size={16} aria-hidden="true" />
+                <ChevronLeftIcon aria-hidden="true" size={16} />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleNext}
                 aria-label="Next"
+                onClick={handleNext}
+                size="icon"
+                variant="ghost"
               >
-                <ChevronRightIcon size={16} aria-hidden="true" />
+                <ChevronRightIcon aria-hidden="true" size={16} />
               </Button>
             </div>
             <h2 className="font-semibold text-sm sm:text-lg md:text-xl">
@@ -316,9 +316,9 @@ export function EventCalendar({
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-1.5 max-[479px]:h-8">
+                <Button className="gap-1.5 max-[479px]:h-8" variant="outline">
                   <span>
-                    <span className="min-[480px]:hidden" aria-hidden="true">
+                    <span aria-hidden="true" className="min-[480px]:hidden">
                       {view.charAt(0).toUpperCase()}
                     </span>
                     <span className="max-[479px]:sr-only">
@@ -326,9 +326,9 @@ export function EventCalendar({
                     </span>
                   </span>
                   <ChevronDownIcon
+                    aria-hidden="true"
                     className="-me-1 opacity-60"
                     size={16}
-                    aria-hidden="true"
                   />
                 </Button>
               </DropdownMenuTrigger>
@@ -349,16 +349,16 @@ export function EventCalendar({
             </DropdownMenu>
             <Button
               className="max-[479px]:aspect-square max-[479px]:p-0!"
-              size="sm"
               onClick={() => {
                 setSelectedEvent(null); // Ensure we're creating a new event
                 setIsEventDialogOpen(true);
               }}
+              size="sm"
             >
               <PlusIcon
+                aria-hidden="true"
                 className="sm:-ms-1 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
               <span className="max-sm:sr-only">New event</span>
             </Button>
@@ -370,24 +370,24 @@ export function EventCalendar({
             <MonthView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              onEventSelect={handleEventSelect}
             />
           )}
           {view === "week" && (
             <WeekView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              onEventSelect={handleEventSelect}
             />
           )}
           {view === "day" && (
             <DayView
               currentDate={currentDate}
               events={events}
-              onEventSelect={handleEventSelect}
               onEventCreate={handleEventCreate}
+              onEventSelect={handleEventSelect}
             />
           )}
           {view === "agenda" && (
@@ -406,8 +406,8 @@ export function EventCalendar({
             setIsEventDialogOpen(false);
             setSelectedEvent(null);
           }}
-          onSave={handleEventSave}
           onDelete={handleEventDelete}
+          onSave={handleEventSave}
         />
       </CalendarDndProvider>
     </div>

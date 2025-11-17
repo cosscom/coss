@@ -5,12 +5,12 @@ import { Group, GroupSeparator } from "@/registry/default/ui/group";
 
 export default function GroupVertical() {
   return (
-    <Group orientation="vertical" aria-label="Zoom controls">
-      <Button variant="outline" size="icon" aria-label="Zoom in">
+    <Group aria-label="Zoom controls" orientation="vertical">
+      <Button aria-label="Zoom in" size="icon" variant="outline">
         <ZoomInIcon />
       </Button>
       <GroupSeparator orientation="horizontal" />
-      <Button variant="outline" size="icon" aria-label="Zoom Out">
+      <Button aria-label="Zoom Out" size="icon" variant="outline">
         <ZoomOutIcon />
       </Button>
     </Group>

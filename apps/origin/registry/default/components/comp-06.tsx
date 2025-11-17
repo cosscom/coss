@@ -9,17 +9,17 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with error</Label>
       <Input
-        id={id}
+        aria-invalid
         className="peer"
+        defaultValue="invalid@email.com"
+        id={id}
         placeholder="Email"
         type="email"
-        defaultValue="invalid@email.com"
-        aria-invalid
       />
       <p
+        aria-live="polite"
         className="mt-2 text-xs peer-aria-invalid:text-destructive"
         role="alert"
-        aria-live="polite"
       >
         Email is invalid
       </p>

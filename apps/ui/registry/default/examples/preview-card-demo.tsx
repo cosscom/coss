@@ -25,8 +25,8 @@ export default function PreviewCardDemo() {
           <div className="flex items-center gap-4 text-muted-foreground text-xs">
             <div className="flex items-center gap-1">
               <span
-                className="size-2 rounded-full bg-blue-500"
                 aria-hidden="true"
+                className="size-2 rounded-full bg-blue-500"
               />
               <span>TypeScript</span>
             </div>

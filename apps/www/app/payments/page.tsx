@@ -107,35 +107,35 @@ const isValid = coss.payments.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Products
         </h2>
-        <CodeBlock code={products} language="tsx" copyButton={false} />
+        <CodeBlock code={products} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Prices
         </h2>
-        <CodeBlock code={prices} language="tsx" copyButton={false} />
+        <CodeBlock code={prices} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Customers
         </h2>
-        <CodeBlock code={customers} language="tsx" copyButton={false} />
+        <CodeBlock code={customers} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Subscriptions
         </h2>
-        <CodeBlock code={subscriptions} language="tsx" copyButton={false} />
+        <CodeBlock code={subscriptions} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Invoices
         </h2>
-        <CodeBlock code={invoices} language="tsx" copyButton={false} />
+        <CodeBlock code={invoices} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
-        <CodeBlock code={webhooks} language="tsx" copyButton={false} />
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
-        <CodeBlock code={utilities} language="tsx" copyButton={false} />
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

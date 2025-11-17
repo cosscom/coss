@@ -111,26 +111,26 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       {/* Drop area */}
       <div
-        role="button"
+        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-[input:focus]:border-ring has-disabled:opacity-50 has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        data-dragging={isDragging || undefined}
         onClick={openFileDialog}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        data-dragging={isDragging || undefined}
-        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-[input:focus]:border-ring has-disabled:opacity-50 has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        role="button"
         tabIndex={-1}
       >
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload files"
+          className="sr-only"
         />
 
         <div className="flex flex-col items-center justify-center text-center">
           <div
-            className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
             aria-hidden="true"
+            className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
           >
             <FileUpIcon className="size-4 opacity-60" />
           </div>
@@ -163,8 +163,8 @@ export default function Component() {
         <div className="space-y-2">
           {files.map((file) => (
             <div
-              key={file.id}
               className="flex items-center justify-between gap-2 rounded-lg border bg-background p-2 pe-3"
+              key={file.id}
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
@@ -187,13 +187,13 @@ export default function Component() {
               </div>
 
               <Button
-                size="icon"
-                variant="ghost"
+                aria-label="Remove file"
                 className="-me-2 size-8 text-muted-foreground/80 hover:bg-transparent hover:text-foreground"
                 onClick={() => removeFile(file.id)}
-                aria-label="Remove file"
+                size="icon"
+                variant="ghost"
               >
-                <XIcon className="size-4" aria-hidden="true" />
+                <XIcon aria-hidden="true" className="size-4" />
               </Button>
             </div>
           ))}
@@ -201,7 +201,7 @@ export default function Component() {
           {/* Remove all files button */}
           {files.length > 1 && (
             <div>
-              <Button size="sm" variant="outline" onClick={clearFiles}>
+              <Button onClick={clearFiles} size="sm" variant="outline">
                 Remove all files
               </Button>
             </div>
@@ -211,13 +211,13 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Multiple files uploader w/ list ∙{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
         >
           API
         </a>

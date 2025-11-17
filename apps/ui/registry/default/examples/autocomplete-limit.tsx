@@ -58,9 +58,9 @@ export default function AutocompleteLimit() {
   return (
     <Autocomplete
       items={manyTags}
-      value={value}
-      onValueChange={setValue}
       limit={limit}
+      onValueChange={setValue}
+      value={value}
     >
       <AutocompleteInput placeholder="e.g. feature" />
       <AutocompletePopup>

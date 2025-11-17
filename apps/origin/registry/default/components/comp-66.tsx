@@ -9,8 +9,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Shorter textarea</Label>
       <Textarea
-        id={id}
         className="min-h-0"
+        id={id}
         placeholder="Leave a comment"
         rows={2}
       />

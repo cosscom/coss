@@ -62,7 +62,6 @@ function EventWrapper({
 
   return (
     <button
-      type="button"
       className={cn(
         "flex size-full select-none overflow-hidden px-1 text-left font-medium outline-none backdrop-blur-md transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-dragging:cursor-grabbing data-past-event:line-through data-dragging:shadow-lg sm:px-2",
         getEventColorClasses(event.color),
@@ -74,6 +73,7 @@ function EventWrapper({
       onClick={onClick}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
+      type="button"
       {...dndListeners}
       {...dndAttributes}
     >
@@ -151,18 +151,18 @@ export function EventItem({
   if (view === "month") {
     return (
       <EventWrapper
-        event={event}
-        isFirstDay={isFirstDay}
-        isLastDay={isLastDay}
-        isDragging={isDragging}
-        onClick={onClick}
         className={cn(
           "mt-[var(--event-gap)] h-[var(--event-height)] items-center text-[10px] sm:text-xs",
           className,
         )}
         currentTime={currentTime}
-        dndListeners={dndListeners}
         dndAttributes={dndAttributes}
+        dndListeners={dndListeners}
+        event={event}
+        isDragging={isDragging}
+        isFirstDay={isFirstDay}
+        isLastDay={isLastDay}
+        onClick={onClick}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -183,11 +183,6 @@ export function EventItem({
   if (view === "week" || view === "day") {
     return (
       <EventWrapper
-        event={event}
-        isFirstDay={isFirstDay}
-        isLastDay={isLastDay}
-        isDragging={isDragging}
-        onClick={onClick}
         className={cn(
           "py-1",
           durationMinutes < 45 ? "items-center" : "flex-col",
@@ -195,8 +190,13 @@ export function EventItem({
           className,
         )}
         currentTime={currentTime}
-        dndListeners={dndListeners}
         dndAttributes={dndAttributes}
+        dndListeners={dndListeners}
+        event={event}
+        isDragging={isDragging}
+        isFirstDay={isFirstDay}
+        isLastDay={isLastDay}
+        onClick={onClick}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -226,7 +226,6 @@ export function EventItem({
   // Agenda view - kept separate since it's significantly different
   return (
     <button
-      type="button"
       className={cn(
         "flex w-full flex-col gap-1 rounded p-2 text-left outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-past-event:line-through data-past-event:opacity-90",
         getEventColorClasses(eventColor),
@@ -236,6 +235,7 @@ export function EventItem({
       onClick={onClick}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
+      type="button"
       {...dndListeners}
       {...dndAttributes}
     >

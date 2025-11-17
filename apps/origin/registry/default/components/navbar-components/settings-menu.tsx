@@ -13,15 +13,15 @@ export default function SettingsMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
           <SettingsIcon
+            aria-hidden="true"
             className="text-muted-foreground"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>

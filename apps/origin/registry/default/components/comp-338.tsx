@@ -42,15 +42,15 @@ export default function Component() {
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-xl">W/ icon and chevron</h2>
-      <Accordion type="single" collapsible className="w-full" defaultValue="3">
+      <Accordion className="w-full" collapsible defaultValue="3" type="single">
         {items.map((item) => (
-          <AccordionItem value={item.id} key={item.id} className="py-2">
+          <AccordionItem className="py-2" key={item.id} value={item.id}>
             <AccordionTrigger className="py-2 text-[15px] leading-6 hover:no-underline">
               <span className="flex items-center gap-3">
                 <item.icon
-                  size={16}
-                  className="shrink-0 opacity-60"
                   aria-hidden="true"
+                  className="shrink-0 opacity-60"
+                  size={16}
                 />
                 <span>{item.title}</span>
               </span>

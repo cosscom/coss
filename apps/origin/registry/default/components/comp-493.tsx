@@ -17,22 +17,22 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="multiple"
-        selected={date}
-        onSelect={setDate}
         className="rounded-md border p-2"
+        mode="multiple"
+        onSelect={setDate}
+        selected={date}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Multiple day selection -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

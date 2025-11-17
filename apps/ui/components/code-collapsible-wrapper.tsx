@@ -20,25 +20,25 @@ export function CodeCollapsibleWrapper({
 
   return (
     <Collapsible
-      open={isOpened}
-      onOpenChange={setIsOpened}
       className={cn("group/collapsible md:-mx-1 relative", className)}
+      onOpenChange={setIsOpened}
+      open={isOpened}
       {...props}
     >
       <div className="absolute top-1.5 right-10 z-10 flex items-center">
         <CollapsibleTrigger
           render={
-            <Button variant="ghost" className="text-muted-foreground">
+            <Button className="text-muted-foreground" variant="ghost">
               {isOpened ? "Collapse" : "Expand"}
             </Button>
           }
         />
-        <Separator orientation="vertical" className="mx-1.5 h-5" />
+        <Separator className="mx-1.5 h-5" orientation="vertical" />
       </div>
       <CollapsiblePanel
         className="[&>figure]:md:!mx-0 relative mt-6 h-full overflow-hidden data-closed:max-h-64 [&>figure]:mt-0"
-        keepMounted
         hidden={false}
+        keepMounted
       >
         {children}
       </CollapsiblePanel>

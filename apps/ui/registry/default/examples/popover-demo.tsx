@@ -28,9 +28,9 @@ export default function PopoverDemo() {
         <Form>
           <Field>
             <Textarea
+              aria-label="Send feedback"
               id="feedback"
               placeholder="How can we improve?"
-              aria-label="Send feedback"
             />
           </Field>
           <Button type="submit">Send feedback</Button>

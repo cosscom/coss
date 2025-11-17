@@ -48,14 +48,14 @@ export default function ComboboxMultipleForm() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Favorite items</FieldLabel>
         <Combobox
+          disabled={loading}
           items={items}
           multiple
           name="items"
-          disabled={loading}
           required
         >
           <ComboboxChips>
@@ -63,7 +63,7 @@ export default function ComboboxMultipleForm() {
               {(value: { value: string; label: string }[]) => (
                 <>
                   {value?.map((item) => (
-                    <ComboboxChip key={item.value} aria-label={item.label}>
+                    <ComboboxChip aria-label={item.label} key={item.value}>
                       {item.label}
                     </ComboboxChip>
                   ))}
@@ -87,7 +87,7 @@ export default function ComboboxMultipleForm() {
         </Combobox>
         <FieldError>Please select at least one item.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

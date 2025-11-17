@@ -19,19 +19,19 @@ export default function CheckboxFormDemo() {
     alert(`Terms: ${accepted}`);
   };
   return (
-    <Form onSubmit={onSubmit} className="w-auto">
+    <Form className="w-auto" onSubmit={onSubmit}>
       <Field name="terms">
         <FieldLabel>
           <Checkbox
-            name="terms"
-            value="yes"
             defaultChecked
             disabled={loading}
+            name="terms"
+            value="yes"
           />
           Accept terms and conditions
         </FieldLabel>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

@@ -29,8 +29,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-emerald-500"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-emerald-500"
                   />
                   Paid
                 </Badge>
@@ -43,8 +43,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-muted-foreground/64"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-muted-foreground/64"
                   />
                   Unpaid
                 </Badge>
@@ -57,8 +57,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-amber-500"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-amber-500"
                   />
                   Pending
                 </Badge>
@@ -71,8 +71,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-emerald-500"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-emerald-500"
                   />
                   Paid
                 </Badge>
@@ -85,8 +85,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-emerald-500"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-emerald-500"
                   />
                   Paid
                 </Badge>
@@ -99,8 +99,8 @@ export default function TableFramed() {
               <TableCell>
                 <Badge variant="outline">
                   <span
-                    className="size-1.5 rounded-full bg-red-500"
                     aria-hidden="true"
+                    className="size-1.5 rounded-full bg-red-500"
                   />
                   Failed
                 </Badge>

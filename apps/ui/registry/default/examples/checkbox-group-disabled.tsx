@@ -10,7 +10,7 @@ export default function CheckboxGroupDemo() {
         Next.js
       </Label>
       <Label>
-        <Checkbox value="vite" disabled />
+        <Checkbox disabled value="vite" />
         Vite
       </Label>
       <Label>

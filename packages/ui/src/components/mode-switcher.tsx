@@ -15,15 +15,15 @@ export function ModeSwitcher() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
       className="relative size-8"
       onClick={toggleTheme}
+      size="icon"
       title="Toggle theme"
+      variant="ghost"
     >
       <HugeiconsIcon
-        icon={LayerMask01Icon}
         className="-rotate-45 size-4"
+        icon={LayerMask01Icon}
         strokeWidth={2}
       />
       <span className="sr-only">Toggle theme</span>

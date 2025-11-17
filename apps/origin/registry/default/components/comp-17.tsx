@@ -19,8 +19,8 @@ export default function Component() {
           <option value="wss://">wss://</option>
         </SelectNative>
         <Input
-          id={id}
           className="-ms-px rounded-s-none shadow-none focus-visible:z-10"
+          id={id}
           placeholder="192.168.1.1"
           type="text"
         />

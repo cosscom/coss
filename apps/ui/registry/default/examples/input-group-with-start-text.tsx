@@ -9,10 +9,10 @@ export default function InputGroupWithStartText() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="search"
+        aria-label="Set your URL"
         className="*:[input]:ps-1!"
         placeholder="coss"
-        aria-label="Set your URL"
+        type="search"
       />
       <InputGroupAddon>
         <InputGroupText>i.cal.com/</InputGroupText>

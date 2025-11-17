@@ -22,10 +22,10 @@ export default function CheckboxGroupFormDemo() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-[160px]">
+    <Form className="max-w-[160px]" onSubmit={onSubmit}>
       <Field
-        name="frameworks"
         className="gap-4"
+        name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
         <FieldsetLegend className="font-medium text-sm">
@@ -46,7 +46,7 @@ export default function CheckboxGroupFormDemo() {
           </FieldLabel>
         </CheckboxGroup>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

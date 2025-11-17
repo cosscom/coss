@@ -18,9 +18,9 @@ const items = [
 export default function SelectWithObjectValues() {
   return (
     <Select
+      aria-label="Select framework with command"
       defaultValue={items[0]}
       itemToStringValue={(item) => item.value}
-      aria-label="Select framework with command"
     >
       <SelectTrigger>
         <SelectValue>

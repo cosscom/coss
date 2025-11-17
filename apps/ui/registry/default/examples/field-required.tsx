@@ -7,7 +7,7 @@ export default function FieldRequiredDemo() {
       <FieldLabel>
         Password <span className="text-destructive-foreground">*</span>
       </FieldLabel>
-      <Input type="password" placeholder="Enter password" required />
+      <Input placeholder="Enter password" required type="password" />
       <FieldError>Please fill out this field.</FieldError>
     </Field>
   );

@@ -23,6 +23,8 @@ export default function Component({
       <PaginationContent className="w-full justify-between">
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === 1 ? true : undefined}
+            aria-label="Go to previous page"
             className={cn(
               "aria-disabled:pointer-events-none aria-disabled:opacity-50",
               buttonVariants({
@@ -30,21 +32,21 @@ export default function Component({
               }),
             )}
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
-            aria-label="Go to previous page"
-            aria-disabled={currentPage === 1 ? true : undefined}
             role={currentPage === 1 ? "link" : undefined}
           >
-            <ChevronLeftIcon size={16} aria-hidden="true" />
+            <ChevronLeftIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <p className="text-muted-foreground text-sm" aria-live="polite">
+          <p aria-live="polite" className="text-muted-foreground text-sm">
             Page <span className="text-foreground">{currentPage}</span> of{" "}
             <span className="text-foreground">{totalPages}</span>
           </p>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === totalPages ? true : undefined}
+            aria-label="Go to next page"
             className={cn(
               "aria-disabled:pointer-events-none aria-disabled:opacity-50",
               buttonVariants({
@@ -56,11 +58,9 @@ export default function Component({
                 ? undefined
                 : `#/page/${currentPage + 1}`
             }
-            aria-label="Go to next page"
-            aria-disabled={currentPage === totalPages ? true : undefined}
             role={currentPage === totalPages ? "link" : undefined}
           >
-            <ChevronRightIcon size={16} aria-hidden="true" />
+            <ChevronRightIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
       </PaginationContent>

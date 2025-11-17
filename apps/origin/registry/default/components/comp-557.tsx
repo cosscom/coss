@@ -19,15 +19,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Cropper with custom crop area color ∙{" "}
         <a
-          href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/origin-space/image-cropper"
           rel="noreferrer"
+          target="_blank"
         >
           API
         </a>

@@ -85,31 +85,31 @@ const isValid = coss.scheduling.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Users
         </h2>
-        <CodeBlock code={users} language="tsx" copyButton={false} />
+        <CodeBlock code={users} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Schedules
         </h2>
-        <CodeBlock code={schedules} language="tsx" copyButton={false} />
+        <CodeBlock code={schedules} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Event Types
         </h2>
-        <CodeBlock code={eventTypes} language="tsx" copyButton={false} />
+        <CodeBlock code={eventTypes} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Bookings
         </h2>
-        <CodeBlock code={bookings} language="tsx" copyButton={false} />
+        <CodeBlock code={bookings} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhooks
         </h2>
-        <CodeBlock code={webhooks} language="tsx" copyButton={false} />
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Utilities
         </h2>
-        <CodeBlock code={utilities} language="tsx" copyButton={false} />
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

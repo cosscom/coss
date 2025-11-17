@@ -47,8 +47,8 @@ export default function Component() {
       <DialogContent>
         <div className="mb-2 flex flex-col gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <StoreIcon className="opacity-80" size={16} />
           </div>
@@ -66,9 +66,9 @@ export default function Component() {
               {/* Monthly */}
               <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs outline-none transition-[color,box-shadow] has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50">
                 <RadioGroupItem
+                  className="sr-only after:absolute after:inset-0"
                   id="radio-monthly"
                   value="monthly"
-                  className="sr-only after:absolute after:inset-0"
                 />
                 <p className="font-medium text-foreground text-sm">Monthly</p>
                 <p className="text-muted-foreground text-sm">$32/month</p>
@@ -76,9 +76,9 @@ export default function Component() {
               {/* Yearly */}
               <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs outline-none transition-[color,box-shadow] has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50">
                 <RadioGroupItem
+                  className="sr-only after:absolute after:inset-0"
                   id="radio-yearly"
                   value="yearly"
-                  className="sr-only after:absolute after:inset-0"
                 />
                 <div className="inline-flex items-start justify-between gap-2">
                   <p className="font-medium text-foreground text-sm">Yearly</p>
@@ -89,7 +89,7 @@ export default function Component() {
             </RadioGroup>
             <div className="*:not-first:mt-2">
               <Label htmlFor={`name-${id}`}>Name on card</Label>
-              <Input id={`name-${id}`} type="text" required />
+              <Input id={`name-${id}`} required type="text" />
             </div>
             <div className="*:not-first:mt-2">
               <legend className="font-medium text-foreground text-sm">
@@ -111,7 +111,7 @@ export default function Component() {
                         width={20}
                       />
                     ) : (
-                      <CreditCardIcon size={16} aria-hidden="true" />
+                      <CreditCardIcon aria-hidden="true" size={16} />
                     )}
                   </div>
                 </div>
@@ -133,9 +133,9 @@ export default function Component() {
             </div>
             {!showCouponInput ? (
               <button
-                type="button"
-                onClick={() => setShowCouponInput(true)}
                 className="text-sm underline hover:no-underline"
+                onClick={() => setShowCouponInput(true)}
+                type="button"
               >
                 + Add coupon
               </button>
@@ -144,15 +144,15 @@ export default function Component() {
                 <Label htmlFor={`coupon-${id}`}>Coupon code</Label>
                 <Input
                   id={`coupon-${id}`}
-                  ref={couponInputRef}
-                  placeholder="Enter your code"
-                  value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter your code"
+                  ref={couponInputRef}
+                  value={couponCode}
                 />
               </div>
             )}
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Subscribe
           </Button>
         </form>

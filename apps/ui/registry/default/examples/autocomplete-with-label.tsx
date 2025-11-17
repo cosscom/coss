@@ -32,9 +32,9 @@ export default function AutocompleteWithLabel() {
       <div className="flex flex-col items-start gap-2">
         <Label htmlFor={id}>Fruits</Label>
         <AutocompleteInput
+          aria-label="Search items"
           id={id}
           placeholder="Search items…"
-          aria-label="Search items"
         />
       </div>
       <AutocompletePopup>

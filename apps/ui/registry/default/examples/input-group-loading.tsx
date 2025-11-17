@@ -8,7 +8,7 @@ import { Spinner } from "@/registry/default/ui/spinner";
 export default function InputGroupLoading() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Searching…" disabled />
+      <InputGroupInput disabled placeholder="Searching…" type="search" />
       <InputGroupAddon align="inline-end">
         <Spinner />
       </InputGroupAddon>

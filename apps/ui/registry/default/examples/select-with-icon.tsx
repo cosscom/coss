@@ -18,9 +18,9 @@ const items = [
 export default function SelectWithIcon() {
   return (
     <Select
-      items={items}
-      defaultValue="next"
       aria-label="Select framework with icon"
+      defaultValue="next"
+      items={items}
     >
       <SelectTrigger>
         <ClockIcon />

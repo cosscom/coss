@@ -39,7 +39,7 @@ export default function Component() {
                 width={20}
               />
             ) : (
-              <CreditCardIcon size={16} aria-hidden="true" />
+              <CreditCardIcon aria-hidden="true" size={16} />
             )}
           </div>
         </div>
@@ -61,16 +61,16 @@ export default function Component() {
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/medipass/react-payment-inputs"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Payment Inputs
         </a>

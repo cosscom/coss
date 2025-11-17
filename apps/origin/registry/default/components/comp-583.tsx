@@ -35,7 +35,7 @@ export default function Component() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="#" className="text-foreground">
+                <BreadcrumbLink className="text-foreground" href="#">
                   <Logo />
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -74,13 +74,13 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 px-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select project" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>

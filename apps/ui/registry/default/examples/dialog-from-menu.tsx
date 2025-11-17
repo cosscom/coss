@@ -31,7 +31,7 @@ export default function DialogFromMenuDemo() {
           <MenuItem onClick={() => setDialogOpen(true)}>Open dialog</MenuItem>
         </MenuPopup>
       </Menu>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
         <DialogPopup>
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>

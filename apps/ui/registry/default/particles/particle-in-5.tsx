@@ -8,7 +8,7 @@ import { Spinner } from "@/registry/default/ui/spinner";
 export default function Particle() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Processing…" disabled />
+      <InputGroupInput disabled placeholder="Processing…" type="search" />
       <InputGroupAddon>
         <Spinner />
       </InputGroupAddon>

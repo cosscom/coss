@@ -11,8 +11,8 @@ export default function Component() {
       <Label htmlFor={id}>Input with end select</Label>
       <div className="flex rounded-md shadow-xs">
         <Input
-          id={id}
           className="-me-px rounded-e-none shadow-none focus-visible:z-10"
+          id={id}
           placeholder="google"
           type="text"
         />

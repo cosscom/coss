@@ -9,12 +9,10 @@ import * as React from "react";
 export function GitHubLink() {
   return (
     <Button
-      size="sm"
-      variant="ghost"
       className="relative h-8 shadow-none max-sm:w-8"
       render={
-        <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
-          <HugeiconsIcon icon={GithubIcon} className="size-4" strokeWidth={2} />
+        <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">
+          <HugeiconsIcon className="size-4" icon={GithubIcon} strokeWidth={2} />
           <span className="max-sm:sr-only">
             <React.Suspense fallback={<Skeleton className="h-4 w-[25.5px]" />}>
               <StarsCount />
@@ -22,6 +20,8 @@ export function GitHubLink() {
           </span>
         </Link>
       }
+      size="sm"
+      variant="ghost"
     />
   );
 }

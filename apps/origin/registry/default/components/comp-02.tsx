@@ -10,7 +10,7 @@ export default function Component() {
       <Label htmlFor={id}>
         Required input <span className="text-destructive">*</span>
       </Label>
-      <Input id={id} placeholder="Email" type="email" required />
+      <Input id={id} placeholder="Email" required type="email" />
     </div>
   );
 }

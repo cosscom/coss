@@ -8,12 +8,12 @@ export default function Component() {
       <div className="flex h-48 justify-center gap-8">
         <div className="flex flex-col items-center gap-2">
           <Slider
-            defaultValue={[2]}
-            min={-5}
-            max={5}
-            orientation="vertical"
-            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
             aria-label="60 Hz"
+            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
+            defaultValue={[2]}
+            max={5}
+            min={-5}
+            orientation="vertical"
             showTooltip
           />
           <Label className="flex w-0 justify-center text-muted-foreground text-xs">
@@ -22,12 +22,12 @@ export default function Component() {
         </div>
         <div className="flex flex-col items-center gap-2">
           <Slider
-            defaultValue={[1]}
-            min={-5}
-            max={5}
-            orientation="vertical"
-            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
             aria-label="250 Hz"
+            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
+            defaultValue={[1]}
+            max={5}
+            min={-5}
+            orientation="vertical"
             showTooltip
           />
           <Label className="flex w-0 justify-center text-muted-foreground text-xs">
@@ -36,12 +36,12 @@ export default function Component() {
         </div>
         <div className="flex flex-col items-center gap-2">
           <Slider
-            defaultValue={[-1]}
-            min={-5}
-            max={5}
-            orientation="vertical"
-            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
             aria-label="1k"
+            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
+            defaultValue={[-1]}
+            max={5}
+            min={-5}
+            orientation="vertical"
             showTooltip
           />
           <Label className="flex w-0 justify-center text-muted-foreground text-xs">
@@ -50,12 +50,12 @@ export default function Component() {
         </div>
         <div className="flex flex-col items-center gap-2">
           <Slider
-            defaultValue={[-3]}
-            min={-5}
-            max={5}
-            orientation="vertical"
-            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
             aria-label="4k"
+            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
+            defaultValue={[-3]}
+            max={5}
+            min={-5}
+            orientation="vertical"
             showTooltip
           />
           <Label className="flex w-0 justify-center text-muted-foreground text-xs">
@@ -64,12 +64,12 @@ export default function Component() {
         </div>
         <div className="flex flex-col items-center gap-2">
           <Slider
-            defaultValue={[2]}
-            min={-5}
-            max={5}
-            orientation="vertical"
-            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
             aria-label="16k"
+            className="[&>:last-child>span]:h-6 [&>:last-child>span]:w-4 [&>:last-child>span]:rounded"
+            defaultValue={[2]}
+            max={5}
+            min={-5}
+            orientation="vertical"
             showTooltip
           />
           <Label className="flex w-0 justify-center text-muted-foreground text-xs">

@@ -23,24 +23,24 @@ export default function InputGroupWithIconButton() {
   return (
     <InputGroup>
       <InputGroupInput
+        aria-label="Url"
+        defaultValue="https://coss.com"
         ref={inputRef}
         type="text"
-        defaultValue="https://coss.com"
-        aria-label="Url"
       />
       <InputGroupAddon align="inline-end">
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
-                variant="ghost"
                 aria-label="Copy"
-                size="icon-xs"
                 onClick={() => {
                   if (inputRef.current) {
                     copyToClipboard(inputRef.current.value);
                   }
                 }}
+                size="icon-xs"
+                variant="ghost"
               />
             }
           >

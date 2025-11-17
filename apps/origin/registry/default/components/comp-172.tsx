@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch id={id} />
-      <Label htmlFor={id} className="sr-only">
+      <Label className="sr-only" htmlFor={id}>
         Simple switch
       </Label>
     </div>

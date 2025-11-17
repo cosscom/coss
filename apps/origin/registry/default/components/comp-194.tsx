@@ -8,16 +8,16 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with error (native)</Label>
-      <SelectNative id={id} aria-invalid>
+      <SelectNative aria-invalid id={id}>
         <option value="1">React</option>
         <option value="2">Next.js</option>
         <option value="3">Astro</option>
         <option value="4">Gatsby</option>
       </SelectNative>
       <p
+        aria-live="polite"
         className="mt-2 text-destructive text-xs"
         role="alert"
-        aria-live="polite"
       >
         Selected option is invalid
       </p>

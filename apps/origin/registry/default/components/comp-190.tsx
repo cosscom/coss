@@ -8,8 +8,8 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with placeholder (native)</Label>
-      <SelectNative id={id} defaultValue="">
-        <option value="" disabled>
+      <SelectNative defaultValue="" id={id}>
+        <option disabled value="">
           Please select a value
         </option>
         <option value="1">1 to 5</option>

@@ -5,13 +5,13 @@ export default function Component() {
     <div className="dark bg-muted px-4 py-3 text-foreground">
       <p className="text-center text-sm">
         <EclipseIcon
+          aria-hidden="true"
           className="-mt-0.5 me-3 inline-flex opacity-60"
           size={16}
-          aria-hidden="true"
         />
         Get the most out of your app with real-time updates and analytics{" "}
         <span className="text-muted-foreground">·</span>{" "}
-        <a href="#" className="font-medium underline hover:no-underline">
+        <a className="font-medium underline hover:no-underline" href="#">
           Upgrade
         </a>
       </p>

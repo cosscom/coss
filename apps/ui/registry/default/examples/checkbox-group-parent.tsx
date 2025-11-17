@@ -17,10 +17,10 @@ export default function CheckboxGroupParentDemo() {
 
   return (
     <CheckboxGroup
-      aria-labelledby="frameworks-caption"
-      value={value}
-      onValueChange={setValue}
       allValues={frameworks.map((framework) => framework.id)}
+      aria-labelledby="frameworks-caption"
+      onValueChange={setValue}
+      value={value}
     >
       <Label id="frameworks-caption">
         <Checkbox name="frameworks" parent />
@@ -28,7 +28,7 @@ export default function CheckboxGroupParentDemo() {
       </Label>
 
       {frameworks.map((framework) => (
-        <Label key={framework.id} className="ms-4">
+        <Label className="ms-4" key={framework.id}>
           <Checkbox value={framework.id} />
           {framework.name}
         </Label>

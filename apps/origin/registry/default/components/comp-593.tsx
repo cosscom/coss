@@ -21,7 +21,7 @@ export default function Component() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink href="#">
-                <HomeIcon size={16} aria-hidden="true" />
+                <HomeIcon aria-hidden="true" size={16} />
                 <span className="sr-only">Home</span>
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -39,14 +39,14 @@ export default function Component() {
           <Filters />
           {/* Saved button */}
           <Button
+            className="text-sm max-sm:aspect-square max-sm:p-0"
             size="sm"
             variant="outline"
-            className="text-sm max-sm:aspect-square max-sm:p-0"
           >
             <BookmarkIcon
+              aria-hidden="true"
               className="sm:-ms-1 text-muted-foreground/80"
               size={16}
-              aria-hidden="true"
             />
             <span className="max-sm:sr-only">Saved</span>
           </Button>

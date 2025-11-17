@@ -15,13 +15,13 @@ export default function Component() {
 
   return (
     <Button
-      variant="outline"
-      size="icon"
+      aria-label="Notifications"
       className="relative"
       onClick={handleClick}
-      aria-label="Notifications"
+      size="icon"
+      variant="outline"
     >
-      <BellIcon size={16} aria-hidden="true" />
+      <BellIcon aria-hidden="true" size={16} />
       {count > 0 && (
         <Badge className="-top-2 -translate-x-1/2 absolute left-full min-w-5 px-1">
           {count > 99 ? "99+" : count}

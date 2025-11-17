@@ -22,24 +22,24 @@ export default function Component() {
       <ScrollArea>
         <TabsList className="mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 text-foreground">
           <TabsTrigger
-            value="tab-1"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-1"
           >
             <HouseIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="tab-2"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-2"
           >
             <PanelsTopLeftIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Projects
             <Badge
@@ -50,47 +50,47 @@ export default function Component() {
             </Badge>
           </TabsTrigger>
           <TabsTrigger
-            value="tab-3"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-3"
           >
             <BoxIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Packages
             <Badge className="ms-1.5">New</Badge>
           </TabsTrigger>
           <TabsTrigger
-            value="tab-4"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-4"
           >
             <UsersRoundIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Team
           </TabsTrigger>
           <TabsTrigger
-            value="tab-5"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-5"
           >
             <ChartLine
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Insights
           </TabsTrigger>
           <TabsTrigger
-            value="tab-6"
             className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
+            value="tab-6"
           >
             <SettingsIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Settings
           </TabsTrigger>

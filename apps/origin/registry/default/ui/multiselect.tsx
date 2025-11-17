@@ -343,7 +343,6 @@ const MultipleSelector = ({
 
     const Item = (
       <CommandItem
-        value={inputValue}
         className="cursor-pointer"
         onMouseDown={(e) => {
           e.preventDefault();
@@ -359,6 +358,7 @@ const MultipleSelector = ({
           setSelected(newOptions);
           onChange?.(newOptions);
         }}
+        value={inputValue}
       >
         {`Create "${inputValue}"`}
       </CommandItem>
@@ -383,7 +383,7 @@ const MultipleSelector = ({
     // For async search that showing emptyIndicator
     if (onSearch && !creatable && Object.keys(options).length === 0) {
       return (
-        <CommandItem value="-" disabled>
+        <CommandItem disabled value="-">
           {emptyIndicator}
         </CommandItem>
       );
@@ -416,20 +416,20 @@ const MultipleSelector = ({
     <Command
       ref={dropdownRef}
       {...commandProps}
-      onKeyDown={(e) => {
-        handleKeyDown(e);
-        commandProps?.onKeyDown?.(e);
-      }}
       className={cn(
         "h-auto overflow-visible bg-transparent",
         commandProps?.className,
       )}
+      filter={commandFilter()}
+      onKeyDown={(e) => {
+        handleKeyDown(e);
+        commandProps?.onKeyDown?.(e);
+      }} // When onSearch is provided, we don&lsquo;t want to filter the options. You can still override it.
       shouldFilter={
         commandProps?.shouldFilter !== undefined
           ? commandProps.shouldFilter
           : !onSearch
-      } // When onSearch is provided, we don&lsquo;t want to filter the options. You can still override it.
-      filter={commandFilter()}
+      }
     >
       <div
         className={cn(
@@ -450,18 +450,19 @@ const MultipleSelector = ({
           {selected.map((option) => {
             return (
               <div
-                key={option.value}
                 className={cn(
                   "relative inline-flex h-7 animate-fadeIn cursor-default items-center rounded-md border bg-background ps-2 pe-7 pl-2 font-medium text-secondary-foreground text-xs transition-all hover:bg-background disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-fixed:pe-2",
                   badgeClassName,
                 )}
-                data-fixed={option.fixed}
                 data-disabled={disabled || undefined}
+                data-fixed={option.fixed}
+                key={option.value}
               >
                 {option.label}
                 <button
-                  type="button"
+                  aria-label="Remove"
                   className="-inset-y-px -end-px absolute flex size-7 items-center justify-center rounded-e-md border border-transparent p-0 text-muted-foreground/80 outline-none outline-hidden transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  onClick={() => handleUnselect(option)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       handleUnselect(option);
@@ -471,10 +472,9 @@ const MultipleSelector = ({
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onClick={() => handleUnselect(option)}
-                  aria-label="Remove"
+                  type="button"
                 >
-                  <XIcon size={14} aria-hidden="true" />
+                  <XIcon aria-hidden="true" size={14} />
                 </button>
               </div>
             );
@@ -482,13 +482,16 @@ const MultipleSelector = ({
           {/* Avoid having the "Search" Icon */}
           <CommandPrimitive.Input
             {...inputProps}
-            ref={inputRef}
-            value={inputValue}
+            className={cn(
+              "flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed",
+              {
+                "w-full": hidePlaceholderWhenSelected,
+                "px-3 py-2": selected.length === 0,
+                "ml-1": selected.length !== 0,
+              },
+              inputProps?.className,
+            )}
             disabled={disabled}
-            onValueChange={(value) => {
-              setInputValue(value);
-              inputProps?.onValueChange?.(value);
-            }}
             onBlur={(event) => {
               if (!onScrollbar) {
                 setOpen(false);
@@ -502,27 +505,20 @@ const MultipleSelector = ({
               }
               inputProps?.onFocus?.(event);
             }}
+            onValueChange={(value) => {
+              setInputValue(value);
+              inputProps?.onValueChange?.(value);
+            }}
             placeholder={
               hidePlaceholderWhenSelected && selected.length !== 0
                 ? ""
                 : placeholder
             }
-            className={cn(
-              "flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed",
-              {
-                "w-full": hidePlaceholderWhenSelected,
-                "px-3 py-2": selected.length === 0,
-                "ml-1": selected.length !== 0,
-              },
-              inputProps?.className,
-            )}
+            ref={inputRef}
+            value={inputValue}
           />
           <button
-            type="button"
-            onClick={() => {
-              setSelected(selected.filter((s) => s.fixed));
-              onChange?.(selected.filter((s) => s.fixed));
-            }}
+            aria-label="Clear all"
             className={cn(
               "absolute end-0 top-0 flex size-9 items-center justify-center rounded-md border border-transparent text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
               (hideClearAllButton ||
@@ -531,9 +527,13 @@ const MultipleSelector = ({
                 selected.filter((s) => s.fixed).length === selected.length) &&
                 "hidden",
             )}
-            aria-label="Clear all"
+            onClick={() => {
+              setSelected(selected.filter((s) => s.fixed));
+              onChange?.(selected.filter((s) => s.fixed));
+            }}
+            type="button"
           >
-            <XIcon size={16} aria-hidden="true" />
+            <XIcon aria-hidden="true" size={16} />
           </button>
         </div>
       </div>
@@ -549,11 +549,11 @@ const MultipleSelector = ({
           {open && (
             <CommandList
               className="bg-popover text-popover-foreground shadow-lg outline-hidden"
-              onMouseLeave={() => {
-                setOnScrollbar(false);
-              }}
               onMouseEnter={() => {
                 setOnScrollbar(true);
+              }}
+              onMouseLeave={() => {
+                setOnScrollbar(false);
               }}
               onMouseUp={() => {
                 inputRef?.current?.focus();
@@ -566,20 +566,24 @@ const MultipleSelector = ({
                   {EmptyItem()}
                   {CreatableItem()}
                   {!selectFirstItem && (
-                    <CommandItem value="-" className="hidden" />
+                    <CommandItem className="hidden" value="-" />
                   )}
                   {Object.entries(selectables).map(([key, dropdowns]) => (
                     <CommandGroup
-                      key={key}
-                      heading={key}
                       className="h-full overflow-auto"
+                      heading={key}
+                      key={key}
                     >
                       {dropdowns.map((option) => {
                         return (
                           <CommandItem
-                            key={option.value}
-                            value={option.value}
+                            className={cn(
+                              "cursor-pointer",
+                              option.disable &&
+                                "pointer-events-none cursor-not-allowed opacity-50",
+                            )}
                             disabled={option.disable}
+                            key={option.value}
                             onMouseDown={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -594,11 +598,7 @@ const MultipleSelector = ({
                               setSelected(newOptions);
                               onChange?.(newOptions);
                             }}
-                            className={cn(
-                              "cursor-pointer",
-                              option.disable &&
-                                "pointer-events-none cursor-not-allowed opacity-50",
-                            )}
+                            value={option.value}
                           >
                             {option.label}
                           </CommandItem>

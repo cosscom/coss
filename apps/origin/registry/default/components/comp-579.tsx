@@ -30,30 +30,30 @@ export default function Component() {
             {/* Mobile menu trigger */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="group size-8" variant="ghost" size="icon">
+                <Button className="group size-8" size="icon" variant="ghost">
                   <svg
                     className="pointer-events-none"
-                    width={16}
-                    height={16}
-                    viewBox="0 0 24 24"
                     fill="none"
+                    height={16}
                     stroke="currentColor"
-                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width={16}
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M4 12L20 12"
                       className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                      d="M4 12L20 12"
                     />
                     <path
-                      d="M4 12H20"
                       className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                      d="M4 12H20"
                     />
                     <path
-                      d="M4 12H20"
                       className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                      d="M4 12H20"
                     />
                   </svg>
                 </Button>
@@ -63,13 +63,13 @@ export default function Component() {
                   <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                     {navigationLinks.map((link, index) => (
                       <NavigationMenuItem
-                        key={String(index)}
                         className="w-full"
+                        key={String(index)}
                       >
                         <NavigationMenuLink
-                          href={link.href}
-                          className="py-1.5"
                           active={link.active}
+                          className="py-1.5"
+                          href={link.href}
                         >
                           {link.label}
                         </NavigationMenuLink>
@@ -82,18 +82,18 @@ export default function Component() {
           </div>
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <a className="text-primary hover:text-primary/90" href="#">
               <Logo />
             </a>
             {/* Navigation menu */}
             <NavigationMenu className="h-full *:h-full max-md:hidden">
               <NavigationMenuList className="h-full gap-2">
                 {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={String(index)} className="h-full">
+                  <NavigationMenuItem className="h-full" key={String(index)}>
                     <NavigationMenuLink
                       active={link.active}
-                      href={link.href}
                       className="h-full justify-center rounded-none border-transparent border-y-2 border-b-primary py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
+                      href={link.href}
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -105,10 +105,10 @@ export default function Component() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
             <a href="#">Sign In</a>
           </Button>
-          <Button asChild size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm">
             <a href="#">Get Started</a>
           </Button>
         </div>

@@ -119,10 +119,10 @@ export function CommandMenu({
   }, [copyPayload, runCommand, selectedType]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger
         render={
-          <Button variant="outline" onClick={() => setOpen(true)} {...props}>
+          <Button onClick={() => setOpen(true)} variant="outline" {...props}>
             <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
             <div className="gap-1 sm:flex">
               <CommandMenuKbd>{isMac ? "⌘" : "Ctrl"}</CommandMenuKbd>
@@ -152,13 +152,12 @@ export function CommandMenu({
             </CommandEmpty>
             {navItems && navItems.length > 0 && (
               <CommandGroup
-                heading="Pages"
                 className="!p-0 [&_[cmdk-group-heading]]:!px-2 [&_[cmdk-group-heading]]:!pt-4 [&_[cmdk-group-heading]]:!pb-1.5 [&_[cmdk-group-heading]]:scroll-mt-16"
+                heading="Pages"
               >
                 {navItems.map((item) => (
                   <CommandMenuItem
                     key={item.href}
-                    value={`Navigation ${item.label}`}
                     keywords={["nav", "navigation", item.label.toLowerCase()]}
                     onHighlight={() => {
                       setSelectedType("page");
@@ -167,11 +166,12 @@ export function CommandMenu({
                     onSelect={() => {
                       runCommand(() => router.push(item.href));
                     }}
+                    value={`Navigation ${item.label}`}
                   >
                     <HugeiconsIcon
+                      className="opacity-72"
                       icon={BookOpen02Icon}
                       strokeWidth={2}
-                      className="opacity-72"
                     />
                     {item.label}
                   </CommandMenuItem>
@@ -180,9 +180,9 @@ export function CommandMenu({
             )}
             {tree.children.map((group) => (
               <CommandGroup
-                key={group.$id}
-                heading={group.name}
                 className="!p-0 [&_[cmdk-group-heading]]:!px-2 [&_[cmdk-group-heading]]:!pt-4 [&_[cmdk-group-heading]]:!pb-1.5 [&_[cmdk-group-heading]]:scroll-mt-16"
+                heading={group.name}
+                key={group.$id}
               >
                 {group.type === "folder" &&
                   group.children.map((item) => {
@@ -192,11 +192,6 @@ export function CommandMenu({
                       return (
                         <CommandMenuItem
                           key={item.url}
-                          value={
-                            item.name?.toString()
-                              ? `${group.name} ${item.name}`
-                              : ""
-                          }
                           keywords={isComponent ? ["component"] : undefined}
                           onHighlight={() =>
                             handlePageHighlight(isComponent, item)
@@ -204,18 +199,23 @@ export function CommandMenu({
                           onSelect={() => {
                             runCommand(() => router.push(item.url));
                           }}
+                          value={
+                            item.name?.toString()
+                              ? `${group.name} ${item.name}`
+                              : ""
+                          }
                         >
                           {isComponent ? (
                             <HugeiconsIcon
+                              className="opacity-72"
                               icon={Atom01Icon}
                               strokeWidth={2}
-                              className="opacity-72"
                             />
                           ) : (
                             <HugeiconsIcon
+                              className="opacity-72"
                               icon={BookOpen02Icon}
                               strokeWidth={2}
-                              className="opacity-72"
                             />
                           )}
                           {item.name}
@@ -239,7 +239,7 @@ export function CommandMenu({
           </div>
           {copyPayload && (
             <>
-              <Separator orientation="vertical" className="!h-4" />
+              <Separator className="!h-4" orientation="vertical" />
               <div className="flex min-w-0 items-center gap-1">
                 <CommandMenuKbd>{isMac ? "⌘" : "Ctrl"}</CommandMenuKbd>
                 <CommandMenuKbd>C</CommandMenuKbd>

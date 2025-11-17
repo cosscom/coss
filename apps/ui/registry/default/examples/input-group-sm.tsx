@@ -10,10 +10,10 @@ export default function InputGroupSm() {
   return (
     <InputGroup>
       <InputGroupInput
+        aria-label="Search"
+        placeholder="Search"
         size="sm"
         type="search"
-        placeholder="Search"
-        aria-label="Search"
       />
       <InputGroupAddon>
         <SearchIcon />

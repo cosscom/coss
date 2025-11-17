@@ -11,13 +11,13 @@ export default function InputGroupDisabled() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="email"
-        placeholder="Your best email"
         aria-label="Subscribe to our newsletter"
         disabled
+        placeholder="Your best email"
+        type="email"
       />
       <InputGroupAddon align="inline-end">
-        <Button variant="ghost" aria-label="Subscribe" size="icon-xs" disabled>
+        <Button aria-label="Subscribe" disabled size="icon-xs" variant="ghost">
           <ArrowRightIcon />
         </Button>
       </InputGroupAddon>

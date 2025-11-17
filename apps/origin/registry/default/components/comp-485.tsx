@@ -124,19 +124,19 @@ const columns: ColumnDef<Item>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
+        aria-label="Select row"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
       />
     ),
     size: 28,
@@ -319,38 +319,38 @@ export default function Component() {
           {/* Filter by name or email */}
           <div className="relative">
             <Input
-              id={`${id}-input`}
-              ref={inputRef}
+              aria-label="Filter by name or email"
               className={cn(
                 "peer min-w-60 ps-9",
                 Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9",
               )}
-              value={
-                (table.getColumn("name")?.getFilterValue() ?? "") as string
-              }
+              id={`${id}-input`}
               onChange={(e) =>
                 table.getColumn("name")?.setFilterValue(e.target.value)
               }
               placeholder="Filter by name or email..."
+              ref={inputRef}
               type="text"
-              aria-label="Filter by name or email"
+              value={
+                (table.getColumn("name")?.getFilterValue() ?? "") as string
+              }
             />
             <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-              <ListFilterIcon size={16} aria-hidden="true" />
+              <ListFilterIcon aria-hidden="true" size={16} />
             </div>
             {Boolean(table.getColumn("name")?.getFilterValue()) && (
               <button
-                type="button"
-                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Clear filter"
+                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => {
                   table.getColumn("name")?.setFilterValue("");
                   if (inputRef.current) {
                     inputRef.current.focus();
                   }
                 }}
+                type="button"
               >
-                <CircleXIcon size={16} aria-hidden="true" />
+                <CircleXIcon aria-hidden="true" size={16} />
               </button>
             )}
           </div>
@@ -359,9 +359,9 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button variant="outline">
                 <FilterIcon
+                  aria-hidden="true"
                   className="-ms-1 opacity-60"
                   size={16}
-                  aria-hidden="true"
                 />
                 Status
                 {selectedStatuses.length > 0 && (
@@ -371,24 +371,24 @@ export default function Component() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-36 p-3" align="start">
+            <PopoverContent align="start" className="w-auto min-w-36 p-3">
               <div className="space-y-3">
                 <div className="font-medium text-muted-foreground text-xs">
                   Filters
                 </div>
                 <div className="space-y-3">
                   {uniqueStatusValues.map((value, i) => (
-                    <div key={value} className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" key={value}>
                       <Checkbox
-                        id={`${id}-${i}`}
                         checked={selectedStatuses.includes(value)}
+                        id={`${id}-${i}`}
                         onCheckedChange={(checked: boolean) =>
                           handleStatusChange(checked, value)
                         }
                       />
                       <Label
-                        htmlFor={`${id}-${i}`}
                         className="flex grow justify-between gap-2 font-normal"
+                        htmlFor={`${id}-${i}`}
                       >
                         {value}{" "}
                         <span className="ms-2 text-muted-foreground text-xs">
@@ -406,9 +406,9 @@ export default function Component() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <Columns3Icon
+                  aria-hidden="true"
                   className="-ms-1 opacity-60"
                   size={16}
-                  aria-hidden="true"
                 />
                 View
               </Button>
@@ -421,9 +421,9 @@ export default function Component() {
                 .map((column) => {
                   return (
                     <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
+                      className="capitalize"
+                      key={column.id}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
@@ -443,9 +443,9 @@ export default function Component() {
               <AlertDialogTrigger asChild>
                 <Button className="ml-auto" variant="outline">
                   <TrashIcon
+                    aria-hidden="true"
                     className="-ms-1 opacity-60"
                     size={16}
-                    aria-hidden="true"
                   />
                   Delete
                   <span className="-me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
@@ -456,8 +456,8 @@ export default function Component() {
               <AlertDialogContent>
                 <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
                   <div
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full border"
                     aria-hidden="true"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border"
                   >
                     <CircleAlertIcon className="opacity-80" size={16} />
                   </div>
@@ -487,9 +487,9 @@ export default function Component() {
           {/* Add user button */}
           <Button className="ml-auto" variant="outline">
             <PlusIcon
+              aria-hidden="true"
               className="-ms-1 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Add user
           </Button>
@@ -501,13 +501,13 @@ export default function Component() {
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent" key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
+                      className="h-11"
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
-                      className="h-11"
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
                         <div
@@ -535,16 +535,16 @@ export default function Component() {
                           {{
                             asc: (
                               <ChevronUpIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                             desc: (
                               <ChevronDownIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                           }[header.column.getIsSorted() as string] ?? null}
@@ -565,11 +565,11 @@ export default function Component() {
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="last:py-0">
+                    <TableCell className="last:py-0" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -581,8 +581,8 @@ export default function Component() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   No results.
                 </TableCell>
@@ -596,16 +596,16 @@ export default function Component() {
       <div className="flex items-center justify-between gap-8">
         {/* Results per page */}
         <div className="flex items-center gap-3">
-          <Label htmlFor={id} className="max-sm:sr-only">
+          <Label className="max-sm:sr-only" htmlFor={id}>
             Rows per page
           </Label>
           <Select
-            value={table.getState().pagination.pageSize.toString()}
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
+            value={table.getState().pagination.pageSize.toString()}
           >
-            <SelectTrigger id={id} className="w-fit whitespace-nowrap">
+            <SelectTrigger className="w-fit whitespace-nowrap" id={id}>
               <SelectValue placeholder="Select number of results" />
             </SelectTrigger>
             <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
@@ -620,8 +620,8 @@ export default function Component() {
         {/* Page number information */}
         <div className="flex grow justify-end whitespace-nowrap text-muted-foreground text-sm">
           <p
-            className="whitespace-nowrap text-muted-foreground text-sm"
             aria-live="polite"
+            className="whitespace-nowrap text-muted-foreground text-sm"
           >
             <span className="text-foreground">
               {table.getState().pagination.pageIndex *
@@ -652,53 +652,53 @@ export default function Component() {
               {/* First page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to first page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.firstPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.firstPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  aria-label="Go to first page"
                 >
-                  <ChevronFirstIcon size={16} aria-hidden="true" />
+                  <ChevronFirstIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
               {/* Previous page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to previous page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.previousPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  aria-label="Go to previous page"
                 >
-                  <ChevronLeftIcon size={16} aria-hidden="true" />
+                  <ChevronLeftIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
               {/* Next page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to next page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.nextPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  aria-label="Go to next page"
                 >
-                  <ChevronRightIcon size={16} aria-hidden="true" />
+                  <ChevronRightIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
               {/* Last page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to last page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.lastPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.lastPage()}
-                  disabled={!table.getCanNextPage()}
-                  aria-label="Go to last page"
                 >
-                  <ChevronLastIcon size={16} aria-hidden="true" />
+                  <ChevronLastIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
             </PaginationContent>
@@ -710,8 +710,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>
@@ -726,12 +726,12 @@ function RowActions() {
       <DropdownMenuTrigger asChild>
         <div className="flex justify-end">
           <Button
+            aria-label="Edit item"
+            className="shadow-none"
             size="icon"
             variant="ghost"
-            className="shadow-none"
-            aria-label="Edit item"
           >
-            <EllipsisIcon size={16} aria-hidden="true" />
+            <EllipsisIcon aria-hidden="true" size={16} />
           </Button>
         </div>
       </DropdownMenuTrigger>

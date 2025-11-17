@@ -8,8 +8,8 @@ export default function SwitchCardDemo() {
 
   return (
     <Label
-      htmlFor={id}
       className="flex items-center gap-6 rounded-lg border p-3 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50"
+      htmlFor={id}
     >
       <div className="flex flex-col gap-1">
         <p className="text-sm leading-4">Enable notifications</p>
@@ -17,7 +17,7 @@ export default function SwitchCardDemo() {
           You can enable or disable notifications at any time.
         </p>
       </div>
-      <Switch id={id} defaultChecked />
+      <Switch defaultChecked id={id} />
     </Label>
   );
 }

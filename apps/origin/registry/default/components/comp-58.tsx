@@ -12,8 +12,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>OTP input (spaced)</Label>
       <OTPInput
-        id={id}
         containerClassName="flex items-center gap-3 has-disabled:opacity-50"
+        id={id}
         maxLength={4}
         render={({ slots }) => (
           <div className="flex gap-2">
@@ -24,16 +24,16 @@ export default function Component() {
         )}
       />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/guilhermerodz/input-otp"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           Input OTP
         </a>

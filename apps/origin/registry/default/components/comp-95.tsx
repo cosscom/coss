@@ -9,12 +9,12 @@ import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+    <Button className="h-auto p-0 hover:bg-transparent" variant="ghost">
       <Avatar>
-        <AvatarImage src="/origin/avatar.jpg" alt="Profile image" />
+        <AvatarImage alt="Profile image" src="/origin/avatar.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <ChevronDownIcon size={16} className="opacity-60" aria-hidden="true" />
+      <ChevronDownIcon aria-hidden="true" className="opacity-60" size={16} />
     </Button>
   );
 }

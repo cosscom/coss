@@ -40,15 +40,15 @@ export default function Component({
             {/* Previous page button */}
             <PaginationItem>
               <PaginationLink
+                aria-disabled={currentPage === 1 ? true : undefined}
+                aria-label="Go to previous page"
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
                 href={
                   currentPage === 1 ? undefined : `#/page/${currentPage - 1}`
                 }
-                aria-label="Go to previous page"
-                aria-disabled={currentPage === 1 ? true : undefined}
                 role={currentPage === 1 ? "link" : undefined}
               >
-                <ChevronLeftIcon size={16} aria-hidden="true" />
+                <ChevronLeftIcon aria-hidden="true" size={16} />
               </PaginationLink>
             </PaginationItem>
 
@@ -81,17 +81,17 @@ export default function Component({
             {/* Next page button */}
             <PaginationItem>
               <PaginationLink
+                aria-disabled={currentPage === totalPages ? true : undefined}
+                aria-label="Go to next page"
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
                 href={
                   currentPage === totalPages
                     ? undefined
                     : `#/page/${currentPage + 1}`
                 }
-                aria-label="Go to next page"
-                aria-disabled={currentPage === totalPages ? true : undefined}
                 role={currentPage === totalPages ? "link" : undefined}
               >
-                <ChevronRightIcon size={16} aria-hidden="true" />
+                <ChevronRightIcon aria-hidden="true" size={16} />
               </PaginationLink>
             </PaginationItem>
           </PaginationContent>
@@ -100,14 +100,14 @@ export default function Component({
 
       {/* Go to page input */}
       <div className="flex items-center gap-3">
-        <Label htmlFor={id} className="whitespace-nowrap">
+        <Label className="whitespace-nowrap" htmlFor={id}>
           Go to page
         </Label>
         <Input
-          id={id}
-          type="text"
           className="w-14"
           defaultValue={String(currentPage)}
+          id={id}
+          type="text"
         />
       </div>
     </div>

@@ -13,7 +13,7 @@ export default function Component() {
     <div className="mx-auto max-w-xl space-y-8 text-center">
       <Stepper defaultValue={2}>
         {steps.map((step) => (
-          <StepperItem key={step} step={step} className="not-last:flex-1">
+          <StepperItem className="not-last:flex-1" key={step} step={step}>
             <StepperTrigger>
               <StepperIndicator asChild>{step}</StepperIndicator>
             </StepperTrigger>
@@ -22,9 +22,9 @@ export default function Component() {
         ))}
       </Stepper>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Stepper with numbers only
       </p>

@@ -50,22 +50,22 @@ const isValid = coss.notifications.utils.verifySignature({
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Initialization
         </h2>
-        <CodeBlock code={initialization} language="tsx" copyButton={false} />
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Subscribers
         </h2>
-        <CodeBlock code={subscribers} language="tsx" copyButton={false} />
+        <CodeBlock code={subscribers} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Workflows
         </h2>
-        <CodeBlock code={workflows} language="tsx" copyButton={false} />
+        <CodeBlock code={workflows} copyButton={false} language="tsx" />
         <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
           Webhook Verification
         </h2>
         <CodeBlock
           code={webhookVerification}
-          language="tsx"
           copyButton={false}
+          language="tsx"
         />
       </div>
     </main>

@@ -7,13 +7,13 @@ export default function Component() {
       <Label>Slider with labels</Label>
       <div>
         <span
-          className="mb-3 flex w-full items-center justify-between gap-2 font-medium text-muted-foreground text-xs"
           aria-hidden="true"
+          className="mb-3 flex w-full items-center justify-between gap-2 font-medium text-muted-foreground text-xs"
         >
           <span>Low</span>
           <span>High</span>
         </span>
-        <Slider defaultValue={[50]} step={10} aria-label="Slider with labels" />
+        <Slider aria-label="Slider with labels" defaultValue={[50]} step={10} />
       </div>
     </div>
   );

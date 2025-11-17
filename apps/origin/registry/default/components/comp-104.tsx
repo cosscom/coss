@@ -30,41 +30,41 @@ export default function Component() {
 
   return (
     <div
+      aria-labelledby="volume-control"
       className="inline-flex items-center"
       role="group"
-      aria-labelledby="volume-control"
     >
-      <span id="volume-control" className="sr-only">
+      <span className="sr-only" id="volume-control">
         Volume Control
       </span>
       <Button
-        className="rounded-full"
-        variant="outline"
-        size="icon"
         aria-label="Decrease volume"
-        onClick={decreaseVolume}
+        className="rounded-full"
         disabled={volume === 0}
+        onClick={decreaseVolume}
+        size="icon"
+        variant="outline"
       >
-        <MinusIcon size={16} aria-hidden="true" />
+        <MinusIcon aria-hidden="true" size={16} />
       </Button>
       <div
-        className="flex items-center px-3 font-medium text-sm tabular-nums"
         aria-live="polite"
+        className="flex items-center px-3 font-medium text-sm tabular-nums"
       >
-        <Icon className="opacity-60" size={16} aria-hidden="true" />
-        <span className="ms-2" aria-label={`Current volume is ${volume}`}>
+        <Icon aria-hidden="true" className="opacity-60" size={16} />
+        <span aria-label={`Current volume is ${volume}`} className="ms-2">
           {volume}
         </span>
       </div>
       <Button
-        className="rounded-full"
-        variant="outline"
-        size="icon"
         aria-label="Increase volume"
-        onClick={increaseVolume}
+        className="rounded-full"
         disabled={volume === 6}
+        onClick={increaseVolume}
+        size="icon"
+        variant="outline"
       >
-        <PlusIcon size={16} aria-hidden="true" />
+        <PlusIcon aria-hidden="true" size={16} />
       </Button>
     </div>
   );

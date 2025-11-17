@@ -14,20 +14,20 @@ export default function Component() {
       <div className="relative">
         <DateInput />
         <div className="pointer-events-none absolute inset-y-0 end-0 z-10 flex items-center justify-center pe-3 text-muted-foreground/80">
-          <ClockIcon size={16} aria-hidden="true" />
+          <ClockIcon aria-hidden="true" size={16} />
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateField.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

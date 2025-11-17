@@ -18,9 +18,9 @@ export default function Component() {
       <div className="flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div>
-          <Select defaultValue="orion-alpha-45" aria-label="Select AI model">
+          <Select aria-label="Select AI model" defaultValue="orion-alpha-45">
             <SelectTrigger className="**:data-desc:hidden [&>svg]:shrink-0 [&>svg]:text-muted-foreground/80">
-              <BotMessageSquareIcon size={16} aria-hidden="true" />
+              <BotMessageSquareIcon aria-hidden="true" size={16} />
               <SelectValue placeholder="Choose an AI model" />
             </SelectTrigger>
             <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
@@ -71,12 +71,12 @@ export default function Component() {
         <div className="flex items-center justify-end gap-2">
           {/* Layout button */}
           <Button
+            aria-label="Temporary chat"
+            className="size-8 rounded-full text-muted-foreground shadow-none"
             size="icon"
             variant="ghost"
-            className="size-8 rounded-full text-muted-foreground shadow-none"
-            aria-label="Temporary chat"
           >
-            <MessageCircleDashedIcon size={16} aria-hidden="true" />
+            <MessageCircleDashedIcon aria-hidden="true" size={16} />
           </Button>
           {/* User menu */}
           <UserMenu />

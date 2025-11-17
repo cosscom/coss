@@ -68,8 +68,8 @@ export default function Component() {
         <TableBody className="[&_td:first-child]:rounded-l-lg [&_td:last-child]:rounded-r-lg">
           {items.map((item) => (
             <TableRow
-              key={item.id}
               className="border-none odd:bg-muted/50 hover:bg-transparent odd:hover:bg-muted/50"
+              key={item.id}
             >
               <TableCell className="py-2.5 font-medium">{item.name}</TableCell>
               <TableCell className="py-2.5">{item.email}</TableCell>

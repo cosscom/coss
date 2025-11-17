@@ -21,7 +21,7 @@ export default function Component() {
               me.
             </p>
           </div>
-          <Button size="sm" className="h-7 px-2">
+          <Button className="h-7 px-2" size="sm">
             Know more
           </Button>
         </div>

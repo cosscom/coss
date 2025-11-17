@@ -30,13 +30,8 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        className="rounded-md border p-2"
         captionLayout="dropdown-years"
-        defaultMonth={new Date()}
-        startMonth={new Date(1980, 6)}
+        className="rounded-md border p-2"
         components={{
           DropdownNav: (props: DropdownNavProps) => {
             return (
@@ -48,12 +43,12 @@ export default function Component() {
           YearsDropdown: (props: DropdownProps) => {
             return (
               <Select
-                value={String(props.value)}
                 onValueChange={(value) => {
                   if (props.onChange) {
                     handleCalendarChange(value, props.onChange);
                   }
                 }}
+                value={String(props.value)}
               >
                 <SelectTrigger className="h-8 w-fit font-medium">
                   <SelectValue />
@@ -61,9 +56,9 @@ export default function Component() {
                 <SelectContent className="max-h-[min(26rem,var(--radix-select-content-available-height))]">
                   {props.options?.map((option) => (
                     <SelectItem
+                      disabled={option.disabled}
                       key={option.value}
                       value={String(option.value)}
-                      disabled={option.disabled}
                     >
                       {option.label}
                     </SelectItem>
@@ -73,18 +68,23 @@ export default function Component() {
             );
           },
         }}
+        defaultMonth={new Date()}
+        mode="single"
+        onSelect={setDate}
+        selected={date}
+        startMonth={new Date(1980, 6)}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Yearly select + nav -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

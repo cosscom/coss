@@ -43,15 +43,15 @@ export default async function Page() {
         </p>
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
           <a
-            href="https://coss.com"
             className="font-medium underline underline-offset-4"
+            href="https://coss.com"
           >
             coss.com
           </a>{" "}
           is the new holding company of{" "}
           <a
-            href="https://cal.com"
             className="font-medium underline underline-offset-4"
+            href="https://cal.com"
           >
             cal.com
           </a>
@@ -74,10 +74,10 @@ export default async function Page() {
 
         <CodeBlock
           code={code}
-          language="json"
-          title="package.json"
           copyButton={false}
+          language="json"
           showLineNumbers={false}
+          title="package.json"
         />
 
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
@@ -112,15 +112,15 @@ export default async function Page() {
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
           if you are interested in coss.com, consider joining the early access{" "}
           <a
-            href="https://i.cal.com/forms/0129f2a8-7b15-4850-b3fb-07944dfacb3c"
             className="font-medium underline underline-offset-4"
+            href="https://i.cal.com/forms/0129f2a8-7b15-4850-b3fb-07944dfacb3c"
           >
             waitlist
           </a>{" "}
           or apply for our{" "}
           <a
-            href="https://cal.com/jobs"
             className="font-medium underline underline-offset-4"
+            href="https://cal.com/jobs"
           >
             open positions
           </a>

@@ -38,16 +38,16 @@ export default function Component() {
         <Button variant="outline">
           Rich menu with icons
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <PlusIcon size={16} className="opacity-60" aria-hidden="true" />
+            <PlusIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>New</span>
             <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
           </DropdownMenuItem>
@@ -59,13 +59,13 @@ export default function Component() {
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuRadioGroup
-                  value={framework}
                   onValueChange={setFramework}
+                  value={framework}
                 >
                   <DropdownMenuRadioItem value="nextjs">
                     Next.js
                   </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="sveltekit" disabled>
+                  <DropdownMenuRadioItem disabled value="sveltekit">
                     SvelteKit
                   </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="remix">
@@ -101,21 +101,21 @@ export default function Component() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Share2Icon size={16} className="opacity-60" aria-hidden="true" />
+            <Share2Icon aria-hidden="true" className="opacity-60" size={16} />
             <span>Share</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <ArchiveRestoreIcon
-              size={16}
-              className="opacity-60"
               aria-hidden="true"
+              className="opacity-60"
+              size={16}
             />
             <span>Archive</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">
-          <TrashIcon size={16} aria-hidden="true" />
+          <TrashIcon aria-hidden="true" size={16} />
           <span>Delete</span>
           <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
         </DropdownMenuItem>

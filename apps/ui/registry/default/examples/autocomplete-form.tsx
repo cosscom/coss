@@ -43,10 +43,10 @@ export default function AutocompleteForm() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Favorite item</FieldLabel>
-        <Autocomplete items={items} name="item" disabled={loading} required>
+        <Autocomplete disabled={loading} items={items} name="item" required>
           <AutocompleteInput placeholder="Search items…" />
           <AutocompletePopup>
             <AutocompleteEmpty>No items found.</AutocompleteEmpty>
@@ -61,7 +61,7 @@ export default function AutocompleteForm() {
         </Autocomplete>
         <FieldError>Please select a item.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

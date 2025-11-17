@@ -21,23 +21,23 @@ export default function Component() {
       >
         {["1", "2", "3", "4", "5"].map((value) => (
           <label
-            key={value}
             className="group relative cursor-pointer rounded p-0.5 outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={value}
             onMouseEnter={() => setHoverRating(value)}
             onMouseLeave={() => setHoverRating("")}
           >
             <RadioGroupItem
+              className="sr-only"
               id={`${id}-${value}`}
               value={value}
-              className="sr-only"
             />
             <RiStarFill
-              size={24}
               className={`transition-all ${
                 (hoverRating || currentRating) >= value
                   ? "text-amber-500"
                   : "text-input"
               } group-hover:scale-110`}
+              size={24}
             />
             <span className="sr-only">
               {value} star{value === "1" ? "" : "s"}

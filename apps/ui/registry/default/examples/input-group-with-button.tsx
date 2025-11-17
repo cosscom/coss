@@ -8,9 +8,9 @@ import {
 export default function InputGroupWithButton() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Type to search…" />
+      <InputGroupInput placeholder="Type to search…" type="search" />
       <InputGroupAddon align="inline-end">
-        <Button variant="secondary" size="xs">
+        <Button size="xs" variant="secondary">
           Search
         </Button>
       </InputGroupAddon>

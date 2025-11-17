@@ -74,26 +74,26 @@ export default async function Page({ params }: Props) {
           An event calendar component built with React and Tailwind CSS.
           Originally built in{" "}
           <a
-            href="https://v0.dev"
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary hover:underline"
+            href="https://v0.dev"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             v0
           </a>{" "}
           and currently in early alpha stage.{" "}
           <a
-            href="https://github.com/origin-space/event-calendar"
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"
+            href="https://github.com/origin-space/event-calendar"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             Docs
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="9"
-              height="9"
               className="-mt-1 fill-current"
+              height="9"
+              width="9"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path d="m1.55 8.445-.776-.776 5.767-5.777H2.087l.01-1.074H8.39v6.304H7.307l.01-4.454L1.55 8.445Z" />
             </svg>
@@ -114,9 +114,9 @@ export default async function Page({ params }: Props) {
       <PageGrid>
         {components.map((component) => (
           <ComponentCard
-            key={component.name}
-            component={component}
             className="data-[slot=comp-542]:px-0"
+            component={component}
+            key={component.name}
           >
             <ComponentLoader component={component} />
             <ComponentDetails component={component} />

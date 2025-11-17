@@ -105,9 +105,9 @@ const getFilePreview = (file: {
 
   const renderImage = (src: string) => (
     <img
-      src={src}
       alt={fileName}
       className="size-full rounded-t-[inherit] object-cover"
+      src={src}
     />
   );
 
@@ -159,18 +159,18 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       {/* Drop area */}
       <div
+        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        data-dragging={isDragging || undefined}
+        data-files={files.length > 0 || undefined}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        data-dragging={isDragging || undefined}
-        data-files={files.length > 0 || undefined}
-        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
       >
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload image file"
+          className="sr-only"
         />
         {files.length > 0 ? (
           <div className="flex w-full flex-col gap-3">
@@ -179,17 +179,17 @@ export default function Component() {
                 Files ({files.length})
               </h3>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={openFileDialog}>
+                <Button onClick={openFileDialog} size="sm" variant="outline">
                   <UploadIcon
-                    className="-ms-0.5 size-3.5 opacity-60"
                     aria-hidden="true"
+                    className="-ms-0.5 size-3.5 opacity-60"
                   />
                   Add files
                 </Button>
-                <Button variant="outline" size="sm" onClick={clearFiles}>
+                <Button onClick={clearFiles} size="sm" variant="outline">
                   <Trash2Icon
-                    className="-ms-0.5 size-3.5 opacity-60"
                     aria-hidden="true"
+                    className="-ms-0.5 size-3.5 opacity-60"
                   />
                   Remove all
                 </Button>
@@ -199,15 +199,15 @@ export default function Component() {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {files.map((file) => (
                 <div
-                  key={file.id}
                   className="relative flex flex-col rounded-md border bg-background"
+                  key={file.id}
                 >
                   {getFilePreview(file)}
                   <Button
+                    aria-label="Remove image"
+                    className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
                     onClick={() => removeFile(file.id)}
                     size="icon"
-                    className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
-                    aria-label="Remove image"
                   >
                     <XIcon className="size-3.5" />
                   </Button>
@@ -226,8 +226,8 @@ export default function Component() {
         ) : (
           <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
             <div
-              className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
               aria-hidden="true"
+              className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
             >
               <ImageIcon className="size-4 opacity-60" />
             </div>
@@ -235,8 +235,8 @@ export default function Component() {
             <p className="text-muted-foreground text-xs">
               Max {maxFiles} files ∙ Up to {maxSizeMB}MB
             </p>
-            <Button variant="outline" className="mt-4" onClick={openFileDialog}>
-              <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
+            <Button className="mt-4" onClick={openFileDialog} variant="outline">
+              <UploadIcon aria-hidden="true" className="-ms-1 opacity-60" />
               Select images
             </Button>
           </div>
@@ -253,13 +253,13 @@ export default function Component() {
       )}
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Mixed content w/ card ∙{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
         >
           API
         </a>

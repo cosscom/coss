@@ -7,7 +7,7 @@ export default function FieldWithValidityDemo() {
   return (
     <Field>
       <FieldLabel>Email</FieldLabel>
-      <Input type="email" placeholder="Enter your email" required />
+      <Input placeholder="Enter your email" required type="email" />
       <FieldValidity>
         {(validity) => (
           <div className="flex w-full flex-col gap-2">

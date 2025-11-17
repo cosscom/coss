@@ -39,24 +39,24 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Tabs w/ plus-minus</h2>
       <Accordion
-        type="single"
-        collapsible
         className="w-full space-y-2"
+        collapsible
         defaultValue="3"
+        type="single"
       >
         {items.map((item) => (
           <AccordionItem
-            value={item.id}
-            key={item.id}
             className="rounded-md border bg-background px-4 py-1 outline-none last:border-b has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={item.id}
+            value={item.id}
           >
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between rounded-md py-2 text-left font-semibold text-[15px] leading-6 outline-none ocus-visible:ring-0 transition-all [&>svg>path:last-child]:origin-center [&>svg>path:last-child]:transition-all [&>svg>path:last-child]:duration-200 [&[data-state=open]>svg>path:last-child]:rotate-90 [&[data-state=open]>svg>path:last-child]:opacity-0 [&[data-state=open]>svg]:rotate-180">
                 {item.title}
                 <PlusIcon
-                  size={16}
-                  className="pointer-events-none shrink-0 opacity-60 transition-transform duration-200"
                   aria-hidden="true"
+                  className="pointer-events-none shrink-0 opacity-60 transition-transform duration-200"
+                  size={16}
                 />
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>

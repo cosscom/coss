@@ -75,24 +75,24 @@ export default function Component() {
             </span>
             <div className="flex gap-0.5">
               <Button
+                aria-label="Previous tip"
+                className="size-6"
+                disabled={isFirstTip}
+                onClick={handlePrev}
                 size="icon"
                 variant="ghost"
-                className="size-6"
-                onClick={handlePrev}
-                disabled={isFirstTip}
-                aria-label="Previous tip"
               >
-                <ArrowLeftIcon size={14} aria-hidden="true" />
+                <ArrowLeftIcon aria-hidden="true" size={14} />
               </Button>
               <Button
+                aria-label="Next tip"
+                className="size-6"
+                disabled={isLastTip}
+                onClick={handleNext}
                 size="icon"
                 variant="ghost"
-                className="size-6"
-                onClick={handleNext}
-                disabled={isLastTip}
-                aria-label="Next tip"
               >
-                <ArrowRightIcon size={14} aria-hidden="true" />
+                <ArrowRightIcon aria-hidden="true" size={14} />
               </Button>
             </div>
           </div>

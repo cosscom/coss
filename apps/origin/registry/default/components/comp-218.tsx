@@ -31,6 +31,7 @@ export default function Component() {
           label: `(${modifiedOffset}) ${timezone.replace(/_/g, " ")}`,
           numericOffset: Number.parseInt(
             offset.replace("GMT", "").replace("+", "") || "0",
+            10,
           ),
         };
       })

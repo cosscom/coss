@@ -29,7 +29,7 @@ const subdomains = [
 export default function ParticleGr1() {
   return (
     <Group aria-label="URL search">
-      <Select items={protocols} defaultValue="both">
+      <Select defaultValue="both" items={protocols}>
         <SelectTrigger className="w-fit min-w-none">
           <SelectValue />
         </SelectTrigger>
@@ -43,13 +43,13 @@ export default function ParticleGr1() {
       </Select>
       <GroupSeparator />
       <Input
-        type="text"
-        defaultValue="coss.com"
         aria-label="URL"
         className="flex-1"
+        defaultValue="coss.com"
+        type="text"
       />
       <GroupSeparator />
-      <Select items={subdomains} defaultValue={null}>
+      <Select defaultValue={null} items={subdomains}>
         <SelectTrigger className="w-fit min-w-none">
           <SelectValue />
         </SelectTrigger>
@@ -62,7 +62,7 @@ export default function ParticleGr1() {
         </SelectPopup>
       </Select>
       <GroupSeparator />
-      <Button variant="outline" size="icon" aria-label="Search">
+      <Button aria-label="Search" size="icon" variant="outline">
         <SearchIcon />
       </Button>
     </Group>

@@ -23,14 +23,14 @@ export default function TeamSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-0 hover:bg-transparent">
+        <Button className="p-0 hover:bg-transparent" variant="ghost">
           <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
             {selectedProject.charAt(0).toUpperCase()}
           </span>
           <div className="flex flex-col gap-0.5 leading-none">
             <span className="">{selectedProject}</span>
           </div>
-          <ChevronsUpDown size={14} className="text-muted-foreground/80" />
+          <ChevronsUpDown className="text-muted-foreground/80" size={14} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">

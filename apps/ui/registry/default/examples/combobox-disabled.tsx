@@ -24,10 +24,10 @@ const items = [
 
 export default function ComboboxDisabled() {
   return (
-    <Combobox items={items} defaultValue={items[2]} disabled>
+    <Combobox defaultValue={items[2]} disabled items={items}>
       <ComboboxInput
-        placeholder="Select an item…"
         aria-label="Select an item"
+        placeholder="Select an item…"
       />
       <ComboboxPopup>
         <ComboboxEmpty>No items found.</ComboboxEmpty>

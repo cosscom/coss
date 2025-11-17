@@ -7,7 +7,6 @@ import { Button } from "@/registry/default/ui/button";
 export default function Component() {
   return (
     <Button
-      variant="outline"
       onClick={() => {
         toast("Your request was completed!", {
           description: "It was a long journey, but we made it!",
@@ -17,6 +16,7 @@ export default function Component() {
           },
         });
       }}
+      variant="outline"
     >
       Show sonner
     </Button>

@@ -50,9 +50,9 @@ export default function Component() {
     <Timeline defaultValue={3}>
       {items.map((item) => (
         <TimelineItem
+          className="group-data-[orientation=vertical]/timeline:ms-10"
           key={item.id}
           step={item.id}
-          className="group-data-[orientation=vertical]/timeline:ms-10"
         >
           <TimelineHeader>
             <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-6.5" />

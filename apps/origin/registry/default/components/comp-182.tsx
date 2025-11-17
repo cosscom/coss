@@ -17,27 +17,27 @@ export default function Component() {
       data-state={checked ? "checked" : "unchecked"}
     >
       <span
-        id={`${id}-off`}
-        className="flex-1 cursor-pointer text-right font-medium text-sm group-data-[state=checked]:text-muted-foreground/70"
         aria-controls={id}
+        className="flex-1 cursor-pointer text-right font-medium text-sm group-data-[state=checked]:text-muted-foreground/70"
+        id={`${id}-off`}
         onClick={() => setChecked(false)}
       >
-        <MoonIcon size={16} aria-hidden="true" />
+        <MoonIcon aria-hidden="true" size={16} />
       </span>
       <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={toggleSwitch}
-        aria-labelledby={`${id}-off ${id}-on`}
         aria-label="Toggle between dark and light mode"
+        aria-labelledby={`${id}-off ${id}-on`}
+        checked={checked}
+        id={id}
+        onCheckedChange={toggleSwitch}
       />
       <span
-        id={`${id}-on`}
-        className="flex-1 cursor-pointer text-left font-medium text-sm group-data-[state=unchecked]:text-muted-foreground/70"
         aria-controls={id}
+        className="flex-1 cursor-pointer text-left font-medium text-sm group-data-[state=unchecked]:text-muted-foreground/70"
+        id={`${id}-on`}
         onClick={() => setChecked(true)}
       >
-        <SunIcon size={16} aria-hidden="true" />
+        <SunIcon aria-hidden="true" size={16} />
       </span>
     </div>
   );

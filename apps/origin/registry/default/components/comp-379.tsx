@@ -21,22 +21,22 @@ export default function Component() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
-          <PlusIcon size={16} aria-hidden="true" />
+          <PlusIcon aria-hidden="true" size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="pb-2">
         <DropdownMenuLabel>Add block</DropdownMenuLabel>
         <DropdownMenuItem>
           <div
-            className="flex size-8 items-center justify-center rounded-md border bg-background"
             aria-hidden="true"
+            className="flex size-8 items-center justify-center rounded-md border bg-background"
           >
-            <TypeIcon size={16} className="opacity-60" />
+            <TypeIcon className="opacity-60" size={16} />
           </div>
           <div>
             <div className="font-medium text-sm">Text</div>
@@ -47,10 +47,10 @@ export default function Component() {
         </DropdownMenuItem>
         <DropdownMenuItem>
           <div
-            className="flex size-8 items-center justify-center rounded-md border bg-background"
             aria-hidden="true"
+            className="flex size-8 items-center justify-center rounded-md border bg-background"
           >
-            <TextQuoteIcon size={16} className="opacity-60" />
+            <TextQuoteIcon className="opacity-60" size={16} />
           </div>
           <div>
             <div className="font-medium text-sm">Quote</div>
@@ -59,10 +59,10 @@ export default function Component() {
         </DropdownMenuItem>
         <DropdownMenuItem>
           <div
-            className="flex size-8 items-center justify-center rounded-md border bg-background"
             aria-hidden="true"
+            className="flex size-8 items-center justify-center rounded-md border bg-background"
           >
-            <MinusIcon size={16} className="opacity-60" />
+            <MinusIcon className="opacity-60" size={16} />
           </div>
           <div>
             <div className="font-medium text-sm">Divider</div>
@@ -73,10 +73,10 @@ export default function Component() {
         </DropdownMenuItem>
         <DropdownMenuItem>
           <div
-            className="flex size-8 items-center justify-center rounded-md border bg-background"
             aria-hidden="true"
+            className="flex size-8 items-center justify-center rounded-md border bg-background"
           >
-            <Heading1Icon size={16} className="opacity-60" />
+            <Heading1Icon className="opacity-60" size={16} />
           </div>
           <div>
             <div className="font-medium text-sm">Heading 1</div>
@@ -87,10 +87,10 @@ export default function Component() {
         </DropdownMenuItem>
         <DropdownMenuItem>
           <div
-            className="flex size-8 items-center justify-center rounded-md border bg-background"
             aria-hidden="true"
+            className="flex size-8 items-center justify-center rounded-md border bg-background"
           >
-            <Heading2Icon size={16} className="opacity-60" />
+            <Heading2Icon className="opacity-60" size={16} />
           </div>
           <div>
             <div className="font-medium text-sm">Heading 2</div>

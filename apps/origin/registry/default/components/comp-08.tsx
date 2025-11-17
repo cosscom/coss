@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Disabled input</Label>
-      <Input id={id} placeholder="Email" type="email" disabled />
+      <Input disabled id={id} placeholder="Email" type="email" />
     </div>
   );
 }

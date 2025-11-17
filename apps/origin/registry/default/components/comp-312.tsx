@@ -25,24 +25,24 @@ export default function Component() {
           New features and improvements available
         </p>
         <Button
-          size="sm"
-          variant="outline"
+          className="min-w-24"
           disabled={isDownloading}
           onClick={handleDownload}
-          className="min-w-24"
+          size="sm"
+          variant="outline"
         >
           {isDownloading ? (
             <>
               <LoaderCircleIcon
+                aria-hidden="true"
                 className="-ms-0.5 me-2 animate-spin"
                 size={16}
-                aria-hidden="true"
               />
               Updating...
             </>
           ) : (
             <>
-              <DownloadIcon size={16} className="-ms-0.5" aria-hidden="true" />
+              <DownloadIcon aria-hidden="true" className="-ms-0.5" size={16} />
               Update now
             </>
           )}

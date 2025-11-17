@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Disabled textarea</Label>
-      <Textarea id={id} disabled placeholder="Leave a comment" />
+      <Textarea disabled id={id} placeholder="Leave a comment" />
     </div>
   );
 }

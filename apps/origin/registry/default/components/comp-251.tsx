@@ -17,9 +17,9 @@ export default function Component() {
         </output>
       </div>
       <Slider
-        value={value}
-        onValueChange={setValue}
         aria-label="Dual range slider with output"
+        onValueChange={setValue}
+        value={value}
       />
     </div>
   );

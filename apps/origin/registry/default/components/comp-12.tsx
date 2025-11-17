@@ -10,8 +10,8 @@ export default function Component() {
       <Label htmlFor={id}>Input with end inline add-on</Label>
       <div className="relative">
         <Input
-          id={id}
           className="peer pe-12"
+          id={id}
           placeholder="google"
           type="text"
         />

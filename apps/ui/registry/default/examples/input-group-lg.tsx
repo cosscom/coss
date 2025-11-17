@@ -10,10 +10,10 @@ export default function InputGroupLg() {
   return (
     <InputGroup>
       <InputGroupInput
+        aria-label="Search"
+        placeholder="Search"
         size="lg"
         type="search"
-        placeholder="Search"
-        aria-label="Search"
       />
       <InputGroupAddon>
         <SearchIcon />

@@ -25,14 +25,14 @@ export default function GroupWithDisabledButton() {
         Files
       </Button>
       <GroupSeparator />
-      <Button variant="outline" disabled>
+      <Button disabled variant="outline">
         <FilmIcon />
         Media
       </Button>
       <GroupSeparator />
       <Menu>
         <MenuTrigger
-          render={<Button variant="outline" size="icon" aria-label="Menu" />}
+          render={<Button aria-label="Menu" size="icon" variant="outline" />}
         >
           <EllipsisIcon className="size-4" />
         </MenuTrigger>

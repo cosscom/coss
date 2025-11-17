@@ -25,9 +25,9 @@ export default function Component() {
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              className="group w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
               id={id}
               variant={"outline"}
-              className="group w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
             >
               <span
                 className={cn("truncate", !date && "text-muted-foreground")}
@@ -35,28 +35,28 @@ export default function Component() {
                 {date ? format(date, "PPP") : "Pick a date"}
               </span>
               <CalendarIcon
-                size={16}
-                className="shrink-0 text-muted-foreground/80 transition-colors group-hover:text-foreground"
                 aria-hidden="true"
+                className="shrink-0 text-muted-foreground/80 transition-colors group-hover:text-foreground"
+                size={16}
               />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-2" align="start">
-            <Calendar mode="single" selected={date} onSelect={setDate} />
+          <PopoverContent align="start" className="w-auto p-2">
+            <Calendar mode="single" onSelect={setDate} selected={date} />
           </PopoverContent>
         </Popover>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

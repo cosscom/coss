@@ -195,7 +195,7 @@ export function DayView({
   );
 
   return (
-    <div data-slot="day-view" className="contents">
+    <div className="contents" data-slot="day-view">
       {showAllDaySection && (
         <div className="border-border/70 border-t bg-muted/50">
           <div className="grid grid-cols-[3rem_1fr] sm:grid-cols-[4rem_1fr]">
@@ -213,12 +213,12 @@ export function DayView({
 
                 return (
                   <EventItem
-                    key={`spanning-${event.id}`}
-                    onClick={(e) => handleEventClick(event, e)}
                     event={event}
-                    view="month"
                     isFirstDay={isFirstDay}
                     isLastDay={isLastDay}
+                    key={`spanning-${event.id}`}
+                    onClick={(e) => handleEventClick(event, e)}
+                    view="month"
                   >
                     {/* Always show the title in day view for better usability */}
                     <div>{event.title}</div>
@@ -234,8 +234,8 @@ export function DayView({
         <div>
           {hours.map((hour, index) => (
             <div
-              key={hour.toString()}
               className="relative h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+              key={hour.toString()}
             >
               {index > 0 && (
                 <span className="-top-3 absolute left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
@@ -250,8 +250,8 @@ export function DayView({
           {/* Positioned events */}
           {positionedEvents.map((positionedEvent) => (
             <div
-              key={positionedEvent.event.id}
               className="absolute z-10 px-0.5"
+              key={positionedEvent.event.id}
               style={{
                 top: `${positionedEvent.top}px`,
                 height: `${positionedEvent.height}px`,
@@ -263,10 +263,10 @@ export function DayView({
               <div className="size-full">
                 <DraggableEvent
                   event={positionedEvent.event}
-                  view="day"
+                  height={positionedEvent.height}
                   onClick={(e) => handleEventClick(positionedEvent.event, e)}
                   showTime
-                  height={positionedEvent.height}
+                  view="day"
                 />
               </div>
             </div>
@@ -290,18 +290,14 @@ export function DayView({
             const hourValue = getHours(hour);
             return (
               <div
-                key={hour.toString()}
                 className="relative h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+                key={hour.toString()}
               >
                 {/* Quarter-hour intervals */}
                 {[0, 1, 2, 3].map((quarter) => {
                   const quarterHourTime = hourValue + quarter * 0.25;
                   return (
                     <DroppableCell
-                      key={`${hour.toString()}-${quarter}`}
-                      id={`day-cell-${currentDate.toISOString()}-${quarterHourTime}`}
-                      date={currentDate}
-                      time={quarterHourTime}
                       className={cn(
                         "absolute h-[calc(var(--week-cells-height)/4)] w-full",
                         quarter === 0 && "top-0",
@@ -312,12 +308,16 @@ export function DayView({
                         quarter === 3 &&
                           "top-[calc(var(--week-cells-height)/4*3)]",
                       )}
+                      date={currentDate}
+                      id={`day-cell-${currentDate.toISOString()}-${quarterHourTime}`}
+                      key={`${hour.toString()}-${quarter}`}
                       onClick={() => {
                         const startTime = new Date(currentDate);
                         startTime.setHours(hourValue);
                         startTime.setMinutes(quarter * 15);
                         onEventCreate(startTime);
                       }}
+                      time={quarterHourTime}
                     />
                   );
                 })}

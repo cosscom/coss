@@ -24,35 +24,35 @@ export default function Component() {
       <div className="flex items-center gap-4">
         <div>
           <Button
-            variant="outline"
-            size="icon"
-            className="size-8"
             aria-label="Decrease value"
-            onClick={decreaseValue}
+            className="size-8"
             disabled={value[0] === 0}
+            onClick={decreaseValue}
+            size="icon"
+            variant="outline"
           >
-            <MinusIcon size={16} aria-hidden="true" />
+            <MinusIcon aria-hidden="true" size={16} />
           </Button>
         </div>
         <Slider
-          className="grow"
-          value={value}
-          onValueChange={setValue}
-          min={minValue}
-          max={maxValue}
-          step={steps}
           aria-label="Dual range slider with buttons"
+          className="grow"
+          max={maxValue}
+          min={minValue}
+          onValueChange={setValue}
+          step={steps}
+          value={value}
         />
         <div>
           <Button
-            variant="outline"
-            size="icon"
-            className="size-8"
             aria-label="Increase value"
-            onClick={increaseValue}
+            className="size-8"
             disabled={value[0] === 200}
+            onClick={increaseValue}
+            size="icon"
+            variant="outline"
           >
-            <PlusIcon size={16} aria-hidden="true" />
+            <PlusIcon aria-hidden="true" size={16} />
           </Button>
         </div>
       </div>

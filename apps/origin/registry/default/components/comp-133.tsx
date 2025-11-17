@@ -13,7 +13,7 @@ export default function Component() {
 
   return (
     <div className="flex items-center gap-2">
-      <Checkbox id={id} checked={checked} onCheckedChange={setChecked} />
+      <Checkbox checked={checked} id={id} onCheckedChange={setChecked} />
       <Label htmlFor={id}>Indeterminate checkbox</Label>
     </div>
   );

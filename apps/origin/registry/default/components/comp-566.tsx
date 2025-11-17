@@ -68,7 +68,7 @@ export default function Component() {
         >
           {tree.getItems().map((item) => {
             return (
-              <TreeItem key={item.getId()} item={item}>
+              <TreeItem item={item} key={item.getId()}>
                 <TreeItemLabel className="before:-inset-y-0.5 before:-z-10 relative before:absolute before:inset-x-0 before:bg-background" />
               </TreeItem>
             );
@@ -78,15 +78,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Basic tree with vertical lines ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

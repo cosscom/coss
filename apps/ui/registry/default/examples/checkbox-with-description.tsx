@@ -8,7 +8,7 @@ export default function CheckboxWithDescriptionDemo() {
 
   return (
     <div className="flex items-start gap-2">
-      <Checkbox id={id} defaultChecked />
+      <Checkbox defaultChecked id={id} />
       <div className="flex flex-col gap-1">
         <Label htmlFor={id}>Accept terms and conditions</Label>
         <p className="text-muted-foreground text-xs">

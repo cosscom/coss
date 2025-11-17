@@ -12,16 +12,16 @@ export default function Component() {
       </Label>
       <DateInput />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateField.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

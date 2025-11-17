@@ -14,17 +14,17 @@ export default function Component() {
 
   return (
     <Button
-      className="gap-1"
-      variant="ghost"
-      onClick={toggleExpand}
+      aria-controls="expandable-content"
       aria-expanded={isExpanded}
-      aria-controls="expandable-content" // Use this ID on the element that this button controls
+      className="gap-1"
+      onClick={toggleExpand}
+      variant="ghost" // Use this ID on the element that this button controls
     >
       {isExpanded ? "Show less" : "Show more"}
       {isExpanded ? (
-        <ChevronUpIcon className="-me-1" size={16} aria-hidden="true" />
+        <ChevronUpIcon aria-hidden="true" className="-me-1" size={16} />
       ) : (
-        <ChevronDownIcon className="-me-1" size={16} aria-hidden="true" />
+        <ChevronDownIcon aria-hidden="true" className="-me-1" size={16} />
       )}
     </Button>
   );

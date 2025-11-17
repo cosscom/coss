@@ -21,16 +21,16 @@ export default function Component() {
         <Button variant="outline">
           Radio items
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuRadioGroup value={framework} onValueChange={setFramework}>
+        <DropdownMenuRadioGroup onValueChange={setFramework} value={framework}>
           <DropdownMenuRadioItem value="nextjs">Next.js</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="sveltekit" disabled>
+          <DropdownMenuRadioItem disabled value="sveltekit">
             SvelteKit
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="remix">Remix</DropdownMenuRadioItem>

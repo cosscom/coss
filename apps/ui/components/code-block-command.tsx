@@ -55,25 +55,25 @@ export function CodeBlockCommand({
   return (
     <div className="overflow-x-auto">
       <Tabs
-        value={packageManager}
+        className="gap-0"
         onValueChange={(value) => {
           setConfig({
             ...config,
             packageManager: value as "pnpm" | "npm" | "yarn" | "bun",
           });
         }}
-        className="gap-0"
+        value={packageManager}
       >
         <div className="flex items-center gap-2 border-border/64 border-b px-4 py-1 font-mono">
           <HugeiconsIcon
+            className="size-5 text-code-foreground sm:size-4"
             icon={ComputerTerminal02Icon}
             strokeWidth={2}
-            className="size-5 text-code-foreground sm:size-4"
           />
           <TabsList className="bg-transparent p-0 *:data-[slot=tab-indicator]:rounded-lg *:data-[slot=tab-indicator]:bg-accent *:data-[slot=tab-indicator]:shadow-none">
             {Object.entries(tabs).map(([key]) => {
               return (
-                <TabsTab key={key} value={key} className="rounded-lg">
+                <TabsTab className="rounded-lg" key={key} value={key}>
                   {key}
                 </TabsTab>
               );
@@ -83,7 +83,7 @@ export function CodeBlockCommand({
         <div className="no-scrollbar overflow-x-auto">
           {Object.entries(tabs).map(([key, value]) => {
             return (
-              <TabsPanel key={key} value={key} className="mt-0 px-4 py-3.5">
+              <TabsPanel className="mt-0 px-4 py-3.5" key={key} value={key}>
                 <pre>
                   <code
                     className="relative font-mono text-[.8125rem] leading-none"
@@ -101,11 +101,11 @@ export function CodeBlockCommand({
         <TooltipTrigger
           render={
             <Button
+              className="absolute top-1.5 right-1.5 z-3 size-9 opacity-70 hover:opacity-100 focus-visible:opacity-100 sm:size-8"
               data-slot="copy-button"
+              onClick={copyCommand}
               size="icon"
               variant="ghost"
-              className="absolute top-1.5 right-1.5 z-3 size-9 opacity-70 hover:opacity-100 focus-visible:opacity-100 sm:size-8"
-              onClick={copyCommand}
             >
               <span className="sr-only">Copy</span>
               {isCopied ? (

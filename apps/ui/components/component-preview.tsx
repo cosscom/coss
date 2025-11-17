@@ -33,11 +33,11 @@ export function ComponentPreview({
 
   return (
     <ComponentPreviewTabs
-      className={className}
       align={align}
-      hideCode={hideCode}
+      className={className}
       component={<Component />}
-      source={<ComponentSource name={name} collapsible={false} />}
+      hideCode={hideCode}
+      source={<ComponentSource collapsible={false} name={name} />}
       {...props}
     />
   );

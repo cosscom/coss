@@ -434,12 +434,12 @@ const countries: Country[] = [
 
 export default function ComboboxWithInnerInput() {
   return (
-    <Combobox items={countries} defaultValue={countries[0]}>
+    <Combobox defaultValue={countries[0]} items={countries}>
       <ComboboxTrigger
         render={
           <Button
-            variant="outline"
             className="w-full justify-between font-normal"
+            variant="outline"
           />
         }
       >

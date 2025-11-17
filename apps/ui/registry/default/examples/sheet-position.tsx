@@ -26,7 +26,7 @@ export default function SheetPosition() {
         <SheetTrigger render={<Button variant="outline" />}>
           Open Left
         </SheetTrigger>
-        <SheetPopup side="left" showCloseButton={false}>
+        <SheetPopup showCloseButton={false} side="left">
           <SheetHeader>
             <SheetTitle>Left</SheetTitle>
             <SheetDescription>Left side of the screen.</SheetDescription>
@@ -37,7 +37,7 @@ export default function SheetPosition() {
         <SheetTrigger render={<Button variant="outline" />}>
           Open Top
         </SheetTrigger>
-        <SheetPopup side="top" showCloseButton={false}>
+        <SheetPopup showCloseButton={false} side="top">
           <SheetHeader>
             <SheetTitle>Top</SheetTitle>
             <SheetDescription>Top of the screen.</SheetDescription>
@@ -48,7 +48,7 @@ export default function SheetPosition() {
         <SheetTrigger render={<Button variant="outline" />}>
           Open Bottom
         </SheetTrigger>
-        <SheetPopup side="bottom" showCloseButton={false}>
+        <SheetPopup showCloseButton={false} side="bottom">
           <SheetHeader>
             <SheetTitle>Bottom</SheetTitle>
             <SheetDescription>Bottom of the screen.</SheetDescription>

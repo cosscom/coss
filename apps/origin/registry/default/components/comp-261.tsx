@@ -7,10 +7,10 @@ export default function Component() {
       <Label>Vertical slider</Label>
       <div className="flex h-40 justify-center">
         <Slider
+          aria-label="Vertical slider"
           defaultValue={[5]}
           max={10}
           orientation="vertical"
-          aria-label="Vertical slider"
         />
       </div>
     </div>

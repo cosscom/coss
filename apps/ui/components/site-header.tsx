@@ -15,17 +15,17 @@ export function SiteHeader() {
       currentProduct="ui"
       mobileNav={
         <MobileNav
-          tree={pageTree}
-          items={appConfig.navItems}
           className="flex lg:hidden"
+          items={appConfig.navItems}
+          tree={pageTree}
         />
       }
     >
-      <MainNav items={appConfig.navItems} className="hidden lg:flex" />
+      <MainNav className="hidden lg:flex" items={appConfig.navItems} />
       <div className="mx-2 hidden w-full flex-1 md:flex md:w-auto md:flex-none">
-        <CommandMenu tree={pageTree} navItems={appConfig.navItems} />
+        <CommandMenu navItems={appConfig.navItems} tree={pageTree} />
       </div>
-      <Separator orientation="vertical" className="h-5 max-md:hidden" />
+      <Separator className="h-5 max-md:hidden" orientation="vertical" />
     </WorkspaceSiteHeader>
   );
 }

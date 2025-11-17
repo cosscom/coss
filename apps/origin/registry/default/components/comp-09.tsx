@@ -10,9 +10,9 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with start icon</Label>
       <div className="relative">
-        <Input id={id} className="peer ps-9" placeholder="Email" type="email" />
+        <Input className="peer ps-9" id={id} placeholder="Email" type="email" />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-          <AtSignIcon size={16} aria-hidden="true" />
+          <AtSignIcon aria-hidden="true" size={16} />
         </div>
       </div>
     </div>

@@ -30,12 +30,12 @@ export default function Component() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
-            size="icon"
-            className="disabled:opacity-100"
-            onClick={handleCopy}
             aria-label={copied ? "Copied" : "Copy to clipboard"}
+            className="disabled:opacity-100"
             disabled={copied}
+            onClick={handleCopy}
+            size="icon"
+            variant="outline"
           >
             <div
               className={cn(
@@ -44,9 +44,9 @@ export default function Component() {
               )}
             >
               <CheckIcon
+                aria-hidden="true"
                 className="stroke-emerald-500"
                 size={16}
-                aria-hidden="true"
               />
             </div>
             <div
@@ -55,7 +55,7 @@ export default function Component() {
                 copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
               )}
             >
-              <CopyIcon size={16} aria-hidden="true" />
+              <CopyIcon aria-hidden="true" size={16} />
             </div>
           </Button>
         </TooltipTrigger>

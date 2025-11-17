@@ -20,7 +20,7 @@ export default function GroupMenu() {
       <Button>Subscribe</Button>
       <GroupSeparator className="bg-primary/72" />
       <Menu>
-        <MenuTrigger render={<Button size="icon" aria-label="Copy options" />}>
+        <MenuTrigger render={<Button aria-label="Copy options" size="icon" />}>
           <ChevronDownIcon className="size-4" />
         </MenuTrigger>
         <MenuPopup align="end">

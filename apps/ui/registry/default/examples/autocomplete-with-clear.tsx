@@ -26,8 +26,8 @@ export default function AutocompleteWithClear() {
   return (
     <Autocomplete items={items}>
       <AutocompleteInput
-        placeholder="Search items…"
         aria-label="Search items"
+        placeholder="Search items…"
         showClear
       />
       <AutocompletePopup>

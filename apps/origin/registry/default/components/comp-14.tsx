@@ -13,8 +13,8 @@ export default function Component() {
           https://
         </span>
         <Input
-          id={id}
           className="-ms-px rounded-s-none shadow-none"
+          id={id}
           placeholder="google.com"
           type="text"
         />

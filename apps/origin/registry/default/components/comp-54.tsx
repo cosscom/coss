@@ -14,7 +14,6 @@ export default function Component() {
       <Input
         id={id}
         placeholder="AB12 CDE"
-        type="text"
         ref={(input) => {
           if (input) {
             withMask("AA99 AAA", {
@@ -23,18 +22,19 @@ export default function Component() {
             })(input);
           }
         }}
+        type="text"
       />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/eduardoborges/use-mask-input"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           use-mask-input
         </a>

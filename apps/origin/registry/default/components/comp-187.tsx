@@ -8,20 +8,20 @@ export default function Component() {
   return (
     <div className="relative flex w-full items-start gap-2 rounded-md border border-input p-4 shadow-xs outline-none has-data-[state=checked]:border-primary/50">
       <Switch
-        id={id}
-        className="data-[state=checked]:[&_span]:rtl:-translate-x-2 order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2"
         aria-describedby={`${id}-description`}
+        className="data-[state=checked]:[&_span]:rtl:-translate-x-2 order-1 h-4 w-6 after:absolute after:inset-0 [&_span]:size-3 data-[state=checked]:[&_span]:translate-x-2"
+        id={id}
       />
       <div className="flex grow items-start gap-3">
         <svg
+          aria-hidden="true"
           className="shrink-0"
-          width={32}
           height={24}
           viewBox="0 0 32 24"
+          width={32}
           xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
         >
-          <rect width="32" height="24" rx="4" fill="#252525" />
+          <rect fill="#252525" height="24" rx="4" width="32" />
           <path
             d="M19.0537 6.49742H12.9282V17.5026H19.0537V6.49742Z"
             fill="#FF5A00"
@@ -42,7 +42,7 @@ export default function Component() {
               (Sublabel)
             </span>
           </Label>
-          <p id={`${id}-description`} className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-xs" id={`${id}-description`}>
             A short description goes here.
           </p>
         </div>

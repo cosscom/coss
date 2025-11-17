@@ -6,7 +6,6 @@ import { toastManager } from "@/registry/default/ui/toast";
 export default function ToastLoading() {
   return (
     <Button
-      variant="outline"
       onClick={() => {
         toastManager.add({
           title: "Loading…",
@@ -14,6 +13,7 @@ export default function ToastLoading() {
           type: "loading",
         });
       }}
+      variant="outline"
     >
       Loading Toast
     </Button>

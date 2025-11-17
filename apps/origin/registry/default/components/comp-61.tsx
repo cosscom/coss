@@ -10,9 +10,9 @@ export default function Component() {
       <Label htmlFor={id}>Textarea with helper text</Label>
       <Textarea id={id} placeholder="Leave a comment" />
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Please add as many details as you can
       </p>

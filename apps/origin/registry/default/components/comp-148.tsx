@@ -35,13 +35,12 @@ export default function Component() {
   return (
     <div className="space-y-3">
       <CheckboxTree
-        tree={initialTree}
         renderNode={({ node, isChecked, onCheckedChange, children }) => (
           <Fragment key={`${id}-${node.id}`}>
             <div className="flex items-center gap-2">
               <Checkbox
-                id={`${id}-${node.id}`}
                 checked={isChecked}
+                id={`${id}-${node.id}`}
                 onCheckedChange={onCheckedChange}
               />
               <Label htmlFor={`${id}-${node.id}`}>{node.label}</Label>
@@ -49,6 +48,7 @@ export default function Component() {
             {children && <div className="ms-6 space-y-3">{children}</div>}
           </Fragment>
         )}
+        tree={initialTree}
       />
     </div>
   );

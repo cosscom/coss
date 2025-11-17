@@ -66,8 +66,8 @@ export default function Component() {
         <TableBody className="[&_td:first-child]:rounded-l-lg [&_td:last-child]:rounded-r-lg">
           {items.map((item) => (
             <TableRow
-              key={item.id}
               className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
+              key={item.id}
             >
               <TableCell className="font-medium">{item.name}</TableCell>
               <TableCell>{item.email}</TableCell>

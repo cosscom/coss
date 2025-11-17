@@ -10,8 +10,8 @@ export default function TopBanner() {
         A new, modern UI component library built on top of Base UI. Explore the
         new{" "}
         <a
-          href={gatewayHome}
           className="group font-heading text-base text-foreground before:absolute before:inset-0 hover:underline"
+          href={gatewayHome}
         >
           <span className="inline-flex items-center gap-1">
             <span className="decoration-muted-foreground underline-offset-4 group-hover:underline">

@@ -19,8 +19,8 @@ export default function Component() {
         <Cropper
           className="h-80"
           image="https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/cropper-07_scsejv.jpg"
-          zoom={zoom}
           onZoomChange={setZoom}
+          zoom={zoom}
         >
           <CropperDescription />
           <CropperImage />
@@ -28,13 +28,13 @@ export default function Component() {
         </Cropper>
         <div className="mx-auto flex w-full max-w-80 items-center gap-1">
           <Slider
-            defaultValue={[1]}
-            value={[zoom]}
-            min={1}
-            max={3}
-            step={0.1}
-            onValueChange={(value) => setZoom(value[0])}
             aria-label="Zoom slider"
+            defaultValue={[1]}
+            max={3}
+            min={1}
+            onValueChange={(value) => setZoom(value[0])}
+            step={0.1}
+            value={[zoom]}
           />
           <output className="block w-10 shrink-0 text-right font-medium text-sm tabular-nums">
             {Number.parseFloat(zoom.toFixed(1))}x
@@ -44,15 +44,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Cropper with zoom slider ∙{" "}
         <a
-          href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/origin-space/image-cropper"
           rel="noreferrer"
+          target="_blank"
         >
           API
         </a>

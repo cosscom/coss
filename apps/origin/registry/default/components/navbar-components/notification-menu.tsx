@@ -64,13 +64,13 @@ const initialNotifications = [
 function Dot({ className }: { className?: string }) {
   return (
     <svg
-      width="6"
-      height="6"
-      fill="currentColor"
-      viewBox="0 0 6 6"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
       aria-hidden="true"
+      className={className}
+      fill="currentColor"
+      height="6"
+      viewBox="0 0 6 6"
+      width="6"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <circle cx="3" cy="3" r="3" />
     </svg>
@@ -104,12 +104,12 @@ export default function NotificationMenu() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          aria-label="Open notifications"
+          className="relative size-8 rounded-full text-muted-foreground shadow-none"
           size="icon"
           variant="ghost"
-          className="relative size-8 rounded-full text-muted-foreground shadow-none"
-          aria-label="Open notifications"
         >
-          <BellIcon size={16} aria-hidden="true" />
+          <BellIcon aria-hidden="true" size={16} />
           {unreadCount > 0 && (
             <div
               aria-hidden="true"
@@ -123,32 +123,31 @@ export default function NotificationMenu() {
           <div className="font-semibold text-sm">Notifications</div>
           {unreadCount > 0 && (
             <button
-              type="button"
               className="font-medium text-xs hover:underline"
               onClick={handleMarkAllAsRead}
+              type="button"
             >
               Mark all as read
             </button>
           )}
         </div>
         <div
-          // biome-ignore lint(a11y/useAriaPropsForRole): known
-          role="separator"
           aria-orientation="horizontal"
           className="-mx-1 my-1 h-px bg-border"
+          role="separator"
           tabIndex={-1}
         />
         {notifications.map((notification) => (
           <div
-            key={notification.id}
             className="rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent"
+            key={notification.id}
           >
             <div className="relative flex items-start pe-3">
               <div className="flex-1 space-y-1">
                 <button
-                  type="button"
                   className="text-left text-foreground/80 after:absolute after:inset-0"
                   onClick={() => handleNotificationClick(notification.id)}
+                  type="button"
                 >
                   <span className="font-medium text-foreground hover:underline">
                     {notification.user}

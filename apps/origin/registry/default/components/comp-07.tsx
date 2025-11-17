@@ -9,8 +9,8 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with gray background</Label>
       <Input
-        id={id}
         className="border-transparent bg-muted shadow-none"
+        id={id}
         placeholder="Email"
         type="email"
       />

@@ -16,28 +16,28 @@ export function CategoryNavigation({
     <div className="mx-auto mt-4 w-full max-w-4xl">
       <div className="flex flex-wrap justify-center gap-2">
         <Button
-          variant="outline"
-          size="xs"
           className={cn(
             "rounded-md px-2 py-1",
             !currentCategory &&
               "!shadow-none before:!shadow-none bg-accent dark:bg-input dark:hover:bg-input",
           )}
           render={<Link href="/particles">All</Link>}
+          size="xs"
+          variant="outline"
         />
         {categories?.map((cat) => {
           const isActive = cat.slug === currentCategory;
           return (
             <Button
-              key={cat.slug}
-              variant="outline"
-              size="xs"
               className={cn(
                 "rounded-md px-2 py-1 capitalize",
                 isActive &&
                   "!shadow-none before:!shadow-none bg-accent dark:bg-input dark:hover:bg-input",
               )}
+              key={cat.slug}
               render={<Link href={`/particles/${cat.slug}`} />}
+              size="xs"
+              variant="outline"
             >
               {cat.name}
             </Button>

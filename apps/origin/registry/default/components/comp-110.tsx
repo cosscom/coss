@@ -12,12 +12,12 @@ export default function Component() {
 
   return (
     <ToggleGroup
-      type="single"
-      variant="outline"
-      value={value}
       onValueChange={(value) => {
         if (value) setValue(value);
       }}
+      type="single"
+      value={value}
+      variant="outline"
     >
       <ToggleGroupItem className="flex-1" value="left">
         Left

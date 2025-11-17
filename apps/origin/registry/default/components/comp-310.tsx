@@ -74,8 +74,8 @@ export default function Component() {
       <div className="flex gap-2 md:items-center">
         <div className="flex grow gap-3 md:items-center">
           <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 max-md:mt-0.5"
             aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 max-md:mt-0.5"
           >
             <TicketPercent className="opacity-80" size={16} />
           </div>
@@ -108,22 +108,22 @@ export default function Component() {
                   <span className="text-muted-foreground">s</span>
                 </span>
               </div>
-              <Button size="sm" className="text-sm">
+              <Button className="text-sm" size="sm">
                 Buy now
               </Button>
             </div>
           </div>
         </div>
         <Button
-          variant="ghost"
+          aria-label="Close banner"
           className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
           onClick={() => setIsVisible(false)}
-          aria-label="Close banner"
+          variant="ghost"
         >
           <XIcon
-            size={16}
-            className="opacity-60 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            size={16}
           />
         </Button>
       </div>

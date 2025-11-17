@@ -16,8 +16,8 @@ export default function Component() {
       <Label htmlFor={id}>Options with portrait</Label>
       <Select defaultValue="1">
         <SelectTrigger
-          id={id}
           className="h-auto ps-2 text-left [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_img]:shrink-0"
+          id={id}
         >
           <SelectValue placeholder="Choose a plan" />
         </SelectTrigger>
@@ -25,11 +25,11 @@ export default function Component() {
           <SelectItem value="1">
             <span className="flex items-center gap-2">
               <img
-                className="rounded-full"
-                src="/origin/avatar-40-01.jpg"
                 alt="Jenny Hamilton"
-                width={40}
+                className="rounded-full"
                 height={40}
+                src="/origin/avatar-40-01.jpg"
+                width={40}
               />
               <span>
                 <span className="block font-medium">Jenny Hamilton</span>
@@ -42,11 +42,11 @@ export default function Component() {
           <SelectItem value="2">
             <span className="flex items-center gap-2">
               <img
-                className="rounded-full"
-                src="/origin/avatar-40-02.jpg"
                 alt="Paul Smith"
-                width={40}
+                className="rounded-full"
                 height={40}
+                src="/origin/avatar-40-02.jpg"
+                width={40}
               />
               <span>
                 <span className="block font-medium">Paul Smith</span>
@@ -59,11 +59,11 @@ export default function Component() {
           <SelectItem value="3">
             <span className="flex items-center gap-2">
               <img
-                className="rounded-full"
-                src="/origin/avatar-40-03.jpg"
                 alt="Luna Wyen"
-                width={40}
+                className="rounded-full"
                 height={40}
+                src="/origin/avatar-40-03.jpg"
+                width={40}
               />
               <span>
                 <span className="block font-medium">Luna Wyen</span>

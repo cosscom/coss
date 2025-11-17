@@ -22,18 +22,18 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <svg
+              aria-hidden="true"
               className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
               height="20"
               viewBox="0 0 32 32"
-              aria-hidden="true"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              <circle cx="16" cy="16" fill="none" r="12" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
@@ -53,8 +53,8 @@ export default function Component() {
               <Input
                 id={`${id}-name`}
                 placeholder="Matt Welsh"
-                type="text"
                 required
+                type="text"
               />
             </div>
             <div className="*:not-first:mt-2">
@@ -62,8 +62,8 @@ export default function Component() {
               <Input
                 id={`${id}-email`}
                 placeholder="hi@yourcompany.com"
-                type="email"
                 required
+                type="email"
               />
             </div>
             <div className="*:not-first:mt-2">
@@ -71,12 +71,12 @@ export default function Component() {
               <Input
                 id={`${id}-password`}
                 placeholder="Enter your password"
-                type="password"
                 required
+                type="password"
               />
             </div>
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Sign up
           </Button>
         </form>

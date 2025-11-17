@@ -32,35 +32,35 @@ export default function Component() {
       </legend>
       <div className="space-y-2">
         <SliderWithInput
-          minValue={-10}
-          maxValue={10}
-          initialValue={[-2]}
           defaultValue={[0]}
+          initialValue={[-2]}
           label="X"
+          maxValue={10}
+          minValue={-10}
           onRegisterReset={(resetFn) => registerResetFunction(resetFn, 0)}
         />
         <SliderWithInput
-          minValue={-10}
-          maxValue={10}
-          initialValue={[4]}
           defaultValue={[0]}
+          initialValue={[4]}
           label="Y"
+          maxValue={10}
+          minValue={-10}
           onRegisterReset={(resetFn) => registerResetFunction(resetFn, 1)}
         />
         <SliderWithInput
-          minValue={-10}
-          maxValue={10}
-          initialValue={[2]}
           defaultValue={[0]}
+          initialValue={[2]}
           label="Z"
+          maxValue={10}
+          minValue={-10}
           onRegisterReset={(resetFn) => registerResetFunction(resetFn, 2)}
         />
       </div>
-      <Button className="w-full" variant="outline" onClick={resetAll}>
+      <Button className="w-full" onClick={resetAll} variant="outline">
         <RotateCcwIcon
+          aria-hidden="true"
           className="-ms-1 opacity-60"
           size={16}
-          aria-hidden="true"
         />
         Reset
       </Button>
@@ -101,26 +101,26 @@ function SliderWithInput({
     <div className="flex items-center gap-2">
       <Label className="text-muted-foreground text-xs">{label}</Label>
       <Slider
-        className="grow [&>:last-child>span]:rounded"
-        value={sliderValue}
-        onValueChange={handleSliderChange}
-        min={minValue}
-        max={maxValue}
         aria-label={label}
+        className="grow [&>:last-child>span]:rounded"
+        max={maxValue}
+        min={minValue}
+        onValueChange={handleSliderChange}
+        value={sliderValue}
       />
       <Input
+        aria-label="Enter value"
         className="h-8 w-12 px-2 py-1"
-        type="text"
         inputMode="decimal"
-        value={inputValues[0]}
-        onChange={(e) => handleInputChange(e, 0)}
         onBlur={() => validateAndUpdateValue(inputValues[0], 0)}
+        onChange={(e) => handleInputChange(e, 0)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             validateAndUpdateValue(inputValues[0], 0);
           }
         }}
-        aria-label="Enter value"
+        type="text"
+        value={inputValues[0]}
       />
     </div>
   );

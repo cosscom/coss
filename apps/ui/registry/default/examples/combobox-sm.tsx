@@ -26,9 +26,9 @@ export default function ComboboxSm() {
   return (
     <Combobox items={items}>
       <ComboboxInput
-        size="sm"
-        placeholder="Select an item..."
         aria-label="Select an item"
+        placeholder="Select an item..."
+        size="sm"
       />
       <ComboboxPopup>
         <ComboboxEmpty>No results found.</ComboboxEmpty>

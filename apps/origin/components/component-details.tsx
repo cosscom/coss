@@ -85,11 +85,11 @@ export default function ComponentDetails({
               <span>
                 <DialogTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="icon"
                     className="text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 lg:group-focus-within/item:opacity-100"
+                    size="icon"
+                    variant="ghost"
                   >
-                    <CodeIcon size={16} aria-hidden={true} />
+                    <CodeIcon aria-hidden={true} size={16} />
                   </Button>
                 </DialogTrigger>
               </span>
@@ -115,10 +115,10 @@ export default function ComponentDetails({
                   <p className="text-muted-foreground text-sm">
                     No code available. If you think this is an error, please{" "}
                     <a
-                      href="https://github.com/cosscom/coss/issues"
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
+                      href="https://github.com/cosscom/coss/issues"
+                      rel="noopener noreferrer"
+                      target="_blank"
                     >
                       open an issue
                     </a>

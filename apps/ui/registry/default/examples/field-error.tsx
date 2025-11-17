@@ -5,7 +5,7 @@ export default function FieldWithErrorDemo() {
   return (
     <Field>
       <FieldLabel>Email</FieldLabel>
-      <Input type="email" placeholder="Enter your email" />
+      <Input placeholder="Enter your email" type="email" />
       <FieldError>Please enter a valid email address.</FieldError>
     </Field>
   );

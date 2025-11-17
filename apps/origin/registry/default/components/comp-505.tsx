@@ -39,18 +39,18 @@ export default function Component() {
       <div className="rounded-md border">
         <div className="flex max-sm:flex-col">
           <Calendar
+            className="p-2 sm:pe-5"
+            disabled={[
+              { before: today }, // Dates before today
+            ]}
             mode="single"
-            selected={date}
             onSelect={(newDate) => {
               if (newDate) {
                 setDate(newDate);
                 setTime(null);
               }
             }}
-            className="p-2 sm:pe-5"
-            disabled={[
-              { before: today }, // Dates before today
-            ]}
+            selected={date}
           />
           <div className="relative w-full max-sm:h-48 sm:w-40">
             <div className="absolute inset-0 py-4 max-sm:border-t">
@@ -64,12 +64,12 @@ export default function Component() {
                   <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
                     {timeSlots.map(({ time: timeSlot, available }) => (
                       <Button
-                        key={timeSlot}
-                        variant={time === timeSlot ? "default" : "outline"}
-                        size="sm"
                         className="w-full"
-                        onClick={() => setTime(timeSlot)}
                         disabled={!available}
+                        key={timeSlot}
+                        onClick={() => setTime(timeSlot)}
+                        size="sm"
+                        variant={time === timeSlot ? "default" : "outline"}
                       >
                         {timeSlot}
                       </Button>
@@ -82,16 +82,16 @@ export default function Component() {
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Appointment picker -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

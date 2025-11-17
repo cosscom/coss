@@ -21,15 +21,15 @@ export default function Component() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="col-start-2"
-              variant="outline"
-              size="icon"
               aria-label="Pan camera up"
+              className="col-start-2"
+              size="icon"
+              variant="outline"
             >
-              <ChevronUpIcon size={16} aria-hidden="true" />
+              <ChevronUpIcon aria-hidden="true" size={16} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="px-2 py-1 text-xs">
+          <TooltipContent className="px-2 py-1 text-xs" side="top">
             Pan top
             <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘T
@@ -41,15 +41,15 @@ export default function Component() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="col-start-1"
-              variant="outline"
-              size="icon"
               aria-label="Pan camera left"
+              className="col-start-1"
+              size="icon"
+              variant="outline"
             >
-              <ChevronLeftIcon size={16} aria-hidden="true" />
+              <ChevronLeftIcon aria-hidden="true" size={16} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left" className="px-2 py-1 text-xs">
+          <TooltipContent className="px-2 py-1 text-xs" side="left">
             Pan left
             <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘L
@@ -57,17 +57,17 @@ export default function Component() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <div className="flex items-center justify-center" aria-hidden="true">
+      <div aria-hidden="true" className="flex items-center justify-center">
         <CircleIcon className="opacity-60" size={16} />
       </div>
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="Pan camera right">
-              <ChevronRightIcon size={16} aria-hidden="true" />
+            <Button aria-label="Pan camera right" size="icon" variant="outline">
+              <ChevronRightIcon aria-hidden="true" size={16} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right" className="px-2 py-1 text-xs">
+          <TooltipContent className="px-2 py-1 text-xs" side="right">
             Pan right
             <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘R
@@ -79,15 +79,15 @@ export default function Component() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="col-start-2"
-              variant="outline"
-              size="icon"
               aria-label="Pan camera down"
+              className="col-start-2"
+              size="icon"
+              variant="outline"
             >
-              <ChevronDownIcon size={16} aria-hidden="true" />
+              <ChevronDownIcon aria-hidden="true" size={16} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="px-2 py-1 text-xs">
+          <TooltipContent className="px-2 py-1 text-xs" side="bottom">
             Pan bottom
             <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘B

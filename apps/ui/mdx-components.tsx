@@ -47,15 +47,15 @@ export const mdxComponents = {
     return (
       <h2
         {...props}
-        id={id}
         className={cn(
           "[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl first:mt-0 lg:mt-16 *:[code]:text-2xl",
           className,
         )}
+        id={id}
       >
         <a
-          href={`#${id}`}
           className="no-underline underline-offset-4 hover:underline"
+          href={`#${id}`}
         >
           {children}
         </a>
@@ -75,15 +75,15 @@ export const mdxComponents = {
     return (
       <h3
         {...props}
-        id={id}
         className={cn(
           "mt-8 scroll-m-20 font-semibold text-lg *:[code]:text-lg",
           className,
         )}
+        id={id}
       >
         <a
-          href={`#${id}`}
           className="no-underline underline-offset-4 hover:underline"
+          href={`#${id}`}
         >
           {children}
         </a>
@@ -160,7 +160,7 @@ export const mdxComponents = {
     />
   ),
   img: ({ className, alt, ...props }: React.ComponentProps<"img">) => (
-    <img className={cn("rounded-md", className)} alt={alt} {...props} />
+    <img alt={alt} className={cn("rounded-md", className)} {...props} />
   ),
   hr: ({ ...props }: React.ComponentProps<"hr">) => (
     <hr className="my-4 md:my-8" {...props} />
@@ -274,10 +274,10 @@ export const mdxComponents = {
     if (isNpmCommand) {
       return (
         <CodeBlockCommand
-          __npm__={__npm__}
-          __yarn__={__yarn__}
-          __pnpm__={__pnpm__}
           __bun__={__bun__}
+          __npm__={__npm__}
+          __pnpm__={__pnpm__}
+          __yarn__={__yarn__}
         />
       );
     }
@@ -285,7 +285,7 @@ export const mdxComponents = {
     // Default codeblock.
     return (
       <>
-        {__raw__ && <CopyButton value={__raw__} src={__src__} />}
+        {__raw__ && <CopyButton src={__src__} value={__raw__} />}
         <code {...props} />
       </>
     );
@@ -311,11 +311,11 @@ export const mdxComponents = {
     ...props
   }: React.ComponentProps<"img">) => (
     <Image
+      alt={alt || ""}
       className={cn("mt-6 rounded-md border", className)}
+      height={Number(height)}
       src={typeof src === "string" ? src : ""}
       width={Number(width)}
-      height={Number(height)}
-      alt={alt || ""}
       {...props}
     />
   ),

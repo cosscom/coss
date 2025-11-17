@@ -105,19 +105,19 @@ export default function Component() {
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Multi-level w/ icon</h2>
-      <Accordion type="single" collapsible className="w-full" defaultValue="3">
+      <Accordion className="w-full" collapsible defaultValue="3" type="single">
         {items.map((item) => (
           <AccordionItem
-            value={item.id}
-            key={item.id}
             className="outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={item.id}
+            value={item.id}
           >
             <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 rounded-md text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0">
               <span className="flex items-center gap-3">
                 <item.icon
-                  size={16}
-                  className="shrink-0 opacity-60"
                   aria-hidden="true"
+                  className="shrink-0 opacity-60"
+                  size={16}
                 />
                 <span>{item.title}</span>
               </span>
@@ -125,11 +125,11 @@ export default function Component() {
             <AccordionContent className="p-0">
               {item.collapsibles.map((collapsible, _index) => (
                 <CollapsibleDemo
-                  key={collapsible.title}
-                  title={collapsible.title}
                   content={collapsible.content}
-                  open={collapsible.open}
                   icon={collapsible.icon}
+                  key={collapsible.title}
+                  open={collapsible.open}
+                  title={collapsible.title}
                 />
               ))}
             </AccordionContent>
@@ -155,12 +155,12 @@ function CollapsibleDemo({
     <Collapsible className="border-t py-3 ps-6 pe-4" defaultOpen={open}>
       <CollapsibleTrigger className="flex gap-2 font-semibold text-[15px] leading-6 [&[data-state=open]>svg]:rotate-180">
         <ChevronDownIcon
-          size={16}
-          className="mt-1 shrink-0 opacity-60 transition-transform duration-200"
           aria-hidden="true"
+          className="mt-1 shrink-0 opacity-60 transition-transform duration-200"
+          size={16}
         />
         <span className="flex items-center gap-3">
-          <Icon size={16} className="shrink-0 opacity-60" aria-hidden="true" />
+          <Icon aria-hidden="true" className="shrink-0 opacity-60" size={16} />
           <span>{title}</span>
         </span>
       </CollapsibleTrigger>

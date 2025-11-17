@@ -14,7 +14,7 @@ export default function NumberFieldWithLabel() {
   return (
     <div className="flex flex-col items-start gap-2">
       <Label htmlFor={id}>Quantity</Label>
-      <NumberField id={id} defaultValue={0}>
+      <NumberField defaultValue={0} id={id}>
         <NumberFieldGroup>
           <NumberFieldDecrement />
           <NumberFieldInput />

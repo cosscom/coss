@@ -15,8 +15,8 @@ export default function Component() {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="Add new item">
-            <PlusIcon size={16} aria-hidden="true" />
+          <Button aria-label="Add new item" size="icon" variant="outline">
+            <PlusIcon aria-hidden="true" size={16} />
           </Button>
         </TooltipTrigger>
         <TooltipContent className="px-2 py-1 text-xs">Tooltip</TooltipContent>

@@ -10,7 +10,7 @@ export function DocsCopyPage({ page }: { page: string }) {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
-    <Button variant="outline" size="xs" onClick={() => copyToClipboard(page)}>
+    <Button onClick={() => copyToClipboard(page)} size="xs" variant="outline">
       {isCopied ? (
         <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} />
       ) : (

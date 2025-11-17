@@ -14,35 +14,35 @@ export default function Component() {
       <ScrollArea>
         <TabsList className="mb-3 gap-1 bg-transparent">
           <TabsTrigger
-            value="tab-1"
             className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+            value="tab-1"
           >
             <HouseIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="tab-2"
             className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+            value="tab-2"
           >
             <PanelsTopLeftIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Projects
           </TabsTrigger>
           <TabsTrigger
-            value="tab-3"
             className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+            value="tab-3"
           >
             <BoxIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Packages
           </TabsTrigger>

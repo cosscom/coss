@@ -60,8 +60,8 @@ export default function Component() {
       <Label htmlFor={id}>Options with flag</Label>
       <Select defaultValue="2">
         <SelectTrigger
-          id={id}
           className="[&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_svg]:shrink-0 [&>span_svg]:text-muted-foreground/80"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>

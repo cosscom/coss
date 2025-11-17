@@ -21,8 +21,8 @@ export default function Component() {
         {/* Left side */}
         <div className="relative flex-1">
           <Input
-            id={`input-${id}`}
             className="peer h-8 w-full max-w-xs ps-8 pe-2"
+            id={`input-${id}`}
             placeholder="Search..."
             type="search"
           />
@@ -34,26 +34,26 @@ export default function Component() {
         <div className="flex items-center gap-4">
           {/* Test mode */}
           <div className="inline-flex items-center gap-2 max-md:hidden">
-            <Label htmlFor={`switch-${id}`} className="font-medium text-sm">
+            <Label className="font-medium text-sm" htmlFor={`switch-${id}`}>
               Test mode
             </Label>
             <Switch
-              id={`switch-${id}`}
-              checked={checked}
-              onCheckedChange={setChecked}
-              className="data-[state=checked]:[&_span]:rtl:-translate-x-3 h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3"
               aria-label="Toggle switch"
+              checked={checked}
+              className="data-[state=checked]:[&_span]:rtl:-translate-x-3 h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3"
+              id={`switch-${id}`}
+              onCheckedChange={setChecked}
             />
           </div>
           <div className="flex items-center gap-2">
             {/* Layout button */}
             <Button
+              aria-label="Open layout menu"
+              className="size-8 rounded-full text-muted-foreground shadow-none"
               size="icon"
               variant="ghost"
-              className="size-8 rounded-full text-muted-foreground shadow-none"
-              aria-label="Open layout menu"
             >
-              <LayoutGridIcon size={16} aria-hidden="true" />
+              <LayoutGridIcon aria-hidden="true" size={16} />
             </Button>
             {/* Info menu */}
             <InfoMenu />
@@ -64,11 +64,11 @@ export default function Component() {
           </div>
           {/* Add button */}
           <Button
+            aria-label="Add new item"
             className="size-8 rounded-full"
             size="icon"
-            aria-label="Add new item"
           >
-            <PlusIcon size={16} aria-hidden="true" />
+            <PlusIcon aria-hidden="true" size={16} />
           </Button>
         </div>
       </div>

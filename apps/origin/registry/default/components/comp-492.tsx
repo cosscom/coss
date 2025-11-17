@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="range"
+        className="rounded-md border p-2"
         disabled={[
           { before: new Date() }, // Dates before today
           new Date(), // Today
@@ -23,19 +23,19 @@ export default function Component() {
           },
         ]}
         excludeDisabled
-        className="rounded-md border p-2"
+        mode="range"
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Disabled dates -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>

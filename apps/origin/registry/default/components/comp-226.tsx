@@ -18,8 +18,8 @@ export default function Component() {
       <Label htmlFor={id}>Options with avatar</Label>
       <Select defaultValue="1">
         <SelectTrigger
-          id={id}
           className="ps-2 [&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_img]:shrink-0"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>
@@ -28,31 +28,31 @@ export default function Component() {
             <SelectLabel className="ps-2">Impersonate user</SelectLabel>
             <SelectItem value="1">
               <img
-                className="size-5 rounded"
-                src="/origin/avatar-20-01.jpg"
                 alt="Frank Allison"
-                width={20}
+                className="size-5 rounded"
                 height={20}
+                src="/origin/avatar-20-01.jpg"
+                width={20}
               />
               <span className="truncate">Jenny Hamilton</span>
             </SelectItem>
             <SelectItem value="2">
               <img
-                className="size-5 rounded"
-                src="/origin/avatar-20-02.jpg"
                 alt="Xavier Guerra"
-                width={20}
+                className="size-5 rounded"
                 height={20}
+                src="/origin/avatar-20-02.jpg"
+                width={20}
               />
               <span className="truncate">Paul Smith</span>
             </SelectItem>
             <SelectItem value="3">
               <img
-                className="size-5 rounded"
-                src="/origin/avatar-20-03.jpg"
                 alt="Anne Kelley"
-                width={20}
+                className="size-5 rounded"
                 height={20}
+                src="/origin/avatar-20-03.jpg"
+                width={20}
               />
               <span className="truncate">Luna Wyen</span>
             </SelectItem>

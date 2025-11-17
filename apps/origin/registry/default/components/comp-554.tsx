@@ -198,24 +198,24 @@ export default function Component() {
       <div className="relative inline-flex">
         {/* Drop area - uses finalImageUrl */}
         <button
-          type="button"
+          aria-label={finalImageUrl ? "Change image" : "Upload image"}
           className="relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-input border-dashed outline-none transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-disabled:pointer-events-none has-[img]:border-none has-disabled:opacity-50 data-[dragging=true]:bg-accent/50"
+          data-dragging={isDragging || undefined}
           onClick={openFileDialog}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          data-dragging={isDragging || undefined}
-          aria-label={finalImageUrl ? "Change image" : "Upload image"}
+          type="button"
         >
           {finalImageUrl ? (
             <img
-              className="size-full object-cover"
-              src={finalImageUrl}
               alt="User avatar"
-              width={64}
+              className="size-full object-cover"
               height={64}
+              src={finalImageUrl}
               style={{ objectFit: "cover" }}
+              width={64}
             />
           ) : (
             <div aria-hidden="true">
@@ -226,24 +226,24 @@ export default function Component() {
         {/* Remove button - depends on finalImageUrl */}
         {finalImageUrl && (
           <Button
+            aria-label="Remove image"
+            className="-top-1 -right-1 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             onClick={handleRemoveFinalImage}
             size="icon"
-            className="-top-1 -right-1 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
-            aria-label="Remove image"
           >
             <XIcon className="size-3.5" />
           </Button>
         )}
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload image file"
+          className="sr-only"
           tabIndex={-1}
         />
       </div>
 
       {/* Cropper Dialog - Use isDialogOpen for open prop */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
         <DialogContent className="gap-0 p-0 sm:max-w-140 *:[button]:hidden">
           <DialogDescription className="sr-only">
             Crop image dialog
@@ -252,22 +252,22 @@ export default function Component() {
             <DialogTitle className="flex items-center justify-between border-b p-4 text-base">
               <div className="flex items-center gap-2">
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
+                  aria-label="Cancel"
                   className="-my-1 opacity-60"
                   onClick={() => setIsDialogOpen(false)}
-                  aria-label="Cancel"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
                 >
                   <ArrowLeftIcon aria-hidden="true" />
                 </Button>
                 <span>Crop image</span>
               </div>
               <Button
-                className="-my-1"
-                onClick={handleApply}
-                disabled={!previewUrl}
                 autoFocus
+                className="-my-1"
+                disabled={!previewUrl}
+                onClick={handleApply}
               >
                 Apply
               </Button>
@@ -277,9 +277,9 @@ export default function Component() {
             <Cropper
               className="h-96 sm:h-120"
               image={previewUrl}
-              zoom={zoom}
               onCropChange={handleCropChange}
               onZoomChange={setZoom}
+              zoom={zoom}
             >
               <CropperDescription />
               <CropperImage />
@@ -289,23 +289,23 @@ export default function Component() {
           <DialogFooter className="border-t px-4 py-6">
             <div className="mx-auto flex w-full max-w-80 items-center gap-4">
               <ZoomOutIcon
+                aria-hidden="true"
                 className="shrink-0 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
               <Slider
-                defaultValue={[1]}
-                value={[zoom]}
-                min={1}
-                max={3}
-                step={0.1}
-                onValueChange={(value) => setZoom(value[0])}
                 aria-label="Zoom slider"
+                defaultValue={[1]}
+                max={3}
+                min={1}
+                onValueChange={(value) => setZoom(value[0])}
+                step={0.1}
+                value={[zoom]}
               />
               <ZoomInIcon
+                aria-hidden="true"
                 className="shrink-0 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
             </div>
           </DialogFooter>
@@ -314,24 +314,24 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Avatar{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           rel="noreferrer"
+          target="_blank"
         >
           uploader
         </a>{" "}
         with{" "}
         <a
-          href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/origin-space/image-cropper"
           rel="noreferrer"
+          target="_blank"
         >
           cropper
         </a>

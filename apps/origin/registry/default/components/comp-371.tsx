@@ -25,9 +25,9 @@ export default function Component() {
         <Button variant="outline">
           Checkbox items
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
@@ -43,8 +43,8 @@ export default function Component() {
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={remix}
-          onCheckedChange={setRemix}
           disabled
+          onCheckedChange={setRemix}
         >
           Remix
         </DropdownMenuCheckboxItem>

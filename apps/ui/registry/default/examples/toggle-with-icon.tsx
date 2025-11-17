@@ -4,7 +4,7 @@ import { Toggle } from "@/registry/default/ui/toggle";
 
 export default function ToggleWithIcon() {
   return (
-    <Toggle variant="outline" aria-label="Toggle bold">
+    <Toggle aria-label="Toggle bold" variant="outline">
       <BoldIcon />
     </Toggle>
   );

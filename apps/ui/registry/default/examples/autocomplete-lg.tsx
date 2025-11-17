@@ -26,9 +26,9 @@ export default function AutocompleteLg() {
   return (
     <Autocomplete items={items}>
       <AutocompleteInput
-        size="lg"
-        placeholder="Search items…"
         aria-label="Search items"
+        placeholder="Search items…"
+        size="lg"
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>

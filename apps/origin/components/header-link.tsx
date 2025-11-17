@@ -25,27 +25,27 @@ export default function HeaderLink({
             className,
           )}
           href={href}
-          target="_blank"
           rel="noreferrer"
+          target="_blank"
         >
           {text}
           <span className="hidden sm:inline">
             {" "}
             <RiArrowRightUpLine
+              aria-hidden="true"
               className="text-muted-foreground/80"
               size={14}
-              aria-hidden="true"
             />
           </span>
         </a>
       ) : (
         <>
           <Link
-            href={href}
             className={cn(
               "inline-flex gap-0.5 text-sm hover:underline",
               className,
             )}
+            href={href}
           >
             {text}
           </Link>

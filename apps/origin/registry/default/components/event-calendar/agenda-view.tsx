@@ -46,8 +46,8 @@ export function AgendaView({
       {!hasEvents ? (
         <div className="flex min-h-[70svh] flex-col items-center justify-center py-16 text-center">
           <RiCalendarEventLine
-            size={32}
             className="mb-2 text-muted-foreground/50"
+            size={32}
           />
           <h3 className="font-medium text-lg">No events found</h3>
           <p className="text-muted-foreground">
@@ -62,8 +62,8 @@ export function AgendaView({
 
           return (
             <div
-              key={day.toString()}
               className="relative my-12 border-border/70 border-t"
+              key={day.toString()}
             >
               <span
                 className="-top-3 absolute left-0 flex h-6 items-center bg-background pe-4 text-[10px] uppercase data-today:font-medium sm:pe-4 sm:text-xs"
@@ -74,10 +74,10 @@ export function AgendaView({
               <div className="mt-6 space-y-2">
                 {dayEvents.map((event) => (
                   <EventItem
-                    key={event.id}
                     event={event}
-                    view="agenda"
+                    key={event.id}
                     onClick={(e) => handleEventClick(event, e)}
+                    view="agenda"
                   />
                 ))}
               </div>

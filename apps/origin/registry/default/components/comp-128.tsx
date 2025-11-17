@@ -12,9 +12,9 @@ export default function Component() {
         </p>
       </div>
       <ChevronRightIcon
+        aria-hidden="true"
         className="opacity-60 transition-transform group-hover:translate-x-0.5"
         size={16}
-        aria-hidden="true"
       />
     </Button>
   );

@@ -14,19 +14,19 @@ export default function Component() {
     <div>
       <div className="relative inline-grid h-9 grid-cols-[1fr_1fr] items-center font-medium text-sm">
         <Switch
-          id={id}
           checked={checked}
-          onCheckedChange={setChecked}
           className="peer [&_span]:data-[state=checked]:rtl:-translate-x-full absolute inset-0 h-[inherit] w-auto data-[state=unchecked]:bg-input/50 [&_span]:z-10 [&_span]:h-full [&_span]:w-1/2 [&_span]:transition-transform [&_span]:duration-300 [&_span]:ease-[cubic-bezier(0.16,1,0.3,1)] [&_span]:data-[state=checked]:translate-x-full"
+          id={id}
+          onCheckedChange={setChecked}
         />
         <span className="peer-data-[state=unchecked]:rtl:-translate-x-full pointer-events-none relative ms-0.5 flex min-w-8 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=checked]:invisible peer-data-[state=unchecked]:translate-x-full">
-          <MoonIcon size={16} aria-hidden="true" />
+          <MoonIcon aria-hidden="true" size={16} />
         </span>
         <span className="peer-data-[state=checked]:-translate-x-full pointer-events-none relative me-0.5 flex min-w-8 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=unchecked]:invisible peer-data-[state=checked]:text-background peer-data-[state=checked]:rtl:translate-x-full">
-          <SunIcon size={16} aria-hidden="true" />
+          <SunIcon aria-hidden="true" size={16} />
         </span>
       </div>
-      <Label htmlFor={id} className="sr-only">
+      <Label className="sr-only" htmlFor={id}>
         Labeled switch
       </Label>
     </div>

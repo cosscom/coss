@@ -16,14 +16,14 @@ import {
 
 export default function Component() {
   return (
-    <Tabs defaultValue="tab-1" className="items-center">
+    <Tabs className="items-center" defaultValue="tab-1">
       <TabsList>
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <TabsTrigger value="tab-1" className="py-3">
-                  <HouseIcon size={16} aria-hidden="true" />
+                <TabsTrigger className="py-3" value="tab-1">
+                  <HouseIcon aria-hidden="true" size={16} />
                 </TabsTrigger>
               </span>
             </TooltipTrigger>
@@ -36,9 +36,9 @@ export default function Component() {
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <TabsTrigger value="tab-2" className="group py-3">
+                <TabsTrigger className="group py-3" value="tab-2">
                   <span className="relative">
-                    <PanelsTopLeftIcon size={16} aria-hidden="true" />
+                    <PanelsTopLeftIcon aria-hidden="true" size={16} />
                     <Badge className="-top-2.5 -translate-x-1.5 absolute left-full min-w-4 border-background px-0.5 text-[10px]/[.875rem] transition-opacity group-data-[state=inactive]:opacity-50">
                       3
                     </Badge>
@@ -55,8 +55,8 @@ export default function Component() {
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <TabsTrigger value="tab-3" className="py-3">
-                  <BoxIcon size={16} aria-hidden="true" />
+                <TabsTrigger className="py-3" value="tab-3">
+                  <BoxIcon aria-hidden="true" size={16} />
                 </TabsTrigger>
               </span>
             </TooltipTrigger>

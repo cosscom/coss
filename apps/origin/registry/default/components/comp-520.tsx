@@ -20,25 +20,25 @@ export default function Component() {
     <div className="mx-auto max-w-xl space-y-8 text-center">
       <div className="flex items-center gap-2">
         <Button
-          className="shrink-0"
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentStep((prev) => prev - 1)}
-          disabled={currentStep === 1}
           aria-label="Prev step"
+          className="shrink-0"
+          disabled={currentStep === 1}
+          onClick={() => setCurrentStep((prev) => prev - 1)}
+          size="icon"
+          variant="ghost"
         >
-          <ChevronLeftIcon size={16} aria-hidden="true" />
+          <ChevronLeftIcon aria-hidden="true" size={16} />
         </Button>
         <Stepper
-          value={currentStep}
-          onValueChange={setCurrentStep}
           className="gap-1"
+          onValueChange={setCurrentStep}
+          value={currentStep}
         >
           {steps.map((step) => (
-            <StepperItem key={step} step={step} className="flex-1">
+            <StepperItem className="flex-1" key={step} step={step}>
               <StepperTrigger
-                className="w-full flex-col items-start gap-2"
                 asChild
+                className="w-full flex-col items-start gap-2"
               >
                 <StepperIndicator asChild className="h-1 w-full bg-border">
                   <span className="sr-only">{step}</span>
@@ -48,20 +48,20 @@ export default function Component() {
           ))}
         </Stepper>
         <Button
-          className="shrink-0"
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentStep((prev) => prev + 1)}
-          disabled={currentStep === steps.length}
           aria-label="Next step"
+          className="shrink-0"
+          disabled={currentStep === steps.length}
+          onClick={() => setCurrentStep((prev) => prev + 1)}
+          size="icon"
+          variant="ghost"
         >
-          <ChevronRightIcon size={16} aria-hidden="true" />
+          <ChevronRightIcon aria-hidden="true" size={16} />
         </Button>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Paginated stepper
       </p>

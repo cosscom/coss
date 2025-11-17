@@ -36,9 +36,9 @@ export default function Component() {
         </DialogHeader>
         <form className="space-y-5">
           <Textarea
+            aria-label="Send feedback"
             id="feedback"
             placeholder="How can we improve coss.com?"
-            aria-label="Send feedback"
           />
           <div className="flex flex-col sm:flex-row sm:justify-end">
             <Button type="button">Send feedback</Button>

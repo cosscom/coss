@@ -61,12 +61,12 @@ function ToastAction({
 }: React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>) {
   return (
     <ToastPrimitives.Action
+      asChild={asChild}
       className={cn(
         !asChild &&
           "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 font-medium text-sm outline-none transition-[color,box-shadow] hover:bg-secondary focus:ring-ring focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 focus:group-[.destructive]:ring-destructive hover:group-[.destructive]:border-destructive/30 hover:group-[.destructive]:bg-destructive hover:group-[.destructive]:text-white",
         className,
       )}
-      asChild={asChild}
       {...props}
     >
       {props.children}
@@ -81,22 +81,22 @@ function ToastClose({
 }: React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>) {
   return (
     <ToastPrimitives.Close
+      asChild={asChild}
       className={cn(
         !asChild &&
           "group absolute top-3 right-3 flex size-7 items-center justify-center rounded outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none",
         className,
       )}
       toast-close=""
-      asChild={asChild}
       {...props}
     >
       {asChild ? (
         props.children
       ) : (
         <XIcon
-          size={16}
-          className="opacity-60 transition-opacity group-hover:opacity-100"
           aria-hidden="true"
+          className="opacity-60 transition-opacity group-hover:opacity-100"
+          size={16}
         />
       )}
     </ToastPrimitives.Close>

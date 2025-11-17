@@ -32,7 +32,7 @@ export default function GroupDemo() {
       <GroupSeparator />
       <Menu>
         <MenuTrigger
-          render={<Button variant="outline" size="icon" aria-label="Menu" />}
+          render={<Button aria-label="Menu" size="icon" variant="outline" />}
         >
           <EllipsisIcon className="size-4" />
         </MenuTrigger>

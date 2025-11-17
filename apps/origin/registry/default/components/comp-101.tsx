@@ -19,12 +19,12 @@ export default function Component() {
         <TooltipTrigger asChild>
           <div>
             <Toggle
-              className="group size-9 p-0 hover:bg-indigo-50 hover:text-indigo-500 data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-500"
               aria-label="Bookmark this"
-              pressed={bookmarked}
+              className="group size-9 p-0 hover:bg-indigo-50 hover:text-indigo-500 data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-500"
               onPressedChange={setBookmarked}
+              pressed={bookmarked}
             >
-              <BookmarkIcon size={16} aria-hidden="true" />
+              <BookmarkIcon aria-hidden="true" size={16} />
             </Toggle>
           </div>
         </TooltipTrigger>

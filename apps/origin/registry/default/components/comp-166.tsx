@@ -25,16 +25,16 @@ export default function Component() {
       >
         {items.map((item) => (
           <div
-            key={`${id}-${item.value}`}
             className="relative flex flex-col gap-4 border border-input p-4 outline-none first:rounded-t-md last:rounded-b-md has-data-[state=checked]:z-10 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:bg-accent"
+            key={`${id}-${item.value}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <RadioGroupItem
+                  aria-describedby={`${`${id}-${item.value}`}-price`}
+                  className="after:absolute after:inset-0"
                   id={`${id}-${item.value}`}
                   value={item.value}
-                  className="after:absolute after:inset-0"
-                  aria-describedby={`${`${id}-${item.value}`}-price`}
                 />
                 <Label
                   className="inline-flex items-start"
@@ -47,8 +47,8 @@ export default function Component() {
                 </Label>
               </div>
               <div
-                id={`${`${id}-${item.value}`}-price`}
                 className="text-muted-foreground text-xs leading-[inherit]"
+                id={`${`${id}-${item.value}`}-price`}
               >
                 {item.price}
               </div>

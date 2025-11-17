@@ -46,32 +46,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M4 12L20 12"
                     className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    d="M4 12L20 12"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -80,8 +80,8 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link) => (
-                    <NavigationMenuItem key={link.label} className="w-full">
-                      <NavigationMenuLink href={link.href} className="py-1.5">
+                    <NavigationMenuItem className="w-full" key={link.label}>
+                      <NavigationMenuLink className="py-1.5" href={link.href}>
                         {link.label}
                       </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -100,13 +100,13 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 p-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select account type" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
@@ -125,13 +125,13 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 p-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select project" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
@@ -153,8 +153,8 @@ export default function Component() {
                 {navigationLinks.map((link) => (
                   <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
-                      href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                      href={link.href}
                     >
                       {link.label}
                     </NavigationMenuLink>

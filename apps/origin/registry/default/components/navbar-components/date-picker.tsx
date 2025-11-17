@@ -21,14 +21,14 @@ export default function DatePicker() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
           className="group w-full justify-between border-input bg-background px-3 font-normal text-sm outline-none outline-offset-0 focus-visible:outline-[3px]"
+          size="sm"
+          variant="outline"
         >
           <CalendarIcon
-            size={16}
-            className="-ms-1 shrink-0 text-muted-foreground/80 transition-colors"
             aria-hidden="true"
+            className="-ms-1 shrink-0 text-muted-foreground/80 transition-colors"
+            size={16}
           />
           <span className={cn("truncate", !date && "font-medium")}>
             {date?.from ? (
@@ -46,8 +46,8 @@ export default function DatePicker() {
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-2" align="start">
-        <Calendar mode="range" selected={date} onSelect={setDate} />
+      <PopoverContent align="start" className="w-auto p-2">
+        <Calendar mode="range" onSelect={setDate} selected={date} />
       </PopoverContent>
     </Popover>
   );

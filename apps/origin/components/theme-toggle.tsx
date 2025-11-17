@@ -32,24 +32,24 @@ export default function ThemeToggle() {
   return (
     <div className="flex flex-col justify-center">
       <input
-        type="checkbox"
-        name="theme-toggle"
-        id={id}
-        className="peer sr-only"
-        checked={system}
-        onChange={smartToggle}
         aria-label="Toggle dark mode"
+        checked={system}
+        className="peer sr-only"
+        id={id}
+        name="theme-toggle"
+        onChange={smartToggle}
+        type="checkbox"
       />
       <label
+        aria-hidden="true"
         className="relative inline-flex size-9 cursor-pointer items-center justify-center rounded text-muted-foreground outline-none transition-[color,box-shadow] hover:text-foreground/80 peer-focus-visible:border-ring peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50"
         htmlFor={id}
-        aria-hidden="true"
       >
-        <RiSunLine className="dark:hidden" size={20} aria-hidden="true" />
+        <RiSunLine aria-hidden="true" className="dark:hidden" size={20} />
         <RiMoonClearLine
+          aria-hidden="true"
           className="hidden dark:block"
           size={20}
-          aria-hidden="true"
         />
         <span className="sr-only">Switch to system/light/dark version</span>
       </label>

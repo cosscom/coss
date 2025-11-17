@@ -23,9 +23,9 @@ export async function CodeBlock({
     <figure data-rehype-pretty-code-figure="">
       {title && (
         <figcaption
-          data-rehype-pretty-code-title=""
           className="flex items-center gap-2 text-code-foreground [&_svg]:size-5 [&_svg]:text-code-foreground sm:[&_svg]:size-4"
           data-language={language}
+          data-rehype-pretty-code-title=""
         >
           {getIconForLanguageExtension(language)}
           {title}

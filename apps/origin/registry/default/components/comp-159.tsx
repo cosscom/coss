@@ -10,10 +10,10 @@ export default function Component() {
       {/* Radio card #1 */}
       <div className="relative flex w-full items-start gap-2 rounded-md border border-input p-4 shadow-xs outline-none has-data-[state=checked]:border-primary/50">
         <RadioGroupItem
-          value="1"
-          id={`${id}-1`}
           aria-describedby={`${id}-1-description`}
           className="order-1 after:absolute after:inset-0"
+          id={`${id}-1`}
+          value="1"
         />
         <div className="grid grow gap-2">
           <Label htmlFor={`${id}-1`}>
@@ -23,8 +23,8 @@ export default function Component() {
             </span>
           </Label>
           <p
-            id={`${id}-1-description`}
             className="text-muted-foreground text-xs"
+            id={`${id}-1-description`}
           >
             You can use this card with a label and a description.
           </p>
@@ -33,10 +33,10 @@ export default function Component() {
       {/* Radio card #2 */}
       <div className="relative flex w-full items-start gap-2 rounded-md border border-input p-4 shadow-xs outline-none has-data-[state=checked]:border-primary/50">
         <RadioGroupItem
-          value="2"
-          id={`${id}-2`}
           aria-describedby={`${id}-2-description`}
           className="order-1 after:absolute after:inset-0"
+          id={`${id}-2`}
+          value="2"
         />
         <div className="grid grow gap-2">
           <Label htmlFor={`${id}-2`}>
@@ -46,8 +46,8 @@ export default function Component() {
             </span>
           </Label>
           <p
-            id={`${id}-2-description`}
             className="text-muted-foreground text-xs"
+            id={`${id}-2-description`}
           >
             You can use this card with a label and a description.
           </p>

@@ -8,7 +8,7 @@ export default function SwitchWithDescriptionDemo() {
 
   return (
     <div className="flex items-start gap-2">
-      <Switch id={id} defaultChecked />
+      <Switch defaultChecked id={id} />
       <div className="flex flex-col gap-1">
         <Label htmlFor={id}>Marketing emails</Label>
         <p className="text-muted-foreground text-xs">

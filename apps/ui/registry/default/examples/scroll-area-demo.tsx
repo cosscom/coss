@@ -9,7 +9,7 @@ export default function ScrollAreaDemo() {
         <h4 className="mb-2 font-medium text-sm">Tags</h4>
         <div className="flex flex-col gap-1">
           {tags.map((tag) => (
-            <div key={tag} className="text-sm">
+            <div className="text-sm" key={tag}>
               {tag}
             </div>
           ))}

@@ -19,7 +19,7 @@ export default function PaginationDemo() {
           <PaginationLink href="#">1</PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink isActive href="#">
+          <PaginationLink href="#" isActive>
             2
           </PaginationLink>
         </PaginationItem>

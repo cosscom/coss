@@ -57,8 +57,8 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
 
           return (
             <MenuItem
-              key={item.href}
               className="group justify-between"
+              key={item.href}
               // biome-ignore lint/a11y/useAnchorContent: This is intentional
               render={isExternal ? <a href={href} /> : <Link href={href} />}
             >
@@ -67,9 +67,9 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
               </span>
               {item.upcoming && (
                 <Badge
-                  variant="info"
-                  size="sm"
                   className="-me-0.5 font-medium opacity-0 group-hover:opacity-100"
+                  size="sm"
+                  variant="info"
                 >
                   Upcoming
                 </Badge>

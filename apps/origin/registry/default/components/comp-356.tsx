@@ -11,7 +11,7 @@ export default function Component() {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             W/ arrow
           </Button>
         </TooltipTrigger>

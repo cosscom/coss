@@ -9,23 +9,23 @@ export default function Component() {
         className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
         variant="outline"
       >
-        <FilesIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+        <FilesIcon aria-hidden="true" className="-ms-1 opacity-60" size={16} />
         Files
       </Button>
       <Button
         className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
         variant="outline"
       >
-        <FilmIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+        <FilmIcon aria-hidden="true" className="-ms-1 opacity-60" size={16} />
         Media
       </Button>
       <Button
-        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-        variant="outline"
-        size="icon"
         aria-label="Menu"
+        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+        size="icon"
+        variant="outline"
       >
-        <EllipsisIcon size={16} aria-hidden="true" />
+        <EllipsisIcon aria-hidden="true" size={16} />
       </Button>
     </div>
   );

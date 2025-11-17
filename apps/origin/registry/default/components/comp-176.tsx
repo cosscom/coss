@@ -7,8 +7,8 @@ export default function Component() {
   const id = useId();
   return (
     <div className="inline-flex items-center gap-2">
-      <Switch id={id} className="rounded-sm [&_span]:rounded" />
-      <Label htmlFor={id} className="sr-only">
+      <Switch className="rounded-sm [&_span]:rounded" id={id} />
+      <Label className="sr-only" htmlFor={id}>
         Square switch
       </Label>
     </div>

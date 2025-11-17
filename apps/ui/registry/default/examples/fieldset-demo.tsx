@@ -12,7 +12,7 @@ export default function FieldsetDemo() {
       <FieldsetLegend>Billing Details</FieldsetLegend>
       <Field>
         <FieldLabel>Company</FieldLabel>
-        <Input type="text" placeholder="Enter company name" />
+        <Input placeholder="Enter company name" type="text" />
         <FieldDescription>
           The name that will appear on invoices.
         </FieldDescription>
@@ -20,7 +20,7 @@ export default function FieldsetDemo() {
 
       <Field>
         <FieldLabel>Tax ID</FieldLabel>
-        <Input type="text" placeholder="Enter tax identification number" />
+        <Input placeholder="Enter tax identification number" type="text" />
         <FieldDescription>
           Your business tax identification number.
         </FieldDescription>

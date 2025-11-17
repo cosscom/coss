@@ -4,7 +4,7 @@ export function SiteFooter() {
   return (
     <footer className="flex flex-col gap-0.5">
       <p>
-        <Link href="/" className="font-heading text-lg">
+        <Link className="font-heading text-lg" href="/">
           coss.com <span className="text-muted-foreground/64">ui</span>
         </Link>
       </p>
@@ -13,8 +13,8 @@ export function SiteFooter() {
         <a
           className="font-medium underline-offset-4 hover:underline"
           href="https://cal.com"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           Cal.com
         </a>

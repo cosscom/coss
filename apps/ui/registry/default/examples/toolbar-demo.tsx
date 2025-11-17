@@ -43,8 +43,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="left" />}
                   aria-label="Align left"
+                  render={<Toggle value="left" />}
                 >
                   <AlignLeftIcon />
                 </ToolbarButton>
@@ -56,8 +56,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="center" aria-label="Toggle center" />}
                   aria-label="Align center"
+                  render={<Toggle aria-label="Toggle center" value="center" />}
                 >
                   <AlignCenterIcon />
                 </ToolbarButton>
@@ -69,8 +69,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="right" aria-label="Toggle right" />}
                   aria-label="Align right"
+                  render={<Toggle aria-label="Toggle right" value="right" />}
                 >
                   <AlignRightIcon />
                 </ToolbarButton>
@@ -85,8 +85,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Button variant="ghost" size="icon" />}
                   aria-label="Format as currency"
+                  render={<Button size="icon" variant="ghost" />}
                 >
                   <DollarSignIcon />
                 </ToolbarButton>
@@ -98,8 +98,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Button variant="ghost" size="icon" />}
                   aria-label="Format as percent"
+                  render={<Button size="icon" variant="ghost" />}
                 >
                   <PercentIcon />
                 </ToolbarButton>
@@ -110,7 +110,7 @@ export default function ToolbarDemo() {
         </ToolbarGroup>
         <ToolbarSeparator />
         <ToolbarGroup>
-          <Select items={items} defaultValue="helvetica">
+          <Select defaultValue="helvetica" items={items}>
             <Tooltip>
               <TooltipTrigger
                 render={

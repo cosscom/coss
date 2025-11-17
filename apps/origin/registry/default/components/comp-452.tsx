@@ -15,7 +15,7 @@ export default function Component() {
       <BreadcrumbList className="rounded-md border bg-background px-3 py-2 shadow-xs">
         <BreadcrumbItem>
           <BreadcrumbLink href="#">
-            <HomeIcon size={16} aria-hidden="true" />
+            <HomeIcon aria-hidden="true" size={16} />
             <span className="sr-only">Home</span>
           </BreadcrumbLink>
         </BreadcrumbItem>

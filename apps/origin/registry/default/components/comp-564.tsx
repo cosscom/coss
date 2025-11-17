@@ -142,16 +142,16 @@ export default function Component() {
           <CropperCropArea />
         </Cropper>
         <div className="flex w-26 flex-col gap-4">
-          <Button onClick={handleCrop} disabled={!croppedAreaPixels}>
+          <Button disabled={!croppedAreaPixels} onClick={handleCrop}>
             Crop preview
           </Button>
           {/* Display Area */}
           <div className="aspect-square w-full shrink-0 overflow-hidden rounded-lg border">
             {croppedImageUrl ? (
               <img
-                src={croppedImageUrl}
                 alt="Cropped result"
                 className="h-full w-full object-cover"
+                src={croppedImageUrl}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-muted p-2 text-center text-muted-foreground/80 text-xs">
@@ -164,15 +164,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Cropper with image preview ∙{" "}
         <a
-          href="https://github.com/origin-space/image-cropper"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://github.com/origin-space/image-cropper"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

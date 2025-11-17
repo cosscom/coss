@@ -68,20 +68,20 @@ export default function Component() {
         offset={4}
       >
         <Dialog className="max-h-[inherit] overflow-auto p-2">
-          <RangeCalendar minValue={now} isDateUnavailable={isDateUnavailable} />
+          <RangeCalendar isDateUnavailable={isDateUnavailable} minValue={now} />
         </Dialog>
       </Popover>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/DateRangePicker.html"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Aria
         </a>

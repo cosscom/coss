@@ -16,22 +16,22 @@ export default function Particle() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="text"
+        aria-label="Set your URL"
         className="*:[input]:ps-1!"
         placeholder="coss.com"
-        aria-label="Set your URL"
+        type="text"
       />
       <InputGroupAddon>https://</InputGroupAddon>
       <InputGroupAddon align="inline-end">
         <Popover openOnHover>
           <PopoverTrigger
             render={
-              <Button variant="ghost" size="icon-xs" aria-label="More info" />
+              <Button aria-label="More info" size="icon-xs" variant="ghost" />
             }
           >
             <InfoIcon />
           </PopoverTrigger>
-          <PopoverPopup tooltipStyle side="top">
+          <PopoverPopup side="top" tooltipStyle>
             <p>The URL of your website</p>
           </PopoverPopup>
         </Popover>

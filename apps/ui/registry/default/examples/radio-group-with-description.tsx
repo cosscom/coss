@@ -5,7 +5,7 @@ export default function RadioGroupWithDescriptionDemo() {
   return (
     <RadioGroup defaultValue="r-1">
       <div className="flex items-start gap-2">
-        <Radio value="r-1" id="r-1" />
+        <Radio id="r-1" value="r-1" />
         <div className="flex flex-col gap-1">
           <Label htmlFor="r-1">Free</Label>
           <p className="text-muted-foreground text-xs">
@@ -14,7 +14,7 @@ export default function RadioGroupWithDescriptionDemo() {
         </div>
       </div>
       <div className="flex items-start gap-2">
-        <Radio value="r-2" id="r-2" />
+        <Radio id="r-2" value="r-2" />
         <div className="flex flex-col gap-1">
           <Label htmlFor="r-2">Pro</Label>
           <p className="text-muted-foreground text-xs">

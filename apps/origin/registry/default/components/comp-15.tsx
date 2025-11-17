@@ -10,8 +10,8 @@ export default function Component() {
       <Label htmlFor={id}>Input with end add-on</Label>
       <div className="flex rounded-md shadow-xs">
         <Input
-          id={id}
           className="-me-px rounded-e-none shadow-none"
+          id={id}
           placeholder="google"
           type="text"
         />

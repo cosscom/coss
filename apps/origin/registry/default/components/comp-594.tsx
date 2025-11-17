@@ -12,29 +12,29 @@ export default function Component() {
       <div className="flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex flex-1 items-center gap-2">
-          <TeamSwitcher teams={teams} defaultTeam={teams[0]} />
+          <TeamSwitcher defaultTeam={teams[0]} teams={teams} />
         </div>
         {/* Middle area */}
         <AppToggle />
         {/* Right side */}
         <div className="flex flex-1 items-center justify-end gap-2">
           <Button
+            className="text-sm max-sm:aspect-square max-sm:p-0"
             size="sm"
             variant="ghost"
-            className="text-sm max-sm:aspect-square max-sm:p-0"
           >
             <UploadIcon
+              aria-hidden="true"
               className="sm:-ms-1 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             <span className="max-sm:sr-only">Export</span>
           </Button>
-          <Button size="sm" className="text-sm max-sm:aspect-square max-sm:p-0">
+          <Button className="text-sm max-sm:aspect-square max-sm:p-0" size="sm">
             <SparklesIcon
+              aria-hidden="true"
               className="sm:-ms-1 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             <span className="max-sm:sr-only">Upgrade</span>
           </Button>

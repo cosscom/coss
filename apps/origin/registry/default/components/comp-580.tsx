@@ -36,32 +36,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M4 12L20 12"
                     className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    d="M4 12L20 12"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -70,35 +70,34 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link) => (
-                    <NavigationMenuItem key={link.label} className="w-full">
-                      <NavigationMenuLink href={link.href} className="py-1.5">
+                    <NavigationMenuItem className="w-full" key={link.label}>
+                      <NavigationMenuLink className="py-1.5" href={link.href}>
                         {link.label}
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   ))}
                   <NavigationMenuItem
+                    aria-hidden="true"
                     className="w-full"
                     role="presentation"
-                    aria-hidden="true"
                   >
                     <div
-                      // biome-ignore lint(a11y/useAriaPropsForRole): known
-                      role="separator"
                       aria-orientation="horizontal"
                       className="-mx-1 my-1 h-px bg-border"
+                      role="separator"
                       tabIndex={-1}
                     />
                   </NavigationMenuItem>
                   <NavigationMenuItem className="w-full">
-                    <NavigationMenuLink href="#" className="py-1.5">
+                    <NavigationMenuLink className="py-1.5" href="#">
                       Sign In
                     </NavigationMenuLink>
                   </NavigationMenuItem>
                   <NavigationMenuItem className="w-full">
                     <Button
                       asChild
-                      size="sm"
                       className="mt-0.5 w-full text-left text-sm"
+                      size="sm"
                     >
                       <span className="flex items-baseline gap-2">
                         Cart
@@ -114,7 +113,7 @@ export default function Component() {
           </Popover>
           {/* Main nav */}
           <div className="flex flex-1 items-center gap-6 max-md:justify-between">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <a className="text-primary hover:text-primary/90" href="#">
               <Logo />
             </a>
             {/* Navigation menu */}
@@ -123,8 +122,8 @@ export default function Component() {
                 {navigationLinks.map((link) => (
                   <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
-                      href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                      href={link.href}
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -135,8 +134,8 @@ export default function Component() {
             {/* Search form */}
             <div className="relative">
               <Input
-                id={id}
                 className="peer h-8 ps-8 pe-2"
+                id={id}
                 placeholder="Search..."
                 type="search"
               />
@@ -148,10 +147,10 @@ export default function Component() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2 max-md:hidden">
-          <Button asChild variant="ghost" size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
             <a href="#">Sign In</a>
           </Button>
-          <Button asChild size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm">
             <a href="#">
               <span className="flex items-baseline gap-2">
                 Cart

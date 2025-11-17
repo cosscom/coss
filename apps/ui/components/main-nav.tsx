@@ -19,15 +19,15 @@ export function MainNav({
     <nav className={cn("items-center gap-2", className)} {...props}>
       {items.map((item) => (
         <Button
-          key={item.href}
-          variant="ghost"
           data-pressed={pathname.includes(item.href) || undefined}
+          key={item.href}
           render={
             <Link
-              href={item.href}
               className={cn(pathname.includes(item.href) && "text-primary")}
+              href={item.href}
             />
           }
+          variant="ghost"
         >
           {item.label}
         </Button>

@@ -13,8 +13,8 @@ export default function Component() {
           €
         </span>
         <Input
-          id={id}
           className="-me-px rounded-e-none ps-6 shadow-none"
+          id={id}
           placeholder="0.00"
           type="text"
         />

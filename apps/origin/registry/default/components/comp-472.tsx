@@ -74,8 +74,8 @@ export default function Component() {
         <TableBody>
           {items.map((item) => (
             <TableRow
-              key={item.id}
               className="has-data-[state=checked]:bg-muted/50"
+              key={item.id}
             >
               <TableCell>
                 <Checkbox id={`table-checkbox-${item.id}`} />

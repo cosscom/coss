@@ -92,57 +92,57 @@ const EasingSVG = ({
 
   return (
     <svg
-      width={config.width}
+      className="w-full"
       height={config.height}
       viewBox={`0 0 ${config.width} ${config.height}`}
-      className="w-full"
+      width={config.width}
     >
       {/* Grid */}
       <rect
+        className="fill-none stroke-muted-foreground/20"
+        height={config.plotSize}
+        strokeWidth="1"
+        width={config.plotSize}
         x={config.padding}
         y={config.padding}
-        width={config.plotSize}
-        height={config.plotSize}
-        className="fill-none stroke-muted-foreground/20"
-        strokeWidth="1"
       />
 
       {/* Diagonal line */}
       <line
-        x1={config.padding}
-        y1={config.height - config.padding}
-        x2={config.width - config.padding}
-        y2={config.padding}
         className="stroke-muted-foreground/20"
         strokeWidth="1"
+        x1={config.padding}
+        x2={config.width - config.padding}
+        y1={config.height - config.padding}
+        y2={config.padding}
       />
 
       {/* Bezier curve */}
       <path
+        className="stroke-muted-foreground"
         d={`M${config.padding},${config.height - config.padding} C${config.padding + easing.points[0] * config.plotSize},${
           config.height - config.padding - easing.points[1] * config.plotSize
         } ${config.padding + easing.points[2] * config.plotSize},${
           config.height - config.padding - easing.points[3] * config.plotSize
         } ${config.padding + config.plotSize},${config.height - config.padding - config.plotSize}`}
         fill="none"
-        className="stroke-muted-foreground"
         strokeWidth="2"
       />
 
       {/* Start point */}
       <circle
+        className="fill-muted-foreground"
         cx={config.padding}
         cy={config.height - config.padding}
         r="4"
-        className="fill-muted-foreground"
       />
 
       {/* End point */}
       <circle
+        className="fill-muted-foreground"
         cx={config.width - config.padding}
         cy={config.padding}
         r="4"
-        className="fill-muted-foreground"
       />
 
       {/* Animated circle */}
@@ -152,10 +152,10 @@ const EasingSVG = ({
         style={getAnimationStyle()}
       >
         <circle
+          className="fill-primary"
           cx={config.padding}
           cy={config.height - config.padding}
           r="4"
-          className="fill-primary"
           style={{
             animationName: "moveCircleHorizontally",
             animationDuration: `${duration}s`,
@@ -231,8 +231,8 @@ const AnimatedSquare = ({
 
   return (
     <div
-      key={`${key}-${duration}-${pauseDuration}-${animationType}`}
       className={`pointer-events-none flex w-full items-center ${animationType === "translate" ? "justify-start" : "justify-center"}`}
+      key={`${key}-${duration}-${pauseDuration}-${animationType}`}
       style={animationType === "translate" ? animationStyle : undefined}
     >
       <div
@@ -335,22 +335,22 @@ export default function Easings({ easings }: EasingsProps) {
             <Label>Duration</Label>
             <div className="flex items-center gap-4">
               <Slider
-                value={[tempDuration]}
-                min={0}
+                className="w-[180px]"
                 max={5000}
-                step={1}
+                min={0}
                 onValueChange={handleSliderChange}
                 onValueCommit={handleSliderChangeEnd}
-                className="w-[180px]"
+                step={1}
+                value={[tempDuration]}
               />
               <Input
+                className="w-[90px]"
+                max={5000}
+                min={0}
+                onBlur={handleInputBlur}
+                onChange={handleInputChange}
                 type="number"
                 value={tempDuration}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                className="w-[90px]"
-                min={0}
-                max={5000}
               />
               <span className="text-muted-foreground text-sm">ms</span>
             </div>
@@ -360,8 +360,8 @@ export default function Easings({ easings }: EasingsProps) {
             <div className="flex flex-col gap-2">
               <Label>Filter</Label>
               <Select
-                value={easingFilter}
                 onValueChange={(value: EasingFilter) => setEasingFilter(value)}
+                value={easingFilter}
               >
                 <SelectTrigger className="h-9 w-[100px]">
                   <SelectValue placeholder="Select animation type" />
@@ -377,10 +377,10 @@ export default function Easings({ easings }: EasingsProps) {
             <div className="flex flex-col gap-2">
               <Label>Animation type</Label>
               <Select
-                value={animationType}
                 onValueChange={(value: AnimationType) =>
                   setAnimationType(value)
                 }
+                value={animationType}
               >
                 <SelectTrigger className="h-9 w-[180px]">
                   <SelectValue placeholder="Select animation type" />
@@ -396,11 +396,11 @@ export default function Easings({ easings }: EasingsProps) {
         </div>
       </div>
 
-      <div id="grid" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" id="grid">
         {getFilteredEasings().map((easing) => (
           <div
-            key={`${easing.name}-${easingFilter}`}
             className="group relative flex aspect-square flex-col items-center justify-center gap-4 rounded-xl bg-muted/65"
+            key={`${easing.name}-${easingFilter}`}
           >
             <div className="pt-6 text-center font-medium text-sm">
               {easing.name}
@@ -409,20 +409,20 @@ export default function Easings({ easings }: EasingsProps) {
             <div className="flex w-full grow flex-col items-start justify-center px-8">
               <div className="mb-4 flex w-full justify-center">
                 <EasingSVG
-                  easing={easing}
+                  animationType={animationType}
                   config={defaultConfig}
                   duration={duration / 1000}
-                  pauseDuration={pauseDuration / 1000}
-                  animationType={animationType}
+                  easing={easing}
                   key={`svg-${easing.name}-${easingFilter}`}
+                  pauseDuration={pauseDuration / 1000}
                 />
               </div>
               <AnimatedSquare
-                easing={easing}
-                duration={duration / 1000}
-                pauseDuration={pauseDuration / 1000}
                 animationType={animationType}
+                duration={duration / 1000}
+                easing={easing}
                 key={`square-${easing.name}-${easingFilter}`}
+                pauseDuration={pauseDuration / 1000}
               />
             </div>
 

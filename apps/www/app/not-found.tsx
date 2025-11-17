@@ -26,16 +26,16 @@ export default function NotFound() {
         <div className="mt-4">
           <Button
             className="group"
-            size="lg"
             render={
               <Link href="/">
                 <ArrowLeftIcon
-                  className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
                   aria-hidden="true"
+                  className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
                 />
                 Back to Home
               </Link>
             }
+            size="lg"
           />
         </div>
       </PageHeader>

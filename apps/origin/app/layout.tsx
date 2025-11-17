@@ -49,8 +49,8 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
           <TopBanner />
           <div className="overflow-hidden px-4 has-data-home:bg-zinc-50 has-not-data-home:before:absolute has-not-data-home:before:inset-x-0 has-not-data-home:before:h-100 has-not-data-home:before:bg-linear-to-b has-not-data-home:before:from-zinc-100 supports-[overflow:clip]:overflow-clip sm:px-6 dark:has-data-home:bg-zinc-950 dark:has-not-data-home:before:hidden">

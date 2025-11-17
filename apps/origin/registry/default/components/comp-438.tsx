@@ -9,35 +9,35 @@ import {
 
 export default function Component() {
   return (
-    <Tabs defaultValue="tab-1" className="items-center">
+    <Tabs className="items-center" defaultValue="tab-1">
       <TabsList className="h-auto rounded-none border-b bg-transparent p-0">
         <TabsTrigger
-          value="tab-1"
           className="relative flex-col rounded-none px-4 py-2 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-1"
         >
           <HouseIcon
+            aria-hidden="true"
             className="mb-1.5 opacity-60"
             size={16}
-            aria-hidden="true"
           />
           Overview
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="relative flex-col rounded-none px-4 py-2 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-2"
         >
           <PanelsTopLeftIcon
+            aria-hidden="true"
             className="mb-1.5 opacity-60"
             size={16}
-            aria-hidden="true"
           />
           Projects
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="relative flex-col rounded-none px-4 py-2 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-3"
         >
-          <BoxIcon className="mb-1.5 opacity-60" size={16} aria-hidden="true" />
+          <BoxIcon aria-hidden="true" className="mb-1.5 opacity-60" size={16} />
           Packages
         </TabsTrigger>
       </TabsList>

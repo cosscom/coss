@@ -28,9 +28,9 @@ const steps = [
 export default function Component() {
   return (
     <div className="mx-auto max-w-xl space-y-8 text-center">
-      <Stepper defaultValue={2} className="items-start gap-4">
+      <Stepper className="items-start gap-4" defaultValue={2}>
         {steps.map(({ step, title }) => (
-          <StepperItem key={step} step={step} className="flex-1">
+          <StepperItem className="flex-1" key={step} step={step}>
             <StepperTrigger className="w-full flex-col items-start gap-2 rounded">
               <StepperIndicator asChild className="h-1 w-full bg-border">
                 <span className="sr-only">{step}</span>
@@ -43,9 +43,9 @@ export default function Component() {
         ))}
       </Stepper>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Stepper with labels
       </p>

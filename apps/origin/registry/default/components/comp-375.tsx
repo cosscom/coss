@@ -15,8 +15,8 @@ export default function Component() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="outline" aria-label="Open account menu">
-          <CircleUserRoundIcon size={16} aria-hidden="true" />
+        <Button aria-label="Open account menu" size="icon" variant="outline">
+          <CircleUserRoundIcon aria-hidden="true" size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-64">

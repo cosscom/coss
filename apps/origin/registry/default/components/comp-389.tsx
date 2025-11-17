@@ -86,9 +86,9 @@ export default function Component() {
         <div className="grid grid-cols-2 place-items-center gap-4">
           {tourSteps.map((step, index) => (
             <Card
+              isActive={currentTip === index}
               key={step.title}
               number={index}
-              isActive={currentTip === index}
             />
           ))}
         </div>
@@ -99,8 +99,8 @@ export default function Component() {
 
         <PopoverContent
           className="max-w-[280px] py-3 shadow-none"
-          side={currentTip % 2 === 0 ? "left" : "right"}
           showArrow={true}
+          side={currentTip % 2 === 0 ? "left" : "right"}
         >
           <div className="space-y-3">
             <div className="space-y-1">
@@ -116,9 +116,9 @@ export default function Component() {
                 {currentTip + 1}/{tourSteps.length}
               </span>
               <button
-                type="button"
                 className="font-medium text-xs hover:underline"
                 onClick={handleNavigation}
+                type="button"
               >
                 {currentTip === tourSteps.length - 1 ? "Start over" : "Next"}
               </button>

@@ -195,33 +195,33 @@ export default function Component() {
       <Label>Price slider</Label>
       <div>
         {/* Histogram bars */}
-        <div className="flex h-12 w-full items-end px-3" aria-hidden="true">
+        <div aria-hidden="true" className="flex h-12 w-full items-end px-3">
           {itemCounts.map((count, i) => (
             <div
-              key={String(i)}
               className="flex flex-1 justify-center"
+              key={String(i)}
               style={{
                 height: `${(count / maxCount) * 100}%`,
               }}
             >
               <span
+                className="size-full bg-primary/20"
                 data-selected={isBarInSelectedRange(
                   i,
                   minValue,
                   priceStep,
                   sliderValue,
                 )}
-                className="size-full bg-primary/20"
               />
             </div>
           ))}
         </div>
         <Slider
-          value={sliderValue}
-          onValueChange={handleSliderValueChange}
-          min={minValue}
-          max={maxValue}
           aria-label="Price range"
+          max={maxValue}
+          min={minValue}
+          onValueChange={handleSliderValueChange}
+          value={sliderValue}
         />
       </div>
 
@@ -231,19 +231,19 @@ export default function Component() {
           <Label htmlFor={`${id}-min`}>Min price</Label>
           <div className="relative">
             <Input
-              id={`${id}-min`}
+              aria-label="Enter minimum price"
               className="peer w-full ps-6"
-              type="text"
+              id={`${id}-min`}
               inputMode="decimal"
-              value={inputValues[0]}
-              onChange={(e) => handleInputChange(e, 0)}
               onBlur={() => validateAndUpdateValue(inputValues[0], 0)}
+              onChange={(e) => handleInputChange(e, 0)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   validateAndUpdateValue(inputValues[0], 0);
                 }
               }}
-              aria-label="Enter minimum price"
+              type="text"
+              value={inputValues[0]}
             />
             <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $
@@ -254,19 +254,19 @@ export default function Component() {
           <Label htmlFor={`${id}-max`}>Max price</Label>
           <div className="relative">
             <Input
-              id={`${id}-max`}
+              aria-label="Enter maximum price"
               className="peer w-full ps-6"
-              type="text"
+              id={`${id}-max`}
               inputMode="decimal"
-              value={inputValues[1]}
-              onChange={(e) => handleInputChange(e, 1)}
               onBlur={() => validateAndUpdateValue(inputValues[1], 1)}
+              onChange={(e) => handleInputChange(e, 1)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   validateAndUpdateValue(inputValues[1], 1);
                 }
               }}
-              aria-label="Enter maximum price"
+              type="text"
+              value={inputValues[1]}
             />
             <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $

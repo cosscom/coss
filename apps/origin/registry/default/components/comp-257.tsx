@@ -16,13 +16,13 @@ export default function Component() {
       <Label>Rate your experience</Label>
       <div className="flex items-center gap-2">
         <Slider
-          value={value}
-          onValueChange={setValue}
-          min={1}
+          aria-label="Rate your experience"
           max={5}
+          min={1}
+          onValueChange={setValue}
           showTooltip
           tooltipContent={(value) => labels[value - 1]}
-          aria-label="Rate your experience"
+          value={value}
         />
         <span className="text-2xl">{emojis[value[0] - 1]}</span>
       </div>

@@ -8,10 +8,10 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        id={id}
         className="h-3 w-9 border-none outline-offset-[6px] [&_span]:border [&_span]:border-input"
+        id={id}
       />
-      <Label htmlFor={id} className="sr-only">
+      <Label className="sr-only" htmlFor={id}>
         M2-style switch
       </Label>
     </div>

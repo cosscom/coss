@@ -11,8 +11,8 @@ export default function Component() {
     <Tabs defaultValue="tab-1">
       <TabsList className="mx-auto flex w-full max-w-xs bg-transparent">
         <TabsTrigger
-          value="tab-1"
           className="group flex-1 flex-col p-3 text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-1"
         >
           <Badge className="mb-1.5 min-w-5 px-1 transition-opacity group-data-[state=inactive]:opacity-50">
             3
@@ -20,8 +20,8 @@ export default function Component() {
           Overview
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="group flex-1 flex-col p-3 text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-2"
         >
           <Badge className="mb-1.5 min-w-5 px-1 transition-opacity group-data-[state=inactive]:opacity-50">
             0
@@ -29,8 +29,8 @@ export default function Component() {
           Projects
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="group flex-1 flex-col p-3 text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none"
+          value="tab-3"
         >
           <Badge className="mb-1.5 min-w-5 px-1 transition-opacity group-data-[state=inactive]:opacity-50">
             7

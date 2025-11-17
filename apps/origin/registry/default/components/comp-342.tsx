@@ -52,17 +52,17 @@ export default function Component() {
   return (
     <div className="space-y-4">
       <h2 className="font-bold text-xl">W/ icon, sub-header, and chevron</h2>
-      <Accordion type="single" collapsible className="w-full" defaultValue="3">
+      <Accordion className="w-full" collapsible defaultValue="3" type="single">
         {items.map((item) => (
-          <AccordionItem value={item.id} key={item.id} className="py-2">
+          <AccordionItem className="py-2" key={item.id} value={item.id}>
             <AccordionPrimitive.Header className="flex">
               <AccordionPrimitive.Trigger className="flex flex-1 items-center justify-between rounded-md py-2 text-left font-semibold text-[15px] leading-6 outline-none transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [&[data-state=open]>svg]:rotate-180">
                 <span className="flex items-center gap-3">
                   <span
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full border"
                     aria-hidden="true"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full border"
                   >
-                    <item.icon size={16} className="opacity-60" />
+                    <item.icon className="opacity-60" size={16} />
                   </span>
                   <span className="flex flex-col space-y-1">
                     <span>{item.title}</span>
@@ -72,9 +72,9 @@ export default function Component() {
                   </span>
                 </span>
                 <ChevronDownIcon
-                  size={16}
-                  className="pointer-events-none shrink-0 opacity-60 transition-transform duration-200"
                   aria-hidden="true"
+                  className="pointer-events-none shrink-0 opacity-60 transition-transform duration-200"
+                  size={16}
                 />
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>

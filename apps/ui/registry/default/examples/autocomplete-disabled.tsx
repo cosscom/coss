@@ -24,10 +24,10 @@ const items = [
 
 export default function AutocompleteDisabled() {
   return (
-    <Autocomplete items={items} disabled>
+    <Autocomplete disabled items={items}>
       <AutocompleteInput
-        placeholder="Search items…"
         aria-label="Search items"
+        placeholder="Search items…"
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>

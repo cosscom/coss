@@ -15,7 +15,7 @@ const items = [
 
 export default function SelectLg() {
   return (
-    <Select items={items} aria-label="Select framework">
+    <Select aria-label="Select framework" items={items}>
       <SelectTrigger size="lg">
         <SelectValue />
       </SelectTrigger>

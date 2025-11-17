@@ -22,39 +22,39 @@ export default function Component() {
     <div>
       <div className="flex items-start gap-2">
         <Checkbox
-          id={checkboxId}
-          checked={checked}
-          onCheckedChange={setChecked}
-          aria-describedby={`${checkboxId}-description`}
           aria-controls={inputId}
+          aria-describedby={`${checkboxId}-description`}
+          checked={checked}
+          id={checkboxId}
+          onCheckedChange={setChecked}
         />
         <div className="grow">
           <div className="grid gap-2">
             <Label htmlFor={checkboxId}>Checkbox with expansion</Label>
             <p
-              id={`${checkboxId}-description`}
               className="text-muted-foreground text-xs"
+              id={`${checkboxId}-description`}
             >
               You can use this checkbox with a label and a description.
             </p>
           </div>
           {/* Expandable field */}
           <div
-            role="region"
-            id={inputId}
             aria-labelledby={checkboxId}
             className="grid transition-all ease-in-out data-[state=collapsed]:grid-rows-[0fr] data-[state=expanded]:grid-rows-[1fr] data-[state=collapsed]:opacity-0 data-[state=expanded]:opacity-100"
             data-state={checked ? "expanded" : "collapsed"}
+            id={inputId}
+            role="region"
           >
             <div className="-m-2 pointer-events-none overflow-hidden p-2">
               <div className="pointer-events-auto mt-3">
                 <Input
-                  ref={inputRef}
-                  type="text"
-                  id="checkbox-11-additional-info"
-                  placeholder="Enter details"
                   aria-label="Additional Information"
                   disabled={!checked}
+                  id="checkbox-11-additional-info"
+                  placeholder="Enter details"
+                  ref={inputRef}
+                  type="text"
                 />
               </div>
             </div>

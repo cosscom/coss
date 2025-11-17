@@ -45,9 +45,9 @@ export default function Component() {
     <Timeline defaultValue={3}>
       {items.map((item) => (
         <TimelineItem
+          className="sm:group-data-[orientation=vertical]/timeline:ms-32"
           key={item.id}
           step={item.id}
-          className="sm:group-data-[orientation=vertical]/timeline:ms-32"
         >
           <TimelineHeader>
             <TimelineSeparator />

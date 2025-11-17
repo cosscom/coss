@@ -24,10 +24,10 @@ const items = [
 
 export default function AutocompleteAutohighlight() {
   return (
-    <Autocomplete items={items} autoHighlight>
+    <Autocomplete autoHighlight items={items}>
       <AutocompleteInput
-        placeholder="Search items…"
         aria-label="Search items"
+        placeholder="Search items…"
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>

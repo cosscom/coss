@@ -40,9 +40,9 @@ export default function Component() {
             Terms & Conditions
           </DialogTitle>
           <div
-            ref={contentRef}
-            onScroll={handleScroll}
             className="overflow-y-auto"
+            onScroll={handleScroll}
+            ref={contentRef}
           >
             <DialogDescription asChild>
               <div className="px-6 py-4">
@@ -167,7 +167,7 @@ export default function Component() {
             </Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button type="button" disabled={!hasReadToBottom}>
+            <Button disabled={!hasReadToBottom} type="button">
               I agree
             </Button>
           </DialogClose>

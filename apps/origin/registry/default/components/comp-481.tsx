@@ -151,8 +151,8 @@ export default function Component() {
 
   return (
     <DndContext
-      id={useId()}
       collisionDetection={closestCenter}
+      id={useId()}
       modifiers={[restrictToHorizontalAxis]}
       onDragEnd={handleDragEnd}
       sensors={sensors}
@@ -160,13 +160,13 @@ export default function Component() {
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               <SortableContext
                 items={columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
                 {headerGroup.headers.map((header) => (
-                  <DraggableTableHeader key={header.id} header={header} />
+                  <DraggableTableHeader header={header} key={header.id} />
                 ))}
               </SortableContext>
             </TableRow>
@@ -176,23 +176,23 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => (
                   <SortableContext
-                    key={cell.id}
                     items={columnOrder}
+                    key={cell.id}
                     strategy={horizontalListSortingStrategy}
                   >
-                    <DragAlongCell key={cell.id} cell={cell} />
+                    <DragAlongCell cell={cell} key={cell.id} />
                   </SortableContext>
                 ))}
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
@@ -204,13 +204,13 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>{" "}
         and{" "}
-        <a href="https://dndkit.com/" target="_blank" rel="noopener noreferrer">
+        <a href="https://dndkit.com/" rel="noopener noreferrer" target="_blank">
           dnd kit
         </a>
       </p>
@@ -246,9 +246,6 @@ const DraggableTableHeader = ({
 
   return (
     <TableHead
-      ref={setNodeRef}
-      className="relative h-10 border-t before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-border first:before:bg-transparent"
-      style={style}
       aria-sort={
         header.column.getIsSorted() === "asc"
           ? "ascending"
@@ -256,20 +253,23 @@ const DraggableTableHeader = ({
             ? "descending"
             : "none"
       }
+      className="relative h-10 border-t before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-border first:before:bg-transparent"
+      ref={setNodeRef}
+      style={style}
     >
       <div className="flex items-center justify-start gap-0.5">
         <Button
+          className="-ml-2 size-7 shadow-none"
           size="icon"
           variant="ghost"
-          className="-ml-2 size-7 shadow-none"
           {...attributes}
           {...listeners}
           aria-label="Drag to reorder"
         >
           <GripVerticalIcon
+            aria-hidden="true"
             className="opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
         <span className="grow truncate">
@@ -278,8 +278,6 @@ const DraggableTableHeader = ({
             : flexRender(header.column.columnDef.header, header.getContext())}
         </span>
         <Button
-          size="icon"
-          variant="ghost"
           className="group -mr-1 size-7 shadow-none"
           onClick={header.column.getToggleSortingHandler()}
           onKeyDown={(e) => {
@@ -292,27 +290,29 @@ const DraggableTableHeader = ({
               header.column.getToggleSortingHandler()?.(e);
             }
           }}
+          size="icon"
+          variant="ghost"
         >
           {{
             asc: (
               <ChevronUpIcon
+                aria-hidden="true"
                 className="shrink-0 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
             ),
             desc: (
               <ChevronDownIcon
+                aria-hidden="true"
                 className="shrink-0 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
             ),
           }[header.column.getIsSorted() as string] ?? (
             <ChevronUpIcon
+              aria-hidden="true"
               className="shrink-0 opacity-0 group-hover:opacity-60"
               size={16}
-              aria-hidden="true"
             />
           )}
         </Button>
@@ -336,7 +336,7 @@ const DragAlongCell = ({ cell }: { cell: Cell<Item, unknown> }) => {
   };
 
   return (
-    <TableCell ref={setNodeRef} className="truncate" style={style}>
+    <TableCell className="truncate" ref={setNodeRef} style={style}>
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
     </TableCell>
   );

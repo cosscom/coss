@@ -17,22 +17,22 @@ export default function Component() {
       <Label htmlFor={id}>Options with icon</Label>
       <Select defaultValue="3">
         <SelectTrigger
-          id={id}
           className="[&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_svg]:shrink-0 [&>span_svg]:text-muted-foreground/80"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>
         <SelectContent className="[&_*[role=option]>span>svg]:shrink-0 [&_*[role=option]>span>svg]:text-muted-foreground/80 [&_*[role=option]>span]:flex [&_*[role=option]>span]:gap-2">
           <SelectItem value="1">
-            <RiReactjsLine size={16} aria-hidden="true" />
+            <RiReactjsLine aria-hidden="true" size={16} />
             <span className="truncate">React</span>
           </SelectItem>
           <SelectItem value="2">
-            <RiNextjsLine size={16} aria-hidden="true" />
+            <RiNextjsLine aria-hidden="true" size={16} />
             <span className="truncate">Next.js</span>
           </SelectItem>
           <SelectItem value="3">
-            <RiGatsbyLine size={16} aria-hidden="true" />
+            <RiGatsbyLine aria-hidden="true" size={16} />
             <span className="truncate">Gatsby</span>
           </SelectItem>
         </SelectContent>

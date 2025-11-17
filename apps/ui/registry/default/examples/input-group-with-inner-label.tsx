@@ -18,19 +18,19 @@ import {
 export default function InputGroupWithInnerLabel() {
   return (
     <InputGroup>
-      <InputGroupInput id="email-1" type="email" placeholder="team@coss.com" />
+      <InputGroupInput id="email-1" placeholder="team@coss.com" type="email" />
       <InputGroupAddon align="block-start">
-        <Label htmlFor="email-1" className="text-foreground">
+        <Label className="text-foreground" htmlFor="email-1">
           Email
         </Label>
         <Popover openOnHover>
           <PopoverTrigger
             className="ml-auto"
-            render={<Button variant="ghost" size="icon-xs" className="-m-1" />}
+            render={<Button className="-m-1" size="icon-xs" variant="ghost" />}
           >
             <InfoIcon />
           </PopoverTrigger>
-          <PopoverPopup tooltipStyle side="top">
+          <PopoverPopup side="top" tooltipStyle>
             <p>We&apos;ll use this to send you notifications</p>
           </PopoverPopup>
         </Popover>

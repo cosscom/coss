@@ -14,30 +14,30 @@ export default function Component() {
       </legend>
       <div className="flex flex-col justify-center">
         <input
-          type="checkbox"
-          name={id}
-          id={id}
-          className="peer sr-only"
           checked={theme === "dark"}
+          className="peer sr-only"
+          id={id}
+          name={id}
           onChange={() =>
             setTheme((prev) => (prev === "dark" ? "light" : "dark"))
           }
+          type="checkbox"
         />
         <label
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
           className="group relative inline-flex size-9 items-center justify-center rounded-md border border-input bg-background text-foreground shadow-xs outline-none transition-[color,box-shadow] hover:bg-accent hover:text-accent-foreground peer-focus-visible:border-ring peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50"
           htmlFor={id}
-          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         >
           {/* Note: After dark mode implementation, rely on dark: prefix rather than group-peer-checked: */}
           <MoonIcon
-            size={16}
-            className="shrink-0 scale-0 opacity-0 transition-all group-peer-checked:scale-100 group-peer-checked:opacity-100"
             aria-hidden="true"
+            className="shrink-0 scale-0 opacity-0 transition-all group-peer-checked:scale-100 group-peer-checked:opacity-100"
+            size={16}
           />
           <SunIcon
-            size={16}
-            className="absolute shrink-0 scale-100 opacity-100 transition-all group-peer-checked:scale-0 group-peer-checked:opacity-0"
             aria-hidden="true"
+            className="absolute shrink-0 scale-100 opacity-100 transition-all group-peer-checked:scale-0 group-peer-checked:opacity-0"
+            size={16}
           />
         </label>
       </div>

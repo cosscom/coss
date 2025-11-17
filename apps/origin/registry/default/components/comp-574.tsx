@@ -79,19 +79,19 @@ export default function Component() {
   return (
     <div className="flex h-full flex-col gap-2 *:nth-2:grow">
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="outline" onClick={() => tree.expandAll()}>
+        <Button onClick={() => tree.expandAll()} size="sm" variant="outline">
           <ListTreeIcon
+            aria-hidden="true"
             className="-ms-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
           Expand all
         </Button>
-        <Button size="sm" variant="outline" onClick={tree.collapseAll}>
+        <Button onClick={tree.collapseAll} size="sm" variant="outline">
           <ListCollapseIcon
+            aria-hidden="true"
             className="-ms-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
           Collapse all
         </Button>
@@ -100,7 +100,7 @@ export default function Component() {
       <Tree indent={indent} tree={tree}>
         {tree.getItems().map((item) => {
           return (
-            <TreeItem key={item.getId()} item={item}>
+            <TreeItem item={item} key={item.getId()}>
               <TreeItemLabel>
                 <span className="flex items-center gap-2">
                   {item.isFolder() &&
@@ -124,15 +124,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Tree with expand/collapse all buttons ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com/"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com/"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

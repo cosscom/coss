@@ -33,7 +33,6 @@ export default function DialogCloseConfirmationDemo() {
 
   return (
     <Dialog
-      open={dialogOpen}
       onOpenChange={(o) => {
         if (!o && value) {
           setConfirmOpen(true);
@@ -41,6 +40,7 @@ export default function DialogCloseConfirmationDemo() {
           setDialogOpen(o);
         }
       }}
+      open={dialogOpen}
     >
       <DialogTrigger render={<Button variant="outline" />}>
         Compose
@@ -59,8 +59,8 @@ export default function DialogCloseConfirmationDemo() {
         >
           <Field>
             <Textarea
-              value={value}
               onChange={(e) => setValue(e.target.value)}
+              value={value}
             />
           </Field>
           <DialogFooter>
@@ -80,7 +80,7 @@ export default function DialogCloseConfirmationDemo() {
       </DialogPopup>
 
       {/* Confirmation dialog */}
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialog onOpenChange={setConfirmOpen} open={confirmOpen}>
         <AlertDialogPopup>
           <AlertDialogHeader>
             <AlertDialogTitle>Discard changes?</AlertDialogTitle>

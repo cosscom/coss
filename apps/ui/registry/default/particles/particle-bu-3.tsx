@@ -12,32 +12,32 @@ export default function Particle() {
   return (
     <div className="inline-grid w-fit grid-cols-3 gap-1">
       <Button
-        className="col-start-2"
-        variant="outline"
-        size="icon"
         aria-label="Pan camera up"
+        className="col-start-2"
+        size="icon"
+        variant="outline"
       >
         <ChevronUpIcon aria-hidden="true" />
       </Button>
       <Button
-        className="col-start-1"
-        variant="outline"
-        size="icon"
         aria-label="Pan camera left"
+        className="col-start-1"
+        size="icon"
+        variant="outline"
       >
         <ChevronLeftIcon aria-hidden="true" />
       </Button>
-      <div className="flex items-center justify-center" aria-hidden="true">
+      <div aria-hidden="true" className="flex items-center justify-center">
         <CircleIcon className="size-4 opacity-72" />
       </div>
-      <Button variant="outline" size="icon" aria-label="Pan camera right">
+      <Button aria-label="Pan camera right" size="icon" variant="outline">
         <ChevronRightIcon aria-hidden="true" />
       </Button>
       <Button
-        className="col-start-2"
-        variant="outline"
-        size="icon"
         aria-label="Pan camera down"
+        className="col-start-2"
+        size="icon"
+        variant="outline"
       >
         <ChevronDownIcon aria-hidden="true" />
       </Button>

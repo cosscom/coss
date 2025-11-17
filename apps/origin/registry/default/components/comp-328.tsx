@@ -36,8 +36,8 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <WalletIcon className="opacity-80" size={16} />
           </div>
@@ -53,15 +53,15 @@ export default function Component() {
           <div className="space-y-4">
             <div className="*:not-first:mt-2">
               <Label htmlFor={`name-${id}`}>Name on card</Label>
-              <Input id={`name-${id}`} type="text" required />
+              <Input id={`name-${id}`} required type="text" />
             </div>
             <div className="*:not-first:mt-2">
               <Label htmlFor={`number-${id}`}>Card Number</Label>
               <div className="relative">
                 <Input
                   {...getCardNumberProps()}
-                  id={`number-${id}`}
                   className="peer pe-9 [direction:inherit]"
+                  id={`number-${id}`}
                 />
                 <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
                   {meta.cardType ? (
@@ -73,7 +73,7 @@ export default function Component() {
                       width={20}
                     />
                   ) : (
-                    <CreditCardIcon size={16} aria-hidden="true" />
+                    <CreditCardIcon aria-hidden="true" size={16} />
                   )}
                 </div>
               </div>
@@ -100,13 +100,13 @@ export default function Component() {
           <div className="flex items-center gap-2">
             <Checkbox id={`primary-${id}`} />
             <Label
-              htmlFor={`primary-${id}`}
               className="font-normal text-muted-foreground"
+              htmlFor={`primary-${id}`}
             >
               Set as default payment method
             </Label>
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Update card
           </Button>
         </form>

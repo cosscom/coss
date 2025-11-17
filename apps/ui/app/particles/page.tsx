@@ -42,12 +42,12 @@ export default async function Page() {
           const ParticleComponent = particle.component;
           return (
             <ParticleDisplay
-              key={particle.id}
-              name={particle.id}
               className={cn(
                 particle.fullWidth ? "lg:col-span-2" : "lg:col-span-1",
                 particle.className,
               )}
+              key={particle.id}
+              name={particle.id}
             >
               <ParticleComponent
                 currentPage={1}

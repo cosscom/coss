@@ -32,9 +32,9 @@ export default function Component() {
       <Stepper defaultValue={2} orientation="vertical">
         {steps.map(({ step, title, description }) => (
           <StepperItem
+            className="relative not-last:flex-1 items-start"
             key={step}
             step={step}
-            className="relative not-last:flex-1 items-start"
           >
             <StepperTrigger className="items-start rounded pb-12 last:pb-0">
               <StepperIndicator />
@@ -50,9 +50,9 @@ export default function Component() {
         ))}
       </Stepper>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Vertical stepper with inline titles and descriptions
       </p>

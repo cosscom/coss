@@ -212,9 +212,22 @@ export default function Component() {
     <div className="flex h-full flex-col gap-2 *:nth-2:grow">
       <div className="relative">
         <Input
-          ref={inputRef}
           className="peer ps-9"
-          value={searchValue}
+          onBlur={(e) => {
+            // Prevent default blur behavior
+            e.preventDefault();
+
+            // Re-apply the search to ensure it stays active
+            if (searchValue && searchValue.length > 0) {
+              const searchProps = tree.getSearchInputElementProps();
+              if (searchProps.onChange) {
+                const syntheticEvent = {
+                  target: { value: searchValue },
+                } as React.ChangeEvent<HTMLInputElement>;
+                searchProps.onChange(syntheticEvent);
+              }
+            }
+          }}
           onChange={(e) => {
             const value = e.target.value;
             setSearchValue(value);
@@ -237,36 +250,23 @@ export default function Component() {
               setFilteredItems([]);
             }
           }}
-          // Prevent the internal search from being cleared on blur
-          onBlur={(e) => {
-            // Prevent default blur behavior
-            e.preventDefault();
-
-            // Re-apply the search to ensure it stays active
-            if (searchValue && searchValue.length > 0) {
-              const searchProps = tree.getSearchInputElementProps();
-              if (searchProps.onChange) {
-                const syntheticEvent = {
-                  target: { value: searchValue },
-                } as React.ChangeEvent<HTMLInputElement>;
-                searchProps.onChange(syntheticEvent);
-              }
-            }
-          }}
-          type="search"
           placeholder="Filter items..."
+          // Prevent the internal search from being cleared on blur
+          ref={inputRef}
+          type="search"
+          value={searchValue}
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-          <FilterIcon className="size-4" aria-hidden="true" />
+          <FilterIcon aria-hidden="true" className="size-4" />
         </div>
         {searchValue && (
           <button
-            type="button"
-            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Clear search"
+            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleClearSearch}
+            type="button"
           >
-            <CircleXIcon className="size-4" aria-hidden="true" />
+            <CircleXIcon aria-hidden="true" className="size-4" />
           </button>
         )}
       </div>
@@ -282,10 +282,10 @@ export default function Component() {
 
             return (
               <TreeItem
-                key={item.getId()}
-                item={item}
-                data-visible={isVisible || !searchValue}
                 className="data-[visible=false]:hidden"
+                data-visible={isVisible || !searchValue}
+                item={item}
+                key={item.getId()}
               >
                 <TreeItemLabel>
                   <span className="flex items-center gap-2">
@@ -306,15 +306,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Tree with filtering ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

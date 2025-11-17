@@ -27,9 +27,9 @@ export default function Component() {
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:text-foreground">
               <span
-                role="presentation"
                 aria-hidden="true"
                 className="flex size-5 items-center justify-center"
+                role="presentation"
               >
                 <FoldersIcon size={16} />
               </span>

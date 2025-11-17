@@ -37,16 +37,16 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Table w/ left chevron</h2>
       <Accordion
-        type="single"
-        collapsible
         className="-space-y-px w-full"
+        collapsible
         defaultValue="3"
+        type="single"
       >
         {items.map((item) => (
           <AccordionItem
-            value={item.id}
-            key={item.id}
             className="relative border bg-background px-4 py-1 outline-none first:rounded-t-md last:rounded-b-md last:border-b has-focus-visible:z-10 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={item.id}
+            value={item.id}
           >
             <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 rounded-md py-2 text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0">
               {item.title}

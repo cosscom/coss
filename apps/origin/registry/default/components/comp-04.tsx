@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <div className="flex items-center justify-between gap-2">
-        <Label htmlFor={id} className="leading-6">
+        <Label className="leading-6" htmlFor={id}>
           Input with hint
         </Label>
         <span className="text-muted-foreground text-sm">Optional</span>

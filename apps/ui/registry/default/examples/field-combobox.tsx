@@ -33,8 +33,8 @@ export default function FieldComboboxDemo() {
       <FieldLabel>Fruits</FieldLabel>
       <Combobox items={items}>
         <ComboboxInput
-          placeholder="Select an item..."
           aria-label="Select an item"
+          placeholder="Select an item..."
         />
         <ComboboxPopup>
           <ComboboxEmpty>No results found.</ComboboxEmpty>

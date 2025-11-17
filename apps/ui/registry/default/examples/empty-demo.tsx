@@ -23,7 +23,7 @@ export default function EmptyDemo() {
       <EmptyContent>
         <div className="flex gap-2">
           <Button size="sm">Create meeting</Button>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             <BookIcon className="opacity-72" />
             View docs
           </Button>

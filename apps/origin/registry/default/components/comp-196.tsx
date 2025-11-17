@@ -8,7 +8,7 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Disabled select (native)</Label>
-      <SelectNative id={id} disabled>
+      <SelectNative disabled id={id}>
         <option value="1">React</option>
         <option value="2">Next.js</option>
         <option value="3">Astro</option>

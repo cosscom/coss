@@ -3,9 +3,9 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 export default function TabsUnderlineVertical() {
   return (
     <Tabs
+      className="w-full flex-row"
       defaultValue="tab-1"
       orientation="vertical"
-      className="w-full flex-row"
     >
       <div className="border-s">
         <TabsList variant="underline">

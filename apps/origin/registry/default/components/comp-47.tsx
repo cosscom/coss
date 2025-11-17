@@ -17,24 +17,24 @@ export default function Component() {
       <div className="relative">
         <Input
           {...getCardNumberProps()}
-          id={`number-${id}`}
           className="peer ps-9 [direction:inherit]"
+          id={`number-${id}`}
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-          <CreditCardIcon size={16} aria-hidden="true" />
+          <CreditCardIcon aria-hidden="true" size={16} />
         </div>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/medipass/react-payment-inputs"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React Payment Inputs
         </a>

@@ -155,8 +155,8 @@ export default function Component() {
     <EventCalendar
       events={events}
       onEventAdd={handleEventAdd}
-      onEventUpdate={handleEventUpdate}
       onEventDelete={handleEventDelete}
+      onEventUpdate={handleEventUpdate}
     />
   );
 }

@@ -9,9 +9,9 @@ export default function Particle() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="search"
-        placeholder="Search…"
         aria-label="Search"
+        placeholder="Search…"
+        type="search"
       />
       <InputGroupAddon align="inline-end">
         <Kbd>/</Kbd>

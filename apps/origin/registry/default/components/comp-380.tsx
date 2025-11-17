@@ -24,26 +24,26 @@ export default function Component() {
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="icon" variant="outline" aria-label="Select theme">
+          <Button aria-label="Select theme" size="icon" variant="outline">
             {displayTheme === "light" && (
-              <SunIcon size={16} aria-hidden="true" />
+              <SunIcon aria-hidden="true" size={16} />
             )}
             {displayTheme === "dark" && (
-              <MoonIcon size={16} aria-hidden="true" />
+              <MoonIcon aria-hidden="true" size={16} />
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="min-w-32">
           <DropdownMenuItem onClick={() => setTheme("light")}>
-            <SunIcon size={16} className="opacity-60" aria-hidden="true" />
+            <SunIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Light</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTheme("dark")}>
-            <MoonIcon size={16} className="opacity-60" aria-hidden="true" />
+            <MoonIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Dark</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTheme("system")}>
-            <MonitorIcon size={16} className="opacity-60" aria-hidden="true" />
+            <MonitorIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>System</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

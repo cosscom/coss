@@ -24,11 +24,11 @@ export default function Component() {
       </Label>
       <div className="flex items-center gap-4">
         <Slider
-          value={value}
-          onValueChange={setValue}
-          min={min_price}
-          max={max_price}
           aria-label="Price range slider"
+          max={max_price}
+          min={min_price}
+          onValueChange={setValue}
+          value={value}
         />
         <Button variant="outline">Go</Button>
       </div>

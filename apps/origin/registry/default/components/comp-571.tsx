@@ -111,18 +111,18 @@ export default function Component() {
               }
             },
           }}
-          type="search"
           placeholder="Quick search..."
+          type="search"
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-          <SearchIcon className="size-4" aria-hidden="true" />
+          <SearchIcon aria-hidden="true" className="size-4" />
         </div>
       </div>
 
       <Tree indent={indent} tree={tree}>
         {tree.getItems().map((item) => {
           return (
-            <TreeItem key={item.getId()} item={item}>
+            <TreeItem item={item} key={item.getId()}>
               <TreeItemLabel>
                 <span className="flex items-center gap-2">
                   {item.isFolder() &&
@@ -141,15 +141,15 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Tree with search highlight ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>

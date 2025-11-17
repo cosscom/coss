@@ -26,9 +26,9 @@ export default function ComboboxLg() {
   return (
     <Combobox items={items}>
       <ComboboxInput
-        size="lg"
-        placeholder="Select an item..."
         aria-label="Select an item"
+        placeholder="Select an item..."
+        size="lg"
       />
       <ComboboxPopup>
         <ComboboxEmpty>No results found.</ComboboxEmpty>

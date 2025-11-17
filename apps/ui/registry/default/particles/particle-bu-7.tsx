@@ -12,8 +12,8 @@ export default function Particle() {
   return (
     <Button onClick={() => setIsStarred(!isStarred)}>
       <StarIcon
-        className={`${isStarred ? "fill-yellow-500 text-yellow-500" : "opacity-72"}`}
         aria-hidden="true"
+        className={`${isStarred ? "fill-yellow-500 text-yellow-500" : "opacity-72"}`}
       />
       <span className="flex items-baseline gap-2">
         {isStarred ? "Starred" : "Star"}

@@ -8,26 +8,26 @@ import {
 export default function Component() {
   return (
     <Tabs
+      className="w-full flex-row"
       defaultValue="tab-1"
       orientation="vertical"
-      className="w-full flex-row"
     >
       <TabsList className="flex-col rounded-none border-l bg-transparent p-0">
         <TabsTrigger
-          value="tab-1"
           className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-1"
         >
           Overview
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-2"
         >
           Projects
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          value="tab-3"
         >
           Packages
         </TabsTrigger>

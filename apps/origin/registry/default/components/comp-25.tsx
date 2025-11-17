@@ -10,8 +10,8 @@ export default function Component() {
       <Label htmlFor={id}>Search input with &lt;kbd&gt;</Label>
       <div className="relative">
         <Input
-          id={id}
           className="pe-11"
+          id={id}
           placeholder="Search..."
           type="search"
         />

@@ -6,11 +6,11 @@ export default function Component() {
     <div className="*:not-first:mt-4">
       <Label>Slider with square thumb</Label>
       <Slider
+        aria-label="Slider with square thumb"
+        className="[&>:last-child>span]:rounded"
         defaultValue={[25]}
         max={100}
         step={10}
-        className="[&>:last-child>span]:rounded"
-        aria-label="Slider with square thumb"
       />
     </div>
   );

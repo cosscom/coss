@@ -29,8 +29,8 @@ export default function SliderForm() {
 
   return (
     <Form onSubmit={onSubmit}>
-      <Field name="volume" className="items-stretch gap-3">
-        <Slider value={value} onValueChange={setValue} disabled={loading}>
+      <Field className="items-stretch gap-3" name="volume">
+        <Slider disabled={loading} onValueChange={setValue} value={value}>
           <div className="mb-2 flex items-center justify-between gap-1">
             <FieldLabel>Volume</FieldLabel>
             <SliderValue />
@@ -38,7 +38,7 @@ export default function SliderForm() {
         </Slider>
         <FieldDescription>Choose a value between 0 and 100</FieldDescription>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

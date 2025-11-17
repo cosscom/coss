@@ -9,7 +9,7 @@ import {
 export default function InputGroupWithEndIcon() {
   return (
     <InputGroup>
-      <InputGroupInput type="email" placeholder="Email" aria-label="Email" />
+      <InputGroupInput aria-label="Email" placeholder="Email" type="email" />
       <InputGroupAddon align="inline-end">
         <MailIcon />
       </InputGroupAddon>

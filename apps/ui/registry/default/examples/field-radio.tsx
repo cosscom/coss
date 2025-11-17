@@ -11,8 +11,8 @@ import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 export default function FieldRadioDemo() {
   return (
     <Field
-      name="plan"
       className="gap-4"
+      name="plan"
       render={(props) => <Fieldset {...props} />}
     >
       <FieldsetLegend className="font-medium text-sm">

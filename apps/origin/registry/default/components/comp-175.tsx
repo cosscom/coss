@@ -7,8 +7,8 @@ export default function Component() {
   const id = useId();
   return (
     <div className="inline-flex items-center gap-2">
-      <Switch id={id} disabled />
-      <Label htmlFor={id} className="sr-only">
+      <Switch disabled id={id} />
+      <Label className="sr-only" htmlFor={id}>
         Disabled
       </Label>
     </div>

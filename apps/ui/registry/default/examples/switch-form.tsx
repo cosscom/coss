@@ -23,14 +23,14 @@ export default function SwitchFormDemo() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="w-auto">
+    <Form className="w-auto" onSubmit={onSubmit}>
       <Field name="marketing">
         <FieldLabel>
-          <Switch name="marketing" defaultChecked disabled={loading} />
+          <Switch defaultChecked disabled={loading} name="marketing" />
           Enable marketing emails
         </FieldLabel>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

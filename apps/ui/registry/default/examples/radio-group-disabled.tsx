@@ -8,7 +8,7 @@ export default function RadioGroupDisabledDemo() {
         <Radio value="next" /> Next.js
       </Label>
       <Label>
-        <Radio value="vite" disabled /> Vite (disabled)
+        <Radio disabled value="vite" /> Vite (disabled)
       </Label>
       <Label>
         <Radio value="astro" /> Astro

@@ -18,12 +18,12 @@ export default function Component() {
   return (
     <div className="mx-auto max-w-xl space-y-8 text-center">
       <div className="space-y-3">
-        <Stepper value={currentStep} onValueChange={setCurrentStep}>
+        <Stepper onValueChange={setCurrentStep} value={currentStep}>
           {steps.map((step) => (
-            <StepperItem key={step} step={step} className="flex-1">
+            <StepperItem className="flex-1" key={step} step={step}>
               <StepperTrigger
-                className="w-full flex-col items-start gap-2"
                 asChild
+                className="w-full flex-col items-start gap-2"
               >
                 <StepperIndicator
                   asChild
@@ -41,26 +41,26 @@ export default function Component() {
       </div>
       <div className="flex justify-center space-x-4">
         <Button
-          variant="outline"
           className="w-32"
-          onClick={() => setCurrentStep((prev) => prev - 1)}
           disabled={currentStep === 1}
+          onClick={() => setCurrentStep((prev) => prev - 1)}
+          variant="outline"
         >
           Prev step
         </Button>
         <Button
-          variant="outline"
           className="w-32"
-          onClick={() => setCurrentStep((prev) => prev + 1)}
           disabled={currentStep >= steps.length}
+          onClick={() => setCurrentStep((prev) => prev + 1)}
+          variant="outline"
         >
           Next step
         </Button>
       </div>
       <p
+        aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Progress stepper
       </p>

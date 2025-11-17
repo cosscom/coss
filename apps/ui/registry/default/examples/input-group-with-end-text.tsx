@@ -9,9 +9,9 @@ export default function InputGroupWithEndText() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="text"
-        placeholder="Choose a username"
         aria-label="Choose a username"
+        placeholder="Choose a username"
+        type="text"
       />
       <InputGroupAddon align="inline-end">
         <InputGroupText>@coss.com</InputGroupText>

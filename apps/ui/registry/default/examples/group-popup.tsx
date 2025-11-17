@@ -23,12 +23,12 @@ export default function GroupPopup() {
       <Popover>
         <PopoverTrigger
           render={
-            <Button variant="outline" size="icon" aria-label="Send options" />
+            <Button aria-label="Send options" size="icon" variant="outline" />
           }
         >
           <ChevronDownIcon />
         </PopoverTrigger>
-        <PopoverPopup className="w-64" align="end">
+        <PopoverPopup align="end" className="w-64">
           <PopoverTitle className="text-base">Existing forks</PopoverTitle>
           <PopoverDescription>
             You don't have any forks of this repository.

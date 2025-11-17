@@ -9,15 +9,15 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with error</Label>
       <Textarea
+        aria-invalid
+        defaultValue="Hello!"
         id={id}
         placeholder="Leave a comment"
-        defaultValue="Hello!"
-        aria-invalid
       />
       <p
+        aria-live="polite"
         className="mt-2 text-destructive text-xs"
         role="alert"
-        aria-live="polite"
       >
         Message should be at least 10 characters
       </p>

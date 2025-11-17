@@ -38,14 +38,6 @@ export default function Component() {
   return (
     <div>
       <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        month={month}
-        onMonthChange={setMonth}
-        defaultMonth={new Date()}
-        startMonth={startDate}
-        endMonth={endDate}
         className="overflow-hidden rounded-md border p-2"
         classNames={{
           month_caption: "ms-2.5 me-20 justify-start",
@@ -63,35 +55,43 @@ export default function Component() {
             return (
               <MonthGrid
                 className={props.className}
-                isYearView={isYearView}
-                setIsYearView={setIsYearView}
-                startDate={startDate}
-                endDate={endDate}
-                years={years}
-                currentYear={month.getFullYear()}
                 currentMonth={month.getMonth()}
+                currentYear={month.getFullYear()}
+                endDate={endDate}
+                isYearView={isYearView}
                 onMonthSelect={(selectedMonth: Date) => {
                   setMonth(selectedMonth);
                   setIsYearView(false);
                 }}
+                setIsYearView={setIsYearView}
+                startDate={startDate}
+                years={years}
               >
                 {props.children}
               </MonthGrid>
             );
           },
         }}
+        defaultMonth={new Date()}
+        endMonth={endDate}
+        mode="single"
+        month={month}
+        onMonthChange={setMonth}
+        onSelect={setDate}
+        selected={date}
+        startMonth={startDate}
       />
       <p
+        aria-live="polite"
         className="mt-4 text-center text-muted-foreground text-xs"
         role="region"
-        aria-live="polite"
       >
         Advanced selection -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
-          target="_blank"
           rel="noreferrer noopener nofollow"
+          target="_blank"
         >
           React DayPicker
         </a>
@@ -146,7 +146,7 @@ function MonthGrid({
       <table className={className}>{children}</table>
       {isYearView && (
         <div className="-mx-2 -mb-2 absolute inset-0 z-20 bg-background">
-          <ScrollArea ref={scrollAreaRef} className="h-full">
+          <ScrollArea className="h-full" ref={scrollAreaRef}>
             {years.map((year) => {
               const months = eachMonthOfInterval({
                 start: startOfYear(year),
@@ -160,8 +160,8 @@ function MonthGrid({
                   ref={isCurrentYear ? currentYearRef : undefined}
                 >
                   <CollapsibleYear
-                    title={year.getFullYear().toString()}
                     open={isCurrentYear}
+                    title={year.getFullYear().toString()}
                   >
                     <div className="grid grid-cols-3 gap-2">
                       {months.map((month) => {
@@ -173,15 +173,15 @@ function MonthGrid({
 
                         return (
                           <Button
+                            className="h-7"
+                            disabled={isDisabled}
                             key={month.getTime()}
+                            onClick={() => onMonthSelect(month)}
                             ref={
                               isCurrentMonth ? currentMonthButtonRef : undefined
                             }
-                            variant={isCurrentMonth ? "default" : "outline"}
                             size="sm"
-                            className="h-7"
-                            disabled={isDisabled}
-                            onClick={() => onMonthSelect(month)}
+                            variant={isCurrentMonth ? "default" : "outline"}
                           >
                             {format(month, "MMM")}
                           </Button>
@@ -210,16 +210,16 @@ function CaptionLabel({
   return (
     <Button
       className="-ms-2 flex items-center gap-2 font-medium text-sm hover:bg-transparent data-[state=open]:text-muted-foreground/80 [&[data-state=open]>svg]:rotate-180"
-      variant="ghost"
-      size="sm"
-      onClick={() => setIsYearView((prev) => !prev)}
       data-state={isYearView ? "open" : "closed"}
+      onClick={() => setIsYearView((prev) => !prev)}
+      size="sm"
+      variant="ghost"
     >
       {children}
       <ChevronDownIcon
-        size={16}
-        className="shrink-0 text-muted-foreground/80 transition-transform duration-200"
         aria-hidden="true"
+        className="shrink-0 text-muted-foreground/80 transition-transform duration-200"
+        size={16}
       />
     </Button>
   );
@@ -239,13 +239,13 @@ function CollapsibleYear({
       <CollapsibleTrigger asChild>
         <Button
           className="flex w-full justify-start gap-2 font-medium text-sm hover:bg-transparent [&[data-state=open]>svg]:rotate-180"
-          variant="ghost"
           size="sm"
+          variant="ghost"
         >
           <ChevronDownIcon
-            size={16}
-            className="shrink-0 text-muted-foreground/80 transition-transform duration-200"
             aria-hidden="true"
+            className="shrink-0 text-muted-foreground/80 transition-transform duration-200"
+            size={16}
           />
           {title}
         </Button>

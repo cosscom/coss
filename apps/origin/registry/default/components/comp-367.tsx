@@ -15,9 +15,9 @@ export default function Component() {
         <Button variant="outline">
           Same width of trigger
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>

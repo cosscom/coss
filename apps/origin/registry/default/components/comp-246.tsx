@@ -11,15 +11,15 @@ export default function Component() {
     <div className="*:not-first:mt-4">
       <Label>Slider with ticks</Label>
       <div>
-        <Slider defaultValue={[5]} max={max} aria-label="Slider with ticks" />
+        <Slider aria-label="Slider with ticks" defaultValue={[5]} max={max} />
         <span
-          className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
           aria-hidden="true"
+          className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
         >
           {ticks.map((_, i) => (
             <span
-              key={String(i)}
               className="flex w-0 flex-col items-center justify-center gap-2"
+              key={String(i)}
             >
               <span
                 className={cn(

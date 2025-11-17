@@ -23,15 +23,15 @@ export default function Component() {
       <div className="flex gap-1.5">
         {items.map((item) => (
           <label
-            key={`${id}-${item.value}`}
             className="relative flex size-9 cursor-pointer flex-col items-center justify-center gap-3 rounded-full border border-input text-center shadow-xs outline-none transition-[color,box-shadow] has-data-disabled:cursor-not-allowed has-data-[state=checked]:border-primary has-focus-visible:border-ring has-data-[state=checked]:bg-primary has-data-[state=checked]:text-primary-foreground has-data-disabled:opacity-50 has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"
+            key={`${id}-${item.value}`}
           >
             <Checkbox
-              id={`${id}-${item.value}`}
-              value={item.value}
               className="sr-only after:absolute after:inset-0"
               defaultChecked={item.defaultChecked}
               disabled={item.disabled}
+              id={`${id}-${item.value}`}
+              value={item.value}
             />
             <span aria-hidden="true" className="font-medium text-sm">
               {item.label[0]}

@@ -29,12 +29,12 @@ function PopoverPopup({
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
-        data-slot="popover-positioner"
-        className="z-50"
-        side={side}
-        sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
+        className="z-50"
+        data-slot="popover-positioner"
+        side={side}
+        sideOffset={sideOffset}
       >
         <span
           className={cn(
@@ -45,12 +45,12 @@ function PopoverPopup({
           )}
         >
           <PopoverPrimitive.Popup
-            data-slot="popover-content"
             className={cn(
               "max-h-(--available-height) w-full overflow-y-auto p-4 outline-none",
               tooltipStyle &&
                 "px-[calc(--spacing(2)+1px)] py-[calc(--spacing(1)+1px)]",
             )}
+            data-slot="popover-content"
             {...props}
           >
             {children}
@@ -68,8 +68,8 @@ function PopoverClose({ ...props }: PopoverPrimitive.Close.Props) {
 function PopoverTitle({ className, ...props }: PopoverPrimitive.Title.Props) {
   return (
     <PopoverPrimitive.Title
-      data-slot="popover-title"
       className={cn("font-semibold text-lg leading-none", className)}
+      data-slot="popover-title"
       {...props}
     />
   );
@@ -81,8 +81,8 @@ function PopoverDescription({
 }: PopoverPrimitive.Description.Props) {
   return (
     <PopoverPrimitive.Description
-      data-slot="popover-description"
       className={cn("text-muted-foreground text-sm", className)}
+      data-slot="popover-description"
       {...props}
     />
   );

@@ -25,18 +25,18 @@ export function MobileNav({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet onOpenChange={setOpen} open={open}>
       <SheetTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon"
             className={cn("-ms-1.5 relative size-8", className)}
+            size="icon"
+            variant="ghost"
           >
             <HugeiconsIcon
+              className="size-5"
               icon={Menu09Icon}
               strokeWidth={2}
-              className="size-5"
             />
             <span className="sr-only">Toggle Menu</span>
           </Button>
@@ -52,8 +52,8 @@ export function MobileNav({
               </MobileLink>
               {items.map((item) => (
                 <MobileLink
-                  key={item.label}
                   href={item.href}
+                  key={item.label}
                   onOpenChange={setOpen}
                 >
                   {item.label}
@@ -65,15 +65,15 @@ export function MobileNav({
             {tree?.children?.map((group, index) => {
               if (group.type === "folder") {
                 return (
-                  <div key={group.$id} className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3" key={group.$id}>
                     <div className="font-medium text-sm">{group.name}</div>
                     <div className="flex flex-col gap-0.5">
                       {group.children.map((item) => {
                         if (item.type === "page") {
                           return (
                             <MobileLink
-                              key={`${item.url}-${index}`}
                               href={item.url}
+                              key={`${item.url}-${index}`}
                               onOpenChange={setOpen}
                             >
                               {item.name}
@@ -83,11 +83,13 @@ export function MobileNav({
                             </MobileLink>
                           );
                         }
+                        return null;
                       })}
                     </div>
                   </div>
                 );
               }
+              return null;
             })}
           </div>
         </div>
@@ -110,15 +112,15 @@ function MobileLink({
   const router = useRouter();
   return (
     <Link
+      className={cn(
+        "flex items-center gap-2 py-1.5 text-muted-foreground",
+        className,
+      )}
       href={href}
       onClick={() => {
         router.push(href.toString());
         onOpenChange?.(false);
       }}
-      className={cn(
-        "flex items-center gap-2 py-1.5 text-muted-foreground",
-        className,
-      )}
       {...props}
     >
       {children}

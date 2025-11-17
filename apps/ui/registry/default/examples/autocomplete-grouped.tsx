@@ -88,8 +88,8 @@ export default function AutocompleteGrouped() {
     <Autocomplete items={groupedTags}>
       <div className="flex flex-col items-start gap-2">
         <AutocompleteInput
-          placeholder="e.g. feature"
           aria-label="Search tags"
+          placeholder="e.g. feature"
         />
       </div>
       <AutocompletePopup>

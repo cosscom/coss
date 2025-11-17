@@ -9,10 +9,10 @@ export default function InputGroupWithStartEndText() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="text"
+        aria-label="Enter your domain"
         className="*:[input]:ps-1!"
         placeholder="coss"
-        aria-label="Enter your domain"
+        type="text"
       />
       <InputGroupAddon>
         <InputGroupText>https://</InputGroupText>

@@ -18,18 +18,18 @@ export default function Component() {
 
   return (
     <Button
-      onClick={handleClick}
-      disabled={isLoading}
-      data-loading={isLoading || undefined}
       className="group relative disabled:opacity-100"
+      data-loading={isLoading || undefined}
+      disabled={isLoading}
+      onClick={handleClick}
     >
       <span className="group-data-loading:text-transparent">Click me</span>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <LoaderCircleIcon
+            aria-hidden="true"
             className="animate-spin"
             size={16}
-            aria-hidden="true"
           />
         </div>
       )}

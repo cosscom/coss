@@ -95,14 +95,14 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with search</Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           <Button
-            id={id}
-            variant="outline"
-            role="combobox"
             aria-expanded={open}
             className="w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
+            id={id}
+            role="combobox"
+            variant="outline"
           >
             <span className={cn("truncate", !value && "text-muted-foreground")}>
               {value
@@ -111,15 +111,15 @@ export default function Component() {
                 : "Select framework"}
             </span>
             <ChevronDownIcon
-              size={16}
-              className="shrink-0 text-muted-foreground/80"
               aria-hidden="true"
+              className="shrink-0 text-muted-foreground/80"
+              size={16}
             />
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
           align="start"
+          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
         >
           <Command>
             <CommandInput placeholder="Search framework..." />
@@ -129,15 +129,15 @@ export default function Component() {
                 {frameworks.map((framework) => (
                   <CommandItem
                     key={framework.value}
-                    value={framework.value}
                     onSelect={(currentValue) => {
                       setValue(currentValue === value ? "" : currentValue);
                       setOpen(false);
                     }}
+                    value={framework.value}
                   >
                     {framework.label}
                     {value === framework.value && (
-                      <CheckIcon size={16} className="ml-auto" />
+                      <CheckIcon className="ml-auto" size={16} />
                     )}
                   </CommandItem>
                 ))}

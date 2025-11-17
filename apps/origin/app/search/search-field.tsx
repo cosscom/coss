@@ -74,10 +74,14 @@ export default function SearchField({
     <div className="mx-auto max-w-2xl">
       <div className="relative">
         <MultipleSelector
+          className="w-full rounded-xl border-border bg-zinc-200/40 ps-[52px] dark:bg-zinc-900"
           commandProps={{
             label: "Search components",
             shouldFilter: false,
           }}
+          defaultOptions={baseOptions}
+          emptyIndicator={<p className="text-center text-sm">No tags found</p>}
+          hidePlaceholderWhenSelected
           inputProps={{
             onValueChange: (v) => {
               setInputValue(v);
@@ -85,23 +89,19 @@ export default function SearchField({
             },
             autoFocus: selectedTags.length === 0,
           }}
-          defaultOptions={baseOptions}
+          onChange={handleMultipleSelectorChange}
           options={getFilteredOptions().filter(
             (option) =>
               !inputValue ||
               option.value.toLowerCase().includes(inputValue.toLowerCase()),
           )}
           value={selectedOptions}
-          hidePlaceholderWhenSelected
-          emptyIndicator={<p className="text-center text-sm">No tags found</p>}
-          onChange={handleMultipleSelectorChange}
-          className="w-full rounded-xl border-border bg-zinc-200/40 ps-[52px] dark:bg-zinc-900"
         />
         <div
-          className="pointer-events-none absolute inset-y-0 start-0 flex items-start justify-center ps-4 pt-2.5 text-muted-foreground"
           aria-label="Search component"
+          className="pointer-events-none absolute inset-y-0 start-0 flex items-start justify-center ps-4 pt-2.5 text-muted-foreground"
         >
-          <RiSearch2Line size={24} aria-hidden="true" />
+          <RiSearch2Line aria-hidden="true" size={24} />
         </div>
       </div>
     </div>

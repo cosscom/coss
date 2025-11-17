@@ -19,18 +19,18 @@ export default function TextareaForm() {
   };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Message</FieldLabel>
         <Textarea
+          disabled={loading}
           name="message"
           placeholder="Type your message here"
-          disabled={loading}
           required
         />
         <FieldError>This field is required.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>

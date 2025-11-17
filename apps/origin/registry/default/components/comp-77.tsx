@@ -11,9 +11,9 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Autogrowing textarea</Label>
       <Textarea
+        className="field-sizing-content max-h-29.5 min-h-0 resize-none py-1.75"
         id={id}
         placeholder="Leave a comment"
-        className="field-sizing-content max-h-29.5 min-h-0 resize-none py-1.75"
       />
     </div>
   );

@@ -22,14 +22,14 @@ export default function SearchButton() {
 
   return (
     <Link
-      href="/search"
       className="inline-flex h-10 w-fit min-w-72 cursor-text rounded-full border bg-background px-4 py-2 text-foreground text-sm outline-none placeholder:text-muted-foreground/70 focus:border-ring focus:ring-[3px] focus:ring-ring/50"
+      href="/search"
     >
       <span className="flex grow items-center gap-2">
         <RiSearch2Line
+          aria-hidden="true"
           className="-ms-1 text-muted-foreground"
           size={20}
-          aria-hidden="true"
         />
         <span className="font-normal text-zinc-400 dark:text-zinc-500">
           Quick search...

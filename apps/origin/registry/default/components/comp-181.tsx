@@ -13,17 +13,17 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={setChecked}
         aria-label="Toggle switch"
+        checked={checked}
+        id={id}
+        onCheckedChange={setChecked}
       />
       <Label htmlFor={id}>
         <span className="sr-only">Toggle switch</span>
         {checked ? (
-          <SunIcon size={16} aria-hidden="true" />
+          <SunIcon aria-hidden="true" size={16} />
         ) : (
-          <MoonIcon size={16} aria-hidden="true" />
+          <MoonIcon aria-hidden="true" size={16} />
         )}
       </Label>
     </div>

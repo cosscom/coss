@@ -25,7 +25,7 @@ const items = [
 export default function ComboboxDemo() {
   return (
     <Combobox items={items}>
-      <ComboboxInput placeholder="Select a item…" aria-label="Select a item" />
+      <ComboboxInput aria-label="Select a item" placeholder="Select a item…" />
       <ComboboxPopup>
         <ComboboxEmpty>No items found.</ComboboxEmpty>
         <ComboboxList>

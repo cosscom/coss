@@ -62,11 +62,11 @@ export default function Component() {
       <DialogContent className="gap-0 p-0 [&>button:last-child]:text-white">
         <div className="p-2">
           <img
+            alt="dialog"
             className="w-full rounded-md"
+            height={216}
             src="/origin/dialog-content.png"
             width={382}
-            height={216}
-            alt="dialog"
           />
         </div>
         <div className="space-y-6 px-6 pt-3 pb-6">
@@ -80,11 +80,11 @@ export default function Component() {
             <div className="flex justify-center space-x-1.5 max-sm:order-1">
               {[...Array(totalSteps)].map((_, index) => (
                 <div
-                  key={String(index)}
                   className={cn(
                     "size-1.5 rounded-full bg-primary",
                     index + 1 === step ? "bg-primary" : "opacity-20",
                   )}
+                  key={String(index)}
                 />
               ))}
             </div>
@@ -97,14 +97,14 @@ export default function Component() {
               {step < totalSteps ? (
                 <Button
                   className="group"
-                  type="button"
                   onClick={handleContinue}
+                  type="button"
                 >
                   Next
                   <ArrowRightIcon
+                    aria-hidden="true"
                     className="-me-1 opacity-60 transition-transform group-hover:translate-x-0.5"
                     size={16}
-                    aria-hidden="true"
                   />
                 </Button>
               ) : (

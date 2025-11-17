@@ -16,11 +16,11 @@ import {
 export default function GroupInputGroup() {
   return (
     <Group
-      className="[--radius-lg:9999px] [--radius:9999rem]"
       aria-label="Message composer"
+      className="[--radius-lg:9999px] [--radius:9999rem]"
     >
       <Group aria-label="Attachments">
-        <Button variant="outline" size="icon" aria-label="Attach file">
+        <Button aria-label="Attach file" size="icon" variant="outline">
           <PaperclipIcon />
         </Button>
       </Group>
@@ -32,9 +32,9 @@ export default function GroupInputGroup() {
               <TooltipTrigger
                 render={
                   <Button
-                    variant="ghost"
-                    size="icon-xs"
                     aria-label="Voice Mode"
+                    size="icon-xs"
+                    variant="ghost"
                   />
                 }
               >

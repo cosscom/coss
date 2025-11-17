@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <>
-      <PageHeader title="Search component" className="mb-10">
+      <PageHeader className="mb-10" title="Search component">
         Use this page to quickly find a component (e.g., multiselect, vertical
         slider, etc.)
       </PageHeader>

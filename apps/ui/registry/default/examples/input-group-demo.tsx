@@ -9,7 +9,7 @@ import {
 export default function InputGroupDemo() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Search" aria-label="Search" />
+      <InputGroupInput aria-label="Search" placeholder="Search" type="search" />
       <InputGroupAddon>
         <SearchIcon />
       </InputGroupAddon>

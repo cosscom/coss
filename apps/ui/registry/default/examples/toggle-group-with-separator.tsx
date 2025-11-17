@@ -9,15 +9,15 @@ import {
 export default function ToggleGroupWithSeparator() {
   return (
     <ToggleGroup defaultValue={["bold"]}>
-      <Toggle value="bold" aria-label="Toggle bold">
+      <Toggle aria-label="Toggle bold" value="bold">
         <BoldIcon />
       </Toggle>
       <ToggleGroupSeparator />
-      <Toggle value="italic" aria-label="Toggle italic">
+      <Toggle aria-label="Toggle italic" value="italic">
         <ItalicIcon />
       </Toggle>
       <ToggleGroupSeparator />
-      <Toggle value="underline" aria-label="Toggle underline">
+      <Toggle aria-label="Toggle underline" value="underline">
         <UnderlineIcon />
       </Toggle>
     </ToggleGroup>

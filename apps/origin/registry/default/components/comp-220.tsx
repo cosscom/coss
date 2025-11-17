@@ -12,13 +12,13 @@ import {
 function StatusDot({ className }: { className?: string }) {
   return (
     <svg
-      width="8"
-      height="8"
-      fill="currentColor"
-      viewBox="0 0 8 8"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
       aria-hidden="true"
+      className={className}
+      fill="currentColor"
+      height="8"
+      viewBox="0 0 8 8"
+      width="8"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <circle cx="4" cy="4" r="4" />
     </svg>
@@ -32,8 +32,8 @@ export default function Component() {
       <Label htmlFor={id}>Status select</Label>
       <Select defaultValue="1">
         <SelectTrigger
-          id={id}
           className="[&>span]:flex [&>span]:items-center [&>span]:gap-2 [&>span_svg]:shrink-0"
+          id={id}
         >
           <SelectValue placeholder="Select status" />
         </SelectTrigger>

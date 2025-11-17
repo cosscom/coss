@@ -10,17 +10,17 @@ import { Button } from "@/registry/default/ui/button";
 export default function Particle() {
   return (
     <div className="inline-flex flex-wrap gap-2">
-      <Button variant="outline" aria-label="Login with Google" size="icon">
-        <RiGoogleFill className="opacity-72" aria-hidden="true" />
+      <Button aria-label="Login with Google" size="icon" variant="outline">
+        <RiGoogleFill aria-hidden="true" className="opacity-72" />
       </Button>
-      <Button variant="outline" aria-label="Login with Facebook" size="icon">
-        <RiFacebookFill className="opacity-72" aria-hidden="true" />
+      <Button aria-label="Login with Facebook" size="icon" variant="outline">
+        <RiFacebookFill aria-hidden="true" className="opacity-72" />
       </Button>
-      <Button variant="outline" aria-label="Login with X" size="icon">
-        <RiTwitterXFill className="opacity-72" aria-hidden="true" />
+      <Button aria-label="Login with X" size="icon" variant="outline">
+        <RiTwitterXFill aria-hidden="true" className="opacity-72" />
       </Button>
-      <Button variant="outline" aria-label="Login with GitHub" size="icon">
-        <RiGithubFill className="opacity-72" aria-hidden="true" />
+      <Button aria-label="Login with GitHub" size="icon" variant="outline">
+        <RiGithubFill aria-hidden="true" className="opacity-72" />
       </Button>
     </div>
   );

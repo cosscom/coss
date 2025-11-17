@@ -49,27 +49,27 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       {/* Drop area */}
       <div
-        role="button"
+        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-[input:focus]:border-ring has-disabled:opacity-50 has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        data-dragging={isDragging || undefined}
         onClick={openFileDialog}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        data-dragging={isDragging || undefined}
-        className="flex min-h-40 flex-col items-center justify-center rounded-xl border border-input border-dashed p-4 transition-colors hover:bg-accent/50 has-disabled:pointer-events-none has-[input:focus]:border-ring has-disabled:opacity-50 has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        role="button"
         tabIndex={-1}
       >
         <input
           {...getInputProps()}
-          className="sr-only"
           aria-label="Upload file"
+          className="sr-only"
           disabled={Boolean(file)}
         />
 
         <div className="flex flex-col items-center justify-center text-center">
           <div
-            className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
             aria-hidden="true"
+            className="mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border bg-background"
           >
             <UploadIcon className="size-4 opacity-60" />
           </div>
@@ -94,13 +94,13 @@ export default function Component() {
       {file && (
         <div className="space-y-2">
           <div
-            key={file.id}
             className="flex items-center justify-between gap-2 rounded-xl border px-4 py-2"
+            key={file.id}
           >
             <div className="flex items-center gap-3 overflow-hidden">
               <PaperclipIcon
-                className="size-4 shrink-0 opacity-60"
                 aria-hidden="true"
+                className="size-4 shrink-0 opacity-60"
               />
               <div className="min-w-0">
                 <p className="truncate font-medium text-[13px]">
@@ -110,13 +110,13 @@ export default function Component() {
             </div>
 
             <Button
-              size="icon"
-              variant="ghost"
+              aria-label="Remove file"
               className="-me-2 size-8 text-muted-foreground/80 hover:bg-transparent hover:text-foreground"
               onClick={() => removeFile(files[0]?.id)}
-              aria-label="Remove file"
+              size="icon"
+              variant="ghost"
             >
-              <XIcon className="size-4" aria-hidden="true" />
+              <XIcon aria-hidden="true" className="size-4" />
             </Button>
           </div>
         </div>
@@ -124,13 +124,13 @@ export default function Component() {
 
       <p
         aria-live="polite"
-        role="region"
         className="mt-2 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Single file uploader w/ max size ∙{" "}
         <a
-          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
           className="underline hover:text-foreground"
+          href="https://github.com/cosscom/coss/blob/main/apps/origin/docs/use-file-upload.md"
         >
           API
         </a>

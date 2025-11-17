@@ -26,12 +26,12 @@ export default function Component() {
         <BreadcrumbItem>
           <Select defaultValue="1">
             <SelectTrigger
-              id="select-database"
-              className="relative gap-2 ps-9"
               aria-label="Select database"
+              className="relative gap-2 ps-9"
+              id="select-database"
             >
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
-                <DatabaseIcon size={16} aria-hidden="true" />
+                <DatabaseIcon aria-hidden="true" size={16} />
               </div>
               <SelectValue placeholder="Select database" />
             </SelectTrigger>

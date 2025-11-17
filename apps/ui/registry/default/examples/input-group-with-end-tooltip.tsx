@@ -18,24 +18,24 @@ export default function InputGroupWithEndTooltip() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="password"
-        placeholder="Password"
         aria-label="Password"
+        placeholder="Password"
+        type="password"
       />
       <InputGroupAddon align="inline-end">
         <Popover openOnHover>
           <PopoverTrigger
             render={
               <Button
-                variant="ghost"
-                size="icon-xs"
                 aria-label="Password requirements"
+                size="icon-xs"
+                variant="ghost"
               />
             }
           >
             <InfoIcon />
           </PopoverTrigger>
-          <PopoverPopup tooltipStyle side="top">
+          <PopoverPopup side="top" tooltipStyle>
             <p>Min. 8 characters</p>
           </PopoverPopup>
         </Popover>

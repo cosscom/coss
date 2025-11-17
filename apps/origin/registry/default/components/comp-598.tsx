@@ -76,8 +76,8 @@ export default function Component() {
         {tree.getItems().map((item) => {
           return (
             <div
-              key={item.getId()}
               className="flex items-center gap-1.5 not-last:pb-0.5"
+              key={item.getId()}
             >
               <Checkbox
                 checked={
@@ -92,7 +92,7 @@ export default function Component() {
                   checkboxProps.onChange?.({ target: { checked } });
                 }}
               />
-              <TreeItem item={item} className="flex-1 not-last:pb-0">
+              <TreeItem className="flex-1 not-last:pb-0" item={item}>
                 <TreeItemLabel />
               </TreeItem>
             </div>
@@ -103,15 +103,15 @@ export default function Component() {
       <div className="space-y-2">
         <p
           aria-live="polite"
-          role="region"
           className="mt-2 text-muted-foreground text-xs"
+          role="region"
         >
           Tree with checkboxes on the left ∙{" "}
           <a
-            href="https://headless-tree.lukasbach.com"
             className="underline hover:text-foreground"
-            target="_blank"
+            href="https://headless-tree.lukasbach.com"
             rel="noopener noreferrer"
+            target="_blank"
           >
             API
           </a>

@@ -25,14 +25,14 @@ export default function CliCommands({ name }: { name: string }) {
   return (
     <div className="relative">
       <Tabs
-        value={packageManager}
+        className="rounded-md bg-zinc-950 dark:bg-zinc-900"
         onValueChange={(value) => {
           setConfig({
             ...config,
             packageManager: value as "pnpm" | "npm" | "yarn" | "bun",
           });
         }}
-        className="rounded-md bg-zinc-950 dark:bg-zinc-900"
+        value={packageManager}
       >
         <TabsList className="dark h-auto w-full justify-start rounded-none border-b bg-transparent px-4 py-0">
           <TabsTrigger
@@ -69,8 +69,8 @@ export default function CliCommands({ name }: { name: string }) {
         ))}
       </Tabs>
       <CopyButton
-        componentSource={commands[packageManager as keyof typeof commands]}
         className="top-1"
+        componentSource={commands[packageManager as keyof typeof commands]}
       />
     </div>
   );

@@ -99,15 +99,15 @@ export default function Component() {
           const ActionIcon = getActionIcon(item.action);
           return (
             <TimelineItem
+              className="m-0! flex-row items-center gap-3 py-2.5!"
               key={item.id}
               step={item.id}
-              className="m-0! flex-row items-center gap-3 py-2.5!"
             >
               <ActionIcon className="text-muted-foreground/80" size={16} />
               <img
-                src={item.image}
                 alt={item.user}
                 className="size-6 rounded-full"
+                src={item.image}
               />
               <TimelineContent className="text-foreground">
                 <a className="font-medium hover:underline" href="#">

@@ -39,32 +39,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M4 12L20 12"
                     className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    d="M4 12L20 12"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -73,11 +73,11 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, _index) => (
-                    <NavigationMenuItem key={link.label} className="w-full">
+                    <NavigationMenuItem className="w-full" key={link.label}>
                       <NavigationMenuLink
-                        href={link.href}
-                        className="py-1.5"
                         active={link.active}
+                        className="py-1.5"
+                        href={link.href}
                       >
                         {link.label}
                       </NavigationMenuLink>
@@ -89,7 +89,7 @@ export default function Component() {
           </Popover>
           {/* Logo */}
           <div className="flex items-center">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <a className="text-primary hover:text-primary/90" href="#">
               <Logo />
             </a>
           </div>
@@ -99,8 +99,8 @@ export default function Component() {
           {/* Search form */}
           <div className="relative mx-auto w-full max-w-xs">
             <Input
-              id={id}
               className="peer h-8 ps-8 pe-10"
+              id={id}
               placeholder="Search..."
               type="search"
             />
@@ -131,8 +131,8 @@ export default function Component() {
               <NavigationMenuItem key={link.label}>
                 <NavigationMenuLink
                   active={link.active}
-                  href={link.href}
                   className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                  href={link.href}
                 >
                   {link.label}
                 </NavigationMenuLink>

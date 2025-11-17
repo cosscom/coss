@@ -52,9 +52,9 @@ export default function Component() {
     <Timeline>
       {items.map((item) => (
         <TimelineItem
+          className="group-data-[orientation=vertical]/timeline:ms-10 group-data-[orientation=vertical]/timeline:not-last:pb-8"
           key={item.id}
           step={item.id}
-          className="group-data-[orientation=vertical]/timeline:ms-10 group-data-[orientation=vertical]/timeline:not-last:pb-8"
         >
           <TimelineHeader>
             <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-6.5" />
@@ -66,9 +66,9 @@ export default function Component() {
             </TimelineTitle>
             <TimelineIndicator className="group-data-[orientation=vertical]/timeline:-left-7 flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground">
               <img
-                src={item.image}
                 alt={item.title}
                 className="size-6 rounded-full"
+                src={item.image}
               />
             </TimelineIndicator>
           </TimelineHeader>

@@ -18,11 +18,11 @@ const CopyLayout = ({ command }: { command: string | undefined }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            type="button"
-            className="inline-flex items-center gap-1 text-sm hover:underline max-sm:hidden"
-            onClick={() => copy(command || "")}
             aria-label={copied ? "Copied" : "Copy command"}
+            className="inline-flex items-center gap-1 text-sm hover:underline max-sm:hidden"
             disabled={copied}
+            onClick={() => copy(command || "")}
+            type="button"
           >
             {copied ? (
               <CheckIcon className="size-4 text-emerald-600" />

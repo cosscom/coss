@@ -10,16 +10,16 @@ export default function HoverCardDemo() {
     <HoverCard>
       <HoverCardTrigger asChild>
         <Button
-          className="size-auto overflow-hidden rounded-full bg-transparent p-0 hover:bg-transparent"
           aria-label="My profile"
           asChild
+          className="size-auto overflow-hidden rounded-full bg-transparent p-0 hover:bg-transparent"
         >
           <a href="#">
             <img
+              alt="Avatar"
+              height={40}
               src="/origin/avatar-40-04.jpg"
               width={40}
-              height={40}
-              alt="Avatar"
             />
           </a>
         </Button>
@@ -27,11 +27,11 @@ export default function HoverCardDemo() {
       <HoverCardContent className="w-[340px]">
         <div className="flex items-start gap-3">
           <img
+            alt="Avatar"
             className="shrink-0 rounded-full"
+            height={40}
             src="/origin/avatar-40-04.jpg"
             width={40}
-            height={40}
-            alt="Avatar"
           />
           <div className="space-y-1">
             <p className="font-medium text-sm">@Origin_UI</p>

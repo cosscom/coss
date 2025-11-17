@@ -67,19 +67,19 @@ const columns: ColumnDef<Item>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
+        aria-label="Select row"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
       />
     ),
   },
@@ -107,11 +107,11 @@ const columns: ColumnDef<Item>[] = [
 
             return (
               <div
-                key={intent}
                 className={cn(
                   "flex size-5 items-center justify-center rounded font-medium text-xs",
                   styles,
                 )}
+                key={intent}
               >
                 {intent.charAt(0)}
               </div>
@@ -133,7 +133,7 @@ const columns: ColumnDef<Item>[] = [
     header: "Volume",
     accessorKey: "volume",
     cell: ({ row }) => {
-      const volume = Number.parseInt(row.getValue("volume"));
+      const volume = Number.parseInt(row.getValue("volume"), 10);
       return new Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: 1,
@@ -155,7 +155,7 @@ const columns: ColumnDef<Item>[] = [
     header: "Traffic",
     accessorKey: "traffic",
     cell: ({ row }) => {
-      const traffic = Number.parseInt(row.getValue("traffic"));
+      const traffic = Number.parseInt(row.getValue("traffic"), 10);
       return new Intl.NumberFormat("en-US", {
         notation: "compact",
         maximumFractionDigits: 1,
@@ -170,7 +170,7 @@ const columns: ColumnDef<Item>[] = [
     accessorKey: "link",
     cell: ({ row }) => (
       <a className="inline-flex items-center gap-1 hover:underline" href="#">
-        {row.getValue("link")} <ExternalLinkIcon size={12} aria-hidden="true" />
+        {row.getValue("link")} <ExternalLinkIcon aria-hidden="true" size={12} />
       </a>
     ),
     enableSorting: false,
@@ -308,12 +308,10 @@ export default function Component() {
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
-                    key={header.id}
-                    className="relative h-10 select-none border-t"
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -321,6 +319,8 @@ export default function Component() {
                           ? "descending"
                           : "none"
                     }
+                    className="relative h-10 select-none border-t"
+                    key={header.id}
                   >
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <div
@@ -348,20 +348,20 @@ export default function Component() {
                         {{
                           asc: (
                             <ChevronUpIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                           desc: (
                             <ChevronDownIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                         }[header.column.getIsSorted() as string] ?? (
-                          <span className="size-4" aria-hidden="true" />
+                          <span aria-hidden="true" className="size-4" />
                         )}
                       </div>
                     ) : (
@@ -380,8 +380,8 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -392,7 +392,7 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
@@ -404,8 +404,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>
@@ -444,9 +444,9 @@ function Filter({ column }: { column: Column<string, unknown> }) {
         <Label>{columnHeader}</Label>
         <div className="flex">
           <Input
-            id={`${id}-range-1`}
+            aria-label={`${columnHeader} min`}
             className="flex-1 rounded-e-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-            value={(columnFilterValue as [number, number])?.[0] ?? ""}
+            id={`${id}-range-1`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
                 e.target.value ? Number(e.target.value) : undefined,
@@ -455,12 +455,12 @@ function Filter({ column }: { column: Column<string, unknown> }) {
             }
             placeholder="Min"
             type="number"
-            aria-label={`${columnHeader} min`}
+            value={(columnFilterValue as [number, number])?.[0] ?? ""}
           />
           <Input
-            id={`${id}-range-2`}
+            aria-label={`${columnHeader} max`}
             className="-ms-px flex-1 rounded-s-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-            value={(columnFilterValue as [number, number])?.[1] ?? ""}
+            id={`${id}-range-2`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
                 old?.[0],
@@ -469,7 +469,7 @@ function Filter({ column }: { column: Column<string, unknown> }) {
             }
             placeholder="Max"
             type="number"
-            aria-label={`${columnHeader} max`}
+            value={(columnFilterValue as [number, number])?.[1] ?? ""}
           />
         </div>
       </div>
@@ -481,10 +481,10 @@ function Filter({ column }: { column: Column<string, unknown> }) {
       <div className="*:not-first:mt-2">
         <Label htmlFor={`${id}-select`}>{columnHeader}</Label>
         <Select
-          value={columnFilterValue?.toString() ?? "all"}
           onValueChange={(value) => {
             column.setFilterValue(value === "all" ? undefined : value);
           }}
+          value={columnFilterValue?.toString() ?? "all"}
         >
           <SelectTrigger id={`${id}-select`}>
             <SelectValue />
@@ -507,12 +507,12 @@ function Filter({ column }: { column: Column<string, unknown> }) {
       <Label htmlFor={`${id}-input`}>{columnHeader}</Label>
       <div className="relative">
         <Input
-          id={`${id}-input`}
           className="peer ps-9"
-          value={(columnFilterValue ?? "") as string}
+          id={`${id}-input`}
           onChange={(e) => column.setFilterValue(e.target.value)}
           placeholder={`Search ${columnHeader.toLowerCase()}`}
           type="text"
+          value={(columnFilterValue ?? "") as string}
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
           <SearchIcon size={16} />

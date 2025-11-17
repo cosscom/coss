@@ -20,17 +20,17 @@ export default function Component() {
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Textarea with characters left</Label>
       <Textarea
+        aria-describedby={`${id}-description`}
         id={id}
-        value={value}
         maxLength={maxLength}
         onChange={handleChange}
-        aria-describedby={`${id}-description`}
+        value={value}
       />
       <p
-        id={`${id}-description`}
-        className="mt-2 text-right text-muted-foreground text-xs"
-        role="status"
         aria-live="polite"
+        className="mt-2 text-right text-muted-foreground text-xs"
+        id={`${id}-description`}
+        role="status"
       >
         <span className="tabular-nums">{limit - characterCount}</span>{" "}
         characters left

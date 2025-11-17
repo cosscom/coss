@@ -34,6 +34,8 @@ export default function Component({
         {/* Previous page button */}
         <PaginationItem className="[&:first-child>a]:rounded-s-md [&:last-child>a]:rounded-e-md">
           <PaginationLink
+            aria-disabled={currentPage === 1 ? true : undefined}
+            aria-label="Go to previous page"
             className={cn(
               buttonVariants({
                 variant: "outline",
@@ -41,11 +43,9 @@ export default function Component({
               "rounded-none shadow-none focus-visible:z-10 aria-disabled:pointer-events-none [&[aria-disabled]>svg]:opacity-50",
             )}
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
-            aria-label="Go to previous page"
-            aria-disabled={currentPage === 1 ? true : undefined}
             role={currentPage === 1 ? "link" : undefined}
           >
-            <ChevronLeftIcon size={16} aria-hidden="true" />
+            <ChevronLeftIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
 
@@ -92,6 +92,8 @@ export default function Component({
         {/* Next page button */}
         <PaginationItem className="[&:first-child>a]:rounded-s-md [&:last-child>a]:rounded-e-md">
           <PaginationLink
+            aria-disabled={currentPage === totalPages ? true : undefined}
+            aria-label="Go to next page"
             className={cn(
               buttonVariants({
                 variant: "outline",
@@ -103,11 +105,9 @@ export default function Component({
                 ? undefined
                 : `#/page/${currentPage + 1}`
             }
-            aria-label="Go to next page"
-            aria-disabled={currentPage === totalPages ? true : undefined}
             role={currentPage === totalPages ? "link" : undefined}
           >
-            <ChevronRightIcon size={16} aria-hidden="true" />
+            <ChevronRightIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
       </PaginationContent>

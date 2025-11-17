@@ -6,8 +6,8 @@ export default function ScrollAreaHorizontal() {
       <div className="flex w-max gap-4 p-4">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
-            key={String(i)}
             className="flex h-20 w-32 shrink-0 items-center justify-center rounded-md bg-muted"
+            key={String(i)}
           >
             <span className="font-medium text-sm">Item {i + 1}</span>
           </div>

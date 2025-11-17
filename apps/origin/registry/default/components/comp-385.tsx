@@ -56,9 +56,9 @@ export default function Component() {
               {currentTip + 1}/{tips.length}
             </span>
             <button
-              type="button"
               className="font-medium text-xs hover:underline"
               onClick={handleNavigation}
+              type="button"
             >
               {currentTip === tips.length - 1 ? "Start over" : "Next"}
             </button>

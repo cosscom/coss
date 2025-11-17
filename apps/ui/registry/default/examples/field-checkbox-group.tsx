@@ -12,8 +12,8 @@ import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 export default function FieldCheckboxGroupDemo() {
   return (
     <Field
-      name="frameworks"
       className="gap-4"
+      name="frameworks"
       render={(props) => <Fieldset {...props} />}
     >
       <FieldsetLegend className="font-medium text-sm">

@@ -10,20 +10,20 @@ export default function Component() {
     <Tabs defaultValue="tab-1">
       <TabsList className="relative h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border">
         <TabsTrigger
-          value="tab-1"
           className="overflow-hidden rounded-b-none border-x border-t bg-muted py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+          value="tab-1"
         >
           Tab 1
         </TabsTrigger>
         <TabsTrigger
-          value="tab-2"
           className="overflow-hidden rounded-b-none border-x border-t bg-muted py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+          value="tab-2"
         >
           Tab 2
         </TabsTrigger>
         <TabsTrigger
-          value="tab-3"
           className="overflow-hidden rounded-b-none border-x border-t bg-muted py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
+          value="tab-3"
         >
           Tab 3
         </TabsTrigger>

@@ -5,7 +5,7 @@ import { Badge } from "@/registry/default/ui/badge";
 export default function Component() {
   return (
     <Badge>
-      <ZapIcon className="-ms-0.5 opacity-60" size={12} aria-hidden="true" />
+      <ZapIcon aria-hidden="true" className="-ms-0.5 opacity-60" size={12} />
       Badge
     </Badge>
   );

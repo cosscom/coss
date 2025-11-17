@@ -18,26 +18,26 @@ export default function Particle({ currentPage, totalPages }: PaginationProps) {
       <PaginationContent className="w-full justify-between gap-2">
         <PaginationItem>
           <Button
-            variant="outline"
             disabled={currentPage === 1}
             render={
               currentPage === 1 ? undefined : (
                 <Link href={`#/page/${currentPage - 1}`} />
               )
             }
+            variant="outline"
           >
             Previous
           </Button>
         </PaginationItem>
         <PaginationItem>
           <Button
-            variant="outline"
             disabled={currentPage === totalPages}
             render={
               currentPage === totalPages ? undefined : (
                 <Link href={`#/page/${currentPage + 1}`} />
               )
             }
+            variant="outline"
           >
             Next
           </Button>

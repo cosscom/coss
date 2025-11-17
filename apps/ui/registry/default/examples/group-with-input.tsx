@@ -20,24 +20,24 @@ export default function GroupWithInput() {
   return (
     <Group aria-label="Url input">
       <Input
+        aria-label="Url"
+        defaultValue="https://coss.com"
         ref={inputRef}
         type="text"
-        defaultValue="https://coss.com"
-        aria-label="Url"
       />
       <GroupSeparator />
       <Tooltip>
         <TooltipTrigger
           render={
             <Button
-              variant="outline"
-              size="icon"
               aria-label="Copy"
               onClick={() => {
                 if (inputRef.current) {
                   copyToClipboard(inputRef.current.value);
                 }
               }}
+              size="icon"
+              variant="outline"
             />
           }
         >

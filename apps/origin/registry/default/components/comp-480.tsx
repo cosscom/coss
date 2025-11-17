@@ -158,7 +158,7 @@ export default function Component() {
       >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const { column } = header;
                 const isPinned = column.getIsPinned();
@@ -169,11 +169,8 @@ export default function Component() {
 
                 return (
                   <TableHead
-                    key={header.id}
                     className="relative h-10 truncate border-t data-pinned:bg-muted/90 data-pinned:backdrop-blur-xs [&:not([data-pinned]):has(+[data-pinned])_div.cursor-col-resize:last-child]:opacity-0 [&[data-last-col=left]_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=left][data-last-col=left]]:border-r [&[data-pinned=right]:last-child_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=right][data-last-col=right]]:border-l [&[data-pinned][data-last-col]]:border-border"
                     colSpan={header.colSpan}
-                    style={{ ...getPinningStyles(column) }}
-                    data-pinned={isPinned || undefined}
                     data-last-col={
                       isLastLeftPinned
                         ? "left"
@@ -181,6 +178,9 @@ export default function Component() {
                           ? "right"
                           : undefined
                     }
+                    data-pinned={isPinned || undefined}
+                    key={header.id}
+                    style={{ ...getPinningStyles(column) }}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate">
@@ -196,33 +196,33 @@ export default function Component() {
                         header.column.getCanPin() &&
                         (header.column.getIsPinned() ? (
                           <Button
-                            size="icon"
-                            variant="ghost"
+                            aria-label={`Unpin ${header.column.columnDef.header as string} column`}
                             className="-mr-1 size-7 shadow-none"
                             onClick={() => header.column.pin(false)}
-                            aria-label={`Unpin ${header.column.columnDef.header as string} column`}
+                            size="icon"
                             title={`Unpin ${header.column.columnDef.header as string} column`}
+                            variant="ghost"
                           >
                             <PinOffIcon
+                              aria-hidden="true"
                               className="opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           </Button>
                         ) : (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
-                                size="icon"
-                                variant="ghost"
-                                className="-mr-1 size-7 shadow-none"
                                 aria-label={`Pin options for ${header.column.columnDef.header as string} column`}
+                                className="-mr-1 size-7 shadow-none"
+                                size="icon"
                                 title={`Pin options for ${header.column.columnDef.header as string} column`}
+                                variant="ghost"
                               >
                                 <EllipsisIcon
+                                  aria-hidden="true"
                                   className="opacity-60"
                                   size={16}
-                                  aria-hidden="true"
                                 />
                               </Button>
                             </DropdownMenuTrigger>
@@ -231,9 +231,9 @@ export default function Component() {
                                 onClick={() => header.column.pin("left")}
                               >
                                 <ArrowLeftToLineIcon
-                                  size={16}
-                                  className="opacity-60"
                                   aria-hidden="true"
+                                  className="opacity-60"
+                                  size={16}
                                 />
                                 Stick to left
                               </DropdownMenuItem>
@@ -241,9 +241,9 @@ export default function Component() {
                                 onClick={() => header.column.pin("right")}
                               >
                                 <ArrowRightToLineIcon
-                                  size={16}
-                                  className="opacity-60"
                                   aria-hidden="true"
+                                  className="opacity-60"
+                                  size={16}
                                 />
                                 Stick to right
                               </DropdownMenuItem>
@@ -272,8 +272,8 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => {
                   const { column } = cell;
@@ -285,10 +285,7 @@ export default function Component() {
 
                   return (
                     <TableCell
-                      key={cell.id}
                       className="truncate data-pinned:bg-background/90 data-pinned:backdrop-blur-xs [&[data-pinned=left][data-last-col=left]]:border-r [&[data-pinned=right][data-last-col=right]]:border-l [&[data-pinned][data-last-col]]:border-border"
-                      style={{ ...getPinningStyles(column) }}
-                      data-pinned={isPinned || undefined}
                       data-last-col={
                         isLastLeftPinned
                           ? "left"
@@ -296,6 +293,9 @@ export default function Component() {
                             ? "right"
                             : undefined
                       }
+                      data-pinned={isPinned || undefined}
+                      key={cell.id}
+                      style={{ ...getPinningStyles(column) }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -308,7 +308,7 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
@@ -320,8 +320,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>

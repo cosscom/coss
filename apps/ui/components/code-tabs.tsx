@@ -14,11 +14,11 @@ export function CodeTabs({ children }: React.ComponentProps<typeof Tabs>) {
 
   return (
     <Tabs
-      value={installationType}
+      className="relative mt-6 w-full"
       onValueChange={(value) =>
         setConfig({ ...config, installationType: value as "cli" | "manual" })
       }
-      className="relative mt-6 w-full"
+      value={installationType}
     >
       {children}
     </Tabs>

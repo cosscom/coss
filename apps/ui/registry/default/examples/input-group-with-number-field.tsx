@@ -11,7 +11,7 @@ import {
 export default function InputGroupWithNumberField() {
   return (
     <InputGroup>
-      <NumberField defaultValue={10} aria-label="Enter the amount">
+      <NumberField aria-label="Enter the amount" defaultValue={10}>
         <NumberFieldInput className="text-left" />
       </NumberField>
       <InputGroupAddon>

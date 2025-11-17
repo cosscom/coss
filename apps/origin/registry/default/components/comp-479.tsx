@@ -141,12 +141,10 @@ export default function Component() {
       >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
-                    key={header.id}
-                    className="relative h-10 select-none border-t last:[&>.cursor-col-resize]:opacity-0"
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -154,6 +152,8 @@ export default function Component() {
                           ? "descending"
                           : "none"
                     }
+                    className="relative h-10 select-none border-t last:[&>.cursor-col-resize]:opacity-0"
+                    key={header.id}
                     {...{
                       colSpan: header.colSpan,
                       style: {
@@ -189,16 +189,16 @@ export default function Component() {
                         {{
                           asc: (
                             <ChevronUpIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                           desc: (
                             <ChevronDownIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                         }[header.column.getIsSorted() as string] ?? null}
@@ -225,11 +225,11 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="truncate">
+                  <TableCell className="truncate" key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -237,7 +237,7 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
@@ -249,8 +249,8 @@ export default function Component() {
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>

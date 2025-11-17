@@ -32,9 +32,9 @@ export default function ComboboxWithLabel() {
       <div className="flex flex-col items-start gap-2">
         <Label htmlFor={id}>Fruits</Label>
         <ComboboxInput
+          aria-label="Select an item"
           id={id}
           placeholder="Select an item..."
-          aria-label="Select an item"
         />
       </div>
       <ComboboxPopup>

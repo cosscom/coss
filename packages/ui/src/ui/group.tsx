@@ -34,9 +34,9 @@ function Group({
 } & React.ComponentProps<"div">) {
   return (
     <div
-      data-slot="group"
-      data-orientation={orientation}
       className={cn(groupVariants({ orientation }), className)}
+      data-orientation={orientation}
+      data-slot="group"
       role="group"
       {...props}
     >
@@ -73,11 +73,11 @@ function GroupSeparator({
 } & React.ComponentProps<typeof Separator>) {
   return (
     <Separator
-      orientation={orientation}
       className={cn(
         "[[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&]:-translate-x-px relative z-20 has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:translate-x-px has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:bg-ring [[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=number-field]:focus-within+&]:bg-ring",
         className,
       )}
+      orientation={orientation}
       {...props}
     />
   );

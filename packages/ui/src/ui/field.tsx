@@ -7,8 +7,8 @@ import { cn } from "@coss/ui/lib/utils";
 function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   return (
     <FieldPrimitive.Root
-      data-slot="field"
       className={cn("flex flex-col items-start gap-2", className)}
+      data-slot="field"
       {...props}
     />
   );
@@ -17,8 +17,8 @@ function Field({ className, ...props }: FieldPrimitive.Root.Props) {
 function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
   return (
     <FieldPrimitive.Label
-      data-slot="field-label"
       className={cn("inline-flex items-center gap-2 text-sm/4", className)}
+      data-slot="field-label"
       {...props}
     />
   );
@@ -30,8 +30,8 @@ function FieldDescription({
 }: FieldPrimitive.Description.Props) {
   return (
     <FieldPrimitive.Description
-      data-slot="field-description"
       className={cn("text-muted-foreground text-xs", className)}
+      data-slot="field-description"
       {...props}
     />
   );
@@ -40,8 +40,8 @@ function FieldDescription({
 function FieldError({ className, ...props }: FieldPrimitive.Error.Props) {
   return (
     <FieldPrimitive.Error
-      data-slot="field-error"
       className={cn("text-destructive-foreground text-xs", className)}
+      data-slot="field-error"
       {...props}
     />
   );

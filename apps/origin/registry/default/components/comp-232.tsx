@@ -69,14 +69,14 @@ export default function Component() {
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Options with flag and search</Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           <Button
-            id={id}
-            variant="outline"
-            role="combobox"
             aria-expanded={open}
             className="w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
+            id={id}
+            role="combobox"
+            variant="outline"
           >
             {value ? (
               <span className="flex min-w-0 items-center gap-2">
@@ -95,15 +95,15 @@ export default function Component() {
               <span className="text-muted-foreground">Select country</span>
             )}
             <ChevronDownIcon
-              size={16}
-              className="shrink-0 text-muted-foreground/80"
               aria-hidden="true"
+              className="shrink-0 text-muted-foreground/80"
+              size={16}
             />
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
           align="start"
+          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
         >
           <Command>
             <CommandInput placeholder="Search country..." />
@@ -115,18 +115,18 @@ export default function Component() {
                     {group.items.map((country) => (
                       <CommandItem
                         key={country.value}
-                        value={country.value}
                         onSelect={(currentValue) => {
                           setValue(currentValue);
                           setOpen(false);
                         }}
+                        value={country.value}
                       >
                         <span className="text-lg leading-none">
                           {country.flag}
                         </span>{" "}
                         {country.value}
                         {value === country.value && (
-                          <CheckIcon size={16} className="ml-auto" />
+                          <CheckIcon className="ml-auto" size={16} />
                         )}
                       </CommandItem>
                     ))}

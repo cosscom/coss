@@ -28,10 +28,6 @@ function ToggleGroup({
 }: ToggleGroupPrimitive.Props & VariantProps<typeof toggleVariants>) {
   return (
     <ToggleGroupPrimitive
-      data-slot="toggle-group"
-      data-variant={variant}
-      data-size={size}
-      orientation={orientation}
       className={cn(
         "flex w-fit *:focus-visible:z-10",
         orientation === "horizontal"
@@ -44,6 +40,10 @@ function ToggleGroup({
             : "*:not-first:before:-top-[0.5px] *:not-last:before:-bottom-[0.5px] flex-col *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-first:border-t-0 *:not-last:border-b-0 *:not-last:before:hidden *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none dark:*:last:before:hidden dark:*:first:before:block",
         className,
       )}
+      data-size={size}
+      data-slot="toggle-group"
+      data-variant={variant}
+      orientation={orientation}
       {...props}
     >
       <ToggleGroupContext.Provider value={{ variant, size }}>
@@ -67,11 +67,11 @@ function Toggle({
 
   return (
     <ToggleComponent
-      data-variant={resolvedVariant}
-      data-size={resolvedSize}
       className={className}
-      variant={resolvedVariant}
+      data-size={resolvedSize}
+      data-variant={resolvedVariant}
       size={resolvedSize}
+      variant={resolvedVariant}
       {...props}
     >
       {children}
@@ -87,7 +87,7 @@ function ToggleGroupSeparator({
   className?: string;
 } & React.ComponentProps<typeof Separator>) {
   return (
-    <Separator orientation={orientation} className={className} {...props} />
+    <Separator className={className} orientation={orientation} {...props} />
   );
 }
 
