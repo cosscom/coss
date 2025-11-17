@@ -1,84 +1,83 @@
-import * as React from "react"
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header"
+} from "@coss/ui/components/page-header";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
-import { getUniqueParticleCategories } from "@/lib/particle-categories"
-import { cn } from "@/lib/utils"
-import { particles } from "@/registry/default/particles"
+import { getUniqueParticleCategories } from "@/lib/particle-categories";
+import { cn } from "@/lib/utils";
+import { particles } from "@/registry/default/particles";
 
-import { CategoryNavigation } from "../category-navigation"
-import { ParticleDisplay } from "../particle-display"
+import { CategoryNavigation } from "../category-navigation";
+import { ParticleDisplay } from "../particle-display";
 
-export const revalidate = false
-export const dynamic = "force-static"
-export const dynamicParams = false
+export const revalidate = false;
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{
-    category: string
-  }>
+    category: string;
+  }>;
 }
 
-const particleCategories = getUniqueParticleCategories(particles)
+const particleCategories = getUniqueParticleCategories(particles);
 
 function getCategoryDetails(categorySlug: string) {
   const categoryObj = particleCategories.find(
-    (cat) => cat.slug === categorySlug
-  )
+    (cat) => cat.slug === categorySlug,
+  );
 
   if (!categoryObj) {
-    return { categoryObj: null, categoryParticles: [] }
+    return { categoryObj: null, categoryParticles: [] };
   }
 
   const categoryParticles = particles.filter((particle) =>
-    particle.category?.includes(categoryObj.name)
-  )
+    particle.category?.includes(categoryObj.name),
+  );
 
-  return { categoryObj, categoryParticles }
+  return { categoryObj, categoryParticles };
 }
 
 export async function generateStaticParams() {
   return particleCategories.map((category) => ({
     category: category.slug,
-  }))
+  }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { category: categorySlug } = await params
-  const { categoryObj, categoryParticles } = getCategoryDetails(categorySlug)
+  const { category: categorySlug } = await params;
+  const { categoryObj, categoryParticles } = getCategoryDetails(categorySlug);
 
   if (!categoryObj) {
-    notFound()
+    notFound();
   }
 
   return {
-    title: `${
-      categoryObj.name.charAt(0).toUpperCase() + categoryObj.name.slice(1)
-    } particle components built with React and Tailwind CSS - coss ui`,
     description: `Showing ${categoryParticles.length} particle component${
       categoryParticles.length !== 1 ? "s" : ""
     } in the ${categoryObj.name} category`,
-  }
+    title: `${
+      categoryObj.name.charAt(0).toUpperCase() + categoryObj.name.slice(1)
+    } particle components built with React and Tailwind CSS - coss ui`,
+  };
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { category: categorySlug } = await params
-  const { categoryObj, categoryParticles } = getCategoryDetails(categorySlug)
+  const { category: categorySlug } = await params;
+  const { categoryObj, categoryParticles } = getCategoryDetails(categorySlug);
 
   if (!categoryObj) {
-    notFound()
+    notFound();
   }
 
   // If no particles found for this category, show 404
   if (categoryParticles.length === 0) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -99,25 +98,30 @@ export default async function CategoryPage({ params }: PageProps) {
       </PageHeader>
       <div className="grid flex-1 items-stretch gap-9 pb-12 lg:grid-cols-2 lg:gap-6 xl:gap-9">
         {categoryParticles.map((particle) => {
-          const ParticleComponent = particle.component
+          const ParticleComponent = particle.component;
+          const isPaginationComponent = particle.id.startsWith("particle-pa-");
           return (
             <ParticleDisplay
-              key={particle.id}
-              name={particle.id}
               className={cn(
                 particle.fullWidth ? "lg:col-span-2" : "lg:col-span-1",
-                particle.className
+                particle.className,
               )}
+              key={particle.id}
+              name={particle.id}
             >
-              <ParticleComponent
-                currentPage={1}
-                totalPages={10}
-                totalResults={100}
-              />
+              {isPaginationComponent ? (
+                <ParticleComponent
+                  currentPage={1}
+                  totalPages={10}
+                  totalResults={100}
+                />
+              ) : (
+                <ParticleComponent />
+              )}
             </ParticleDisplay>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

@@ -1,19 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-demo",
-  "type": "registry:example",
+  "categories": ["input"],
   "description": "Basic input component without label",
-  "registryDependencies": [
-    "@coss/input"
-  ],
   "files": [
     {
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function InputDemo() {\n  return <Input aria-label=\"Enter text\" placeholder=\"Enter text\" type=\"text\" />;\n}\n",
       "path": "registry/default/examples/input-demo.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\"\n\nexport default function InputDemo() {\n  return <Input type=\"text\" placeholder=\"Enter text\" aria-label=\"Enter text\" />\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input"
-  ]
+  "name": "input-demo",
+  "registryDependencies": ["@coss/input"],
+  "type": "registry:example"
 }

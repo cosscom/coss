@@ -1,70 +1,71 @@
-import { useId } from "react"
-import { ListFilterIcon } from "lucide-react"
+import { ListFilterIcon } from "lucide-react";
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex flex-col gap-4">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="text-sm">
+          <Button className="text-sm" size="sm" variant="outline">
             <ListFilterIcon
-              size={16}
-              className="-ms-1 text-muted-foreground/80"
               aria-hidden="true"
+              className="-ms-1 text-muted-foreground/80"
+              size={16}
             />
             Filters
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-36 p-3">
           <div className="space-y-3">
-            <div className="text-xs font-medium">Filters</div>
+            <div className="font-medium text-xs">Filters</div>
             <form>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Checkbox id={`${id}-1`} />
-                  <Label htmlFor={`${id}-1`} className="font-normal">
+                  <Label className="font-normal" htmlFor={`${id}-1`}>
                     Real Time
                   </Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id={`${id}-2`} />
-                  <Label htmlFor={`${id}-2`} className="font-normal">
+                  <Label className="font-normal" htmlFor={`${id}-2`}>
                     Top Channels
                   </Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id={`${id}-3`} />
-                  <Label htmlFor={`${id}-3`} className="font-normal">
+                  <Label className="font-normal" htmlFor={`${id}-3`}>
                     Last Orders
                   </Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id={`${id}-4`} />
-                  <Label htmlFor={`${id}-4`} className="font-normal">
+                  <Label className="font-normal" htmlFor={`${id}-4`}>
                     Total Spent
                   </Label>
                 </div>
               </div>
               <div
-                role="separator"
                 aria-orientation="horizontal"
                 className="-mx-3 my-3 h-px bg-border"
-              ></div>
+                role="separator"
+                tabIndex={-1}
+              />
               <div className="flex justify-between gap-2">
-                <Button size="sm" variant="outline" className="h-7 px-2">
+                <Button className="h-7 px-2" size="sm" variant="outline">
                   Clear
                 </Button>
-                <Button size="sm" className="h-7 px-2">
+                <Button className="h-7 px-2" size="sm">
                   Apply
                 </Button>
               </div>
@@ -73,5 +74,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

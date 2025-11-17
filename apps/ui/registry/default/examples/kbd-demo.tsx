@@ -1,10 +1,10 @@
-import { Kbd, KbdGroup } from "@/registry/default/ui/kbd"
+import { Kbd, KbdGroup } from "@/registry/default/ui/kbd";
 
 export default function KbdDemo() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="mb-2 text-sm text-muted-foreground">Single keys:</p>
+        <p className="mb-2 text-muted-foreground text-sm">Single keys:</p>
         <div className="flex gap-2">
           <Kbd>K</Kbd>
           <Kbd>⌘</Kbd>
@@ -13,7 +13,7 @@ export default function KbdDemo() {
         </div>
       </div>
       <div>
-        <p className="mb-2 text-sm text-muted-foreground">Key combinations:</p>
+        <p className="mb-2 text-muted-foreground text-sm">Key combinations:</p>
         <div className="flex gap-2">
           <KbdGroup>
             <Kbd>⌘</Kbd>
@@ -32,5 +32,5 @@ export default function KbdDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }

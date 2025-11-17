@@ -1,23 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "group-with-text",
-  "type": "registry:example",
+  "categories": ["group", "input", "label"],
   "description": "Group with start labeled text",
-  "registryDependencies": [
-    "@coss/group",
-    "@coss/input",
-    "@coss/label"
-  ],
   "files": [
     {
+      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function GroupWithText() {\n  return (\n    <Group aria-label=\"Domain input\">\n      <GroupText render={<Label aria-label=\"Domain\" htmlFor=\"domain\" />}>\n        https://\n      </GroupText>\n      <GroupSeparator />\n      <Input\n        aria-label=\"Domain\"\n        defaultValue=\"coss.com\"\n        id=\"domain\"\n        type=\"text\"\n      />\n    </Group>\n  );\n}\n",
       "path": "registry/default/examples/group-with-text.tsx",
-      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\"\nimport { Input } from \"@/registry/default/ui/input\"\nimport { Label } from \"@/registry/default/ui/label\"\n\nexport default function GroupWithText() {\n  return (\n    <Group aria-label=\"Domain input\">\n      <GroupText render={<Label htmlFor=\"domain\" aria-label=\"Domain\" />}>\n        https://\n      </GroupText>\n      <GroupSeparator />\n      <Input\n        id=\"domain\"\n        type=\"text\"\n        defaultValue=\"coss.com\"\n        aria-label=\"Domain\"\n      />\n    </Group>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "group",
-    "input",
-    "label"
-  ]
+  "name": "group-with-text",
+  "registryDependencies": ["@coss/group", "@coss/input", "@coss/label"],
+  "type": "registry:example"
 }

@@ -2,23 +2,23 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
+} from "@/registry/default/ui/avatar";
 
 export default function Component() {
   return (
     <div className="relative">
       <Avatar>
-        <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
+        <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <span className="absolute -end-1.5 -top-1.5">
+      <span className="-end-1.5 -top-1.5 absolute">
         <span className="sr-only">Verified</span>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
+          aria-hidden="true"
           height="20"
           viewBox="0 0 24 24"
-          aria-hidden="true"
+          width="20"
+          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             className="fill-background"
@@ -35,5 +35,5 @@ export default function Component() {
         </svg>
       </span>
     </div>
-  )
+  );
 }

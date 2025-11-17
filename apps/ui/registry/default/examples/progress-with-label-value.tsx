@@ -4,7 +4,7 @@ import {
   ProgressLabel,
   ProgressTrack,
   ProgressValue,
-} from "@/registry/default/ui/progress"
+} from "@/registry/default/ui/progress";
 
 export default function ProgressWithLabelValueDemo() {
   return (
@@ -17,5 +17,5 @@ export default function ProgressWithLabelValueDemo() {
         <ProgressIndicator />
       </ProgressTrack>
     </Progress>
-  )
+  );
 }

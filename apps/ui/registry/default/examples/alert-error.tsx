@@ -1,10 +1,10 @@
-import { CircleAlertIcon } from "lucide-react"
+import { CircleAlertIcon } from "lucide-react";
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
+} from "@/registry/default/ui/alert";
 
 export default function AlertWarning() {
   return (
@@ -15,5 +15,5 @@ export default function AlertWarning() {
         Describe what can be done about it here.
       </AlertDescription>
     </Alert>
-  )
+  );
 }

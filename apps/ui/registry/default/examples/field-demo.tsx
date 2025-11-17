@@ -2,15 +2,15 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/field";
+import { Input } from "@/registry/default/ui/input";
 
 export default function FieldDemo() {
   return (
     <Field>
       <FieldLabel>Name</FieldLabel>
-      <Input type="text" placeholder="Enter your name" />
+      <Input placeholder="Enter your name" type="text" />
       <FieldDescription>Visible on your profile</FieldDescription>
     </Field>
-  )
+  );
 }

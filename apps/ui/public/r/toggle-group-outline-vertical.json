@@ -1,21 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "toggle-group-outline-vertical",
-  "type": "registry:example",
+  "categories": ["toggle group", "toggle", "vertical"],
   "description": "Toggle group with outline toggles and vertical layout",
-  "registryDependencies": [
-    "@coss/toggle-group"
-  ],
   "files": [
     {
+      "content": "import { BoldIcon, ItalicIcon, UnderlineIcon } from \"lucide-react\";\n\nimport {\n  Toggle,\n  ToggleGroup,\n  ToggleGroupSeparator,\n} from \"@/registry/default/ui/toggle-group\";\n\nexport default function ToggleGroupOutline() {\n  return (\n    <ToggleGroup\n      defaultValue={[\"bold\"]}\n      orientation=\"vertical\"\n      variant=\"outline\"\n    >\n      <Toggle aria-label=\"Toggle bold\" value=\"bold\">\n        <BoldIcon />\n      </Toggle>\n      <ToggleGroupSeparator orientation=\"horizontal\" />\n      <Toggle aria-label=\"Toggle italic\" value=\"italic\">\n        <ItalicIcon />\n      </Toggle>\n      <ToggleGroupSeparator orientation=\"horizontal\" />\n      <Toggle aria-label=\"Toggle underline\" value=\"underline\">\n        <UnderlineIcon />\n      </Toggle>\n    </ToggleGroup>\n  );\n}\n",
       "path": "registry/default/examples/toggle-group-outline-vertical.tsx",
-      "content": "import { BoldIcon, ItalicIcon, UnderlineIcon } from \"lucide-react\"\n\nimport {\n  Toggle,\n  ToggleGroup,\n  ToggleGroupSeparator,\n} from \"@/registry/default/ui/toggle-group\"\n\nexport default function ToggleGroupOutline() {\n  return (\n    <ToggleGroup\n      orientation=\"vertical\"\n      variant=\"outline\"\n      defaultValue={[\"bold\"]}\n    >\n      <Toggle value=\"bold\" aria-label=\"Toggle bold\">\n        <BoldIcon />\n      </Toggle>\n      <ToggleGroupSeparator orientation=\"horizontal\" />\n      <Toggle value=\"italic\" aria-label=\"Toggle italic\">\n        <ItalicIcon />\n      </Toggle>\n      <ToggleGroupSeparator orientation=\"horizontal\" />\n      <Toggle value=\"underline\" aria-label=\"Toggle underline\">\n        <UnderlineIcon />\n      </Toggle>\n    </ToggleGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "toggle group",
-    "toggle",
-    "vertical"
-  ]
+  "name": "toggle-group-outline-vertical",
+  "registryDependencies": ["@coss/toggle-group"],
+  "type": "registry:example"
 }

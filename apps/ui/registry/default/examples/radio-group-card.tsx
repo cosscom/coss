@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Radio, RadioGroup } from "@/registry/default/ui/radio-group"
+import { Label } from "@/registry/default/ui/label";
+import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 
 export default function RadioGroupCardDemo() {
   return (
@@ -8,7 +8,7 @@ export default function RadioGroupCardDemo() {
         <Radio value="r-1" />
         <div className="flex flex-col gap-1">
           <p className="text-sm leading-4">Email</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Receive notifications via email.
           </p>
         </div>
@@ -17,11 +17,11 @@ export default function RadioGroupCardDemo() {
         <Radio value="r-2" />
         <div className="flex flex-col gap-1">
           <p className="text-sm leading-4">SMS</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Receive notifications via text message.
           </p>
         </div>
       </Label>
     </RadioGroup>
-  )
+  );
 }

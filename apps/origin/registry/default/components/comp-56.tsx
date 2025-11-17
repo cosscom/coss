@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { Tag, TagInput } from "emblor"
+import { type Tag, TagInput } from "emblor";
+import { useId, useState } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 
 const tags = [
   {
@@ -18,27 +18,27 @@ const tags = [
     id: "3",
     text: "Travel",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [exampleTags, setExampleTags] = useState<Tag[]>(tags)
-  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null)
+  const id = useId();
+  const [exampleTags, setExampleTags] = useState<Tag[]>(tags);
+  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
 
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with tags</Label>
       <TagInput
+        activeTagIndex={activeTagIndex}
         id={id}
-        tags={exampleTags}
-        setTags={(newTags) => {
-          setExampleTags(newTags)
-        }}
+        inlineTags={false}
+        inputFieldPosition="top"
         placeholder="Add a tag"
+        setActiveTagIndex={setActiveTagIndex}
+        setTags={(newTags) => {
+          setExampleTags(newTags);
+        }}
         styleClasses={{
-          tagList: {
-            container: "gap-1",
-          },
           input:
             "rounded-md transition-[color,box-shadow] placeholder:text-muted-foreground/70 focus-visible:border-ring outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
           tag: {
@@ -46,27 +46,27 @@ export default function Component() {
             closeButton:
               "absolute -inset-y-px -end-px p-0 rounded-s-none rounded-e-md flex size-7 transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] text-muted-foreground/80 hover:text-foreground",
           },
+          tagList: {
+            container: "gap-1",
+          },
         }}
-        activeTagIndex={activeTagIndex}
-        setActiveTagIndex={setActiveTagIndex}
-        inlineTags={false}
-        inputFieldPosition="top"
+        tags={exampleTags}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/JaleelB/emblor"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           emblor
         </a>
       </p>
     </div>
-  )
+  );
 }

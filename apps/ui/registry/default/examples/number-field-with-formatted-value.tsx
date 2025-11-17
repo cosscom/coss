@@ -4,13 +4,13 @@ import {
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function NumberFieldWithFormattedValue() {
   return (
     <NumberField
       defaultValue={0}
-      format={{ style: "currency", currency: "USD" }}
+      format={{ currency: "USD", style: "currency" }}
     >
       <NumberFieldGroup>
         <NumberFieldDecrement />
@@ -18,5 +18,5 @@ export default function NumberFieldWithFormattedValue() {
         <NumberFieldIncrement />
       </NumberFieldGroup>
     </NumberField>
-  )
+  );
 }

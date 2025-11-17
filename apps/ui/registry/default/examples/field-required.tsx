@@ -1,5 +1,5 @@
-import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
-import { Input } from "@/registry/default/ui/input"
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
+import { Input } from "@/registry/default/ui/input";
 
 export default function FieldRequiredDemo() {
   return (
@@ -7,8 +7,8 @@ export default function FieldRequiredDemo() {
       <FieldLabel>
         Password <span className="text-destructive-foreground">*</span>
       </FieldLabel>
-      <Input type="password" placeholder="Enter password" required />
+      <Input placeholder="Enter password" required type="password" />
       <FieldError>Please fill out this field.</FieldError>
     </Field>
-  )
+  );
 }

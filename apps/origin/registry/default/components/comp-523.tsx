@@ -5,7 +5,7 @@ import {
   StepperSeparator,
   StepperTitle,
   StepperTrigger,
-} from "@/registry/default/ui/stepper"
+} from "@/registry/default/ui/stepper";
 
 const steps = [
   {
@@ -20,7 +20,7 @@ const steps = [
     step: 3,
     title: "Step Three",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -28,9 +28,9 @@ export default function Component() {
       <Stepper defaultValue={2}>
         {steps.map(({ step, title }) => (
           <StepperItem
+            className="not-last:flex-1 max-md:items-start"
             key={step}
             step={step}
-            className="not-last:flex-1 max-md:items-start"
           >
             <StepperTrigger className="rounded max-md:flex-col">
               <StepperIndicator />
@@ -45,12 +45,12 @@ export default function Component() {
         ))}
       </Stepper>
       <p
-        className="mt-2 text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Stepper with inline titles
       </p>
     </div>
-  )
+  );
 }

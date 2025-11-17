@@ -1,39 +1,39 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Particle() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <InputGroup>
       <InputGroupInput
-        type={showPassword ? "text" : "password"}
-        placeholder="Enter your password"
         aria-label="Password with toggle visibility"
+        placeholder="Enter your password"
+        type={showPassword ? "text" : "password"}
       />
       <InputGroupAddon align="inline-end">
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword(!showPassword)}
+                size="icon-xs"
+                variant="ghost"
               />
             }
           >
@@ -45,5 +45,5 @@ export default function Particle() {
         </Tooltip>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

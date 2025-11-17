@@ -1,21 +1,18 @@
-import * as React from "react";
-import Link from "next/link";
+import { siteConfig } from "@coss/ui/lib/config";
+import { Button } from "@coss/ui/ui/button";
+import { Skeleton } from "@coss/ui/ui/skeleton";
 import { GithubIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-
-import { siteConfig } from "@coss/ui/lib/config";
-import { Skeleton } from "@coss/ui/ui/skeleton";
-import { Button } from "@coss/ui/ui/button";
+import Link from "next/link";
+import * as React from "react";
 
 export function GitHubLink() {
   return (
     <Button
-      size="sm"
-      variant="ghost"
       className="relative h-8 shadow-none max-sm:w-8"
       render={
-        <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
-          <HugeiconsIcon icon={GithubIcon} className="size-4" strokeWidth={2} />
+        <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">
+          <HugeiconsIcon className="size-4" icon={GithubIcon} strokeWidth={2} />
           <span className="max-sm:sr-only">
             <React.Suspense fallback={<Skeleton className="h-4 w-[25.5px]" />}>
               <StarsCount />
@@ -23,6 +20,8 @@ export function GitHubLink() {
           </span>
         </Link>
       }
+      size="sm"
+      variant="ghost"
     />
   );
 }
@@ -45,7 +44,7 @@ export async function StarsCount() {
     }
 
     return (
-      <span className="w-8 text-xs text-muted-foreground tabular-nums">
+      <span className="w-8 text-muted-foreground text-xs tabular-nums">
         {starsCount >= 1000
           ? `${(starsCount / 1000).toFixed(1)}k`
           : starsCount.toLocaleString()}

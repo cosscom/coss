@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { ClockIcon, PowerIcon, PowerOffIcon, ZapIcon } from "lucide-react"
+import { ClockIcon, PowerIcon, PowerOffIcon, ZapIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Label } from "@/registry/default/ui/label"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Label } from "@/registry/default/ui/label";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
-import { Switch } from "@/registry/default/ui/switch"
+} from "@/registry/default/ui/popover";
+import { Switch } from "@/registry/default/ui/switch";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Overview", active: true },
+  { active: true, href: "#", label: "Overview" },
   { href: "#", label: "Graphs" },
   { href: "#", label: "Backups" },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [checked, setChecked] = useState<boolean>(true)
+  const id = useId();
+  const [checked, setChecked] = useState<boolean>(true);
 
   return (
     <header className="border-b px-4 md:px-6">
@@ -39,30 +39,30 @@ export default function Component() {
             {/* Mobile menu trigger */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="group size-8" variant="ghost" size="icon">
+                <Button className="group size-8" size="icon" variant="ghost">
                   <svg
                     className="pointer-events-none"
-                    width={16}
-                    height={16}
-                    viewBox="0 0 24 24"
                     fill="none"
+                    height={16}
                     stroke="currentColor"
-                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width={16}
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
+                      className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                       d="M4 12L20 12"
-                      className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                     />
                     <path
-                      d="M4 12H20"
                       className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                      d="M4 12H20"
                     />
                     <path
-                      d="M4 12H20"
                       className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                      d="M4 12H20"
                     />
                   </svg>
                 </Button>
@@ -70,9 +70,9 @@ export default function Component() {
               <PopoverContent align="start" className="w-36 p-1 md:hidden">
                 <NavigationMenu className="max-w-none *:w-full">
                   <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                    {navigationLinks.map((link, index) => (
-                      <NavigationMenuItem key={index} className="w-full">
-                        <NavigationMenuLink href={link.href} className="py-1.5">
+                    {navigationLinks.map((link, _index) => (
+                      <NavigationMenuItem className="w-full" key={link.label}>
+                        <NavigationMenuLink className="py-1.5" href={link.href}>
                           {link.label}
                         </NavigationMenuLink>
                       </NavigationMenuItem>
@@ -87,12 +87,12 @@ export default function Component() {
             {/* Navigation menu */}
             <NavigationMenu className="h-full *:h-full max-md:hidden">
               <NavigationMenuList className="h-full gap-2">
-                {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index} className="h-full">
+                {navigationLinks.map((link, _index) => (
+                  <NavigationMenuItem className="h-full" key={link.label}>
                     <NavigationMenuLink
                       active={link.active}
+                      className="h-full justify-center rounded-none border-transparent border-y-2 border-b-primary py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
                       href={link.href}
-                      className="h-full justify-center rounded-none border-y-2 border-transparent border-b-primary py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -105,52 +105,52 @@ export default function Component() {
         {/* Right side */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 text-emerald-600">
+            <Badge className="gap-1.5 text-emerald-600" variant="outline">
               <span
-                className="size-1.5 rounded-full bg-emerald-500"
                 aria-hidden="true"
-              ></span>
+                className="size-1.5 rounded-full bg-emerald-500"
+              />
               Online
             </Badge>
-            <Badge variant="outline" className="gap-1.5">
+            <Badge className="gap-1.5" variant="outline">
               <ZapIcon
+                aria-hidden="true"
                 className="-ms-0.5 opacity-60"
                 size={12}
-                aria-hidden="true"
               />
               99.9%
             </Badge>
-            <Badge variant="outline" className="gap-1.5">
+            <Badge className="gap-1.5" variant="outline">
               <ClockIcon
+                aria-hidden="true"
                 className="-ms-0.5 opacity-60"
                 size={12}
-                aria-hidden="true"
               />
               45ms
             </Badge>
           </div>
           {/* Switch */}
           <div>
-            <div className="relative inline-grid h-7 grid-cols-[1fr_1fr] items-center text-sm font-medium">
+            <div className="relative inline-grid h-7 grid-cols-[1fr_1fr] items-center font-medium text-sm">
               <Switch
-                id={id}
                 checked={checked}
+                className="peer [&_span]:data-[state=checked]:rtl:-translate-x-full absolute inset-0 h-[inherit] w-auto data-[state=unchecked]:bg-input/50 [&_span]:z-10 [&_span]:h-full [&_span]:w-1/2 [&_span]:transition-transform [&_span]:duration-300 [&_span]:ease-[cubic-bezier(0.16,1,0.3,1)] [&_span]:data-[state=checked]:translate-x-full"
+                id={id}
                 onCheckedChange={setChecked}
-                className="peer absolute inset-0 h-[inherit] w-auto data-[state=unchecked]:bg-input/50 [&_span]:z-10 [&_span]:h-full [&_span]:w-1/2 [&_span]:transition-transform [&_span]:duration-300 [&_span]:ease-[cubic-bezier(0.16,1,0.3,1)] [&_span]:data-[state=checked]:translate-x-full [&_span]:data-[state=checked]:rtl:-translate-x-full"
               />
-              <span className="pointer-events-none relative ms-0.5 flex w-6 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=checked]:invisible peer-data-[state=unchecked]:translate-x-full peer-data-[state=unchecked]:rtl:-translate-x-full">
-                <PowerOffIcon size={12} aria-hidden="true" />
+              <span className="peer-data-[state=unchecked]:rtl:-translate-x-full pointer-events-none relative ms-0.5 flex w-6 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=checked]:invisible peer-data-[state=unchecked]:translate-x-full">
+                <PowerOffIcon aria-hidden="true" size={12} />
               </span>
-              <span className="pointer-events-none relative me-0.5 flex w-6 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=checked]:-translate-x-full peer-data-[state=checked]:text-background peer-data-[state=unchecked]:invisible peer-data-[state=checked]:rtl:translate-x-full">
-                <PowerIcon size={12} aria-hidden="true" />
+              <span className="peer-data-[state=checked]:-translate-x-full pointer-events-none relative me-0.5 flex w-6 items-center justify-center text-center transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-data-[state=unchecked]:invisible peer-data-[state=checked]:text-background peer-data-[state=checked]:rtl:translate-x-full">
+                <PowerIcon aria-hidden="true" size={12} />
               </span>
             </div>
-            <Label htmlFor={id} className="sr-only">
+            <Label className="sr-only" htmlFor={id}>
               Power
             </Label>
           </div>
         </div>
       </div>
     </header>
-  )
+  );
 }

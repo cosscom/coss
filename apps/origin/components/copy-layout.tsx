@@ -1,27 +1,28 @@
-"use client"
+"use client";
 
-import { CheckIcon, TerminalIcon } from "lucide-react"
+import { CheckIcon, TerminalIcon } from "lucide-react";
 
-import { useCopy } from "@/hooks/use-copy"
+import { useCopy } from "@/hooks/use-copy";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 const CopyLayout = ({ command }: { command: string | undefined }) => {
-  const { copied, copy } = useCopy()
+  const { copied, copy } = useCopy();
 
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className="inline-flex items-center gap-1 text-sm hover:underline max-sm:hidden"
-            onClick={() => copy(command || "")}
             aria-label={copied ? "Copied" : "Copy command"}
+            className="inline-flex items-center gap-1 text-sm hover:underline max-sm:hidden"
             disabled={copied}
+            onClick={() => copy(command || "")}
+            type="button"
           >
             {copied ? (
               <CheckIcon className="size-4 text-emerald-600" />
@@ -31,12 +32,12 @@ const CopyLayout = ({ command }: { command: string | undefined }) => {
             CLI Command
           </button>
         </TooltipTrigger>
-        <TooltipContent className="px-2 py-1 text-xs text-muted-foreground">
+        <TooltipContent className="px-2 py-1 text-muted-foreground text-xs">
           Click to copy
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
-}
+  );
+};
 
-export default CopyLayout
+export default CopyLayout;

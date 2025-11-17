@@ -4,16 +4,16 @@ import {
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function NumberFieldSm() {
   return (
-    <NumberField size="sm" defaultValue={0}>
+    <NumberField defaultValue={0} size="sm">
       <NumberFieldGroup>
         <NumberFieldDecrement />
         <NumberFieldInput />
         <NumberFieldIncrement />
       </NumberFieldGroup>
     </NumberField>
-  )
+  );
 }

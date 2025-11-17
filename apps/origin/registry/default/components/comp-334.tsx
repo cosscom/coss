@@ -3,42 +3,42 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 const items = [
   {
-    id: "1",
-    title: "What makes coss ui different?",
     content:
       "coss ui focuses on developer experience and performance. Built with TypeScript, it offers excellent type safety, follows accessibility standards, and provides comprehensive documentation with regular updates.",
+    id: "1",
+    title: "What makes coss ui different?",
   },
   {
-    id: "2",
-    title: "How can I customize the components?",
     content:
       "Use our CSS variables for global styling, or className and style props for component-specific changes. We support CSS modules, Tailwind, and dark mode out of the box.",
+    id: "2",
+    title: "How can I customize the components?",
   },
   {
-    id: "3",
-    title: "Is coss ui optimized for performance?",
     content:
       "Yes, with tree-shaking, code splitting, and minimal runtime overhead. Most components are under 5KB gzipped.",
+    id: "3",
+    title: "Is coss ui optimized for performance?",
   },
   {
-    id: "4",
-    title: "How accessible are the components?",
     content:
       "All components follow WAI-ARIA standards, featuring proper ARIA attributes, keyboard navigation, and screen reader support. Regular testing ensures compatibility with NVDA, VoiceOver, and JAWS.",
+    id: "4",
+    title: "How accessible are the components?",
   },
-]
+];
 
 export default function Component() {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">W/ chevron</h2>
-      <Accordion type="single" collapsible className="w-full" defaultValue="3">
+      <h2 className="font-bold text-xl">W/ chevron</h2>
+      <Accordion className="w-full" collapsible defaultValue="3" type="single">
         {items.map((item) => (
-          <AccordionItem value={item.id} key={item.id} className="py-2">
+          <AccordionItem className="py-2" key={item.id} value={item.id}>
             <AccordionTrigger className="py-2 text-[15px] leading-6 hover:no-underline">
               {item.title}
             </AccordionTrigger>
@@ -49,5 +49,5 @@ export default function Component() {
         ))}
       </Accordion>
     </div>
-  )
+  );
 }

@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  PaginationState,
-  SortingState,
+  type PaginationState,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronUpIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { usePagination } from "@/registry/default/hooks/use-pagination"
-import { cn } from "@/registry/default/lib/utils"
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { usePagination } from "@/registry/default/hooks/use-pagination";
+import { cn } from "@/registry/default/lib/utils";
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 import {
   Table,
   TableBody,
@@ -43,56 +43,55 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 type Item = {
-  id: string
-  name: string
-  email: string
-  location: string
-  flag: string
-  status: "Active" | "Inactive" | "Pending"
-  balance: number
-}
+  id: string;
+  name: string;
+  email: string;
+  location: string;
+  flag: string;
+  status: "Active" | "Inactive" | "Pending";
+  balance: number;
+};
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableSorting: false,
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all rows"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all rows"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    id: "select",
     size: 28,
-    enableSorting: false,
   },
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
+    header: "Name",
     size: 180,
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
     size: 200,
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div>
@@ -100,85 +99,86 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
     size: 180,
   },
   {
-    header: "Status",
     accessorKey: "status",
     cell: ({ row }) => (
       <Badge
         className={cn(
           row.getValue("status") === "Inactive" &&
-            "bg-muted-foreground/60 text-primary-foreground"
+            "bg-muted-foreground/60 text-primary-foreground",
         )}
       >
         {row.getValue("status")}
       </Badge>
     ),
+    header: "Status",
     size: 120,
   },
   {
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"))
+      const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
-      }).format(amount)
-      return formatted
+        style: "currency",
+      }).format(amount);
+      return formatted;
     },
+    header: "Balance",
     size: 120,
   },
-]
+];
 
 export default function Component() {
-  const pageSize = 5
+  const pageSize = 5;
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: pageSize,
-  })
+  });
 
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "name",
       desc: false,
+      id: "name",
     },
-  ])
+  ]);
 
-  const [data, setData] = useState<Item[]>([])
+  const [data, setData] = useState<Item[]>([]);
   useEffect(() => {
     async function fetchPosts() {
       const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      )
-      const data = await res.json()
-      setData(data)
+        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json",
+      );
+      const data = await res.json();
+      setData(data);
     }
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const table = useReactTable({
-    data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    data,
     enableSortingRemoval: false,
+    getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
-      sorting,
       pagination,
+      sorting,
     },
-  })
+  });
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage: table.getState().pagination.pageIndex + 1,
-    totalPages: table.getPageCount(),
     paginationItemsToDisplay: 5,
-  })
+    totalPages: table.getPageCount(),
+  });
 
   return (
     <div className="space-y-4">
@@ -186,19 +186,19 @@ export default function Component() {
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent" key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
+                      className="h-11"
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
-                      className="h-11"
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
                         <div
                           className={cn(
                             header.column.getCanSort() &&
-                              "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                              "flex h-full cursor-pointer select-none items-center justify-between gap-2",
                           )}
                           onClick={header.column.getToggleSortingHandler()}
                           onKeyDown={(e) => {
@@ -207,29 +207,29 @@ export default function Component() {
                               header.column.getCanSort() &&
                               (e.key === "Enter" || e.key === " ")
                             ) {
-                              e.preventDefault()
-                              header.column.getToggleSortingHandler()?.(e)
+                              e.preventDefault();
+                              header.column.getToggleSortingHandler()?.(e);
                             }
                           }}
                           tabIndex={header.column.getCanSort() ? 0 : undefined}
                         >
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                           {{
                             asc: (
                               <ChevronUpIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                             desc: (
                               <ChevronDownIcon
+                                aria-hidden="true"
                                 className="shrink-0 opacity-60"
                                 size={16}
-                                aria-hidden="true"
                               />
                             ),
                           }[header.column.getIsSorted() as string] ?? null}
@@ -237,11 +237,11 @@ export default function Component() {
                       ) : (
                         flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )
                       )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -250,14 +250,14 @@ export default function Component() {
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -266,8 +266,8 @@ export default function Component() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   No results.
                 </TableCell>
@@ -281,8 +281,8 @@ export default function Component() {
       <div className="flex items-center justify-between gap-3 max-sm:flex-col">
         {/* Page number information */}
         <p
-          className="flex-1 text-sm whitespace-nowrap text-muted-foreground"
           aria-live="polite"
+          className="flex-1 whitespace-nowrap text-muted-foreground text-sm"
         >
           Page{" "}
           <span className="text-foreground">
@@ -298,14 +298,14 @@ export default function Component() {
               {/* Previous page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to previous page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => table.previousPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  aria-label="Go to previous page"
                 >
-                  <ChevronLeftIcon size={16} aria-hidden="true" />
+                  <ChevronLeftIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
 
@@ -319,19 +319,19 @@ export default function Component() {
               {/* Page number buttons */}
               {pages.map((page) => {
                 const isActive =
-                  page === table.getState().pagination.pageIndex + 1
+                  page === table.getState().pagination.pageIndex + 1;
                 return (
                   <PaginationItem key={page}>
                     <Button
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => table.setPageIndex(page - 1)}
                       size="icon"
                       variant={`${isActive ? "outline" : "ghost"}`}
-                      onClick={() => table.setPageIndex(page - 1)}
-                      aria-current={isActive ? "page" : undefined}
                     >
                       {page}
                     </Button>
                   </PaginationItem>
-                )
+                );
               })}
 
               {/* Right ellipsis (...) */}
@@ -344,14 +344,14 @@ export default function Component() {
               {/* Next page button */}
               <PaginationItem>
                 <Button
+                  aria-label="Go to next page"
+                  className="disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => table.nextPage()}
                   size="icon"
                   variant="outline"
-                  className="disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  aria-label="Go to next page"
                 >
-                  <ChevronRightIcon size={16} aria-hidden="true" />
+                  <ChevronRightIcon aria-hidden="true" size={16} />
                 </Button>
               </PaginationItem>
             </PaginationContent>
@@ -361,15 +361,15 @@ export default function Component() {
         {/* Results per page */}
         <div className="flex flex-1 justify-end">
           <Select
-            value={table.getState().pagination.pageSize.toString()}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value))
-            }}
             aria-label="Results per page"
+            onValueChange={(value) => {
+              table.setPageSize(Number(value));
+            }}
+            value={table.getState().pagination.pageSize.toString()}
           >
             <SelectTrigger
-              id="results-per-page"
               className="w-fit whitespace-nowrap"
+              id="results-per-page"
             >
               <SelectValue placeholder="Select number of results" />
             </SelectTrigger>
@@ -383,17 +383,17 @@ export default function Component() {
           </Select>
         </div>
       </div>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Numeric pagination made with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>
       </p>
     </div>
-  )
+  );
 }

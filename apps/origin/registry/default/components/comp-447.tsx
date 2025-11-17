@@ -1,4 +1,4 @@
-import { FoldersIcon } from "lucide-react"
+import { FoldersIcon } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -7,13 +7,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
+} from "@/registry/default/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function Component() {
   return (
@@ -27,9 +27,9 @@ export default function Component() {
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:text-foreground">
               <span
-                role="presentation"
                 aria-hidden="true"
                 className="flex size-5 items-center justify-center"
+                role="presentation"
               >
                 <FoldersIcon size={16} />
               </span>
@@ -54,5 +54,5 @@ export default function Component() {
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
-  )
+  );
 }

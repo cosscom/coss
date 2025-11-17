@@ -1,19 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "button-xs",
-  "type": "registry:example",
+  "categories": ["button"],
   "description": "Extra-small button",
-  "registryDependencies": [
-    "@coss/button"
-  ],
   "files": [
     {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonXs() {\n  return <Button size=\"xs\">Button</Button>;\n}\n",
       "path": "registry/default/examples/button-xs.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonXs() {\n  return <Button size=\"xs\">Button</Button>\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "name": "button-xs",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:example"
 }

@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
-import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 const items = [
   { id: 1, price: 80 },
@@ -129,16 +129,16 @@ const items = [
   { id: 118, price: 895 },
   { id: 119, price: 898 },
   { id: 120, price: 900 },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   // Define the number of ticks
-  const tick_count = 40
+  const tick_count = 40;
   // Find the min and max values across all items
-  const minValue = Math.min(...items.map((item) => item.price))
-  const maxValue = Math.max(...items.map((item) => item.price))
+  const minValue = Math.min(...items.map((item) => item.price));
+  const maxValue = Math.max(...items.map((item) => item.price));
 
   const {
     sliderValue,
@@ -146,81 +146,82 @@ export default function Component() {
     validateAndUpdateValue,
     handleInputChange,
     handleSliderChange,
-  } = useSliderWithInput({ minValue, maxValue, initialValue: [200, 780] }) // set initialValue: [minValue, maxValue] to show all items by default
+  } = useSliderWithInput({ initialValue: [200, 780], maxValue, minValue }); // set initialValue: [minValue, maxValue] to show all items by default
 
   // Calculate the price step based on the min and max prices
-  const priceStep = (maxValue - minValue) / tick_count
+  const priceStep = (maxValue - minValue) / tick_count;
 
   // Calculate item counts for each price range
   const itemCounts = Array(tick_count)
     .fill(0)
     .map((_, tick) => {
-      const rangeMin = minValue + tick * priceStep
-      const rangeMax = minValue + (tick + 1) * priceStep
+      const rangeMin = minValue + tick * priceStep;
+      const rangeMax = minValue + (tick + 1) * priceStep;
       return items.filter(
-        (item) => item.price >= rangeMin && item.price < rangeMax
-      ).length
-    })
+        (item) => item.price >= rangeMin && item.price < rangeMax,
+      ).length;
+    });
 
   // Find maximum count for scaling
-  const maxCount = Math.max(...itemCounts)
+  const maxCount = Math.max(...itemCounts);
 
   const handleSliderValueChange = (values: number[]) => {
-    handleSliderChange(values)
-  }
+    handleSliderChange(values);
+  };
 
   // Function to count items in the selected range
   const countItemsInRange = (min: number, max: number) => {
-    return items.filter((item) => item.price >= min && item.price <= max).length
-  }
+    return items.filter((item) => item.price >= min && item.price <= max)
+      .length;
+  };
 
   const isBarInSelectedRange = (
     index: number,
     minValue: number,
     priceStep: number,
-    sliderValue: number[]
+    sliderValue: number[],
   ) => {
-    const rangeMin = minValue + index * priceStep
-    const rangeMax = minValue + (index + 1) * priceStep
+    const rangeMin = minValue + index * priceStep;
+    const rangeMax = minValue + (index + 1) * priceStep;
     return (
       countItemsInRange(sliderValue[0], sliderValue[1]) > 0 &&
       rangeMin <= sliderValue[1] &&
       rangeMax >= sliderValue[0]
-    )
-  }
+    );
+  };
 
   return (
     <div className="*:not-first:mt-4">
       <Label>Price slider</Label>
       <div>
         {/* Histogram bars */}
-        <div className="flex h-12 w-full items-end px-3" aria-hidden="true">
+        <div aria-hidden="true" className="flex h-12 w-full items-end px-3">
           {itemCounts.map((count, i) => (
             <div
-              key={i}
               className="flex flex-1 justify-center"
+              key={String(i)}
               style={{
                 height: `${(count / maxCount) * 100}%`,
               }}
             >
               <span
+                className="size-full bg-primary/20"
                 data-selected={isBarInSelectedRange(
                   i,
                   minValue,
                   priceStep,
-                  sliderValue
+                  sliderValue,
                 )}
-                className="size-full bg-primary/20"
-              ></span>
+              />
             </div>
           ))}
         </div>
         <Slider
-          value={sliderValue}
-          onValueChange={handleSliderValueChange}
-          min={minValue}
-          max={maxValue}
           aria-label="Price range"
+          max={maxValue}
+          min={minValue}
+          onValueChange={handleSliderValueChange}
+          value={sliderValue}
         />
       </div>
 
@@ -230,21 +231,21 @@ export default function Component() {
           <Label htmlFor={`${id}-min`}>Min price</Label>
           <div className="relative">
             <Input
-              id={`${id}-min`}
+              aria-label="Enter minimum price"
               className="peer w-full ps-6"
-              type="text"
+              id={`${id}-min`}
               inputMode="decimal"
-              value={inputValues[0]}
-              onChange={(e) => handleInputChange(e, 0)}
               onBlur={() => validateAndUpdateValue(inputValues[0], 0)}
+              onChange={(e) => handleInputChange(e, 0)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  validateAndUpdateValue(inputValues[0], 0)
+                  validateAndUpdateValue(inputValues[0], 0);
                 }
               }}
-              aria-label="Enter minimum price"
+              type="text"
+              value={inputValues[0]}
             />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-sm text-muted-foreground peer-disabled:opacity-50">
+            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $
             </span>
           </div>
@@ -253,21 +254,21 @@ export default function Component() {
           <Label htmlFor={`${id}-max`}>Max price</Label>
           <div className="relative">
             <Input
-              id={`${id}-max`}
+              aria-label="Enter maximum price"
               className="peer w-full ps-6"
-              type="text"
+              id={`${id}-max`}
               inputMode="decimal"
-              value={inputValues[1]}
-              onChange={(e) => handleInputChange(e, 1)}
               onBlur={() => validateAndUpdateValue(inputValues[1], 1)}
+              onChange={(e) => handleInputChange(e, 1)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  validateAndUpdateValue(inputValues[1], 1)
+                  validateAndUpdateValue(inputValues[1], 1);
                 }
               }}
-              aria-label="Enter maximum price"
+              type="text"
+              value={inputValues[1]}
             />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-sm text-muted-foreground peer-disabled:opacity-50">
+            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $
             </span>
           </div>
@@ -279,5 +280,5 @@ export default function Component() {
         Show {countItemsInRange(sliderValue[0], sliderValue[1])} items
       </Button>
     </div>
-  )
+  );
 }

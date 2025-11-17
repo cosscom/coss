@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 
 export default function Component() {
   return (
@@ -149,5 +149,5 @@ export default function Component() {
         </DialogHeader>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

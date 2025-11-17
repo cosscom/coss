@@ -1,20 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-disabled",
-  "type": "registry:example",
+  "categories": ["input", "disabled"],
   "description": "Input with disabled state",
-  "registryDependencies": [
-    "@coss/input"
-  ],
   "files": [
     {
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function InputDisabled() {\n  return (\n    <Input aria-label=\"Disabled\" disabled placeholder=\"Disabled\" type=\"text\" />\n  );\n}\n",
       "path": "registry/default/examples/input-disabled.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\"\n\nexport default function InputDisabled() {\n  return (\n    <Input type=\"text\" placeholder=\"Disabled\" disabled aria-label=\"Disabled\" />\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "disabled"
-  ]
+  "name": "input-disabled",
+  "registryDependencies": ["@coss/input"],
+  "type": "registry:example"
 }

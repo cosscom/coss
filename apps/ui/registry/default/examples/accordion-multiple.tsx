@@ -3,7 +3,7 @@ import {
   AccordionItem,
   AccordionPanel,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
+} from "@/registry/default/ui/accordion";
 
 export default function AccordionMultipleDemo() {
   return (
@@ -29,5 +29,5 @@ export default function AccordionMultipleDemo() {
         </AccordionPanel>
       </AccordionItem>
     </Accordion>
-  )
+  );
 }

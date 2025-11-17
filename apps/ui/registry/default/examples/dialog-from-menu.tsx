@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -11,16 +11,16 @@ import {
   DialogHeader,
   DialogPopup,
   DialogTitle,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function DialogFromMenuDemo() {
-  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [dialogOpen, setDialogOpen] = React.useState(false);
   return (
     <>
       <Menu>
@@ -31,7 +31,7 @@ export default function DialogFromMenuDemo() {
           <MenuItem onClick={() => setDialogOpen(true)}>Open dialog</MenuItem>
         </MenuPopup>
       </Menu>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
         <DialogPopup>
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
@@ -43,5 +43,5 @@ export default function DialogFromMenuDemo() {
         </DialogPopup>
       </Dialog>
     </>
-  )
+  );
 }

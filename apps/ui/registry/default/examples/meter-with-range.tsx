@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Meter,
@@ -6,11 +6,11 @@ import {
   MeterLabel,
   MeterTrack,
   MeterValue,
-} from "@/registry/default/ui/meter"
+} from "@/registry/default/ui/meter";
 
 export default function MeterWithRangeDemo() {
   return (
-    <Meter value={700} min={500} max={1000}>
+    <Meter max={1000} min={500} value={700}>
       <div className="flex items-center justify-between gap-2">
         <MeterLabel>Bandwidth (Mbps)</MeterLabel>
         <MeterValue>{(_formatted, value) => value}</MeterValue>
@@ -19,5 +19,5 @@ export default function MeterWithRangeDemo() {
         <MeterIndicator />
       </MeterTrack>
     </Meter>
-  )
+  );
 }

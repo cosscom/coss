@@ -1,12 +1,12 @@
-import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group"
-import { Input } from "@/registry/default/ui/input"
+import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group";
+import { Input } from "@/registry/default/ui/input";
 
 export default function GroupWithEndText() {
   return (
     <Group aria-label="Domain input">
-      <Input id="domain" type="text" defaultValue="coss" aria-label="Domain" />
+      <Input aria-label="Domain" defaultValue="coss" id="domain" type="text" />
       <GroupSeparator />
       <GroupText>.com</GroupText>
     </Group>
-  )
+  );
 }

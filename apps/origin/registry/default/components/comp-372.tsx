@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function Component() {
-  const [framework, setFramework] = useState("nextjs")
+  const [framework, setFramework] = useState("nextjs");
 
   return (
     <DropdownMenu>
@@ -21,16 +21,16 @@ export default function Component() {
         <Button variant="outline">
           Radio items
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuRadioGroup value={framework} onValueChange={setFramework}>
+        <DropdownMenuRadioGroup onValueChange={setFramework} value={framework}>
           <DropdownMenuRadioItem value="nextjs">Next.js</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="sveltekit" disabled>
+          <DropdownMenuRadioItem disabled value="sveltekit">
             SvelteKit
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="remix">Remix</DropdownMenuRadioItem>
@@ -38,5 +38,5 @@ export default function Component() {
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

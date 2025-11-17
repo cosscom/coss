@@ -1,6 +1,6 @@
-import { MailIcon } from "lucide-react"
+import { MailIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Component() {
   return (
@@ -20,18 +20,18 @@ export default function Component() {
       <DialogContent>
         <div className="mb-2 flex flex-col items-center gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <svg
+              aria-hidden="true"
               className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
               height="20"
               viewBox="0 0 32 32"
-              aria-hidden="true"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              <circle cx="16" cy="16" fill="none" r="12" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
@@ -48,23 +48,23 @@ export default function Component() {
           <div className="*:not-first:mt-2">
             <div className="relative">
               <Input
-                id="dialog-subscribe"
+                aria-label="Email"
                 className="peer ps-9"
+                id="dialog-subscribe"
                 placeholder="hi@yourcompany.com"
                 type="email"
-                aria-label="Email"
               />
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-                <MailIcon size={16} aria-hidden="true" />
+                <MailIcon aria-hidden="true" size={16} />
               </div>
             </div>
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Subscribe
           </Button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs">
           By subscribing you agree to our{" "}
           <a className="underline hover:no-underline" href="#">
             Privacy Policy
@@ -73,5 +73,5 @@ export default function Component() {
         </p>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -4,18 +4,18 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Select framework", value: null },
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
-]
+];
 
 export default function SelectDemo() {
   return (
-    <Select items={items} defaultValue="next">
+    <Select defaultValue="next" items={items}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
@@ -27,5 +27,5 @@ export default function SelectDemo() {
         ))}
       </SelectPopup>
     </Select>
-  )
+  );
 }

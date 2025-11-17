@@ -1,15 +1,15 @@
-import { ChevronDownIcon, GitForkIcon } from "lucide-react"
+import { ChevronDownIcon, GitForkIcon } from "lucide-react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
-import { Group, GroupSeparator } from "@/registry/default/ui/group"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
 import {
   Popover,
   PopoverDescription,
   PopoverPopup,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function GroupPopup() {
   return (
@@ -23,12 +23,12 @@ export default function GroupPopup() {
       <Popover>
         <PopoverTrigger
           render={
-            <Button variant="outline" size="icon" aria-label="Send options" />
+            <Button aria-label="Send options" size="icon" variant="outline" />
           }
         >
           <ChevronDownIcon />
         </PopoverTrigger>
-        <PopoverPopup className="w-64" align="end">
+        <PopoverPopup align="end" className="w-64">
           <PopoverTitle className="text-base">Existing forks</PopoverTitle>
           <PopoverDescription>
             You don't have any forks of this repository.
@@ -36,5 +36,5 @@ export default function GroupPopup() {
         </PopoverPopup>
       </Popover>
     </Group>
-  )
+  );
 }

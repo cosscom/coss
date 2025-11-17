@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DownloadIcon, LoaderCircleIcon } from "lucide-react"
+import { DownloadIcon, LoaderCircleIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = () => {
-    setIsDownloading(true)
+    setIsDownloading(true);
     // Simulate download
     setTimeout(() => {
-      setIsDownloading(false)
-    }, 2000)
-  }
+      setIsDownloading(false);
+    }, 2000);
+  };
 
   return (
     <div className="bg-muted px-4 py-3 md:py-2">
@@ -25,29 +25,29 @@ export default function Component() {
           New features and improvements available
         </p>
         <Button
-          size="sm"
-          variant="outline"
+          className="min-w-24"
           disabled={isDownloading}
           onClick={handleDownload}
-          className="min-w-24"
+          size="sm"
+          variant="outline"
         >
           {isDownloading ? (
             <>
               <LoaderCircleIcon
+                aria-hidden="true"
                 className="-ms-0.5 me-2 animate-spin"
                 size={16}
-                aria-hidden="true"
               />
               Updating...
             </>
           ) : (
             <>
-              <DownloadIcon size={16} className="-ms-0.5" aria-hidden="true" />
+              <DownloadIcon aria-hidden="true" className="-ms-0.5" size={16} />
               Update now
             </>
           )}
         </Button>
       </div>
     </div>
-  )
+  );
 }

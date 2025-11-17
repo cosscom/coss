@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { StarIcon } from "lucide-react"
+import { StarIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
-  const [isStarred, setIsStarred] = useState(false)
-  const count = isStarred ? 730 : 729
+  const [isStarred, setIsStarred] = useState(false);
+  const count = isStarred ? 730 : 729;
 
   return (
     <Button onClick={() => setIsStarred(!isStarred)}>
       <StarIcon
-        className={`${isStarred ? "fill-yellow-500 text-yellow-500" : "opacity-72"}`}
         aria-hidden="true"
+        className={`${isStarred ? "fill-yellow-500 text-yellow-500" : "opacity-72"}`}
       />
       <span className="flex items-baseline gap-2">
         {isStarred ? "Starred" : "Star"}
-        <span className="text-xs text-primary-foreground/60">{count}</span>
+        <span className="text-primary-foreground/60 text-xs">{count}</span>
       </span>
     </Button>
-  )
+  );
 }

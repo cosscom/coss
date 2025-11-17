@@ -1,77 +1,76 @@
-"use client"
+"use client";
 
-import React from "react"
 import {
   checkboxesFeature,
   hotkeysCoreFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
-import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react"
+} from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
+import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
+  apis: { name: "APIs" },
+  backend: { children: ["apis", "infrastructure"], name: "Backend" },
   company: {
-    name: "Company",
     children: ["engineering", "marketing", "operations"],
-  },
-  engineering: {
-    name: "Engineering",
-    children: ["frontend", "backend", "platform-team"],
-  },
-  frontend: { name: "Frontend", children: ["design-system", "web-platform"] },
-  "design-system": {
-    name: "Design System",
-    children: ["components", "tokens", "guidelines"],
+    name: "Company",
   },
   components: { name: "Components" },
-  tokens: { name: "Tokens" },
-  guidelines: { name: "Guidelines" },
-  "web-platform": { name: "Web Platform" },
-  backend: { name: "Backend", children: ["apis", "infrastructure"] },
-  apis: { name: "APIs" },
-  infrastructure: { name: "Infrastructure" },
-  "platform-team": { name: "Platform Team" },
-  marketing: { name: "Marketing", children: ["content", "seo"] },
   content: { name: "Content" },
-  seo: { name: "SEO" },
-  operations: { name: "Operations", children: ["hr", "finance"] },
-  hr: { name: "HR" },
+  "design-system": {
+    children: ["components", "tokens", "guidelines"],
+    name: "Design System",
+  },
+  engineering: {
+    children: ["frontend", "backend", "platform-team"],
+    name: "Engineering",
+  },
   finance: { name: "Finance" },
-}
+  frontend: { children: ["design-system", "web-platform"], name: "Frontend" },
+  guidelines: { name: "Guidelines" },
+  hr: { name: "HR" },
+  infrastructure: { name: "Infrastructure" },
+  marketing: { children: ["content", "seo"], name: "Marketing" },
+  operations: { children: ["hr", "finance"], name: "Operations" },
+  "platform-team": { name: "Platform Team" },
+  seo: { name: "SEO" },
+  tokens: { name: "Tokens" },
+  "web-platform": { name: "Web Platform" },
+};
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
   const tree = useTree<Item>({
-    initialState: {
-      expandedItems: ["engineering", "frontend", "design-system"],
-      checkedItems: ["components", "tokens"],
-    },
-    indent,
-    rootItemId: "company",
-    getItemName: (item) => item.getItemData().name,
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    dataLoader: {
-      getItem: (itemId) => items[itemId],
-      getChildren: (itemId) => items[itemId].children ?? [],
-    },
     canCheckFolders: true,
+    dataLoader: {
+      getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => items[itemId],
+    },
     features: [
       syncDataLoaderFeature,
       selectionFeature,
       checkboxesFeature,
       hotkeysCoreFeature,
     ],
-  })
+    getItemName: (item) => item.getItemData().name,
+    indent,
+    initialState: {
+      checkedItems: ["components", "tokens"],
+      expandedItems: ["engineering", "frontend", "design-system"],
+    },
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    rootItemId: "company",
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
@@ -84,24 +83,24 @@ export default function Component() {
           {tree.getItems().map((item) => {
             return (
               <div
-                key={item.getId()}
                 className="flex items-center gap-1.5 not-last:pb-0.5"
+                key={item.getId()}
               >
                 <Checkbox
                   checked={
                     {
                       checked: true,
-                      unchecked: false,
                       indeterminate: "indeterminate" as const,
+                      unchecked: false,
                     }[item.getCheckedState()]
                   }
                   onCheckedChange={(checked) => {
-                    const checkboxProps = item.getCheckboxProps()
-                    checkboxProps.onChange?.({ target: { checked } })
+                    const checkboxProps = item.getCheckboxProps();
+                    checkboxProps.onChange?.({ target: { checked } });
                   }}
                 />
-                <TreeItem item={item} className="flex-1 not-last:pb-0">
-                  <TreeItemLabel className="relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10 before:bg-background">
+                <TreeItem className="flex-1 not-last:pb-0" item={item}>
+                  <TreeItemLabel className="before:-inset-y-0.5 before:-z-10 relative before:absolute before:inset-x-0 before:bg-background">
                     <span className="flex items-center gap-2">
                       {item.isFolder() ? (
                         item.isExpanded() ? (
@@ -117,7 +116,7 @@ export default function Component() {
                   </TreeItemLabel>
                 </TreeItem>
               </div>
-            )
+            );
           })}
         </Tree>
       </div>
@@ -125,20 +124,20 @@ export default function Component() {
       <div className="space-y-2">
         <p
           aria-live="polite"
+          className="mt-2 text-muted-foreground text-xs"
           role="region"
-          className="mt-2 text-xs text-muted-foreground"
         >
           Tree with canCheckFolders option ∙{" "}
           <a
-            href="https://headless-tree.lukasbach.com"
             className="underline hover:text-foreground"
-            target="_blank"
+            href="https://headless-tree.lukasbach.com"
             rel="noopener noreferrer"
+            target="_blank"
           >
             API
           </a>
         </p>
       </div>
     </div>
-  )
+  );
 }

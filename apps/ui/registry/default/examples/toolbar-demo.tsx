@@ -4,35 +4,35 @@ import {
   AlignRightIcon,
   DollarSignIcon,
   PercentIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
-import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group"
+} from "@/registry/default/ui/select";
+import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group";
 import {
   Toolbar,
   ToolbarButton,
   ToolbarGroup,
   ToolbarSeparator,
-} from "@/registry/default/ui/toolbar"
+} from "@/registry/default/ui/toolbar";
 import {
   Tooltip,
   TooltipPopup,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 const items = [
   { label: "Helvetica", value: "helvetica" },
   { label: "Arial", value: "arial" },
   { label: "Times New Roman", value: "times-new-roman" },
-]
+];
 
 export default function ToolbarDemo() {
   return (
@@ -43,8 +43,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="left" />}
                   aria-label="Align left"
+                  render={<Toggle value="left" />}
                 >
                   <AlignLeftIcon />
                 </ToolbarButton>
@@ -56,8 +56,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="center" aria-label="Toggle center" />}
                   aria-label="Align center"
+                  render={<Toggle aria-label="Toggle center" value="center" />}
                 >
                   <AlignCenterIcon />
                 </ToolbarButton>
@@ -69,8 +69,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Toggle value="right" aria-label="Toggle right" />}
                   aria-label="Align right"
+                  render={<Toggle aria-label="Toggle right" value="right" />}
                 >
                   <AlignRightIcon />
                 </ToolbarButton>
@@ -85,8 +85,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Button variant="ghost" size="icon" />}
                   aria-label="Format as currency"
+                  render={<Button size="icon" variant="ghost" />}
                 >
                   <DollarSignIcon />
                 </ToolbarButton>
@@ -98,8 +98,8 @@ export default function ToolbarDemo() {
             <TooltipTrigger
               render={
                 <ToolbarButton
-                  render={<Button variant="ghost" size="icon" />}
                   aria-label="Format as percent"
+                  render={<Button size="icon" variant="ghost" />}
                 >
                   <PercentIcon />
                 </ToolbarButton>
@@ -110,7 +110,7 @@ export default function ToolbarDemo() {
         </ToolbarGroup>
         <ToolbarSeparator />
         <ToolbarGroup>
-          <Select items={items} defaultValue="helvetica">
+          <Select defaultValue="helvetica" items={items}>
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -143,5 +143,5 @@ export default function ToolbarDemo() {
         </ToolbarGroup>
       </Toolbar>
     </TooltipProvider>
-  )
+  );
 }

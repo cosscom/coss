@@ -1,5 +1,4 @@
 {
-  "title": "Components",
   "pages": [
     "accordion",
     "alert",
@@ -49,5 +48,6 @@
     "toggle-group",
     "toolbar",
     "tooltip"
-  ]
+  ],
+  "title": "Components"
 }

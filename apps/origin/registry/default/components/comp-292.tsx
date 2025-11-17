@@ -1,6 +1,6 @@
-import { Info, XIcon } from "lucide-react"
+import { Info, XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -9,16 +9,16 @@ export default function Component() {
       <div className="flex gap-2">
         <div className="flex grow gap-3">
           <Info
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-blue-500"
             size={16}
-            aria-hidden="true"
           />
           <div className="flex grow flex-col gap-3">
             <div className="space-y-1">
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 Here is some helpful information!
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 It aims to provide clarity or support for better
                 decision-making.
               </p>
@@ -28,18 +28,18 @@ export default function Component() {
             </div>
           </div>
           <Button
-            variant="ghost"
-            className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
             aria-label="Close notification"
+            className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+            variant="ghost"
           >
             <XIcon
-              size={16}
-              className="opacity-60 transition-opacity group-hover:opacity-100"
               aria-hidden="true"
+              className="opacity-60 transition-opacity group-hover:opacity-100"
+              size={16}
             />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

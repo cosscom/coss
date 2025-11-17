@@ -1,34 +1,34 @@
-import { GlobeIcon } from "lucide-react"
+import { GlobeIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             W/ icon
           </Button>
         </TooltipTrigger>
         <TooltipContent className="dark py-3">
           <div className="flex gap-3">
             <GlobeIcon
+              aria-hidden="true"
               className="mt-0.5 shrink-0 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             <div className="space-y-1">
-              <p className="text-[13px] font-medium">
+              <p className="font-medium text-[13px]">
                 Tooltip with title and icon
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Tooltips are made to be highly customizable, with features like
                 dynamic placement, rich content, and a robust API.
               </p>
@@ -37,5 +37,5 @@ export default function Component() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

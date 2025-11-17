@@ -1,20 +1,20 @@
-import { useId } from "react"
-import { MicIcon, SearchIcon } from "lucide-react"
+import { MicIcon, SearchIcon } from "lucide-react";
+import { useId } from "react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle"
-import { Button } from "@/registry/default/ui/button"
-import { Input } from "@/registry/default/ui/input"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
 
   return (
     <header className="border-b px-4 md:px-6">
       <div className="flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex-1">
-          <a href="#" className="text-primary hover:text-primary/90">
+          <a className="text-primary hover:text-primary/90" href="#">
             <Logo />
           </a>
         </div>
@@ -23,8 +23,8 @@ export default function Component() {
           {/* Search form */}
           <div className="relative mx-auto w-full max-w-xs">
             <Input
-              id={id}
               className="peer h-8 px-8"
+              id={id}
               placeholder="Search..."
               type="search"
             />
@@ -32,25 +32,25 @@ export default function Component() {
               <SearchIcon size={16} />
             </div>
             <button
-              className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Press to speak"
+              className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
               type="submit"
             >
-              <MicIcon size={16} aria-hidden="true" />
+              <MicIcon aria-hidden="true" size={16} />
             </button>
           </div>
         </div>
         {/* Right side */}
         <div className="flex flex-1 items-center justify-end gap-2">
-          <Button asChild variant="ghost" size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
             <a href="#">Community</a>
           </Button>
-          <Button asChild size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm">
             <a href="#">Get Started</a>
           </Button>
           <ThemeToggle />
         </div>
       </div>
     </header>
-  )
+  );
 }

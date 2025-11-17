@@ -1,99 +1,91 @@
-"use client"
+"use client";
 
-import React from "react"
 import {
-  FeatureImplementation,
+  type FeatureImplementation,
   hotkeysCoreFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
-import { FolderIcon, FolderOpenIcon } from "lucide-react"
+} from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
+import { FolderIcon, FolderOpenIcon } from "lucide-react";
+import type React from "react";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
+  name: string;
+  children?: string[];
 }
 
 const items: Record<string, Item> = {
+  apis: { name: "APIs" },
+  backend: { children: ["apis", "infrastructure"], name: "Backend" },
   company: {
-    name: "Company",
     children: ["engineering", "marketing", "operations"],
-  },
-  engineering: {
-    name: "Engineering",
-    children: ["frontend", "backend", "platform-team"],
-  },
-  frontend: { name: "Frontend", children: ["design-system", "web-platform"] },
-  "design-system": {
-    name: "Design System",
-    children: ["components", "tokens", "guidelines"],
+    name: "Company",
   },
   components: { name: "Components" },
-  tokens: { name: "Tokens" },
-  guidelines: { name: "Guidelines" },
-  "web-platform": { name: "Web Platform" },
-  backend: { name: "Backend", children: ["apis", "infrastructure"] },
-  apis: { name: "APIs" },
-  infrastructure: { name: "Infrastructure" },
-  "platform-team": { name: "Platform Team" },
-  marketing: { name: "Marketing", children: ["content", "seo"] },
   content: { name: "Content" },
-  seo: { name: "SEO" },
-  operations: { name: "Operations", children: ["hr", "finance"] },
-  hr: { name: "HR" },
+  "design-system": {
+    children: ["components", "tokens", "guidelines"],
+    name: "Design System",
+  },
+  engineering: {
+    children: ["frontend", "backend", "platform-team"],
+    name: "Engineering",
+  },
   finance: { name: "Finance" },
-}
+  frontend: { children: ["design-system", "web-platform"], name: "Frontend" },
+  guidelines: { name: "Guidelines" },
+  hr: { name: "HR" },
+  infrastructure: { name: "Infrastructure" },
+  marketing: { children: ["content", "seo"], name: "Marketing" },
+  operations: { children: ["hr", "finance"], name: "Operations" },
+  "platform-team": { name: "Platform Team" },
+  seo: { name: "SEO" },
+  tokens: { name: "Tokens" },
+  "web-platform": { name: "Web Platform" },
+};
 
-const indent = 20
+const indent = 20;
 
 const doubleClickExpandFeature: FeatureImplementation = {
   itemInstance: {
     getProps: ({ tree, item, prev }) => ({
       ...prev?.(),
-      onDoubleClick: (e: React.MouseEvent) => {
-        item.primaryAction()
+      onClick: (e: React.MouseEvent) => {
+        if (e.shiftKey) {
+          item.selectUpTo(e.ctrlKey || e.metaKey);
+        } else if (e.ctrlKey || e.metaKey) {
+          item.toggleSelect();
+        } else {
+          tree.setSelectedItems([item.getItemMeta().itemId]);
+        }
+
+        item.setFocused();
+      },
+      onDoubleClick: (_e: React.MouseEvent) => {
+        item.primaryAction();
 
         if (!item.isFolder()) {
-          return
+          return;
         }
 
         if (item.isExpanded()) {
-          item.collapse()
+          item.collapse();
         } else {
-          item.expand()
+          item.expand();
         }
-      },
-      onClick: (e: React.MouseEvent) => {
-        if (e.shiftKey) {
-          item.selectUpTo(e.ctrlKey || e.metaKey)
-        } else if (e.ctrlKey || e.metaKey) {
-          item.toggleSelect()
-        } else {
-          tree.setSelectedItems([item.getItemMeta().itemId])
-        }
-
-        item.setFocused()
       },
     }),
   },
-}
+};
 
 export default function Component() {
   const tree = useTree<Item>({
-    initialState: {
-      expandedItems: ["engineering", "frontend", "design-system"],
-      selectedItems: ["components"],
-    },
-    indent,
-    rootItemId: "company",
-    getItemName: (item) => item.getItemData().name,
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
     dataLoader: {
-      getItem: (itemId) => items[itemId],
       getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => items[itemId],
     },
     features: [
       syncDataLoaderFeature,
@@ -101,14 +93,22 @@ export default function Component() {
       hotkeysCoreFeature,
       doubleClickExpandFeature,
     ],
-  })
+    getItemName: (item) => item.getItemData().name,
+    indent,
+    initialState: {
+      expandedItems: ["engineering", "frontend", "design-system"],
+      selectedItems: ["components"],
+    },
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    rootItemId: "company",
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
       <Tree indent={indent} tree={tree}>
         {tree.getItems().map((item) => {
           return (
-            <TreeItem key={item.getId()} item={item}>
+            <TreeItem item={item} key={item.getId()}>
               <TreeItemLabel>
                 <span className="flex items-center gap-2">
                   {item.isFolder() &&
@@ -121,25 +121,25 @@ export default function Component() {
                 </span>
               </TreeItemLabel>
             </TreeItem>
-          )
+          );
         })}
       </Tree>
 
       <p
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
       >
         Tree with items expandable on double click ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

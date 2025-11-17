@@ -1,9 +1,9 @@
-import { ChevronsUpDown } from "lucide-react"
-import { Select as SelectPrimitive } from "radix-ui"
+import { ChevronsUpDown } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -11,20 +11,20 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/breadcrumb";
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function Component() {
   return (
@@ -35,7 +35,7 @@ export default function Component() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="#" className="text-foreground">
+                <BreadcrumbLink className="text-foreground" href="#">
                   <Logo />
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -74,17 +74,17 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 px-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select project" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="1">Main project</SelectItem>
                     <SelectItem value="2">Origin project</SelectItem>
                   </SelectContent>
@@ -102,5 +102,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

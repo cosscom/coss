@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuItem,
@@ -7,7 +7,7 @@ import {
   MenuSubPopup,
   MenuSubTrigger,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuNestedDemo() {
   return (
@@ -25,5 +25,5 @@ export default function MenuNestedDemo() {
         <MenuItem>Item two</MenuItem>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

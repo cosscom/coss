@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import { CodeBlock } from "@coss/ui/components/code-block";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "coss.com notifications",
   description: "open source is the foundation of all modern software",
-} 
+  title: "coss.com notifications",
+};
 
 export default function Page() {
   const initialization = `import { coss } from '@coss';
@@ -45,32 +45,28 @@ const isValid = coss.notifications.utils.verifySignature({
 });`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">   
-      <div className="mt-12 lg:mt-16 max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Initialization</h2>
-        <CodeBlock
-          code={initialization}
-          language="tsx"
-          copyButton={false}
-        />   
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Subscribers</h2>
-        <CodeBlock
-          code={subscribers}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Workflows</h2>
-        <CodeBlock
-          code={workflows}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Webhook Verification</h2>
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
+      <div className="mx-auto mt-12 max-w-2xl text-muted-foreground lg:mt-16 [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Initialization
+        </h2>
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Subscribers
+        </h2>
+        <CodeBlock code={subscribers} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Workflows
+        </h2>
+        <CodeBlock code={workflows} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Webhook Verification
+        </h2>
         <CodeBlock
           code={webhookVerification}
-          language="tsx"
           copyButton={false}
-        />                
+          language="tsx"
+        />
       </div>
     </main>
   );

@@ -1,12 +1,12 @@
-import Link from "next/link"
+import Link from "next/link";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuLinkDemo() {
   return (
@@ -17,5 +17,5 @@ export default function MenuLinkDemo() {
         <MenuItem render={<Link href="/particles" />}>Particles</MenuItem>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

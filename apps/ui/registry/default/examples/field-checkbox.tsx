@@ -1,5 +1,5 @@
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
 
 export default function FieldCheckboxDemo() {
   return (
@@ -9,5 +9,5 @@ export default function FieldCheckboxDemo() {
         Accept terms and conditions
       </FieldLabel>
     </Field>
-  )
+  );
 }

@@ -1,58 +1,58 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { RiMoonClearLine, RiSunLine } from "@remixicon/react"
-import { useTheme } from "next-themes"
+import { RiMoonClearLine, RiSunLine } from "@remixicon/react";
+import { useTheme } from "next-themes";
+import { useId, useState } from "react";
 
 export default function ThemeToggle() {
-  const id = useId()
-  const { theme, setTheme } = useTheme()
-  const [system, setSystem] = useState(false)
+  const id = useId();
+  const { theme, setTheme } = useTheme();
+  const [system, setSystem] = useState(false);
 
   const smartToggle = () => {
     /* The smart toggle by @nrjdalal */
     const prefersDarkScheme = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches
+      "(prefers-color-scheme: dark)",
+    ).matches;
     if (theme === "system") {
-      setTheme(prefersDarkScheme ? "light" : "dark")
-      setSystem(false)
+      setTheme(prefersDarkScheme ? "light" : "dark");
+      setSystem(false);
     } else if (
       (theme === "light" && !prefersDarkScheme) ||
       (theme === "dark" && prefersDarkScheme)
     ) {
-      setTheme(theme === "light" ? "dark" : "light")
-      setSystem(false)
+      setTheme(theme === "light" ? "dark" : "light");
+      setSystem(false);
     } else {
-      setTheme("system")
-      setSystem(true)
+      setTheme("system");
+      setSystem(true);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col justify-center">
       <input
-        type="checkbox"
-        name="theme-toggle"
-        id={id}
-        className="peer sr-only"
-        checked={system}
-        onChange={smartToggle}
         aria-label="Toggle dark mode"
+        checked={system}
+        className="peer sr-only"
+        id={id}
+        name="theme-toggle"
+        onChange={smartToggle}
+        type="checkbox"
       />
       <label
-        className="relative inline-flex size-9 cursor-pointer items-center justify-center rounded text-muted-foreground transition-[color,box-shadow] outline-none peer-focus-visible:border-ring peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 hover:text-foreground/80"
-        htmlFor={id}
         aria-hidden="true"
+        className="relative inline-flex size-9 cursor-pointer items-center justify-center rounded text-muted-foreground outline-none transition-[color,box-shadow] hover:text-foreground/80 peer-focus-visible:border-ring peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50"
+        htmlFor={id}
       >
-        <RiSunLine className="dark:hidden" size={20} aria-hidden="true" />
+        <RiSunLine aria-hidden="true" className="dark:hidden" size={20} />
         <RiMoonClearLine
+          aria-hidden="true"
           className="hidden dark:block"
           size={20}
-          aria-hidden="true"
         />
         <span className="sr-only">Switch to system/light/dark version</span>
       </label>
     </div>
-  )
+  );
 }

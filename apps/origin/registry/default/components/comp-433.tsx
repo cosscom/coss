@@ -1,13 +1,13 @@
-import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react"
+import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area"
+import { Badge } from "@/registry/default/ui/badge";
+import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/tabs";
 
 export default function Component() {
   return (
@@ -16,17 +16,17 @@ export default function Component() {
         <TabsList className="mb-3">
           <TabsTrigger value="tab-1">
             <HouseIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="tab-2" className="group">
+          <TabsTrigger className="group" value="tab-2">
             <PanelsTopLeftIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Projects
             <Badge
@@ -36,11 +36,11 @@ export default function Component() {
               3
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="tab-3" className="group">
+          <TabsTrigger className="group" value="tab-3">
             <BoxIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Packages
             <Badge className="ms-1.5 transition-opacity group-data-[state=inactive]:opacity-50">
@@ -51,20 +51,20 @@ export default function Component() {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
       <TabsContent value="tab-1">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 1
         </p>
       </TabsContent>
       <TabsContent value="tab-2">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 2
         </p>
       </TabsContent>
       <TabsContent value="tab-3">
-        <p className="p-4 pt-1 text-center text-xs text-muted-foreground">
+        <p className="p-4 pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 3
         </p>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

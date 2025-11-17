@@ -4,18 +4,18 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Select framework", value: null },
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
-]
+];
 
 export default function SelectDisabled() {
   return (
-    <Select items={items} aria-label="Select framework">
+    <Select aria-label="Select framework" items={items}>
       <SelectTrigger disabled>
         <SelectValue />
       </SelectTrigger>
@@ -27,5 +27,5 @@ export default function SelectDisabled() {
         ))}
       </SelectPopup>
     </Select>
-  )
+  );
 }

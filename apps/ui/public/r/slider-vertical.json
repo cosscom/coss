@@ -1,20 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "slider-vertical",
-  "type": "registry:example",
+  "categories": ["slider", "vertical slider"],
   "description": "Vertical slider",
-  "registryDependencies": [
-    "@coss/slider"
-  ],
   "files": [
     {
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function SliderVertical() {\n  return <Slider defaultValue={50} orientation=\"vertical\" />;\n}\n",
       "path": "registry/default/examples/slider-vertical.tsx",
-      "content": "import { Slider } from \"@/registry/default/ui/slider\"\n\nexport default function SliderVertical() {\n  return <Slider orientation=\"vertical\" defaultValue={50} />\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "slider",
-    "vertical slider"
-  ]
+  "name": "slider-vertical",
+  "registryDependencies": ["@coss/slider"],
+  "type": "registry:example"
 }

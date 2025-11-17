@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Autocomplete as AutocompletePrimitive } from "@base-ui-components/react/autocomplete"
+import { Autocomplete as AutocompletePrimitive } from "@base-ui-components/react/autocomplete";
+import * as React from "react";
 
 import {
   Autocomplete,
@@ -11,11 +11,11 @@ import {
   AutocompleteList,
   AutocompletePopup,
   AutocompleteStatus,
-} from "@/registry/default/ui/autocomplete"
+} from "@/registry/default/ui/autocomplete";
 
 // Limit results demo
-const limit = 7
-type SimpleTag = { id: string; value: string }
+const limit = 7;
+type SimpleTag = { id: string; value: string };
 const manyTags: SimpleTag[] = [
   { id: "lang-js", value: "JavaScript" },
   { id: "lang-ts", value: "TypeScript" },
@@ -41,26 +41,26 @@ const manyTags: SimpleTag[] = [
   { id: "lang-lua", value: "Lua" },
   { id: "lang-ocaml", value: "OCaml" },
   { id: "lang-fsharp", value: "F#" },
-]
+];
 
 export default function AutocompleteLimit() {
-  const [value, setValue] = React.useState("")
-  const { contains } = AutocompletePrimitive.useFilter({ sensitivity: "base" })
+  const [value, setValue] = React.useState("");
+  const { contains } = AutocompletePrimitive.useFilter({ sensitivity: "base" });
 
   const totalMatches = React.useMemo(() => {
-    const trimmed = value.trim()
-    if (!trimmed) return manyTags.length
-    return manyTags.filter((t) => contains(t.value, trimmed)).length
-  }, [value, contains])
+    const trimmed = value.trim();
+    if (!trimmed) return manyTags.length;
+    return manyTags.filter((t) => contains(t.value, trimmed)).length;
+  }, [value, contains]);
 
-  const moreCount = Math.max(0, totalMatches - limit)
+  const moreCount = Math.max(0, totalMatches - limit);
 
   return (
     <Autocomplete
       items={manyTags}
-      value={value}
-      onValueChange={setValue}
       limit={limit}
+      onValueChange={setValue}
+      value={value}
     >
       <AutocompleteInput placeholder="e.g. feature" />
       <AutocompletePopup>
@@ -79,5 +79,5 @@ export default function AutocompleteLimit() {
         )}
       </AutocompletePopup>
     </Autocomplete>
-  )
+  );
 }

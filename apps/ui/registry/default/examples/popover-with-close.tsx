@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { XIcon } from "lucide-react"
+import { XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverClose,
@@ -10,7 +10,7 @@ import {
   PopoverPopup,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function PopoverWithCloseDemo() {
   return (
@@ -19,7 +19,7 @@ export default function PopoverWithCloseDemo() {
         Open Popover
       </PopoverTrigger>
       <PopoverPopup className="w-80">
-        <PopoverClose className="absolute end-2 top-2 inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-72 transition-[color,background-color,box-shadow,opacity] outline-none hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background pointer-coarse:after:absolute pointer-coarse:after:-inset-1 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
+        <PopoverClose className="pointer-coarse:after:-inset-1 absolute end-2 top-2 inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-72 outline-none transition-[color,background-color,box-shadow,opacity] pointer-coarse:after:absolute hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
           <XIcon />
           <span className="sr-only">Close</span>
         </PopoverClose>
@@ -32,5 +32,5 @@ export default function PopoverWithCloseDemo() {
         <PopoverClose render={<Button variant="outline" />}>Close</PopoverClose>
       </PopoverPopup>
     </Popover>
-  )
+  );
 }

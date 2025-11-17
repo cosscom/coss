@@ -1,30 +1,30 @@
-import { cn } from "@/registry/default/lib/utils"
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { cn } from "@/registry/default/lib/utils";
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
-  const max = 12
-  const skipInterval = 2 // Set to 1 to allow no text skipping
-  const ticks = [...Array(max + 1)].map((_, i) => i)
+  const max = 12;
+  const skipInterval = 2; // Set to 1 to allow no text skipping
+  const ticks = [...Array(max + 1)].map((_, i) => i);
 
   return (
     <div className="*:not-first:mt-4">
       <Label>Slider with ticks</Label>
       <div>
-        <Slider defaultValue={[5]} max={max} aria-label="Slider with ticks" />
+        <Slider aria-label="Slider with ticks" defaultValue={[5]} max={max} />
         <span
-          className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 text-xs font-medium text-muted-foreground"
           aria-hidden="true"
+          className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
         >
           {ticks.map((_, i) => (
             <span
-              key={i}
               className="flex w-0 flex-col items-center justify-center gap-2"
+              key={String(i)}
             >
               <span
                 className={cn(
                   "h-1 w-px bg-muted-foreground/70",
-                  i % skipInterval !== 0 && "h-0.5"
+                  i % skipInterval !== 0 && "h-0.5",
                 )}
               />
               <span className={cn(i % skipInterval !== 0 && "opacity-0")}>
@@ -35,5 +35,5 @@ export default function Component() {
         </span>
       </div>
     </div>
-  )
+  );
 }

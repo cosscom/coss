@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset"
-import { Radio, RadioGroup } from "@/registry/default/ui/radio-group"
+} from "@/registry/default/ui/field";
+import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
+import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 
 export default function FieldRadioDemo() {
   return (
     <Field
-      name="plan"
       className="gap-4"
+      name="plan"
       render={(props) => <Fieldset {...props} />}
     >
-      <FieldsetLegend className="text-sm font-medium">
+      <FieldsetLegend className="font-medium text-sm">
         Choose Plan
       </FieldsetLegend>
       <RadioGroup defaultValue="free">
@@ -31,5 +31,5 @@ export default function FieldRadioDemo() {
       </RadioGroup>
       <FieldDescription>Select the plan that fits your needs.</FieldDescription>
     </Field>
-  )
+  );
 }

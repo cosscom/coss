@@ -1,28 +1,28 @@
-import type { NextConfig } from "next"
-import { createMDX } from "fumadocs-mdx/next"
+import { createMDX } from "fumadocs-mdx/next";
+import type { NextConfig } from "next";
 
-const withMDX = createMDX()
+const withMDX = createMDX();
 
 const nextConfig: NextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "/ui",
-  transpilePackages: ["@coss/ui"],
   async redirects() {
     return [
       {
-        source: "/",
         destination: "/docs",
         permanent: false,
+        source: "/",
       },
-    ]
+    ];
   },
   async rewrites() {
     return [
       {
-        source: "/docs/:path*.md",
         destination: "/api/raw/docs/:path*",
+        source: "/docs/:path*.md",
       },
-    ]
+    ];
   },
-}
+  transpilePackages: ["@coss/ui"],
+};
 
-export default withMDX(nextConfig)
+export default withMDX(nextConfig);

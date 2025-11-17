@@ -1,53 +1,52 @@
-"use client"
+"use client";
 
-import React from "react"
-import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core"
-import { useTree } from "@headless-tree/react"
+import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core";
+import { useTree } from "@headless-tree/react";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  href?: string
-  children?: string[]
-  current?: boolean
+  name: string;
+  href?: string;
+  children?: string[];
+  current?: boolean;
 }
 
 const items: Record<string, Item> = {
-  main: { name: "Documentation", children: ["guides", "api", "resources"] },
-  guides: { name: "User Guides", children: ["getting-started", "advanced"] },
+  advanced: { href: "#", name: "Advanced Usage" },
+  api: { children: ["endpoints", "models"], name: "API Reference" },
+  endpoints: { href: "#", name: "Endpoints" },
+  examples: { href: "#", name: "Code Examples" },
+  faq: { href: "#", name: "FAQ" },
   "getting-started": {
-    name: "Getting Started",
     children: ["installation", "setup"],
+    name: "Getting Started",
   },
-  installation: { name: "Installation", href: "#", current: true },
-  setup: { name: "Configuration", href: "#" },
-  advanced: { name: "Advanced Usage", href: "#" },
-  api: { name: "API Reference", children: ["endpoints", "models"] },
-  endpoints: { name: "Endpoints", href: "#" },
-  models: { name: "Data Models", href: "#" },
-  resources: { name: "Resources", children: ["examples", "faq"] },
-  examples: { name: "Code Examples", href: "#" },
-  faq: { name: "FAQ", href: "#" },
-}
+  guides: { children: ["getting-started", "advanced"], name: "User Guides" },
+  installation: { current: true, href: "#", name: "Installation" },
+  main: { children: ["guides", "api", "resources"], name: "Documentation" },
+  models: { href: "#", name: "Data Models" },
+  resources: { children: ["examples", "faq"], name: "Resources" },
+  setup: { href: "#", name: "Configuration" },
+};
 
-const indent = 20
+const indent = 20;
 
 // Find the path from root to the current item
 function findPathToCurrent(
   items: Record<string, Item>,
-  rootId: string
+  rootId: string,
 ): string[] {
-  const path: string[] = []
+  const path: string[] = [];
 
   function findPath(itemId: string): boolean {
-    const item = items[itemId]
-    if (!item) return false
+    const item = items[itemId];
+    if (!item) return false;
 
     // If this is the current item, we found the path
     if (item.current) {
-      path.unshift(itemId)
-      return true
+      path.unshift(itemId);
+      return true;
     }
 
     // If this item has children, search them
@@ -55,39 +54,39 @@ function findPathToCurrent(
       for (const childId of item.children) {
         if (findPath(childId)) {
           // If we found the path in this branch, add this item to the path
-          path.unshift(itemId)
-          return true
+          path.unshift(itemId);
+          return true;
         }
       }
     }
 
-    return false
+    return false;
   }
 
-  findPath(rootId)
-  return path
+  findPath(rootId);
+  return path;
 }
 
 // Get all parent IDs that need to be expanded
-const pathToCurrent = findPathToCurrent(items, "main")
+const pathToCurrent = findPathToCurrent(items, "main");
 // Remove the current item from the path if it's a leaf node
-const expandedItems = pathToCurrent.filter((id) => items[id].children?.length)
+const expandedItems = pathToCurrent.filter((id) => items[id].children?.length);
 
 export default function Component() {
   const tree = useTree<Item>({
+    dataLoader: {
+      getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => items[itemId],
+    },
+    features: [syncDataLoaderFeature, hotkeysCoreFeature],
+    getItemName: (item) => item.getItemData().name,
+    indent,
     initialState: {
       expandedItems,
     },
-    indent,
-    rootItemId: "main",
-    getItemName: (item) => item.getItemData().name,
     isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    dataLoader: {
-      getItem: (itemId) => items[itemId],
-      getChildren: (itemId) => items[itemId].children ?? [],
-    },
-    features: [syncDataLoaderFeature, hotkeysCoreFeature],
-  })
+    rootItemId: "main",
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
@@ -95,14 +94,14 @@ export default function Component() {
         {tree.getItems().map((item) => {
           return (
             <TreeItem
-              key={item.getId()}
-              item={item}
               asChild={!!item.getItemData()?.href}
+              item={item}
+              key={item.getId()}
             >
               {item.getItemData()?.href ? (
                 <a
-                  href={item.getItemData().href}
                   data-current={item.getItemData().current}
+                  href={item.getItemData().href}
                 >
                   <TreeItemLabel className="in-data-[current=true]:bg-accent in-data-[current=true]:text-accent-foreground" />
                 </a>
@@ -110,25 +109,25 @@ export default function Component() {
                 <TreeItemLabel />
               )}
             </TreeItem>
-          )
+          );
         })}
       </Tree>
 
       <p
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
       >
         Menu navigation tree ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

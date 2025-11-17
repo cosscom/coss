@@ -1,19 +1,19 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithButton() {
   return (
     <InputGroup>
-      <InputGroupInput type="search" placeholder="Type to search…" />
+      <InputGroupInput placeholder="Type to search…" type="search" />
       <InputGroupAddon align="inline-end">
-        <Button variant="secondary" size="xs">
+        <Button size="xs" variant="secondary">
           Search
         </Button>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

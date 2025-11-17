@@ -1,7 +1,7 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -23,18 +23,18 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <svg
+              aria-hidden="true"
               className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
               height="20"
               viewBox="0 0 32 32"
-              aria-hidden="true"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              <circle cx="16" cy="16" fill="none" r="12" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
@@ -52,8 +52,8 @@ export default function Component() {
               <Input
                 id={`${id}-email`}
                 placeholder="hi@yourcompany.com"
-                type="email"
                 required
+                type="email"
               />
             </div>
             <div className="*:not-first:mt-2">
@@ -61,8 +61,8 @@ export default function Component() {
               <Input
                 id={`${id}-password`}
                 placeholder="Enter your password"
-                type="password"
                 required
+                type="password"
               />
             </div>
           </div>
@@ -70,8 +70,8 @@ export default function Component() {
             <div className="flex items-center gap-2">
               <Checkbox id={`${id}-remember`} />
               <Label
-                htmlFor={`${id}-remember`}
                 className="font-normal text-muted-foreground"
+                htmlFor={`${id}-remember`}
               >
                 Remember me
               </Label>
@@ -80,17 +80,17 @@ export default function Component() {
               Forgot password?
             </a>
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Sign in
           </Button>
         </form>
 
         <div className="flex items-center gap-3 before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-          <span className="text-xs text-muted-foreground">Or</span>
+          <span className="text-muted-foreground text-xs">Or</span>
         </div>
 
         <Button variant="outline">Login with Google</Button>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

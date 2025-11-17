@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -11,11 +11,11 @@ export default function Component() {
         </p>
         <div className="flex gap-2 max-md:flex-wrap">
           <Button size="sm">Accept</Button>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             Decline
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

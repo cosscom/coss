@@ -1,27 +1,27 @@
-import { SettingsIcon } from "lucide-react"
+import { SettingsIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function SettingsMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
           <SettingsIcon
+            aria-hidden="true"
             className="text-muted-foreground"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
@@ -31,5 +31,5 @@ export default function SettingsMenu() {
         <DropdownMenuItem>API Settings</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

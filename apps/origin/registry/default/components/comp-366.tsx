@@ -1,24 +1,24 @@
-import { EllipsisIcon } from "lucide-react"
+import { EllipsisIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function Component() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
-          <EllipsisIcon size={16} aria-hidden="true" />
+          <EllipsisIcon aria-hidden="true" size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
@@ -28,5 +28,5 @@ export default function Component() {
         <DropdownMenuItem>Option 4</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

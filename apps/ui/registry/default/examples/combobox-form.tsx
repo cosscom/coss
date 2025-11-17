@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Combobox,
   ComboboxEmpty,
@@ -10,42 +10,42 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
-import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
+} from "@/registry/default/ui/combobox";
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
 
 const items = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "orange", label: "Orange" },
-  { value: "grape", label: "Grape" },
-  { value: "strawberry", label: "Strawberry" },
-  { value: "mango", label: "Mango" },
-  { value: "pineapple", label: "Pineapple" },
-  { value: "kiwi", label: "Kiwi" },
-  { value: "peach", label: "Peach" },
-  { value: "pear", label: "Pear" },
-]
+  { label: "Apple", value: "apple" },
+  { label: "Banana", value: "banana" },
+  { label: "Orange", value: "orange" },
+  { label: "Grape", value: "grape" },
+  { label: "Strawberry", value: "strawberry" },
+  { label: "Mango", value: "mango" },
+  { label: "Pineapple", value: "pineapple" },
+  { label: "Kiwi", value: "kiwi" },
+  { label: "Peach", value: "peach" },
+  { label: "Pear", value: "pear" },
+];
 
 export default function ComboboxForm() {
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const selectedItem = formData.get("item")
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const selectedItem = formData.get("item");
     const itemValue =
-      items.find((item) => item.label === selectedItem)?.value || selectedItem
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
-    alert(`Favorite item: ${itemValue || ""}`)
-  }
+      items.find((item) => item.label === selectedItem)?.value || selectedItem;
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    alert(`Favorite item: ${itemValue || ""}`);
+  };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Favorite item</FieldLabel>
-        <Combobox items={items} name="item" disabled={loading} required>
+        <Combobox disabled={loading} items={items} name="item" required>
           <ComboboxInput placeholder="Select an item..." />
           <ComboboxPopup>
             <ComboboxEmpty>No results found.</ComboboxEmpty>
@@ -60,9 +60,9 @@ export default function ComboboxForm() {
         </Combobox>
         <FieldError>Please select a item.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with error</Label>
       <Select defaultValue="1">
-        <SelectTrigger id={id} aria-invalid>
+        <SelectTrigger aria-invalid id={id}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -26,12 +26,12 @@ export default function Component() {
         </SelectContent>
       </Select>
       <p
-        className="mt-2 text-xs text-destructive"
-        role="alert"
         aria-live="polite"
+        className="mt-2 text-destructive text-xs"
+        role="alert"
       >
         Selected option is invalid
       </p>
     </div>
-  )
+  );
 }

@@ -1,14 +1,12 @@
 export interface ComponentCategory {
-  slug: string
-  name: string
-  components: { name: string }[]
-  isNew?: boolean
+  slug: string;
+  name: string;
+  components: { name: string }[];
+  isNew?: boolean;
 }
 
 export const categories: ComponentCategory[] = [
   {
-    slug: "accordion",
-    name: "Accordion",
     components: [
       { name: "comp-334" },
       { name: "comp-335" },
@@ -31,10 +29,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-352" },
       { name: "comp-353" },
     ],
+    name: "Accordion",
+    slug: "accordion",
   },
   {
-    slug: "alert",
-    name: "Alert",
     components: [
       { name: "comp-267" },
       { name: "comp-268" },
@@ -49,10 +47,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-277" },
       { name: "comp-278" },
     ],
+    name: "Alert",
+    slug: "alert",
   },
   {
-    slug: "avatar",
-    name: "Avatar",
     components: [
       { name: "comp-390" },
       { name: "comp-391" },
@@ -78,10 +76,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-411" },
       { name: "comp-412" },
     ],
+    name: "Avatar",
+    slug: "avatar",
   },
   {
-    slug: "badge",
-    name: "Badge",
     components: [
       { name: "comp-413" },
       { name: "comp-414" },
@@ -97,10 +95,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-424" },
       { name: "comp-425" },
     ],
+    name: "Badge",
+    slug: "badge",
   },
   {
-    slug: "banner",
-    name: "Banner",
     components: [
       { name: "comp-301" },
       { name: "comp-302" },
@@ -115,10 +113,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-311" },
       { name: "comp-312" },
     ],
+    name: "Banner",
+    slug: "banner",
   },
   {
-    slug: "breadcrumb",
-    name: "Breadcrumb",
     components: [
       { name: "comp-446" },
       { name: "comp-447" },
@@ -129,10 +127,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-452" },
       { name: "comp-453" },
     ],
+    name: "Breadcrumb",
+    slug: "breadcrumb",
   },
   {
-    slug: "button",
-    name: "Button",
     components: [
       { name: "comp-78" },
       { name: "comp-79" },
@@ -189,10 +187,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-127" },
       { name: "comp-128" },
     ],
+    name: "Button",
+    slug: "button",
   },
   {
-    slug: "calendar-date-picker",
-    name: "Calendar & Date picker",
     components: [
       { name: "comp-487" },
       { name: "comp-488" },
@@ -223,10 +221,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-511" },
       { name: "comp-512" },
     ],
+    name: "Calendar & Date picker",
+    slug: "calendar-date-picker",
   },
   {
-    slug: "checkbox",
-    name: "Checkbox",
     components: [
       { name: "comp-132" },
       { name: "comp-133" },
@@ -249,10 +247,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-149" },
       { name: "comp-150" },
     ],
+    name: "Checkbox",
+    slug: "checkbox",
   },
   {
-    slug: "image-cropper",
-    name: "Image Cropper",
     components: [
       { name: "comp-554" },
       { name: "comp-555" },
@@ -266,10 +264,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-563" },
       { name: "comp-564" },
     ],
+    name: "Image Cropper",
+    slug: "image-cropper",
   },
   {
-    slug: "dialog",
-    name: "Dialog",
     components: [
       { name: "comp-313" },
       { name: "comp-314" },
@@ -293,10 +291,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-332" },
       { name: "comp-333" },
     ],
+    name: "Dialog",
+    slug: "dialog",
   },
   {
-    slug: "dropdown",
-    name: "Dropdown",
     components: [
       { name: "comp-366" },
       { name: "comp-367" },
@@ -314,10 +312,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-379" },
       { name: "comp-380" },
     ],
+    name: "Dropdown",
+    slug: "dropdown",
   },
   {
-    slug: "file-upload",
-    name: "File upload",
     components: [
       { name: "comp-125" },
       { name: "comp-126" },
@@ -334,15 +332,15 @@ export const categories: ComponentCategory[] = [
       { name: "comp-553" },
       { name: "comp-554" },
     ],
+    name: "File upload",
+    slug: "file-upload",
   },
   {
-    slug: "event-calendar",
-    name: "Event calendar",
     components: [{ name: "comp-542" }],
+    name: "Event calendar",
+    slug: "event-calendar",
   },
   {
-    slug: "input",
-    name: "Input",
     components: [
       { name: "comp-01" },
       { name: "comp-02" },
@@ -404,10 +402,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-56" },
       { name: "comp-57" },
     ],
+    name: "Input",
+    slug: "input",
   },
   {
-    slug: "navbar",
-    name: "Navbar",
     components: [
       { name: "comp-577" },
       { name: "comp-578" },
@@ -430,10 +428,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-595" },
       { name: "comp-596" },
     ],
+    name: "Navbar",
+    slug: "navbar",
   },
   {
-    slug: "notification",
-    name: "Notification",
     components: [
       { name: "comp-279" },
       { name: "comp-280" },
@@ -458,10 +456,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-299" },
       { name: "comp-300" },
     ],
+    name: "Notification",
+    slug: "notification",
   },
   {
-    slug: "pagination",
-    name: "Pagination",
     components: [
       { name: "comp-454" },
       { name: "comp-455" },
@@ -476,10 +474,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-464" },
       { name: "comp-465" },
     ],
+    name: "Pagination",
+    slug: "pagination",
   },
   {
-    slug: "popover",
-    name: "Popover",
     components: [
       { name: "comp-381" },
       { name: "comp-382" },
@@ -491,10 +489,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-388" },
       { name: "comp-389" },
     ],
+    name: "Popover",
+    slug: "popover",
   },
   {
-    slug: "radio",
-    name: "Radio",
     components: [
       { name: "comp-152" },
       { name: "comp-153" },
@@ -517,10 +515,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-169" },
       { name: "comp-170" },
     ],
+    name: "Radio",
+    slug: "radio",
   },
   {
-    slug: "select",
-    name: "Select",
     components: [
       { name: "comp-189" },
       { name: "comp-190" },
@@ -574,10 +572,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-238" },
       { name: "comp-239" },
     ],
+    name: "Select",
+    slug: "select",
   },
   {
-    slug: "slider",
-    name: "Slider",
     components: [
       { name: "comp-240" },
       { name: "comp-241" },
@@ -607,10 +605,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-265" },
       { name: "comp-266" },
     ],
+    name: "Slider",
+    slug: "slider",
   },
   {
-    slug: "stepper",
-    name: "Stepper",
     components: [
       { name: "comp-513" },
       { name: "comp-514" },
@@ -630,10 +628,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-528" },
       { name: "comp-529" },
     ],
+    name: "Stepper",
+    slug: "stepper",
   },
   {
-    slug: "switch",
-    name: "Switch",
     components: [
       { name: "comp-172" },
       { name: "comp-173" },
@@ -653,10 +651,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-187" },
       { name: "comp-188" },
     ],
+    name: "Switch",
+    slug: "switch",
   },
   {
-    slug: "table",
-    name: "Table",
     components: [
       { name: "comp-466" },
       { name: "comp-467" },
@@ -679,10 +677,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-484" },
       { name: "comp-485" },
     ],
+    name: "Table",
+    slug: "table",
   },
   {
-    slug: "tabs",
-    name: "Tabs",
     components: [
       { name: "comp-426" },
       { name: "comp-427" },
@@ -705,10 +703,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-444" },
       { name: "comp-445" },
     ],
+    name: "Tabs",
+    slug: "tabs",
   },
   {
-    slug: "textarea",
-    name: "Textarea",
     components: [
       { name: "comp-59" },
       { name: "comp-60" },
@@ -730,10 +728,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-76" },
       { name: "comp-77" },
     ],
+    name: "Textarea",
+    slug: "textarea",
   },
   {
-    slug: "timeline",
-    name: "Timeline",
     components: [
       { name: "comp-530" },
       { name: "comp-531" },
@@ -748,10 +746,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-540" },
       { name: "comp-541" },
     ],
+    name: "Timeline",
+    slug: "timeline",
   },
   {
-    slug: "tooltip",
-    name: "Tooltip",
     components: [
       { name: "comp-354" },
       { name: "comp-355" },
@@ -766,10 +764,10 @@ export const categories: ComponentCategory[] = [
       { name: "comp-364" },
       { name: "comp-365" },
     ],
+    name: "Tooltip",
+    slug: "tooltip",
   },
   {
-    slug: "tree",
-    name: "Tree",
     components: [
       { name: "comp-565" },
       { name: "comp-566" },
@@ -787,9 +785,11 @@ export const categories: ComponentCategory[] = [
       { name: "comp-598" },
       { name: "comp-599" },
     ],
+    name: "Tree",
+    slug: "tree",
   },
-]
+];
 
 export function getCategory(slug: string): ComponentCategory | undefined {
-  return categories.find((category) => category.slug === slug)
+  return categories.find((category) => category.slug === slug);
 }

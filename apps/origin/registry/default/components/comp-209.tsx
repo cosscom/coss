@@ -1,23 +1,23 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with gray background</Label>
       <Select defaultValue="2">
         <SelectTrigger
-          id={id}
           className="border-transparent bg-muted shadow-none"
+          id={id}
         >
           <SelectValue placeholder="Select framework" />
         </SelectTrigger>
@@ -29,5 +29,5 @@ export default function Component() {
         </SelectContent>
       </Select>
     </div>
-  )
+  );
 }

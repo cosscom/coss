@@ -1,6 +1,6 @@
-import { XIcon } from "lucide-react"
+import { XIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -8,15 +8,15 @@ export default function Component() {
     <div className="z-50 max-w-[400px] rounded-md border bg-background p-4 shadow-lg">
       <div className="flex gap-3">
         <img
+          alt="Mary Palmer"
           className="size-9 rounded-full"
+          height={32}
           src="/origin/avatar-32-01.jpg"
           width={32}
-          height={32}
-          alt="Mary Palmer"
         />
         <div className="flex grow flex-col gap-3">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               <a
                 className="font-medium text-foreground hover:underline"
                 href="#"
@@ -32,7 +32,7 @@ export default function Component() {
               </a>
               .
             </p>
-            <p className="text-xs text-muted-foreground">2 min ago</p>
+            <p className="text-muted-foreground text-xs">2 min ago</p>
           </div>
           <div className="flex gap-2">
             <Button size="sm">Accept</Button>
@@ -42,17 +42,17 @@ export default function Component() {
           </div>
         </div>
         <Button
-          variant="ghost"
-          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
           aria-label="Close notification"
+          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+          variant="ghost"
         >
           <XIcon
-            size={16}
-            className="opacity-60 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            size={16}
           />
         </Button>
       </div>
     </div>
-  )
+  );
 }

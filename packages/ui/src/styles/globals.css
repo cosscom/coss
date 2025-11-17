@@ -115,11 +115,7 @@
 .dark {
   --background: var(--color-zinc-950);
   --foreground: var(--color-zinc-100);
-  --card: color-mix(
-    in srgb,
-    var(--color-zinc-900) 80%,
-    var(--color-zinc-950)
-  );
+  --card: color-mix(in srgb, var(--color-zinc-900) 80%, var(--color-zinc-950));
   --card-foreground: var(--color-zinc-100);
   --popover: var(--color-zinc-900);
   --popover-foreground: var(--color-zinc-100);
@@ -159,11 +155,7 @@
   --sidebar-accent-foreground: var(--color-zinc-100);
   --sidebar-border: --alpha(var(--color-white) / 12%);
   --sidebar-ring: var(--color-zinc-400);
-  --code: color-mix(
-    in srgb,
-    var(--color-zinc-900) 80%,
-    var(--color-zinc-950)
-  );
+  --code: color-mix(in srgb, var(--color-zinc-900) 80%, var(--color-zinc-950));
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-white) / 8%);
 }
@@ -220,7 +212,7 @@
     position: relative;
 
     &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
-      top: calc(var(--spacing) * 1.5) !important;
+      top: calc(var(--spacing) * 1.5);
     }
 
     :where(*[data-tab="code"]) & {
@@ -280,6 +272,7 @@
     color: var(--shiki-light);
 
     @variant dark {
+      /* biome-ignore lint(suspicious/noDuplicateProperties): knwon */
       color: var(--shiki-dark) !important;
     }
   }

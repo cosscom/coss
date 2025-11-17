@@ -1,10 +1,10 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
-import { Textarea } from "@/registry/default/ui/textarea"
+} from "@/registry/default/ui/popover";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function Component() {
   return (
@@ -14,12 +14,12 @@ export default function Component() {
           <Button variant="outline">Feedback</Button>
         </PopoverTrigger>
         <PopoverContent className="w-72">
-          <h2 className="mb-2 text-sm font-semibold">Send us feedback</h2>
+          <h2 className="mb-2 font-semibold text-sm">Send us feedback</h2>
           <form className="space-y-3">
             <Textarea
+              aria-label="Send feedback"
               id="feedback"
               placeholder="How can we improve coss ui?"
-              aria-label="Send feedback"
             />
             <div className="flex flex-col sm:flex-row sm:justify-end">
               <Button size="sm">Send feedback</Button>
@@ -28,5 +28,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

@@ -2,7 +2,7 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/registry/default/ui/alert"
+} from "@/registry/default/ui/alert";
 
 export default function AlertDemo() {
   return (
@@ -12,5 +12,5 @@ export default function AlertDemo() {
         <p>Describe what can be done about it here.</p>
       </AlertDescription>
     </Alert>
-  )
+  );
 }

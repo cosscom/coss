@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { subDays, subMonths, subYears } from "date-fns"
+import { subDays, subMonths, subYears } from "date-fns";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
+import { Button } from "@/registry/default/ui/button";
+import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {
-  const today = new Date()
-  const yesterday = subDays(today, 1)
-  const lastWeek = subDays(today, 7)
-  const lastMonth = subMonths(today, 1)
-  const lastYear = subYears(today, 1)
-  const [month, setMonth] = useState(today)
-  const [date, setDate] = useState<Date>(today)
+  const today = new Date();
+  const yesterday = subDays(today, 1);
+  const lastWeek = subDays(today, 7);
+  const lastMonth = subMonths(today, 1);
+  const lastYear = subYears(today, 1);
+  const [month, setMonth] = useState(today);
+  const [date, setDate] = useState<Date>(today);
 
   return (
     <div>
@@ -23,57 +23,57 @@ export default function Component() {
             <div className="h-full sm:border-e">
               <div className="flex flex-col px-2">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setDate(today)
-                    setMonth(today)
+                    setDate(today);
+                    setMonth(today);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Today
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setDate(yesterday)
-                    setMonth(yesterday)
+                    setDate(yesterday);
+                    setMonth(yesterday);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Yesterday
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setDate(lastWeek)
-                    setMonth(lastWeek)
+                    setDate(lastWeek);
+                    setMonth(lastWeek);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last week
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setDate(lastMonth)
-                    setMonth(lastMonth)
+                    setDate(lastMonth);
+                    setMonth(lastMonth);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last month
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setDate(lastYear)
-                    setMonth(lastYear)
+                    setDate(lastYear);
+                    setMonth(lastYear);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   Last year
                 </Button>
@@ -81,37 +81,37 @@ export default function Component() {
             </div>
           </div>
           <Calendar
-            mode="single"
-            selected={date}
-            onSelect={(newDate) => {
-              if (newDate) {
-                setDate(newDate)
-              }
-            }}
-            month={month}
-            onMonthChange={setMonth}
             className="p-2"
             disabled={[
               { after: today }, // Dates before today
             ]}
+            mode="single"
+            month={month}
+            onMonthChange={setMonth}
+            onSelect={(newDate) => {
+              if (newDate) {
+                setDate(newDate);
+              }
+            }}
+            selected={date}
           />
         </div>
       </div>
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-4 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Calendar with presets -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@/registry/default/ui/toggle-group"
+} from "@/registry/default/ui/toggle-group";
 
 export default function Component() {
-  const [value, setValue] = useState<string>("left")
+  const [value, setValue] = useState<string>("left");
 
   return (
     <ToggleGroup
-      type="single"
-      variant="outline"
-      value={value}
       onValueChange={(value) => {
-        if (value) setValue(value)
+        if (value) setValue(value);
       }}
+      type="single"
+      value={value}
+      variant="outline"
     >
       <ToggleGroupItem className="flex-1" value="left">
         Left
@@ -29,5 +29,5 @@ export default function Component() {
         Right
       </ToggleGroupItem>
     </ToggleGroup>
-  )
+  );
 }

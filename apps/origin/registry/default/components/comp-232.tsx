@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Fragment, useId, useState } from "react"
-import { CheckIcon, ChevronDownIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { Fragment, useId, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,72 +11,72 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/registry/default/ui/command"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/command";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const countries = [
   {
     continent: "America",
     items: [
-      { value: "United States", flag: "🇺🇸" },
-      { value: "Canada", flag: "🇨🇦" },
-      { value: "Mexico", flag: "🇲🇽" },
+      { flag: "🇺🇸", value: "United States" },
+      { flag: "🇨🇦", value: "Canada" },
+      { flag: "🇲🇽", value: "Mexico" },
     ],
   },
   {
     continent: "Africa",
     items: [
-      { value: "South Africa", flag: "🇿🇦" },
-      { value: "Nigeria", flag: "🇳🇬" },
-      { value: "Morocco", flag: "🇲🇦" },
+      { flag: "🇿🇦", value: "South Africa" },
+      { flag: "🇳🇬", value: "Nigeria" },
+      { flag: "🇲🇦", value: "Morocco" },
     ],
   },
   {
     continent: "Asia",
     items: [
-      { value: "China", flag: "🇨🇳" },
-      { value: "Japan", flag: "🇯🇵" },
-      { value: "India", flag: "🇮🇳" },
+      { flag: "🇨🇳", value: "China" },
+      { flag: "🇯🇵", value: "Japan" },
+      { flag: "🇮🇳", value: "India" },
     ],
   },
   {
     continent: "Europe",
     items: [
-      { value: "United Kingdom", flag: "🇬🇧" },
-      { value: "France", flag: "🇫🇷" },
-      { value: "Germany", flag: "🇩🇪" },
+      { flag: "🇬🇧", value: "United Kingdom" },
+      { flag: "🇫🇷", value: "France" },
+      { flag: "🇩🇪", value: "Germany" },
     ],
   },
   {
     continent: "Oceania",
     items: [
-      { value: "Australia", flag: "🇦🇺" },
-      { value: "New Zealand", flag: "🇳🇿" },
+      { flag: "🇦🇺", value: "Australia" },
+      { flag: "🇳🇿", value: "New Zealand" },
     ],
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [open, setOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<string>("")
+  const id = useId();
+  const [open, setOpen] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
 
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Options with flag and search</Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           <Button
-            id={id}
-            variant="outline"
-            role="combobox"
             aria-expanded={open}
-            className="w-full justify-between border-input bg-background px-3 font-normal outline-offset-0 outline-none hover:bg-background focus-visible:outline-[3px]"
+            className="w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
+            id={id}
+            role="combobox"
+            variant="outline"
           >
             {value ? (
               <span className="flex min-w-0 items-center gap-2">
@@ -84,7 +84,7 @@ export default function Component() {
                   {
                     countries
                       .map((group) =>
-                        group.items.find((item) => item.value === value)
+                        group.items.find((item) => item.value === value),
                       )
                       .filter(Boolean)[0]?.flag
                   }
@@ -95,15 +95,15 @@ export default function Component() {
               <span className="text-muted-foreground">Select country</span>
             )}
             <ChevronDownIcon
-              size={16}
-              className="shrink-0 text-muted-foreground/80"
               aria-hidden="true"
+              className="shrink-0 text-muted-foreground/80"
+              size={16}
             />
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
           align="start"
+          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
         >
           <Command>
             <CommandInput placeholder="Search country..." />
@@ -115,18 +115,18 @@ export default function Component() {
                     {group.items.map((country) => (
                       <CommandItem
                         key={country.value}
-                        value={country.value}
                         onSelect={(currentValue) => {
-                          setValue(currentValue)
-                          setOpen(false)
+                          setValue(currentValue);
+                          setOpen(false);
                         }}
+                        value={country.value}
                       >
                         <span className="text-lg leading-none">
                           {country.flag}
                         </span>{" "}
                         {country.value}
                         {value === country.value && (
-                          <CheckIcon size={16} className="ml-auto" />
+                          <CheckIcon className="ml-auto" size={16} />
                         )}
                       </CommandItem>
                     ))}
@@ -138,5 +138,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

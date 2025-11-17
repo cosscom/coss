@@ -7,43 +7,43 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
-    id: 1,
     date: "Mar 15, 2024",
-    title: "Project Kickoff",
     description: "Initial team meeting.",
+    id: 1,
+    title: "Project Kickoff",
   },
   {
-    id: 2,
     date: "Mar 22, 2024",
-    title: "Design Phase",
     description: "Completed wireframes.",
+    id: 2,
+    title: "Design Phase",
   },
   {
-    id: 3,
     date: "Apr 5, 2024",
-    title: "Development Sprint",
     description: "Backend development.",
+    id: 3,
+    title: "Development Sprint",
   },
   {
-    id: 4,
     date: "Apr 19, 2024",
-    title: "Testing & Deployment",
     description: "Performance optimization.",
+    id: 4,
+    title: "Testing & Deployment",
   },
-]
+];
 
 export default function Component() {
   return (
     <Timeline defaultValue={3} orientation="horizontal">
       {items.map((item) => (
         <TimelineItem
+          className="group-data-[orientation=horizontal]/timeline:mt-0"
           key={item.id}
           step={item.id}
-          className="group-data-[orientation=horizontal]/timeline:mt-0"
         >
           <TimelineHeader>
             <TimelineSeparator className="group-data-[orientation=horizontal]/timeline:top-8" />
@@ -55,5 +55,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

@@ -4,16 +4,16 @@ import {
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function NumberFieldLg() {
   return (
-    <NumberField size="lg" defaultValue={0}>
+    <NumberField defaultValue={0} size="lg">
       <NumberFieldGroup>
         <NumberFieldDecrement />
         <NumberFieldInput />
         <NumberFieldIncrement />
       </NumberFieldGroup>
     </NumberField>
-  )
+  );
 }

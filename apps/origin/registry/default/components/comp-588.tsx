@@ -1,26 +1,26 @@
-import { HouseIcon, InboxIcon, SparklesIcon, ZapIcon } from "lucide-react"
+import { HouseIcon, InboxIcon, SparklesIcon, ZapIcon } from "lucide-react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 // Navigation links array
 const navigationLinks = [
-  { href: "#", label: "Home", icon: HouseIcon, active: true },
-  { href: "#", label: "Inbox", icon: InboxIcon },
-  { href: "#", label: "Insights", icon: ZapIcon },
-]
+  { active: true, href: "#", icon: HouseIcon, label: "Home" },
+  { href: "#", icon: InboxIcon, label: "Inbox" },
+  { href: "#", icon: ZapIcon, label: "Insights" },
+];
 
 export default function Component() {
   return (
@@ -33,32 +33,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -66,24 +66,24 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    const Icon = link.icon
+                  {navigationLinks.map((link) => {
+                    const Icon = link.icon;
                     return (
-                      <NavigationMenuItem key={index} className="w-full">
+                      <NavigationMenuItem className="w-full" key={link.label}>
                         <NavigationMenuLink
-                          href={link.href}
-                          className="flex-row items-center gap-2 py-1.5"
                           active={link.active}
+                          className="flex-row items-center gap-2 py-1.5"
+                          href={link.href}
                         >
                           <Icon
-                            size={16}
-                            className="text-muted-foreground/80"
                             aria-hidden="true"
+                            className="text-muted-foreground/80"
+                            size={16}
                           />
                           <span>{link.label}</span>
                         </NavigationMenuLink>
                       </NavigationMenuItem>
-                    )
+                    );
                   })}
                 </NavigationMenuList>
               </NavigationMenu>
@@ -92,24 +92,24 @@ export default function Component() {
 
           <NavigationMenu className="max-md:hidden">
             <NavigationMenuList className="gap-2">
-              {navigationLinks.map((link, index) => {
-                const Icon = link.icon
+              {navigationLinks.map((link) => {
+                const Icon = link.icon;
                 return (
-                  <NavigationMenuItem key={index}>
+                  <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
                       active={link.active}
-                      href={link.href}
                       className="flex-row items-center gap-2 py-1.5 font-medium text-foreground hover:text-primary"
+                      href={link.href}
                     >
                       <Icon
-                        size={16}
-                        className="text-muted-foreground/80"
                         aria-hidden="true"
+                        className="text-muted-foreground/80"
+                        size={16}
                       />
                       <span>{link.label}</span>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
-                )
+                );
               })}
             </NavigationMenuList>
           </NavigationMenu>
@@ -117,7 +117,7 @@ export default function Component() {
 
         {/* Middle side: Logo */}
         <div className="flex items-center">
-          <a href="#" className="text-primary hover:text-primary/90">
+          <a className="text-primary hover:text-primary/90" href="#">
             <Logo />
           </a>
         </div>
@@ -127,16 +127,16 @@ export default function Component() {
           {/* User menu */}
           <UserMenu />
           {/* Upgrade button */}
-          <Button size="sm" className="text-sm sm:aspect-square">
+          <Button className="text-sm sm:aspect-square" size="sm">
             <SparklesIcon
-              className="opacity-60 sm:-ms-1"
-              size={16}
               aria-hidden="true"
+              className="sm:-ms-1 opacity-60"
+              size={16}
             />
             <span className="sm:sr-only">Upgrade</span>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

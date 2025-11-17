@@ -1,32 +1,33 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { Tag, TagInput } from "emblor"
+import { type Tag, TagInput } from "emblor";
+import { useId, useState } from "react";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 
 const tags = [
   {
     id: "1",
     text: "Red",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [exampleTags, setExampleTags] = useState<Tag[]>(tags)
-  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null)
+  const id = useId();
+  const [exampleTags, setExampleTags] = useState<Tag[]>(tags);
+  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
 
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with inner tags</Label>
       <TagInput
+        activeTagIndex={activeTagIndex}
         id={id}
-        tags={exampleTags}
-        setTags={(newTags) => {
-          setExampleTags(newTags)
-        }}
         placeholder="Add a tag"
+        setActiveTagIndex={setActiveTagIndex}
+        setTags={(newTags) => {
+          setExampleTags(newTags);
+        }}
         styleClasses={{
           inlineTagsContainer:
             "border-input rounded-md bg-background shadow-xs transition-[color,box-shadow] focus-within:border-ring outline-none focus-within:ring-[3px] focus-within:ring-ring/50 p-1 gap-1",
@@ -37,24 +38,23 @@ export default function Component() {
               "absolute -inset-y-px -end-px p-0 rounded-e-md flex size-7 transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] text-muted-foreground/80 hover:text-foreground",
           },
         }}
-        activeTagIndex={activeTagIndex}
-        setActiveTagIndex={setActiveTagIndex}
+        tags={exampleTags}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://github.com/JaleelB/emblor"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           emblor
         </a>
       </p>
     </div>
-  )
+  );
 }

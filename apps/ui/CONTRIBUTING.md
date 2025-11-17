@@ -199,7 +199,7 @@ After adding your component, run these scripts in sequence:
 
 ```bash
 # Format code and sort imports
-bun run format:write
+bun run format:all
 
 # Build registry JSON files
 bun run registry:build

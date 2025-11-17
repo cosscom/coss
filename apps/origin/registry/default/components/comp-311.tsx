@@ -5,10 +5,10 @@ export default function Component() {
         <span className="mr-1 text-base leading-none">📫</span> Subscribe to our
         newsletter and get 10% off your first order!{" "}
         <span className="mx-1 text-muted-foreground">·</span>{" "}
-        <a href="#" className="font-medium underline hover:no-underline">
+        <a className="font-medium underline hover:no-underline" href="#">
           Subscribe
         </a>
       </p>
     </div>
-  )
+  );
 }

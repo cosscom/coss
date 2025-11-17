@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
 import {
   createOnDropHandler,
   dragAndDropFeature,
@@ -8,8 +7,8 @@ import {
   keyboardDragAndDropFeature,
   selectionFeature,
   syncDataLoaderFeature,
-} from "@headless-tree/core"
-import { AssistiveTreeDescription, useTree } from "@headless-tree/react"
+} from "@headless-tree/core";
+import { AssistiveTreeDescription, useTree } from "@headless-tree/react";
 import {
   RiBracesLine,
   RiCodeSSlashLine,
@@ -17,59 +16,57 @@ import {
   RiFileTextLine,
   RiImageLine,
   RiReactjsLine,
-} from "@remixicon/react"
+} from "@remixicon/react";
+import { useState } from "react";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree"
+import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {
-  name: string
-  children?: string[]
-  fileExtension?: string
+  name: string;
+  children?: string[];
+  fileExtension?: string;
 }
 
 const initialItems: Record<string, Item> = {
   app: {
-    name: "app",
     children: ["app/layout.tsx", "app/page.tsx", "app/(dashboard)", "app/api"],
+    name: "app",
   },
-  "app/layout.tsx": { name: "layout.tsx", fileExtension: "tsx" },
-  "app/page.tsx": { name: "page.tsx", fileExtension: "tsx" },
   "app/(dashboard)": {
-    name: "(dashboard)",
     children: ["app/(dashboard)/dashboard"],
+    name: "(dashboard)",
   },
   "app/(dashboard)/dashboard": {
-    name: "dashboard",
     children: ["app/(dashboard)/dashboard/page.tsx"],
+    name: "dashboard",
   },
   "app/(dashboard)/dashboard/page.tsx": {
-    name: "page.tsx",
     fileExtension: "tsx",
+    name: "page.tsx",
   },
-  "app/api": { name: "api", children: ["app/api/hello"] },
-  "app/api/hello": { name: "hello", children: ["app/api/hello/route.ts"] },
-  "app/api/hello/route.ts": { name: "route.ts", fileExtension: "ts" },
+  "app/api": { children: ["app/api/hello"], name: "api" },
+  "app/api/hello": { children: ["app/api/hello/route.ts"], name: "hello" },
+  "app/api/hello/route.ts": { fileExtension: "ts", name: "route.ts" },
+  "app/layout.tsx": { fileExtension: "tsx", name: "layout.tsx" },
+  "app/page.tsx": { fileExtension: "tsx", name: "page.tsx" },
   components: {
-    name: "components",
     children: ["components/button.tsx", "components/card.tsx"],
+    name: "components",
   },
-  "components/button.tsx": { name: "button.tsx", fileExtension: "tsx" },
-  "components/card.tsx": { name: "card.tsx", fileExtension: "tsx" },
-  lib: { name: "lib", children: ["lib/utils.ts"] },
-  "lib/utils.ts": { name: "utils.ts", fileExtension: "ts" },
+  "components/button.tsx": { fileExtension: "tsx", name: "button.tsx" },
+  "components/card.tsx": { fileExtension: "tsx", name: "card.tsx" },
+  lib: { children: ["lib/utils.ts"], name: "lib" },
+  "lib/utils.ts": { fileExtension: "ts", name: "utils.ts" },
+  "next.config.mjs": { fileExtension: "mjs", name: "next.config.mjs" },
+  "package.json": { fileExtension: "json", name: "package.json" },
   public: {
-    name: "public",
     children: ["public/favicon.ico", "public/vercel.svg"],
+    name: "public",
   },
-  "public/favicon.ico": { name: "favicon.ico", fileExtension: "ico" },
-  "public/vercel.svg": { name: "vercel.svg", fileExtension: "svg" },
-  "package.json": { name: "package.json", fileExtension: "json" },
-  "tailwind.config.ts": { name: "tailwind.config.ts", fileExtension: "ts" },
-  "tsconfig.json": { name: "tsconfig.json", fileExtension: "json" },
-  "next.config.mjs": { name: "next.config.mjs", fileExtension: "mjs" },
-  "README.md": { name: "README.md", fileExtension: "md" },
+  "public/favicon.ico": { fileExtension: "ico", name: "favicon.ico" },
+  "public/vercel.svg": { fileExtension: "svg", name: "vercel.svg" },
+  "README.md": { fileExtension: "md", name: "README.md" },
   root: {
-    name: "Project Root",
     children: [
       "app",
       "components",
@@ -81,78 +78,46 @@ const initialItems: Record<string, Item> = {
       "next.config.mjs",
       "README.md",
     ],
+    name: "Project Root",
   },
-}
+  "tailwind.config.ts": { fileExtension: "ts", name: "tailwind.config.ts" },
+  "tsconfig.json": { fileExtension: "json", name: "tsconfig.json" },
+};
 
 // Helper function to get icon based on file extension
 function getFileIcon(extension: string | undefined, className: string) {
   switch (extension) {
     case "tsx":
     case "jsx":
-      return <RiReactjsLine className={className} />
+      return <RiReactjsLine className={className} />;
     case "ts":
     case "js":
     case "mjs":
-      return <RiCodeSSlashLine className={className} />
+      return <RiCodeSSlashLine className={className} />;
     case "json":
-      return <RiBracesLine className={className} />
+      return <RiBracesLine className={className} />;
     case "svg":
     case "ico":
     case "png":
     case "jpg":
-      return <RiImageLine className={className} />
+      return <RiImageLine className={className} />;
     case "md":
-      return <RiFileTextLine className={className} />
+      return <RiFileTextLine className={className} />;
     default:
-      return <RiFileLine className={className} />
+      return <RiFileLine className={className} />;
   }
 }
 
-const indent = 20
+const indent = 20;
 
 export default function Component() {
-  const [items, setItems] = useState(initialItems)
+  const [items, setItems] = useState(initialItems);
 
   const tree = useTree<Item>({
-    initialState: {
-      expandedItems: ["app", "app/(dashboard)", "app/(dashboard)/dashboard"],
-      selectedItems: ["components"],
-    },
-    indent,
-    rootItemId: "root",
-    getItemName: (item) => item.getItemData()?.name ?? "Unknown",
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
     canReorder: false,
-    onDrop: createOnDropHandler((parentItem, newChildrenIds) => {
-      setItems((prevItems) => {
-        // Sort the children alphabetically
-        const sortedChildren = [...newChildrenIds].sort((a, b) => {
-          const itemA = prevItems[a]
-          const itemB = prevItems[b]
-
-          // First sort folders before files
-          const isAFolder = (itemA?.children?.length ?? 0) > 0
-          const isBFolder = (itemB?.children?.length ?? 0) > 0
-
-          if (isAFolder && !isBFolder) return -1
-          if (!isAFolder && isBFolder) return 1
-
-          // Then sort alphabetically by name
-          return (itemA?.name ?? "").localeCompare(itemB?.name ?? "")
-        })
-
-        return {
-          ...prevItems,
-          [parentItem.getId()]: {
-            ...prevItems[parentItem.getId()],
-            children: sortedChildren,
-          },
-        }
-      })
-    }),
     dataLoader: {
-      getItem: (itemId) => items[itemId],
       getChildren: (itemId) => items[itemId]?.children ?? [],
+      getItem: (itemId) => items[itemId],
     },
     features: [
       syncDataLoaderFeature,
@@ -161,51 +126,86 @@ export default function Component() {
       dragAndDropFeature,
       keyboardDragAndDropFeature,
     ],
-  })
+    getItemName: (item) => item.getItemData()?.name ?? "Unknown",
+    indent,
+    initialState: {
+      expandedItems: ["app", "app/(dashboard)", "app/(dashboard)/dashboard"],
+      selectedItems: ["components"],
+    },
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    onDrop: createOnDropHandler((parentItem, newChildrenIds) => {
+      setItems((prevItems) => {
+        // Sort the children alphabetically
+        const sortedChildren = [...newChildrenIds].sort((a, b) => {
+          const itemA = prevItems[a];
+          const itemB = prevItems[b];
+
+          // First sort folders before files
+          const isAFolder = (itemA?.children?.length ?? 0) > 0;
+          const isBFolder = (itemB?.children?.length ?? 0) > 0;
+
+          if (isAFolder && !isBFolder) return -1;
+          if (!isAFolder && isBFolder) return 1;
+
+          // Then sort alphabetically by name
+          return (itemA?.name ?? "").localeCompare(itemB?.name ?? "");
+        });
+
+        return {
+          ...prevItems,
+          [parentItem.getId()]: {
+            ...prevItems[parentItem.getId()],
+            children: sortedChildren,
+          },
+        };
+      });
+    }),
+    rootItemId: "root",
+  });
 
   return (
     <div className="flex h-full flex-col gap-2 *:first:grow">
       <div>
         <Tree
-          className="relative before:absolute before:inset-0 before:-ms-1 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
+          className="before:-ms-1 relative before:absolute before:inset-0 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
           indent={indent}
           tree={tree}
         >
           <AssistiveTreeDescription tree={tree} />
           {tree.getItems().map((item) => {
             return (
-              <TreeItem key={item.getId()} item={item} className="pb-0!">
+              <TreeItem className="pb-0!" item={item} key={item.getId()}>
                 <TreeItemLabel className="rounded-none py-1">
                   <span className="flex items-center gap-2">
                     {!item.isFolder() &&
                       getFileIcon(
                         item.getItemData()?.fileExtension,
-                        "text-muted-foreground pointer-events-none size-4"
+                        "text-muted-foreground pointer-events-none size-4",
                       )}
                     {item.getItemName()}
                   </span>
                 </TreeItemLabel>
               </TreeItem>
-            )
+            );
           })}
         </Tree>
       </div>
 
       <p
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
         role="region"
-        className="mt-2 text-xs text-muted-foreground"
       >
         File editor with drag and drop ∙{" "}
         <a
-          href="https://headless-tree.lukasbach.com"
           className="underline hover:text-foreground"
-          target="_blank"
+          href="https://headless-tree.lukasbach.com"
           rel="noopener noreferrer"
+          target="_blank"
         >
           API
         </a>
       </p>
     </div>
-  )
+  );
 }

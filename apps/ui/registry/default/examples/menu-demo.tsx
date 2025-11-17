@@ -4,9 +4,9 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
   TrashIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuCheckboxItem,
@@ -22,7 +22,7 @@ import {
   MenuSubPopup,
   MenuSubTrigger,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuDemo() {
   return (
@@ -96,5 +96,5 @@ export default function MenuDemo() {
         </MenuItem>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

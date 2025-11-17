@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { CircleCheckIcon, XIcon } from "lucide-react"
+import { CircleCheckIcon, XIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Toast,
   ToastAction,
@@ -12,12 +12,12 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@/registry/default/ui/toast"
+} from "@/registry/default/ui/toast";
 
 interface UseProgressTimerProps {
-  duration: number
-  interval?: number
-  onComplete?: () => void
+  duration: number;
+  interval?: number;
+  onComplete?: () => void;
 }
 
 function useProgressTimer({
@@ -25,125 +25,125 @@ function useProgressTimer({
   interval = 100,
   onComplete,
 }: UseProgressTimerProps) {
-  const [progress, setProgress] = useState(duration)
-  const timerRef = useRef(0)
+  const [progress, setProgress] = useState(duration);
+  const timerRef = useRef(0);
   const timerState = useRef({
-    startTime: 0,
-    remaining: duration,
     isPaused: false,
-  })
+    remaining: duration,
+    startTime: 0,
+  });
 
   const cleanup = useCallback(() => {
-    window.clearInterval(timerRef.current)
-  }, [])
+    window.clearInterval(timerRef.current);
+  }, []);
 
   const reset = useCallback(() => {
-    cleanup()
-    setProgress(duration)
+    cleanup();
+    setProgress(duration);
     timerState.current = {
-      startTime: 0,
-      remaining: duration,
       isPaused: false,
-    }
-  }, [duration, cleanup])
+      remaining: duration,
+      startTime: 0,
+    };
+  }, [duration, cleanup]);
 
   const start = useCallback(() => {
-    const state = timerState.current
-    state.startTime = Date.now()
-    state.isPaused = false
+    const state = timerState.current;
+    state.startTime = Date.now();
+    state.isPaused = false;
 
     timerRef.current = window.setInterval(() => {
-      const elapsedTime = Date.now() - state.startTime
-      const remaining = Math.max(0, state.remaining - elapsedTime)
+      const elapsedTime = Date.now() - state.startTime;
+      const remaining = Math.max(0, state.remaining - elapsedTime);
 
-      setProgress(remaining)
+      setProgress(remaining);
 
       if (remaining <= 0) {
-        cleanup()
-        onComplete?.()
+        cleanup();
+        onComplete?.();
       }
-    }, interval)
-  }, [interval, cleanup, onComplete])
+    }, interval);
+  }, [interval, cleanup, onComplete]);
 
   const pause = useCallback(() => {
-    const state = timerState.current
+    const state = timerState.current;
     if (!state.isPaused) {
-      cleanup()
+      cleanup();
       state.remaining = Math.max(
         0,
-        state.remaining - (Date.now() - state.startTime)
-      )
-      state.isPaused = true
+        state.remaining - (Date.now() - state.startTime),
+      );
+      state.isPaused = true;
     }
-  }, [cleanup])
+  }, [cleanup]);
 
   const resume = useCallback(() => {
-    const state = timerState.current
+    const state = timerState.current;
     if (state.isPaused && state.remaining > 0) {
-      start()
+      start();
     }
-  }, [start])
+  }, [start]);
 
   useEffect(() => {
-    return cleanup
-  }, [cleanup])
+    return cleanup;
+  }, [cleanup]);
 
   return {
-    progress,
-    start,
     pause,
-    resume,
+    progress,
     reset,
-  }
+    resume,
+    start,
+  };
 }
 
 export default function Component() {
-  const [open, setOpen] = useState(false)
-  const toastDuration = 5000
+  const [open, setOpen] = useState(false);
+  const toastDuration = 5000;
   const { progress, start, pause, resume, reset } = useProgressTimer({
     duration: toastDuration,
     onComplete: () => setOpen(false),
-  })
+  });
 
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {
-      setOpen(isOpen)
+      setOpen(isOpen);
       if (isOpen) {
-        reset()
-        start()
+        reset();
+        start();
       }
     },
-    [reset, start]
-  )
+    [reset, start],
+  );
 
   const handleButtonClick = useCallback(() => {
     if (open) {
-      setOpen(false)
+      setOpen(false);
       // Wait for the close animation to finish
       window.setTimeout(() => {
-        handleOpenChange(true)
-      }, 150)
+        handleOpenChange(true);
+      }, 150);
     } else {
-      handleOpenChange(true)
+      handleOpenChange(true);
     }
-  }, [open, handleOpenChange])
+  }, [open, handleOpenChange]);
 
   return (
     <ToastProvider swipeDirection="left">
-      <Button variant="outline" onClick={handleButtonClick}>
+      <Button onClick={handleButtonClick} variant="outline">
         Custom toast
       </Button>
       <Toast
-        open={open}
         onOpenChange={handleOpenChange}
         onPause={pause}
         onResume={resume}
+        open={open}
       >
         <div className="flex w-full justify-between gap-3">
           <CircleCheckIcon
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-emerald-500"
             size={16}
-            aria-hidden="true"
           />
           <div className="flex grow flex-col gap-3">
             <div className="space-y-1">
@@ -160,29 +160,29 @@ export default function Component() {
           </div>
           <ToastClose asChild>
             <Button
-              variant="ghost"
-              className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
               aria-label="Close notification"
+              className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+              variant="ghost"
             >
               <XIcon
-                size={16}
-                className="opacity-60 transition-opacity group-hover:opacity-100"
                 aria-hidden="true"
+                className="opacity-60 transition-opacity group-hover:opacity-100"
+                size={16}
               />
             </Button>
           </ToastClose>
         </div>
-        <div className="contents" aria-hidden="true">
+        <div aria-hidden="true" className="contents">
           <div
             className="pointer-events-none absolute bottom-0 left-0 h-1 w-full bg-emerald-500"
             style={{
-              width: `${(progress / toastDuration) * 100}%`,
               transition: "width 100ms linear",
+              width: `${(progress / toastDuration) * 100}%`,
             }}
           />
         </div>
       </Toast>
       <ToastViewport className="sm:right-auto sm:left-0" />
     </ToastProvider>
-  )
+  );
 }

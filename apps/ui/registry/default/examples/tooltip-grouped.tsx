@@ -1,12 +1,12 @@
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react"
+import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 
-import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group"
+import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group";
 import {
   Tooltip,
   TooltipPopup,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function TooltipDemo() {
   return (
@@ -14,7 +14,7 @@ export default function TooltipDemo() {
       <ToggleGroup defaultValue={["bold"]} multiple>
         <Tooltip>
           <TooltipTrigger
-            render={<Toggle value="bold" aria-label="Toggle bold" />}
+            render={<Toggle aria-label="Toggle bold" value="bold" />}
           >
             <BoldIcon />
           </TooltipTrigger>
@@ -22,7 +22,7 @@ export default function TooltipDemo() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger
-            render={<Toggle value="italic" aria-label="Toggle italic" />}
+            render={<Toggle aria-label="Toggle italic" value="italic" />}
           >
             <ItalicIcon />
           </TooltipTrigger>
@@ -30,7 +30,7 @@ export default function TooltipDemo() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger
-            render={<Toggle value="underline" aria-label="Toggle underline" />}
+            render={<Toggle aria-label="Toggle underline" value="underline" />}
           >
             <UnderlineIcon />
           </TooltipTrigger>
@@ -38,5 +38,5 @@ export default function TooltipDemo() {
         </Tooltip>
       </ToggleGroup>
     </TooltipProvider>
-  )
+  );
 }

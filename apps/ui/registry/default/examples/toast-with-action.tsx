@@ -1,33 +1,33 @@
-"use client"
+"use client";
 
-import { Button } from "@/registry/default/ui/button"
-import { toastManager } from "@/registry/default/ui/toast"
+import { Button } from "@/registry/default/ui/button";
+import { toastManager } from "@/registry/default/ui/toast";
 
 export default function ToastWithAction() {
   return (
     <Button
-      variant="outline"
       onClick={() => {
         const id = toastManager.add({
-          title: "Action performed",
-          description: "You can undo this action.",
-          type: "success",
           actionProps: {
             children: "Undo",
             onClick: () => {
-              toastManager.close(id)
+              toastManager.close(id);
               toastManager.add({
-                title: "Action undone",
                 description: "The action has been reverted.",
+                title: "Action undone",
                 type: "info",
-              })
+              });
             },
           },
+          description: "You can undo this action.",
           timeout: 1000000,
-        })
+          title: "Action performed",
+          type: "success",
+        });
       }}
+      variant="outline"
     >
       Perform Action
     </Button>
-  )
+  );
 }

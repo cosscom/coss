@@ -4,7 +4,7 @@ import {
   MeterLabel,
   MeterTrack,
   MeterValue,
-} from "@/registry/default/ui/meter"
+} from "@/registry/default/ui/meter";
 
 export default function MeterDemo() {
   return (
@@ -17,5 +17,5 @@ export default function MeterDemo() {
         <MeterIndicator />
       </MeterTrack>
     </Meter>
-  )
+  );
 }

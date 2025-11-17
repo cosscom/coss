@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { CircleAlertIcon } from "lucide-react"
+import { CircleAlertIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,15 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
-const PROJECT_NAME = "coss-ui"
+const PROJECT_NAME = "coss-ui";
 
 export default function Component() {
-  const id = useId()
-  const [inputValue, setInputValue] = useState("")
+  const id = useId();
+  const [inputValue, setInputValue] = useState("");
 
   return (
     <Dialog>
@@ -31,8 +31,8 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full border"
           >
             <CircleAlertIcon className="opacity-80" size={16} />
           </div>
@@ -52,22 +52,22 @@ export default function Component() {
             <Label htmlFor={id}>Project name</Label>
             <Input
               id={id}
-              type="text"
-              placeholder="Type coss-ui to confirm"
-              value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Type coss-ui to confirm"
+              type="text"
+              value={inputValue}
             />
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" className="flex-1">
+              <Button className="flex-1" type="button" variant="outline">
                 Cancel
               </Button>
             </DialogClose>
             <Button
-              type="button"
               className="flex-1"
               disabled={inputValue !== PROJECT_NAME}
+              type="button"
             >
               Delete
             </Button>
@@ -75,5 +75,5 @@ export default function Component() {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

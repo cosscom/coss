@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
-import { Calendar } from "@/registry/default/ui/calendar"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function DatePicker() {
-  const [date, setDate] = useState<DateRange | undefined>()
+  const [date, setDate] = useState<DateRange | undefined>();
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          className="group w-full justify-between border-input bg-background px-3 font-normal text-sm outline-none outline-offset-0 focus-visible:outline-[3px]"
           size="sm"
-          className="group w-full justify-between border-input bg-background px-3 text-sm font-normal outline-offset-0 outline-none focus-visible:outline-[3px]"
+          variant="outline"
         >
           <CalendarIcon
-            size={16}
-            className="-ms-1 shrink-0 text-muted-foreground/80 transition-colors"
             aria-hidden="true"
+            className="-ms-1 shrink-0 text-muted-foreground/80 transition-colors"
+            size={16}
           />
           <span className={cn("truncate", !date && "font-medium")}>
             {date?.from ? (
@@ -46,9 +46,9 @@ export default function DatePicker() {
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-2" align="start">
-        <Calendar mode="range" selected={date} onSelect={setDate} />
+      <PopoverContent align="start" className="w-auto p-2">
+        <Calendar mode="range" onSelect={setDate} selected={date} />
       </PopoverContent>
     </Popover>
-  )
+  );
 }

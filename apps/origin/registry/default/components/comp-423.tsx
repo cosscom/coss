@@ -1,29 +1,29 @@
-import { useId } from "react"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "lucide-react";
+import { useId } from "react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Badge } from "@/registry/default/ui/badge";
+import { Checkbox } from "@/registry/default/ui/checkbox";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
-    <Badge className="relative outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 has-data-[state=unchecked]:bg-muted has-data-[state=unchecked]:text-muted-foreground">
+    <Badge className="relative outline-none has-focus-visible:border-ring has-data-[state=unchecked]:bg-muted has-data-[state=unchecked]:text-muted-foreground has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50">
       <Checkbox
-        id={id}
         className="peer sr-only after:absolute after:inset-0"
         defaultChecked
+        id={id}
       />
       <CheckIcon
-        size={12}
-        className="hidden peer-data-[state=checked]:block"
         aria-hidden="true"
+        className="hidden peer-data-[state=checked]:block"
+        size={12}
       />
       <label
-        htmlFor={id}
         className="cursor-pointer select-none after:absolute after:inset-0"
+        htmlFor={id}
       >
         Selectable
       </label>
     </Badge>
-  )
+  );
 }

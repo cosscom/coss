@@ -1,19 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "avatar-fallback",
-  "type": "registry:example",
+  "categories": ["avatar"],
   "description": "Fallback-only avatar",
-  "registryDependencies": [
-    "@coss/avatar"
-  ],
   "files": [
     {
+      "content": "import { Avatar, AvatarFallback } from \"@/registry/default/ui/avatar\";\n\nexport default function AvatarFallbackDemo() {\n  return (\n    <Avatar>\n      <AvatarFallback>LT</AvatarFallback>\n    </Avatar>\n  );\n}\n",
       "path": "registry/default/examples/avatar-fallback.tsx",
-      "content": "import { Avatar, AvatarFallback } from \"@/registry/default/ui/avatar\"\n\nexport default function AvatarFallbackDemo() {\n  return (\n    <Avatar>\n      <AvatarFallback>LT</AvatarFallback>\n    </Avatar>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "avatar"
-  ]
+  "name": "avatar-fallback",
+  "registryDependencies": ["@coss/avatar"],
+  "type": "registry:example"
 }

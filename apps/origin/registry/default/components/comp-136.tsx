@@ -1,16 +1,16 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex items-center gap-2">
-      <Checkbox id={id} defaultChecked />
-      <Label htmlFor={id} className="peer-data-[state=checked]:line-through">
+      <Checkbox defaultChecked id={id} />
+      <Label className="peer-data-[state=checked]:line-through" htmlFor={id}>
         Simple todo item
       </Label>
     </div>
-  )
+  );
 }

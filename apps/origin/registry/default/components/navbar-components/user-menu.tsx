@@ -5,14 +5,14 @@ import {
   LogOutIcon,
   PinIcon,
   UserPenIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/avatar";
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,60 +21,60 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+        <Button className="h-auto p-0 hover:bg-transparent" variant="ghost">
           <Avatar>
-            <AvatarImage src="/origin/avatar.jpg" alt="Profile image" />
+            <AvatarImage alt="Profile image" src="/origin/avatar.jpg" />
             <AvatarFallback>KK</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-w-64" align="end">
+      <DropdownMenuContent align="end" className="max-w-64">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">
+          <span className="truncate font-medium text-foreground text-sm">
             Keith Kennedy
           </span>
-          <span className="truncate text-xs font-normal text-muted-foreground">
+          <span className="truncate font-normal text-muted-foreground text-xs">
             k.kennedy@coss.com
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <BoltIcon size={16} className="opacity-60" aria-hidden="true" />
+            <BoltIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Option 1</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Layers2Icon size={16} className="opacity-60" aria-hidden="true" />
+            <Layers2Icon aria-hidden="true" className="opacity-60" size={16} />
             <span>Option 2</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <BookOpenIcon size={16} className="opacity-60" aria-hidden="true" />
+            <BookOpenIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Option 3</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <PinIcon size={16} className="opacity-60" aria-hidden="true" />
+            <PinIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Option 4</span>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <UserPenIcon size={16} className="opacity-60" aria-hidden="true" />
+            <UserPenIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Option 5</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
+          <LogOutIcon aria-hidden="true" className="opacity-60" size={16} />
           <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

@@ -1,22 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "field-switch",
-  "type": "registry:example",
+  "categories": ["field", "switch", "label"],
   "description": "Field with toggle switch",
-  "registryDependencies": [
-    "@coss/field",
-    "@coss/switch"
-  ],
   "files": [
     {
+      "content": "import { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Switch } from \"@/registry/default/ui/switch\";\n\nexport default function FieldSwitchDemo() {\n  return (\n    <Field>\n      <FieldLabel>\n        <Switch />\n        Email notifications\n      </FieldLabel>\n    </Field>\n  );\n}\n",
       "path": "registry/default/examples/field-switch.tsx",
-      "content": "import { Field, FieldLabel } from \"@/registry/default/ui/field\"\nimport { Switch } from \"@/registry/default/ui/switch\"\n\nexport default function FieldSwitchDemo() {\n  return (\n    <Field>\n      <FieldLabel>\n        <Switch />\n        Email notifications\n      </FieldLabel>\n    </Field>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "field",
-    "switch",
-    "label"
-  ]
+  "name": "field-switch",
+  "registryDependencies": ["@coss/field", "@coss/switch"],
+  "type": "registry:example"
 }

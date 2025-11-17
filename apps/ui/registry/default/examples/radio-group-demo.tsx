@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Radio, RadioGroup } from "@/registry/default/ui/radio-group"
+import { Label } from "@/registry/default/ui/label";
+import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 
 export default function RadioGroupDemo() {
   return (
@@ -14,5 +14,5 @@ export default function RadioGroupDemo() {
         <Radio value="astro" /> Astro
       </Label>
     </RadioGroup>
-  )
+  );
 }
