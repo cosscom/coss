@@ -2,8 +2,8 @@ import { CodeBlock } from "@coss/ui/components/code-block";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "coss.com scheduling",
   description: "open source is the foundation of all modern software",
+  title: "coss.com scheduling",
 };
 
 export default function Page() {

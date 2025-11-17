@@ -9,10 +9,10 @@ import { Form } from "@/registry/default/ui/form";
 import { Input } from "@/registry/default/ui/input";
 
 const schema = z.object({
-  name: z.string().min(1, { message: "Please enter a name." }),
   age: z.coerce
     .number({ message: "Please enter a number." })
     .positive({ message: "Number must be positive." }),
+  name: z.string().min(1, { message: "Please enter a name." }),
 });
 
 type Errors = Record<string, string | string[]>;

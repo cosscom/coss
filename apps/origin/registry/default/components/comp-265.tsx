@@ -146,7 +146,7 @@ export default function Component() {
     validateAndUpdateValue,
     handleInputChange,
     handleSliderChange,
-  } = useSliderWithInput({ minValue, maxValue, initialValue: [200, 780] }); // set initialValue: [minValue, maxValue] to show all items by default
+  } = useSliderWithInput({ initialValue: [200, 780], maxValue, minValue }); // set initialValue: [minValue, maxValue] to show all items by default
 
   // Calculate the price step based on the min and max prices
   const priceStep = (maxValue - minValue) / tick_count;

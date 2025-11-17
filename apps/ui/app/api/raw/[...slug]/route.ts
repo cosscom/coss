@@ -40,8 +40,8 @@ export async function GET(
     // Return raw markdown with appropriate headers
     return new NextResponse(content, {
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "public, max-age=3600",
+        "Content-Type": "text/plain; charset=utf-8",
       },
     });
   } catch {

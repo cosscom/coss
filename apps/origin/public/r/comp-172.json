@@ -1,20 +1,20 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "comp-172",
-  "type": "registry:component",
-  "registryDependencies": [
-    "https://coss.com/origin/r/switch.json",
-    "https://coss.com/origin/r/label.json"
-  ],
   "files": [
     {
-      "path": "registry/default/components/comp-172.tsx",
       "content": "import { useId } from \"react\"\n\nimport { Label } from \"@/registry/default/ui/label\"\nimport { Switch } from \"@/registry/default/ui/switch\"\n\nexport default function Component() {\n  const id = useId()\n  return (\n    <div className=\"inline-flex items-center gap-2\">\n      <Switch id={id} />\n      <Label htmlFor={id} className=\"sr-only\">\n        Simple switch\n      </Label>\n    </div>\n  )\n}\n",
+      "path": "registry/default/components/comp-172.tsx",
       "type": "registry:component"
     }
   ],
   "meta": {
-    "tags": ["switch", "radix"],
-    "style": 1
-  }
+    "style": 1,
+    "tags": ["switch", "radix"]
+  },
+  "name": "comp-172",
+  "registryDependencies": [
+    "https://coss.com/origin/r/switch.json",
+    "https://coss.com/origin/r/label.json"
+  ],
+  "type": "registry:component"
 }

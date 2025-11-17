@@ -22,25 +22,25 @@ import { Button } from "@/registry/default/ui/button";
 // Create some dummy initial files
 const initialFiles = [
   {
+    id: "document.pdf-1744638436563-8u5xuls",
     name: "document.pdf",
     size: 528737,
     type: "application/pdf",
     url: "https://example.com/document.pdf",
-    id: "document.pdf-1744638436563-8u5xuls",
   },
   {
+    id: "intro.zip-1744638436563-8u5xuls",
     name: "intro.zip",
     size: 252873,
     type: "application/zip",
     url: "https://example.com/intro.zip",
-    id: "intro.zip-1744638436563-8u5xuls",
   },
   {
+    id: "conclusion.xlsx-1744638436563-8u5xuls",
     name: "conclusion.xlsx",
     size: 352873,
     type: "application/xlsx",
     url: "https://example.com/conclusion.xlsx",
-    id: "conclusion.xlsx-1744638436563-8u5xuls",
   },
 ];
 
@@ -101,10 +101,10 @@ export default function Component() {
       getInputProps,
     },
   ] = useFileUpload({
-    multiple: true,
+    initialFiles,
     maxFiles,
     maxSize,
-    initialFiles,
+    multiple: true,
   });
 
   return (

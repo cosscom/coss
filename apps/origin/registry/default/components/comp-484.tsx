@@ -57,7 +57,14 @@ type Item = {
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableSorting: false,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all rows"
@@ -68,31 +75,23 @@ const columns: ColumnDef<Item>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label="Select row"
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
+    id: "select",
     size: 28,
-    enableSorting: false,
   },
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
+    header: "Name",
     size: 180,
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
     size: 200,
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div>
@@ -100,10 +99,10 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
     size: 180,
   },
   {
-    header: "Status",
     accessorKey: "status",
     cell: ({ row }) => (
       <Badge
@@ -115,19 +114,20 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("status")}
       </Badge>
     ),
+    header: "Status",
     size: 120,
   },
   {
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
+        style: "currency",
       }).format(amount);
       return formatted;
     },
+    header: "Balance",
     size: 120,
   },
 ];
@@ -142,8 +142,8 @@ export default function Component() {
 
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "name",
       desc: false,
+      id: "name",
     },
   ]);
 
@@ -160,24 +160,24 @@ export default function Component() {
   }, []);
 
   const table = useReactTable({
-    data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    data,
     enableSortingRemoval: false,
+    getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
-      sorting,
       pagination,
+      sorting,
     },
   });
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage: table.getState().pagination.pageIndex + 1,
-    totalPages: table.getPageCount(),
     paginationItemsToDisplay: 5,
+    totalPages: table.getPageCount(),
   });
 
   return (

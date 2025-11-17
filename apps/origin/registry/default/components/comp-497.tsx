@@ -36,13 +36,6 @@ export default function Component() {
           month_caption: "mx-0",
         }}
         components={{
-          DropdownNav: (props: DropdownNavProps) => {
-            return (
-              <div className="flex w-full items-center gap-2">
-                {props.children}
-              </div>
-            );
-          },
           Dropdown: (props: DropdownProps) => {
             return (
               <Select
@@ -68,6 +61,13 @@ export default function Component() {
                   ))}
                 </SelectContent>
               </Select>
+            );
+          },
+          DropdownNav: (props: DropdownNavProps) => {
+            return (
+              <div className="flex w-full items-center gap-2">
+                {props.children}
+              </div>
             );
           },
         }}

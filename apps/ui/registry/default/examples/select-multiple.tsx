@@ -9,16 +9,16 @@ import {
 } from "@/registry/default/ui/select";
 
 const languages = {
-  javascript: "JavaScript",
-  typescript: "TypeScript",
-  python: "Python",
-  java: "Java",
-  csharp: "C#",
-  php: "PHP",
   cpp: "C++",
-  rust: "Rust",
+  csharp: "C#",
   go: "Go",
+  java: "Java",
+  javascript: "JavaScript",
+  php: "PHP",
+  python: "Python",
+  rust: "Rust",
   swift: "Swift",
+  typescript: "TypeScript",
 };
 
 type Language = keyof typeof languages;

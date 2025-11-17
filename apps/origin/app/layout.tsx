@@ -23,17 +23,17 @@ const fontHeading = FontHeading({
 
 export const viewport: Viewport = {
   initialScale: 1,
-  width: "device-width",
   maximumScale: 1,
   viewportFit: "cover",
+  width: "device-width",
 };
 
 export const metadata: Metadata = {
+  description:
+    "An extensive collection of copy-and-paste components for quickly building app UIs. Free, open-source, and ready to drop into your projects.",
   metadataBase: new URL("https://coss.com"),
   title:
     "coss.com origin - Beautiful UI components built with Tailwind CSS and React",
-  description:
-    "An extensive collection of copy-and-paste components for quickly building app UIs. Free, open-source, and ready to drop into your projects.",
 };
 
 export default function RootLayout({

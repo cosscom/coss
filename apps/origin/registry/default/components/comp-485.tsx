@@ -121,7 +121,15 @@ const statusFilterFn: FilterFn<Item> = (
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableHiding: false,
+    enableSorting: false,
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -132,34 +140,25 @@ const columns: ColumnDef<Item>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label="Select row"
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
+    id: "select",
     size: 28,
-    enableSorting: false,
-    enableHiding: false,
   },
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
-    size: 180,
-    filterFn: multiColumnFilterFn,
     enableHiding: false,
+    filterFn: multiColumnFilterFn,
+    header: "Name",
+    size: 180,
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
     size: 220,
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div>
@@ -167,10 +166,10 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
     size: 180,
   },
   {
-    header: "Status",
     accessorKey: "status",
     cell: ({ row }) => (
       <Badge
@@ -182,32 +181,33 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("status")}
       </Badge>
     ),
-    size: 100,
     filterFn: statusFilterFn,
+    header: "Status",
+    size: 100,
   },
   {
-    header: "Performance",
     accessorKey: "performance",
+    header: "Performance",
   },
   {
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
+        style: "currency",
       }).format(amount);
       return formatted;
     },
+    header: "Balance",
     size: 120,
   },
   {
-    id: "actions",
-    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <RowActions row={row} />,
-    size: 60,
     enableHiding: false,
+    header: () => <span className="sr-only">Actions</span>,
+    id: "actions",
+    size: 60,
   },
 ];
 
@@ -223,8 +223,8 @@ export default function Component() {
 
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "name",
       desc: false,
+      id: "name",
     },
   ]);
 
@@ -250,23 +250,23 @@ export default function Component() {
   };
 
   const table = useReactTable({
-    data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    data,
     enableSortingRemoval: false,
+    getCoreRowModel: getCoreRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onPaginationChange: setPagination,
+    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
-      sorting,
-      pagination,
       columnFilters,
       columnVisibility,
+      pagination,
+      sorting,
     },
   });
 

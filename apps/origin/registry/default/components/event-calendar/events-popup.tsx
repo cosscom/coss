@@ -91,8 +91,8 @@ export function EventsPopup({
       className="absolute z-50 max-h-96 w-80 overflow-auto rounded-md border bg-background shadow-lg"
       ref={popupRef}
       style={{
-        top: `${adjustedPosition.top}px`,
         left: `${adjustedPosition.left}px`,
+        top: `${adjustedPosition.top}px`,
       }}
     >
       <div className="sticky top-0 flex items-center justify-between border-b bg-background p-3">

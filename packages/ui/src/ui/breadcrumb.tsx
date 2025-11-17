@@ -37,14 +37,14 @@ function BreadcrumbLink({
   ...props
 }: useRender.ComponentProps<"a">) {
   const defaultProps = {
-    "data-slot": "breadcrumb-link",
     className: cn("transition-colors hover:text-foreground", className),
+    "data-slot": "breadcrumb-link",
   };
 
   return useRender({
     defaultTagName: "a",
-    render,
     props: mergeProps<"a">(defaultProps, props),
+    render,
   });
 }
 

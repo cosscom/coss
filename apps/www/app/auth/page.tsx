@@ -2,8 +2,8 @@ import { CodeBlock } from "@coss/ui/components/code-block";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "coss.com auth",
   description: "open source is the foundation of all modern software",
+  title: "coss.com auth",
 };
 
 export default function Page() {

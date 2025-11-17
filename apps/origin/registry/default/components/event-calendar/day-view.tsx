@@ -54,8 +54,8 @@ export function DayView({
   const hours = useMemo(() => {
     const dayStart = startOfDay(currentDate);
     return eachHourOfInterval({
-      start: addHours(dayStart, StartHour),
       end: addHours(dayStart, EndHour - 1),
+      start: addHours(dayStart, StartHour),
     });
   }, [currentDate]);
 
@@ -148,8 +148,8 @@ export function DayView({
         } else {
           const overlaps = col.some((c) =>
             areIntervalsOverlapping(
-              { start: adjustedStart, end: adjustedEnd },
-              { start: new Date(c.event.start), end: new Date(c.event.end) },
+              { end: adjustedEnd, start: adjustedStart },
+              { end: new Date(c.event.end), start: new Date(c.event.start) },
             ),
           );
 
@@ -164,7 +164,7 @@ export function DayView({
       // Ensure column is initialized before pushing
       const currentColumn = columns[columnIndex] || [];
       columns[columnIndex] = currentColumn;
-      currentColumn.push({ event, end: adjustedEnd });
+      currentColumn.push({ end: adjustedEnd, event });
 
       // First column takes full width, others are indented by 10% and take 90% width
       const width = columnIndex === 0 ? 1 : 0.9;
@@ -172,9 +172,9 @@ export function DayView({
 
       result.push({
         event,
-        top,
         height,
         left,
+        top,
         width,
         zIndex: 10 + columnIndex,
       });
@@ -253,9 +253,9 @@ export function DayView({
               className="absolute z-10 px-0.5"
               key={positionedEvent.event.id}
               style={{
-                top: `${positionedEvent.top}px`,
                 height: `${positionedEvent.height}px`,
                 left: `${positionedEvent.left * 100}%`,
+                top: `${positionedEvent.top}px`,
                 width: `${positionedEvent.width * 100}%`,
                 zIndex: positionedEvent.zIndex,
               }}

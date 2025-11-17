@@ -20,32 +20,32 @@ const items: {
   date: Date;
 }[] = [
   {
-    id: 1,
-    user: "Matt",
-    image: "/origin/avatar-40-02.jpg",
     action: "post",
     date: new Date(Date.now() - 59000), // 59 seconds ago
+    id: 1,
+    image: "/origin/avatar-40-02.jpg",
+    user: "Matt",
   },
   {
-    id: 2,
-    user: "Matt",
-    image: "/origin/avatar-40-02.jpg",
     action: "reply",
     date: new Date(Date.now() - 180000), // 3 minutes ago
+    id: 2,
+    image: "/origin/avatar-40-02.jpg",
+    user: "Matt",
   },
   {
-    id: 3,
-    user: "Matt",
-    image: "/origin/avatar-40-02.jpg",
     action: "edit",
     date: new Date(Date.now() - 300000), // 5 minutes ago
+    id: 3,
+    image: "/origin/avatar-40-02.jpg",
+    user: "Matt",
   },
   {
-    id: 4,
-    user: "Matt",
-    image: "/origin/avatar-40-02.jpg",
     action: "create",
     date: new Date(Date.now() - 600000), // 10 minutes ago
+    id: 4,
+    image: "/origin/avatar-40-02.jpg",
+    user: "Matt",
   },
 ];
 
@@ -53,20 +53,20 @@ type ActionType = "post" | "reply" | "edit" | "create";
 
 function getActionIcon(action: ActionType): LucideIcon {
   const icons: Record<ActionType, LucideIcon> = {
+    create: PlusIcon,
+    edit: PencilIcon,
     post: BookOpenIcon,
     reply: MessageCircleIcon,
-    edit: PencilIcon,
-    create: PlusIcon,
   };
   return icons[action];
 }
 
 function getActionText(action: ActionType): string {
   const texts: Record<ActionType, string> = {
+    create: "created a new project",
+    edit: "edited a post",
     post: "wrote a new post",
     reply: "replied to a comment",
-    edit: "edited a post",
-    create: "created a new project",
   };
   return texts[action];
 }

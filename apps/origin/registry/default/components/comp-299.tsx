@@ -9,11 +9,11 @@ export default function Component() {
     <Button
       onClick={() => {
         toast("Your request was completed!", {
-          description: "It was a long journey, but we made it!",
           action: {
             label: "Undo",
             onClick: () => console.log("Undo"),
           },
+          description: "It was a long journey, but we made it!",
         });
       }}
       variant="outline"

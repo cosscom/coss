@@ -9,8 +9,8 @@ import { RangeCalendar } from "@/registry/default/ui/calendar-rac";
 export default function Component() {
   const now = today(getLocalTimeZone());
   const [date, setDate] = useState<DateRange | null>({
-    start: now,
     end: now.add({ days: 3 }),
+    start: now,
   });
 
   return (

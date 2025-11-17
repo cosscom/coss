@@ -64,7 +64,13 @@ type Item = {
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -75,23 +81,16 @@ const columns: ColumnDef<Item>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label="Select row"
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
+    id: "select",
   },
   {
-    header: "Keyword",
     accessorKey: "keyword",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("keyword")}</div>
     ),
+    header: "Keyword",
   },
   {
-    header: "Intents",
     accessorKey: "intents",
     cell: ({ row }) => {
       const intents = row.getValue("intents") as string[];
@@ -99,9 +98,9 @@ const columns: ColumnDef<Item>[] = [
         <div className="flex gap-1">
           {intents.map((intent) => {
             const styles = {
+              Commercial: "bg-amber-400/20 text-amber-500",
               Informational: "bg-indigo-400/20 text-indigo-500",
               Navigational: "bg-emerald-400/20 text-emerald-500",
-              Commercial: "bg-amber-400/20 text-amber-500",
               Transactional: "bg-rose-400/20 text-rose-500",
             }[intent];
 
@@ -121,52 +120,52 @@ const columns: ColumnDef<Item>[] = [
       );
     },
     enableSorting: false,
-    meta: {
-      filterVariant: "select",
-    },
     filterFn: (row, id, filterValue) => {
       const rowValue = row.getValue(id);
       return Array.isArray(rowValue) && rowValue.includes(filterValue);
     },
+    header: "Intents",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
-    header: "Volume",
     accessorKey: "volume",
     cell: ({ row }) => {
       const volume = Number.parseInt(row.getValue("volume"), 10);
       return new Intl.NumberFormat("en-US", {
-        notation: "compact",
         maximumFractionDigits: 1,
+        notation: "compact",
       }).format(volume);
     },
+    header: "Volume",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "CPC",
     accessorKey: "cpc",
     cell: ({ row }) => <div>${row.getValue("cpc")}</div>,
+    header: "CPC",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "Traffic",
     accessorKey: "traffic",
     cell: ({ row }) => {
       const traffic = Number.parseInt(row.getValue("traffic"), 10);
       return new Intl.NumberFormat("en-US", {
-        notation: "compact",
         maximumFractionDigits: 1,
+        notation: "compact",
       }).format(traffic);
     },
+    header: "Traffic",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "Link",
     accessorKey: "link",
     cell: ({ row }) => (
       <a className="inline-flex items-center gap-1 hover:underline" href="#">
@@ -174,81 +173,82 @@ const columns: ColumnDef<Item>[] = [
       </a>
     ),
     enableSorting: false,
+    header: "Link",
   },
 ];
 
 const items: Item[] = [
   {
-    id: "1",
-    keyword: "react components",
-    intents: ["Informational", "Navigational"],
-    volume: 2507,
     cpc: 2.5,
-    traffic: 88,
-    link: "https://coss.com/origin",
-  },
-  {
-    id: "2",
-    keyword: "buy react templates",
-    intents: ["Commercial", "Transactional"],
-    volume: 1850,
-    cpc: 4.75,
-    traffic: 65,
-    link: "https://coss.com/origin/input",
-  },
-  {
-    id: "3",
-    keyword: "react ui library",
-    intents: ["Informational", "Commercial"],
-    volume: 3200,
-    cpc: 3.25,
-    traffic: 112,
-    link: "https://coss.com/origin/badge",
-  },
-  {
-    id: "4",
-    keyword: "tailwind components download",
-    intents: ["Transactional"],
-    volume: 890,
-    cpc: 1.95,
-    traffic: 45,
-    link: "https://coss.com/origin/alert",
-  },
-  {
-    id: "5",
-    keyword: "react dashboard template free",
-    intents: ["Commercial", "Transactional"],
-    volume: 4100,
-    cpc: 5.5,
-    traffic: 156,
-    link: "https://coss.com/origin/tabs",
-  },
-  {
-    id: "6",
-    keyword: "how to use react components",
-    intents: ["Informational"],
-    volume: 1200,
-    cpc: 1.25,
-    traffic: 42,
-    link: "https://coss.com/origin/table",
-  },
-  {
-    id: "7",
-    keyword: "react ui kit premium",
-    intents: ["Commercial", "Transactional"],
-    volume: 760,
-    cpc: 6.8,
-    traffic: 28,
-    link: "https://coss.com/origin/avatar",
-  },
-  {
-    id: "8",
-    keyword: "react component documentation",
+    id: "1",
     intents: ["Informational", "Navigational"],
-    volume: 950,
-    cpc: 1.8,
-    traffic: 35,
+    keyword: "react components",
     link: "https://coss.com/origin",
+    traffic: 88,
+    volume: 2507,
+  },
+  {
+    cpc: 4.75,
+    id: "2",
+    intents: ["Commercial", "Transactional"],
+    keyword: "buy react templates",
+    link: "https://coss.com/origin/input",
+    traffic: 65,
+    volume: 1850,
+  },
+  {
+    cpc: 3.25,
+    id: "3",
+    intents: ["Informational", "Commercial"],
+    keyword: "react ui library",
+    link: "https://coss.com/origin/badge",
+    traffic: 112,
+    volume: 3200,
+  },
+  {
+    cpc: 1.95,
+    id: "4",
+    intents: ["Transactional"],
+    keyword: "tailwind components download",
+    link: "https://coss.com/origin/alert",
+    traffic: 45,
+    volume: 890,
+  },
+  {
+    cpc: 5.5,
+    id: "5",
+    intents: ["Commercial", "Transactional"],
+    keyword: "react dashboard template free",
+    link: "https://coss.com/origin/tabs",
+    traffic: 156,
+    volume: 4100,
+  },
+  {
+    cpc: 1.25,
+    id: "6",
+    intents: ["Informational"],
+    keyword: "how to use react components",
+    link: "https://coss.com/origin/table",
+    traffic: 42,
+    volume: 1200,
+  },
+  {
+    cpc: 6.8,
+    id: "7",
+    intents: ["Commercial", "Transactional"],
+    keyword: "react ui kit premium",
+    link: "https://coss.com/origin/avatar",
+    traffic: 28,
+    volume: 760,
+  },
+  {
+    cpc: 1.8,
+    id: "8",
+    intents: ["Informational", "Navigational"],
+    keyword: "react component documentation",
+    link: "https://coss.com/origin",
+    traffic: 35,
+    volume: 950,
   },
 ];
 
@@ -256,27 +256,27 @@ export default function Component() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "traffic",
       desc: false,
+      id: "traffic",
     },
   ]);
 
   const table = useReactTable({
-    data: items,
     columns,
-    state: {
-      sorting,
-      columnFilters,
-    },
-    onColumnFiltersChange: setColumnFilters,
+    data: items,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
-    getSortedRowModel: getSortedRowModel(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
     getFacetedRowModel: getFacetedRowModel(), // client-side faceting
     getFacetedUniqueValues: getFacetedUniqueValues(), // generate unique values for select filter/autocomplete
-    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
+    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
-    enableSortingRemoval: false,
+    state: {
+      columnFilters,
+      sorting,
+    },
   });
 
   return (

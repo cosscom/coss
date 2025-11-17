@@ -31,14 +31,14 @@ function EmptyHeader({ className, ...props }: React.ComponentProps<"div">) {
 const emptyMediaVariants = cva(
   "flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
+    defaultVariants: {
+      variant: "default",
+    },
     variants: {
       variant: {
         default: "bg-transparent",
         icon: "relative flex size-9 shrink-0 items-center justify-center rounded-md border bg-card text-foreground shadow-black/5 shadow-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-md)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_svg:not([class*='size-'])]:size-4.5",
       },
-    },
-    defaultVariants: {
-      variant: "default",
     },
   },
 );
@@ -60,21 +60,21 @@ function EmptyMedia({
           <div
             aria-hidden="true"
             className={cn(
-              emptyMediaVariants({ variant, className }),
+              emptyMediaVariants({ className, variant }),
               "-translate-x-0.5 -rotate-10 pointer-events-none absolute bottom-px origin-bottom-left scale-84 shadow-none",
             )}
           />
           <div
             aria-hidden="true"
             className={cn(
-              emptyMediaVariants({ variant, className }),
+              emptyMediaVariants({ className, variant }),
               "pointer-events-none absolute bottom-px origin-bottom-right translate-x-0.5 rotate-10 scale-84 shadow-none",
             )}
           />
         </>
       )}
       <div
-        className={cn(emptyMediaVariants({ variant, className }))}
+        className={cn(emptyMediaVariants({ className, variant }))}
         {...props}
       />
     </div>

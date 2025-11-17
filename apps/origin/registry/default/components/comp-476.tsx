@@ -11,7 +11,6 @@ import {
 
 const items = [
   {
-    feature: "scroll-timeline",
     desktop: [
       { name: "Chrome", supported: true, version: "115" },
       { name: "Edge", supported: true, version: "115" },
@@ -19,6 +18,7 @@ const items = [
       { name: "Opera", supported: true, version: "101" },
       { name: "Safari", supported: false, version: "No" },
     ],
+    feature: "scroll-timeline",
     mobile: [
       { name: "Chrome Android", supported: true, version: "115" },
       { name: "Firefox Android", supported: false, version: "No" },
@@ -28,7 +28,6 @@ const items = [
     ],
   },
   {
-    feature: "view-timeline",
     desktop: [
       { name: "Chrome", supported: true, version: "115" },
       { name: "Edge", supported: true, version: "115" },
@@ -36,6 +35,7 @@ const items = [
       { name: "Opera", supported: true, version: "101" },
       { name: "Safari", supported: false, version: "No" },
     ],
+    feature: "view-timeline",
     mobile: [
       { name: "Chrome Android", supported: true, version: "115" },
       { name: "Firefox Android", supported: false, version: "No" },
@@ -45,7 +45,6 @@ const items = [
     ],
   },
   {
-    feature: "font-size-adjust",
     desktop: [
       { name: "Chrome", supported: true, version: "127" },
       { name: "Edge", supported: true, version: "127" },
@@ -53,6 +52,7 @@ const items = [
       { name: "Opera", supported: true, version: "113" },
       { name: "Safari", supported: true, version: "16.4" },
     ],
+    feature: "font-size-adjust",
     mobile: [
       { name: "Chrome Android", supported: true, version: "127" },
       { name: "Firefox Android", supported: true, version: "4" },

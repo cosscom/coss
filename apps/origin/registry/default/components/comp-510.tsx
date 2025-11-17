@@ -42,12 +42,12 @@ export default function Component() {
       <Calendar
         className="rounded-md border p-2"
         classNames={{
-          months: "sm:flex-col md:flex-row gap-8",
+          day_button: "size-12",
           month:
             "relative first-of-type:before:hidden before:absolute max-md:before:inset-x-2 max-md:before:h-px max-md:before:-top-4 md:before:inset-y-2 md:before:w-px before:bg-border md:before:-left-4",
-          weekday: "w-12",
-          day_button: "size-12",
+          months: "sm:flex-col md:flex-row gap-8",
           today: "*:after:hidden",
+          weekday: "w-12",
         }}
         components={{
           DayButton: (props: DayButtonProps) => (

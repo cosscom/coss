@@ -23,9 +23,9 @@ export default function Component() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
+    isExpired: false,
     minutes: 0,
     seconds: 0,
-    isExpired: false,
   });
 
   useEffect(() => {
@@ -37,9 +37,9 @@ export default function Component() {
         setTimeLeft({
           days: 0,
           hours: 0,
+          isExpired: true,
           minutes: 0,
           seconds: 0,
-          isExpired: true,
         });
         return;
       }
@@ -54,9 +54,9 @@ export default function Component() {
       setTimeLeft({
         days,
         hours,
+        isExpired: false,
         minutes,
         seconds,
-        isExpired: false,
       });
     };
 

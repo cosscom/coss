@@ -18,8 +18,8 @@ const OpenInV0 = ({ componentSource }: { componentSource: string }) => {
             aria-label="Open in v0"
             className={cn(
               buttonVariants({
-                variant: "ghost",
                 size: "icon",
+                variant: "ghost",
               }),
               "text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 lg:group-focus-within/item:opacity-100",
             )}

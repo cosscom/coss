@@ -127,7 +127,7 @@ export function EventDialog({
         // Use a fixed date to avoid unnecessary date object creations
         const date = new Date(2000, 0, 1, hour, minute);
         const label = format(date, "h:mm a");
-        options.push({ value, label });
+        options.push({ label, value });
       }
     }
     return options;
@@ -172,14 +172,14 @@ export function EventDialog({
     const eventTitle = title.trim() ? title : "(no title)";
 
     onSave({
-      id: event?.id || "",
-      title: eventTitle,
-      description,
-      start,
-      end,
       allDay,
-      location,
       color,
+      description,
+      end,
+      id: event?.id || "",
+      location,
+      start,
+      title: eventTitle,
     });
   };
 
@@ -197,40 +197,40 @@ export function EventDialog({
     borderClass: string;
   }> = [
     {
-      value: "sky",
-      label: "Sky",
       bgClass: "bg-sky-400 data-[state=checked]:bg-sky-400",
       borderClass: "border-sky-400 data-[state=checked]:border-sky-400",
+      label: "Sky",
+      value: "sky",
     },
     {
-      value: "amber",
-      label: "Amber",
       bgClass: "bg-amber-400 data-[state=checked]:bg-amber-400",
       borderClass: "border-amber-400 data-[state=checked]:border-amber-400",
+      label: "Amber",
+      value: "amber",
     },
     {
-      value: "violet",
-      label: "Violet",
       bgClass: "bg-violet-400 data-[state=checked]:bg-violet-400",
       borderClass: "border-violet-400 data-[state=checked]:border-violet-400",
+      label: "Violet",
+      value: "violet",
     },
     {
-      value: "rose",
-      label: "Rose",
       bgClass: "bg-rose-400 data-[state=checked]:bg-rose-400",
       borderClass: "border-rose-400 data-[state=checked]:border-rose-400",
+      label: "Rose",
+      value: "rose",
     },
     {
-      value: "emerald",
-      label: "Emerald",
       bgClass: "bg-emerald-400 data-[state=checked]:bg-emerald-400",
       borderClass: "border-emerald-400 data-[state=checked]:border-emerald-400",
+      label: "Emerald",
+      value: "emerald",
     },
     {
-      value: "orange",
-      label: "Orange",
       bgClass: "bg-orange-400 data-[state=checked]:bg-orange-400",
       borderClass: "border-orange-400 data-[state=checked]:border-orange-400",
+      label: "Orange",
+      value: "orange",
     },
   ];
 

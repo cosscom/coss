@@ -14,20 +14,20 @@ interface TreeNode {
 }
 
 const initialTree: TreeNode = {
-  id: "1",
-  label: "Natural Wonders",
   children: [
-    { id: "2", label: "Mountains", defaultChecked: true },
+    { defaultChecked: true, id: "2", label: "Mountains" },
     {
-      id: "3",
-      label: "Waterfalls",
       children: [
         { id: "4", label: "Niagara Falls" },
-        { id: "5", label: "Angel Falls", defaultChecked: true },
+        { defaultChecked: true, id: "5", label: "Angel Falls" },
       ],
+      id: "3",
+      label: "Waterfalls",
     },
     { id: "6", label: "Grand Canyon" },
   ],
+  id: "1",
+  label: "Natural Wonders",
 };
 
 export default function Component() {

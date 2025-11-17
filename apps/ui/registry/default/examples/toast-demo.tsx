@@ -8,8 +8,8 @@ export default function ToastDemo() {
     <Button
       onClick={() => {
         toastManager.add({
-          title: "Event has been created",
           description: "Monday, January 3rd at 6:00pm",
+          title: "Event has been created",
         });
       }}
       variant="outline"

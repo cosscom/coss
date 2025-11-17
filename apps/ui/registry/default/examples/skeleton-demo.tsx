@@ -13,31 +13,31 @@ import { Skeleton } from "@/registry/default/ui/skeleton";
 
 const users = [
   {
-    name: "Sarah Johnson",
-    role: "Design Engineer",
+    delay: 3000,
+    fallback: "SJ",
     followers: "15k",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&dpr=2&q=80",
-    fallback: "SJ",
-    delay: 3000,
+    name: "Sarah Johnson",
+    role: "Design Engineer",
   },
   {
-    name: "Mark Bennett Andersson",
-    role: "Product Designer",
+    delay: 4000,
+    fallback: "MA",
     followers: "8k",
     image:
       "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=80&h=80&dpr=2&q=80",
-    fallback: "MA",
-    delay: 4000,
+    name: "Mark Bennett Andersson",
+    role: "Product Designer",
   },
   {
-    name: "Alex Rivera",
-    role: "UI/UX Designer",
+    delay: 3400,
+    fallback: "AR",
     followers: "12k",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&dpr=2&q=80",
-    fallback: "AR",
-    delay: 3400,
+    name: "Alex Rivera",
+    role: "UI/UX Designer",
   },
 ];
 

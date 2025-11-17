@@ -23,25 +23,25 @@ import { Button } from "@/registry/default/ui/button";
 // Create some dummy initial files
 const initialFiles = [
   {
+    id: "intro.zip-1744638436563-8u5xuls",
     name: "intro.zip",
     size: 252873,
     type: "application/zip",
     url: "https://example.com/intro.zip",
-    id: "intro.zip-1744638436563-8u5xuls",
   },
   {
+    id: "image-01-123456789",
     name: "image-01.jpg",
     size: 1528737,
     type: "image/jpeg",
     url: "https://picsum.photos/1000/800?grayscale&random=1",
-    id: "image-01-123456789",
   },
   {
+    id: "audio-123456789",
     name: "audio.mp3",
     size: 1528737,
     type: "audio/mpeg",
     url: "https://example.com/audio.mp3",
-    id: "audio-123456789",
   },
 ];
 
@@ -50,41 +50,41 @@ const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
   const fileName = file.file instanceof File ? file.file.name : file.file.name;
 
   const iconMap = {
+    archive: {
+      conditions: (type: string, name: string) =>
+        type.includes("zip") ||
+        type.includes("archive") ||
+        name.endsWith(".zip") ||
+        name.endsWith(".rar"),
+      icon: FileArchiveIcon,
+    },
+    audio: {
+      conditions: (type: string) => type.includes("audio/"),
+      icon: HeadphonesIcon,
+    },
+    excel: {
+      conditions: (type: string, name: string) =>
+        type.includes("excel") ||
+        name.endsWith(".xls") ||
+        name.endsWith(".xlsx"),
+      icon: FileSpreadsheetIcon,
+    },
+    image: {
+      conditions: (type: string) => type.startsWith("image/"),
+      icon: ImageIcon,
+    },
     pdf: {
-      icon: FileTextIcon,
       conditions: (type: string, name: string) =>
         type.includes("pdf") ||
         name.endsWith(".pdf") ||
         type.includes("word") ||
         name.endsWith(".doc") ||
         name.endsWith(".docx"),
-    },
-    archive: {
-      icon: FileArchiveIcon,
-      conditions: (type: string, name: string) =>
-        type.includes("zip") ||
-        type.includes("archive") ||
-        name.endsWith(".zip") ||
-        name.endsWith(".rar"),
-    },
-    excel: {
-      icon: FileSpreadsheetIcon,
-      conditions: (type: string, name: string) =>
-        type.includes("excel") ||
-        name.endsWith(".xls") ||
-        name.endsWith(".xlsx"),
+      icon: FileTextIcon,
     },
     video: {
-      icon: VideoIcon,
       conditions: (type: string) => type.includes("video/"),
-    },
-    audio: {
-      icon: HeadphonesIcon,
-      conditions: (type: string) => type.includes("audio/"),
-    },
-    image: {
-      icon: ImageIcon,
-      conditions: (type: string) => type.startsWith("image/"),
+      icon: VideoIcon,
     },
   };
 
@@ -149,10 +149,10 @@ export default function Component() {
       getInputProps,
     },
   ] = useFileUpload({
-    multiple: true,
+    initialFiles,
     maxFiles,
     maxSize,
-    initialFiles,
+    multiple: true,
   });
 
   return (

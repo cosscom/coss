@@ -19,9 +19,9 @@ const fontHeading = FontHeading({
 });
 
 export const metadata: Metadata = {
+  description: "coss.com - the everything but AI company",
   metadataBase: new URL("https://coss.com"),
   title: "coss.com",
-  description: "coss.com - the everything but AI company",
 };
 
 export default function RootLayout({

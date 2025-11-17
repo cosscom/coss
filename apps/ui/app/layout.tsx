@@ -19,11 +19,11 @@ const fontHeading = FontHeading({
 });
 
 export const metadata: Metadata = {
+  description:
+    "coss ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
   metadataBase: new URL("https://coss.com"),
   title:
     "coss ui - A new, modern UI component library built on top of Base UI. Built for developers and AI.",
-  description:
-    "coss ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
 };
 
 export default function RootLayout({

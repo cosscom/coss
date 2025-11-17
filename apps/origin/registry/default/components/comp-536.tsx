@@ -11,39 +11,39 @@ import {
 
 const items = [
   {
-    id: 1,
-    date: "15 minutes ago",
-    title: "Hannah Kandell",
     action: "opened a new issue",
+    date: "15 minutes ago",
     description:
       "I'm having trouble with the new component library. It's not rendering properly.",
+    id: 1,
     image: "/origin/avatar-40-01.jpg",
+    title: "Hannah Kandell",
   },
   {
-    id: 2,
-    date: "10 minutes ago",
-    title: "Chris Tompson",
     action: "commented on",
+    date: "10 minutes ago",
     description:
       "Hey Hannah, I'm having trouble with the new component library. It's not rendering properly.",
+    id: 2,
     image: "/origin/avatar-40-02.jpg",
+    title: "Chris Tompson",
   },
   {
-    id: 3,
-    date: "5 minutes ago",
-    title: "Emma Davis",
     action: "assigned you to",
+    date: "5 minutes ago",
     description:
       "The new component library is not rendering properly. Can you take a look?",
+    id: 3,
     image: "/origin/avatar-40-03.jpg",
+    title: "Emma Davis",
   },
   {
-    id: 4,
-    date: "2 minutes ago",
-    title: "Alex Morgan",
     action: "closed the issue",
+    date: "2 minutes ago",
     description: "The issue has been fixed. Please review the changes.",
+    id: 4,
     image: "/origin/avatar-40-05.jpg",
+    title: "Alex Morgan",
   },
 ];
 

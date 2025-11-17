@@ -24,16 +24,16 @@ interface Currency {
 
 const currencies: Currency[] = [
   {
-    value: "$",
     label: "US Dollar",
+    value: "$",
   },
   {
-    value: "€",
     label: "Euro",
+    value: "€",
   },
   {
-    value: "£",
     label: "British Pound",
+    value: "£",
   },
 ];
 

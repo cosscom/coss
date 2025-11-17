@@ -19,17 +19,17 @@ export default function ToastPromise() {
             }, 2000);
           }),
           {
+            error: () => ({
+              description: "Please try again.",
+              title: "Something went wrong",
+            }),
             loading: {
-              title: "Loading…",
               description: "The promise is loading.",
+              title: "Loading…",
             },
             success: (data: string) => ({
-              title: "This is a success toast!",
               description: `Success: ${data}`,
-            }),
-            error: () => ({
-              title: "Something went wrong",
-              description: "Please try again.",
+              title: "This is a success toast!",
             }),
           },
         );

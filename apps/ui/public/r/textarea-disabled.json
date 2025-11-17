@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "textarea-disabled",
-  "type": "registry:example",
+  "categories": ["textarea", "disabled"],
   "description": "Disabled textarea",
-  "registryDependencies": ["@coss/textarea"],
   "files": [
     {
-      "path": "registry/default/examples/textarea-disabled.tsx",
       "content": "import { Textarea } from \"@/registry/default/ui/textarea\"\n\nexport default function TextareaDisabled() {\n  return <Textarea placeholder=\"Can't type here\" disabled />\n}\n",
+      "path": "registry/default/examples/textarea-disabled.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["textarea", "disabled"]
+  "name": "textarea-disabled",
+  "registryDependencies": ["@coss/textarea"],
+  "type": "registry:example"
 }

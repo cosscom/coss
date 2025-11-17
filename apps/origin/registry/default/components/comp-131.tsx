@@ -14,19 +14,19 @@ import {
 
 const options = [
   {
-    label: "Merge pull request",
     description:
       "All commits from this branch will be added to the base branch via a commit version.",
+    label: "Merge pull request",
   },
   {
-    label: "Squash and merge",
     description:
       "The 6 commits from this branch will be combined into one commit in the base branch.",
+    label: "Squash and merge",
   },
   {
-    label: "Rebase and merge",
     description:
       "The 6 commits from this branch will be rebased and added to the base branch.",
+    label: "Rebase and merge",
   },
 ];
 

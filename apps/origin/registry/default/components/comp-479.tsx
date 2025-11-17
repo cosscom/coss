@@ -38,20 +38,19 @@ type Item = {
 
 const columns: ColumnDef<Item>[] = [
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="truncate font-medium">{row.getValue("name")}</div>
     ),
-    sortUndefined: "last",
+    header: "Name",
     sortDescFirst: false,
+    sortUndefined: "last",
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div className="truncate">
@@ -59,42 +58,43 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
   },
   {
-    header: "Status",
     accessorKey: "status",
+    header: "Status",
   },
   {
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
+        style: "currency",
       }).format(amount);
       return formatted;
     },
+    header: "Balance",
   },
   {
-    header: "Department",
     accessorKey: "department",
+    header: "Department",
   },
   {
-    header: "Role",
     accessorKey: "role",
+    header: "Role",
   },
   {
-    header: "Join Date",
     accessorKey: "joinDate",
+    header: "Join Date",
   },
   {
-    header: "Last Active",
     accessorKey: "lastActive",
+    header: "Last Active",
   },
   {
-    header: "Performance",
     accessorKey: "performance",
+    header: "Performance",
   },
 ];
 
@@ -102,8 +102,8 @@ export default function Component() {
   const [data, setData] = useState<Item[]>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "name",
       desc: false,
+      id: "name",
     },
   ]);
 
@@ -119,16 +119,16 @@ export default function Component() {
   }, []);
 
   const table = useReactTable({
-    data,
-    columns,
     columnResizeMode: "onChange",
+    columns,
+    data,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     state: {
       sorting,
     },
-    enableSortingRemoval: false,
   });
 
   return (
@@ -207,11 +207,11 @@ export default function Component() {
                     {header.column.getCanResize() && (
                       <div
                         {...{
+                          className:
+                            "absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -right-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:translate-x-px",
                           onDoubleClick: () => header.column.resetSize(),
                           onMouseDown: header.getResizeHandler(),
                           onTouchStart: header.getResizeHandler(),
-                          className:
-                            "absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -right-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:translate-x-px",
                         }}
                       />
                     )}

@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "slider-demo",
-  "type": "registry:example",
+  "categories": ["slider"],
   "description": "Basic slider",
-  "registryDependencies": ["@coss/slider"],
   "files": [
     {
-      "path": "registry/default/examples/slider-demo.tsx",
       "content": "import { Slider } from \"@/registry/default/ui/slider\"\n\nexport default function SliderDemo() {\n  return <Slider defaultValue={50} />\n}\n",
+      "path": "registry/default/examples/slider-demo.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["slider"]
+  "name": "slider-demo",
+  "registryDependencies": ["@coss/slider"],
+  "type": "registry:example"
 }

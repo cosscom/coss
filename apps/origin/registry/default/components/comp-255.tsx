@@ -16,7 +16,7 @@ export default function Component() {
     validateAndUpdateValue,
     handleInputChange,
     handleSliderChange,
-  } = useSliderWithInput({ minValue, maxValue, initialValue });
+  } = useSliderWithInput({ initialValue, maxValue, minValue });
 
   return (
     <div className="*:not-first:mt-3">

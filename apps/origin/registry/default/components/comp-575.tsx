@@ -29,47 +29,44 @@ interface Item {
 
 const initialItems: Record<string, Item> = {
   app: {
-    name: "app",
     children: ["app/layout.tsx", "app/page.tsx", "app/(dashboard)", "app/api"],
+    name: "app",
   },
-  "app/layout.tsx": { name: "layout.tsx", fileExtension: "tsx" },
-  "app/page.tsx": { name: "page.tsx", fileExtension: "tsx" },
   "app/(dashboard)": {
-    name: "(dashboard)",
     children: ["app/(dashboard)/dashboard"],
+    name: "(dashboard)",
   },
   "app/(dashboard)/dashboard": {
-    name: "dashboard",
     children: ["app/(dashboard)/dashboard/page.tsx"],
+    name: "dashboard",
   },
   "app/(dashboard)/dashboard/page.tsx": {
-    name: "page.tsx",
     fileExtension: "tsx",
+    name: "page.tsx",
   },
-  "app/api": { name: "api", children: ["app/api/hello"] },
-  "app/api/hello": { name: "hello", children: ["app/api/hello/route.ts"] },
-  "app/api/hello/route.ts": { name: "route.ts", fileExtension: "ts" },
+  "app/api": { children: ["app/api/hello"], name: "api" },
+  "app/api/hello": { children: ["app/api/hello/route.ts"], name: "hello" },
+  "app/api/hello/route.ts": { fileExtension: "ts", name: "route.ts" },
+  "app/layout.tsx": { fileExtension: "tsx", name: "layout.tsx" },
+  "app/page.tsx": { fileExtension: "tsx", name: "page.tsx" },
   components: {
-    name: "components",
     children: ["components/button.tsx", "components/card.tsx"],
+    name: "components",
   },
-  "components/button.tsx": { name: "button.tsx", fileExtension: "tsx" },
-  "components/card.tsx": { name: "card.tsx", fileExtension: "tsx" },
-  lib: { name: "lib", children: ["lib/utils.ts"] },
-  "lib/utils.ts": { name: "utils.ts", fileExtension: "ts" },
+  "components/button.tsx": { fileExtension: "tsx", name: "button.tsx" },
+  "components/card.tsx": { fileExtension: "tsx", name: "card.tsx" },
+  lib: { children: ["lib/utils.ts"], name: "lib" },
+  "lib/utils.ts": { fileExtension: "ts", name: "utils.ts" },
+  "next.config.mjs": { fileExtension: "mjs", name: "next.config.mjs" },
+  "package.json": { fileExtension: "json", name: "package.json" },
   public: {
-    name: "public",
     children: ["public/favicon.ico", "public/vercel.svg"],
+    name: "public",
   },
-  "public/favicon.ico": { name: "favicon.ico", fileExtension: "ico" },
-  "public/vercel.svg": { name: "vercel.svg", fileExtension: "svg" },
-  "package.json": { name: "package.json", fileExtension: "json" },
-  "tailwind.config.ts": { name: "tailwind.config.ts", fileExtension: "ts" },
-  "tsconfig.json": { name: "tsconfig.json", fileExtension: "json" },
-  "next.config.mjs": { name: "next.config.mjs", fileExtension: "mjs" },
-  "README.md": { name: "README.md", fileExtension: "md" },
+  "public/favicon.ico": { fileExtension: "ico", name: "favicon.ico" },
+  "public/vercel.svg": { fileExtension: "svg", name: "vercel.svg" },
+  "README.md": { fileExtension: "md", name: "README.md" },
   root: {
-    name: "Project Root",
     children: [
       "app",
       "components",
@@ -81,7 +78,10 @@ const initialItems: Record<string, Item> = {
       "next.config.mjs",
       "README.md",
     ],
+    name: "Project Root",
   },
+  "tailwind.config.ts": { fileExtension: "ts", name: "tailwind.config.ts" },
+  "tsconfig.json": { fileExtension: "json", name: "tsconfig.json" },
 };
 
 // Helper function to get icon based on file extension
@@ -114,15 +114,25 @@ export default function Component() {
   const [items, setItems] = useState(initialItems);
 
   const tree = useTree<Item>({
+    canReorder: false,
+    dataLoader: {
+      getChildren: (itemId) => items[itemId]?.children ?? [],
+      getItem: (itemId) => items[itemId],
+    },
+    features: [
+      syncDataLoaderFeature,
+      selectionFeature,
+      hotkeysCoreFeature,
+      dragAndDropFeature,
+      keyboardDragAndDropFeature,
+    ],
+    getItemName: (item) => item.getItemData()?.name ?? "Unknown",
+    indent,
     initialState: {
       expandedItems: ["app", "app/(dashboard)", "app/(dashboard)/dashboard"],
       selectedItems: ["components"],
     },
-    indent,
-    rootItemId: "root",
-    getItemName: (item) => item.getItemData()?.name ?? "Unknown",
     isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    canReorder: false,
     onDrop: createOnDropHandler((parentItem, newChildrenIds) => {
       setItems((prevItems) => {
         // Sort the children alphabetically
@@ -150,17 +160,7 @@ export default function Component() {
         };
       });
     }),
-    dataLoader: {
-      getItem: (itemId) => items[itemId],
-      getChildren: (itemId) => items[itemId]?.children ?? [],
-    },
-    features: [
-      syncDataLoaderFeature,
-      selectionFeature,
-      hotkeysCoreFeature,
-      dragAndDropFeature,
-      keyboardDragAndDropFeature,
-    ],
+    rootItemId: "root",
   });
 
   return (

@@ -10,33 +10,33 @@ import {
 
 const items = [
   {
-    id: 1,
     date: "Mar 15, 2024",
+    id: 1,
     title: "Project Kickoff",
   },
   {
-    id: 2,
     date: "Mar 22, 2024",
+    id: 2,
     title: "Design Phase",
   },
   {
-    id: 3,
     date: "Apr 5, 2024",
+    id: 3,
     title: "Development Sprint",
   },
   {
-    id: 4,
     date: "Apr 19, 2024",
+    id: 4,
     title: "Testing & Deployment",
   },
   {
-    id: 5,
     date: "May 3, 2024",
+    id: 5,
     title: "User Training",
   },
   {
-    id: 6,
     date: "May 17, 2024",
+    id: 6,
     title: "Project Handover",
   },
 ];

@@ -79,10 +79,10 @@ function SidebarProvider({
 
       // This sets the cookie to keep the sidebar state.
       await cookieStore.set({
-        name: SIDEBAR_COOKIE_NAME,
-        value: String(openState),
         expires: Date.now() + SIDEBAR_COOKIE_MAX_AGE * 1000,
+        name: SIDEBAR_COOKIE_NAME,
         path: "/",
+        value: String(openState),
       });
     },
     [setOpenProp, open],
@@ -115,12 +115,12 @@ function SidebarProvider({
 
   const contextValue = React.useMemo<SidebarContextProps>(
     () => ({
-      state,
-      open,
-      setOpen,
       isMobile,
+      open,
       openMobile,
+      setOpen,
       setOpenMobile,
+      state,
       toggleSidebar,
     }),
     [state, open, setOpen, isMobile, openMobile, toggleSidebar],
@@ -398,19 +398,19 @@ function SidebarGroupLabel({
   ...props
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
-    "data-slot": "sidebar-group-label",
-    "data-sidebar": "group-label",
     className: cn(
       "flex h-8 shrink-0 items-center rounded-md px-2 font-medium text-sidebar-foreground/70 text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
       "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
       className,
     ),
+    "data-sidebar": "group-label",
+    "data-slot": "sidebar-group-label",
   };
 
   return useRender({
     defaultTagName: "div",
-    render,
     props: mergeProps(defaultProps, props),
+    render,
   });
 }
 
@@ -420,8 +420,6 @@ function SidebarGroupAction({
   ...props
 }: useRender.ComponentProps<"button">) {
   const defaultProps = {
-    "data-slot": "sidebar-group-action",
-    "data-sidebar": "group-action",
     className: cn(
       "absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
       // Increases the hit area of the button on mobile.
@@ -429,12 +427,14 @@ function SidebarGroupAction({
       "group-data-[collapsible=icon]:hidden",
       className,
     ),
+    "data-sidebar": "group-action",
+    "data-slot": "sidebar-group-action",
   };
 
   return useRender({
     defaultTagName: "button",
-    render,
     props: mergeProps(defaultProps, props),
+    render,
   });
 }
 
@@ -477,21 +477,21 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 const sidebarMenuButtonVariants = cva(
   "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
+    defaultVariants: {
+      size: "default",
+      variant: "default",
+    },
     variants: {
+      size: {
+        default: "h-8 text-sm",
+        lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
+        sm: "h-7 text-xs",
+      },
       variant: {
         default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         outline:
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
-      size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
     },
   },
 );
@@ -511,19 +511,19 @@ function SidebarMenuButton({
   const { isMobile, state } = useSidebar();
 
   const defaultProps = {
-    "data-slot": "sidebar-menu-button",
+    className: cn(sidebarMenuButtonVariants({ size, variant }), className),
+    "data-active": isActive,
     "data-sidebar": "menu-button",
     "data-size": size,
-    "data-active": isActive,
-    className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+    "data-slot": "sidebar-menu-button",
   };
 
   const buttonProps = mergeProps<"button">(defaultProps, props);
 
   const buttonElement = useRender({
     defaultTagName: "button",
-    render,
     props: buttonProps,
+    render,
   });
 
   if (!tooltip) {
@@ -560,8 +560,6 @@ function SidebarMenuAction({
   showOnHover?: boolean;
 }) {
   const defaultProps = {
-    "data-slot": "sidebar-menu-action",
-    "data-sidebar": "menu-action",
     className: cn(
       "absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
       // Increases the hit area of the button on mobile.
@@ -574,12 +572,14 @@ function SidebarMenuAction({
         "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
       className,
     ),
+    "data-sidebar": "menu-action",
+    "data-slot": "sidebar-menu-action",
   };
 
   return useRender({
     defaultTagName: "button",
-    render,
     props: mergeProps<"button">(defaultProps, props),
+    render,
   });
 }
 
@@ -683,10 +683,6 @@ function SidebarMenuSubButton({
   isActive?: boolean;
 }) {
   const defaultProps = {
-    "data-slot": "sidebar-menu-sub-button",
-    "data-sidebar": "menu-sub-button",
-    "data-size": size,
-    "data-active": isActive,
     className: cn(
       "-translate-x-px flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
@@ -695,12 +691,16 @@ function SidebarMenuSubButton({
       "group-data-[collapsible=icon]:hidden",
       className,
     ),
+    "data-active": isActive,
+    "data-sidebar": "menu-sub-button",
+    "data-size": size,
+    "data-slot": "sidebar-menu-sub-button",
   };
 
   return useRender({
     defaultTagName: "a",
-    render,
     props: mergeProps<"a">(defaultProps, props),
+    render,
   });
 }
 

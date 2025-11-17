@@ -7,9 +7,9 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "USA" },
-    { value: "2", label: "UK" },
-    { value: "3", label: "France" },
+    { label: "USA", value: "1" },
+    { label: "UK", value: "2" },
+    { label: "France", value: "3" },
   ];
 
   return (

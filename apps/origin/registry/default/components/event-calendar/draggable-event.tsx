@@ -51,17 +51,17 @@ export function DraggableEvent({
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
-      id: `${event.id}-${view}`,
       data: {
-        event,
-        view,
-        height: height || elementRef.current?.offsetHeight || null,
-        isMultiDay: isMultiDayEvent,
-        multiDayWidth: multiDayWidth,
         dragHandlePosition,
+        event,
+        height: height || elementRef.current?.offsetHeight || null,
         isFirstDay,
         isLastDay,
+        isMultiDay: isMultiDayEvent,
+        multiDayWidth: multiDayWidth,
+        view,
       },
+      id: `${event.id}-${view}`,
     });
 
   // Handle mouse down to track where on the event the user clicked
@@ -88,8 +88,8 @@ export function DraggableEvent({
 
   const style = transform
     ? {
-        transform: CSS.Translate.toString(transform),
         height: height || "auto",
+        transform: CSS.Translate.toString(transform),
         width:
           isMultiDayEvent && multiDayWidth ? `${multiDayWidth}%` : undefined,
       }

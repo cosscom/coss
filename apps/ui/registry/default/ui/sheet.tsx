@@ -23,22 +23,22 @@ function SheetClose(props: SheetPrimitive.Close.Props) {
 const sheetPopupVariants = cva(
   "fixed z-50 flex flex-col gap-4 overflow-y-auto bg-popover text-popover-foreground shadow-lg transition-[opacity,translate] duration-300 ease-in-out will-change-transform [--sheet-inset:0px] data-ending-style:opacity-0 data-starting-style:opacity-0",
   {
+    defaultVariants: {
+      inset: false,
+      side: "right",
+    },
     variants: {
       inset: {
         true: "sm:rounded-xl sm:[--sheet-inset:1rem]",
       },
       side: {
-        right:
-          "inset-y-[var(--sheet-inset)] right-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:translate-x-12 data-starting-style:translate-x-12 sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
-        left: "data-ending-style:-translate-x-12 data-starting-style:-translate-x-12 inset-y-[var(--sheet-inset)] left-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
-        top: "data-ending-style:-translate-y-12 data-starting-style:-translate-y-12 inset-x-[var(--sheet-inset)] top-[var(--sheet-inset)] h-auto max-h-[calc(100dvh-var(--sheet-inset)*2)]",
         bottom:
           "inset-x-[var(--sheet-inset)] bottom-[var(--sheet-inset)] h-auto max-h-[calc(100dvh-var(--sheet-inset)*2)] data-ending-style:translate-y-12 data-starting-style:translate-y-12",
+        left: "data-ending-style:-translate-x-12 data-starting-style:-translate-x-12 inset-y-[var(--sheet-inset)] left-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
+        right:
+          "inset-y-[var(--sheet-inset)] right-[var(--sheet-inset)] h-dvh w-[calc(100%-(--spacing(12)))] max-w-sm data-ending-style:translate-x-12 data-starting-style:translate-x-12 sm:h-[calc(100dvh-var(--sheet-inset)*2)]",
+        top: "data-ending-style:-translate-y-12 data-starting-style:-translate-y-12 inset-x-[var(--sheet-inset)] top-[var(--sheet-inset)] h-auto max-h-[calc(100dvh-var(--sheet-inset)*2)]",
       },
-    },
-    defaultVariants: {
-      inset: false,
-      side: "right",
     },
   },
 );

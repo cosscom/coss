@@ -39,8 +39,8 @@ export async function generateMetadata(props: {
   }
 
   return {
-    title: `${doc.title} - coss ui`,
     description: doc.description,
+    title: `${doc.title} - coss ui`,
   };
 }
 

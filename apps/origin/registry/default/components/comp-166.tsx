@@ -8,10 +8,10 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "Hobby", price: "$9/mo" },
-    { value: "2", label: "Plus", price: "$29/mo" },
-    { value: "3", label: "Team", price: "$49/mo" },
-    { value: "4", label: "Enterprise", price: "Custom" },
+    { label: "Hobby", price: "$9/mo", value: "1" },
+    { label: "Plus", price: "$29/mo", value: "2" },
+    { label: "Team", price: "$49/mo", value: "3" },
+    { label: "Enterprise", price: "Custom", value: "4" },
   ];
 
   return (

@@ -12,29 +12,29 @@ import {
 
 const tips = [
   {
-    title: "Welcome to Dashboard",
     description:
       "This is your new workspace. Here you'll find all your projects, recent activities, settings, and more.",
+    title: "Welcome to Dashboard",
   },
   {
-    title: "Quick Actions",
     description:
       "Use the toolbar above to create new projects, invite team members, or access settings.",
+    title: "Quick Actions",
   },
   {
-    title: "Need Help?",
     description:
       "Click the support icon in the top right corner to access our help center and documentation.",
+    title: "Need Help?",
   },
   {
-    title: "Keyboard Shortcuts",
     description:
       "Press ⌘K to open the command palette. Use arrow keys to navigate and Enter to select an action.",
+    title: "Keyboard Shortcuts",
   },
   {
-    title: "Stay Updated",
     description:
       "Enable notifications to receive updates about your projects, team activity, and important deadlines.",
+    title: "Stay Updated",
   },
 ];
 

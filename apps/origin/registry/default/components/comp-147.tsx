@@ -8,10 +8,10 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "Palette", Icon: SwatchBook, defaultChecked: true },
-    { value: "2", label: "Brush", Icon: Brush },
-    { value: "3", label: "Eraser", Icon: Eraser },
-    { value: "4", label: "Cut", Icon: Scissors },
+    { defaultChecked: true, Icon: SwatchBook, label: "Palette", value: "1" },
+    { Icon: Brush, label: "Brush", value: "2" },
+    { Icon: Eraser, label: "Eraser", value: "3" },
+    { Icon: Scissors, label: "Cut", value: "4" },
   ];
 
   return (

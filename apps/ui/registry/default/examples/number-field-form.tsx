@@ -36,8 +36,8 @@ async function submitForm(event: React.FormEvent<HTMLFormElement>) {
   }
 
   return {
-    errors: {} as Errors,
     data: result.data,
+    errors: {} as Errors,
   };
 }
 

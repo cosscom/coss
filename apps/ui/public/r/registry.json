@@ -1,10 +1,8 @@
 {
-  "name": "shadcn/ui",
   "homepage": "https://ui.shadcn.com",
   "items": [
     {
       "name": "ui",
-      "type": "registry:ui",
       "registryDependencies": [
         "@coss/accordion",
         "@coss/alert",
@@ -54,38 +52,22 @@
         "@coss/toggle-group",
         "@coss/toolbar",
         "@coss/tooltip"
-      ]
+      ],
+      "type": "registry:ui"
     },
     {
-      "name": "accordion",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/accordion.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "accordion",
+      "type": "registry:ui"
     },
     {
-      "name": "alert",
-      "type": "registry:ui",
-      "files": [
-        {
-          "path": "registry/default/ui/alert.tsx",
-          "type": "registry:ui"
-        }
-      ],
       "cssVars": {
-        "light": {
-          "destructive-foreground": "var(--color-red-700)",
-          "info": "var(--color-blue-500)",
-          "info-foreground": "var(--color-blue-700)",
-          "success": "var(--color-emerald-500)",
-          "success-foreground": "var(--color-emerald-700)",
-          "warning": "var(--color-amber-500)",
-          "warning-foreground": "var(--color-amber-700)"
-        },
         "dark": {
           "destructive-foreground": "var(--color-red-400)",
           "info": "var(--color-blue-500)",
@@ -94,46 +76,81 @@
           "success-foreground": "var(--color-emerald-400)",
           "warning": "var(--color-amber-500)",
           "warning-foreground": "var(--color-amber-400)"
+        },
+        "light": {
+          "destructive-foreground": "var(--color-red-700)",
+          "info": "var(--color-blue-500)",
+          "info-foreground": "var(--color-blue-700)",
+          "success": "var(--color-emerald-500)",
+          "success-foreground": "var(--color-emerald-700)",
+          "warning": "var(--color-amber-500)",
+          "warning-foreground": "var(--color-amber-700)"
         }
-      }
+      },
+      "files": [
+        {
+          "path": "registry/default/ui/alert.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "alert",
+      "type": "registry:ui"
     },
     {
-      "name": "alert-dialog",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/alert-dialog.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "alert-dialog",
+      "type": "registry:ui"
     },
     {
-      "name": "autocomplete",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
       "files": [
         {
           "path": "registry/default/ui/autocomplete.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "autocomplete",
+      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
+      "type": "registry:ui"
     },
     {
-      "name": "avatar",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/avatar.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "avatar",
+      "type": "registry:ui"
     },
     {
-      "name": "badge",
-      "type": "registry:ui",
+      "cssVars": {
+        "dark": {
+          "destructive-foreground": "var(--color-red-400)",
+          "info": "var(--color-blue-500)",
+          "info-foreground": "var(--color-blue-400)",
+          "success": "var(--color-emerald-500)",
+          "success-foreground": "var(--color-emerald-400)",
+          "warning": "var(--color-amber-500)",
+          "warning-foreground": "var(--color-amber-400)"
+        },
+        "light": {
+          "destructive-foreground": "var(--color-red-700)",
+          "info": "var(--color-blue-500)",
+          "info-foreground": "var(--color-blue-700)",
+          "success": "var(--color-emerald-500)",
+          "success-foreground": "var(--color-emerald-700)",
+          "warning": "var(--color-amber-500)",
+          "warning-foreground": "var(--color-amber-700)"
+        }
+      },
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
@@ -141,41 +158,29 @@
           "type": "registry:ui"
         }
       ],
-      "cssVars": {
-        "light": {
-          "destructive-foreground": "var(--color-red-700)",
-          "info": "var(--color-blue-500)",
-          "info-foreground": "var(--color-blue-700)",
-          "success": "var(--color-emerald-500)",
-          "success-foreground": "var(--color-emerald-700)",
-          "warning": "var(--color-amber-500)",
-          "warning-foreground": "var(--color-amber-700)"
-        },
-        "dark": {
-          "destructive-foreground": "var(--color-red-400)",
-          "info": "var(--color-blue-500)",
-          "info-foreground": "var(--color-blue-400)",
-          "success": "var(--color-emerald-500)",
-          "success-foreground": "var(--color-emerald-400)",
-          "warning": "var(--color-amber-500)",
-          "warning-foreground": "var(--color-amber-400)"
-        }
-      }
+      "name": "badge",
+      "type": "registry:ui"
     },
     {
-      "name": "breadcrumb",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/breadcrumb.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "breadcrumb",
+      "type": "registry:ui"
     },
     {
-      "name": "button",
-      "type": "registry:ui",
+      "cssVars": {
+        "dark": {
+          "destructive-foreground": "var(--color-red-400)"
+        },
+        "light": {
+          "destructive-foreground": "var(--color-red-700)"
+        }
+      },
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
@@ -183,95 +188,95 @@
           "type": "registry:ui"
         }
       ],
-      "cssVars": {
-        "light": {
-          "destructive-foreground": "var(--color-red-700)"
-        },
-        "dark": {
-          "destructive-foreground": "var(--color-red-400)"
-        }
-      }
+      "name": "button",
+      "type": "registry:ui"
     },
     {
-      "name": "card",
-      "type": "registry:ui",
       "dependencies": [],
       "files": [
         {
           "path": "registry/default/ui/card.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "card",
+      "type": "registry:ui"
     },
     {
-      "name": "checkbox",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/checkbox.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "checkbox",
+      "type": "registry:ui"
     },
     {
-      "name": "checkbox-group",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/checkbox-group.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "checkbox-group",
+      "type": "registry:ui"
     },
     {
-      "name": "collapsible",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/collapsible.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "collapsible",
+      "type": "registry:ui"
     },
     {
-      "name": "combobox",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
       "files": [
         {
           "path": "registry/default/ui/combobox.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "combobox",
+      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
+      "type": "registry:ui"
     },
     {
-      "name": "dialog",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/dialog.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "dialog",
+      "type": "registry:ui"
     },
     {
-      "name": "empty",
-      "type": "registry:ui",
       "files": [
         {
           "path": "registry/default/ui/empty.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "empty",
+      "type": "registry:ui"
     },
     {
-      "name": "field",
-      "type": "registry:ui",
+      "cssVars": {
+        "dark": {
+          "destructive-foreground": "var(--color-red-400)"
+        },
+        "light": {
+          "destructive-foreground": "var(--color-red-700)"
+        }
+      },
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
@@ -279,105 +284,105 @@
           "type": "registry:ui"
         }
       ],
-      "cssVars": {
-        "light": {
-          "destructive-foreground": "var(--color-red-700)"
-        },
-        "dark": {
-          "destructive-foreground": "var(--color-red-400)"
-        }
-      }
+      "name": "field",
+      "type": "registry:ui"
     },
     {
-      "name": "fieldset",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/fieldset.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "fieldset",
+      "type": "registry:ui"
     },
     {
-      "name": "form",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/form.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "form",
+      "type": "registry:ui"
     },
     {
-      "name": "frame",
-      "type": "registry:ui",
       "files": [
         {
           "path": "registry/default/ui/frame.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "frame",
+      "type": "registry:ui"
     },
     {
-      "name": "group",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/separator"],
       "files": [
         {
           "path": "registry/default/ui/group.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "group",
+      "registryDependencies": ["@coss/separator"],
+      "type": "registry:ui"
     },
     {
-      "name": "input",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/input.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "input",
+      "type": "registry:ui"
     },
     {
-      "name": "input-group",
-      "type": "registry:ui",
-      "registryDependencies": ["@coss/input", "@coss/field", "@coss/textarea"],
       "files": [
         {
           "path": "registry/default/ui/input-group.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "input-group",
+      "registryDependencies": ["@coss/input", "@coss/field", "@coss/textarea"],
+      "type": "registry:ui"
     },
     {
-      "name": "kbd",
-      "type": "registry:ui",
       "files": [
         {
           "path": "registry/default/ui/kbd.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "kbd",
+      "type": "registry:ui"
     },
     {
-      "name": "label",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/label.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "label",
+      "type": "registry:ui"
     },
     {
-      "name": "menu",
-      "type": "registry:ui",
+      "cssVars": {
+        "dark": {
+          "destructive-foreground": "var(--color-red-400)"
+        },
+        "light": {
+          "destructive-foreground": "var(--color-red-700)"
+        }
+      },
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
@@ -385,1096 +390,1096 @@
           "type": "registry:ui"
         }
       ],
-      "cssVars": {
-        "light": {
-          "destructive-foreground": "var(--color-red-700)"
-        },
-        "dark": {
-          "destructive-foreground": "var(--color-red-400)"
-        }
-      }
+      "name": "menu",
+      "type": "registry:ui"
     },
     {
-      "name": "meter",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/meter.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "meter",
+      "type": "registry:ui"
     },
     {
-      "name": "number-field",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/number-field.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "number-field",
+      "type": "registry:ui"
     },
     {
-      "name": "pagination",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/ui/pagination.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "pagination",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:ui"
     },
     {
-      "name": "popover",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/popover.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "popover",
+      "type": "registry:ui"
     },
     {
-      "name": "preview-card",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/preview-card.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "preview-card",
+      "type": "registry:ui"
     },
     {
-      "name": "progress",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/progress.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "progress",
+      "type": "registry:ui"
     },
     {
-      "name": "radio-group",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/radio-group.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "radio-group",
+      "type": "registry:ui"
     },
     {
-      "name": "scroll-area",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/scroll-area.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "scroll-area",
+      "type": "registry:ui"
     },
     {
-      "name": "select",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/select.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "select",
+      "type": "registry:ui"
     },
     {
-      "name": "separator",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/separator.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "separator",
+      "type": "registry:ui"
     },
     {
-      "name": "sheet",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/dialog"],
       "files": [
         {
           "path": "registry/default/ui/sheet.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "sheet",
+      "registryDependencies": ["@coss/dialog"],
+      "type": "registry:ui"
     },
     {
-      "name": "skeleton",
-      "type": "registry:ui",
-      "files": [
-        {
-          "path": "registry/default/ui/skeleton.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "cssVars": {
-        "theme": {
-          "--animate-skeleton": "skeleton 2s -1s infinite linear"
-        }
-      },
       "css": {
         "@keyframes skeleton": {
           "to": {
             "background-position": "-200% 0"
           }
         }
-      }
+      },
+      "cssVars": {
+        "theme": {
+          "--animate-skeleton": "skeleton 2s -1s infinite linear"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/default/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "skeleton",
+      "type": "registry:ui"
     },
     {
-      "name": "slider",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/slider.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "slider",
+      "type": "registry:ui"
     },
     {
-      "name": "spinner",
-      "type": "registry:ui",
       "files": [
         {
           "path": "registry/default/ui/spinner.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "spinner",
+      "type": "registry:ui"
     },
     {
-      "name": "switch",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/switch.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "switch",
+      "type": "registry:ui"
     },
     {
-      "name": "table",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/table.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "table",
+      "type": "registry:ui"
     },
     {
-      "name": "tabs",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/tabs.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "tabs",
+      "type": "registry:ui"
     },
     {
-      "name": "textarea",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/textarea.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "textarea",
+      "type": "registry:ui"
     },
     {
-      "name": "toast",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/ui/toast.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "toast",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:ui"
     },
     {
-      "name": "toggle",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/toggle.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "toggle",
+      "type": "registry:ui"
     },
     {
-      "name": "toggle-group",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
-      "registryDependencies": ["@coss/separator", "@coss/toggle"],
       "files": [
         {
           "path": "registry/default/ui/toggle-group.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "toggle-group",
+      "registryDependencies": ["@coss/separator", "@coss/toggle"],
+      "type": "registry:ui"
     },
     {
-      "name": "toolbar",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/toolbar.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "toolbar",
+      "type": "registry:ui"
     },
     {
-      "name": "tooltip",
-      "type": "registry:ui",
       "dependencies": ["@base-ui-components/react"],
       "files": [
         {
           "path": "registry/default/ui/tooltip.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "name": "tooltip",
+      "type": "registry:ui"
     },
     {
-      "name": "accordion-controlled",
+      "categories": ["accordion"],
       "description": "Controlled accordion",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/accordion", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/accordion-controlled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["accordion"]
+      "name": "accordion-controlled",
+      "registryDependencies": ["@coss/accordion", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "accordion-demo",
+      "categories": ["accordion"],
       "description": "Basic accordion",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/accordion"],
       "files": [
         {
           "path": "registry/default/examples/accordion-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["accordion"]
+      "name": "accordion-demo",
+      "registryDependencies": ["@coss/accordion"],
+      "type": "registry:example"
     },
     {
-      "name": "accordion-multiple",
+      "categories": ["accordion"],
       "description": "Accordion allowing multiple panels open",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/accordion"],
       "files": [
         {
           "path": "registry/default/examples/accordion-multiple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["accordion"]
+      "name": "accordion-multiple",
+      "registryDependencies": ["@coss/accordion"],
+      "type": "registry:example"
     },
     {
-      "name": "accordion-single",
+      "categories": ["accordion"],
       "description": "Accordion with one panel open",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/accordion"],
       "files": [
         {
           "path": "registry/default/examples/accordion-single.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["accordion"]
+      "name": "accordion-single",
+      "registryDependencies": ["@coss/accordion"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-demo",
+      "categories": ["alert"],
       "description": "Basic alert",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert"]
+      "name": "alert-demo",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-with-icon",
+      "categories": ["alert"],
       "description": "Alert with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert"]
+      "name": "alert-with-icon",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-with-icon-action",
+      "categories": ["alert"],
       "description": "Alert with icon and action buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/alert-with-icon-action.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert"]
+      "name": "alert-with-icon-action",
+      "registryDependencies": ["@coss/alert", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-info",
+      "categories": ["alert", "info"],
       "description": "Info alert",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-info.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert", "info"]
+      "name": "alert-info",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-success",
+      "categories": ["alert", "success"],
       "description": "Success alert",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-success.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert", "success"]
+      "name": "alert-success",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-warning",
+      "categories": ["alert", "warning"],
       "description": "Warning alert",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-warning.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert", "warning"]
+      "name": "alert-warning",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-error",
+      "categories": ["alert", "error"],
       "description": "Error alert",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert"],
       "files": [
         {
           "path": "registry/default/examples/alert-error.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["alert", "error"]
+      "name": "alert-error",
+      "registryDependencies": ["@coss/alert"],
+      "type": "registry:example"
     },
     {
-      "name": "alert-dialog-demo",
+      "categories": ["dialog"],
       "description": "Alert dialog",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/alert-dialog-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["dialog"]
+      "name": "alert-dialog-demo",
+      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-demo",
+      "categories": ["autocomplete", "input"],
       "description": "Basic autocomplete",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-demo",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-disabled",
+      "categories": ["autocomplete", "input", "disabled"],
       "description": "Disabled autocomplete",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input", "disabled"]
+      "name": "autocomplete-disabled",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-sm",
+      "categories": ["autocomplete", "input"],
       "description": "Small autocomplete",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-sm",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-lg",
+      "categories": ["autocomplete", "input"],
       "description": "Large autocomplete",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-lg",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-with-label",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete with label",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-with-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-with-label",
+      "registryDependencies": ["@coss/autocomplete", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-inline",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete autofilling the input with the highlighted item",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-inline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-inline",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-autohighlight",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete auto highlighting the first option",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-autohighlight.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-autohighlight",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-with-clear",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete with clear button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-with-clear.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-with-clear",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-with-trigger-clear",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete with trigger and clear buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-with-trigger-clear.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-with-trigger-clear",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-grouped",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete with grouped items",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-grouped.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-grouped",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-limit",
+      "categories": ["autocomplete", "input"],
       "description": "Autocomplete with limited number of results",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-limit.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input"]
+      "name": "autocomplete-limit",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-async",
+      "categories": ["autocomplete", "input", "async"],
       "description": "Autocomplete with async items loading",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-async.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input", "async"]
+      "name": "autocomplete-async",
+      "registryDependencies": ["@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "autocomplete-form",
+      "categories": ["autocomplete", "input", "form"],
       "description": "Autocomplete form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/autocomplete",
-        "@coss/form",
-        "@coss/field"
-      ],
       "files": [
         {
           "path": "registry/default/examples/autocomplete-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["autocomplete", "input", "form"]
+      "name": "autocomplete-form",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/form",
+        "@coss/field"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "avatar-demo",
+      "categories": ["avatar"],
       "description": "Avatar with image and fallback",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/avatar"],
       "files": [
         {
           "path": "registry/default/examples/avatar-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["avatar"]
+      "name": "avatar-demo",
+      "registryDependencies": ["@coss/avatar"],
+      "type": "registry:example"
     },
     {
-      "name": "avatar-fallback",
+      "categories": ["avatar"],
       "description": "Fallback-only avatar",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/avatar"],
       "files": [
         {
           "path": "registry/default/examples/avatar-fallback.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["avatar"]
+      "name": "avatar-fallback",
+      "registryDependencies": ["@coss/avatar"],
+      "type": "registry:example"
     },
     {
-      "name": "avatar-group",
+      "categories": ["avatar", "avatar group"],
       "description": "Overlapping avatar group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/avatar"],
       "files": [
         {
           "path": "registry/default/examples/avatar-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["avatar", "avatar group"]
+      "name": "avatar-group",
+      "registryDependencies": ["@coss/avatar"],
+      "type": "registry:example"
     },
     {
-      "name": "avatar-radius",
+      "categories": ["avatar"],
       "description": "Avatars with different radii",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/avatar"],
       "files": [
         {
           "path": "registry/default/examples/avatar-radius.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["avatar"]
+      "name": "avatar-radius",
+      "registryDependencies": ["@coss/avatar"],
+      "type": "registry:example"
     },
     {
-      "name": "avatar-size",
+      "categories": ["avatar"],
       "description": "Avatars with different sizes",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/avatar"],
       "files": [
         {
           "path": "registry/default/examples/avatar-size.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["avatar"]
+      "name": "avatar-size",
+      "registryDependencies": ["@coss/avatar"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-demo",
+      "categories": ["badge"],
       "description": "Basic badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-demo",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-outline",
+      "categories": ["badge"],
       "description": "Outline badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-outline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-outline",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-secondary",
+      "categories": ["badge"],
       "description": "Secondary badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-secondary.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-secondary",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-destructive",
+      "categories": ["badge", "destructive", "error"],
       "description": "Destructive badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-destructive.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge", "destructive", "error"]
+      "name": "badge-destructive",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-info",
+      "categories": ["badge", "info"],
       "description": "Info badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-info.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge", "info"]
+      "name": "badge-info",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-success",
+      "categories": ["badge", "success"],
       "description": "Success badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-success.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge", "success"]
+      "name": "badge-success",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-warning",
+      "categories": ["badge", "warning"],
       "description": "Warning badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-warning.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge", "warning"]
+      "name": "badge-warning",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-error",
+      "categories": ["badge", "error"],
       "description": "Error badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-error.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge", "error"]
+      "name": "badge-error",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-sm",
+      "categories": ["badge"],
       "description": "Small badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-sm",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-lg",
+      "categories": ["badge"],
       "description": "Large badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-lg",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-with-icon",
+      "categories": ["badge"],
       "description": "Badge with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-with-icon",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "badge-with-link",
+      "categories": ["badge"],
       "description": "Badge with link",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/badge-with-link.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["badge"]
+      "name": "badge-with-link",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "breadcrumb-demo",
+      "categories": ["breadcrumb", "menu"],
       "description": "Breadcrumb with menu example",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/breadcrumb", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/breadcrumb-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["breadcrumb", "menu"]
+      "name": "breadcrumb-demo",
+      "registryDependencies": ["@coss/breadcrumb", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "breadcrumb-custom-separator",
+      "categories": ["breadcrumb"],
       "description": "Breadcrumb with custom separator",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/breadcrumb"],
       "files": [
         {
           "path": "registry/default/examples/breadcrumb-custom-separator.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["breadcrumb"]
+      "name": "breadcrumb-custom-separator",
+      "registryDependencies": ["@coss/breadcrumb"],
+      "type": "registry:example"
     },
     {
-      "name": "button-demo",
+      "categories": ["button"],
       "description": "Default button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-demo",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-secondary",
+      "categories": ["button"],
       "description": "Secondary button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-secondary.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-secondary",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-destructive",
+      "categories": ["button", "delete", "destructive"],
       "description": "Destructive button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-destructive.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button", "delete", "destructive"]
+      "name": "button-destructive",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-destructive-outline",
+      "categories": ["button", "delete"],
       "description": "Destructive outline button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-destructive-outline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button", "delete"]
+      "name": "button-destructive-outline",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-outline",
+      "categories": ["button"],
       "description": "Outline button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-outline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-outline",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-ghost",
+      "categories": ["button"],
       "description": "Ghost button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-ghost.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-ghost",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-link",
+      "categories": ["button"],
       "description": "Link button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-link.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-link",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-xs",
+      "categories": ["button"],
       "description": "Extra-small button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-xs.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-xs",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-sm",
+      "categories": ["button"],
       "description": "Small button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-sm",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-lg",
+      "categories": ["button"],
       "description": "Large button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-lg",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-xl",
+      "categories": ["button"],
       "description": "Extra-large button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-xl.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-xl",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-disabled",
+      "categories": ["button", "disabled"],
       "description": "Disabled button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button", "disabled"]
+      "name": "button-disabled",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-icon",
+      "categories": ["button"],
       "description": "Icon button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-icon",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-icon-sm",
+      "categories": ["button"],
       "description": "Small icon button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-icon-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-icon-sm",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-icon-lg",
+      "categories": ["button"],
       "description": "Large icon button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-icon-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-icon-lg",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-with-icon",
+      "categories": ["button"],
       "description": "Button with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-with-icon",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-with-link",
+      "categories": ["button"],
       "description": "Link rendered as button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-with-link.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button"]
+      "name": "button-with-link",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "button-loading",
+      "categories": ["button", "loading"],
       "description": "Loading button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/button-loading.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["button", "loading"]
+      "name": "button-loading",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "card-demo",
+      "categories": ["card", "button", "input", "select", "form", "field"],
       "description": "Card example with form",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/card-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "card-demo",
       "registryDependencies": [
         "@coss/card",
         "@coss/button",
@@ -1483,109 +1488,116 @@
         "@coss/field",
         "@coss/input"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/card-demo.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": ["card", "button", "input", "select", "form", "field"]
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-card",
+      "categories": ["checkbox", "card", "label"],
       "description": "Card-style checkbox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/checkbox-card.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox", "card", "label"]
+      "name": "checkbox-card",
+      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-demo",
+      "categories": ["checkbox", "label"],
       "description": "Basic checkbox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/checkbox-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox", "label"]
+      "name": "checkbox-demo",
+      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-disabled",
+      "categories": ["checkbox", "disabled", "label"],
       "description": "Disabled checkbox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/checkbox-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox", "disabled", "label"]
+      "name": "checkbox-disabled",
+      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-form",
+      "categories": ["checkbox", "form", "button", "label"],
       "description": "Checkbox in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/checkbox",
-        "@coss/field",
-        "@coss/form",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/checkbox-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox", "form", "button", "label"]
+      "name": "checkbox-form",
+      "registryDependencies": [
+        "@coss/checkbox",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-group-demo",
+      "categories": ["checkbox group", "checkbox"],
       "description": "Checkbox group",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/checkbox-group",
-        "@coss/checkbox",
-        "@coss/label"
-      ],
       "files": [
         {
           "path": "registry/default/examples/checkbox-group-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox group", "checkbox"]
-    },
-    {
-      "name": "checkbox-group-disabled",
-      "description": "Checkbox group with disabled item",
-      "type": "registry:example",
+      "name": "checkbox-group-demo",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
         "@coss/label"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["checkbox group", "checkbox", "disabled"],
+      "description": "Checkbox group with disabled item",
       "files": [
         {
           "path": "registry/default/examples/checkbox-group-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox group", "checkbox", "disabled"]
+      "name": "checkbox-group-disabled",
+      "registryDependencies": [
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-group-form",
+      "categories": [
+        "checkbox group",
+        "checkbox",
+        "form",
+        "button",
+        "field",
+        "fieldset"
+      ],
       "description": "Checkbox group in a form",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/checkbox-group-form.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "checkbox-group-form",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1594,251 +1606,251 @@
         "@coss/fieldset",
         "@coss/form"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/checkbox-group-form.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": [
-        "checkbox group",
-        "checkbox",
-        "form",
-        "button",
-        "field",
-        "fieldset"
-      ]
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-group-nested-parent",
+      "categories": ["checkbox group", "checkbox", "label"],
       "description": "Checkbox group parent with nested children controls",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/checkbox-group",
-        "@coss/checkbox",
-        "@coss/label"
-      ],
       "files": [
         {
           "path": "registry/default/examples/checkbox-group-nested-parent.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox group", "checkbox", "label"]
-    },
-    {
-      "name": "checkbox-group-parent",
-      "description": "Checkbox group select/deselect all checkboxes",
-      "type": "registry:example",
+      "name": "checkbox-group-nested-parent",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
         "@coss/label"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["checkbox group", "checkbox", "label"],
+      "description": "Checkbox group select/deselect all checkboxes",
       "files": [
         {
           "path": "registry/default/examples/checkbox-group-parent.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox group", "checkbox", "label"]
+      "name": "checkbox-group-parent",
+      "registryDependencies": [
+        "@coss/checkbox-group",
+        "@coss/checkbox",
+        "@coss/label"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "checkbox-with-description",
+      "categories": ["checkbox", "label", "helper", "hint"],
       "description": "Checkbox with helper text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/checkbox-with-description.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["checkbox", "label", "helper", "hint"]
+      "name": "checkbox-with-description",
+      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "collapsible-demo",
+      "categories": ["collapsible"],
       "description": "Basic collapsible",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/collapsible"],
       "files": [
         {
           "path": "registry/default/examples/collapsible-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["collapsible"]
+      "name": "collapsible-demo",
+      "registryDependencies": ["@coss/collapsible"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-demo",
+      "categories": ["combobox", "input"],
       "description": "Basic combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-demo",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-disabled",
+      "categories": ["combobox", "input", "disabled"],
       "description": "Disabled combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input", "disabled"]
+      "name": "combobox-disabled",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-sm",
+      "categories": ["combobox", "input"],
       "description": "Small combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-sm",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-lg",
+      "categories": ["combobox", "input"],
       "description": "Large combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-lg",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-with-label",
+      "categories": ["combobox", "input"],
       "description": "Combobox with label",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/combobox-with-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-with-label",
+      "registryDependencies": ["@coss/combobox", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-autohighlight",
+      "categories": ["combobox", "input"],
       "description": "Combobox auto highlighting the first option",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-autohighlight.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-autohighlight",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-grouped",
+      "categories": ["combobox", "input"],
       "description": "Combobox with grouped items",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-grouped.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-grouped",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-with-clear",
+      "categories": ["combobox", "input"],
       "description": "Combobox with clear button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-with-clear.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-with-clear",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-multiple",
+      "categories": ["combobox", "input"],
       "description": "Combobox with multiple selection",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/combobox-multiple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-multiple",
+      "registryDependencies": ["@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-with-inner-input",
+      "categories": ["combobox", "input"],
       "description": "Combobox with popup",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/combobox", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/combobox-with-inner-input.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input"]
+      "name": "combobox-with-inner-input",
+      "registryDependencies": ["@coss/combobox", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "combobox-form",
+      "categories": ["combobox", "input", "form"],
       "description": "Combobox form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/combobox",
-        "@coss/button",
-        "@coss/form",
-        "@coss/field"
-      ],
       "files": [
         {
           "path": "registry/default/examples/combobox-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input", "form"]
-    },
-    {
-      "name": "combobox-multiple-form",
-      "description": "Combobox multiple selection form",
-      "type": "registry:example",
+      "name": "combobox-form",
       "registryDependencies": [
         "@coss/combobox",
         "@coss/button",
         "@coss/form",
         "@coss/field"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["combobox", "input", "form", "multiple"],
+      "description": "Combobox multiple selection form",
       "files": [
         {
           "path": "registry/default/examples/combobox-multiple-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["combobox", "input", "form", "multiple"]
+      "name": "combobox-multiple-form",
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "dialog-close-confirmation",
+      "categories": [
+        "dialog",
+        "alert dialog",
+        "form",
+        "field",
+        "button",
+        "textarea"
+      ],
       "description": "Prompt before closing with unsaved changes",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/dialog-close-confirmation.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "dialog-close-confirmation",
       "registryDependencies": [
         "@coss/alert-dialog",
         "@coss/dialog",
@@ -1847,94 +1859,68 @@
         "@coss/field",
         "@coss/textarea"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/dialog-close-confirmation.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": [
-        "dialog",
-        "alert dialog",
-        "form",
-        "field",
-        "button",
-        "textarea"
-      ]
+      "type": "registry:example"
     },
     {
-      "name": "dialog-demo",
+      "categories": ["dialog", "form", "field", "button"],
       "description": "Basic dialog",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/dialog",
-        "@coss/button",
-        "@coss/form",
-        "@coss/field",
-        "@coss/input"
-      ],
       "files": [
         {
           "path": "registry/default/examples/dialog-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["dialog", "form", "field", "button"]
+      "name": "dialog-demo",
+      "registryDependencies": [
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "dialog-from-menu",
+      "categories": ["dialog", "menu", "button"],
       "description": "Open dialog from a menu item",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/dialog", "@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/dialog-from-menu.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["dialog", "menu", "button"]
+      "name": "dialog-from-menu",
+      "registryDependencies": ["@coss/dialog", "@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "dialog-nested",
+      "categories": ["dialog", "field", "button"],
       "description": "Dialog with a nested dialog",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/dialog",
-        "@coss/button",
-        "@coss/field",
-        "@coss/input"
-      ],
       "files": [
         {
           "path": "registry/default/examples/dialog-nested.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["dialog", "field", "button"]
-    },
-    {
-      "name": "sheet-demo",
-      "description": "Basic sheet",
-      "type": "registry:example",
+      "name": "dialog-nested",
       "registryDependencies": [
-        "@coss/sheet",
+        "@coss/dialog",
         "@coss/button",
-        "@coss/form",
         "@coss/field",
         "@coss/input"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["sheet", "dialog"],
+      "description": "Basic sheet",
       "files": [
         {
           "path": "registry/default/examples/sheet-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["sheet", "dialog"]
-    },
-    {
-      "name": "sheet-inset",
-      "description": "Sheet inset",
-      "type": "registry:example",
+      "name": "sheet-demo",
       "registryDependencies": [
         "@coss/sheet",
         "@coss/button",
@@ -1942,76 +1928,78 @@
         "@coss/field",
         "@coss/input"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["sheet"],
+      "description": "Sheet inset",
       "files": [
         {
           "path": "registry/default/examples/sheet-inset.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["sheet"]
+      "name": "sheet-inset",
+      "registryDependencies": [
+        "@coss/sheet",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "sheet-position",
+      "categories": ["sheet"],
       "description": "Sheet position",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/sheet", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/sheet-position.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["sheet"]
+      "name": "sheet-position",
+      "registryDependencies": ["@coss/sheet", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "field-checkbox",
+      "categories": ["field", "label", "checkbox"],
       "description": "Field with checkbox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/checkbox"],
       "files": [
         {
           "path": "registry/default/examples/field-checkbox.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "label", "checkbox"]
+      "name": "field-checkbox",
+      "registryDependencies": ["@coss/field", "@coss/checkbox"],
+      "type": "registry:example"
     },
     {
-      "name": "field-checkbox-group",
-      "description": "Field with checkbox group",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/field",
-        "@coss/checkbox-group",
-        "@coss/checkbox",
-        "@coss/fieldset"
+      "categories": [
+        "field",
+        "checkbox group",
+        "checkbox",
+        "fieldset",
+        "label"
       ],
+      "description": "Field with checkbox group",
       "files": [
         {
           "path": "registry/default/examples/field-checkbox-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "checkbox group", "checkbox", "fieldset", "label"]
-    },
-    {
-      "name": "field-complete-form",
-      "description": "Complete form built with field",
-      "type": "registry:example",
+      "name": "field-checkbox-group",
       "registryDependencies": [
         "@coss/field",
-        "@coss/select",
+        "@coss/checkbox-group",
         "@coss/checkbox",
-        "@coss/form",
-        "@coss/input",
-        "@coss/button"
+        "@coss/fieldset"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/field-complete-form.tsx",
-          "type": "registry:example"
-        }
-      ],
+      "type": "registry:example"
+    },
+    {
       "categories": [
         "field",
         "label",
@@ -2021,1141 +2009,1164 @@
         "button",
         "helper",
         "hint"
-      ]
+      ],
+      "description": "Complete form built with field",
+      "files": [
+        {
+          "path": "registry/default/examples/field-complete-form.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "field-complete-form",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/select",
+        "@coss/checkbox",
+        "@coss/form",
+        "@coss/input",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "field-demo",
+      "categories": ["field", "label", "helper", "hint"],
       "description": "Field with description",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/field-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "label", "helper", "hint"]
+      "name": "field-demo",
+      "registryDependencies": ["@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "field-disabled",
+      "categories": ["field", "label", "disabled", "helper", "hint"],
       "description": "Field in disabled state",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/field-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "label", "disabled", "helper", "hint"]
+      "name": "field-disabled",
+      "registryDependencies": ["@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "field-error",
+      "categories": ["field", "label", "error"],
       "description": "Field showing validation error",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/field-error.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "label", "error"]
+      "name": "field-error",
+      "registryDependencies": ["@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "field-autocomplete",
+      "categories": ["field", "input", "autocomplete", "label"],
       "description": "Field with autocomplete",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/autocomplete"],
       "files": [
         {
           "path": "registry/default/examples/field-autocomplete.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "input", "autocomplete", "label"]
+      "name": "field-autocomplete",
+      "registryDependencies": ["@coss/field", "@coss/autocomplete"],
+      "type": "registry:example"
     },
     {
-      "name": "field-combobox",
+      "categories": ["field", "input", "combobox", "label"],
       "description": "Field with combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/field-combobox.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "input", "combobox", "label"]
+      "name": "field-combobox",
+      "registryDependencies": ["@coss/field", "@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "field-combobox-multiple",
+      "categories": ["field", "input", "combobox", "label", "multiple"],
       "description": "Field with multiple selection combobox",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/combobox"],
       "files": [
         {
           "path": "registry/default/examples/field-combobox-multiple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "input", "combobox", "label", "multiple"]
+      "name": "field-combobox-multiple",
+      "registryDependencies": ["@coss/field", "@coss/combobox"],
+      "type": "registry:example"
     },
     {
-      "name": "field-number-field",
+      "categories": ["field", "input", "label", "number", "helper", "hint"],
       "description": "Field with number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/field-number-field.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "input", "label", "number", "helper", "hint"]
+      "name": "field-number-field",
+      "registryDependencies": ["@coss/field", "@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "field-radio",
+      "categories": ["field", "radio", "label", "fieldset", "helper", "hint"],
       "description": "Field with radio group",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/field",
-        "@coss/radio-group",
-        "@coss/fieldset"
-      ],
       "files": [
         {
           "path": "registry/default/examples/field-radio.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "radio", "label", "fieldset", "helper", "hint"]
+      "name": "field-radio",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/radio-group",
+        "@coss/fieldset"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "field-required",
+      "categories": ["field", "label", "required"],
       "description": "Field with required indicator",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/field-required.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "label", "required"]
+      "name": "field-required",
+      "registryDependencies": ["@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "field-select",
+      "categories": ["field", "select", "label", "helper", "hint"],
       "description": "Field with select",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/field-select.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "select", "label", "helper", "hint"]
+      "name": "field-select",
+      "registryDependencies": ["@coss/field", "@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "field-slider",
+      "categories": ["field", "slider", "label", "helper", "hint"],
       "description": "Field with slider",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/slider"],
       "files": [
         {
           "path": "registry/default/examples/field-slider.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "slider", "label", "helper", "hint"]
+      "name": "field-slider",
+      "registryDependencies": ["@coss/field", "@coss/slider"],
+      "type": "registry:example"
     },
     {
-      "name": "field-switch",
+      "categories": ["field", "switch", "label"],
       "description": "Field with toggle switch",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/switch"],
       "files": [
         {
           "path": "registry/default/examples/field-switch.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "switch", "label"]
+      "name": "field-switch",
+      "registryDependencies": ["@coss/field", "@coss/switch"],
+      "type": "registry:example"
     },
     {
-      "name": "field-textarea",
+      "categories": ["field", "textarea", "label", "helper", "hint"],
       "description": "Field with textarea",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/textarea"],
       "files": [
         {
           "path": "registry/default/examples/field-textarea.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field", "textarea", "label", "helper", "hint"]
+      "name": "field-textarea",
+      "registryDependencies": ["@coss/field", "@coss/textarea"],
+      "type": "registry:example"
     },
     {
-      "name": "field-validity",
+      "categories": ["field"],
       "description": "Show field validity state",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/field-validity.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["field"]
+      "name": "field-validity",
+      "registryDependencies": ["@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "fieldset-demo",
+      "categories": ["fieldset", "field", "label", "input", "helper"],
       "description": "Fieldset with legend and labeled fields",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/fieldset-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["fieldset", "field", "label", "input", "helper"]
+      "name": "fieldset-demo",
+      "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "form-demo",
+      "categories": ["form", "field", "button", "input"],
       "description": "Input in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/form",
-        "@coss/field",
-        "@coss/button",
-        "@coss/input"
-      ],
       "files": [
         {
           "path": "registry/default/examples/form-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["form", "field", "button", "input"]
-    },
-    {
-      "name": "form-zod",
-      "description": "Form with zod validation",
-      "type": "registry:example",
+      "name": "form-demo",
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
         "@coss/button",
         "@coss/input"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["form", "field", "button", "validation", "label", "zod"],
       "dependencies": ["zod"],
+      "description": "Form with zod validation",
       "files": [
         {
           "path": "registry/default/examples/form-zod.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["form", "field", "button", "validation", "label", "zod"]
+      "name": "form-zod",
+      "registryDependencies": [
+        "@coss/form",
+        "@coss/field",
+        "@coss/button",
+        "@coss/input"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "empty-demo",
+      "categories": ["empty"],
       "description": "Basic empty state with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/empty", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/empty-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["empty"]
+      "name": "empty-demo",
+      "registryDependencies": ["@coss/empty", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "input-demo",
+      "categories": ["input"],
       "description": "Basic input component without label",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/input-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input"]
+      "name": "input-demo",
+      "registryDependencies": ["@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "frame-demo",
+      "categories": ["frame"],
       "description": "Frame example",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/frame"],
       "files": [
         {
           "path": "registry/default/examples/frame-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["frame"]
+      "name": "frame-demo",
+      "registryDependencies": ["@coss/frame"],
+      "type": "registry:example"
     },
     {
-      "name": "group-demo",
+      "categories": ["group"],
       "description": "Group example",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/group-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group"]
+      "name": "group-demo",
+      "registryDependencies": ["@coss/group", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "group-with-input",
+      "categories": ["group", "input", "copy", "button", "tooltip"],
       "description": "Group with input and copy button",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/button",
-        "@coss/input",
-        "@coss/tooltip"
-      ],
       "files": [
         {
           "path": "registry/default/examples/group-with-input.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "input", "copy", "button", "tooltip"]
+      "name": "group-with-input",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/input",
+        "@coss/tooltip"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "group-sm",
+      "categories": ["group", "button", "menu"],
       "description": "Group with small buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/group-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "menu"]
+      "name": "group-sm",
+      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "group-lg",
+      "categories": ["group", "button", "menu"],
       "description": "Group with large buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/group-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "menu"]
+      "name": "group-lg",
+      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "group-with-disabled-button",
+      "categories": ["group", "button", "menu"],
       "description": "Group with disabled button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/group-with-disabled-button.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "menu"]
+      "name": "group-with-disabled-button",
+      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "group-default-button",
+      "categories": ["group", "button", "menu"],
       "description": "Group with default style buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/group-default-button.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "menu"]
+      "name": "group-default-button",
+      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "group-with-text",
+      "categories": ["group", "input", "label"],
       "description": "Group with start labeled text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/input", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/group-with-text.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "input", "label"]
+      "name": "group-with-text",
+      "registryDependencies": ["@coss/group", "@coss/input", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "group-with-end-text",
+      "categories": ["group", "input"],
       "description": "Group with end text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/group-with-end-text.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "input"]
+      "name": "group-with-end-text",
+      "registryDependencies": ["@coss/group", "@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "group-vertical",
+      "categories": ["group", "button"],
       "description": "Vertical group of buttons",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/group-vertical.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button"]
+      "name": "group-vertical",
+      "registryDependencies": ["@coss/group", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "group-nested",
+      "categories": ["group", "button"],
       "description": "Pagination example made with nested groups",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/group-nested.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button"]
+      "name": "group-nested",
+      "registryDependencies": ["@coss/group", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "group-popup",
+      "categories": ["group", "button", "popover", "badge"],
       "description": "Group with button and popup",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/button",
-        "@coss/popover",
-        "@coss/badge"
-      ],
       "files": [
         {
           "path": "registry/default/examples/group-popup.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "popover", "badge"]
-    },
-    {
-      "name": "group-input-group",
-      "description": "Nested groups with input group",
-      "type": "registry:example",
+      "name": "group-popup",
       "registryDependencies": [
         "@coss/group",
         "@coss/button",
-        "@coss/input-group",
-        "@coss/tooltip"
+        "@coss/popover",
+        "@coss/badge"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["group", "button", "input", "input group", "tooltip"],
+      "description": "Nested groups with input group",
       "files": [
         {
           "path": "registry/default/examples/group-input-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "input", "input group", "tooltip"]
+      "name": "group-input-group",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/tooltip"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "group-menu",
+      "categories": ["group", "button", "menu"],
       "description": "Group with button and menu",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
       "files": [
         {
           "path": "registry/default/examples/group-menu.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "button", "menu"]
+      "name": "group-menu",
+      "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+      "type": "registry:example"
     },
     {
-      "name": "group-select",
+      "categories": ["group", "select", "number field", "button"],
       "description": "Group with select and number field",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/select",
-        "@coss/number-field",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/group-select.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["group", "select", "number field", "button"]
+      "name": "group-select",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/select",
+        "@coss/number-field",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "input-sm",
+      "categories": ["input"],
       "description": "Small input",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/input-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input"]
+      "name": "input-sm",
+      "registryDependencies": ["@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "input-lg",
+      "categories": ["input"],
       "description": "Large input",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/input-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input"]
+      "name": "input-lg",
+      "registryDependencies": ["@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "input-disabled",
+      "categories": ["input", "disabled"],
       "description": "Input with disabled state",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/input-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "disabled"]
+      "name": "input-disabled",
+      "registryDependencies": ["@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "input-file",
+      "categories": ["input", "file"],
       "description": "Input type set to file",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input"],
       "files": [
         {
           "path": "registry/default/examples/input-file.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "file"]
+      "name": "input-file",
+      "registryDependencies": ["@coss/input"],
+      "type": "registry:example"
     },
     {
-      "name": "input-with-label",
+      "categories": ["input", "label"],
       "description": "Input with label",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/input-with-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "label"]
+      "name": "input-with-label",
+      "registryDependencies": ["@coss/input", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "input-with-button",
+      "categories": ["input", "button"],
       "description": "Input with button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/input-with-button.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "button"]
+      "name": "input-with-button",
+      "registryDependencies": ["@coss/input", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-demo",
+      "categories": ["input", "input group"],
       "description": "Basic input group with search icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-demo",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-sm",
+      "categories": ["input", "input group"],
       "description": "Small input group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-sm",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-lg",
+      "categories": ["input", "input group"],
       "description": "Large input group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-lg",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-disabled",
+      "categories": ["input", "input group", "disabled", "button"],
       "description": "Input group with disabled state",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/button", "@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "disabled", "button"]
+      "name": "input-group-disabled",
+      "registryDependencies": ["@coss/button", "@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "field-input-group",
+      "categories": ["input", "input group", "field", "button"],
       "description": "Input group with field",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/field",
-        "@coss/button",
-        "@coss/input-group"
-      ],
       "files": [
         {
           "path": "registry/default/examples/field-input-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "field", "button"]
+      "name": "field-input-group",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-loading",
+      "categories": ["input", "input group", "loading", "spinner"],
       "description": "Input group with end loading state",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group", "@coss/spinner"],
       "files": [
         {
           "path": "registry/default/examples/input-group-loading.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "loading", "spinner"]
+      "name": "input-group-loading",
+      "registryDependencies": ["@coss/input-group", "@coss/spinner"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-textarea",
+      "categories": ["input group", "textarea", "button", "menu", "tooltip"],
       "description": "Input group with textarea",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/input-group",
-        "@coss/button",
-        "@coss/menu",
-        "@coss/tooltip"
-      ],
       "files": [
         {
           "path": "registry/default/examples/input-group-textarea.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input group", "textarea", "button", "menu", "tooltip"]
+      "name": "input-group-textarea",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/menu",
+        "@coss/tooltip"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-badge",
+      "categories": ["input", "input group", "badge"],
       "description": "Input group with badge",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group", "@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-badge.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "badge"]
+      "name": "input-group-with-badge",
+      "registryDependencies": ["@coss/input-group", "@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-button",
+      "categories": ["input", "input group", "button"],
       "description": "Input group with button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-button.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "button"]
+      "name": "input-group-with-button",
+      "registryDependencies": ["@coss/input-group", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-end-icon",
+      "categories": ["input", "input group"],
       "description": "Input group with end icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-end-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-with-end-icon",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-end-text",
+      "categories": ["input", "input group"],
       "description": "Input group with end text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-end-text.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-with-end-text",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-end-tooltip",
+      "categories": ["input", "input group", "popover", "tooltip"],
       "description": "Input group with end tooltip",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/input-group",
-        "@coss/button",
-        "@coss/popover"
-      ],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-end-tooltip.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "popover", "tooltip"]
-    },
-    {
-      "name": "input-group-with-icon-button",
-      "description": "Input group with copy button",
-      "type": "registry:example",
+      "name": "input-group-with-end-tooltip",
       "registryDependencies": [
-        "@coss/use-copy-to-clipboard",
         "@coss/input-group",
         "@coss/button",
-        "@coss/tooltip"
+        "@coss/popover"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["input", "input group", "button", "tooltip"],
+      "description": "Input group with copy button",
       "files": [
         {
           "path": "registry/default/examples/input-group-with-icon-button.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "button", "tooltip"]
-    },
-    {
-      "name": "input-group-with-inner-label",
-      "description": "Input group with inner label",
-      "type": "registry:example",
+      "name": "input-group-with-icon-button",
       "registryDependencies": [
+        "@coss/use-copy-to-clipboard",
         "@coss/input-group",
         "@coss/button",
-        "@coss/label",
-        "@coss/popover"
+        "@coss/tooltip"
       ],
+      "type": "registry:example"
+    },
+    {
+      "categories": ["input", "input group", "label", "popover", "tooltip"],
+      "description": "Input group with inner label",
       "files": [
         {
           "path": "registry/default/examples/input-group-with-inner-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "label", "popover", "tooltip"]
+      "name": "input-group-with-inner-label",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/button",
+        "@coss/label",
+        "@coss/popover"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-kbd",
+      "categories": ["input", "input group", "kbd", "search"],
       "description": "Input group with keyboard shortcut",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group", "@coss/kbd"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-kbd.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "kbd", "search"]
+      "name": "input-group-with-kbd",
+      "registryDependencies": ["@coss/input-group", "@coss/kbd"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-number-field",
+      "categories": ["input", "input group", "number field"],
       "description": "Input group with number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group", "@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-number-field.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group", "number field"]
+      "name": "input-group-with-number-field",
+      "registryDependencies": ["@coss/input-group", "@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-start-end-text",
+      "categories": ["input", "input group"],
       "description": "Input group with start and end text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-start-end-text.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-with-start-end-text",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "input-group-with-start-text",
+      "categories": ["input", "input group"],
       "description": "Input group with start text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/input-group"],
       "files": [
         {
           "path": "registry/default/examples/input-group-with-start-text.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["input", "input group"]
+      "name": "input-group-with-start-text",
+      "registryDependencies": ["@coss/input-group"],
+      "type": "registry:example"
     },
     {
-      "name": "kbd-demo",
+      "categories": ["kbd"],
       "description": "Keyboard shortcuts",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/kbd"],
       "files": [
         {
           "path": "registry/default/examples/kbd-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["kbd"]
+      "name": "kbd-demo",
+      "registryDependencies": ["@coss/kbd"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-checkbox",
+      "categories": ["menu", "checkbox"],
       "description": "Menu with checkbox items",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-checkbox.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu", "checkbox"]
+      "name": "menu-checkbox",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-close-on-click",
+      "categories": ["menu"],
       "description": "Close menu when items are clicked",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-close-on-click.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu"]
+      "name": "menu-close-on-click",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-demo",
+      "categories": ["menu"],
       "description": "Basic menu",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu"]
+      "name": "menu-demo",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-group-labels",
+      "categories": ["menu", "label"],
       "description": "Menu items grouped with labels",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-group-labels.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu", "label"]
+      "name": "menu-group-labels",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-hover",
+      "categories": ["menu"],
       "description": "Open the menu on hover",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-hover.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu"]
+      "name": "menu-hover",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-link",
+      "categories": ["menu", "link"],
       "description": "Menu items as links",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-link.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu", "link"]
+      "name": "menu-link",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-nested",
+      "categories": ["menu"],
       "description": "Menu with submenu",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-nested.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu"]
+      "name": "menu-nested",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "menu-radio-group",
+      "categories": ["menu", "radio"],
       "description": "Menu with radio options",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/menu", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/menu-radio-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["menu", "radio"]
+      "name": "menu-radio-group",
+      "registryDependencies": ["@coss/menu", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "meter-demo",
+      "categories": ["meter"],
       "description": "Basic meter",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/meter"],
       "files": [
         {
           "path": "registry/default/examples/meter-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["meter"]
+      "name": "meter-demo",
+      "registryDependencies": ["@coss/meter"],
+      "type": "registry:example"
     },
     {
-      "name": "meter-simple",
+      "categories": ["meter"],
       "description": "Meter without label and value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/meter"],
       "files": [
         {
           "path": "registry/default/examples/meter-simple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["meter"]
+      "name": "meter-simple",
+      "registryDependencies": ["@coss/meter"],
+      "type": "registry:example"
     },
     {
-      "name": "meter-with-formatted-value",
+      "categories": ["meter"],
       "description": "Meter with a custom formatted value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/meter"],
       "files": [
         {
           "path": "registry/default/examples/meter-with-formatted-value.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["meter"]
+      "name": "meter-with-formatted-value",
+      "registryDependencies": ["@coss/meter"],
+      "type": "registry:example"
     },
     {
-      "name": "meter-with-range",
+      "categories": ["meter"],
       "description": "Meter with min and max values",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/meter"],
       "files": [
         {
           "path": "registry/default/examples/meter-with-range.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["meter"]
+      "name": "meter-with-range",
+      "registryDependencies": ["@coss/meter"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-demo",
+      "categories": ["number field"],
       "description": "A number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-demo",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-sm",
+      "categories": ["number field"],
       "description": "Small number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-sm",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-lg",
+      "categories": ["number field"],
       "description": "Large number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-lg",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-disabled",
+      "categories": ["number field", "disabled", "label"],
       "description": "A disabled number field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field", "disabled", "label"]
+      "name": "number-field-disabled",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-form",
+      "categories": ["number field", "field", "form", "button"],
       "description": "A number in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/number-field",
-        "@coss/field",
-        "@coss/form",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/number-field-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field", "field", "form", "button"]
+      "name": "number-field-form",
+      "registryDependencies": [
+        "@coss/number-field",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-with-formatted-value",
+      "categories": ["number field"],
       "description": "A number field with formatted value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-formatted-value.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-with-formatted-value",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-with-label",
+      "categories": ["number field", "label"],
       "description": "A number field with an external label",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field", "label"]
+      "name": "number-field-with-label",
+      "registryDependencies": ["@coss/number-field", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-with-range",
+      "categories": ["number field", "range"],
       "description": "A number field with min/max constraints",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-range.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field", "range"]
+      "name": "number-field-with-range",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-with-scrub",
+      "categories": ["number field"],
       "description": "A number field with a scrub area",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-scrub.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-with-scrub",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "number-field-with-step",
+      "categories": ["number field"],
       "description": "A number field with step",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/number-field"],
       "files": [
         {
           "path": "registry/default/examples/number-field-with-step.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["number field"]
+      "name": "number-field-with-step",
+      "registryDependencies": ["@coss/number-field"],
+      "type": "registry:example"
     },
     {
-      "name": "pagination-demo",
+      "categories": ["pagination"],
       "description": "Pagination example",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/pagination"],
       "files": [
         {
           "path": "registry/default/examples/pagination-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["pagination"]
+      "name": "pagination-demo",
+      "registryDependencies": ["@coss/pagination"],
+      "type": "registry:example"
     },
     {
-      "name": "popover-demo",
+      "categories": ["popover", "button", "textarea", "form", "field"],
       "description": "Popover with a form",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/popover-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "popover-demo",
       "registryDependencies": [
         "@coss/popover",
         "@coss/button",
@@ -3163,122 +3174,122 @@
         "@coss/form",
         "@coss/field"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/popover-demo.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": ["popover", "button", "textarea", "form", "field"]
+      "type": "registry:example"
     },
     {
-      "name": "popover-with-close",
+      "categories": ["popover", "button"],
       "description": "Popover with close button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/popover", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/popover-with-close.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["popover", "button"]
+      "name": "popover-with-close",
+      "registryDependencies": ["@coss/popover", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "preview-card-demo",
+      "categories": ["preview card", "button"],
       "description": "Preview card example",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/preview-card", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/preview-card-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["preview card", "button"]
+      "name": "preview-card-demo",
+      "registryDependencies": ["@coss/preview-card", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "progress-demo",
+      "categories": ["progress"],
       "description": "Animated progress bar",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/progress"],
       "files": [
         {
           "path": "registry/default/examples/progress-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["progress"]
+      "name": "progress-demo",
+      "registryDependencies": ["@coss/progress"],
+      "type": "registry:example"
     },
     {
-      "name": "progress-with-formatted-value",
+      "categories": ["progress"],
       "description": "Progress with a custom formatted value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/progress"],
       "files": [
         {
           "path": "registry/default/examples/progress-with-formatted-value.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["progress"]
+      "name": "progress-with-formatted-value",
+      "registryDependencies": ["@coss/progress"],
+      "type": "registry:example"
     },
     {
-      "name": "progress-with-label-value",
+      "categories": ["progress", "label"],
       "description": "Progress with label and value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/progress"],
       "files": [
         {
           "path": "registry/default/examples/progress-with-label-value.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["progress", "label"]
+      "name": "progress-with-label-value",
+      "registryDependencies": ["@coss/progress"],
+      "type": "registry:example"
     },
     {
-      "name": "radio-group-card",
+      "categories": ["radio", "label"],
       "description": "Card-style radio options",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/radio-group", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/radio-group-card.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["radio", "label"]
+      "name": "radio-group-card",
+      "registryDependencies": ["@coss/radio-group", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "radio-group-demo",
+      "categories": ["radio", "label"],
       "description": "Basic radio group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/radio-group", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/radio-group-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["radio", "label"]
+      "name": "radio-group-demo",
+      "registryDependencies": ["@coss/radio-group", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "radio-group-disabled",
+      "categories": ["radio", "label"],
       "description": "Radio group with one option disabled",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/radio-group", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/radio-group-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["radio", "label"]
+      "name": "radio-group-disabled",
+      "registryDependencies": ["@coss/radio-group", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "radio-group-form",
+      "categories": ["radio", "field", "fieldset", "form", "button"],
       "description": "Radio group in a form",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/radio-group-form.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "radio-group-form",
       "registryDependencies": [
         "@coss/radio-group",
         "@coss/field",
@@ -3286,848 +3297,848 @@
         "@coss/form",
         "@coss/button"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/radio-group-form.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": ["radio", "field", "fieldset", "form", "button"]
+      "type": "registry:example"
     },
     {
-      "name": "radio-group-with-description",
+      "categories": ["radio", "label", "helper", "hint"],
       "description": "Radio options with helper text",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/radio-group", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/radio-group-with-description.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["radio", "label", "helper", "hint"]
+      "name": "radio-group-with-description",
+      "registryDependencies": ["@coss/radio-group", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "scroll-area-demo",
+      "categories": ["scroll area"],
       "description": "Scroll area - vertical",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/scroll-area"],
       "files": [
         {
           "path": "registry/default/examples/scroll-area-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["scroll area"]
+      "name": "scroll-area-demo",
+      "registryDependencies": ["@coss/scroll-area"],
+      "type": "registry:example"
     },
     {
-      "name": "scroll-area-horizontal",
+      "categories": ["scroll area"],
       "description": "Scroll area - horizontal",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/scroll-area"],
       "files": [
         {
           "path": "registry/default/examples/scroll-area-horizontal.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["scroll area"]
+      "name": "scroll-area-horizontal",
+      "registryDependencies": ["@coss/scroll-area"],
+      "type": "registry:example"
     },
     {
-      "name": "scroll-area-both",
+      "categories": ["scroll area"],
       "description": "Scroll area - both horizontal and vertical",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/scroll-area"],
       "files": [
         {
           "path": "registry/default/examples/scroll-area-both.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["scroll area"]
+      "name": "scroll-area-both",
+      "registryDependencies": ["@coss/scroll-area"],
+      "type": "registry:example"
     },
     {
-      "name": "select-demo",
+      "categories": ["select"],
       "description": "A basic select",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-demo",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-sm",
+      "categories": ["select"],
       "description": "A select with small size",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-sm",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-lg",
+      "categories": ["select"],
       "description": "A select with large size",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-lg",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-disabled",
+      "categories": ["select", "disabled"],
       "description": "A disabled select",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select", "disabled"]
+      "name": "select-disabled",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-without-alignment",
+      "categories": ["select"],
       "description": "Select popup not aligned to trigger",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-without-alignment.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-without-alignment",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-with-groups",
+      "categories": ["select"],
       "description": "Select items grouped with labels",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-with-groups.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-with-groups",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-multiple",
+      "categories": ["select"],
       "description": "Multiple selection with formatted value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-multiple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-multiple",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-with-icon",
+      "categories": ["select"],
       "description": "Select with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-with-icon",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-options-with-icon",
+      "categories": ["select"],
       "description": "Select options with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-options-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-options-with-icon",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-with-object-values",
+      "categories": ["select"],
       "description": "Select with object values",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/select"],
       "files": [
         {
           "path": "registry/default/examples/select-with-object-values.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select"]
+      "name": "select-with-object-values",
+      "registryDependencies": ["@coss/select"],
+      "type": "registry:example"
     },
     {
-      "name": "select-form",
+      "categories": ["select", "form", "field", "helper", "hint"],
       "description": "Select in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/select",
-        "@coss/form",
-        "@coss/field"
-      ],
       "files": [
         {
           "path": "registry/default/examples/select-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["select", "form", "field", "helper", "hint"]
+      "name": "select-form",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/select",
+        "@coss/form",
+        "@coss/field"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "separator-demo",
+      "categories": ["separator"],
       "description": "Separator with horizontal and vertical orientations",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/separator"],
       "files": [
         {
           "path": "registry/default/examples/separator-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["separator"]
+      "name": "separator-demo",
+      "registryDependencies": ["@coss/separator"],
+      "type": "registry:example"
     },
     {
-      "name": "skeleton-demo",
+      "categories": ["skeleton"],
       "description": "Skeleton demo",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/avatar",
-        "@coss/button",
-        "@coss/skeleton"
-      ],
       "files": [
         {
           "path": "registry/default/examples/skeleton-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["skeleton"]
+      "name": "skeleton-demo",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/button",
+        "@coss/skeleton"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "skeleton-only",
+      "categories": ["skeleton"],
       "description": "Skeleton only",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/skeleton"],
       "files": [
         {
           "path": "registry/default/examples/skeleton-only.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["skeleton"]
+      "name": "skeleton-only",
+      "registryDependencies": ["@coss/skeleton"],
+      "type": "registry:example"
     },
     {
-      "name": "slider-demo",
+      "categories": ["slider"],
       "description": "Basic slider",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/slider"],
       "files": [
         {
           "path": "registry/default/examples/slider-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["slider"]
+      "name": "slider-demo",
+      "registryDependencies": ["@coss/slider"],
+      "type": "registry:example"
     },
     {
-      "name": "slider-with-label-value",
+      "categories": ["slider", "label"],
       "description": "Slider with label and value",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/slider", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/slider-with-label-value.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["slider", "label"]
+      "name": "slider-with-label-value",
+      "registryDependencies": ["@coss/slider", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "slider-range",
+      "categories": ["slider", "range slider"],
       "description": "Two-thumb range slider",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/slider"],
       "files": [
         {
           "path": "registry/default/examples/slider-range.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["slider", "range slider"]
+      "name": "slider-range",
+      "registryDependencies": ["@coss/slider"],
+      "type": "registry:example"
     },
     {
-      "name": "slider-vertical",
+      "categories": ["slider", "vertical slider"],
       "description": "Vertical slider",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/slider"],
       "files": [
         {
           "path": "registry/default/examples/slider-vertical.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["slider", "vertical slider"]
+      "name": "slider-vertical",
+      "registryDependencies": ["@coss/slider"],
+      "type": "registry:example"
     },
     {
-      "name": "slider-form",
+      "categories": ["slider", "form", "field", "button", "helper", "hint"],
       "description": "Slider in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/slider",
-        "@coss/form",
-        "@coss/field",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/slider-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["slider", "form", "field", "button", "helper", "hint"]
+      "name": "slider-form",
+      "registryDependencies": [
+        "@coss/slider",
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "spinner-demo",
+      "categories": ["spinner", "loading"],
       "description": "Spinner demo",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/spinner"],
       "files": [
         {
           "path": "registry/default/examples/spinner-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["spinner", "loading"]
+      "name": "spinner-demo",
+      "registryDependencies": ["@coss/spinner"],
+      "type": "registry:example"
     },
     {
-      "name": "switch-demo",
+      "categories": ["switch", "label"],
       "description": "Basic switch",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/switch", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/switch-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["switch", "label"]
+      "name": "switch-demo",
+      "registryDependencies": ["@coss/switch", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "switch-disabled",
+      "categories": ["switch", "label", "disabled"],
       "description": "Disabled switch",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/switch", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/switch-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["switch", "label", "disabled"]
+      "name": "switch-disabled",
+      "registryDependencies": ["@coss/switch", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "switch-with-description",
+      "categories": ["switch", "label", "helper", "hint"],
       "description": "Switch with description",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/switch", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/switch-with-description.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["switch", "label", "helper", "hint"]
+      "name": "switch-with-description",
+      "registryDependencies": ["@coss/switch", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "switch-card",
+      "categories": ["switch", "label", "card"],
       "description": "Card-style switch",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/switch", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/switch-card.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["switch", "label", "card"]
+      "name": "switch-card",
+      "registryDependencies": ["@coss/switch", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "switch-form",
+      "categories": ["switch", "form", "field", "button"],
       "description": "Switch in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/switch",
-        "@coss/field",
-        "@coss/form",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/switch-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["switch", "form", "field", "button"]
+      "name": "switch-form",
+      "registryDependencies": [
+        "@coss/switch",
+        "@coss/field",
+        "@coss/form",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "table-demo",
+      "categories": ["table", "badge"],
       "description": "Basic table",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/table", "@coss/badge"],
       "files": [
         {
           "path": "registry/default/examples/table-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["table", "badge"]
+      "name": "table-demo",
+      "registryDependencies": ["@coss/table", "@coss/badge"],
+      "type": "registry:example"
     },
     {
-      "name": "table-framed",
+      "categories": ["table", "badge", "frame"],
       "description": "Framed table",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/table", "@coss/badge", "@coss/frame"],
       "files": [
         {
           "path": "registry/default/examples/table-framed.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["table", "badge", "frame"]
+      "name": "table-framed",
+      "registryDependencies": ["@coss/table", "@coss/badge", "@coss/frame"],
+      "type": "registry:example"
     },
     {
-      "name": "tabs-demo",
+      "categories": ["tabs"],
       "description": "Tabs with default indicator",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tabs"],
       "files": [
         {
           "path": "registry/default/examples/tabs-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tabs"]
+      "name": "tabs-demo",
+      "registryDependencies": ["@coss/tabs"],
+      "type": "registry:example"
     },
     {
-      "name": "tabs-underline",
+      "categories": ["tabs"],
       "description": "Tabs with underline indicator",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tabs"],
       "files": [
         {
           "path": "registry/default/examples/tabs-underline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tabs"]
+      "name": "tabs-underline",
+      "registryDependencies": ["@coss/tabs"],
+      "type": "registry:example"
     },
     {
-      "name": "tabs-vertical",
+      "categories": ["tabs", "vertical tabs"],
       "description": "Tabs with vertical layout",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tabs"],
       "files": [
         {
           "path": "registry/default/examples/tabs-vertical.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tabs", "vertical tabs"]
+      "name": "tabs-vertical",
+      "registryDependencies": ["@coss/tabs"],
+      "type": "registry:example"
     },
     {
-      "name": "tabs-underline-vertical",
+      "categories": ["tabs", "vertical tabs"],
       "description": "Underline tabs with vertical layout",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tabs"],
       "files": [
         {
           "path": "registry/default/examples/tabs-underline-vertical.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tabs", "vertical tabs"]
+      "name": "tabs-underline-vertical",
+      "registryDependencies": ["@coss/tabs"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-demo",
+      "categories": ["textarea"],
       "description": "Basic textarea",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/textarea"],
       "files": [
         {
           "path": "registry/default/examples/textarea-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea"]
+      "name": "textarea-demo",
+      "registryDependencies": ["@coss/textarea"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-sm",
+      "categories": ["textarea"],
       "description": "Small textarea",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/textarea"],
       "files": [
         {
           "path": "registry/default/examples/textarea-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea"]
+      "name": "textarea-sm",
+      "registryDependencies": ["@coss/textarea"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-lg",
+      "categories": ["textarea"],
       "description": "Large textarea",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/textarea"],
       "files": [
         {
           "path": "registry/default/examples/textarea-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea"]
+      "name": "textarea-lg",
+      "registryDependencies": ["@coss/textarea"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-disabled",
+      "categories": ["textarea", "disabled"],
       "description": "Disabled textarea",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/textarea"],
       "files": [
         {
           "path": "registry/default/examples/textarea-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea", "disabled"]
+      "name": "textarea-disabled",
+      "registryDependencies": ["@coss/textarea"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-with-label",
+      "categories": ["textarea", "field", "label"],
       "description": "Textarea labelled with Field",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/textarea", "@coss/label"],
       "files": [
         {
           "path": "registry/default/examples/textarea-with-label.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea", "field", "label"]
+      "name": "textarea-with-label",
+      "registryDependencies": ["@coss/textarea", "@coss/label"],
+      "type": "registry:example"
     },
     {
-      "name": "textarea-form",
+      "categories": ["textarea", "form", "field", "button"],
       "description": "Textarea in a form",
-      "type": "registry:example",
-      "registryDependencies": [
-        "@coss/textarea",
-        "@coss/form",
-        "@coss/field",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/examples/textarea-form.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["textarea", "form", "field", "button"]
+      "name": "textarea-form",
+      "registryDependencies": [
+        "@coss/textarea",
+        "@coss/form",
+        "@coss/field",
+        "@coss/button"
+      ],
+      "type": "registry:example"
     },
     {
-      "name": "toast-demo",
+      "categories": ["toast", "button"],
       "description": "Status toast",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast", "button"]
+      "name": "toast-demo",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toast-loading",
+      "categories": ["toast", "button", "loading"],
       "description": "Loading toast",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-loading.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast", "button", "loading"]
+      "name": "toast-loading",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toast-promise",
+      "categories": ["toast", "button"],
       "description": "Drive toasts from promise states",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-promise.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast", "button"]
+      "name": "toast-promise",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toast-with-action",
+      "categories": ["toast", "button"],
       "description": "Toast with an action button",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-with-action.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast", "button"]
+      "name": "toast-with-action",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toast-with-status",
+      "categories": ["toast", "button"],
       "description": "Success toast",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-with-status.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast", "button"]
+      "name": "toast-with-status",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toast-heights",
+      "categories": ["toast"],
       "description": "Toast with varying heights",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toast"],
       "files": [
         {
           "path": "registry/default/examples/toast-heights.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toast"]
+      "name": "toast-heights",
+      "registryDependencies": ["@coss/toast"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-demo",
+      "categories": ["toggle"],
       "description": "Basic toggle",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-demo",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-disabled",
+      "categories": ["toggle", "disabled"],
       "description": "Disabled toggle",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle", "disabled"]
+      "name": "toggle-disabled",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-demo",
+      "categories": ["toggle group", "toggle"],
       "description": "Toggle group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle"]
+      "name": "toggle-group-demo",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-sm",
+      "categories": ["toggle group", "toggle"],
       "description": "Toggle group with small toggles",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle"]
+      "name": "toggle-group-sm",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-lg",
+      "categories": ["toggle group", "toggle"],
       "description": "Toggle group with large toggles",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle"]
+      "name": "toggle-group-lg",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-outline",
+      "categories": ["toggle group", "toggle"],
       "description": "Toggle group with outline toggles",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-outline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle"]
+      "name": "toggle-group-outline",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-outline-vertical",
+      "categories": ["toggle group", "toggle", "vertical"],
       "description": "Toggle group with outline toggles and vertical layout",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-outline-vertical.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle", "vertical"]
+      "name": "toggle-group-outline-vertical",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-disabled",
+      "categories": ["toggle group", "toggle", "disabled"],
       "description": "Disabled toggle group",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-disabled.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle", "disabled"]
+      "name": "toggle-group-disabled",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-multiple",
+      "categories": ["toggle group", "toggle"],
       "description": "Toggle group with multiple selection",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-multiple.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle"]
+      "name": "toggle-group-multiple",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-group-with-disabled-item",
+      "categories": ["toggle group", "toggle", "disabled"],
       "description": "Toggle group with disabled item",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/toggle-group-with-disabled-item.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle group", "toggle", "disabled"]
+      "name": "toggle-group-with-disabled-item",
+      "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-icon-group",
+      "categories": ["toggle"],
       "description": "Multiple toggles",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-icon-group.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-icon-group",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-lg",
+      "categories": ["toggle"],
       "description": "Large toggle",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-lg.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-lg",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-outline",
+      "categories": ["toggle"],
       "description": "Outline toggle",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-outline.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-outline",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-sm",
+      "categories": ["toggle"],
       "description": "Small toggle",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-sm.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-sm",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toggle-with-icon",
+      "categories": ["toggle"],
       "description": "Toggle with icon",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/toggle"],
       "files": [
         {
           "path": "registry/default/examples/toggle-with-icon.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["toggle"]
+      "name": "toggle-with-icon",
+      "registryDependencies": ["@coss/toggle"],
+      "type": "registry:example"
     },
     {
-      "name": "toolbar-demo",
+      "categories": ["toolbar", "button", "select", "toggle", "tooltip"],
       "description": "Toolbar",
-      "type": "registry:example",
+      "files": [
+        {
+          "path": "registry/default/examples/toolbar-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "name": "toolbar-demo",
       "registryDependencies": [
         "@coss/button",
         "@coss/select",
@@ -4135,342 +4146,337 @@
         "@coss/toolbar",
         "@coss/tooltip"
       ],
-      "files": [
-        {
-          "path": "registry/default/examples/toolbar-demo.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "categories": ["toolbar", "button", "select", "toggle", "tooltip"]
+      "type": "registry:example"
     },
     {
-      "name": "tooltip-demo",
+      "categories": ["tooltip", "button"],
       "description": "Basic tooltip",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tooltip", "@coss/button"],
       "files": [
         {
           "path": "registry/default/examples/tooltip-demo.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tooltip", "button"]
+      "name": "tooltip-demo",
+      "registryDependencies": ["@coss/tooltip", "@coss/button"],
+      "type": "registry:example"
     },
     {
-      "name": "tooltip-grouped",
+      "categories": ["tooltip", "toggle group", "toggle"],
       "description": "Toggle group with grouped tooltips",
-      "type": "registry:example",
-      "registryDependencies": ["@coss/tooltip", "@coss/toggle-group"],
       "files": [
         {
           "path": "registry/default/examples/tooltip-grouped.tsx",
           "type": "registry:example"
         }
       ],
-      "categories": ["tooltip", "toggle group", "toggle"]
+      "name": "tooltip-grouped",
+      "registryDependencies": ["@coss/tooltip", "@coss/toggle-group"],
+      "type": "registry:example"
     },
     {
-      "name": "particle-bu-1",
+      "categories": ["button"],
       "description": "Back link button with chevron",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-1.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-1",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-2",
+      "categories": ["button"],
       "description": "Card-style button with heading and description",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-2.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-2",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-3",
+      "categories": ["button"],
       "description": "Directional pad control buttons",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-3.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-3",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-4",
+      "categories": ["button"],
       "description": "Outline like button with count",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-4.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-4",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-5",
-      "description": "Social login icon buttons",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
+      "categories": ["button"],
       "dependencies": ["@remixicon/react"],
+      "description": "Social login icon buttons",
       "files": [
         {
           "path": "registry/default/particles/particle-bu-5.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-5",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-6",
+      "categories": ["button"],
       "description": "Expandable show more/less toggle button",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-6.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-6",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-bu-7",
+      "categories": ["button"],
       "description": "Star button with count badge",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/button"],
       "files": [
         {
           "path": "registry/default/particles/particle-bu-7.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["button"]
+      "name": "particle-bu-7",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-fr-1",
+      "categories": ["frame", "collapsible"],
       "description": "Frame with collapsible content and delete button",
-      "type": "registry:block",
-      "registryDependencies": [
-        "@coss/frame",
-        "@coss/collapsible",
-        "@coss/button"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-fr-1.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["frame", "collapsible"]
+      "name": "particle-fr-1",
+      "registryDependencies": [
+        "@coss/frame",
+        "@coss/collapsible",
+        "@coss/button"
+      ],
+      "type": "registry:block"
     },
     {
-      "name": "particle-in-1",
+      "categories": ["input", "input group", "button", "popover"],
       "description": "Input with start text and end tooltip",
-      "type": "registry:block",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/input-group",
-        "@coss/popover"
-      ],
       "files": [
         {
           "path": "registry/default/particles/particle-in-1.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["input", "input group", "button", "popover"]
-    },
-    {
-      "name": "particle-in-2",
-      "description": "Password input with toggle visibility",
-      "type": "registry:block",
+      "name": "particle-in-1",
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
-        "@coss/tooltip"
+        "@coss/popover"
       ],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["input", "input group", "button", "tooltip"],
+      "description": "Password input with toggle visibility",
       "files": [
         {
           "path": "registry/default/particles/particle-in-2.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["input", "input group", "button", "tooltip"]
-    },
-    {
-      "name": "particle-in-3",
-      "description": "Input group mimicking a URL bar",
-      "type": "registry:block",
+      "name": "particle-in-2",
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
-        "@coss/popover"
+        "@coss/tooltip"
       ],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["input", "input group", "button", "popover"],
+      "description": "Input group mimicking a URL bar",
       "files": [
         {
           "path": "registry/default/particles/particle-in-3.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["input", "input group", "button", "popover"]
+      "name": "particle-in-3",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/popover"
+      ],
+      "type": "registry:block"
     },
     {
-      "name": "particle-in-4",
+      "categories": ["input", "input group", "kbd", "search"],
       "description": "Input group with keyboard shortcut",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/input-group", "@coss/kbd"],
       "files": [
         {
           "path": "registry/default/particles/particle-in-4.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["input", "input group", "kbd", "search"]
+      "name": "particle-in-4",
+      "registryDependencies": ["@coss/input-group", "@coss/kbd"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-in-5",
+      "categories": ["input", "input group", "loading", "spinner"],
       "description": "Input group with start loading spinner",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/input-group", "@coss/spinner"],
       "files": [
         {
           "path": "registry/default/particles/particle-in-5.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["input", "input group", "loading", "spinner"]
+      "name": "particle-in-5",
+      "registryDependencies": ["@coss/input-group", "@coss/spinner"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-pa-1",
+      "categories": ["pagination"],
       "description": "Pagination with previous and next buttons only",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/pagination"],
       "files": [
         {
           "path": "registry/default/particles/particle-pa-1.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["pagination"]
+      "name": "particle-pa-1",
+      "registryDependencies": ["@coss/pagination"],
+      "type": "registry:block"
     },
     {
-      "name": "particle-pa-2",
+      "categories": ["pagination", "select"],
       "description": "Pagination with select, and previous and next buttons",
-      "type": "registry:block",
-      "registryDependencies": ["@coss/pagination", "@coss/select"],
       "files": [
         {
           "path": "registry/default/particles/particle-pa-2.tsx",
           "type": "registry:block"
         }
       ],
-      "categories": ["pagination", "select"]
+      "name": "particle-pa-2",
+      "registryDependencies": ["@coss/pagination", "@coss/select"],
+      "type": "registry:block"
     },
     {
-      "name": "colors-zinc",
-      "type": "registry:style",
       "cssVars": {
-        "light": {
-          "background": "var(--color-white)",
-          "foreground": "var(--color-zinc-900)",
-          "card": "var(--color-white)",
-          "card-foreground": "var(--color-zinc-900)",
-          "popover": "var(--color-white)",
-          "popover-foreground": "var(--color-zinc-900)",
-          "primary": "var(--color-zinc-800)",
-          "primary-foreground": "var(--color-zinc-50)",
-          "secondary": "--alpha(var(--color-black) / 4%)",
-          "secondary-foreground": "var(--color-zinc-900)",
-          "muted": "--alpha(var(--color-black) / 4%)",
-          "muted-foreground": "var(--color-zinc-600)",
-          "accent": "--alpha(var(--color-black) / 4%)",
-          "accent-foreground": "var(--color-zinc-900)",
-          "destructive": "var(--color-red-500)",
-          "destructive-foreground": "var(--color-red-700)",
-          "info": "var(--color-blue-500)",
-          "info-foreground": "var(--color-blue-700)",
-          "success": "var(--color-emerald-500)",
-          "success-foreground": "var(--color-emerald-700)",
-          "warning": "var(--color-amber-500)",
-          "warning-foreground": "var(--color-amber-700)",
-          "border": "--alpha(var(--color-black) / 10%)",
-          "input": "--alpha(var(--color-black) / 10%)",
-          "ring": "var(--color-zinc-400)"
-        },
         "dark": {
+          "accent": "--alpha(var(--color-white) / 8%)",
+          "accent-foreground": "var(--color-zinc-100)",
           "background": "var(--color-zinc-950)",
-          "foreground": "var(--color-zinc-100)",
+          "border": "--alpha(var(--color-white) / 12%)",
           "card": "color-mix(in srgb, var(--color-zinc-900) 80%, var(--color-zinc-950))",
           "card-foreground": "var(--color-zinc-100)",
+          "destructive": "var(--color-red-500)",
+          "destructive-foreground": "var(--color-red-400)",
+          "foreground": "var(--color-zinc-100)",
+          "info": "var(--color-blue-500)",
+          "info-foreground": "var(--color-blue-400)",
+          "input": "--alpha(var(--color-white) / 12%)",
+          "muted": "--alpha(var(--color-white) / 8%)",
+          "muted-foreground": "var(--color-zinc-400)",
           "popover": "var(--color-zinc-900)",
           "popover-foreground": "var(--color-zinc-100)",
           "primary": "var(--color-zinc-100)",
           "primary-foreground": "var(--color-zinc-900)",
+          "ring": "var(--color-zinc-500)",
           "secondary": "--alpha(var(--color-white) / 8%)",
           "secondary-foreground": "var(--color-zinc-100)",
-          "muted": "--alpha(var(--color-white) / 8%)",
-          "muted-foreground": "var(--color-zinc-400)",
-          "accent": "--alpha(var(--color-white) / 8%)",
-          "accent-foreground": "var(--color-zinc-100)",
-          "destructive": "var(--color-red-500)",
-          "destructive-foreground": "var(--color-red-400)",
-          "info": "var(--color-blue-500)",
-          "info-foreground": "var(--color-blue-400)",
           "success": "var(--color-emerald-500)",
           "success-foreground": "var(--color-emerald-400)",
           "warning": "var(--color-amber-500)",
-          "warning-foreground": "var(--color-amber-400)",
-          "border": "--alpha(var(--color-white) / 12%)",
-          "input": "--alpha(var(--color-white) / 12%)",
-          "ring": "var(--color-zinc-500)"
+          "warning-foreground": "var(--color-amber-400)"
+        },
+        "light": {
+          "accent": "--alpha(var(--color-black) / 4%)",
+          "accent-foreground": "var(--color-zinc-900)",
+          "background": "var(--color-white)",
+          "border": "--alpha(var(--color-black) / 10%)",
+          "card": "var(--color-white)",
+          "card-foreground": "var(--color-zinc-900)",
+          "destructive": "var(--color-red-500)",
+          "destructive-foreground": "var(--color-red-700)",
+          "foreground": "var(--color-zinc-900)",
+          "info": "var(--color-blue-500)",
+          "info-foreground": "var(--color-blue-700)",
+          "input": "--alpha(var(--color-black) / 10%)",
+          "muted": "--alpha(var(--color-black) / 4%)",
+          "muted-foreground": "var(--color-zinc-600)",
+          "popover": "var(--color-white)",
+          "popover-foreground": "var(--color-zinc-900)",
+          "primary": "var(--color-zinc-800)",
+          "primary-foreground": "var(--color-zinc-50)",
+          "ring": "var(--color-zinc-400)",
+          "secondary": "--alpha(var(--color-black) / 4%)",
+          "secondary-foreground": "var(--color-zinc-900)",
+          "success": "var(--color-emerald-500)",
+          "success-foreground": "var(--color-emerald-700)",
+          "warning": "var(--color-amber-500)",
+          "warning-foreground": "var(--color-amber-700)"
         }
-      }
+      },
+      "name": "colors-zinc",
+      "type": "registry:style"
     },
     {
-      "name": "utils",
-      "type": "registry:lib",
       "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {
           "path": "registry/default/lib/utils.ts",
           "type": "registry:lib"
         }
-      ]
+      ],
+      "name": "utils",
+      "type": "registry:lib"
     },
     {
-      "name": "use-mobile",
-      "type": "registry:hook",
       "files": [
         {
           "path": "registry/default/hooks/use-mobile.ts",
           "type": "registry:hook"
         }
-      ]
+      ],
+      "name": "use-mobile",
+      "type": "registry:hook"
     },
     {
-      "name": "use-copy-to-clipboard",
-      "type": "registry:hook",
       "files": [
         {
           "path": "registry/default/hooks/use-copy-to-clipboard.ts",
           "type": "registry:hook"
         }
-      ]
+      ],
+      "name": "use-copy-to-clipboard",
+      "type": "registry:hook"
     }
-  ]
+  ],
+  "name": "shadcn/ui"
 }

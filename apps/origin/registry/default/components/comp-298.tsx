@@ -28,9 +28,9 @@ function useProgressTimer({
   const [progress, setProgress] = useState(duration);
   const timerRef = useRef(0);
   const timerState = useRef({
-    startTime: 0,
-    remaining: duration,
     isPaused: false,
+    remaining: duration,
+    startTime: 0,
   });
 
   const cleanup = useCallback(() => {
@@ -41,9 +41,9 @@ function useProgressTimer({
     cleanup();
     setProgress(duration);
     timerState.current = {
-      startTime: 0,
-      remaining: duration,
       isPaused: false,
+      remaining: duration,
+      startTime: 0,
     };
   }, [duration, cleanup]);
 
@@ -89,11 +89,11 @@ function useProgressTimer({
   }, [cleanup]);
 
   return {
-    progress,
-    start,
     pause,
-    resume,
+    progress,
     reset,
+    resume,
+    start,
   };
 }
 
@@ -176,8 +176,8 @@ export default function Component() {
           <div
             className="pointer-events-none absolute bottom-0 left-0 h-1 w-full bg-emerald-500"
             style={{
-              width: `${(progress / toastDuration) * 100}%`,
               transition: "width 100ms linear",
+              width: `${(progress / toastDuration) * 100}%`,
             }}
           />
         </div>

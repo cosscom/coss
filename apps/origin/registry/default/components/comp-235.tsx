@@ -5,68 +5,68 @@ import MultipleSelector, {
 
 const frameworks: Option[] = [
   {
-    value: "next.js",
     label: "Next.js",
+    value: "next.js",
   },
   {
-    value: "sveltekit",
     label: "SvelteKit",
+    value: "sveltekit",
   },
   {
-    value: "nuxt.js",
     label: "Nuxt.js",
+    value: "nuxt.js",
   },
   {
-    value: "remix",
     label: "Remix",
+    value: "remix",
   },
   {
-    value: "astro",
     label: "Astro",
+    value: "astro",
   },
   {
-    value: "angular",
     label: "Angular",
+    value: "angular",
   },
   {
-    value: "vue",
     label: "Vue.js",
+    value: "vue",
   },
   {
-    value: "react",
     label: "React",
+    value: "react",
   },
   {
-    value: "ember",
     label: "Ember.js",
+    value: "ember",
   },
   {
-    value: "gatsby",
     label: "Gatsby",
+    value: "gatsby",
   },
   {
-    value: "eleventy",
     label: "Eleventy",
+    value: "eleventy",
   },
   {
-    value: "solid",
     label: "SolidJS",
+    value: "solid",
   },
   {
-    value: "preact",
     label: "Preact",
+    value: "preact",
   },
   {
-    value: "qwik",
     label: "Qwik",
+    value: "qwik",
   },
   {
-    value: "alpine",
     label: "Alpine.js",
+    value: "alpine",
   },
   {
-    value: "lit",
     label: "Lit",
+    value: "lit",
   },
 ];
 

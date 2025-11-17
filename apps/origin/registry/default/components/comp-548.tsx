@@ -16,11 +16,11 @@ import { Button } from "@/registry/default/ui/button";
 // Create some dummy initial files
 const initialFiles = [
   {
+    id: "document.pdf-1744638436563-8u5xuls",
     name: "document.pdf",
     size: 1528737,
     type: "application/pdf",
     url: "https://picsum.photos/1000/800?grayscale&random=1",
-    id: "document.pdf-1744638436563-8u5xuls",
   },
 ];
 
@@ -39,8 +39,8 @@ export default function Component() {
       getInputProps,
     },
   ] = useFileUpload({
-    maxSize,
     initialFiles,
+    maxSize,
   });
 
   const file = files[0];

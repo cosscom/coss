@@ -8,21 +8,21 @@ export default function ToastWithAction() {
     <Button
       onClick={() => {
         const id = toastManager.add({
-          title: "Action performed",
-          description: "You can undo this action.",
-          type: "success",
           actionProps: {
             children: "Undo",
             onClick: () => {
               toastManager.close(id);
               toastManager.add({
-                title: "Action undone",
                 description: "The action has been reverted.",
+                title: "Action undone",
                 type: "info",
               });
             },
           },
+          description: "You can undo this action.",
           timeout: 1000000,
+          title: "Action performed",
+          type: "success",
         });
       }}
       variant="outline"

@@ -19,24 +19,24 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
   if (!process.env.EMAIL_OCTOPUS_API_KEY) {
     console.error("Missing EMAIL_OCTOPUS_API_KEY environment variable");
     return {
-      success: false,
       error: "Service configuration error. Please try again later.",
+      success: false,
     };
   }
 
   if (!process.env.EMAIL_OCTOPUS_LIST_ID) {
     console.error("Missing EMAIL_OCTOPUS_LIST_ID environment variable");
     return {
-      success: false,
       error: "Service configuration error. Please try again later.",
+      success: false,
     };
   }
 
   const result = subscribeSchema.safeParse({ email: email.trim() });
   if (!result.success) {
     return {
-      success: false,
       error: result.error.issues[0]?.message || "Invalid email format.",
+      success: false,
     };
   }
 
@@ -46,17 +46,17 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
     const response = await fetch(
       `https://api.emailoctopus.com/lists/${process.env.EMAIL_OCTOPUS_LIST_ID}/contacts`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.EMAIL_OCTOPUS_API_KEY}`,
-        },
         body: JSON.stringify({
           email_address: result.data.email,
-          status: "subscribed",
           fields: {},
+          status: "subscribed",
           tags: [],
         }),
+        headers: {
+          Authorization: `Bearer ${process.env.EMAIL_OCTOPUS_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
       },
     );
 
@@ -65,41 +65,41 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
     // Always log API errors for debugging
     if (!response.ok) {
       console.error("EmailOctopus API Error:", {
-        status: response.status,
-        statusText: response.statusText,
         data,
         email: result.data.email,
+        status: response.status,
+        statusText: response.statusText,
       });
     }
 
     if (!response.ok) {
       if (response.status === 429) {
         return {
-          success: false,
           error: "Too many attempts. Please try again later.",
+          success: false,
         };
       }
 
       // Provide more specific error messages based on status codes
       if (response.status === 400) {
         return {
-          success: false,
           error: data.detail || data.title || "Invalid email address.",
+          success: false,
         };
       }
 
       if (response.status === 401) {
         console.error("EmailOctopus API authentication failed");
         return {
-          success: false,
           error: "Service configuration error. Please try again later.",
+          success: false,
         };
       }
 
       return {
-        success: false,
         error:
           data.detail || data.title || "Failed to subscribe. Please try again.",
+        success: false,
       };
     }
 
@@ -107,14 +107,14 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
     return { success: true };
   } catch (error) {
     console.error("Unexpected error during subscription:", {
-      error: error instanceof Error ? error.message : String(error),
       email: result.data.email,
+      error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
 
     return {
-      success: false,
       error: "Network error. Please check your connection and try again.",
+      success: false,
     };
   }
 }

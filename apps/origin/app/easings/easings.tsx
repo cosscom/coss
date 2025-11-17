@@ -28,12 +28,12 @@ interface EasingsProps {
 type EasingFilter = "all" | "in" | "out" | "in-out";
 
 const defaultConfig = {
-  width: 140,
+  animationDuration: 1000,
   height: 140,
   padding: 20,
-  plotSize: 100,
-  animationDuration: 1000,
   pauseDuration: 1000,
+  plotSize: 100,
+  width: 140,
 };
 
 type AnimationType = "translate" | "scale" | "rotate";
@@ -81,12 +81,12 @@ const EasingSVG = ({
       ["--bezier-coordinates" as string]: easing.points.join(","),
       ["--animation-duration" as string]: `${duration}s`,
       ["--total-duration" as string]: `${duration + pauseDuration}s`,
-      animationName: "moveCircleVertically",
-      animationDuration: `${duration}s`,
-      animationTimingFunction: `cubic-bezier(${easing.points.join(",")})`,
-      animationIterationCount: "1",
-      animationFillMode: "forwards",
       animationDelay: "0s",
+      animationDuration: `${duration}s`,
+      animationFillMode: "forwards",
+      animationIterationCount: "1",
+      animationName: "moveCircleVertically",
+      animationTimingFunction: `cubic-bezier(${easing.points.join(",")})`,
     };
   };
 
@@ -157,12 +157,12 @@ const EasingSVG = ({
           cy={config.height - config.padding}
           r="4"
           style={{
-            animationName: "moveCircleHorizontally",
-            animationDuration: `${duration}s`,
-            animationTimingFunction: "linear",
-            animationIterationCount: "1",
-            animationFillMode: "forwards",
             animationDelay: "0s",
+            animationDuration: `${duration}s`,
+            animationFillMode: "forwards",
+            animationIterationCount: "1",
+            animationName: "moveCircleHorizontally",
+            animationTimingFunction: "linear",
           }}
         />
       </g>
@@ -211,19 +211,19 @@ const AnimatedSquare = ({
     };
 
     const animationName = {
-      translate: "translateSquare",
-      scale: "scaleSquare",
       rotate: "rotateSquare",
+      scale: "scaleSquare",
+      translate: "translateSquare",
     }[animationType];
 
     return {
       ...baseStyle,
-      animationName,
-      animationDuration: `${duration}s`,
-      animationTimingFunction: `cubic-bezier(${easing.points.join(",")})`,
-      animationIterationCount: "1",
-      animationFillMode: "forwards",
       animationDelay: "0s",
+      animationDuration: `${duration}s`,
+      animationFillMode: "forwards",
+      animationIterationCount: "1",
+      animationName,
+      animationTimingFunction: `cubic-bezier(${easing.points.join(",")})`,
     };
   };
 

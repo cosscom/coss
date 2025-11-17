@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "spinner-demo",
-  "type": "registry:example",
+  "categories": ["spinner", "loading"],
   "description": "Spinner demo",
-  "registryDependencies": ["@coss/spinner"],
   "files": [
     {
-      "path": "registry/default/examples/spinner-demo.tsx",
       "content": "import { Spinner } from \"@/registry/default/ui/spinner\"\n\nexport default function SpinnerDemo() {\n  return <Spinner />\n}\n",
+      "path": "registry/default/examples/spinner-demo.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["spinner", "loading"]
+  "name": "spinner-demo",
+  "registryDependencies": ["@coss/spinner"],
+  "type": "registry:example"
 }

@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "group-menu",
-  "type": "registry:example",
+  "categories": ["group", "button", "menu"],
   "description": "Group with button and menu",
-  "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
   "files": [
     {
-      "path": "registry/default/examples/group-menu.tsx",
       "content": "import {\n  ChevronDownIcon,\n  DownloadIcon,\n  EditIcon,\n  ShareIcon,\n} from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\"\n\nexport default function GroupMenu() {\n  return (\n    <Group aria-label=\"Subscription actions\">\n      <Button>Subscribe</Button>\n      <GroupSeparator className=\"bg-primary/72\" />\n      <Menu>\n        <MenuTrigger render={<Button size=\"icon\" aria-label=\"Copy options\" />}>\n          <ChevronDownIcon className=\"size-4\" />\n        </MenuTrigger>\n        <MenuPopup align=\"end\">\n          <MenuItem>\n            <ShareIcon />\n            Share link\n          </MenuItem>\n          <MenuItem>\n            <DownloadIcon />\n            Download\n          </MenuItem>\n          <MenuItem>\n            <EditIcon />\n            Duplicate\n          </MenuItem>\n        </MenuPopup>\n      </Menu>\n    </Group>\n  )\n}\n",
+      "path": "registry/default/examples/group-menu.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["group", "button", "menu"]
+  "name": "group-menu",
+  "registryDependencies": ["@coss/group", "@coss/button", "@coss/menu"],
+  "type": "registry:example"
 }

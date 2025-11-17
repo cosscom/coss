@@ -124,9 +124,9 @@ export default function Component() {
     // Check if we have the necessary data
     if (!previewUrl || !fileId || !croppedAreaPixels) {
       console.error("Missing data for apply:", {
-        previewUrl,
-        fileId,
         croppedAreaPixels,
+        fileId,
+        previewUrl,
       });
       // Remove file if apply is clicked without crop data?
       if (fileId) {

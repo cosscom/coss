@@ -23,12 +23,12 @@ import {
 
 const organizations = [
   {
-    value: "coss",
     label: "coss.com",
+    value: "coss",
   },
   {
-    value: "cruip",
     label: "Cruip",
+    value: "cruip",
   },
 ];
 

@@ -23,21 +23,21 @@ import { Textarea } from "@/registry/default/ui/textarea";
 // Pretend we have initial image files
 const initialBgImage = [
   {
+    id: "profile-bg-123456789",
     name: "profile-bg.jpg",
     size: 1528737,
     type: "image/jpeg",
     url: "/origin/profile-bg.jpg",
-    id: "profile-bg-123456789",
   },
 ];
 
 const initialAvatarImage = [
   {
+    id: "avatar-123456789",
     name: "avatar-72-01.jpg",
     size: 1528737,
     type: "image/jpeg",
     url: "/origin/avatar-72-01.jpg",
-    id: "avatar-123456789",
   },
 ];
 
@@ -51,9 +51,9 @@ export default function Component() {
     handleChange,
     maxLength: limit,
   } = useCharacterLimit({
-    maxLength,
     initialValue:
       "Hey, I am Margaret, a web developer who loves turning ideas into amazing websites!",
+    maxLength,
   });
 
   return (

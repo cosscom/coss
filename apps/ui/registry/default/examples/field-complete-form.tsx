@@ -29,10 +29,10 @@ export default function FieldCompleteFormDemo() {
     await new Promise((r) => setTimeout(r, 800));
     setLoading(false);
     const data = {
-      fullName: formData.get("fullName"),
       email: formData.get("email"),
-      role: formData.get("role"),
+      fullName: formData.get("fullName"),
       newsletter: formData.get("newsletter"),
+      role: formData.get("role"),
     };
     alert(
       `Full name: ${data.fullName || ""}\nEmail: ${data.email || ""}\nRole: ${

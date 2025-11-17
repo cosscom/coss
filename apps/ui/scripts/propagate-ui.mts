@@ -5,18 +5,18 @@ async function resolvePaths() {
   const cwd = process.cwd();
   const sourceRoot = path.join(cwd, "registry/default");
   const sourceDirs = {
-    ui: path.join(sourceRoot, "ui"),
     hooks: path.join(sourceRoot, "hooks"),
     lib: path.join(sourceRoot, "lib"),
+    ui: path.join(sourceRoot, "ui"),
   };
   // From apps/ui → ../../packages/ui/src/*
   const targetRoot = path.resolve(cwd, "../../packages/ui/src");
   const targetDirs = {
-    ui: path.join(targetRoot, "ui"),
     hooks: path.join(targetRoot, "hooks"),
     lib: path.join(targetRoot, "lib"),
+    ui: path.join(targetRoot, "ui"),
   };
-  return { sourceRoot, sourceDirs, targetRoot, targetDirs };
+  return { sourceDirs, sourceRoot, targetDirs, targetRoot };
 }
 
 async function ensureDirExists(dir: string) {
@@ -44,7 +44,7 @@ async function copyRegistryTrees() {
       continue;
     }
     await ensureDirExists(to);
-    await fs.cp(from, to, { recursive: true, force: true });
+    await fs.cp(from, to, { force: true, recursive: true });
   }
 }
 

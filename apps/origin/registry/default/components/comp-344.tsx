@@ -7,28 +7,28 @@ import {
 
 const items = [
   {
-    id: "1",
-    title: "What makes coss ui different?",
     content:
       "coss ui focuses on developer experience and performance. Built with TypeScript, it offers excellent type safety, follows accessibility standards, and provides comprehensive documentation with regular updates.",
+    id: "1",
+    title: "What makes coss ui different?",
   },
   {
-    id: "2",
-    title: "How can I customize the components?",
     content:
       "Use our CSS variables for global styling, or className and style props for component-specific changes. We support CSS modules, Tailwind, and dark mode out of the box.",
+    id: "2",
+    title: "How can I customize the components?",
   },
   {
-    id: "3",
-    title: "Is coss ui optimized for performance?",
     content:
       "Yes, with tree-shaking, code splitting, and minimal runtime overhead. Most components are under 5KB gzipped.",
+    id: "3",
+    title: "Is coss ui optimized for performance?",
   },
   {
-    id: "4",
-    title: "How accessible are the components?",
     content:
       "All components follow WAI-ARIA standards, featuring proper ARIA attributes, keyboard navigation, and screen reader support. Regular testing ensures compatibility with NVDA, VoiceOver, and JAWS.",
+    id: "4",
+    title: "How accessible are the components?",
   },
 ];
 

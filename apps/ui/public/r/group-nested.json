@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "group-nested",
-  "type": "registry:example",
+  "categories": ["group", "button"],
   "description": "Pagination example made with nested groups",
-  "registryDependencies": ["@coss/group", "@coss/button"],
   "files": [
     {
-      "path": "registry/default/examples/group-nested.tsx",
       "content": "import { ArrowLeftIcon, ArrowRightIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\n\nexport default function GroupNested() {\n  return (\n    <Group aria-label=\"Pagination\">\n      <Group aria-label=\"Page numbers\">\n        <Button variant=\"outline\" className=\"min-w-8\">\n          1\n        </Button>\n        <GroupSeparator />\n        <Button variant=\"outline\" className=\"min-w-8\">\n          2\n        </Button>\n        <GroupSeparator />\n        <Button variant=\"outline\" className=\"min-w-8\">\n          3\n        </Button>\n        <GroupSeparator />\n        <Button variant=\"outline\" className=\"min-w-8\">\n          4\n        </Button>\n        <GroupSeparator />\n        <Button variant=\"outline\" className=\"min-w-8\">\n          5\n        </Button>\n      </Group>\n      <Group aria-label=\"Navigation\">\n        <Button variant=\"outline\" size=\"icon\" aria-label=\"Previous\">\n          <ArrowLeftIcon />\n        </Button>\n        <GroupSeparator />\n        <Button variant=\"outline\" size=\"icon\" aria-label=\"Next\">\n          <ArrowRightIcon />\n        </Button>\n      </Group>\n    </Group>\n  )\n}\n",
+      "path": "registry/default/examples/group-nested.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["group", "button"]
+  "name": "group-nested",
+  "registryDependencies": ["@coss/group", "@coss/button"],
+  "type": "registry:example"
 }

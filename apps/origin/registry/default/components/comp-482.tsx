@@ -36,18 +36,16 @@ type Item = {
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "expander",
-    header: () => null,
     cell: ({ row }) => {
       return row.getCanExpand() ? (
         <Button
           {...{
-            className: "size-7 shadow-none text-muted-foreground",
-            onClick: row.getToggleExpandedHandler(),
             "aria-expanded": row.getIsExpanded(),
             "aria-label": row.getIsExpanded()
               ? `Collapse details for ${row.original.name}`
               : `Expand details for ${row.original.name}`,
+            className: "size-7 shadow-none text-muted-foreground",
+            onClick: row.getToggleExpandedHandler(),
             size: "icon",
             variant: "ghost",
           }}
@@ -68,9 +66,17 @@ const columns: ColumnDef<Item>[] = [
         </Button>
       ) : undefined;
     },
+    header: () => null,
+    id: "expander",
   },
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
     header: ({ table }) => (
       <Checkbox
         aria-label="Select all"
@@ -81,27 +87,20 @@ const columns: ColumnDef<Item>[] = [
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label="Select row"
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
+    id: "select",
   },
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
+    header: "Name",
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div>
@@ -109,9 +108,9 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
   },
   {
-    header: "Status",
     accessorKey: "status",
     cell: ({ row }) => (
       <Badge
@@ -123,18 +122,19 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("status")}
       </Badge>
     ),
+    header: "Status",
   },
   {
-    header: () => <div className="text-right">Balance</div>,
     accessorKey: "balance",
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
+        style: "currency",
       }).format(amount);
       return <div className="text-right">{formatted}</div>;
     },
+    header: () => <div className="text-right">Balance</div>,
   },
 ];
 
@@ -153,11 +153,11 @@ export default function Component() {
   }, []);
 
   const table = useReactTable({
-    data,
     columns,
-    getRowCanExpand: (row) => Boolean(row.original.note),
+    data,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: (row) => Boolean(row.original.note),
   });
 
   return (

@@ -348,7 +348,7 @@ const MultipleSelector = ({
   const CreatableItem = () => {
     if (!creatable) return undefined;
     if (
-      isOptionsExist(options, [{ value: inputValue, label: inputValue }]) ||
+      isOptionsExist(options, [{ label: inputValue, value: inputValue }]) ||
       selected.find((s) => s.value === inputValue)
     ) {
       return undefined;
@@ -367,7 +367,7 @@ const MultipleSelector = ({
             return;
           }
           setInputValue("");
-          const newOptions = [...selected, { value, label: value }];
+          const newOptions = [...selected, { label: value, value }];
           setSelected(newOptions);
           onChange?.(newOptions);
           setOpen(false);
@@ -450,8 +450,8 @@ const MultipleSelector = ({
         className={cn(
           "relative min-h-[46px] rounded-md border border-input text-sm outline-none transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-aria-invalid:border-destructive has-disabled:opacity-50 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40",
           {
-            "p-2": selected.length !== 0,
             "cursor-text": !disabled && selected.length !== 0,
+            "p-2": selected.length !== 0,
           },
           !hideClearAllButton && "pe-10",
           className,
@@ -504,9 +504,9 @@ const MultipleSelector = ({
             className={cn(
               "flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground/70 disabled:cursor-not-allowed",
               {
-                "w-full": hidePlaceholderWhenSelected,
-                "py-3 pe-3": selected.length === 0,
                 "ml-1": selected.length !== 0,
+                "py-3 pe-3": selected.length === 0,
+                "w-full": hidePlaceholderWhenSelected,
               },
               inputProps?.className,
             )}

@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "toggle-with-icon",
-  "type": "registry:example",
+  "categories": ["toggle"],
   "description": "Toggle with icon",
-  "registryDependencies": ["@coss/toggle"],
   "files": [
     {
-      "path": "registry/default/examples/toggle-with-icon.tsx",
       "content": "import { BoldIcon } from \"lucide-react\"\n\nimport { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleWithIcon() {\n  return (\n    <Toggle variant=\"outline\" aria-label=\"Toggle bold\">\n      <BoldIcon />\n    </Toggle>\n  )\n}\n",
+      "path": "registry/default/examples/toggle-with-icon.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["toggle"]
+  "name": "toggle-with-icon",
+  "registryDependencies": ["@coss/toggle"],
+  "type": "registry:example"
 }

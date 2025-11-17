@@ -9,10 +9,10 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Next.js", value: "next", description: "npx create-next-app" },
-  { label: "Vite", value: "vite", description: "npm create vite@latest" },
-  { label: "Astro", value: "astro", description: "npm create astro@latest" },
-  { label: "Remix", value: "remix", description: "npx create-remix" },
+  { description: "npx create-next-app", label: "Next.js", value: "next" },
+  { description: "npm create vite@latest", label: "Vite", value: "vite" },
+  { description: "npm create astro@latest", label: "Astro", value: "astro" },
+  { description: "npx create-remix", label: "Remix", value: "remix" },
 ];
 
 export default function SelectWithObjectValues() {

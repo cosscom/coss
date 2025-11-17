@@ -16,36 +16,36 @@ function Form() {
   const id = useId();
   const [formState, setFormState] = useState({
     email: "",
-    status: "idle" as FormStatus,
     message: "",
+    status: "idle" as FormStatus,
   });
 
   const isLoading = formState.status === "loading";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormState((prev) => ({ ...prev, status: "loading", message: "" }));
+    setFormState((prev) => ({ ...prev, message: "", status: "loading" }));
 
     try {
       const result = await subscribe(formState.email);
       if (!result.success) {
         setFormState((prev) => ({
           ...prev,
-          status: "error",
           message: result.error,
+          status: "error",
         }));
       } else {
         setFormState({
           email: "",
-          status: "success",
           message: "Thanks for subscribing!",
+          status: "success",
         });
       }
     } catch (error) {
       setFormState((prev) => ({
         ...prev,
-        status: "error",
         message: error instanceof Error ? error.message : "Failed to subscribe",
+        status: "error",
       }));
     }
   };

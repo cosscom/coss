@@ -1,20 +1,20 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "group-popup",
-  "type": "registry:example",
+  "categories": ["group", "button", "popover", "badge"],
   "description": "Group with button and popup",
+  "files": [
+    {
+      "content": "import { ChevronDownIcon, GitForkIcon } from \"lucide-react\"\n\nimport { Badge } from \"@/registry/default/ui/badge\"\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\nimport {\n  Popover,\n  PopoverDescription,\n  PopoverPopup,\n  PopoverTitle,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\"\n\nexport default function GroupPopup() {\n  return (\n    <Group aria-label=\"Repository actions\">\n      <Button variant=\"outline\">\n        <GitForkIcon />\n        Fork\n        <Badge variant=\"secondary\">48</Badge>\n      </Button>\n      <GroupSeparator />\n      <Popover>\n        <PopoverTrigger\n          render={\n            <Button variant=\"outline\" size=\"icon\" aria-label=\"Send options\" />\n          }\n        >\n          <ChevronDownIcon />\n        </PopoverTrigger>\n        <PopoverPopup className=\"w-64\" align=\"end\">\n          <PopoverTitle className=\"text-base\">Existing forks</PopoverTitle>\n          <PopoverDescription>\n            You don't have any forks of this repository.\n          </PopoverDescription>\n        </PopoverPopup>\n      </Popover>\n    </Group>\n  )\n}\n",
+      "path": "registry/default/examples/group-popup.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "group-popup",
   "registryDependencies": [
     "@coss/group",
     "@coss/button",
     "@coss/popover",
     "@coss/badge"
   ],
-  "files": [
-    {
-      "path": "registry/default/examples/group-popup.tsx",
-      "content": "import { ChevronDownIcon, GitForkIcon } from \"lucide-react\"\n\nimport { Badge } from \"@/registry/default/ui/badge\"\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\nimport {\n  Popover,\n  PopoverDescription,\n  PopoverPopup,\n  PopoverTitle,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\"\n\nexport default function GroupPopup() {\n  return (\n    <Group aria-label=\"Repository actions\">\n      <Button variant=\"outline\">\n        <GitForkIcon />\n        Fork\n        <Badge variant=\"secondary\">48</Badge>\n      </Button>\n      <GroupSeparator />\n      <Popover>\n        <PopoverTrigger\n          render={\n            <Button variant=\"outline\" size=\"icon\" aria-label=\"Send options\" />\n          }\n        >\n          <ChevronDownIcon />\n        </PopoverTrigger>\n        <PopoverPopup className=\"w-64\" align=\"end\">\n          <PopoverTitle className=\"text-base\">Existing forks</PopoverTitle>\n          <PopoverDescription>\n            You don't have any forks of this repository.\n          </PopoverDescription>\n        </PopoverPopup>\n      </Popover>\n    </Group>\n  )\n}\n",
-      "type": "registry:example"
-    }
-  ],
-  "categories": ["group", "button", "popover", "badge"]
+  "type": "registry:example"
 }

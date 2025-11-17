@@ -1,17 +1,17 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "comp-90",
-  "type": "registry:component",
-  "registryDependencies": ["https://coss.com/origin/r/button.json"],
   "files": [
     {
-      "path": "registry/default/components/comp-90.tsx",
       "content": "import { LoaderCircleIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\n\nexport default function Component() {\n  return (\n    <Button disabled>\n      <LoaderCircleIcon\n        className=\"-ms-1 animate-spin\"\n        size={16}\n        aria-hidden=\"true\"\n      />\n      Button\n    </Button>\n  )\n}\n",
+      "path": "registry/default/components/comp-90.tsx",
       "type": "registry:component"
     }
   ],
   "meta": {
-    "tags": ["button", "loading"],
-    "style": 2
-  }
+    "style": 2,
+    "tags": ["button", "loading"]
+  },
+  "name": "comp-90",
+  "registryDependencies": ["https://coss.com/origin/r/button.json"],
+  "type": "registry:component"
 }

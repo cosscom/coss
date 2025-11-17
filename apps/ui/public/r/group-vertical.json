@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "group-vertical",
-  "type": "registry:example",
+  "categories": ["group", "button"],
   "description": "Vertical group of buttons",
-  "registryDependencies": ["@coss/group", "@coss/button"],
   "files": [
     {
-      "path": "registry/default/examples/group-vertical.tsx",
       "content": "import { ZoomInIcon, ZoomOutIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\"\n\nexport default function GroupVertical() {\n  return (\n    <Group orientation=\"vertical\" aria-label=\"Zoom controls\">\n      <Button variant=\"outline\" size=\"icon\" aria-label=\"Zoom in\">\n        <ZoomInIcon />\n      </Button>\n      <GroupSeparator orientation=\"horizontal\" />\n      <Button variant=\"outline\" size=\"icon\" aria-label=\"Zoom Out\">\n        <ZoomOutIcon />\n      </Button>\n    </Group>\n  )\n}\n",
+      "path": "registry/default/examples/group-vertical.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["group", "button"]
+  "name": "group-vertical",
+  "registryDependencies": ["@coss/group", "@coss/button"],
+  "type": "registry:example"
 }

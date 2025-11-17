@@ -15,40 +15,40 @@ const countries = [
   {
     continent: "America",
     items: [
-      { value: "1", label: "United States", flag: "🇺🇸" },
-      { value: "2", label: "Canada", flag: "🇨🇦" },
-      { value: "3", label: "Mexico", flag: "🇲🇽" },
+      { flag: "🇺🇸", label: "United States", value: "1" },
+      { flag: "🇨🇦", label: "Canada", value: "2" },
+      { flag: "🇲🇽", label: "Mexico", value: "3" },
     ],
   },
   {
     continent: "Africa",
     items: [
-      { value: "4", label: "South Africa", flag: "🇿🇦" },
-      { value: "5", label: "Nigeria", flag: "🇳🇬" },
-      { value: "6", label: "Morocco", flag: "🇲🇦" },
+      { flag: "🇿🇦", label: "South Africa", value: "4" },
+      { flag: "🇳🇬", label: "Nigeria", value: "5" },
+      { flag: "🇲🇦", label: "Morocco", value: "6" },
     ],
   },
   {
     continent: "Asia",
     items: [
-      { value: "7", label: "China", flag: "🇨🇳" },
-      { value: "8", label: "Japan", flag: "🇯🇵" },
-      { value: "9", label: "India", flag: "🇮🇳" },
+      { flag: "🇨🇳", label: "China", value: "7" },
+      { flag: "🇯🇵", label: "Japan", value: "8" },
+      { flag: "🇮🇳", label: "India", value: "9" },
     ],
   },
   {
     continent: "Europe",
     items: [
-      { value: "10", label: "United Kingdom", flag: "🇬🇧" },
-      { value: "11", label: "France", flag: "🇫🇷" },
-      { value: "12", label: "Germany", flag: "🇩🇪" },
+      { flag: "🇬🇧", label: "United Kingdom", value: "10" },
+      { flag: "🇫🇷", label: "France", value: "11" },
+      { flag: "🇩🇪", label: "Germany", value: "12" },
     ],
   },
   {
     continent: "Oceania",
     items: [
-      { value: "13", label: "Australia", flag: "🇦🇺" },
-      { value: "14", label: "New Zealand", flag: "🇳🇿" },
+      { flag: "🇦🇺", label: "Australia", value: "13" },
+      { flag: "🇳🇿", label: "New Zealand", value: "14" },
     ],
   },
 ];

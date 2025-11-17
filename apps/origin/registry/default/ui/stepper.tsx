@@ -81,8 +81,8 @@ function Stepper({
     <StepperContext.Provider
       value={{
         activeStep: currentStep,
-        setActiveStep,
         orientation,
+        setActiveStep,
       }}
     >
       <div
@@ -128,7 +128,7 @@ function StepperItem({
 
   return (
     <StepItemContext.Provider
-      value={{ step, state, isDisabled: disabled, isLoading }}
+      value={{ isDisabled: disabled, isLoading, state, step }}
     >
       <div
         className={cn(

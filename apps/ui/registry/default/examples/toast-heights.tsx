@@ -19,8 +19,8 @@ export default function ToastHeights() {
     setCount((prev) => prev + 1);
     const description = TEXTS[Math.floor(Math.random() * TEXTS.length)];
     toastManager.add({
-      title: `Toast ${count + 1} created`,
       description,
+      title: `Toast ${count + 1} created`,
     });
   }
 

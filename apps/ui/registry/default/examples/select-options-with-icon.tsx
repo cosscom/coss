@@ -11,10 +11,10 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Components", value: "components", icon: LayersIcon },
-  { label: "Performance", value: "performance", icon: ZapIcon },
-  { label: "Network", value: "network", icon: GlobeIcon },
-  { label: "Development", value: "development", icon: Code2Icon },
+  { icon: LayersIcon, label: "Components", value: "components" },
+  { icon: ZapIcon, label: "Performance", value: "performance" },
+  { icon: GlobeIcon, label: "Network", value: "network" },
+  { icon: Code2Icon, label: "Development", value: "development" },
 ];
 
 export default function SelectOptionsWithIcon() {

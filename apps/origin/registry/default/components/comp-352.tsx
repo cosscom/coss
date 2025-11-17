@@ -14,69 +14,69 @@ import {
 
 const items = [
   {
-    id: "1",
-    title: "What makes coss ui different?",
     collapsibles: [
       {
-        title: "What about performance?",
         content:
           "We optimize every component for maximum performance and minimal bundle size.",
+        title: "What about performance?",
       },
       {
-        title: "How is the documentation?",
         content:
           "Our documentation is comprehensive and includes live examples for every component.",
+        title: "How is the documentation?",
       },
     ],
+    id: "1",
+    title: "What makes coss ui different?",
   },
   {
-    id: "2",
-    title: "How can I customize the components?",
     collapsibles: [
       {
-        title: "Can I use custom themes?",
         content:
           "Yes, our theming system is fully customizable and supports both light and dark modes.",
+        title: "Can I use custom themes?",
       },
       {
-        title: "What about Tailwind support?",
         content:
           "We have first-class support for Tailwind CSS with custom utility classes.",
+        title: "What about Tailwind support?",
       },
     ],
+    id: "2",
+    title: "How can I customize the components?",
   },
   {
-    id: "3",
-    title: "Is coss ui optimized for performance?",
     collapsibles: [
       {
-        title: "What's the bundle size impact?",
         content:
           "Our components are tree-shakeable and typically add minimal overhead to your bundle.",
         open: true,
+        title: "What's the bundle size impact?",
       },
       {
-        title: "How is code splitting handled?",
         content:
           "We support automatic code splitting for optimal loading performance.",
+        title: "How is code splitting handled?",
       },
     ],
+    id: "3",
+    title: "Is coss ui optimized for performance?",
   },
   {
-    id: "4",
-    title: "How accessible are the components?",
     collapsibles: [
       {
-        title: "Which screen readers are supported?",
         content:
           "We test with NVDA, VoiceOver, and JAWS to ensure broad compatibility.",
+        title: "Which screen readers are supported?",
       },
       {
-        title: "What about keyboard navigation?",
         content:
           "Full keyboard navigation support is implemented following WAI-ARIA best practices.",
+        title: "What about keyboard navigation?",
       },
     ],
+    id: "4",
+    title: "How accessible are the components?",
   },
 ];
 

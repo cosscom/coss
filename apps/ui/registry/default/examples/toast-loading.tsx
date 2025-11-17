@@ -8,8 +8,8 @@ export default function ToastLoading() {
     <Button
       onClick={() => {
         toastManager.add({
-          title: "Loading…",
           description: "Please wait while we process your request.",
+          title: "Loading…",
           type: "loading",
         });
       }}

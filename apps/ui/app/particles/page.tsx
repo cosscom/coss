@@ -23,8 +23,8 @@ const description =
   "Particles are more than just components. They are the building blocks of your design system. Click on a category or browse them all.";
 
 export const metadata: Metadata = {
-  title: "Particle components built with React and Tailwind CSS - coss ui",
   description: description,
+  title: "Particle components built with React and Tailwind CSS - coss ui",
 };
 
 export default async function Page() {

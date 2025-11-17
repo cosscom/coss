@@ -10,19 +10,19 @@ import {
 
 const steps = [
   {
+    description: "Desc for step one",
     step: 1,
     title: "Step One",
-    description: "Desc for step one",
   },
   {
+    description: "Desc for step two",
     step: 2,
     title: "Step Two",
-    description: "Desc for step two",
   },
   {
+    description: "Desc for step three",
     step: 3,
     title: "Step Three",
-    description: "Desc for step three",
   },
 ];
 

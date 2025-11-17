@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-file",
-  "type": "registry:example",
+  "categories": ["input", "file"],
   "description": "Input type set to file",
-  "registryDependencies": ["@coss/input"],
   "files": [
     {
-      "path": "registry/default/examples/input-file.tsx",
       "content": "import { Input } from \"@/registry/default/ui/input\"\n\nexport default function InputFile() {\n  return <Input type=\"file\" aria-label=\"File\" />\n}\n",
+      "path": "registry/default/examples/input-file.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["input", "file"]
+  "name": "input-file",
+  "registryDependencies": ["@coss/input"],
+  "type": "registry:example"
 }

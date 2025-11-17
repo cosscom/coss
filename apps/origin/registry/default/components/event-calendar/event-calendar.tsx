@@ -162,11 +162,11 @@ export function EventCalendar({
     }
 
     const newEvent: CalendarEvent = {
-      id: "",
-      title: "",
-      start: startTime,
-      end: addHoursToDate(startTime, 1),
       allDay: false,
+      end: addHoursToDate(startTime, 1),
+      id: "",
+      start: startTime,
+      title: "",
     };
     setSelectedEvent(newEvent);
     setIsEventDialogOpen(true);
@@ -265,8 +265,8 @@ export function EventCalendar({
       className="flex flex-col rounded-lg border has-data-[slot=month-view]:flex-1"
       style={
         {
-          "--event-height": `${EventHeight}px`,
           "--event-gap": `${EventGap}px`,
+          "--event-height": `${EventHeight}px`,
           "--week-cells-height": `${WeekCellsHeight}px`,
         } as React.CSSProperties
       }

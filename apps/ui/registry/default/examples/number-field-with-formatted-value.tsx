@@ -10,7 +10,7 @@ export default function NumberFieldWithFormattedValue() {
   return (
     <NumberField
       defaultValue={0}
-      format={{ style: "currency", currency: "USD" }}
+      format={{ currency: "USD", style: "currency" }}
     >
       <NumberFieldGroup>
         <NumberFieldDecrement />

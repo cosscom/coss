@@ -28,9 +28,9 @@ const _teams = ["Acme Inc.", "coss.com", "Junon"];
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Home", icon: HouseIcon },
-  { href: "#", label: "Hash", icon: HashIcon },
-  { href: "#", label: "Groups", icon: UsersRound },
+  { href: "#", icon: HouseIcon, label: "Home" },
+  { href: "#", icon: HashIcon, label: "Hash" },
+  { href: "#", icon: UsersRound, label: "Groups" },
 ];
 
 export default function Component() {

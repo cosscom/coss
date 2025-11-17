@@ -4,9 +4,9 @@ import { useId } from "react";
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 const items = [
-  { value: "1", label: "Light", image: "/origin/ui-light.png" },
-  { value: "2", label: "Dark", image: "/origin/ui-dark.png" },
-  { value: "3", label: "System", image: "/origin/ui-system.png" },
+  { image: "/origin/ui-light.png", label: "Light", value: "1" },
+  { image: "/origin/ui-dark.png", label: "Dark", value: "2" },
+  { image: "/origin/ui-system.png", label: "System", value: "3" },
 ];
 
 export default function Component() {

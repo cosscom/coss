@@ -38,19 +38,19 @@ import {
 
 // Navigation links with icons for desktop icon-only navigation
 const navigationLinks = [
-  { href: "#", label: "Dashboard", icon: HomeIcon, active: true },
-  { href: "#", label: "Projects", icon: LayersIcon },
-  { href: "#", label: "Documentation", icon: FileTextIcon },
-  { href: "#", label: "Team", icon: UsersIcon },
+  { active: true, href: "#", icon: HomeIcon, label: "Dashboard" },
+  { href: "#", icon: LayersIcon, label: "Projects" },
+  { href: "#", icon: FileTextIcon, label: "Documentation" },
+  { href: "#", icon: UsersIcon, label: "Team" },
 ];
 
 // Language options
 const languages = [
-  { value: "en", label: "En" },
-  { value: "es", label: "Es" },
-  { value: "fr", label: "Fr" },
-  { value: "de", label: "De" },
-  { value: "ja", label: "Ja" },
+  { label: "En", value: "en" },
+  { label: "Es", value: "es" },
+  { label: "Fr", value: "fr" },
+  { label: "De", value: "de" },
+  { label: "Ja", value: "ja" },
 ];
 
 export default function Component() {

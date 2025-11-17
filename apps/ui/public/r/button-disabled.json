@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "button-disabled",
-  "type": "registry:example",
+  "categories": ["button", "disabled"],
   "description": "Disabled button",
-  "registryDependencies": ["@coss/button"],
   "files": [
     {
-      "path": "registry/default/examples/button-disabled.tsx",
       "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonDisabled() {\n  return <Button disabled>Button</Button>\n}\n",
+      "path": "registry/default/examples/button-disabled.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["button", "disabled"]
+  "name": "button-disabled",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:example"
 }

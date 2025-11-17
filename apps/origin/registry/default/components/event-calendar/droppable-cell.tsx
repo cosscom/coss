@@ -25,11 +25,11 @@ export function DroppableCell({
   const { activeEvent } = useCalendarDnd();
 
   const { setNodeRef, isOver } = useDroppable({
-    id,
     data: {
       date,
       time,
     },
+    id,
   });
 
   // Format time for display in tooltip (only for debugging)

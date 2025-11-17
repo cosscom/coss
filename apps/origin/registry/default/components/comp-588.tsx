@@ -17,9 +17,9 @@ import {
 
 // Navigation links array
 const navigationLinks = [
-  { href: "#", label: "Home", icon: HouseIcon, active: true },
-  { href: "#", label: "Inbox", icon: InboxIcon },
-  { href: "#", label: "Insights", icon: ZapIcon },
+  { active: true, href: "#", icon: HouseIcon, label: "Home" },
+  { href: "#", icon: InboxIcon, label: "Inbox" },
+  { href: "#", icon: ZapIcon, label: "Insights" },
 ];
 
 export default function Component() {

@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "toggle-lg",
-  "type": "registry:example",
+  "categories": ["toggle"],
   "description": "Large toggle",
-  "registryDependencies": ["@coss/toggle"],
   "files": [
     {
-      "path": "registry/default/examples/toggle-lg.tsx",
       "content": "import { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleLg() {\n  return (\n    <Toggle variant=\"outline\" size=\"lg\">\n      Large\n    </Toggle>\n  )\n}\n",
+      "path": "registry/default/examples/toggle-lg.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["toggle"]
+  "name": "toggle-lg",
+  "registryDependencies": ["@coss/toggle"],
+  "type": "registry:example"
 }

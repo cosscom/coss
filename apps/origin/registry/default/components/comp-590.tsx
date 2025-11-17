@@ -26,10 +26,10 @@ const teams = ["Acme Inc.", "coss.com", "Junon"];
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Dashboard", icon: HouseIcon },
-  { href: "#", label: "Explore", icon: CompassIcon },
-  { href: "#", label: "Write", icon: FeatherIcon },
-  { href: "#", label: "Search", icon: SearchIcon },
+  { href: "#", icon: HouseIcon, label: "Dashboard" },
+  { href: "#", icon: CompassIcon, label: "Explore" },
+  { href: "#", icon: FeatherIcon, label: "Write" },
+  { href: "#", icon: SearchIcon, label: "Search" },
 ];
 
 export default function Component() {

@@ -51,23 +51,23 @@ function PaginationLink({
 }: PaginationLinkProps) {
   const defaultProps = {
     "aria-current": isActive ? ("page" as const) : undefined,
-    "data-slot": "pagination-link",
-    "data-active": isActive,
     className: render
       ? className
       : cn(
           buttonVariants({
-            variant: isActive ? "outline" : "ghost",
             size,
+            variant: isActive ? "outline" : "ghost",
           }),
           className,
         ),
+    "data-active": isActive,
+    "data-slot": "pagination-link",
   };
 
   return useRender({
     defaultTagName: "a",
-    render,
     props: mergeProps<"a">(defaultProps, props),
+    render,
   });
 }
 

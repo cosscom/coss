@@ -31,8 +31,8 @@ export default function Component() {
   const endDate = new Date(2030, 6);
 
   const years = eachYearOfInterval({
-    start: startOfYear(startDate),
     end: endOfYear(endDate),
+    start: startOfYear(startDate),
   });
 
   return (
@@ -149,8 +149,8 @@ function MonthGrid({
           <ScrollArea className="h-full" ref={scrollAreaRef}>
             {years.map((year) => {
               const months = eachMonthOfInterval({
-                start: startOfYear(year),
                 end: endOfYear(year),
+                start: startOfYear(year),
               });
               const isCurrentYear = year.getFullYear() === currentYear;
 

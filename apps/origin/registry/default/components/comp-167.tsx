@@ -6,11 +6,11 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "Angry", icon: "😠" },
-    { value: "2", label: "Sad", icon: "🙁" },
-    { value: "3", label: "Neutral", icon: "😐" },
-    { value: "4", label: "Happy", icon: "🙂" },
-    { value: "5", label: "Laughing", icon: "😀" },
+    { icon: "😠", label: "Angry", value: "1" },
+    { icon: "🙁", label: "Sad", value: "2" },
+    { icon: "😐", label: "Neutral", value: "3" },
+    { icon: "🙂", label: "Happy", value: "4" },
+    { icon: "😀", label: "Laughing", value: "5" },
   ];
 
   return (

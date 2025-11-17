@@ -6,12 +6,12 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "2 CPU" },
-    { value: "2", label: "4 CPU" },
-    { value: "3", label: "6 CPU" },
-    { value: "4", label: "8 CPU" },
-    { value: "5", label: "12 CPU" },
-    { value: "6", label: "16 CPU", disabled: true },
+    { label: "2 CPU", value: "1" },
+    { label: "4 CPU", value: "2" },
+    { label: "6 CPU", value: "3" },
+    { label: "8 CPU", value: "4" },
+    { label: "12 CPU", value: "5" },
+    { disabled: true, label: "16 CPU", value: "6" },
   ];
 
   return (

@@ -40,12 +40,12 @@ export default function Component() {
         const modifiedOffset = offset === "GMT" ? "GMT+0" : offset;
 
         return {
-          value: timezone,
           label: `(${modifiedOffset}) ${timezone.replace(/_/g, " ")}`,
           numericOffset: Number.parseInt(
             offset.replace("GMT", "").replace("+", "") || "0",
             10,
           ),
+          value: timezone,
         };
       })
       .sort((a, b) => a.numericOffset - b.numericOffset);

@@ -9,8 +9,8 @@ export default function ToastWithStatus() {
       <Button
         onClick={() => {
           toastManager.add({
-            title: "Success!",
             description: "Your changes have been saved.",
+            title: "Success!",
             type: "success",
           });
         }}
@@ -21,8 +21,8 @@ export default function ToastWithStatus() {
       <Button
         onClick={() => {
           toastManager.add({
-            title: "Uh oh! Something went wrong.",
             description: "There was a problem with your request.",
+            title: "Uh oh! Something went wrong.",
             type: "error",
           });
         }}
@@ -33,8 +33,8 @@ export default function ToastWithStatus() {
       <Button
         onClick={() => {
           toastManager.add({
-            title: "Heads up!",
             description: "You can add components to your app using the cli.",
+            title: "Heads up!",
             type: "info",
           });
         }}
@@ -45,8 +45,8 @@ export default function ToastWithStatus() {
       <Button
         onClick={() => {
           toastManager.add({
-            title: "Warning!",
             description: "Your session is about to expire.",
+            title: "Warning!",
             type: "warning",
           });
         }}

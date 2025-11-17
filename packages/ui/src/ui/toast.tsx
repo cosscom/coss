@@ -14,10 +14,10 @@ import {
 const toastManager = Toast.createToastManager();
 
 const TOAST_ICONS = {
-  loading: LoaderCircleIcon,
-  success: CircleCheckIcon,
   error: CircleAlertIcon,
   info: InfoIcon,
+  loading: LoaderCircleIcon,
+  success: CircleCheckIcon,
   warning: TriangleAlertIcon,
 } as const;
 

@@ -13,21 +13,21 @@ interface Item {
 }
 
 const items: Record<string, Item> = {
-  main: { name: "Documentation", children: ["guides", "api", "resources"] },
-  guides: { name: "User Guides", children: ["getting-started", "advanced"] },
+  advanced: { href: "#", name: "Advanced Usage" },
+  api: { children: ["endpoints", "models"], name: "API Reference" },
+  endpoints: { href: "#", name: "Endpoints" },
+  examples: { href: "#", name: "Code Examples" },
+  faq: { href: "#", name: "FAQ" },
   "getting-started": {
-    name: "Getting Started",
     children: ["installation", "setup"],
+    name: "Getting Started",
   },
-  installation: { name: "Installation", href: "#", current: true },
-  setup: { name: "Configuration", href: "#" },
-  advanced: { name: "Advanced Usage", href: "#" },
-  api: { name: "API Reference", children: ["endpoints", "models"] },
-  endpoints: { name: "Endpoints", href: "#" },
-  models: { name: "Data Models", href: "#" },
-  resources: { name: "Resources", children: ["examples", "faq"] },
-  examples: { name: "Code Examples", href: "#" },
-  faq: { name: "FAQ", href: "#" },
+  guides: { children: ["getting-started", "advanced"], name: "User Guides" },
+  installation: { current: true, href: "#", name: "Installation" },
+  main: { children: ["guides", "api", "resources"], name: "Documentation" },
+  models: { href: "#", name: "Data Models" },
+  resources: { children: ["examples", "faq"], name: "Resources" },
+  setup: { href: "#", name: "Configuration" },
 };
 
 const indent = 20;
@@ -74,18 +74,18 @@ const expandedItems = pathToCurrent.filter((id) => items[id].children?.length);
 
 export default function Component() {
   const tree = useTree<Item>({
+    dataLoader: {
+      getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => items[itemId],
+    },
+    features: [syncDataLoaderFeature, hotkeysCoreFeature],
+    getItemName: (item) => item.getItemData().name,
+    indent,
     initialState: {
       expandedItems,
     },
-    indent,
-    rootItemId: "main",
-    getItemName: (item) => item.getItemData().name,
     isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    dataLoader: {
-      getItem: (itemId) => items[itemId],
-      getChildren: (itemId) => items[itemId].children ?? [],
-    },
-    features: [syncDataLoaderFeature, hotkeysCoreFeature],
+    rootItemId: "main",
   });
 
   return (

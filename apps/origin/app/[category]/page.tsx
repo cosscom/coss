@@ -31,20 +31,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Custom title and description for event-calendar
   if (category.slug === "event-calendar") {
     return {
-      title:
-        "Event calendar component built with React and Tailwind CSS - coss.com origin",
       description:
         "An event calendar component built with React and Tailwind CSS. Originally built in v0 and currently in early alpha stage.",
+      title:
+        "Event calendar component built with React and Tailwind CSS - coss.com origin",
     };
   }
 
   return {
-    title: isSingleComponent
-      ? `${category.name} component built with React and Tailwind CSS - coss.com origin`
-      : `${category.name} components built with React and Tailwind CSS - coss.com origin`,
     description: isSingleComponent
       ? `A beautiful and accessible ${category.name.toLowerCase()} component built with React and Tailwind CSS.`
       : `A collection of beautiful and accessible ${category.name.toLowerCase()} components built with React and Tailwind CSS.`,
+    title: isSingleComponent
+      ? `${category.name} component built with React and Tailwind CSS - coss.com origin`
+      : `${category.name} components built with React and Tailwind CSS - coss.com origin`,
   };
 }
 

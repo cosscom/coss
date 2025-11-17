@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-group-with-end-icon",
-  "type": "registry:example",
+  "categories": ["input", "input group"],
   "description": "Input group with end icon",
-  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
-      "path": "registry/default/examples/input-group-with-end-icon.tsx",
       "content": "import { MailIcon } from \"lucide-react\"\n\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithEndIcon() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"email\" placeholder=\"Email\" aria-label=\"Email\" />\n      <InputGroupAddon align=\"inline-end\">\n        <MailIcon />\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "path": "registry/default/examples/input-group-with-end-icon.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["input", "input group"]
+  "name": "input-group-with-end-icon",
+  "registryDependencies": ["@coss/input-group"],
+  "type": "registry:example"
 }

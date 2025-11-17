@@ -11,32 +11,32 @@ import {
 
 const items = [
   {
-    id: 1,
     date: "Mar 15, 2024",
-    title: "Project Kickoff",
     description:
       "Initial team meeting and project scope definition. Established key milestones and resource allocation.",
+    id: 1,
+    title: "Project Kickoff",
   },
   {
-    id: 2,
     date: "Mar 22, 2024",
-    title: "Design Phase",
     description:
       "Completed wireframes and user interface mockups. Stakeholder review and feedback incorporated.",
+    id: 2,
+    title: "Design Phase",
   },
   {
-    id: 3,
     date: "Apr 5, 2024",
-    title: "Development Sprint",
     description:
       "Backend API implementation and frontend component development in progress.",
+    id: 3,
+    title: "Development Sprint",
   },
   {
-    id: 4,
     date: "Apr 19, 2024",
-    title: "Testing & Deployment",
     description:
       "Quality assurance testing, performance optimization, and production deployment preparation.",
+    id: 4,
+    title: "Testing & Deployment",
   },
 ];
 

@@ -6,13 +6,13 @@ export default function Component() {
   const id = useId();
 
   const items = [
-    { value: "1", label: "Monday", defaultChecked: true },
-    { value: "2", label: "Tuesday", defaultChecked: true },
-    { value: "3", label: "Wednesday" },
-    { value: "4", label: "Thursday", defaultChecked: true },
-    { value: "5", label: "Friday", defaultChecked: true },
-    { value: "6", label: "Saturday" },
-    { value: "7", label: "Sunday", disabled: true },
+    { defaultChecked: true, label: "Monday", value: "1" },
+    { defaultChecked: true, label: "Tuesday", value: "2" },
+    { label: "Wednesday", value: "3" },
+    { defaultChecked: true, label: "Thursday", value: "4" },
+    { defaultChecked: true, label: "Friday", value: "5" },
+    { label: "Saturday", value: "6" },
+    { disabled: true, label: "Sunday", value: "7" },
   ];
 
   return (

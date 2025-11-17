@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "meter-simple",
-  "type": "registry:example",
+  "categories": ["meter"],
   "description": "Meter without label and value",
-  "registryDependencies": ["@coss/meter"],
   "files": [
     {
-      "path": "registry/default/examples/meter-simple.tsx",
       "content": "import { Meter } from \"@/registry/default/ui/meter\"\n\nexport default function MeterSimpleDemo() {\n  return <Meter value={50} />\n}\n",
+      "path": "registry/default/examples/meter-simple.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["meter"]
+  "name": "meter-simple",
+  "registryDependencies": ["@coss/meter"],
+  "type": "registry:example"
 }

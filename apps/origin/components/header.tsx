@@ -7,7 +7,7 @@ import HeaderLink from "@/components/header-link";
 import ThemeToggle from "@/components/theme-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const links = [{ text: "Easing Classes", href: "/easings" }];
+const links = [{ href: "/easings", text: "Easing Classes" }];
 
 export default function Header() {
   const isMobile = useIsMobile();

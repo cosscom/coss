@@ -14,9 +14,9 @@ export default function Component() {
     <NumberField
       defaultValue={99}
       formatOptions={{
-        style: "currency",
         currency: "EUR",
         currencySign: "accounting",
+        style: "currency",
       }}
     >
       <div className="*:not-first:mt-2">

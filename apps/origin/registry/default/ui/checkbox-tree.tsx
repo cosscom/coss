@@ -79,7 +79,7 @@ function useCheckboxTree(initialTree: TreeNode) {
     [checkedNodes, isChecked],
   );
 
-  return { isChecked, handleCheck };
+  return { handleCheck, isChecked };
 }
 
 interface CheckboxTreeProps {
@@ -99,10 +99,10 @@ export function CheckboxTree({ tree, renderNode }: CheckboxTreeProps) {
     const children = node.children?.map(renderTreeNode);
 
     return renderNode({
-      node,
-      isChecked: isChecked(node),
-      onCheckedChange: () => handleCheck(node),
       children,
+      isChecked: isChecked(node),
+      node,
+      onCheckedChange: () => handleCheck(node),
     });
   };
 

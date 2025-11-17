@@ -53,10 +53,10 @@ const CalendarDndContext = createContext<CalendarDndContextType>({
   activeId: null,
   activeView: null,
   currentTime: null,
+  dragHandlePosition: null,
   eventHeight: null,
   isMultiDay: false,
   multiDayWidth: null,
-  dragHandlePosition: null,
 });
 
 // Hook to use the context
@@ -307,8 +307,8 @@ export function CalendarDndProvider({
         // Update the event only if the time has changed
         onEventUpdate({
           ...calendarEvent,
-          start: newStart,
           end: newEnd,
+          start: newStart,
         });
       }
     } catch (error) {
@@ -340,10 +340,10 @@ export function CalendarDndProvider({
           activeId,
           activeView,
           currentTime,
+          dragHandlePosition,
           eventHeight,
           isMultiDay,
           multiDayWidth,
-          dragHandlePosition,
         }}
       >
         {children}

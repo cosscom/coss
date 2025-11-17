@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-group-with-number-field",
-  "type": "registry:example",
+  "categories": ["input", "input group", "number field"],
   "description": "Input group with number field",
-  "registryDependencies": ["@coss/input-group", "@coss/number-field"],
   "files": [
     {
-      "path": "registry/default/examples/input-group-with-number-field.tsx",
       "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\"\nimport {\n  NumberField,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\"\n\nexport default function InputGroupWithNumberField() {\n  return (\n    <InputGroup>\n      <NumberField defaultValue={10} aria-label=\"Enter the amount\">\n        <NumberFieldInput className=\"text-left\" />\n      </NumberField>\n      <InputGroupAddon>\n        <InputGroupText>€</InputGroupText>\n      </InputGroupAddon>\n      <InputGroupAddon align=\"inline-end\">\n        <InputGroupText>EUR</InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "path": "registry/default/examples/input-group-with-number-field.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["input", "input group", "number field"]
+  "name": "input-group-with-number-field",
+  "registryDependencies": ["@coss/input-group", "@coss/number-field"],
+  "type": "registry:example"
 }

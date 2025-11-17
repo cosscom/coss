@@ -16,8 +16,8 @@ interface TreeContextValue<T = any> {
 }
 
 const TreeContext = React.createContext<TreeContextValue>({
-  indent: 20,
   currentItem: undefined,
+  indent: 20,
   tree: undefined,
 });
 
@@ -89,7 +89,7 @@ function TreeItem<T = any>({
   const Comp = asChild ? Slot.Root : "button";
 
   return (
-    <TreeContext.Provider value={{ indent, currentItem: item }}>
+    <TreeContext.Provider value={{ currentItem: item, indent }}>
       <Comp
         aria-expanded={item.isExpanded()}
         className={cn(

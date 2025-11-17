@@ -35,8 +35,8 @@ export async function getRegistryItem(name: string) {
 
     processedFiles.push({
       ...file,
-      path: relativePath,
       content,
+      path: relativePath,
     });
   }
 
@@ -200,7 +200,7 @@ export function createFileTreeForRegistryItemFiles(
       } else if (part) {
         const newNode: FileTree = isFile
           ? { name: part, path }
-          : { name: part, children: [] };
+          : { children: [], name: part };
 
         currentLevel.push(newNode);
 

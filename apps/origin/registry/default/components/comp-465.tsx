@@ -27,8 +27,8 @@ export default function Component({
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage,
-    totalPages,
     paginationItemsToDisplay,
+    totalPages,
   });
 
   return (

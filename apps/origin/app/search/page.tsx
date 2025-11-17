@@ -6,8 +6,8 @@ import PageHeader from "@/components/page-header";
 import ComponentsContainer from "./components-container";
 
 export const metadata: Metadata = {
-  title: "Search a UI component",
   description: "Search for components in the UI library.",
+  title: "Search a UI component",
 };
 
 export default function Page() {

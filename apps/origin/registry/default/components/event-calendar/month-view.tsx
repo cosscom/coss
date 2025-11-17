@@ -54,7 +54,7 @@ export function MonthView({
     const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
     const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
-    return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+    return eachDayOfInterval({ end: calendarEnd, start: calendarStart });
   }, [currentDate]);
 
   const weekdays = useMemo(() => {
@@ -86,8 +86,8 @@ export function MonthView({
 
   const [isMounted, setIsMounted] = useState(false);
   const { contentRef, getVisibleEventCount } = useEventVisibility({
-    eventHeight: EventHeight,
     eventGap: EventGap,
+    eventHeight: EventHeight,
   });
 
   useEffect(() => {

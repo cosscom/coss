@@ -90,7 +90,7 @@ function SliderWithInput({
     handleInputChange,
     handleSliderChange,
     resetToDefault,
-  } = useSliderWithInput({ minValue, maxValue, initialValue, defaultValue });
+  } = useSliderWithInput({ defaultValue, initialValue, maxValue, minValue });
 
   // Register the reset function when the component mounts
   React.useEffect(() => {

@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "toggle-outline",
-  "type": "registry:example",
+  "categories": ["toggle"],
   "description": "Outline toggle",
-  "registryDependencies": ["@coss/toggle"],
   "files": [
     {
-      "path": "registry/default/examples/toggle-outline.tsx",
       "content": "import { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleOutline() {\n  return <Toggle variant=\"outline\">Outline Toggle</Toggle>\n}\n",
+      "path": "registry/default/examples/toggle-outline.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["toggle"]
+  "name": "toggle-outline",
+  "registryDependencies": ["@coss/toggle"],
+  "type": "registry:example"
 }

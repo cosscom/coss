@@ -90,12 +90,12 @@ export function useSliderWithInput({
   }, [defaultValue]);
 
   return {
-    sliderValue,
-    inputValues,
-    validateAndUpdateValue,
     handleInputChange,
     handleSliderChange,
+    inputValues,
     resetToDefault,
     showReset,
+    sliderValue,
+    validateAndUpdateValue,
   };
 }

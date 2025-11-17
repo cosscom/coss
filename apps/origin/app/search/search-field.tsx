@@ -15,8 +15,8 @@ interface SearchFieldProps {
 }
 
 const baseOptions: Option[] = registryTags.map((tag) => ({
-  value: tag,
   label: tag,
+  value: tag,
 }));
 
 export default function SearchField({
@@ -47,10 +47,10 @@ export default function SearchField({
     return baseOptions
       .map((option) => ({
         ...option,
-        label: `${option.value}`,
         disable:
           !selectedTags.includes(option.value) &&
           !availableTags.includes(option.value as RegistryTag),
+        label: `${option.value}`,
       }))
       .sort((a, b) => {
         // Selected tags first
@@ -83,11 +83,11 @@ export default function SearchField({
           emptyIndicator={<p className="text-center text-sm">No tags found</p>}
           hidePlaceholderWhenSelected
           inputProps={{
+            autoFocus: selectedTags.length === 0,
             onValueChange: (v) => {
               setInputValue(v);
               return v;
             },
-            autoFocus: selectedTags.length === 0,
           }}
           onChange={handleMultipleSelectorChange}
           options={getFilteredOptions().filter(

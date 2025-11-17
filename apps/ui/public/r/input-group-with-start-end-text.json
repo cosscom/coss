@@ -1,15 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-group-with-start-end-text",
-  "type": "registry:example",
+  "categories": ["input", "input group"],
   "description": "Input group with start and end text",
-  "registryDependencies": ["@coss/input-group"],
   "files": [
     {
-      "path": "registry/default/examples/input-group-with-start-end-text.tsx",
       "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithStartEndText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"text\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss\"\n        aria-label=\"Enter your domain\"\n      />\n      <InputGroupAddon>\n        <InputGroupText>https://</InputGroupText>\n      </InputGroupAddon>\n      <InputGroupAddon align=\"inline-end\">\n        <InputGroupText>.com</InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "path": "registry/default/examples/input-group-with-start-end-text.tsx",
       "type": "registry:example"
     }
   ],
-  "categories": ["input", "input group"]
+  "name": "input-group-with-start-end-text",
+  "registryDependencies": ["@coss/input-group"],
+  "type": "registry:example"
 }

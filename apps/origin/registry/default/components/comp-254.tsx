@@ -29,7 +29,7 @@ export default function Component() {
     handleSliderChange,
     resetToDefault,
     showReset,
-  } = useSliderWithInput({ minValue, maxValue, initialValue, defaultValue });
+  } = useSliderWithInput({ defaultValue, initialValue, maxValue, minValue });
 
   return (
     <div className="space-y-3">

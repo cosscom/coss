@@ -78,8 +78,8 @@ export function useEventVisibility({
 
   // Use type assertion to satisfy TypeScript
   return {
-    contentRef,
     contentHeight,
+    contentRef,
     getVisibleEventCount,
   } as EventVisibilityResult;
 }

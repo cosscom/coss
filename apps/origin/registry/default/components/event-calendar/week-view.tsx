@@ -59,7 +59,7 @@ export function WeekView({
   const days = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
-    return eachDayOfInterval({ start: weekStart, end: weekEnd });
+    return eachDayOfInterval({ end: weekEnd, start: weekStart });
   }, [currentDate]);
 
   const weekStart = useMemo(
@@ -70,8 +70,8 @@ export function WeekView({
   const hours = useMemo(() => {
     const dayStart = startOfDay(currentDate);
     return eachHourOfInterval({
-      start: addHours(dayStart, StartHour),
       end: addHours(dayStart, EndHour - 1),
+      start: addHours(dayStart, StartHour),
     });
   }, [currentDate]);
 
@@ -170,10 +170,10 @@ export function WeekView({
           } else {
             const overlaps = col.some((c) =>
               areIntervalsOverlapping(
-                { start: adjustedStart, end: adjustedEnd },
+                { end: adjustedEnd, start: adjustedStart },
                 {
-                  start: new Date(c.event.start),
                   end: new Date(c.event.end),
+                  start: new Date(c.event.start),
                 },
               ),
             );
@@ -189,7 +189,7 @@ export function WeekView({
         // Ensure column is initialized before pushing
         const currentColumn = columns[columnIndex] || [];
         columns[columnIndex] = currentColumn;
-        currentColumn.push({ event, end: adjustedEnd });
+        currentColumn.push({ end: adjustedEnd, event });
 
         // Calculate width and left position based on number of columns
         const width = columnIndex === 0 ? 1 : 0.9;
@@ -197,9 +197,9 @@ export function WeekView({
 
         positionedEvents.push({
           event,
-          top,
           height,
           left,
+          top,
           width,
           zIndex: 10 + columnIndex, // Higher columns get higher z-index
         });
@@ -336,9 +336,9 @@ export function WeekView({
                 key={positionedEvent.event.id}
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  top: `${positionedEvent.top}px`,
                   height: `${positionedEvent.height}px`,
                   left: `${positionedEvent.left * 100}%`,
+                  top: `${positionedEvent.top}px`,
                   width: `${positionedEvent.width * 100}%`,
                   zIndex: positionedEvent.zIndex,
                 }}

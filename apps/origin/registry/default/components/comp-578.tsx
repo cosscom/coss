@@ -21,47 +21,47 @@ import {
 const navigationLinks = [
   { href: "#", label: "Home" },
   {
+    items: [
+      {
+        description: "Browse all components in the library.",
+        href: "#",
+        label: "Components",
+      },
+      {
+        description: "Learn how to use the library.",
+        href: "#",
+        label: "Documentation",
+      },
+      {
+        description: "Pre-built layouts for common use cases.",
+        href: "#",
+        label: "Templates",
+      },
+    ],
     label: "Features",
     submenu: true,
     type: "description",
-    items: [
-      {
-        href: "#",
-        label: "Components",
-        description: "Browse all components in the library.",
-      },
-      {
-        href: "#",
-        label: "Documentation",
-        description: "Learn how to use the library.",
-      },
-      {
-        href: "#",
-        label: "Templates",
-        description: "Pre-built layouts for common use cases.",
-      },
-    ],
   },
   {
-    label: "Pricing",
-    submenu: true,
-    type: "simple",
     items: [
       { href: "#", label: "Product A" },
       { href: "#", label: "Product B" },
       { href: "#", label: "Product C" },
       { href: "#", label: "Product D" },
     ],
+    label: "Pricing",
+    submenu: true,
+    type: "simple",
   },
   {
+    items: [
+      { href: "#", icon: "BookOpenIcon", label: "Getting Started" },
+      { href: "#", icon: "LifeBuoyIcon", label: "Tutorials" },
+      { href: "#", icon: "InfoIcon", label: "About Us" },
+    ],
     label: "About",
     submenu: true,
     type: "icon",
-    items: [
-      { href: "#", label: "Getting Started", icon: "BookOpenIcon" },
-      { href: "#", label: "Tutorials", icon: "LifeBuoyIcon" },
-      { href: "#", label: "About Us", icon: "InfoIcon" },
-    ],
   },
 ];
 

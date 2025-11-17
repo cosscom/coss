@@ -10,9 +10,9 @@ import Link from "next/link";
 import { Button } from "@/registry/default/ui/button";
 
 export const metadata: Metadata = {
-  title: "Page Not Found",
   description:
     "The page you're looking for doesn't exist or may have been moved.",
+  title: "Page Not Found",
 };
 
 export default function NotFound() {

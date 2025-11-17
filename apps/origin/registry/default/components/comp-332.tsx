@@ -21,24 +21,24 @@ export default function Component() {
 
   const stepContent = [
     {
-      title: "Welcome to coss.com",
       description:
         "Discover a powerful collection of components designed to enhance your development workflow.",
+      title: "Welcome to coss.com",
     },
     {
-      title: "Customizable Components",
       description:
         "Each component is fully customizable and built with modern web standards in mind.",
+      title: "Customizable Components",
     },
     {
-      title: "Ready to Start?",
       description:
         "Begin building amazing interfaces with our comprehensive component library.",
+      title: "Ready to Start?",
     },
     {
-      title: "Get Support",
       description:
         "Access our extensive documentation and community resources to make the most of coss.com.",
+      title: "Get Support",
     },
   ];
 

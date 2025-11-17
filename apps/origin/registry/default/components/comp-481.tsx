@@ -53,23 +53,21 @@ type Item = {
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "name",
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="truncate font-medium">{row.getValue("name")}</div>
     ),
-    sortUndefined: "last",
+    header: "Name",
+    id: "name",
     sortDescFirst: false,
+    sortUndefined: "last",
   },
   {
-    id: "email",
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
+    id: "email",
   },
   {
-    id: "location",
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div className="truncate">
@@ -77,24 +75,26 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
+    id: "location",
   },
   {
-    id: "status",
-    header: "Status",
     accessorKey: "status",
+    header: "Status",
+    id: "status",
   },
   {
-    id: "balance",
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
+        style: "currency",
       }).format(amount);
       return formatted;
     },
+    header: "Balance",
+    id: "balance",
   },
 ];
 
@@ -117,18 +117,18 @@ export default function Component() {
   }, []);
 
   const table = useReactTable({
-    data,
-    columns,
     columnResizeMode: "onChange",
+    columns,
+    data,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    onColumnOrderChange: setColumnOrder,
     onSortingChange: setSorting,
     state: {
-      sorting,
       columnOrder,
+      sorting,
     },
-    onColumnOrderChange: setColumnOrder,
-    enableSortingRemoval: false,
   });
 
   // reorder columns after drag & drop

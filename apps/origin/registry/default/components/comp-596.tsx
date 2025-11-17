@@ -21,7 +21,7 @@ import { Switch } from "@/registry/default/ui/switch";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Overview", active: true },
+  { active: true, href: "#", label: "Overview" },
   { href: "#", label: "Graphs" },
   { href: "#", label: "Backups" },
 ];

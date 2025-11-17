@@ -25,9 +25,9 @@ export function useCharacterLimit({
   };
 
   return {
-    value,
     characterCount,
     handleChange,
     maxLength,
+    value,
   };
 }
