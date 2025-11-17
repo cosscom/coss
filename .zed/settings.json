@@ -1,4 +1,12 @@
 {
+  "code_actions_on_format": {
+    "source.fixAll.biome": true,
+    "source.organizeImports.biome": true
+  },
   "format_on_save": "on",
-  "formatter": "auto"
+  "formatter": {
+    "language_server": {
+      "name": "biome"
+    }
+  }
 }

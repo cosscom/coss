@@ -1,5 +1,21 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.6/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on",
+        "useSortedAttributes": "on",
+        "useSortedKeys": "on"
+      }
+    },
+    "enabled": true
+  },
+  "css": {
+    "parser": {
+      "allowWrongLineComments": true,
+      "tailwindDirectives": true
+    }
+  },
   "files": {
     "includes": [
       "**",
@@ -13,28 +29,32 @@
       "!**/apps/**/*/.source"
     ]
   },
-  "css": {
-    "parser": {
-      "allowWrongLineComments": true,
-      "tailwindDirectives": true
-    }
-  },
-  "vcs": {
-    "enabled": false,
-    "clientKind": "git",
-    "defaultBranch": "main",
-    "useIgnoreFile": false
-  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 80
   },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "all"
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "a11y": {
+        "noLabelWithoutControl": "off",
+        "noStaticElementInteractions": "off",
+        "noSvgWithoutTitle": "off",
+        "useAriaPropsForRole": "off",
+        "useAriaPropsSupportedByRole": "off",
+        "useGenericFontNames": "off",
+        "useKeyWithClickEvents": "off",
+        "useSemanticElements": "off",
+        "useValidAnchor": "off"
+      },
       "nursery": {
         "useSortedClasses": {
           "level": "error",
@@ -44,50 +64,31 @@
           }
         }
       },
-      "a11y": {
-        "noSvgWithoutTitle": "off",
-        "noLabelWithoutControl": "off",
-        "useSemanticElements": "off",
-        "useValidAnchor": "off",
-        "useKeyWithClickEvents": "off",
-        "noStaticElementInteractions": "off",
-        "useAriaPropsSupportedByRole": "off",
-        "useGenericFontNames": "off",
-        "useAriaPropsForRole": "off"
-      },
-      "security": {
-        "noDangerouslySetInnerHtml": "off"
-      },
       "performance": {
         "noImgElement": "off"
       },
+      "recommended": true,
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
       "style": {
+        "noInferrableTypes": "error",
         "noParameterAssign": "error",
+        "noUnusedTemplateLiteral": "error",
+        "noUselessElse": "error",
         "useAsConstAssertion": "error",
         "useDefaultParameterLast": "error",
         "useEnumInitializers": "error",
-        "useSelfClosingElements": "error",
-        "useSingleVarDeclarator": "error",
-        "noUnusedTemplateLiteral": "error",
         "useNumberNamespace": "error",
-        "noInferrableTypes": "error",
-        "noUselessElse": "error"
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error"
       }
     }
   },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on",
-        "useSortedAttributes": "on"
-      }
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double",
-      "trailingCommas": "all"
-    }
+  "vcs": {
+    "clientKind": "git",
+    "defaultBranch": "main",
+    "enabled": false,
+    "useIgnoreFile": false
   }
 }

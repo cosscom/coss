@@ -23,50 +23,42 @@ interface Item {
 }
 
 const items: Record<string, Item> = {
+  apis: { name: "APIs" },
+  backend: { children: ["apis", "infrastructure"], name: "Backend" },
   company: {
-    name: "Company",
     children: ["engineering", "marketing", "operations"],
-  },
-  engineering: {
-    name: "Engineering",
-    children: ["frontend", "backend", "platform-team"],
-  },
-  frontend: { name: "Frontend", children: ["design-system", "web-platform"] },
-  "design-system": {
-    name: "Design System",
-    children: ["components", "tokens", "guidelines"],
+    name: "Company",
   },
   components: { name: "Components" },
-  tokens: { name: "Tokens" },
-  guidelines: { name: "Guidelines" },
-  "web-platform": { name: "Web Platform" },
-  backend: { name: "Backend", children: ["apis", "infrastructure"] },
-  apis: { name: "APIs" },
-  infrastructure: { name: "Infrastructure" },
-  "platform-team": { name: "Platform Team" },
-  marketing: { name: "Marketing", children: ["content", "seo"] },
   content: { name: "Content" },
-  seo: { name: "SEO" },
-  operations: { name: "Operations", children: ["hr", "finance"] },
-  hr: { name: "HR" },
+  "design-system": {
+    children: ["components", "tokens", "guidelines"],
+    name: "Design System",
+  },
+  engineering: {
+    children: ["frontend", "backend", "platform-team"],
+    name: "Engineering",
+  },
   finance: { name: "Finance" },
+  frontend: { children: ["design-system", "web-platform"], name: "Frontend" },
+  guidelines: { name: "Guidelines" },
+  hr: { name: "HR" },
+  infrastructure: { name: "Infrastructure" },
+  marketing: { children: ["content", "seo"], name: "Marketing" },
+  operations: { children: ["hr", "finance"], name: "Operations" },
+  "platform-team": { name: "Platform Team" },
+  seo: { name: "SEO" },
+  tokens: { name: "Tokens" },
+  "web-platform": { name: "Web Platform" },
 };
 
 const indent = 20;
 
 export default function Component() {
   const tree = useTree<Item>({
-    initialState: {
-      expandedItems: ["engineering", "frontend", "design-system"],
-      selectedItems: ["components"],
-    },
-    indent,
-    rootItemId: "company",
-    getItemName: (item) => item.getItemData().name,
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
     dataLoader: {
-      getItem: (itemId) => items[itemId],
       getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => items[itemId],
     },
     features: [
       syncDataLoaderFeature,
@@ -74,6 +66,14 @@ export default function Component() {
       hotkeysCoreFeature,
       expandAllFeature,
     ],
+    getItemName: (item) => item.getItemData().name,
+    indent,
+    initialState: {
+      expandedItems: ["engineering", "frontend", "design-system"],
+      selectedItems: ["components"],
+    },
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    rootItemId: "company",
   });
 
   return (
