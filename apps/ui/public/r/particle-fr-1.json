@@ -9,6 +9,9 @@
       "type": "registry:block"
     }
   ],
+  "meta": {
+    "className": "**:data-[slot=particle-wrapper]:w-full"
+  },
   "name": "particle-fr-1",
   "registryDependencies": ["@coss/frame", "@coss/collapsible", "@coss/button"],
   "type": "registry:block"

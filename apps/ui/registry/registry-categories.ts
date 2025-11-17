@@ -57,7 +57,7 @@ export const componentCategories = [
   "toggle group",
   "toolbar",
   "tooltip",
-] as const
+] as const;
 
 // Tag categories (features, states, modifiers)
 export const tagCategories = [
@@ -81,38 +81,38 @@ export const tagCategories = [
   "validation",
   "warning",
   "zod",
-] as const
+] as const;
 
 // Combined categories array in custom order (components first, then tags)
 export const registryCategories = [
   ...componentCategories,
   ...tagCategories,
-] as const
+] as const;
 
-export type ComponentCategory = (typeof componentCategories)[number]
-export type TagCategory = (typeof tagCategories)[number]
-export type RegistryCategory = (typeof registryCategories)[number]
+export type ComponentCategory = (typeof componentCategories)[number];
+export type TagCategory = (typeof tagCategories)[number];
+export type RegistryCategory = (typeof registryCategories)[number];
 
 // Helper function to check if a category is a component category
 export function isComponentCategory(
-  category: string
+  category: string,
 ): category is ComponentCategory {
-  return componentCategories.includes(category as ComponentCategory)
+  return componentCategories.includes(category as ComponentCategory);
 }
 
 // Helper function to check if a category is a tag category
 export function isTagCategory(category: string): category is TagCategory {
-  return tagCategories.includes(category as TagCategory)
+  return tagCategories.includes(category as TagCategory);
 }
 
 // Custom order for display (components first, then tags)
 export const categoryDisplayOrder: RegistryCategory[] = [
   ...componentCategories,
   ...tagCategories,
-]
+];
 
 // Helper function to get category sort order
 export function getCategorySortOrder(category: string): number {
-  const index = categoryDisplayOrder.indexOf(category as RegistryCategory)
-  return index === -1 ? Infinity : index
+  const index = categoryDisplayOrder.indexOf(category as RegistryCategory);
+  return index === -1 ? Number.POSITIVE_INFINITY : index;
 }

@@ -9,6 +9,9 @@
       "type": "registry:block"
     }
   ],
+  "meta": {
+    "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+  },
   "name": "particle-in-1",
   "registryDependencies": [
     "@coss/button",

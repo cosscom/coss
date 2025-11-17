@@ -1,40 +1,39 @@
-import { Suspense } from "react"
-import type { Metadata } from "next"
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@coss/ui/components/page-header";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ParticlesDisplay } from "./particles-display"
-import SearchContainer from "./search-container"
+import { ParticlesDisplay } from "./particles-display";
+import SearchContainer from "./search-container";
 
 const description =
-  "Particles are more than just components. They are the building blocks of your design system. Use the filters to find the perfect component for your project."
+  "Particles are more than just components. They are the building blocks of your design system. Use the filters to find the perfect component for your project.";
 
 export const metadata: Metadata = {
-  title: "Search components",
   description,
-}
+  title: "Search components",
+};
 
 async function ParticlesDisplayServer({
   searchParams,
 }: {
-  searchParams: Promise<{ tags?: string }>
+  searchParams: Promise<{ tags?: string }>;
 }) {
-  const params = await searchParams
-  const selectedCategories = params.tags?.split(",").filter(Boolean) || []
+  const params = await searchParams;
+  const selectedCategories = params.tags?.split(",").filter(Boolean) || [];
 
-  if (selectedCategories.length === 0) return null
+  if (selectedCategories.length === 0) return null;
 
-  return <ParticlesDisplay selectedCategories={selectedCategories} />
+  return <ParticlesDisplay selectedCategories={selectedCategories} />;
 }
 
 export default function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ tags?: string }>
+  searchParams: Promise<{ tags?: string }>;
 }) {
   return (
     <div className="container w-full">

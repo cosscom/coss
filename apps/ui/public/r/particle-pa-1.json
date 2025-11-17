@@ -9,6 +9,9 @@
       "type": "registry:block"
     }
   ],
+  "meta": {
+    "className": "**:data-[slot=particle-wrapper]:w-full"
+  },
   "name": "particle-pa-1",
   "registryDependencies": ["@coss/pagination"],
   "type": "registry:block"

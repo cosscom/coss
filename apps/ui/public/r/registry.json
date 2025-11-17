@@ -4275,6 +4275,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      },
       "name": "particle-fr-1",
       "registryDependencies": [
         "@coss/frame",
@@ -4292,6 +4295,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      },
       "name": "particle-in-1",
       "registryDependencies": [
         "@coss/button",
@@ -4309,6 +4315,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      },
       "name": "particle-in-2",
       "registryDependencies": [
         "@coss/button",
@@ -4326,6 +4335,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      },
       "name": "particle-in-3",
       "registryDependencies": [
         "@coss/button",
@@ -4343,6 +4355,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      },
       "name": "particle-in-4",
       "registryDependencies": ["@coss/input-group", "@coss/kbd"],
       "type": "registry:block"
@@ -4356,6 +4371,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+      },
       "name": "particle-in-5",
       "registryDependencies": ["@coss/input-group", "@coss/spinner"],
       "type": "registry:block"
@@ -4369,6 +4387,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      },
       "name": "particle-pa-1",
       "registryDependencies": ["@coss/pagination"],
       "type": "registry:block"
@@ -4382,6 +4403,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=particle-wrapper]:w-full"
+      },
       "name": "particle-pa-2",
       "registryDependencies": ["@coss/pagination", "@coss/select"],
       "type": "registry:block"
