@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
   return (
     <div className="*:not-first:mt-4">
       <Label>Slider with multiple thumbs</Label>
       <Slider
-        defaultValue={[25, 50, 100]}
         aria-label="Slider with multiple thumbs"
+        defaultValue={[25, 50, 100]}
         showTooltip
         tooltipContent={(value) => `${value}%`}
       />
     </div>
-  )
+  );
 }

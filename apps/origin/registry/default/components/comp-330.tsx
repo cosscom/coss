@@ -1,7 +1,7 @@
-import { useId } from "react"
-import { CheckIcon, RefreshCcwIcon } from "lucide-react"
+import { CheckIcon, RefreshCcwIcon } from "lucide-react";
+import { useId } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,12 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Label } from "@/registry/default/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+} from "@/registry/default/ui/dialog";
+import { Label } from "@/registry/default/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -24,8 +24,8 @@ export default function Component() {
       <DialogContent>
         <div className="mb-2 flex flex-col gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <RefreshCcwIcon className="opacity-80" size={16} />
           </div>
@@ -42,16 +42,16 @@ export default function Component() {
             {/* Radio card #1 */}
             <div className="relative flex w-full items-center gap-2 rounded-md border border-input px-4 py-3 shadow-xs outline-none has-data-[state=checked]:border-primary/50 has-data-[state=checked]:bg-accent">
               <RadioGroupItem
-                value="1"
-                id={`${id}-1`}
                 aria-describedby={`${id}-1-description`}
                 className="order-1 after:absolute after:inset-0"
+                id={`${id}-1`}
+                value="1"
               />
               <div className="grid grow gap-1">
                 <Label htmlFor={`${id}-1`}>Essential</Label>
                 <p
+                  className="text-muted-foreground text-xs"
                   id={`${id}-1-description`}
-                  className="text-xs text-muted-foreground"
                 >
                   $4 per member/month
                 </p>
@@ -60,16 +60,16 @@ export default function Component() {
             {/* Radio card #2 */}
             <div className="relative flex w-full items-center gap-2 rounded-md border border-input px-4 py-3 shadow-xs outline-none has-data-[state=checked]:border-primary/50 has-data-[state=checked]:bg-accent">
               <RadioGroupItem
-                value="2"
-                id={`${id}-2`}
                 aria-describedby={`${id}-2-description`}
                 className="order-1 after:absolute after:inset-0"
+                id={`${id}-2`}
+                value="2"
               />
               <div className="grid grow gap-1">
                 <Label htmlFor={`${id}-2`}>Standard</Label>
                 <p
+                  className="text-muted-foreground text-xs"
                   id={`${id}-2-description`}
-                  className="text-xs text-muted-foreground"
                 >
                   $19 per member/month
                 </p>
@@ -78,16 +78,16 @@ export default function Component() {
             {/* Radio card #3 */}
             <div className="relative flex w-full items-center gap-2 rounded-md border border-input px-4 py-3 shadow-xs outline-none has-data-[state=checked]:border-primary/50 has-data-[state=checked]:bg-accent">
               <RadioGroupItem
-                value="3"
-                id={`${id}-3`}
                 aria-describedby={`${id}-3-description`}
                 className="order-1 after:absolute after:inset-0"
+                id={`${id}-3`}
+                value="3"
               />
               <div className="grid grow gap-1">
                 <Label htmlFor={`${id}-3`}>Enterprise</Label>
                 <p
+                  className="text-muted-foreground text-xs"
                   id={`${id}-3-description`}
-                  className="text-xs text-muted-foreground"
                 >
                   $32 per member/month
                 </p>
@@ -97,54 +97,54 @@ export default function Component() {
 
           <div className="space-y-3">
             <p>
-              <strong className="text-sm font-medium">Features include:</strong>
+              <strong className="font-medium text-sm">Features include:</strong>
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 Create unlimited projects.
               </li>
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 Remove watermarks.
               </li>
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 Add unlimited users and free viewers.
               </li>
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 Upload unlimited files.
               </li>
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 7-day money back guarantee.
               </li>
               <li className="flex gap-2">
                 <CheckIcon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
                   aria-hidden="true"
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={16}
                 />
                 Advanced permissions.
               </li>
@@ -152,11 +152,11 @@ export default function Component() {
           </div>
 
           <div className="grid gap-2">
-            <Button type="button" className="w-full">
+            <Button className="w-full" type="button">
               Change plan
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="ghost" className="w-full">
+              <Button className="w-full" type="button" variant="ghost">
                 Cancel
               </Button>
             </DialogClose>
@@ -164,5 +164,5 @@ export default function Component() {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

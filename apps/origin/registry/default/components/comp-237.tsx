@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { ListBox, ListBoxItem } from "react-aria-components"
+import { ListBox, ListBoxItem } from "react-aria-components";
 
-import { Label } from "@/registry/default/ui/label"
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
   return (
@@ -10,53 +10,53 @@ export default function Component() {
       <Label>Listbox with single option</Label>
       <div className="overflow-hidden rounded-md border border-input">
         <ListBox
-          className="space-y-1 bg-background p-1 text-sm shadow-xs transition-[color,box-shadow]"
           aria-label="Select framework"
-          selectionMode="single"
+          className="space-y-1 bg-background p-1 text-sm shadow-xs transition-[color,box-shadow]"
           defaultSelectedKeys={["svelte"]}
+          selectionMode="single"
         >
           <ListBoxItem
+            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-focus-visible:border-ring data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-disabled:opacity-50 data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50"
             id="react"
-            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-focus-visible:border-ring data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
           >
             React
           </ListBoxItem>
           <ListBoxItem
+            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-focus-visible:border-ring data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-disabled:opacity-50 data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50"
             id="vue"
-            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-focus-visible:border-ring data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
           >
             Vue
           </ListBoxItem>
           <ListBoxItem
+            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-focus-visible:border-ring data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-disabled:opacity-50 data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50"
             id="angular"
-            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-focus-visible:border-ring data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
             isDisabled
           >
             Angular
           </ListBoxItem>
           <ListBoxItem
+            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-focus-visible:border-ring data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-disabled:opacity-50 data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50"
             id="svelte"
-            className="relative rounded px-2 py-1.5 outline-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-focus-visible:border-ring data-focus-visible:ring-[3px] data-focus-visible:ring-ring/50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
           >
             Svelte
           </ListBoxItem>
         </ListBox>
       </div>
       <p
-        className="mt-2 text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Built with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://react-spectrum.adobe.com/react-aria/ListBox.html"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           React Aria
         </a>
       </p>
     </div>
-  )
+  );
 }

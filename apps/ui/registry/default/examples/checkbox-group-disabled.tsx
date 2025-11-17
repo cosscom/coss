@@ -1,6 +1,6 @@
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { CheckboxGroup } from "@/registry/default/ui/checkbox-group"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
+import { Label } from "@/registry/default/ui/label";
 
 export default function CheckboxGroupDemo() {
   return (
@@ -10,7 +10,7 @@ export default function CheckboxGroupDemo() {
         Next.js
       </Label>
       <Label>
-        <Checkbox value="vite" disabled />
+        <Checkbox disabled value="vite" />
         Vite
       </Label>
       <Label>
@@ -18,5 +18,5 @@ export default function CheckboxGroupDemo() {
         Astro
       </Label>
     </CheckboxGroup>
-  )
+  );
 }

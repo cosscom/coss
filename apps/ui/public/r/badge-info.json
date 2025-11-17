@@ -1,20 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "badge-info",
-  "type": "registry:example",
+  "categories": ["badge", "info"],
   "description": "Info badge",
-  "registryDependencies": [
-    "@coss/badge"
-  ],
   "files": [
     {
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function BadgeInfo() {\n  return <Badge variant=\"info\">Badge</Badge>;\n}\n",
       "path": "registry/default/examples/badge-info.tsx",
-      "content": "import { Badge } from \"@/registry/default/ui/badge\"\n\nexport default function BadgeInfo() {\n  return <Badge variant=\"info\">Badge</Badge>\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "badge",
-    "info"
-  ]
+  "name": "badge-info",
+  "registryDependencies": ["@coss/badge"],
+  "type": "registry:example"
 }

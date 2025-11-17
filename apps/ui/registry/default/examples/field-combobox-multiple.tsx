@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Combobox,
@@ -10,12 +10,12 @@ import {
   ComboboxList,
   ComboboxPopup,
   ComboboxValue,
-} from "@/registry/default/ui/combobox"
+} from "@/registry/default/ui/combobox";
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
+} from "@/registry/default/ui/field";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -28,25 +28,25 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function FieldComboboxMultiple() {
   return (
     <Field>
       <FieldLabel>Fruits</FieldLabel>
-      <Combobox items={items} multiple defaultValue={[items[0], items[4]]}>
+      <Combobox defaultValue={[items[0], items[4]]} items={items} multiple>
         <ComboboxChips>
           <ComboboxValue>
             {(value: { value: string; label: string }[]) => (
               <>
                 {value?.map((item) => (
-                  <ComboboxChip key={item.value} aria-label={item.label}>
+                  <ComboboxChip aria-label={item.label} key={item.value}>
                     {item.label}
                   </ComboboxChip>
                 ))}
                 <ComboboxInput
-                  placeholder={value.length > 0 ? undefined : "Select items…"}
                   aria-label="Select items"
+                  placeholder={value.length > 0 ? undefined : "Select items…"}
                 />
               </>
             )}
@@ -65,5 +65,5 @@ export default function FieldComboboxMultiple() {
       </Combobox>
       <FieldDescription>Select multiple items.</FieldDescription>
     </Field>
-  )
+  );
 }

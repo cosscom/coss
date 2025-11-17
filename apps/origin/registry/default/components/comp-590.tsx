@@ -4,33 +4,33 @@ import {
   HouseIcon,
   PlusIcon,
   SearchIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu"
-import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
-import { Button } from "@/registry/default/ui/button"
+import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
+import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
-const teams = ["Acme Inc.", "coss.com", "Junon"]
+const teams = ["Acme Inc.", "coss.com", "Junon"];
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "#", label: "Dashboard", icon: HouseIcon },
-  { href: "#", label: "Explore", icon: CompassIcon },
-  { href: "#", label: "Write", icon: FeatherIcon },
-  { href: "#", label: "Search", icon: SearchIcon },
-]
+  { href: "#", icon: HouseIcon, label: "Dashboard" },
+  { href: "#", icon: CompassIcon, label: "Explore" },
+  { href: "#", icon: FeatherIcon, label: "Write" },
+  { href: "#", icon: SearchIcon, label: "Search" },
+];
 
 export default function Component() {
   return (
@@ -43,32 +43,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -76,57 +76,57 @@ export default function Component() {
             <PopoverContent align="start" className="w-48 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    const Icon = link.icon
+                  {navigationLinks.map((link, _index) => {
+                    const Icon = link.icon;
                     return (
-                      <NavigationMenuItem key={index} className="w-full">
+                      <NavigationMenuItem className="w-full" key={link.label}>
                         <NavigationMenuLink
-                          href={link.href}
                           className="flex-row items-center gap-2 py-1.5"
+                          href={link.href}
                         >
                           <Icon
-                            size={16}
-                            className="text-muted-foreground"
                             aria-hidden="true"
+                            className="text-muted-foreground"
+                            size={16}
                           />
                           <span>{link.label}</span>
                         </NavigationMenuLink>
                       </NavigationMenuItem>
-                    )
+                    );
                   })}
                 </NavigationMenuList>
               </NavigationMenu>
             </PopoverContent>
           </Popover>
-          <TeamSwitcher teams={teams} defaultTeam={teams[0]} />
+          <TeamSwitcher defaultTeam={teams[0]} teams={teams} />
         </div>
         {/* Middle area */}
         <NavigationMenu className="max-md:hidden">
           <NavigationMenuList className="gap-2">
-            {navigationLinks.map((link, index) => {
-              const Icon = link.icon
+            {navigationLinks.map((link, _index) => {
+              const Icon = link.icon;
               return (
-                <NavigationMenuItem key={index}>
+                <NavigationMenuItem key={link.label}>
                   <NavigationMenuLink
-                    href={link.href}
                     className="flex size-8 items-center justify-center p-1.5"
+                    href={link.href}
                     title={link.label}
                   >
                     <Icon aria-hidden="true" />
                     <span className="sr-only">{link.label}</span>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
-              )
+              );
             })}
           </NavigationMenuList>
         </NavigationMenu>
         {/* Right side */}
         <div className="flex flex-1 items-center justify-end gap-4">
-          <Button size="sm" className="text-sm max-sm:aspect-square max-sm:p-0">
+          <Button className="text-sm max-sm:aspect-square max-sm:p-0" size="sm">
             <PlusIcon
-              className="opacity-60 sm:-ms-1"
-              size={16}
               aria-hidden="true"
+              className="sm:-ms-1 opacity-60"
+              size={16}
             />
             <span className="max-sm:sr-only">Post</span>
           </Button>
@@ -135,5 +135,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

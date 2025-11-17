@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Autocomplete,
@@ -7,7 +7,7 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompletePopup,
-} from "@/registry/default/ui/autocomplete"
+} from "@/registry/default/ui/autocomplete";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -20,16 +20,16 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function AutocompleteWithTriggerClear() {
   return (
     <Autocomplete items={items}>
       <AutocompleteInput
-        placeholder="Search items…"
         aria-label="Search items"
-        showTrigger
+        placeholder="Search items…"
         showClear
+        showTrigger
       />
       <AutocompletePopup>
         <AutocompleteEmpty>No items found.</AutocompleteEmpty>
@@ -42,5 +42,5 @@ export default function AutocompleteWithTriggerClear() {
         </AutocompleteList>
       </AutocompletePopup>
     </Autocomplete>
-  )
+  );
 }

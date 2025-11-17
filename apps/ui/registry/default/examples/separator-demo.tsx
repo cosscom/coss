@@ -1,11 +1,11 @@
-import { Separator } from "@/registry/default/ui/separator"
+import { Separator } from "@/registry/default/ui/separator";
 
 export default function SeparatorDemo() {
   return (
     <div className="max-w-72">
       <div className="space-y-1">
-        <h4 className="text-sm font-medium">coss ui</h4>
-        <p className="text-sm text-muted-foreground">
+        <h4 className="font-medium text-sm">coss ui</h4>
+        <p className="text-muted-foreground text-sm">
           Unstyled, accessible primitives for fast product UI and design
           systems.
         </p>
@@ -21,5 +21,5 @@ export default function SeparatorDemo() {
         <div>Releases</div>
       </div>
     </div>
-  )
+  );
 }

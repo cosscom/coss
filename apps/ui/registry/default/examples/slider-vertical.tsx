@@ -1,5 +1,5 @@
-import { Slider } from "@/registry/default/ui/slider"
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function SliderVertical() {
-  return <Slider orientation="vertical" defaultValue={50} />
+  return <Slider defaultValue={50} orientation="vertical" />;
 }

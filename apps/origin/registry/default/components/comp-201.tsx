@@ -1,19 +1,19 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { SelectNative } from "@/registry/default/ui/select-native"
+import { SelectNative } from "@/registry/default/ui/select-native";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="group relative">
       <label
+        className="-translate-y-1/2 absolute start-1 top-0 z-10 block bg-background px-2 font-medium text-foreground text-xs group-has-[select:disabled]:opacity-50"
         htmlFor={id}
-        className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground group-has-[select:disabled]:opacity-50"
       >
         Select with overlapping label (native)
       </label>
-      <SelectNative id={id} defaultValue="">
-        <option value="" disabled>
+      <SelectNative defaultValue="" id={id}>
+        <option disabled value="">
           Select framework
         </option>
         <option value="1">React</option>
@@ -22,5 +22,5 @@ export default function Component() {
         <option value="4">Gatsby</option>
       </SelectNative>
     </div>
-  )
+  );
 }

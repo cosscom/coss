@@ -2,8 +2,8 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Slider } from "@/registry/default/ui/slider"
+} from "@/registry/default/ui/field";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function FieldSelectDemo() {
   return (
@@ -12,5 +12,5 @@ export default function FieldSelectDemo() {
       <Slider defaultValue={50} />
       <FieldDescription>This is an optional field</FieldDescription>
     </Field>
-  )
+  );
 }

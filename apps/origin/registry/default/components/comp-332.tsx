@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon } from "lucide-react";
+import { useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -14,46 +14,46 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 
 export default function Component() {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
 
   const stepContent = [
     {
-      title: "Welcome to coss.com",
       description:
         "Discover a powerful collection of components designed to enhance your development workflow.",
+      title: "Welcome to coss.com",
     },
     {
-      title: "Customizable Components",
       description:
         "Each component is fully customizable and built with modern web standards in mind.",
+      title: "Customizable Components",
     },
     {
-      title: "Ready to Start?",
       description:
         "Begin building amazing interfaces with our comprehensive component library.",
+      title: "Ready to Start?",
     },
     {
-      title: "Get Support",
       description:
         "Access our extensive documentation and community resources to make the most of coss.com.",
+      title: "Get Support",
     },
-  ]
+  ];
 
-  const totalSteps = stepContent.length
+  const totalSteps = stepContent.length;
 
   const handleContinue = () => {
     if (step < totalSteps) {
-      setStep(step + 1)
+      setStep(step + 1);
     }
-  }
+  };
 
   return (
     <Dialog
       onOpenChange={(open) => {
-        if (open) setStep(1)
+        if (open) setStep(1);
       }}
     >
       <DialogTrigger asChild>
@@ -62,11 +62,11 @@ export default function Component() {
       <DialogContent className="gap-0 p-0 [&>button:last-child]:text-white">
         <div className="p-2">
           <img
+            alt="dialog"
             className="w-full rounded-md"
+            height={216}
             src="/origin/dialog-content.png"
             width={382}
-            height={216}
-            alt="dialog"
           />
         </div>
         <div className="space-y-6 px-6 pt-3 pb-6">
@@ -80,11 +80,11 @@ export default function Component() {
             <div className="flex justify-center space-x-1.5 max-sm:order-1">
               {[...Array(totalSteps)].map((_, index) => (
                 <div
-                  key={index}
                   className={cn(
                     "size-1.5 rounded-full bg-primary",
-                    index + 1 === step ? "bg-primary" : "opacity-20"
+                    index + 1 === step ? "bg-primary" : "opacity-20",
                   )}
+                  key={String(index)}
                 />
               ))}
             </div>
@@ -97,14 +97,14 @@ export default function Component() {
               {step < totalSteps ? (
                 <Button
                   className="group"
-                  type="button"
                   onClick={handleContinue}
+                  type="button"
                 >
                   Next
                   <ArrowRightIcon
+                    aria-hidden="true"
                     className="-me-1 opacity-60 transition-transform group-hover:translate-x-0.5"
                     size={16}
-                    aria-hidden="true"
                   />
                 </Button>
               ) : (
@@ -117,5 +117,5 @@ export default function Component() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

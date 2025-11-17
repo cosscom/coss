@@ -3,27 +3,27 @@ import {
   ChevronLastIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-  paginationItemsToDisplay?: number
-}
+  currentPage: number;
+  totalPages: number;
+  paginationItemsToDisplay?: number;
+};
 
 export default function Component({
   currentPage,
@@ -35,33 +35,33 @@ export default function Component({
         {/* First page button */}
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === 1 ? true : undefined}
+            aria-label="Go to first page"
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
-            aria-label="Go to first page"
-            aria-disabled={currentPage === 1 ? true : undefined}
             role={currentPage === 1 ? "link" : undefined}
           >
-            <ChevronFirstIcon size={16} aria-hidden="true" />
+            <ChevronFirstIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
 
         {/* Previous page button */}
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === 1 ? true : undefined}
+            aria-label="Go to previous page"
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
-            aria-label="Go to previous page"
-            aria-disabled={currentPage === 1 ? true : undefined}
             role={currentPage === 1 ? "link" : undefined}
           >
-            <ChevronLeftIcon size={16} aria-hidden="true" />
+            <ChevronLeftIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
 
         {/* Page number select */}
         <PaginationItem>
-          <Select defaultValue={String(currentPage)} aria-label="Select page">
-            <SelectTrigger id="select-page" className="w-fit whitespace-nowrap">
+          <Select aria-label="Select page" defaultValue={String(currentPage)}>
+            <SelectTrigger className="w-fit whitespace-nowrap" id="select-page">
               <SelectValue placeholder="Select page" />
             </SelectTrigger>
             <SelectContent>
@@ -70,7 +70,7 @@ export default function Component({
                   <SelectItem key={page} value={String(page)}>
                     Page {page}
                   </SelectItem>
-                )
+                ),
               )}
             </SelectContent>
           </Select>
@@ -79,35 +79,35 @@ export default function Component({
         {/* Next page button */}
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === totalPages ? true : undefined}
+            aria-label="Go to next page"
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={
               currentPage === totalPages
                 ? undefined
                 : `#/page/${currentPage + 1}`
             }
-            aria-label="Go to next page"
-            aria-disabled={currentPage === totalPages ? true : undefined}
             role={currentPage === totalPages ? "link" : undefined}
           >
-            <ChevronRightIcon size={16} aria-hidden="true" />
+            <ChevronRightIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
 
         {/* Last page button */}
         <PaginationItem>
           <PaginationLink
+            aria-disabled={currentPage === totalPages ? true : undefined}
+            aria-label="Go to last page"
             className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             href={
               currentPage === totalPages ? undefined : `#/page/${totalPages}`
             }
-            aria-label="Go to last page"
-            aria-disabled={currentPage === totalPages ? true : undefined}
             role={currentPage === totalPages ? "link" : undefined}
           >
-            <ChevronLastIcon size={16} aria-hidden="true" />
+            <ChevronLastIcon aria-hidden="true" size={16} />
           </PaginationLink>
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

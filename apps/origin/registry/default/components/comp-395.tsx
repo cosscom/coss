@@ -2,18 +2,18 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
+} from "@/registry/default/ui/avatar";
 
 export default function Component() {
   return (
     <div className="relative">
       <Avatar>
-        <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
+        <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
+      <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
         <span className="sr-only">Offline</span>
       </span>
     </div>
-  )
+  );
 }

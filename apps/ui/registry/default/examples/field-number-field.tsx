@@ -1,4 +1,4 @@
-import { Field, FieldDescription } from "@/registry/default/ui/field"
+import { Field, FieldDescription } from "@/registry/default/ui/field";
 import {
   NumberField,
   NumberFieldDecrement,
@@ -6,12 +6,12 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
   NumberFieldScrubArea,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function FieldNumberFieldDemo() {
   return (
     <Field>
-      <NumberField defaultValue={1} min={1} max={100}>
+      <NumberField defaultValue={1} max={100} min={1}>
         <NumberFieldScrubArea label="Quantity" />
         <NumberFieldGroup>
           <NumberFieldDecrement />
@@ -21,5 +21,5 @@ export default function FieldNumberFieldDemo() {
       </NumberField>
       <FieldDescription>Choose a value between 1 and 100.</FieldDescription>
     </Field>
-  )
+  );
 }

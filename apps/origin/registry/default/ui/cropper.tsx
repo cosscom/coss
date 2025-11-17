@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Cropper as CropperPrimitive } from "@origin-space/image-cropper"
+import { Cropper as CropperPrimitive } from "@origin-space/image-cropper";
 
-import { cn } from "@/registry/default/lib/utils"
+import { cn } from "@/registry/default/lib/utils";
 
 function Cropper({
   className,
@@ -10,14 +10,14 @@ function Cropper({
 }: React.ComponentProps<typeof CropperPrimitive.Root>) {
   return (
     <CropperPrimitive.Root
-      data-slot="cropper"
       className={cn(
         "relative flex w-full cursor-move touch-none items-center justify-center overflow-hidden focus:outline-none",
-        className
+        className,
       )}
+      data-slot="cropper"
       {...props}
     />
-  )
+  );
 }
 
 function CropperDescription({
@@ -26,11 +26,11 @@ function CropperDescription({
 }: React.ComponentProps<typeof CropperPrimitive.Description>) {
   return (
     <CropperPrimitive.Description
-      data-slot="cropper-description"
       className={cn("sr-only", className)}
+      data-slot="cropper-description"
       {...props}
     />
-  )
+  );
 }
 
 function CropperImage({
@@ -39,14 +39,14 @@ function CropperImage({
 }: React.ComponentProps<typeof CropperPrimitive.Image>) {
   return (
     <CropperPrimitive.Image
-      data-slot="cropper-image"
       className={cn(
         "pointer-events-none h-full w-full object-cover",
-        className
+        className,
       )}
+      data-slot="cropper-image"
       {...props}
     />
-  )
+  );
 }
 
 function CropperCropArea({
@@ -55,14 +55,14 @@ function CropperCropArea({
 }: React.ComponentProps<typeof CropperPrimitive.CropArea>) {
   return (
     <CropperPrimitive.CropArea
-      data-slot="cropper-crop-area"
       className={cn(
         "pointer-events-none absolute border-3 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.3)] in-[[data-slot=cropper]:focus-visible]:ring-[3px] in-[[data-slot=cropper]:focus-visible]:ring-white/50",
-        className
+        className,
       )}
+      data-slot="cropper-crop-area"
       {...props}
     />
-  )
+  );
 }
 
-export { Cropper, CropperDescription, CropperImage, CropperCropArea }
+export { Cropper, CropperDescription, CropperImage, CropperCropArea };

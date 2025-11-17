@@ -1,94 +1,94 @@
-"use client"
+"use client";
 
-import { useState } from "react"
 import {
   ClubIcon,
   DiamondIcon,
   HeartIcon,
-  LucideIcon,
+  type LucideIcon,
   SpadeIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 interface TourStep {
-  icon: LucideIcon
-  title: string
-  description: string
+  icon: LucideIcon;
+  title: string;
+  description: string;
 }
 
 const tourSteps: TourStep[] = [
   {
-    icon: HeartIcon,
-    title: "Heart",
     description:
       "This is your new workspace. Here you'll find all your projects, recent activities, settings, and more.",
+    icon: HeartIcon,
+    title: "Heart",
   },
   {
-    icon: DiamondIcon,
-    title: "Diamond",
     description:
       "Use the toolbar above to create new projects, invite team members, or access settings.",
+    icon: DiamondIcon,
+    title: "Diamond",
   },
   {
-    icon: ClubIcon,
-    title: "Club",
     description:
       "Click the support icon in the top right corner to access our help center and documentation.",
+    icon: ClubIcon,
+    title: "Club",
   },
   {
-    icon: SpadeIcon,
-    title: "Spade",
     description:
       "Press ⌘K to open the command palette. Use arrow keys to navigate and Enter to select an action.",
+    icon: SpadeIcon,
+    title: "Spade",
   },
-]
+];
 
 interface CardProps {
-  number: number
-  isActive: boolean
+  number: number;
+  isActive: boolean;
 }
 
 function Card({ number, isActive }: CardProps) {
   const content = (
-    <div className="flex size-10 items-center justify-center rounded-md bg-secondary text-sm font-medium text-muted-foreground">
+    <div className="flex size-10 items-center justify-center rounded-md bg-secondary font-medium text-muted-foreground text-sm">
       {number + 1}
     </div>
-  )
+  );
 
-  return isActive ? <PopoverAnchor>{content}</PopoverAnchor> : content
+  return isActive ? <PopoverAnchor>{content}</PopoverAnchor> : content;
 }
 
 export default function Component() {
-  const [currentTip, setCurrentTip] = useState(0)
+  const [currentTip, setCurrentTip] = useState(0);
 
   const handleNavigation = () => {
     if (currentTip === tourSteps.length - 1) {
-      setCurrentTip(0)
+      setCurrentTip(0);
     } else {
-      setCurrentTip(currentTip + 1)
+      setCurrentTip(currentTip + 1);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <Popover
         onOpenChange={(open) => {
-          if (open) setCurrentTip(0)
+          if (open) setCurrentTip(0);
         }}
       >
         <div className="grid grid-cols-2 place-items-center gap-4">
           {tourSteps.map((step, index) => (
             <Card
+              isActive={currentTip === index}
               key={step.title}
               number={index}
-              isActive={currentTip === index}
             />
           ))}
         </div>
@@ -99,25 +99,26 @@ export default function Component() {
 
         <PopoverContent
           className="max-w-[280px] py-3 shadow-none"
-          side={currentTip % 2 === 0 ? "left" : "right"}
           showArrow={true}
+          side={currentTip % 2 === 0 ? "left" : "right"}
         >
           <div className="space-y-3">
             <div className="space-y-1">
-              <p className="text-[13px] font-medium">
+              <p className="font-medium text-[13px]">
                 {tourSteps[currentTip].title}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {tourSteps[currentTip].description}
               </p>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {currentTip + 1}/{tourSteps.length}
               </span>
               <button
-                className="text-xs font-medium hover:underline"
+                className="font-medium text-xs hover:underline"
                 onClick={handleNavigation}
+                type="button"
               >
                 {currentTip === tourSteps.length - 1 ? "Start over" : "Next"}
               </button>
@@ -126,5 +127,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { BookOpenIcon, InfoIcon, LifeBuoyIcon } from "lucide-react"
+import { BookOpenIcon, InfoIcon, LifeBuoyIcon } from "lucide-react";
 
-import Logo from "@/registry/default/components/navbar-components/logo"
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import Logo from "@/registry/default/components/navbar-components/logo";
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,60 +10,60 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "#", label: "Home" },
   {
+    items: [
+      {
+        description: "Browse all components in the library.",
+        href: "#",
+        label: "Components",
+      },
+      {
+        description: "Learn how to use the library.",
+        href: "#",
+        label: "Documentation",
+      },
+      {
+        description: "Pre-built layouts for common use cases.",
+        href: "#",
+        label: "Templates",
+      },
+    ],
     label: "Features",
     submenu: true,
     type: "description",
-    items: [
-      {
-        href: "#",
-        label: "Components",
-        description: "Browse all components in the library.",
-      },
-      {
-        href: "#",
-        label: "Documentation",
-        description: "Learn how to use the library.",
-      },
-      {
-        href: "#",
-        label: "Templates",
-        description: "Pre-built layouts for common use cases.",
-      },
-    ],
   },
   {
-    label: "Pricing",
-    submenu: true,
-    type: "simple",
     items: [
       { href: "#", label: "Product A" },
       { href: "#", label: "Product B" },
       { href: "#", label: "Product C" },
       { href: "#", label: "Product D" },
     ],
+    label: "Pricing",
+    submenu: true,
+    type: "simple",
   },
   {
+    items: [
+      { href: "#", icon: "BookOpenIcon", label: "Getting Started" },
+      { href: "#", icon: "LifeBuoyIcon", label: "Tutorials" },
+      { href: "#", icon: "InfoIcon", label: "About Us" },
+    ],
     label: "About",
     submenu: true,
     type: "icon",
-    items: [
-      { href: "#", label: "Getting Started", icon: "BookOpenIcon" },
-      { href: "#", label: "Tutorials", icon: "LifeBuoyIcon" },
-      { href: "#", label: "About Us", icon: "InfoIcon" },
-    ],
   },
-]
+];
 
 export default function Component() {
   return (
@@ -76,32 +76,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -110,18 +110,18 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
+                    <NavigationMenuItem className="w-full" key={link.label}>
                       {link.submenu ? (
                         <>
-                          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                          <div className="px-2 py-1.5 font-medium text-muted-foreground text-xs">
                             {link.label}
                           </div>
                           <ul>
-                            {link.items.map((item, itemIndex) => (
-                              <li key={itemIndex}>
+                            {link.items.map((item, _itemIndex) => (
+                              <li key={item.label}>
                                 <NavigationMenuLink
-                                  href={item.href}
                                   className="py-1.5"
+                                  href={item.href}
                                 >
                                   {item.label}
                                 </NavigationMenuLink>
@@ -130,7 +130,7 @@ export default function Component() {
                           </ul>
                         </>
                       ) : (
-                        <NavigationMenuLink href={link.href} className="py-1.5">
+                        <NavigationMenuLink className="py-1.5" href={link.href}>
                           {link.label}
                         </NavigationMenuLink>
                       )}
@@ -147,9 +147,10 @@ export default function Component() {
                             navigationLinks[index + 1].submenu &&
                             link.type !== navigationLinks[index + 1].type)) && (
                           <div
-                            role="separator"
                             aria-orientation="horizontal"
                             className="-mx-1 my-1 h-px w-full bg-border"
+                            role="separator"
+                            tabIndex={-1}
                           />
                         )}
                     </NavigationMenuItem>
@@ -160,55 +161,55 @@ export default function Component() {
           </Popover>
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <a className="text-primary hover:text-primary/90" href="#">
               <Logo />
             </a>
             {/* Navigation menu */}
-            <NavigationMenu viewport={false} className="max-md:hidden">
+            <NavigationMenu className="max-md:hidden" viewport={false}>
               <NavigationMenuList className="gap-2">
-                {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
+                {navigationLinks.map((link) => (
+                  <NavigationMenuItem key={link.label}>
                     {link.submenu ? (
                       <>
-                        <NavigationMenuTrigger className="bg-transparent px-2 py-1.5 font-medium text-muted-foreground hover:text-primary *:[svg]:-me-0.5 *:[svg]:size-3.5">
+                        <NavigationMenuTrigger className="*:[svg]:-me-0.5 bg-transparent px-2 py-1.5 font-medium text-muted-foreground hover:text-primary *:[svg]:size-3.5">
                           {link.label}
                         </NavigationMenuTrigger>
-                        <NavigationMenuContent className="z-50 p-1 data-[motion=from-end]:slide-in-from-right-16! data-[motion=from-start]:slide-in-from-left-16! data-[motion=to-end]:slide-out-to-right-16! data-[motion=to-start]:slide-out-to-left-16!">
+                        <NavigationMenuContent className="data-[motion=from-end]:slide-in-from-right-16! data-[motion=from-start]:slide-in-from-left-16! data-[motion=to-end]:slide-out-to-right-16! data-[motion=to-start]:slide-out-to-left-16! z-50 p-1">
                           <ul
                             className={cn(
                               link.type === "description"
                                 ? "min-w-64"
-                                : "min-w-48"
+                                : "min-w-48",
                             )}
                           >
-                            {link.items.map((item, itemIndex) => (
-                              <li key={itemIndex}>
+                            {link.items.map((item) => (
+                              <li key={item.label}>
                                 <NavigationMenuLink
-                                  href={item.href}
                                   className="py-1.5"
+                                  href={item.href}
                                 >
                                   {/* Display icon if present */}
                                   {link.type === "icon" && "icon" in item && (
                                     <div className="flex items-center gap-2">
                                       {item.icon === "BookOpenIcon" && (
                                         <BookOpenIcon
-                                          size={16}
-                                          className="text-foreground opacity-60"
                                           aria-hidden="true"
+                                          className="text-foreground opacity-60"
+                                          size={16}
                                         />
                                       )}
                                       {item.icon === "LifeBuoyIcon" && (
                                         <LifeBuoyIcon
-                                          size={16}
-                                          className="text-foreground opacity-60"
                                           aria-hidden="true"
+                                          className="text-foreground opacity-60"
+                                          size={16}
                                         />
                                       )}
                                       {item.icon === "InfoIcon" && (
                                         <InfoIcon
-                                          size={16}
-                                          className="text-foreground opacity-60"
                                           aria-hidden="true"
+                                          className="text-foreground opacity-60"
+                                          size={16}
                                         />
                                       )}
                                       <span>{item.label}</span>
@@ -222,7 +223,7 @@ export default function Component() {
                                       <div className="font-medium">
                                         {item.label}
                                       </div>
-                                      <p className="line-clamp-2 text-xs text-muted-foreground">
+                                      <p className="line-clamp-2 text-muted-foreground text-xs">
                                         {item.description}
                                       </p>
                                     </div>
@@ -242,8 +243,8 @@ export default function Component() {
                       </>
                     ) : (
                       <NavigationMenuLink
-                        href={link.href}
                         className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                        href={link.href}
                       >
                         {link.label}
                       </NavigationMenuLink>
@@ -256,14 +257,14 @@ export default function Component() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm" variant="ghost">
             <a href="#">Sign In</a>
           </Button>
-          <Button asChild size="sm" className="text-sm">
+          <Button asChild className="text-sm" size="sm">
             <a href="#">Get Started</a>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

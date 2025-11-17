@@ -1,4 +1,4 @@
-import { ClockIcon } from "lucide-react"
+import { ClockIcon } from "lucide-react";
 
 import {
   Select,
@@ -6,21 +6,21 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 const items = [
   { label: "Select framework", value: null },
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
-]
+];
 
 export default function SelectWithIcon() {
   return (
     <Select
-      items={items}
-      defaultValue="next"
       aria-label="Select framework with icon"
+      defaultValue="next"
+      items={items}
     >
       <SelectTrigger>
         <ClockIcon />
@@ -34,5 +34,5 @@ export default function SelectWithIcon() {
         ))}
       </SelectPopup>
     </Select>
-  )
+  );
 }

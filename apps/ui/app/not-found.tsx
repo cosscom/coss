@@ -1,19 +1,19 @@
-import { Metadata } from "next"
-import Link from "next/link"
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header"
-import { RiArrowLeftLine } from "@remixicon/react"
+} from "@coss/ui/components/page-header";
+import { RiArrowLeftLine } from "@remixicon/react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export const metadata: Metadata = {
-  title: "Page Not Found",
   description:
     "The page you're looking for doesn't exist or may have been moved.",
-}
+  title: "Page Not Found",
+};
 
 export default function NotFound() {
   return (
@@ -27,19 +27,19 @@ export default function NotFound() {
         <div className="mt-4">
           <Button
             className="group"
-            size="lg"
             render={
               <Link href="/">
                 <RiArrowLeftLine
-                  className="-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5"
                   aria-hidden="true"
+                  className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
                 />
                 Back to Home
               </Link>
             }
+            size="lg"
           />
         </div>
       </PageHeader>
     </div>
-  )
+  );
 }

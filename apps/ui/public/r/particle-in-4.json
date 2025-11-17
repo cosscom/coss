@@ -1,26 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "particle-in-4",
-  "type": "registry:block",
+  "categories": ["input", "input group", "kbd", "search"],
   "description": "Input group with keyboard shortcut",
-  "registryDependencies": [
-    "@coss/input-group",
-    "@coss/kbd"
-  ],
   "files": [
     {
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\nimport { Kbd } from \"@/registry/default/ui/kbd\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        aria-label=\"Search\"\n        placeholder=\"Search…\"\n        type=\"search\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "path": "registry/default/particles/particle-in-4.tsx",
-      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Kbd } from \"@/registry/default/ui/kbd\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"search\"\n        placeholder=\"Search…\"\n        aria-label=\"Search\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:block"
     }
   ],
-  "meta": {
-    "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
-  },
-  "categories": [
-    "input",
-    "input group",
-    "kbd",
-    "search"
-  ]
+  "name": "particle-in-4",
+  "registryDependencies": ["@coss/input-group", "@coss/kbd"],
+  "type": "registry:block"
 }

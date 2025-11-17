@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Cta() {
   return (
@@ -9,11 +9,12 @@ export default function Cta() {
       <Button asChild className="rounded-full">
         <a
           href="https://github.com/cosscom/coss/discussions/categories/suggestions"
+          rel="noreferrer"
           target="_blank"
         >
           <span className="text-primary-foreground">Suggest component</span>
         </a>
       </Button>
     </div>
-  )
+  );
 }

@@ -4,7 +4,8 @@ import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header"
+} from "@coss/ui/components/page-header";
+import type { Metadata } from "next";
 
 import { ParticlesDisplay } from "./particles-display"
 import SearchContainer from "./search-container"
@@ -50,5 +51,5 @@ export default function Page({
         <ParticlesDisplayServer searchParams={searchParams} />
       </Suspense>
     </div>
-  )
+  );
 }

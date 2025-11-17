@@ -1,20 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "input-group-with-start-text",
-  "type": "registry:example",
+  "categories": ["input", "input group"],
   "description": "Input group with start text",
-  "registryDependencies": [
-    "@coss/input-group"
-  ],
   "files": [
     {
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\";\n\nexport default function InputGroupWithStartText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        aria-label=\"Set your URL\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss\"\n        type=\"search\"\n      />\n      <InputGroupAddon>\n        <InputGroupText>i.cal.com/</InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "path": "registry/default/examples/input-group-with-start-text.tsx",
-      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithStartText() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"search\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss\"\n        aria-label=\"Set your URL\"\n      />\n      <InputGroupAddon>\n        <InputGroupText>i.cal.com/</InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "input",
-    "input group"
-  ]
+  "name": "input-group-with-start-text",
+  "registryDependencies": ["@coss/input-group"],
+  "type": "registry:example"
 }

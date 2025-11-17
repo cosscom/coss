@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useId, useState } from "react"
-import { CheckIcon, ChevronDownIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { useId, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,97 +12,97 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/registry/default/ui/command"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/command";
+import { Label } from "@/registry/default/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const frameworks = [
   {
-    value: "next.js",
     label: "Next.js",
+    value: "next.js",
   },
   {
-    value: "sveltekit",
     label: "SvelteKit",
+    value: "sveltekit",
   },
   {
-    value: "nuxt.js",
     label: "Nuxt.js",
+    value: "nuxt.js",
   },
   {
-    value: "remix",
     label: "Remix",
+    value: "remix",
   },
   {
-    value: "astro",
     label: "Astro",
+    value: "astro",
   },
   {
-    value: "angular",
     label: "Angular",
+    value: "angular",
   },
   {
-    value: "vue",
     label: "Vue.js",
+    value: "vue",
   },
   {
-    value: "react",
     label: "React",
+    value: "react",
   },
   {
-    value: "ember",
     label: "Ember.js",
+    value: "ember",
   },
   {
-    value: "gatsby",
     label: "Gatsby",
+    value: "gatsby",
   },
   {
-    value: "eleventy",
     label: "Eleventy",
+    value: "eleventy",
   },
   {
-    value: "solid",
     label: "SolidJS",
+    value: "solid",
   },
   {
-    value: "preact",
     label: "Preact",
+    value: "preact",
   },
   {
-    value: "qwik",
     label: "Qwik",
+    value: "qwik",
   },
   {
-    value: "alpine",
     label: "Alpine.js",
+    value: "alpine",
   },
   {
-    value: "lit",
     label: "Lit",
+    value: "lit",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
-  const [open, setOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<string>("")
+  const id = useId();
+  const [open, setOpen] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
 
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Select with search</Label>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           <Button
-            id={id}
-            variant="outline"
-            role="combobox"
             aria-expanded={open}
-            className="w-full justify-between border-input bg-background px-3 font-normal outline-offset-0 outline-none hover:bg-background focus-visible:outline-[3px]"
+            className="w-full justify-between border-input bg-background px-3 font-normal outline-none outline-offset-0 hover:bg-background focus-visible:outline-[3px]"
+            id={id}
+            role="combobox"
+            variant="outline"
           >
             <span className={cn("truncate", !value && "text-muted-foreground")}>
               {value
@@ -111,15 +111,15 @@ export default function Component() {
                 : "Select framework"}
             </span>
             <ChevronDownIcon
-              size={16}
-              className="shrink-0 text-muted-foreground/80"
               aria-hidden="true"
+              className="shrink-0 text-muted-foreground/80"
+              size={16}
             />
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
           align="start"
+          className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
         >
           <Command>
             <CommandInput placeholder="Search framework..." />
@@ -129,15 +129,15 @@ export default function Component() {
                 {frameworks.map((framework) => (
                   <CommandItem
                     key={framework.value}
-                    value={framework.value}
                     onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue)
-                      setOpen(false)
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
                     }}
+                    value={framework.value}
                   >
                     {framework.label}
                     {value === framework.value && (
-                      <CheckIcon size={16} className="ml-auto" />
+                      <CheckIcon className="ml-auto" size={16} />
                     )}
                   </CommandItem>
                 ))}
@@ -147,5 +147,5 @@ export default function Component() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

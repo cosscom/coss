@@ -1,19 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "particle-bu-6",
-  "type": "registry:block",
+  "categories": ["button"],
   "description": "Expandable show more/less toggle button",
-  "registryDependencies": [
-    "@coss/button"
-  ],
   "files": [
     {
+      "content": "\"use client\";\n\nimport { ChevronDownIcon, ChevronUpIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  const [isExpanded, setIsExpanded] = useState<boolean>(false);\n\n  const toggleExpand = () => {\n    setIsExpanded((prevState) => !prevState);\n  };\n\n  return (\n    <Button\n      aria-controls=\"expandable-content\"\n      aria-expanded={isExpanded}\n      className=\"gap-1\"\n      onClick={toggleExpand}\n      variant=\"ghost\" // Use this ID on the element that this button controls\n    >\n      {isExpanded ? \"Show less\" : \"Show more\"}\n      {isExpanded ? (\n        <ChevronUpIcon aria-hidden=\"true\" className=\"-me-1\" />\n      ) : (\n        <ChevronDownIcon aria-hidden=\"true\" className=\"-me-1\" />\n      )}\n    </Button>\n  );\n}\n",
       "path": "registry/default/particles/particle-bu-6.tsx",
-      "content": "\"use client\"\n\nimport { useState } from \"react\"\nimport { ChevronDownIcon, ChevronUpIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\n\nexport default function Particle() {\n  const [isExpanded, setIsExpanded] = useState<boolean>(false)\n\n  const toggleExpand = () => {\n    setIsExpanded((prevState) => !prevState)\n  }\n\n  return (\n    <Button\n      className=\"gap-1\"\n      variant=\"ghost\"\n      onClick={toggleExpand}\n      aria-expanded={isExpanded}\n      aria-controls=\"expandable-content\" // Use this ID on the element that this button controls\n    >\n      {isExpanded ? \"Show less\" : \"Show more\"}\n      {isExpanded ? (\n        <ChevronUpIcon className=\"-me-1\" aria-hidden=\"true\" />\n      ) : (\n        <ChevronDownIcon className=\"-me-1\" aria-hidden=\"true\" />\n      )}\n    </Button>\n  )\n}\n",
       "type": "registry:block"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "name": "particle-bu-6",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:block"
 }

@@ -1,5 +1,5 @@
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function CheckboxCardDemo() {
   return (
@@ -7,10 +7,10 @@ export default function CheckboxCardDemo() {
       <Checkbox defaultChecked />
       <div className="flex flex-col gap-1">
         <p className="text-sm leading-4">Enable notifications</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           You can enable or disable notifications at any time.
         </p>
       </div>
     </Label>
-  )
+  );
 }

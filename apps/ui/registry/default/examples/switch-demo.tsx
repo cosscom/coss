@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Switch } from "@/registry/default/ui/switch"
+import { Label } from "@/registry/default/ui/label";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function SwitchWithLabel() {
   return (
@@ -7,5 +7,5 @@ export default function SwitchWithLabel() {
       <Switch />
       Marketing emails
     </Label>
-  )
+  );
 }

@@ -18,8 +18,8 @@ This repository contains multiple products and applications that make up the cos
 - **`apps/ui/`** - coss ui component library and documentation
 - **`apps/origin/`** - Legacy Origin UI components (pre-acquisition)
 - **`packages/ui/`** - Shared UI components package
-- **`packages/eslint-config/`** - ESLint configurations
 - **`packages/typescript-config/`** - TypeScript configurations
+- **`biome.json`** - Shared Biome configuration for linting and formatting
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -71,8 +71,7 @@ For local development, create a `.env.local` file in each of the app directories
 This Turborepo has some additional tools already setup for you:
 
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- [Biome](https://biomejs.dev/) for linting and formatting
 
 #### Build
 

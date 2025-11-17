@@ -1,7 +1,7 @@
-import { Button } from "@/registry/default/ui/button"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Input } from "@/registry/default/ui/input"
+import { Button } from "@/registry/default/ui/button";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Input } from "@/registry/default/ui/input";
 import {
   Sheet,
   SheetClose,
@@ -11,7 +11,7 @@ import {
   SheetPopup,
   SheetTitle,
   SheetTrigger,
-} from "@/registry/default/ui/sheet"
+} from "@/registry/default/ui/sheet";
 
 export default function SheetDemo() {
   return (
@@ -31,11 +31,11 @@ export default function SheetDemo() {
           <div className="flex flex-col gap-4 px-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
-              <Input type="text" defaultValue="Margaret Welsh" />
+              <Input defaultValue="Margaret Welsh" type="text" />
             </Field>
             <Field>
               <FieldLabel>Username</FieldLabel>
-              <Input type="text" defaultValue="@maggie.welsh" />
+              <Input defaultValue="@maggie.welsh" type="text" />
             </Field>
           </div>
           <SheetFooter>
@@ -45,5 +45,5 @@ export default function SheetDemo() {
         </Form>
       </SheetPopup>
     </Sheet>
-  )
+  );
 }

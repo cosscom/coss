@@ -4,4 +4,4 @@ export const PAGES_NEW = [
   "/docs/components/input-group",
   "/docs/components/kbd",
   "/docs/components/spinner",
-]
+];

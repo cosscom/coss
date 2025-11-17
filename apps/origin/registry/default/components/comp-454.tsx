@@ -1,16 +1,16 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-}
+  currentPage: number;
+  totalPages: number;
+};
 
 export default function Component({
   currentPage,
@@ -21,19 +21,19 @@ export default function Component({
       <PaginationContent className="w-full justify-between gap-3">
         <PaginationItem>
           <Button
-            variant="outline"
-            className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             aria-disabled={currentPage === 1 ? true : undefined}
-            role={currentPage === 1 ? "link" : undefined}
             asChild
+            className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
+            role={currentPage === 1 ? "link" : undefined}
+            variant="outline"
           >
             <a
               href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
             >
               <ChevronLeftIcon
+                aria-hidden="true"
                 className="-ms-1 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
               Previous
             </a>
@@ -41,11 +41,11 @@ export default function Component({
         </PaginationItem>
         <PaginationItem>
           <Button
-            variant="outline"
-            className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
             aria-disabled={currentPage === totalPages ? true : undefined}
-            role={currentPage === totalPages ? "link" : undefined}
             asChild
+            className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
+            role={currentPage === totalPages ? "link" : undefined}
+            variant="outline"
           >
             <a
               href={
@@ -56,14 +56,14 @@ export default function Component({
             >
               Next
               <ChevronRightIcon
+                aria-hidden="true"
                 className="-me-1 opacity-60"
                 size={16}
-                aria-hidden="true"
               />
             </a>
           </Button>
         </PaginationItem>
       </PaginationContent>
     </Pagination>
-  )
+  );
 }

@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { ArrowUpIcon, PlusIcon } from "lucide-react"
+import { ArrowUpIcon, PlusIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupText,
   InputGroupTextarea,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Menu,
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function InputGroupWithTextarea() {
   return (
@@ -33,10 +33,10 @@ export default function InputGroupWithTextarea() {
                 <MenuTrigger
                   render={
                     <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="rounded-full"
                       aria-label="Add files"
+                      className="rounded-full"
+                      size="icon-sm"
+                      variant="ghost"
                     />
                   }
                 >
@@ -58,10 +58,10 @@ export default function InputGroupWithTextarea() {
           <TooltipTrigger
             render={
               <Button
-                variant="default"
+                aria-label="Send"
                 className="rounded-full"
                 size="icon-sm"
-                aria-label="Send"
+                variant="default"
               >
                 <ArrowUpIcon />
               </Button>
@@ -71,5 +71,5 @@ export default function InputGroupWithTextarea() {
         </Tooltip>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

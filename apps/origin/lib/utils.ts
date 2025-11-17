@@ -1,63 +1,62 @@
-import registry from "@/registry.json"
-import { clsx, type ClassValue } from "clsx"
-import type { RegistryItem } from "shadcn/registry"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import type { RegistryItem } from "shadcn/registry";
+import { twMerge } from "tailwind-merge";
+import type { RegistryTag } from "@/registry/registry-tags";
+import registry from "@/registry.json";
 
-import type { RegistryTag } from "@/registry/registry-tags"
-
-const components = registry.items as unknown as RegistryItem[]
+const components = registry.items as unknown as RegistryItem[];
 
 export const getComponents = (
-  selectedTags: RegistryTag[] = []
+  selectedTags: RegistryTag[] = [],
 ): RegistryItem[] => {
   return selectedTags.length
     ? components.filter((component) =>
         selectedTags.every(
-          (tag) => component.meta?.tags?.includes(tag) ?? false
-        )
+          (tag) => component.meta?.tags?.includes(tag) ?? false,
+        ),
       )
-    : components
-}
+    : components;
+};
 
 export const getComponentsByNames = (names: string[]): RegistryItem[] => {
-  const componentsMap = new Map(components.map((comp) => [comp.name, comp]))
+  const componentsMap = new Map(components.map((comp) => [comp.name, comp]));
 
   return names
     .map((name) => componentsMap.get(name))
-    .filter((comp): comp is RegistryItem => comp !== undefined)
-}
+    .filter((comp): comp is RegistryItem => comp !== undefined);
+};
 
 export const getAvailableTags = (
-  selectedTags: RegistryTag[]
+  selectedTags: RegistryTag[],
 ): RegistryTag[] => {
-  if (!selectedTags.length) return []
+  if (!selectedTags.length) return [];
 
   // Get all components that have all the selected tags
   const matchingComponents = components.filter((component) =>
-    selectedTags.every((tag) => component.meta?.tags?.includes(tag) ?? false)
-  )
+    selectedTags.every((tag) => component.meta?.tags?.includes(tag) ?? false),
+  );
 
   // Get all unique tags from the matching components
-  const availableTags = new Set<RegistryTag>()
-  matchingComponents.forEach((component) => {
-    component.meta?.tags?.forEach((tag: RegistryTag) => {
+  const availableTags = new Set<RegistryTag>();
+  for (const component of matchingComponents) {
+    for (const tag of component.meta?.tags ?? []) {
       if (!selectedTags.includes(tag)) {
-        availableTags.add(tag)
+        availableTags.add(tag);
       }
-    })
-  })
+    }
+  }
 
-  return Array.from(availableTags)
-}
+  return Array.from(availableTags);
+};
 
 export const convertRegistryPaths = (content: string): string => {
   return content
     .replace(/@\/registry\/default\/ui/g, "@/components/ui")
     .replace(/@\/registry\/default\/compositions/g, "@/components")
     .replace(/@\/registry\/default\/hooks/g, "@/hooks")
-    .replace(/@\/registry\/default\/lib/g, "@/lib")
-}
+    .replace(/@\/registry\/default\/lib/g, "@/lib");
+};
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }

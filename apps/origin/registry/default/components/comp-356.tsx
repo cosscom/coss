@@ -1,17 +1,17 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             W/ arrow
           </Button>
         </TooltipTrigger>
@@ -20,5 +20,5 @@ export default function Component() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

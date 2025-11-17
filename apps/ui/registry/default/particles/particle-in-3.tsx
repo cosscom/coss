@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { InfoIcon, StarIcon } from "lucide-react"
+import { InfoIcon, StarIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Popover,
   PopoverDescription,
   PopoverPopup,
   PopoverTitle,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 export default function Particle() {
-  const [isFavorite, setIsFavorite] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false);
 
   return (
     <InputGroup className="[--radius-lg:9999px] [--radius:9999rem]">
       <Popover>
         <InputGroupAddon>
           <PopoverTrigger
-            render={<Button variant="secondary" size="icon-xs" />}
+            render={<Button size="icon-xs" variant="secondary" />}
           >
             <InfoIcon />
           </PopoverTrigger>
         </InputGroupAddon>
         <PopoverPopup
           align="start"
-          sideOffset={6}
           alignOffset={-5}
           className="w-64"
+          sideOffset={6}
         >
           <PopoverTitle className="text-sm">
             Your connection is not secure.
@@ -48,22 +48,22 @@ export default function Particle() {
         https://
       </InputGroupAddon>
       <InputGroupInput
-        type="text"
-        className="*:[input]:ps-1!"
         aria-label="Url"
+        className="*:[input]:ps-1!"
+        type="text"
       />
       <InputGroupAddon align="inline-end">
         <Button
-          variant="ghost"
           onClick={() => setIsFavorite(!isFavorite)}
           size="icon-xs"
+          variant="ghost"
         >
           <StarIcon
-            data-favorite={isFavorite}
             className="data-[favorite=true]:fill-primary data-[favorite=true]:stroke-primary"
+            data-favorite={isFavorite}
           />
         </Button>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

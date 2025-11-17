@@ -1,11 +1,11 @@
-import { CornerUpLeftIcon, StarIcon } from "lucide-react"
+import { CornerUpLeftIcon, StarIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   PreviewCard,
   PreviewCardPopup,
   PreviewCardTrigger,
-} from "@/registry/default/ui/preview-card"
+} from "@/registry/default/ui/preview-card";
 
 export default function PreviewCardDemo() {
   return (
@@ -16,18 +16,18 @@ export default function PreviewCardDemo() {
       <PreviewCardPopup>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <h4 className="text-sm font-medium">coss.com/ui</h4>
-            <p className="text-sm text-muted-foreground">
+            <h4 className="font-medium text-sm">coss.com/ui</h4>
+            <p className="text-muted-foreground text-sm">
               Beautifully designed components that you can copy and paste into
               your apps.
             </p>
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 text-muted-foreground text-xs">
             <div className="flex items-center gap-1">
               <span
-                className="size-2 rounded-full bg-blue-500"
                 aria-hidden="true"
-              ></span>
+                className="size-2 rounded-full bg-blue-500"
+              />
               <span>TypeScript</span>
             </div>
             <div className="flex items-center gap-1">
@@ -42,5 +42,5 @@ export default function PreviewCardDemo() {
         </div>
       </PreviewCardPopup>
     </PreviewCard>
-  )
+  );
 }

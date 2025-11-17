@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 import {
   Select,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 type PaginationProps = {
-  currentPage?: number
-  totalPages?: number
-  totalResults: number
-  resultsPerPage?: number
-}
+  currentPage?: number;
+  totalPages?: number;
+  totalResults: number;
+  resultsPerPage?: number;
+};
 
 export default function Particle({
   currentPage: initialPage = 1,
@@ -31,28 +31,28 @@ export default function Particle({
   totalResults,
   resultsPerPage = 10,
 }: PaginationProps) {
-  const [currentPage, setCurrentPage] = React.useState(initialPage)
+  const [currentPage, setCurrentPage] = React.useState(initialPage);
   const resultRanges = Array.from({ length: totalPages }, (_, i) => {
-    const start = i * resultsPerPage + 1
-    const end = Math.min((i + 1) * resultsPerPage, totalResults)
-    const pageNum = i + 1
-    return { label: `${start}-${end}`, value: pageNum }
-  })
+    const start = i * resultsPerPage + 1;
+    const end = Math.min((i + 1) * resultsPerPage, totalResults);
+    const pageNum = i + 1;
+    return { label: `${start}-${end}`, value: pageNum };
+  });
 
   return (
     <div className="flex items-center justify-between gap-2">
       {/* Results range selector */}
       <div className="flex items-center gap-2 whitespace-nowrap">
-        <p className="text-sm text-muted-foreground">Viewing</p>
+        <p className="text-muted-foreground text-sm">Viewing</p>
         <Select
-          value={currentPage}
-          onValueChange={(value) => setCurrentPage(value as number)}
           items={resultRanges}
+          onValueChange={(value) => setCurrentPage(value as number)}
+          value={currentPage}
         >
           <SelectTrigger
-            className="min-w-none w-fit"
-            size="sm"
             aria-label="Select result range"
+            className="w-fit min-w-none"
+            size="sm"
           >
             <SelectValue />
           </SelectTrigger>
@@ -64,7 +64,7 @@ export default function Particle({
             ))}
           </SelectPopup>
         </Select>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           of{" "}
           <strong className="font-medium text-foreground">
             {totalResults}
@@ -82,12 +82,12 @@ export default function Particle({
                 className="sm:*:[svg]:hidden"
                 render={
                   <Button
-                    variant="outline"
-                    size="sm"
                     disabled={currentPage === 1 ? true : undefined}
                     onClick={() =>
                       currentPage > 1 && setCurrentPage(currentPage - 1)
                     }
+                    size="sm"
+                    variant="outline"
                   />
                 }
               />
@@ -97,13 +97,13 @@ export default function Particle({
                 className="sm:*:[svg]:hidden"
                 render={
                   <Button
-                    variant="outline"
-                    size="sm"
                     disabled={currentPage === totalPages ? true : undefined}
                     onClick={() =>
                       currentPage < totalPages &&
                       setCurrentPage(currentPage + 1)
                     }
+                    size="sm"
+                    variant="outline"
                   />
                 }
               />
@@ -112,5 +112,5 @@ export default function Particle({
         </Pagination>
       </div>
     </div>
-  )
+  );
 }

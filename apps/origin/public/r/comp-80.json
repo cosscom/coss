@@ -1,21 +1,17 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "comp-80",
-  "type": "registry:component",
-  "registryDependencies": [
-    "https://coss.com/origin/r/button.json"
-  ],
   "files": [
     {
-      "path": "registry/default/components/comp-80.tsx",
       "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function Component() {\n  return <Button className=\"rounded-full\">Button</Button>\n}\n",
+      "path": "registry/default/components/comp-80.tsx",
       "type": "registry:component"
     }
   ],
   "meta": {
-    "tags": [
-      "button"
-    ],
-    "style": 2
-  }
+    "style": 2,
+    "tags": ["button"]
+  },
+  "name": "comp-80",
+  "registryDependencies": ["https://coss.com/origin/r/button.json"],
+  "type": "registry:component"
 }

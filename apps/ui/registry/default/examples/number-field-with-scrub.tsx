@@ -5,7 +5,7 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
   NumberFieldScrubArea,
-} from "@/registry/default/ui/number-field"
+} from "@/registry/default/ui/number-field";
 
 export default function NumberFieldDemoWithScrub() {
   return (
@@ -17,5 +17,5 @@ export default function NumberFieldDemoWithScrub() {
         <NumberFieldIncrement />
       </NumberFieldGroup>
     </NumberField>
-  )
+  );
 }

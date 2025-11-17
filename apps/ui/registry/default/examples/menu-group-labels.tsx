@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
   MenuGroup,
@@ -7,7 +7,7 @@ import {
   MenuPopup,
   MenuSeparator,
   MenuTrigger,
-} from "@/registry/default/ui/menu"
+} from "@/registry/default/ui/menu";
 
 export default function MenuGroupLabelsDemo() {
   return (
@@ -27,5 +27,5 @@ export default function MenuGroupLabelsDemo() {
         </MenuGroup>
       </MenuPopup>
     </Menu>
-  )
+  );
 }

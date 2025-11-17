@@ -1,4 +1,4 @@
-import { Badge } from "@/registry/default/ui/badge"
+import { Badge } from "@/registry/default/ui/badge";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 export default function TableDemo() {
   return (
@@ -28,8 +28,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-emerald-500"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-emerald-500"
               />
               Paid
             </Badge>
@@ -42,8 +42,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-muted-foreground/64"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-muted-foreground/64"
               />
               Unpaid
             </Badge>
@@ -56,8 +56,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-amber-500"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-amber-500"
               />
               Pending
             </Badge>
@@ -70,8 +70,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-emerald-500"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-emerald-500"
               />
               Paid
             </Badge>
@@ -84,8 +84,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-emerald-500"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-emerald-500"
               />
               Paid
             </Badge>
@@ -98,8 +98,8 @@ export default function TableDemo() {
           <TableCell>
             <Badge variant="outline">
               <span
-                className="size-1.5 rounded-full bg-red-500"
                 aria-hidden="true"
+                className="size-1.5 rounded-full bg-red-500"
               />
               Failed
             </Badge>
@@ -115,5 +115,5 @@ export default function TableDemo() {
         </TableRow>
       </TableFooter>
     </Table>
-  )
+  );
 }

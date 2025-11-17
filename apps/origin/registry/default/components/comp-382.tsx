@@ -1,118 +1,117 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BellIcon } from "lucide-react"
+import { BellIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 
 const initialNotifications = [
   {
-    id: 1,
-    user: "Chris Tompson",
     action: "requested review on",
+    id: 1,
     target: "PR #42: Feature implementation",
     timestamp: "15 minutes ago",
     unread: true,
+    user: "Chris Tompson",
   },
   {
-    id: 2,
-    user: "Emma Davis",
     action: "shared",
+    id: 2,
     target: "New component library",
     timestamp: "45 minutes ago",
     unread: true,
+    user: "Emma Davis",
   },
   {
-    id: 3,
-    user: "James Wilson",
     action: "assigned you to",
+    id: 3,
     target: "API integration task",
     timestamp: "4 hours ago",
     unread: false,
+    user: "James Wilson",
   },
   {
-    id: 4,
-    user: "Alex Morgan",
     action: "replied to your comment in",
+    id: 4,
     target: "Authentication flow",
     timestamp: "12 hours ago",
     unread: false,
+    user: "Alex Morgan",
   },
   {
-    id: 5,
-    user: "Sarah Chen",
     action: "commented on",
+    id: 5,
     target: "Dashboard redesign",
     timestamp: "2 days ago",
     unread: false,
+    user: "Sarah Chen",
   },
   {
-    id: 6,
-    user: "Miky Derya",
     action: "mentioned you in",
+    id: 6,
     target: "coss.com open graph image",
     timestamp: "2 weeks ago",
     unread: false,
+    user: "Miky Derya",
   },
-]
+];
 
 function Dot({ className }: { className?: string }) {
   return (
     <svg
-      width="6"
-      height="6"
-      fill="currentColor"
-      viewBox="0 0 6 6"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
       aria-hidden="true"
+      className={className}
+      fill="currentColor"
+      height="6"
+      viewBox="0 0 6 6"
+      width="6"
     >
       <circle cx="3" cy="3" r="3" />
     </svg>
-  )
+  );
 }
 
 export default function Component() {
-  const [notifications, setNotifications] = useState(initialNotifications)
-  const unreadCount = notifications.filter((n) => n.unread).length
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const handleMarkAllAsRead = () => {
     setNotifications(
       notifications.map((notification) => ({
         ...notification,
         unread: false,
-      }))
-    )
-  }
+      })),
+    );
+  };
 
   const handleNotificationClick = (id: number) => {
     setNotifications(
       notifications.map((notification) =>
         notification.id === id
           ? { ...notification, unread: false }
-          : notification
-      )
-    )
-  }
+          : notification,
+      ),
+    );
+  };
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          aria-label="Open notifications"
+          className="relative"
           size="icon"
           variant="outline"
-          className="relative"
-          aria-label="Open notifications"
         >
-          <BellIcon size={16} aria-hidden="true" />
+          <BellIcon aria-hidden="true" size={16} />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 left-full min-w-5 -translate-x-1/2 px-1">
+            <Badge className="-top-2 -translate-x-1/2 absolute left-full min-w-5 px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
@@ -120,31 +119,34 @@ export default function Component() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-1">
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">
-          <div className="text-sm font-semibold">Notifications</div>
+          <div className="font-semibold text-sm">Notifications</div>
           {unreadCount > 0 && (
             <button
-              className="text-xs font-medium hover:underline"
+              className="font-medium text-xs hover:underline"
               onClick={handleMarkAllAsRead}
+              type="button"
             >
               Mark all as read
             </button>
           )}
         </div>
         <div
-          role="separator"
           aria-orientation="horizontal"
           className="-mx-1 my-1 h-px bg-border"
-        ></div>
+          role="separator"
+          tabIndex={-1}
+        />
         {notifications.map((notification) => (
           <div
-            key={notification.id}
             className="rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent"
+            key={notification.id}
           >
             <div className="relative flex items-start pe-3">
               <div className="flex-1 space-y-1">
                 <button
                   className="text-left text-foreground/80 after:absolute after:inset-0"
                   onClick={() => handleNotificationClick(notification.id)}
+                  type="button"
                 >
                   <span className="font-medium text-foreground hover:underline">
                     {notification.user}
@@ -155,7 +157,7 @@ export default function Component() {
                   </span>
                   .
                 </button>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {notification.timestamp}
                 </div>
               </div>
@@ -170,5 +172,5 @@ export default function Component() {
         ))}
       </PopoverContent>
     </Popover>
-  )
+  );
 }

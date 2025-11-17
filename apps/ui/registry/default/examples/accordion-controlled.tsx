@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
 import {
   Accordion,
   AccordionItem,
   AccordionPanel,
   AccordionTrigger,
-} from "@/registry/default/ui/accordion"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/accordion";
+import { Button } from "@/registry/default/ui/button";
 
 export default function AccordionControlledDemo() {
-  const [value, setValue] = React.useState<string[]>([])
+  const [value, setValue] = React.useState<string[]>([]);
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <Accordion className="w-full" value={value} onValueChange={setValue}>
+      <Accordion className="w-full" onValueChange={setValue} value={value}>
         <AccordionItem value="item-1">
           <AccordionTrigger>What is Base UI?</AccordionTrigger>
           <AccordionPanel>
@@ -40,15 +40,15 @@ export default function AccordionControlledDemo() {
 
       <div className="flex flex-col items-start gap-4">
         <Button
-          variant="outline"
           onClick={() => setValue(["item-1", "item-2"])}
+          variant="outline"
         >
           Open First Two
         </Button>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Open items: {value.length > 0 ? value.join(", ") : "None"}
         </p>
       </div>
     </div>
-  )
+  );
 }

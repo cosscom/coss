@@ -1,14 +1,14 @@
-import { addDays } from "date-fns"
+import { addDays } from "date-fns";
 
-import { Calendar } from "@/registry/default/ui/calendar"
+import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {
-  const today = new Date()
+  const today = new Date();
 
   return (
     <div>
       <Calendar
-        mode="range"
+        className="rounded-md border p-2"
         disabled={[
           { before: new Date() }, // Dates before today
           new Date(), // Today
@@ -23,23 +23,23 @@ export default function Component() {
           },
         ]}
         excludeDisabled
-        className="rounded-md border p-2"
+        mode="range"
       />
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-4 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Disabled dates -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

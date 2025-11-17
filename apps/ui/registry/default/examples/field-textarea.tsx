@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@/registry/default/ui/field"
-import { Textarea } from "@/registry/default/ui/textarea"
+} from "@/registry/default/ui/field";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function FieldTextareaDemo() {
   return (
@@ -16,5 +16,5 @@ export default function FieldTextareaDemo() {
         Write a short bio. Maximum 500 characters.
       </FieldDescription>
     </Field>
-  )
+  );
 }

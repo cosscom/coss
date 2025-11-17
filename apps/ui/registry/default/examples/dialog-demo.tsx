@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,10 +8,10 @@ import {
   DialogPopup,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
-import { Input } from "@/registry/default/ui/input"
+} from "@/registry/default/ui/dialog";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Input } from "@/registry/default/ui/input";
 
 export default function DialogDemo() {
   return (
@@ -31,11 +31,11 @@ export default function DialogDemo() {
           <div className="flex flex-col gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
-              <Input type="text" defaultValue="Margaret Welsh" />
+              <Input defaultValue="Margaret Welsh" type="text" />
             </Field>
             <Field>
               <FieldLabel>Username</FieldLabel>
-              <Input type="text" defaultValue="@maggie.welsh" />
+              <Input defaultValue="@maggie.welsh" type="text" />
             </Field>
           </div>
           <DialogFooter>
@@ -47,5 +47,5 @@ export default function DialogDemo() {
         </Form>
       </DialogPopup>
     </Dialog>
-  )
+  );
 }

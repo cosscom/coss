@@ -3,14 +3,14 @@ import {
   HistoryIcon,
   MessageSquareText,
   UserRoundPlus,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/registry/default/ui/avatar"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/avatar";
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
@@ -19,83 +19,83 @@ export default function Component() {
         {/* Left side */}
         <div className="flex items-center gap-2">
           <Button
-            className="size-8"
-            variant="ghost"
-            size="icon"
             aria-label="Go back"
             asChild
+            className="size-8"
+            size="icon"
+            variant="ghost"
           >
             <a href="#">
               <ChevronLeftIcon />
             </a>
           </Button>
-          <h1 className="text-sm font-medium">Basic UI</h1>
+          <h1 className="font-medium text-sm">Basic UI</h1>
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
           {/* History button */}
           <Button
+            aria-label="History"
+            className="size-8 rounded-full text-muted-foreground shadow-none"
             size="icon"
             variant="ghost"
-            className="size-8 rounded-full text-muted-foreground shadow-none"
-            aria-label="History"
           >
-            <HistoryIcon size={16} aria-hidden="true" />
+            <HistoryIcon aria-hidden="true" size={16} />
           </Button>
           {/* Comments button */}
           <Button
+            aria-label="Save"
+            className="size-8 rounded-full text-muted-foreground shadow-none"
             size="icon"
             variant="ghost"
-            className="size-8 rounded-full text-muted-foreground shadow-none"
-            aria-label="Save"
           >
-            <MessageSquareText size={16} aria-hidden="true" />
+            <MessageSquareText aria-hidden="true" size={16} />
           </Button>
           {/* Add user */}
           <Button
+            aria-label="Add user"
+            className="size-8 rounded-full text-muted-foreground shadow-none"
             size="icon"
             variant="ghost"
-            className="size-8 rounded-full text-muted-foreground shadow-none"
-            aria-label="Add user"
           >
-            <UserRoundPlus size={16} aria-hidden="true" />
+            <UserRoundPlus aria-hidden="true" size={16} />
           </Button>
           {/* Online users */}
           <div className="ml-2 flex items-center gap-2">
             <div className="relative">
               <Avatar>
-                <AvatarImage src="/origin/avatar-80-07.jpg" alt="Kelly King" />
+                <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-emerald-500">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-emerald-500">
                 <span className="sr-only">Online</span>
               </span>
             </div>
             <div className="relative">
               <Avatar>
                 <AvatarImage
-                  src="/origin/avatar-80-06.jpg"
                   alt="Martha Johnson"
+                  src="/origin/avatar-80-06.jpg"
                 />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>
             <div className="relative">
               <Avatar>
-                <AvatarImage src="/origin/avatar-80-05.jpg" alt="Linda Green" />
+                <AvatarImage alt="Linda Green" src="/origin/avatar-80-05.jpg" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>
             <Button
-              variant="secondary"
-              className="flex size-8 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground ring-background hover:bg-secondary hover:text-foreground"
+              className="flex size-8 items-center justify-center rounded-full bg-secondary text-muted-foreground text-xs ring-background hover:bg-secondary hover:text-foreground"
               size="icon"
+              variant="secondary"
             >
               +3
             </Button>
@@ -103,5 +103,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

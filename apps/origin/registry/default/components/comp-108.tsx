@@ -1,32 +1,32 @@
-import { EllipsisIcon, FilesIcon, FilmIcon } from "lucide-react"
+import { EllipsisIcon, FilesIcon, FilmIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
+    <div className="-space-x-px inline-flex rounded-md shadow-xs rtl:space-x-reverse">
       <Button
         className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
         variant="outline"
       >
-        <FilesIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+        <FilesIcon aria-hidden="true" className="-ms-1 opacity-60" size={16} />
         Files
       </Button>
       <Button
         className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
         variant="outline"
       >
-        <FilmIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+        <FilmIcon aria-hidden="true" className="-ms-1 opacity-60" size={16} />
         Media
       </Button>
       <Button
-        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
-        variant="outline"
-        size="icon"
         aria-label="Menu"
+        className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"
+        size="icon"
+        variant="outline"
       >
-        <EllipsisIcon size={16} aria-hidden="true" />
+        <EllipsisIcon aria-hidden="true" size={16} />
       </Button>
     </div>
-  )
+  );
 }

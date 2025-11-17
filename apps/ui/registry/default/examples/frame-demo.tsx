@@ -4,7 +4,7 @@ import {
   FrameHeader,
   FramePanel,
   FrameTitle,
-} from "@/registry/default/ui/frame"
+} from "@/registry/default/ui/frame";
 
 export default function FrameDemo() {
   return (
@@ -14,9 +14,9 @@ export default function FrameDemo() {
         <FrameDescription>Brief description about the section</FrameDescription>
       </FrameHeader>
       <FramePanel>
-        <h2 className="text-sm font-semibold">Section title</h2>
-        <p className="text-sm text-muted-foreground">Section description</p>
+        <h2 className="font-semibold text-sm">Section title</h2>
+        <p className="text-muted-foreground text-sm">Section description</p>
       </FramePanel>
     </Frame>
-  )
+  );
 }

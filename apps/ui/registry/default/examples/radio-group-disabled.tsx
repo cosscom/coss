@@ -1,5 +1,5 @@
-import { Label } from "@/registry/default/ui/label"
-import { Radio, RadioGroup } from "@/registry/default/ui/radio-group"
+import { Label } from "@/registry/default/ui/label";
+import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 
 export default function RadioGroupDisabledDemo() {
   return (
@@ -8,11 +8,11 @@ export default function RadioGroupDisabledDemo() {
         <Radio value="next" /> Next.js
       </Label>
       <Label>
-        <Radio value="vite" disabled /> Vite (disabled)
+        <Radio disabled value="vite" /> Vite (disabled)
       </Label>
       <Label>
         <Radio value="astro" /> Astro
       </Label>
     </RadioGroup>
-  )
+  );
 }

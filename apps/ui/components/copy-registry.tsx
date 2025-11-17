@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Icons } from "@coss/ui/components/icons"
-import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard"
-import { Tick02Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { Icons } from "@coss/ui/components/icons";
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
+import { Tick02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export function copyToClipboard(value: string) {
-  navigator.clipboard.writeText(value)
+  navigator.clipboard.writeText(value);
 }
 
 export function CopyRegistry({
@@ -24,29 +24,29 @@ export function CopyRegistry({
   variant = "ghost",
   ...props
 }: React.ComponentProps<typeof Button> & {
-  value: string
-  src?: string
+  value: string;
+  src?: string;
 }) {
-  const { isCopied, copyToClipboard } = useCopyToClipboard()
+  const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <Button
+            className={cn(className)}
             data-slot="copy-button"
+            onClick={() => copyToClipboard(value)}
             size="icon-sm"
             variant={variant}
-            className={cn(className)}
-            onClick={() => copyToClipboard(value)}
             {...props}
           >
             <span className="sr-only">Copy</span>
             {isCopied ? (
               <HugeiconsIcon
+                className="size-3.5"
                 icon={Tick02Icon}
                 strokeWidth={2}
-                className="size-3.5"
               />
             ) : (
               <Icons.mcp className="size-3.5" />
@@ -56,5 +56,5 @@ export function CopyRegistry({
       />
       <TooltipPopup>{isCopied ? "Copied" : "Copy Registry URL"}</TooltipPopup>
     </Tooltip>
-  )
+  );
 }

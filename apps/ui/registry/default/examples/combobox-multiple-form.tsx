@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Combobox,
   ComboboxChip,
@@ -13,9 +13,9 @@ import {
   ComboboxList,
   ComboboxPopup,
   ComboboxValue,
-} from "@/registry/default/ui/combobox"
-import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field"
-import { Form } from "@/registry/default/ui/form"
+} from "@/registry/default/ui/combobox";
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
 
 const items = [
   { label: "Apple", value: "apple" },
@@ -28,33 +28,34 @@ const items = [
   { label: "Kiwi", value: "kiwi" },
   { label: "Peach", value: "peach" },
   { label: "Pear", value: "pear" },
-]
+];
 
 export default function ComboboxMultipleForm() {
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const selectedItems = formData.getAll("items")
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const selectedItems = formData.getAll("items");
     const itemValues = selectedItems.map(
       (selectedItem) =>
-        items.find((item) => item.label === selectedItem)?.value || selectedItem
-    )
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
-    alert(`Favorite items: ${itemValues.join(", ") || ""}`)
-  }
+        items.find((item) => item.label === selectedItem)?.value ||
+        selectedItem,
+    );
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    alert(`Favorite items: ${itemValues.join(", ") || ""}`);
+  };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-64">
+    <Form className="max-w-64" onSubmit={onSubmit}>
       <Field>
         <FieldLabel>Favorite items</FieldLabel>
         <Combobox
+          disabled={loading}
           items={items}
           multiple
           name="items"
-          disabled={loading}
           required
         >
           <ComboboxChips>
@@ -62,7 +63,7 @@ export default function ComboboxMultipleForm() {
               {(value: { value: string; label: string }[]) => (
                 <>
                   {value?.map((item) => (
-                    <ComboboxChip key={item.value} aria-label={item.label}>
+                    <ComboboxChip aria-label={item.label} key={item.value}>
                       {item.label}
                     </ComboboxChip>
                   ))}
@@ -86,9 +87,9 @@ export default function ComboboxMultipleForm() {
         </Combobox>
         <FieldError>Please select at least one item.</FieldError>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>
-  )
+  );
 }

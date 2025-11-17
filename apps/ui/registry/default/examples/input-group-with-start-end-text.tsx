@@ -3,16 +3,16 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 
 export default function InputGroupWithStartEndText() {
   return (
     <InputGroup>
       <InputGroupInput
-        type="text"
+        aria-label="Enter your domain"
         className="*:[input]:ps-1!"
         placeholder="coss"
-        aria-label="Enter your domain"
+        type="text"
       />
       <InputGroupAddon>
         <InputGroupText>https://</InputGroupText>
@@ -21,5 +21,5 @@ export default function InputGroupWithStartEndText() {
         <InputGroupText>.com</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
-  )
+  );
 }

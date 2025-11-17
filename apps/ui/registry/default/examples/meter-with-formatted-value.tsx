@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Meter,
@@ -6,11 +6,11 @@ import {
   MeterLabel,
   MeterTrack,
   MeterValue,
-} from "@/registry/default/ui/meter"
+} from "@/registry/default/ui/meter";
 
 export default function MeterWithFormattedValueDemo() {
   return (
-    <Meter value={3} max={5}>
+    <Meter max={5} value={3}>
       <div className="flex items-center justify-between gap-2">
         <MeterLabel>Rating</MeterLabel>
         <MeterValue>{(_formatted, value) => `${value} / 5`}</MeterValue>
@@ -19,5 +19,5 @@ export default function MeterWithFormattedValueDemo() {
         <MeterIndicator />
       </MeterTrack>
     </Meter>
-  )
+  );
 }

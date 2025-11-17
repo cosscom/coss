@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { CheckboxGroup } from "@/registry/default/ui/checkbox-group"
-import { Field, FieldLabel } from "@/registry/default/ui/field"
-import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset"
-import { Form } from "@/registry/default/ui/form"
+import { Button } from "@/registry/default/ui/button";
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
+import { Form } from "@/registry/default/ui/form";
 
 export default function CheckboxGroupFormDemo() {
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setLoading(false)
-    const frameworks = formData.getAll("frameworks") as string[]
-    alert(`Selected: ${frameworks.join(", ") || "none"}`)
-  }
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    const frameworks = formData.getAll("frameworks") as string[];
+    alert(`Selected: ${frameworks.join(", ") || "none"}`);
+  };
 
   return (
-    <Form onSubmit={onSubmit} className="max-w-[160px]">
+    <Form className="max-w-[160px]" onSubmit={onSubmit}>
       <Field
-        name="frameworks"
         className="gap-4"
+        name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
-        <FieldsetLegend className="text-sm font-medium">
+        <FieldsetLegend className="font-medium text-sm">
           Frameworks
         </FieldsetLegend>
         <CheckboxGroup defaultValue={["next"]} disabled={loading}>
@@ -46,9 +46,9 @@ export default function CheckboxGroupFormDemo() {
           </FieldLabel>
         </CheckboxGroup>
       </Field>
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         Submit
       </Button>
     </Form>
-  )
+  );
 }

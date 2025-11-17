@@ -1,16 +1,16 @@
-import { PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
     <Button
-      className="rounded-full"
-      variant="outline"
-      size="icon"
       aria-label="Add new item"
+      className="rounded-full"
+      size="icon"
+      variant="outline"
     >
-      <PlusIcon size={16} aria-hidden="true" />
+      <PlusIcon aria-hidden="true" size={16} />
     </Button>
-  )
+  );
 }

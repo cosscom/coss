@@ -1,5 +1,5 @@
-import { Button } from "@/registry/default/ui/button"
-import { Spinner } from "@/registry/default/ui/spinner"
+import { Button } from "@/registry/default/ui/button";
+import { Spinner } from "@/registry/default/ui/spinner";
 
 export default function ButtonLoading() {
   return (
@@ -7,5 +7,5 @@ export default function ButtonLoading() {
       <Spinner />
       Loading...
     </Button>
-  )
+  );
 }

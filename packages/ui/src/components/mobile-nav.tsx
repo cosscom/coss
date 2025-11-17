@@ -1,13 +1,12 @@
 "use client";
 
-import * as React from "react";
-import Link, { LinkProps } from "next/link";
-import { Menu09Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-
 import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/ui/button";
 import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/ui/sheet";
+import { Menu09Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link, { type LinkProps } from "next/link";
+import * as React from "react";
 
 export type PageNode = {
   type: "page";
@@ -37,18 +36,18 @@ export function MobileNav({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet onOpenChange={setOpen} open={open}>
       <SheetTrigger
         render={
           <Button
-            variant="ghost"
+            className={cn("-ms-1.5 relative size-8", className)}
             size="icon"
-            className={cn("relative -ms-1.5 size-8", className)}
+            variant="ghost"
           >
             <HugeiconsIcon
+              className="size-5"
               icon={Menu09Icon}
               strokeWidth={2}
-              className="size-5"
             />
             <span className="sr-only">Toggle Menu</span>
           </Button>
@@ -57,13 +56,17 @@ export function MobileNav({
       <SheetPopup side="left">
         <div className="flex flex-col gap-12 overflow-auto p-6 pt-8">
           <div className="flex flex-col gap-3">
-            <div className="text-sm font-medium">Menu</div>
+            <div className="font-medium text-sm">Menu</div>
             <div className="flex flex-col gap-2">
               <MobileLink href="/" onOpenChange={setOpen}>
                 Home
               </MobileLink>
-              {items.map((item, index) => (
-                <MobileLink key={index} href={item.href} onOpenChange={setOpen}>
+              {items.map((item) => (
+                <MobileLink
+                  href={item.href}
+                  key={item.label}
+                  onOpenChange={setOpen}
+                >
                   {item.label}
                 </MobileLink>
               ))}
@@ -74,26 +77,28 @@ export function MobileNav({
               {tree?.children?.map((group: FolderNode, index: number) => {
                 if (group.type === "folder") {
                   return (
-                    <div key={index} className="flex flex-col gap-3">
-                      <div className="text-sm font-medium">{group.name}</div>
+                    <div className="flex flex-col gap-3" key={group.name}>
+                      <div className="font-medium text-sm">{group.name}</div>
                       <div className="flex flex-col gap-2">
                         {group.children.map((item) => {
                           if (item.type === "page") {
                             return (
                               <MobileLink
-                                key={`${item.url}-${index}`}
                                 href={item.url}
+                                key={`${item.url}-${index}`}
                                 onOpenChange={setOpen}
                               >
                                 {item.name}
                               </MobileLink>
                             );
                           }
+                          return null;
                         })}
                       </div>
                     </div>
                   );
                 }
+                return null;
               })}
             </div>
           ) : null}
@@ -116,11 +121,11 @@ function MobileLink({
 }) {
   return (
     <Link
+      className={cn("text-muted-foreground", className)}
       href={href}
       onClick={() => {
         onOpenChange?.(false);
       }}
-      className={cn("text-muted-foreground", className)}
       {...props}
     >
       {children}

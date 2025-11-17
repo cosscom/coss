@@ -1,95 +1,95 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
-import { Calendar } from "@/registry/default/ui/calendar"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { Calendar } from "@/registry/default/ui/calendar";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const today = new Date()
-  const [month, setMonth] = useState(today)
-  const [date, setDate] = useState<Date | undefined>(today)
-  const [inputValue, setInputValue] = useState("")
+  const id = useId();
+  const today = new Date();
+  const [month, setMonth] = useState(today);
+  const [date, setDate] = useState<Date | undefined>(today);
+  const [inputValue, setInputValue] = useState("");
 
   const handleDayPickerSelect = (date: Date | undefined) => {
     if (!date) {
-      setInputValue("")
-      setDate(undefined)
+      setInputValue("");
+      setDate(undefined);
     } else {
-      setDate(date)
-      setMonth(date)
-      setInputValue(format(date, "yyyy-MM-dd"))
+      setDate(date);
+      setMonth(date);
+      setInputValue(format(date, "yyyy-MM-dd"));
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setInputValue(value)
+    const value = e.target.value;
+    setInputValue(value);
 
     if (value) {
-      const parsedDate = new Date(value)
-      setDate(parsedDate)
-      setMonth(parsedDate)
+      const parsedDate = new Date(value);
+      setDate(parsedDate);
+      setMonth(parsedDate);
     } else {
-      setDate(undefined)
+      setDate(undefined);
     }
-  }
+  };
 
   useEffect(() => {
-    setInputValue(format(today, "yyyy-MM-dd"))
-  }, [])
+    setInputValue(format(today, "yyyy-MM-dd"));
+  }, [today]);
 
   return (
     <div>
       <div className="rounded-md border">
         <Calendar
-          mode="single"
           className="p-2"
-          selected={date}
-          onSelect={handleDayPickerSelect}
+          mode="single"
           month={month}
           onMonthChange={setMonth}
+          onSelect={handleDayPickerSelect}
+          selected={date}
         />
         <div className="border-t p-3">
           <div className="flex items-center gap-3">
-            <Label htmlFor={id} className="text-xs">
+            <Label className="text-xs" htmlFor={id}>
               Enter date
             </Label>
             <div className="relative grow">
               <Input
+                aria-label="Select date"
+                className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                 id={id}
+                onChange={handleInputChange}
                 type="date"
                 value={inputValue}
-                onChange={handleInputChange}
-                className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                aria-label="Select date"
               />
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-                <CalendarIcon size={16} aria-hidden="true" />
+                <CalendarIcon aria-hidden="true" size={16} />
               </div>
             </div>
           </div>
         </div>
       </div>
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-4 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Date input -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

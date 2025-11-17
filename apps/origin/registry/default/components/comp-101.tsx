@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BookmarkIcon } from "lucide-react"
+import { BookmarkIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Toggle } from "@/registry/default/ui/toggle"
+import { Toggle } from "@/registry/default/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function Component() {
-  const [bookmarked, setBookmarked] = useState<boolean>(false)
+  const [bookmarked, setBookmarked] = useState<boolean>(false);
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div>
             <Toggle
-              className="group size-9 p-0 hover:bg-indigo-50 hover:text-indigo-500 data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-500"
               aria-label="Bookmark this"
-              pressed={bookmarked}
+              className="group size-9 p-0 hover:bg-indigo-50 hover:text-indigo-500 data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-500"
               onPressedChange={setBookmarked}
+              pressed={bookmarked}
             >
-              <BookmarkIcon size={16} aria-hidden="true" />
+              <BookmarkIcon aria-hidden="true" size={16} />
             </Toggle>
           </div>
         </TooltipTrigger>
@@ -33,5 +33,5 @@ export default function Component() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  )
+  );
 }

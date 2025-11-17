@@ -1,4 +1,4 @@
-import { ComponentIcon, HomeIcon } from "lucide-react"
+import { ComponentIcon, HomeIcon } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -7,22 +7,22 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
+} from "@/registry/default/ui/breadcrumb";
 
 export default function Component() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="#" className="inline-flex items-center gap-1.5">
-            <HomeIcon size={16} aria-hidden="true" />
+          <BreadcrumbLink className="inline-flex items-center gap-1.5" href="#">
+            <HomeIcon aria-hidden="true" size={16} />
             Home
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="#" className="inline-flex items-center gap-1.5">
-            <ComponentIcon size={16} aria-hidden="true" />
+          <BreadcrumbLink className="inline-flex items-center gap-1.5" href="#">
+            <ComponentIcon aria-hidden="true" size={16} />
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -32,5 +32,5 @@ export default function Component() {
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
+import { Checkbox } from "@/registry/default/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -9,53 +9,53 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 const items = [
   {
-    id: "1",
-    name: "Alex Thompson",
-    email: "alex.t@company.com",
-    location: "San Francisco, US",
-    status: "Active",
     balance: "$1,250.00",
+    email: "alex.t@company.com",
+    id: "1",
+    location: "San Francisco, US",
+    name: "Alex Thompson",
+    status: "Active",
   },
   {
-    id: "2",
-    name: "Sarah Chen",
-    email: "sarah.c@company.com",
-    location: "Singapore",
-    status: "Active",
     balance: "$600.00",
+    email: "sarah.c@company.com",
+    id: "2",
+    location: "Singapore",
+    name: "Sarah Chen",
+    status: "Active",
   },
   {
-    id: "3",
-    name: "James Wilson",
-    email: "j.wilson@company.com",
-    location: "London, UK",
-    status: "Inactive",
     balance: "$650.00",
+    email: "j.wilson@company.com",
+    id: "3",
+    location: "London, UK",
+    name: "James Wilson",
+    status: "Inactive",
   },
   {
-    id: "4",
-    name: "Maria Garcia",
-    email: "m.garcia@company.com",
-    location: "Madrid, Spain",
-    status: "Active",
     balance: "$0.00",
+    email: "m.garcia@company.com",
+    id: "4",
+    location: "Madrid, Spain",
+    name: "Maria Garcia",
+    status: "Active",
   },
   {
-    id: "5",
-    name: "David Kim",
-    email: "d.kim@company.com",
-    location: "Seoul, KR",
-    status: "Active",
     balance: "-$1,000.00",
+    email: "d.kim@company.com",
+    id: "5",
+    location: "Seoul, KR",
+    name: "David Kim",
+    status: "Active",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div>
       <div className="overflow-hidden rounded-md border bg-background">
@@ -94,9 +94,9 @@ export default function Component() {
           </TableFooter>
         </Table>
       </div>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Card Table
       </p>
     </div>
-  )
+  );
 }

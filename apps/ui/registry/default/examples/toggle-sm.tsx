@@ -1,9 +1,9 @@
-import { Toggle } from "@/registry/default/ui/toggle"
+import { Toggle } from "@/registry/default/ui/toggle";
 
 export default function ToggleSm() {
   return (
-    <Toggle variant="outline" size="sm">
+    <Toggle size="sm" variant="outline">
       Small
     </Toggle>
-  )
+  );
 }

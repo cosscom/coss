@@ -1,19 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "button-outline",
-  "type": "registry:example",
+  "categories": ["button"],
   "description": "Outline button",
-  "registryDependencies": [
-    "@coss/button"
-  ],
   "files": [
     {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonOutline() {\n  return <Button variant=\"outline\">Outline</Button>;\n}\n",
       "path": "registry/default/examples/button-outline.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonOutline() {\n  return <Button variant=\"outline\">Outline</Button>\n}\n",
       "type": "registry:example"
     }
   ],
-  "categories": [
-    "button"
-  ]
+  "name": "button-outline",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:example"
 }

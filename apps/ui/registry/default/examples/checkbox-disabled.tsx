@@ -1,5 +1,5 @@
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function CheckboxDisabledDemo() {
   return (
@@ -7,5 +7,5 @@ export default function CheckboxDisabledDemo() {
       <Checkbox defaultChecked disabled />
       Accept terms and conditions
     </Label>
-  )
+  );
 }

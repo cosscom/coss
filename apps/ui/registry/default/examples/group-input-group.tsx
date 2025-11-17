@@ -1,26 +1,26 @@
-import { MicIcon, PaperclipIcon } from "lucide-react"
+import { MicIcon, PaperclipIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Group } from "@/registry/default/ui/group"
+import { Button } from "@/registry/default/ui/button";
+import { Group } from "@/registry/default/ui/group";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/registry/default/ui/input-group"
+} from "@/registry/default/ui/input-group";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function GroupInputGroup() {
   return (
     <Group
-      className="[--radius-lg:9999px] [--radius:9999rem]"
       aria-label="Message composer"
+      className="[--radius-lg:9999px] [--radius:9999rem]"
     >
       <Group aria-label="Attachments">
-        <Button variant="outline" size="icon" aria-label="Attach file">
+        <Button aria-label="Attach file" size="icon" variant="outline">
           <PaperclipIcon />
         </Button>
       </Group>
@@ -32,9 +32,9 @@ export default function GroupInputGroup() {
               <TooltipTrigger
                 render={
                   <Button
-                    variant="ghost"
-                    size="icon-xs"
                     aria-label="Voice Mode"
+                    size="icon-xs"
+                    variant="ghost"
                   />
                 }
               >
@@ -46,5 +46,5 @@ export default function GroupInputGroup() {
         </InputGroup>
       </Group>
     </Group>
-  )
+  );
 }

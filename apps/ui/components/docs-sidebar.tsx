@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { PAGES_NEW } from "@/lib/docs"
-import type { source } from "@/lib/source"
-import { Badge } from "@/registry/default/ui/badge"
+import { PAGES_NEW } from "@/lib/docs";
+import type { source } from "@/lib/source";
+import { Badge } from "@/registry/default/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -15,13 +15,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/registry/default/ui/sidebar"
+} from "@/registry/default/ui/sidebar";
 
 export function DocsSidebar({
   tree,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { tree: typeof source.pageTree }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <Sidebar
@@ -32,7 +32,7 @@ export function DocsSidebar({
       <SidebarContent className="no-scrollbar px-4 py-2">
         <div className="h-(--top-spacing) shrink-0" />
         {tree.children.map((item) => (
-          <SidebarGroup key={item.$id} className="gap-1">
+          <SidebarGroup className="gap-1" key={item.$id}>
             <SidebarGroupLabel className="h-7 px-0 text-sidebar-accent-foreground">
               {item.name}
             </SidebarGroupLabel>
@@ -44,9 +44,9 @@ export function DocsSidebar({
                       item.type === "page" && (
                         <SidebarMenuItem key={item.url}>
                           <SidebarMenuButton
-                            render={<Link href={item.url} />}
-                            isActive={item.url === pathname}
                             className="from-secondary to-secondary/64 ps-3.5 text-sidebar-foreground/64 hover:bg-transparent active:bg-transparent data-[active=true]:bg-gradient-to-tr"
+                            isActive={item.url === pathname}
+                            render={<Link href={item.url} />}
                           >
                             {item.name}
                             {PAGES_NEW.includes(item.url) && (
@@ -55,7 +55,7 @@ export function DocsSidebar({
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
-                    )
+                    );
                   })}
                 </SidebarMenu>
               )}
@@ -64,5 +64,5 @@ export function DocsSidebar({
         ))}
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

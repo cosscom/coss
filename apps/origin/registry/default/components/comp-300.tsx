@@ -1,34 +1,37 @@
-"use client"
+"use client";
 
-import { CircleCheckIcon, XIcon } from "lucide-react"
-import { toast } from "sonner"
+import { CircleCheckIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
     <Button
-      variant="outline"
       onClick={() => {
         toast.custom((t) => (
           <div className="w-full rounded-md border bg-background px-4 py-3 text-foreground shadow-lg sm:w-[var(--width)]">
             <div className="flex gap-2">
               <div className="flex grow gap-3">
                 <CircleCheckIcon
+                  aria-hidden="true"
                   className="mt-0.5 shrink-0 text-emerald-500"
                   size={16}
-                  aria-hidden="true"
                 />
                 <div className="flex grow justify-between gap-12">
                   <p className="text-sm">Message sent</p>
-                  <div className="text-sm whitespace-nowrap">
-                    <button className="text-sm font-medium hover:underline">
+                  <div className="whitespace-nowrap text-sm">
+                    <button
+                      className="font-medium text-sm hover:underline"
+                      type="button"
+                    >
                       View
                     </button>{" "}
                     <span className="mx-1 text-muted-foreground">·</span>{" "}
                     <button
-                      className="text-sm font-medium hover:underline"
+                      className="font-medium text-sm hover:underline"
                       onClick={() => toast.dismiss(t)}
+                      type="button"
                     >
                       Undo
                     </button>
@@ -36,23 +39,24 @@ export default function Component() {
                 </div>
               </div>
               <Button
-                variant="ghost"
+                aria-label="Close banner"
                 className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
                 onClick={() => toast.dismiss(t)}
-                aria-label="Close banner"
+                variant="ghost"
               >
                 <XIcon
-                  size={16}
-                  className="opacity-60 transition-opacity group-hover:opacity-100"
                   aria-hidden="true"
+                  className="opacity-60 transition-opacity group-hover:opacity-100"
+                  size={16}
                 />
               </Button>
             </div>
           </div>
-        ))
+        ));
       }}
+      variant="outline"
     >
       Custom sonner
     </Button>
-  )
+  );
 }

@@ -1,14 +1,14 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import PageHeader from "@/components/page-header"
+import PageHeader from "@/components/page-header";
 
-import Easings from "./easings"
+import Easings from "./easings";
 
 export const metadata: Metadata = {
-  title: "Tailwind CSS Easing Classes - coss.com origin",
   description:
     "A collection of easing utility classes to enhance your Tailwind CSS animations and transitions.",
-}
+  title: "Tailwind CSS Easing Classes - coss.com origin",
+};
 
 const easings = [
   {
@@ -127,7 +127,7 @@ const easings = [
     name: "ease-in-out-back",
     points: [0.68, -0.6, 0.32, 1.6],
   },
-]
+];
 
 export default function Page() {
   return (
@@ -139,5 +139,5 @@ export default function Page() {
 
       <Easings easings={easings} />
     </>
-  )
+  );
 }

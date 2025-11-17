@@ -16,16 +16,12 @@ export const particles: ParticleItem[] = [
   {
     name: "particle-bu-1",
     description: "Back link button with chevron",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [{ path: "particles/particle-bu-1.tsx", type: "registry:block" }],
     categories: categories("button"),
   },
   {
-    name: "particle-bu-2",
+    categories: ["button"],
     description: "Card-style button with heading and description",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "particles/particle-bu-2.tsx",
@@ -35,18 +31,14 @@ export const particles: ParticleItem[] = [
     categories: categories("button"),
   },
   {
-    name: "particle-bu-3",
+    categories: ["button"],
     description: "Directional pad control buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [{ path: "particles/particle-bu-3.tsx", type: "registry:block" }],
     categories: categories("button"),
   },
   {
-    name: "particle-bu-4",
+    categories: ["button"],
     description: "Outline like button with count",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [
       {
         path: "particles/particle-bu-4.tsx",
@@ -56,11 +48,9 @@ export const particles: ParticleItem[] = [
     categories: categories("button"),
   },
   {
-    name: "particle-bu-5",
-    description: "Social login icon buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
+    categories: ["button"],
     dependencies: ["@remixicon/react"],
+    description: "Social login icon buttons",
     files: [
       {
         path: "particles/particle-bu-5.tsx",
@@ -70,25 +60,22 @@ export const particles: ParticleItem[] = [
     categories: categories("button"),
   },
   {
-    name: "particle-bu-6",
+    categories: ["button"],
     description: "Expandable show more/less toggle button",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [{ path: "particles/particle-bu-6.tsx", type: "registry:block" }],
     categories: categories("button"),
   },
   {
-    name: "particle-bu-7",
+    categories: ["button"],
     description: "Star button with count badge",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
     files: [{ path: "particles/particle-bu-7.tsx", type: "registry:block" }],
     categories: categories("button"),
   },
   {
-    name: "particle-fr-1",
+    categories: ["frame", "collapsible"],
     description: "Frame with collapsible content and delete button",
-    type: "registry:block",
+    files: [{ path: "particles/particle-fr-1.tsx", type: "registry:block" }],
+    name: "particle-fr-1",
     registryDependencies: ["@coss/frame", "@coss/collapsible", "@coss/button"],
     files: [{ path: "particles/particle-fr-1.tsx", type: "registry:block" }],
     categories: categories("frame", "collapsible"),
@@ -97,9 +84,10 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-in-1",
+    categories: ["input", "input group", "button", "popover"],
     description: "Input with start text and end tooltip",
-    type: "registry:block",
+    files: [{ path: "particles/particle-in-1.tsx", type: "registry:block" }],
+    name: "particle-in-1",
     registryDependencies: [
       "@coss/button",
       "@coss/input-group",
@@ -113,9 +101,10 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-in-2",
+    categories: ["input", "input group", "button", "tooltip"],
     description: "Password input with toggle visibility",
-    type: "registry:block",
+    files: [{ path: "particles/particle-in-2.tsx", type: "registry:block" }],
+    name: "particle-in-2",
     registryDependencies: [
       "@coss/button",
       "@coss/input-group",
@@ -129,9 +118,10 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-in-3",
+    categories: ["input", "input group", "button", "popover"],
     description: "Input group mimicking a URL bar",
-    type: "registry:block",
+    files: [{ path: "particles/particle-in-3.tsx", type: "registry:block" }],
+    name: "particle-in-3",
     registryDependencies: [
       "@coss/button",
       "@coss/input-group",
@@ -145,10 +135,8 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-in-4",
+    categories: ["input", "input group", "kbd", "search"],
     description: "Input group with keyboard shortcut",
-    type: "registry:block",
-    registryDependencies: ["@coss/input-group", "@coss/kbd"],
     files: [{ path: "particles/particle-in-4.tsx", type: "registry:block" }],
     categories: categories("input", "input group", "kbd", "search"),
     meta: {
@@ -157,10 +145,8 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-in-5",
+    categories: ["input", "input group", "loading", "spinner"],
     description: "Input group with start loading spinner",
-    type: "registry:block",
-    registryDependencies: ["@coss/input-group", "@coss/spinner"],
     files: [{ path: "particles/particle-in-5.tsx", type: "registry:block" }],
     categories: categories("input", "input group", "loading", "spinner"),
     meta: {
@@ -169,10 +155,8 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-pa-1",
+    categories: ["pagination"],
     description: "Pagination with previous and next buttons only",
-    type: "registry:block",
-    registryDependencies: ["@coss/pagination"],
     files: [{ path: "particles/particle-pa-1.tsx", type: "registry:block" }],
     categories: categories("pagination"),
     meta: {
@@ -180,14 +164,12 @@ export const particles: ParticleItem[] = [
     },
   },
   {
-    name: "particle-pa-2",
+    categories: ["pagination", "select"],
     description: "Pagination with select, and previous and next buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/pagination", "@coss/select"],
     files: [{ path: "particles/particle-pa-2.tsx", type: "registry:block" }],
     categories: categories("pagination", "select"),
     meta: {
       className: "**:data-[slot=particle-wrapper]:w-full",
     },
   },
-]
+];

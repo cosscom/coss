@@ -1,6 +1,6 @@
-import { ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (
@@ -10,14 +10,14 @@ export default function Particle() {
     >
       <div className="space-y-1">
         <h3>Talent Agency</h3>
-        <p className="font-normal whitespace-break-spaces text-muted-foreground">
+        <p className="whitespace-break-spaces font-normal text-muted-foreground">
           Matches for your roster
         </p>
       </div>
       <ChevronRightIcon
-        className="opacity-72 transition-transform group-hover:translate-x-0.5"
         aria-hidden="true"
+        className="opacity-72 transition-transform group-hover:translate-x-0.5"
       />
     </Button>
-  )
+  );
 }

@@ -7,37 +7,37 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
-    id: 1,
     date: "15 minutes ago",
-    title: "Pull Request Submitted",
     description:
       "Submitted PR #342 with new feature implementation. Waiting for code review from team leads.",
+    id: 1,
+    title: "Pull Request Submitted",
   },
   {
-    id: 2,
     date: "10 minutes ago",
-    title: "CI Pipeline Started",
     description:
       "Automated tests and build process initiated. Running unit tests and code quality checks.",
+    id: 2,
+    title: "CI Pipeline Started",
   },
   {
-    id: 3,
     date: "5 minutes ago",
-    title: "Code Review Feedback",
     description:
       "Received comments on PR. Minor adjustments needed in error handling and documentation.",
+    id: 3,
+    title: "Code Review Feedback",
   },
   {
-    id: 4,
-    title: "Changes Pushed",
     description:
       "Implemented requested changes and pushed updates to feature branch. Awaiting final approval.",
+    id: 4,
+    title: "Changes Pushed",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -56,5 +56,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

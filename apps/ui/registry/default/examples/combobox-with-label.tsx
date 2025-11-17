@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
 import {
   Combobox,
@@ -9,32 +9,32 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-} from "@/registry/default/ui/combobox"
-import { Label } from "@/registry/default/ui/label"
+} from "@/registry/default/ui/combobox";
+import { Label } from "@/registry/default/ui/label";
 
 const items = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "orange", label: "Orange" },
-  { value: "grape", label: "Grape" },
-  { value: "strawberry", label: "Strawberry" },
-  { value: "mango", label: "Mango" },
-  { value: "pineapple", label: "Pineapple" },
-  { value: "kiwi", label: "Kiwi" },
-  { value: "peach", label: "Peach" },
-  { value: "pear", label: "Pear" },
-]
+  { label: "Apple", value: "apple" },
+  { label: "Banana", value: "banana" },
+  { label: "Orange", value: "orange" },
+  { label: "Grape", value: "grape" },
+  { label: "Strawberry", value: "strawberry" },
+  { label: "Mango", value: "mango" },
+  { label: "Pineapple", value: "pineapple" },
+  { label: "Kiwi", value: "kiwi" },
+  { label: "Peach", value: "peach" },
+  { label: "Pear", value: "pear" },
+];
 
 export default function ComboboxWithLabel() {
-  const id = useId()
+  const id = useId();
   return (
     <Combobox items={items}>
       <div className="flex flex-col items-start gap-2">
         <Label htmlFor={id}>Fruits</Label>
         <ComboboxInput
+          aria-label="Select an item"
           id={id}
           placeholder="Select an item..."
-          aria-label="Select an item"
         />
       </div>
       <ComboboxPopup>
@@ -48,5 +48,5 @@ export default function ComboboxWithLabel() {
         </ComboboxList>
       </ComboboxPopup>
     </Combobox>
-  )
+  );
 }

@@ -7,8 +7,8 @@ import {
   AlertDialogPopup,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/registry/default/ui/alert-dialog"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/alert-dialog";
+import { Button } from "@/registry/default/ui/button";
 
 export default function AlertDialogDemo() {
   return (
@@ -34,5 +34,5 @@ export default function AlertDialogDemo() {
         </AlertDialogFooter>
       </AlertDialogPopup>
     </AlertDialog>
-  )
+  );
 }
