@@ -4,7 +4,7 @@
   "description": "Group with end text",
   "files": [
     {
-      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\"\nimport { Input } from \"@/registry/default/ui/input\"\n\nexport default function GroupWithEndText() {\n  return (\n    <Group aria-label=\"Domain input\">\n      <Input id=\"domain\" type=\"text\" defaultValue=\"coss\" aria-label=\"Domain\" />\n      <GroupSeparator />\n      <GroupText>.com</GroupText>\n    </Group>\n  )\n}\n",
+      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function GroupWithEndText() {\n  return (\n    <Group aria-label=\"Domain input\">\n      <Input aria-label=\"Domain\" defaultValue=\"coss\" id=\"domain\" type=\"text\" />\n      <GroupSeparator />\n      <GroupText>.com</GroupText>\n    </Group>\n  );\n}\n",
       "path": "registry/default/examples/group-with-end-text.tsx",
       "type": "registry:example"
     }

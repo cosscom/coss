@@ -4,7 +4,7 @@
   "description": "Loading button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\nimport { Spinner } from \"@/registry/default/ui/spinner\"\n\nexport default function ButtonLoading() {\n  return (\n    <Button disabled>\n      <Spinner />\n      Loading...\n    </Button>\n  )\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Spinner } from \"@/registry/default/ui/spinner\";\n\nexport default function ButtonLoading() {\n  return (\n    <Button disabled>\n      <Spinner />\n      Loading...\n    </Button>\n  );\n}\n",
       "path": "registry/default/examples/button-loading.tsx",
       "type": "registry:example"
     }

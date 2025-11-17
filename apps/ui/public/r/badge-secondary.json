@@ -4,7 +4,7 @@
   "description": "Secondary badge",
   "files": [
     {
-      "content": "import { Badge } from \"@/registry/default/ui/badge\"\n\nexport default function BadgeSecondary() {\n  return <Badge variant=\"secondary\">Badge</Badge>\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function BadgeSecondary() {\n  return <Badge variant=\"secondary\">Badge</Badge>;\n}\n",
       "path": "registry/default/examples/badge-secondary.tsx",
       "type": "registry:example"
     }

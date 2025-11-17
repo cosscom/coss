@@ -4,7 +4,7 @@
   "description": "Toggle with icon",
   "files": [
     {
-      "content": "import { BoldIcon } from \"lucide-react\"\n\nimport { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleWithIcon() {\n  return (\n    <Toggle variant=\"outline\" aria-label=\"Toggle bold\">\n      <BoldIcon />\n    </Toggle>\n  )\n}\n",
+      "content": "import { BoldIcon } from \"lucide-react\";\n\nimport { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function ToggleWithIcon() {\n  return (\n    <Toggle aria-label=\"Toggle bold\" variant=\"outline\">\n      <BoldIcon />\n    </Toggle>\n  );\n}\n",
       "path": "registry/default/examples/toggle-with-icon.tsx",
       "type": "registry:example"
     }

@@ -4,7 +4,7 @@
   "description": "Input group with button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupWithButton() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Type to search…\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Button variant=\"secondary\" size=\"xs\">\n          Search\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\n\nexport default function InputGroupWithButton() {\n  return (\n    <InputGroup>\n      <InputGroupInput placeholder=\"Type to search…\" type=\"search\" />\n      <InputGroupAddon align=\"inline-end\">\n        <Button size=\"xs\" variant=\"secondary\">\n          Search\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "path": "registry/default/examples/input-group-with-button.tsx",
       "type": "registry:example"
     }

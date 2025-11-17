@@ -4,7 +4,7 @@
   "description": "Info badge",
   "files": [
     {
-      "content": "import { Badge } from \"@/registry/default/ui/badge\"\n\nexport default function BadgeInfo() {\n  return <Badge variant=\"info\">Badge</Badge>\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function BadgeInfo() {\n  return <Badge variant=\"info\">Badge</Badge>;\n}\n",
       "path": "registry/default/examples/badge-info.tsx",
       "type": "registry:example"
     }

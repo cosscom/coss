@@ -4,7 +4,7 @@
   "description": "A disabled number field",
   "files": [
     {
-      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\"\n\nexport default function NumberFieldDisabled() {\n  return (\n    <NumberField defaultValue={42} disabled>\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  )\n}\n",
+      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\";\n\nexport default function NumberFieldDisabled() {\n  return (\n    <NumberField defaultValue={42} disabled>\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  );\n}\n",
       "path": "registry/default/examples/number-field-disabled.tsx",
       "type": "registry:example"
     }

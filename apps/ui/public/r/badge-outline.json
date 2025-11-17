@@ -4,7 +4,7 @@
   "description": "Outline badge",
   "files": [
     {
-      "content": "import { Badge } from \"@/registry/default/ui/badge\"\n\nexport default function BadgeOutline() {\n  return <Badge variant=\"outline\">Badge</Badge>\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function BadgeOutline() {\n  return <Badge variant=\"outline\">Badge</Badge>;\n}\n",
       "path": "registry/default/examples/badge-outline.tsx",
       "type": "registry:example"
     }

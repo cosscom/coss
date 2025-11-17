@@ -4,7 +4,7 @@
   "description": "Disabled switch",
   "files": [
     {
-      "content": "import { Label } from \"@/registry/default/ui/label\"\nimport { Switch } from \"@/registry/default/ui/switch\"\n\nexport default function SwitchWithLabel() {\n  return (\n    <Label>\n      <Switch disabled />\n      Marketing emails\n    </Label>\n  )\n}\n",
+      "content": "import { Label } from \"@/registry/default/ui/label\";\nimport { Switch } from \"@/registry/default/ui/switch\";\n\nexport default function SwitchWithLabel() {\n  return (\n    <Label>\n      <Switch disabled />\n      Marketing emails\n    </Label>\n  );\n}\n",
       "path": "registry/default/examples/switch-disabled.tsx",
       "type": "registry:example"
     }

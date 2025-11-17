@@ -4,7 +4,7 @@
   "description": "Disabled toggle",
   "files": [
     {
-      "content": "import { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleDisabled() {\n  return (\n    <Toggle variant=\"outline\" disabled>\n      Disabled\n    </Toggle>\n  )\n}\n",
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function ToggleDisabled() {\n  return (\n    <Toggle disabled variant=\"outline\">\n      Disabled\n    </Toggle>\n  );\n}\n",
       "path": "registry/default/examples/toggle-disabled.tsx",
       "type": "registry:example"
     }

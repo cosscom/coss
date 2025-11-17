@@ -4,7 +4,7 @@
   "description": "Field with required indicator",
   "files": [
     {
-      "content": "import { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\"\nimport { Input } from \"@/registry/default/ui/input\"\n\nexport default function FieldRequiredDemo() {\n  return (\n    <Field>\n      <FieldLabel>\n        Password <span className=\"text-destructive-foreground\">*</span>\n      </FieldLabel>\n      <Input type=\"password\" placeholder=\"Enter password\" required />\n      <FieldError>Please fill out this field.</FieldError>\n    </Field>\n  )\n}\n",
+      "content": "import { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function FieldRequiredDemo() {\n  return (\n    <Field>\n      <FieldLabel>\n        Password <span className=\"text-destructive-foreground\">*</span>\n      </FieldLabel>\n      <Input placeholder=\"Enter password\" required type=\"password\" />\n      <FieldError>Please fill out this field.</FieldError>\n    </Field>\n  );\n}\n",
       "path": "registry/default/examples/field-required.tsx",
       "type": "registry:example"
     }

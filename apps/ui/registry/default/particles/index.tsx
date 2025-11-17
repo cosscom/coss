@@ -267,7 +267,8 @@ import ParticlePa2 from "@/registry/default/particles/particle-pa-2";
 
 import GroupWithDisabledButton from "../examples/group-with-disabled-button";
 
-type ParticleComponent = React.ComponentType;
+// biome-ignore lint/suspicious/noExplicitAny: Particle components can have varying prop types
+type ParticleComponent = React.ComponentType<any>;
 
 interface ParticleItem {
   id: string;

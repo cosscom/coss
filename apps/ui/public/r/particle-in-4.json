@@ -4,7 +4,7 @@
   "description": "Input group with keyboard shortcut",
   "files": [
     {
-      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\nimport { Kbd } from \"@/registry/default/ui/kbd\"\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        type=\"search\"\n        placeholder=\"Search…\"\n        aria-label=\"Search\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\nimport { Kbd } from \"@/registry/default/ui/kbd\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        aria-label=\"Search\"\n        placeholder=\"Search…\"\n        type=\"search\"\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <Kbd>/</Kbd>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "path": "registry/default/particles/particle-in-4.tsx",
       "type": "registry:block"
     }

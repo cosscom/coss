@@ -4,7 +4,7 @@
   "description": "Basic toggle",
   "files": [
     {
-      "content": "import { Toggle } from \"@/registry/default/ui/toggle\"\n\nexport default function ToggleDemo() {\n  return <Toggle>Toggle</Toggle>\n}\n",
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function ToggleDemo() {\n  return <Toggle>Toggle</Toggle>;\n}\n",
       "path": "registry/default/examples/toggle-demo.tsx",
       "type": "registry:example"
     }

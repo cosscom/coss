@@ -11,6 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type PaginationState,
+  type Row,
   type SortingState,
   useReactTable,
   type VisibilityState,
@@ -720,7 +721,7 @@ export default function Component() {
   );
 }
 
-function RowActions() {
+function RowActions({ row: _row }: { row: Row<Item> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

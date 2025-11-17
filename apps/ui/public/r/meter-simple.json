@@ -4,7 +4,7 @@
   "description": "Meter without label and value",
   "files": [
     {
-      "content": "import { Meter } from \"@/registry/default/ui/meter\"\n\nexport default function MeterSimpleDemo() {\n  return <Meter value={50} />\n}\n",
+      "content": "import { Meter } from \"@/registry/default/ui/meter\";\n\nexport default function MeterSimpleDemo() {\n  return <Meter value={50} />;\n}\n",
       "path": "registry/default/examples/meter-simple.tsx",
       "type": "registry:example"
     }

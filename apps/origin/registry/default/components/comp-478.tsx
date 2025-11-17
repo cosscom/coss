@@ -45,7 +45,9 @@ import {
 
 declare module "@tanstack/react-table" {
   //allows us to define custom properties for our columns
-  interface ColumnMeta<_TData extends RowData, _TValue> {
+  // Type parameters TData and TValue must match TanStack Table's declaration exactly
+  // biome-ignore lint: Type parameters required for module augmentation compatibility
+  interface ColumnMeta<TData extends RowData, TValue> {
     filterVariant?: "text" | "range" | "select";
   }
 }
@@ -279,30 +281,46 @@ export default function Component() {
     },
   });
 
+  const keywordColumn = table.getColumn("keyword");
+  const intentsColumn = table.getColumn("intents");
+  const volumeColumn = table.getColumn("volume");
+  const cpcColumn = table.getColumn("cpc");
+  const trafficColumn = table.getColumn("traffic");
+
   return (
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         {/* Search input */}
-        <div className="w-44">
-          <Filter column={table.getColumn("keyword")} />
-        </div>
+        {keywordColumn && (
+          <div className="w-44">
+            <Filter column={keywordColumn} />
+          </div>
+        )}
         {/* Intents select */}
-        <div className="w-36">
-          <Filter column={table.getColumn("intents")} />
-        </div>
+        {intentsColumn && (
+          <div className="w-36">
+            <Filter column={intentsColumn} />
+          </div>
+        )}
         {/* Volume inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("volume")} />
-        </div>
+        {volumeColumn && (
+          <div className="w-36">
+            <Filter column={volumeColumn} />
+          </div>
+        )}
         {/* CPC inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("cpc")} />
-        </div>
+        {cpcColumn && (
+          <div className="w-36">
+            <Filter column={cpcColumn} />
+          </div>
+        )}
         {/* Traffic inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("traffic")} />
-        </div>
+        {trafficColumn && (
+          <div className="w-36">
+            <Filter column={trafficColumn} />
+          </div>
+        )}
       </div>
 
       <Table>
@@ -414,7 +432,7 @@ export default function Component() {
   );
 }
 
-function Filter({ column }: { column: Column<string, unknown> }) {
+function Filter({ column }: { column: Column<Item, unknown> }) {
   const id = useId();
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};
@@ -429,9 +447,11 @@ function Filter({ column }: { column: Column<string, unknown> }) {
     // If the values are arrays, flatten them and get unique items
     const flattenedValues = values.reduce((acc: string[], curr) => {
       if (Array.isArray(curr)) {
-        return acc.push(curr);
+        acc.push(...curr);
+      } else {
+        acc.push(curr);
       }
-      return acc.push(curr);
+      return acc;
     }, []);
 
     // Get unique values and sort them

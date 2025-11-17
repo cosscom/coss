@@ -4,7 +4,7 @@
   "description": "Destructive outline button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonDestructiveOutline() {\n  return <Button variant=\"destructive-outline\">Delete</Button>\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonDestructiveOutline() {\n  return <Button variant=\"destructive-outline\">Delete</Button>;\n}\n",
       "path": "registry/default/examples/button-destructive-outline.tsx",
       "type": "registry:example"
     }

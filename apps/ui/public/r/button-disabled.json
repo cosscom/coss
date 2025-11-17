@@ -4,7 +4,7 @@
   "description": "Disabled button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonDisabled() {\n  return <Button disabled>Button</Button>\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonDisabled() {\n  return <Button disabled>Button</Button>;\n}\n",
       "path": "registry/default/examples/button-disabled.tsx",
       "type": "registry:example"
     }

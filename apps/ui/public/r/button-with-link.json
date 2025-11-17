@@ -4,7 +4,7 @@
   "description": "Link rendered as button",
   "files": [
     {
-      "content": "import Link from \"next/link\"\n\nimport { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonWithLink() {\n  return <Button render={<Link href=\"/\" />}>Link</Button>\n}\n",
+      "content": "import Link from \"next/link\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonWithLink() {\n  return <Button render={<Link href=\"/\" />}>Link</Button>;\n}\n",
       "path": "registry/default/examples/button-with-link.tsx",
       "type": "registry:example"
     }

@@ -4,7 +4,7 @@
   "description": "Vertical slider",
   "files": [
     {
-      "content": "import { Slider } from \"@/registry/default/ui/slider\"\n\nexport default function SliderVertical() {\n  return <Slider orientation=\"vertical\" defaultValue={50} />\n}\n",
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function SliderVertical() {\n  return <Slider defaultValue={50} orientation=\"vertical\" />;\n}\n",
       "path": "registry/default/examples/slider-vertical.tsx",
       "type": "registry:example"
     }

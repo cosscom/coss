@@ -4,7 +4,7 @@
   "description": "Large button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonLg() {\n  return <Button size=\"lg\">Button</Button>\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonLg() {\n  return <Button size=\"lg\">Button</Button>;\n}\n",
       "path": "registry/default/examples/button-lg.tsx",
       "type": "registry:example"
     }

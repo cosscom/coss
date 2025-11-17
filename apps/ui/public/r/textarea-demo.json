@@ -4,7 +4,7 @@
   "description": "Basic textarea",
   "files": [
     {
-      "content": "import { Textarea } from \"@/registry/default/ui/textarea\"\n\nexport default function TextareaDemo() {\n  return <Textarea placeholder=\"Type your message here\" />\n}\n",
+      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function TextareaDemo() {\n  return <Textarea placeholder=\"Type your message here\" />;\n}\n",
       "path": "registry/default/examples/textarea-demo.tsx",
       "type": "registry:example"
     }

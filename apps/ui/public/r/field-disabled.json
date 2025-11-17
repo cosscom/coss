@@ -4,7 +4,7 @@
   "description": "Field in disabled state",
   "files": [
     {
-      "content": "import {\n  Field,\n  FieldDescription,\n  FieldLabel,\n} from \"@/registry/default/ui/field\"\nimport { Input } from \"@/registry/default/ui/input\"\n\nexport default function FieldDisabledDemo() {\n  return (\n    <Field disabled>\n      <FieldLabel>Email</FieldLabel>\n      <Input type=\"email\" placeholder=\"Enter your email\" disabled />\n      <FieldDescription>This field is currently disabled.</FieldDescription>\n    </Field>\n  )\n}\n",
+      "content": "import {\n  Field,\n  FieldDescription,\n  FieldLabel,\n} from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function FieldDisabledDemo() {\n  return (\n    <Field disabled>\n      <FieldLabel>Email</FieldLabel>\n      <Input disabled placeholder=\"Enter your email\" type=\"email\" />\n      <FieldDescription>This field is currently disabled.</FieldDescription>\n    </Field>\n  );\n}\n",
       "path": "registry/default/examples/field-disabled.tsx",
       "type": "registry:example"
     }

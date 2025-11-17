@@ -4,7 +4,7 @@
   "description": "A number field with a scrub area",
   "files": [
     {
-      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n  NumberFieldScrubArea,\n} from \"@/registry/default/ui/number-field\"\n\nexport default function NumberFieldDemoWithScrub() {\n  return (\n    <NumberField defaultValue={0}>\n      <NumberFieldScrubArea label=\"Quantity\" />\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  )\n}\n",
+      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n  NumberFieldScrubArea,\n} from \"@/registry/default/ui/number-field\";\n\nexport default function NumberFieldDemoWithScrub() {\n  return (\n    <NumberField defaultValue={0}>\n      <NumberFieldScrubArea label=\"Quantity\" />\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  );\n}\n",
       "path": "registry/default/examples/number-field-with-scrub.tsx",
       "type": "registry:example"
     }

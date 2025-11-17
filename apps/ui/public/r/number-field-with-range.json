@@ -4,7 +4,7 @@
   "description": "A number field with min/max constraints",
   "files": [
     {
-      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\"\n\nexport default function NumberFieldWithRange() {\n  return (\n    <NumberField defaultValue={5} min={0} max={10}>\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  )\n}\n",
+      "content": "import {\n  NumberField,\n  NumberFieldDecrement,\n  NumberFieldGroup,\n  NumberFieldIncrement,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\";\n\nexport default function NumberFieldWithRange() {\n  return (\n    <NumberField defaultValue={5} max={10} min={0}>\n      <NumberFieldGroup>\n        <NumberFieldDecrement />\n        <NumberFieldInput />\n        <NumberFieldIncrement />\n      </NumberFieldGroup>\n    </NumberField>\n  );\n}\n",
       "path": "registry/default/examples/number-field-with-range.tsx",
       "type": "registry:example"
     }

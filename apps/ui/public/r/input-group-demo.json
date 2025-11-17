@@ -4,7 +4,7 @@
   "description": "Basic input group with search icon",
   "files": [
     {
-      "content": "import { SearchIcon } from \"lucide-react\"\n\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\"\n\nexport default function InputGroupDemo() {\n  return (\n    <InputGroup>\n      <InputGroupInput type=\"search\" placeholder=\"Search\" aria-label=\"Search\" />\n      <InputGroupAddon>\n        <SearchIcon />\n      </InputGroupAddon>\n    </InputGroup>\n  )\n}\n",
+      "content": "import { SearchIcon } from \"lucide-react\";\n\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\n\nexport default function InputGroupDemo() {\n  return (\n    <InputGroup>\n      <InputGroupInput aria-label=\"Search\" placeholder=\"Search\" type=\"search\" />\n      <InputGroupAddon>\n        <SearchIcon />\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "path": "registry/default/examples/input-group-demo.tsx",
       "type": "registry:example"
     }

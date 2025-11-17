@@ -4,7 +4,7 @@
   "description": "Error alert",
   "files": [
     {
-      "content": "import { CircleAlertIcon } from \"lucide-react\"\n\nimport {\n  Alert,\n  AlertDescription,\n  AlertTitle,\n} from \"@/registry/default/ui/alert\"\n\nexport default function AlertWarning() {\n  return (\n    <Alert variant=\"error\">\n      <CircleAlertIcon />\n      <AlertTitle>Heads up!</AlertTitle>\n      <AlertDescription>\n        Describe what can be done about it here.\n      </AlertDescription>\n    </Alert>\n  )\n}\n",
+      "content": "import { CircleAlertIcon } from \"lucide-react\";\n\nimport {\n  Alert,\n  AlertDescription,\n  AlertTitle,\n} from \"@/registry/default/ui/alert\";\n\nexport default function AlertWarning() {\n  return (\n    <Alert variant=\"error\">\n      <CircleAlertIcon />\n      <AlertTitle>Heads up!</AlertTitle>\n      <AlertDescription>\n        Describe what can be done about it here.\n      </AlertDescription>\n    </Alert>\n  );\n}\n",
       "path": "registry/default/examples/alert-error.tsx",
       "type": "registry:example"
     }

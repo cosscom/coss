@@ -129,6 +129,9 @@ function fixFilePaths(
 
   // Resolve all paths relative to the first file's directory.
   const firstFilePath = files[0]?.path;
+  if (!firstFilePath) {
+    return [];
+  }
   const firstFilePathDir = path.dirname(firstFilePath);
 
   return files.map((file) => {

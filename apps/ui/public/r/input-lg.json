@@ -4,7 +4,7 @@
   "description": "Large input",
   "files": [
     {
-      "content": "import { Input } from \"@/registry/default/ui/input\"\n\nexport default function InputLg() {\n  return (\n    <Input\n      type=\"text\"\n      size=\"lg\"\n      placeholder=\"Enter text\"\n      aria-label=\"Enter text\"\n    />\n  )\n}\n",
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function InputLg() {\n  return (\n    <Input\n      aria-label=\"Enter text\"\n      placeholder=\"Enter text\"\n      size=\"lg\"\n      type=\"text\"\n    />\n  );\n}\n",
       "path": "registry/default/examples/input-lg.tsx",
       "type": "registry:example"
     }

@@ -4,7 +4,7 @@
   "description": "Input with disabled state",
   "files": [
     {
-      "content": "import { Input } from \"@/registry/default/ui/input\"\n\nexport default function InputDisabled() {\n  return (\n    <Input type=\"text\" placeholder=\"Disabled\" disabled aria-label=\"Disabled\" />\n  )\n}\n",
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function InputDisabled() {\n  return (\n    <Input aria-label=\"Disabled\" disabled placeholder=\"Disabled\" type=\"text\" />\n  );\n}\n",
       "path": "registry/default/examples/input-disabled.tsx",
       "type": "registry:example"
     }

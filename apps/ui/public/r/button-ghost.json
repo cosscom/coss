@@ -4,7 +4,7 @@
   "description": "Ghost button",
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\"\n\nexport default function ButtonGhost() {\n  return <Button variant=\"ghost\">Ghost</Button>\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function ButtonGhost() {\n  return <Button variant=\"ghost\">Ghost</Button>;\n}\n",
       "path": "registry/default/examples/button-ghost.tsx",
       "type": "registry:example"
     }

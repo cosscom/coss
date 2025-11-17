@@ -4,7 +4,7 @@
   "description": "Basic slider",
   "files": [
     {
-      "content": "import { Slider } from \"@/registry/default/ui/slider\"\n\nexport default function SliderDemo() {\n  return <Slider defaultValue={50} />\n}\n",
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function SliderDemo() {\n  return <Slider defaultValue={50} />;\n}\n",
       "path": "registry/default/examples/slider-demo.tsx",
       "type": "registry:example"
     }

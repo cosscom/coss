@@ -99,6 +99,7 @@ export default async function CategoryPage({ params }: PageProps) {
       <div className="grid flex-1 items-stretch gap-9 pb-12 lg:grid-cols-2 lg:gap-6 xl:gap-9">
         {categoryParticles.map((particle) => {
           const ParticleComponent = particle.component;
+          const isPaginationComponent = particle.id.startsWith("particle-pa-");
           return (
             <ParticleDisplay
               className={cn(
@@ -108,11 +109,15 @@ export default async function CategoryPage({ params }: PageProps) {
               key={particle.id}
               name={particle.id}
             >
-              <ParticleComponent
-                currentPage={1}
-                totalPages={10}
-                totalResults={100}
-              />
+              {isPaginationComponent ? (
+                <ParticleComponent
+                  currentPage={1}
+                  totalPages={10}
+                  totalResults={100}
+                />
+              ) : (
+                <ParticleComponent />
+              )}
             </ParticleDisplay>
           );
         })}

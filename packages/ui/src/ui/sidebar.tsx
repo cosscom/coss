@@ -2,8 +2,6 @@
 
 import { mergeProps } from "@base-ui-components/react/merge-props";
 import { useRender } from "@base-ui-components/react/use-render";
-import { useIsMobile } from "@coss/ui/hooks/use-mobile";
-import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/ui/button";
 import { Input } from "@coss/ui/ui/input";
 import { Separator } from "@coss/ui/ui/separator";
@@ -16,6 +14,8 @@ import {
 } from "@coss/ui/ui/sheet";
 import { Skeleton } from "@coss/ui/ui/skeleton";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@coss/ui/ui/tooltip";
+import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import { cn } from "@workspace/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";

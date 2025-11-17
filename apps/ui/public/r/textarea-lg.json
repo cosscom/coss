@@ -4,7 +4,7 @@
   "description": "Large textarea",
   "files": [
     {
-      "content": "import { Textarea } from \"@/registry/default/ui/textarea\"\n\nexport default function TextareaLg() {\n  return <Textarea size=\"lg\" placeholder=\"Type your message here\" />\n}\n",
+      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function TextareaLg() {\n  return <Textarea placeholder=\"Type your message here\" size=\"lg\" />;\n}\n",
       "path": "registry/default/examples/textarea-lg.tsx",
       "type": "registry:example"
     }
