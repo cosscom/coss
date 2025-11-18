@@ -1,39 +1,39 @@
-import { ChevronsUpDown } from "lucide-react"
-import { Select as SelectPrimitive } from "radix-ui"
+import { ChevronsUpDown } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
 
-import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu"
-import UserMenu from "@/registry/default/components/navbar-components/user-menu"
+import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu";
+import UserMenu from "@/registry/default/components/navbar-components/user-menu";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/registry/default/ui/breadcrumb"
-import { Button } from "@/registry/default/ui/button"
+} from "@/registry/default/ui/breadcrumb";
+import { Button } from "@/registry/default/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/registry/default/ui/navigation-menu"
+} from "@/registry/default/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/registry/default/ui/popover"
+} from "@/registry/default/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "#", label: "Dashboard" },
   { href: "#", label: "Docs" },
   { href: "#", label: "API reference" },
-]
+];
 
 export default function Component() {
   return (
@@ -46,32 +46,32 @@ export default function Component() {
             <PopoverTrigger asChild>
               <Button
                 className="group size-8 md:hidden"
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 <svg
                   className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
                   fill="none"
+                  height={16}
                   stroke="currentColor"
-                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width={16}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                     d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)] group-aria-expanded:rotate-45"
+                    d="M4 12H20"
                   />
                   <path
-                    d="M4 12H20"
                     className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    d="M4 12H20"
                   />
                 </svg>
               </Button>
@@ -79,9 +79,9 @@ export default function Component() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink href={link.href} className="py-1.5">
+                  {navigationLinks.map((link) => (
+                    <NavigationMenuItem className="w-full" key={link.label}>
+                      <NavigationMenuLink className="py-1.5" href={link.href}>
                         {link.label}
                       </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -100,17 +100,17 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 p-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select account type" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="personal">Personal</SelectItem>
                     <SelectItem value="team">Team</SelectItem>
                     <SelectItem value="business">Business</SelectItem>
@@ -125,17 +125,17 @@ export default function Component() {
                     asChild
                   >
                     <Button
-                      variant="ghost"
                       className="h-8 p-1.5 text-foreground focus-visible:bg-accent focus-visible:ring-0"
+                      variant="ghost"
                     >
                       <SelectValue placeholder="Select project" />
                       <ChevronsUpDown
-                        size={14}
                         className="text-muted-foreground/80"
+                        size={14}
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="1">Main project</SelectItem>
                     <SelectItem value="2">Origin project</SelectItem>
                   </SelectContent>
@@ -150,11 +150,11 @@ export default function Component() {
             {/* Nav menu */}
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
-                {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
+                {navigationLinks.map((link) => (
+                  <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
-                      href={link.href}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                      href={link.href}
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -170,5 +170,5 @@ export default function Component() {
         </div>
       </div>
     </header>
-  )
+  );
 }

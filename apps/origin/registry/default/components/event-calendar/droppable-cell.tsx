@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useDroppable } from "@dnd-kit/core"
+import { useDroppable } from "@dnd-kit/core";
 
-import { useCalendarDnd } from "@/registry/default/components/event-calendar"
-import { cn } from "@/registry/default/lib/utils"
+import { useCalendarDnd } from "@/registry/default/components/event-calendar";
+import { cn } from "@/registry/default/lib/utils";
 
 interface DroppableCellProps {
-  id: string
-  date: Date
-  time?: number // For week/day views, represents hours (e.g., 9.25 for 9:15)
-  children?: React.ReactNode
-  className?: string
-  onClick?: () => void
+  id: string;
+  date: Date;
+  time?: number; // For week/day views, represents hours (e.g., 9.25 for 9:15)
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
 }
 
 export function DroppableCell({
@@ -22,15 +22,15 @@ export function DroppableCell({
   className,
   onClick,
 }: DroppableCellProps) {
-  const { activeEvent } = useCalendarDnd()
+  const { activeEvent } = useCalendarDnd();
 
   const { setNodeRef, isOver } = useDroppable({
-    id,
     data: {
       date,
       time,
     },
-  })
+    id,
+  });
 
   // Format time for display in tooltip (only for debugging)
   const formattedTime =
@@ -38,20 +38,20 @@ export function DroppableCell({
       ? `${Math.floor(time)}:${Math.round((time - Math.floor(time)) * 60)
           .toString()
           .padStart(2, "0")}`
-      : null
+      : null;
 
   return (
     <div
-      ref={setNodeRef}
-      onClick={onClick}
       className={cn(
         "flex h-full flex-col overflow-hidden px-0.5 py-1 data-dragging:bg-accent sm:px-1",
-        className
+        className,
       )}
-      title={formattedTime ? `${formattedTime}` : undefined}
       data-dragging={isOver && activeEvent ? true : undefined}
+      onClick={onClick}
+      ref={setNodeRef}
+      title={formattedTime ? `${formattedTime}` : undefined}
     >
       {children}
     </div>
-  )
+  );
 }

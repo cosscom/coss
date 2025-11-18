@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+} from "@tanstack/react-table";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
+import { cn } from "@/registry/default/lib/utils";
 import {
   Table,
   TableBody,
@@ -19,39 +19,38 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 type Item = {
-  id: string
-  name: string
-  email: string
-  location: string
-  flag: string
-  status: "Active" | "Inactive" | "Pending"
-  balance: number
-  department: string
-  role: string
-  joinDate: string
-  lastActive: string
-  performance: "Excellent" | "Good" | "Average" | "Poor"
-}
+  id: string;
+  name: string;
+  email: string;
+  location: string;
+  flag: string;
+  status: "Active" | "Inactive" | "Pending";
+  balance: number;
+  department: string;
+  role: string;
+  joinDate: string;
+  lastActive: string;
+  performance: "Excellent" | "Good" | "Average" | "Poor";
+};
 
 const columns: ColumnDef<Item>[] = [
   {
-    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => (
       <div className="truncate font-medium">{row.getValue("name")}</div>
     ),
-    sortUndefined: "last",
+    header: "Name",
     sortDescFirst: false,
+    sortUndefined: "last",
   },
   {
-    header: "Email",
     accessorKey: "email",
+    header: "Email",
   },
   {
-    header: "Location",
     accessorKey: "location",
     cell: ({ row }) => (
       <div className="truncate">
@@ -59,77 +58,78 @@ const columns: ColumnDef<Item>[] = [
         {row.getValue("location")}
       </div>
     ),
+    header: "Location",
   },
   {
-    header: "Status",
     accessorKey: "status",
+    header: "Status",
   },
   {
-    header: "Balance",
     accessorKey: "balance",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"))
+      const amount = Number.parseFloat(row.getValue("balance"));
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
         currency: "USD",
-      }).format(amount)
-      return formatted
+        style: "currency",
+      }).format(amount);
+      return formatted;
     },
+    header: "Balance",
   },
   {
-    header: "Department",
     accessorKey: "department",
+    header: "Department",
   },
   {
-    header: "Role",
     accessorKey: "role",
+    header: "Role",
   },
   {
-    header: "Join Date",
     accessorKey: "joinDate",
+    header: "Join Date",
   },
   {
-    header: "Last Active",
     accessorKey: "lastActive",
+    header: "Last Active",
   },
   {
-    header: "Performance",
     accessorKey: "performance",
+    header: "Performance",
   },
-]
+];
 
 export default function Component() {
-  const [data, setData] = useState<Item[]>([])
+  const [data, setData] = useState<Item[]>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "name",
       desc: false,
+      id: "name",
     },
-  ])
+  ]);
 
   useEffect(() => {
     async function fetchPosts() {
       const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      )
-      const data = await res.json()
-      setData(data.slice(0, 5)) // Limit to 5 items
+        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json",
+      );
+      const data = await res.json();
+      setData(data.slice(0, 5)); // Limit to 5 items
     }
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const table = useReactTable({
-    data,
-    columns,
     columnResizeMode: "onChange",
+    columns,
+    data,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     state: {
       sorting,
     },
-    enableSortingRemoval: false,
-  })
+  });
 
   return (
     <div>
@@ -141,12 +141,10 @@ export default function Component() {
       >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
-                    key={header.id}
-                    className="relative h-10 border-t select-none last:[&>.cursor-col-resize]:opacity-0"
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -154,6 +152,8 @@ export default function Component() {
                           ? "descending"
                           : "none"
                     }
+                    className="relative h-10 select-none border-t last:[&>.cursor-col-resize]:opacity-0"
+                    key={header.id}
                     {...{
                       colSpan: header.colSpan,
                       style: {
@@ -165,7 +165,7 @@ export default function Component() {
                       <div
                         className={cn(
                           header.column.getCanSort() &&
-                            "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                            "flex h-full cursor-pointer select-none items-center justify-between gap-2",
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                         onKeyDown={(e) => {
@@ -174,8 +174,8 @@ export default function Component() {
                             header.column.getCanSort() &&
                             (e.key === "Enter" || e.key === " ")
                           ) {
-                            e.preventDefault()
-                            header.column.getToggleSortingHandler()?.(e)
+                            e.preventDefault();
+                            header.column.getToggleSortingHandler()?.(e);
                           }
                         }}
                         tabIndex={header.column.getCanSort() ? 0 : undefined}
@@ -183,22 +183,22 @@ export default function Component() {
                         <span className="truncate">
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                         </span>
                         {{
                           asc: (
                             <ChevronUpIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                           desc: (
                             <ChevronDownIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                         }[header.column.getIsSorted() as string] ?? null}
@@ -207,16 +207,16 @@ export default function Component() {
                     {header.column.getCanResize() && (
                       <div
                         {...{
+                          className:
+                            "absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -right-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:translate-x-px",
                           onDoubleClick: () => header.column.resetSize(),
                           onMouseDown: header.getResizeHandler(),
                           onTouchStart: header.getResizeHandler(),
-                          className:
-                            "absolute top-0 h-full w-4 cursor-col-resize user-select-none touch-none -right-2 z-10 flex justify-center before:absolute before:w-px before:inset-y-0 before:bg-border before:translate-x-px",
                         }}
                       />
                     )}
                   </TableHead>
-                )
+                );
               })}
             </TableRow>
           ))}
@@ -225,11 +225,11 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="truncate">
+                  <TableCell className="truncate" key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -237,24 +237,24 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Resizable and sortable columns made with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>
       </p>
     </div>
-  )
+  );
 }

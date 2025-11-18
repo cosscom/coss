@@ -1,19 +1,19 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import { Switch } from "@/registry/default/ui/switch"
+import { Label } from "@/registry/default/ui/label";
+import { Switch } from "@/registry/default/ui/switch";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        id={id}
         className="h-3 w-9 border-none outline-offset-[6px] [&_span]:border [&_span]:border-input"
+        id={id}
       />
-      <Label htmlFor={id} className="sr-only">
+      <Label className="sr-only" htmlFor={id}>
         M2-style switch
       </Label>
     </div>
-  )
+  );
 }

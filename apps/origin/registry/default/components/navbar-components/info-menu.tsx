@@ -3,68 +3,68 @@ import {
   InfoIcon,
   LifeBuoyIcon,
   MessageCircleMoreIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
 export default function InfoMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          aria-label="Open edit menu"
+          className="size-8 rounded-full shadow-none"
           size="icon"
           variant="ghost"
-          className="size-8 rounded-full shadow-none"
-          aria-label="Open edit menu"
         >
           <InfoIcon
+            aria-hidden="true"
             className="text-muted-foreground"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="pb-2">
         <DropdownMenuLabel>Need help?</DropdownMenuLabel>
         <DropdownMenuItem
-          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
           asChild
+          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
         >
           <a href="#">
-            <BookIcon size={16} className="opacity-60" aria-hidden="true" />
+            <BookIcon aria-hidden="true" className="opacity-60" size={16} />
             Documentation
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
           asChild
+          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
         >
           <a href="#">
-            <LifeBuoyIcon size={16} className="opacity-60" aria-hidden="true" />
+            <LifeBuoyIcon aria-hidden="true" className="opacity-60" size={16} />
             Support
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
           asChild
+          className="cursor-pointer py-1 focus:bg-transparent focus:underline"
         >
           <a href="#">
             <MessageCircleMoreIcon
-              size={16}
-              className="opacity-60"
               aria-hidden="true"
+              className="opacity-60"
+              size={16}
             />
             Contact us
           </a>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

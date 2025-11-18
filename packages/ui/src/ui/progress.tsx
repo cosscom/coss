@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Progress as ProgressPrimitive } from "@base-ui-components/react/progress"
+import { Progress as ProgressPrimitive } from "@base-ui-components/react/progress";
 
-import { cn } from "@coss/ui/lib/utils"
+import { cn } from "@coss/ui/lib/utils";
 
 function Progress({
   className,
@@ -11,8 +11,8 @@ function Progress({
 }: ProgressPrimitive.Root.Props) {
   return (
     <ProgressPrimitive.Root
-      data-slot="progress"
       className={cn("flex w-full flex-col gap-2", className)}
+      data-slot="progress"
       {...props}
     >
       {children ? (
@@ -23,30 +23,30 @@ function Progress({
         </ProgressTrack>
       )}
     </ProgressPrimitive.Root>
-  )
+  );
 }
 
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
+      className={cn("font-medium text-sm", className)}
       data-slot="progress-label"
-      className={cn("text-sm font-medium", className)}
       {...props}
     />
-  )
+  );
 }
 
 function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
-      data-slot="progress-track"
       className={cn(
         "block h-1.5 w-full overflow-hidden rounded-full bg-input",
-        className
+        className,
       )}
+      data-slot="progress-track"
       {...props}
     />
-  )
+  );
 }
 
 function ProgressIndicator({
@@ -55,21 +55,21 @@ function ProgressIndicator({
 }: ProgressPrimitive.Indicator.Props) {
   return (
     <ProgressPrimitive.Indicator
-      data-slot="progress-indicator"
       className={cn("bg-primary transition-all duration-500", className)}
+      data-slot="progress-indicator"
       {...props}
     />
-  )
+  );
 }
 
 function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
-      data-slot="progress-value"
       className={cn("text-sm tabular-nums", className)}
+      data-slot="progress-value"
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -78,4 +78,4 @@ export {
   ProgressTrack,
   ProgressIndicator,
   ProgressValue,
-}
+};

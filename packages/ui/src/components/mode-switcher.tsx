@@ -1,11 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { Button } from "@coss/ui/ui/button";
 import { LayerMask01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useTheme } from "next-themes";
-
-import { Button } from "@coss/ui/ui/button";
+import * as React from "react";
 
 export function ModeSwitcher() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -16,15 +15,15 @@ export function ModeSwitcher() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
       className="relative size-8"
       onClick={toggleTheme}
+      size="icon"
       title="Toggle theme"
+      variant="ghost"
     >
       <HugeiconsIcon
+        className="-rotate-45 size-4"
         icon={LayerMask01Icon}
-        className="size-4 -rotate-45"
         strokeWidth={2}
       />
       <span className="sr-only">Toggle theme</span>

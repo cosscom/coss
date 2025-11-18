@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useEffect, useId, useRef, useState } from "react"
-import { CreditCardIcon, StoreIcon } from "lucide-react"
-import { usePaymentInputs } from "react-payment-inputs"
-import images, { type CardImages } from "react-payment-inputs/images"
+import { CreditCardIcon, StoreIcon } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { usePaymentInputs } from "react-payment-inputs";
+import images, { type CardImages } from "react-payment-inputs/images";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { Button } from "@/registry/default/ui/button"
+import { Badge } from "@/registry/default/ui/badge";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,30 +14,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group"
+} from "@/registry/default/ui/dialog";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   const {
     meta,
     getCardNumberProps,
     getExpiryDateProps,
     getCVCProps,
     getCardImageProps,
-  } = usePaymentInputs()
-  const couponInputRef = useRef<HTMLInputElement>(null)
-  const [showCouponInput, setShowCouponInput] = useState(false)
-  const [couponCode, setCouponCode] = useState("")
+  } = usePaymentInputs();
+  const couponInputRef = useRef<HTMLInputElement>(null);
+  const [showCouponInput, setShowCouponInput] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
 
   // Auto-focus the coupon input when it's shown
   useEffect(() => {
     if (showCouponInput && couponInputRef.current) {
-      couponInputRef.current.focus()
+      couponInputRef.current.focus();
     }
-  }, [showCouponInput])
+  }, [showCouponInput]);
 
   return (
     <Dialog>
@@ -47,8 +47,8 @@ export default function Component() {
       <DialogContent>
         <div className="mb-2 flex flex-col gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <StoreIcon className="opacity-80" size={16} />
           </div>
@@ -64,35 +64,35 @@ export default function Component() {
           <div className="space-y-4">
             <RadioGroup className="grid-cols-2" defaultValue="yearly">
               {/* Monthly */}
-              <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 has-data-[state=checked]:border-primary/50">
+              <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs outline-none transition-[color,box-shadow] has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50">
                 <RadioGroupItem
+                  className="sr-only after:absolute after:inset-0"
                   id="radio-monthly"
                   value="monthly"
-                  className="sr-only after:absolute after:inset-0"
                 />
-                <p className="text-sm font-medium text-foreground">Monthly</p>
-                <p className="text-sm text-muted-foreground">$32/month</p>
+                <p className="font-medium text-foreground text-sm">Monthly</p>
+                <p className="text-muted-foreground text-sm">$32/month</p>
               </label>
               {/* Yearly */}
-              <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50 has-data-[state=checked]:border-primary/50">
+              <label className="relative flex cursor-pointer flex-col gap-1 rounded-md border border-input px-4 py-3 shadow-xs outline-none transition-[color,box-shadow] has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50">
                 <RadioGroupItem
+                  className="sr-only after:absolute after:inset-0"
                   id="radio-yearly"
                   value="yearly"
-                  className="sr-only after:absolute after:inset-0"
                 />
                 <div className="inline-flex items-start justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground">Yearly</p>
+                  <p className="font-medium text-foreground text-sm">Yearly</p>
                   <Badge>Popular</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">$320/month</p>
+                <p className="text-muted-foreground text-sm">$320/month</p>
               </label>
             </RadioGroup>
             <div className="*:not-first:mt-2">
               <Label htmlFor={`name-${id}`}>Name on card</Label>
-              <Input id={`name-${id}`} type="text" required />
+              <Input id={`name-${id}`} required type="text" />
             </div>
             <div className="*:not-first:mt-2">
-              <legend className="text-sm font-medium text-foreground">
+              <legend className="font-medium text-foreground text-sm">
                 Card Details
               </legend>
               <div className="rounded-md shadow-xs">
@@ -111,7 +111,7 @@ export default function Component() {
                         width={20}
                       />
                     ) : (
-                      <CreditCardIcon size={16} aria-hidden="true" />
+                      <CreditCardIcon aria-hidden="true" size={16} />
                     )}
                   </div>
                 </div>
@@ -133,9 +133,9 @@ export default function Component() {
             </div>
             {!showCouponInput ? (
               <button
-                type="button"
-                onClick={() => setShowCouponInput(true)}
                 className="text-sm underline hover:no-underline"
+                onClick={() => setShowCouponInput(true)}
+                type="button"
               >
                 + Add coupon
               </button>
@@ -144,23 +144,23 @@ export default function Component() {
                 <Label htmlFor={`coupon-${id}`}>Coupon code</Label>
                 <Input
                   id={`coupon-${id}`}
-                  ref={couponInputRef}
-                  placeholder="Enter your code"
-                  value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter your code"
+                  ref={couponInputRef}
+                  value={couponCode}
                 />
               </div>
             )}
           </div>
-          <Button type="button" className="w-full">
+          <Button className="w-full" type="button">
             Subscribe
           </Button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs">
           Payments are non-refundable. Cancel anytime.
         </p>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

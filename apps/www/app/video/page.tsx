@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import { CodeBlock } from "@coss/ui/components/code-block";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "coss.com video",
   description: "open source is the foundation of all modern software",
-} 
+  title: "coss.com video",
+};
 
 export default function Page() {
   const initialization = `import { coss } from '@coss';
@@ -101,56 +101,40 @@ const meetingUrl = coss.video.utils.generateJoinUrl({
 });`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">   
-      <div className="mt-12 lg:mt-16 max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Initialization</h2>
-        <CodeBlock
-          code={initialization}
-          language="tsx"
-          copyButton={false}
-        />   
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Rooms</h2>
-        <CodeBlock
-          code={rooms}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Tokens</h2>
-        <CodeBlock
-          code={tokens}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Participants</h2>
-        <CodeBlock
-          code={participants}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Recordings</h2>
-        <CodeBlock
-          code={recordings}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Webhooks</h2>
-        <CodeBlock
-          code={webhooks}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Utilities</h2>
-        <CodeBlock
-          code={utilities}
-          language="tsx"
-          copyButton={false}
-        />                
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Bonus - Meeting URL Generator</h2>
-        <CodeBlock
-          code={bonus}
-          language="tsx"
-          copyButton={false}
-        />                
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
+      <div className="mx-auto mt-12 max-w-2xl text-muted-foreground lg:mt-16 [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Initialization
+        </h2>
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Rooms
+        </h2>
+        <CodeBlock code={rooms} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Tokens
+        </h2>
+        <CodeBlock code={tokens} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Participants
+        </h2>
+        <CodeBlock code={participants} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Recordings
+        </h2>
+        <CodeBlock code={recordings} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Webhooks
+        </h2>
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Utilities
+        </h2>
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Bonus - Meeting URL Generator
+        </h2>
+        <CodeBlock code={bonus} copyButton={false} language="tsx" />
       </div>
     </main>
   );

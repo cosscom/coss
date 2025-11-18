@@ -7,51 +7,51 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
-    id: 1,
     date: "Mar 15, 2024",
-    title: "Project Kickoff",
     description:
       "Initial team meeting and project scope definition. Established key milestones and resource allocation.",
+    id: 1,
+    title: "Project Kickoff",
   },
   {
-    id: 2,
     date: "Mar 22, 2024",
-    title: "Design Phase",
     description:
       "Completed wireframes and user interface mockups. Stakeholder review and feedback incorporated.",
+    id: 2,
+    title: "Design Phase",
   },
   {
-    id: 3,
     date: "Apr 5, 2024",
-    title: "Development Sprint",
     description:
       "Backend API implementation and frontend component development in progress.",
+    id: 3,
+    title: "Development Sprint",
   },
   {
-    id: 4,
     date: "Apr 19, 2024",
-    title: "Testing & Deployment",
     description:
       "Quality assurance testing, performance optimization, and production deployment preparation.",
+    id: 4,
+    title: "Testing & Deployment",
   },
-]
+];
 
 export default function Component() {
   return (
     <Timeline defaultValue={3}>
       {items.map((item) => (
         <TimelineItem
+          className="sm:group-data-[orientation=vertical]/timeline:ms-32"
           key={item.id}
           step={item.id}
-          className="sm:group-data-[orientation=vertical]/timeline:ms-32"
         >
           <TimelineHeader>
             <TimelineSeparator />
-            <TimelineDate className="sm:group-data-[orientation=vertical]/timeline:absolute sm:group-data-[orientation=vertical]/timeline:-left-32 sm:group-data-[orientation=vertical]/timeline:w-20 sm:group-data-[orientation=vertical]/timeline:text-right">
+            <TimelineDate className="sm:group-data-[orientation=vertical]/timeline:-left-32 sm:group-data-[orientation=vertical]/timeline:absolute sm:group-data-[orientation=vertical]/timeline:w-20 sm:group-data-[orientation=vertical]/timeline:text-right">
               {item.date}
             </TimelineDate>
             <TimelineTitle className="sm:-mt-0.5">{item.title}</TimelineTitle>
@@ -61,5 +61,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
-import { Label } from "@/registry/default/ui/label"
-import { Slider } from "@/registry/default/ui/slider"
+import { Button } from "@/registry/default/ui/button";
+import { Label } from "@/registry/default/ui/label";
+import { Slider } from "@/registry/default/ui/slider";
 
 export default function Component() {
-  const min_price = 5
-  const max_price = 1240
-  const [value, setValue] = useState([min_price, max_price])
+  const min_price = 5;
+  const max_price = 1240;
+  const [value, setValue] = useState([min_price, max_price]);
 
   const formatPrice = (price: number) => {
     return price === max_price
       ? `$${price.toLocaleString()}+`
-      : `$${price.toLocaleString()}`
-  }
+      : `$${price.toLocaleString()}`;
+  };
 
   return (
     <div className="*:not-first:mt-3">
@@ -24,14 +24,14 @@ export default function Component() {
       </Label>
       <div className="flex items-center gap-4">
         <Slider
-          value={value}
-          onValueChange={setValue}
-          min={min_price}
-          max={max_price}
           aria-label="Price range slider"
+          max={max_price}
+          min={min_price}
+          onValueChange={setValue}
+          value={value}
         />
         <Button variant="outline">Go</Button>
       </div>
     </div>
-  )
+  );
 }

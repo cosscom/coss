@@ -3,7 +3,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 export default function Component() {
   return (
@@ -44,9 +44,9 @@ export default function Component() {
           </TableBody>
         </Table>
       </div>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Vertical table
       </p>
     </div>
-  )
+  );
 }

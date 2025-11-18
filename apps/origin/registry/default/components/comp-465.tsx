@@ -1,35 +1,35 @@
-import { useId } from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useId } from "react";
 
-import { usePagination } from "@/registry/default/hooks/use-pagination"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { usePagination } from "@/registry/default/hooks/use-pagination";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/registry/default/ui/pagination"
+} from "@/registry/default/ui/pagination";
 
 type PaginationProps = {
-  currentPage: number
-  totalPages: number
-  paginationItemsToDisplay?: number
-}
+  currentPage: number;
+  totalPages: number;
+  paginationItemsToDisplay?: number;
+};
 
 export default function Component({
   currentPage,
   totalPages,
   paginationItemsToDisplay = 5,
 }: PaginationProps) {
-  const id = useId()
+  const id = useId();
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
     currentPage,
-    totalPages,
     paginationItemsToDisplay,
-  })
+    totalPages,
+  });
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -40,15 +40,15 @@ export default function Component({
             {/* Previous page button */}
             <PaginationItem>
               <PaginationLink
+                aria-disabled={currentPage === 1 ? true : undefined}
+                aria-label="Go to previous page"
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
                 href={
                   currentPage === 1 ? undefined : `#/page/${currentPage - 1}`
                 }
-                aria-label="Go to previous page"
-                aria-disabled={currentPage === 1 ? true : undefined}
                 role={currentPage === 1 ? "link" : undefined}
               >
-                <ChevronLeftIcon size={16} aria-hidden="true" />
+                <ChevronLeftIcon aria-hidden="true" size={16} />
               </PaginationLink>
             </PaginationItem>
 
@@ -81,17 +81,17 @@ export default function Component({
             {/* Next page button */}
             <PaginationItem>
               <PaginationLink
+                aria-disabled={currentPage === totalPages ? true : undefined}
+                aria-label="Go to next page"
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
                 href={
                   currentPage === totalPages
                     ? undefined
                     : `#/page/${currentPage + 1}`
                 }
-                aria-label="Go to next page"
-                aria-disabled={currentPage === totalPages ? true : undefined}
                 role={currentPage === totalPages ? "link" : undefined}
               >
-                <ChevronRightIcon size={16} aria-hidden="true" />
+                <ChevronRightIcon aria-hidden="true" size={16} />
               </PaginationLink>
             </PaginationItem>
           </PaginationContent>
@@ -100,16 +100,16 @@ export default function Component({
 
       {/* Go to page input */}
       <div className="flex items-center gap-3">
-        <Label htmlFor={id} className="whitespace-nowrap">
+        <Label className="whitespace-nowrap" htmlFor={id}>
           Go to page
         </Label>
         <Input
-          id={id}
-          type="text"
           className="w-14"
           defaultValue={String(currentPage)}
+          id={id}
+          type="text"
         />
       </div>
     </div>
-  )
+  );
 }

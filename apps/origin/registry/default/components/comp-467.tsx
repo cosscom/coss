@@ -5,54 +5,54 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 const items = [
   {
+    balance: "$1,250.00",
+    email: "alex.t@company.com",
     id: "1",
-    name: "Alex Thompson",
-    username: "@alexthompson",
     image:
       "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp1/avatar-40-02_upqrxi.jpg",
-    email: "alex.t@company.com",
     location: "San Francisco, US",
+    name: "Alex Thompson",
     status: "Active",
-    balance: "$1,250.00",
+    username: "@alexthompson",
   },
   {
+    balance: "$600.00",
+    email: "sarah.c@company.com",
     id: "2",
-    name: "Sarah Chen",
-    username: "@sarahchen",
     image:
       "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp1/avatar-40-01_ij9v7j.jpg",
-    email: "sarah.c@company.com",
     location: "Singapore",
+    name: "Sarah Chen",
     status: "Active",
-    balance: "$600.00",
+    username: "@sarahchen",
   },
   {
+    balance: "$0.00",
+    email: "m.garcia@company.com",
     id: "4",
-    name: "Maria Garcia",
-    username: "@mariagarcia",
     image:
       "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp1/avatar-40-03_dkeufx.jpg",
-    email: "m.garcia@company.com",
     location: "Madrid, Spain",
+    name: "Maria Garcia",
     status: "Active",
-    balance: "$0.00",
+    username: "@mariagarcia",
   },
   {
+    balance: "-$1,000.00",
+    email: "d.kim@company.com",
     id: "5",
-    name: "David Kim",
-    username: "@davidkim",
     image:
       "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/exp1/avatar-40-05_cmz0mg.jpg",
-    email: "d.kim@company.com",
     location: "Seoul, KR",
+    name: "David Kim",
     status: "Active",
-    balance: "-$1,000.00",
+    username: "@davidkim",
   },
-]
+];
 
 export default function Component() {
   return (
@@ -73,15 +73,15 @@ export default function Component() {
               <TableCell>
                 <div className="flex items-center gap-3">
                   <img
+                    alt={item.name}
                     className="rounded-full"
+                    height={40}
                     src={item.image}
                     width={40}
-                    height={40}
-                    alt={item.name}
                   />
                   <div>
                     <div className="font-medium">{item.name}</div>
-                    <span className="mt-0.5 text-xs text-muted-foreground">
+                    <span className="mt-0.5 text-muted-foreground text-xs">
                       {item.username}
                     </span>
                   </div>
@@ -95,9 +95,9 @@ export default function Component() {
           ))}
         </TableBody>
       </Table>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Table with images
       </p>
     </div>
-  )
+  );
 }

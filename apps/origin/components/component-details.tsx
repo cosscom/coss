@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { JSX, useEffect, useState } from "react"
-import { CodeIcon } from "lucide-react"
-import type { RegistryItem } from "shadcn/registry"
+import { CodeIcon } from "lucide-react";
+import { type JSX, useEffect, useState } from "react";
+import type { RegistryItem } from "shadcn/registry";
 
-import { convertRegistryPaths } from "@/lib/utils"
-import ComponentCli from "@/components/cli-commands"
-import CodeBlock, { highlight } from "@/components/code-block"
-import CopyButton from "@/components/copy-button"
-import CopyRegistry from "@/components/copy-registry"
-import OpenInV0 from "@/components/open-in-v0"
-import { Button } from "@/registry/default/ui/button"
+import ComponentCli from "@/components/cli-commands";
+import CodeBlock, { highlight } from "@/components/code-block";
+import CopyButton from "@/components/copy-button";
+import CopyRegistry from "@/components/copy-registry";
+import OpenInV0 from "@/components/open-in-v0";
+import { convertRegistryPaths } from "@/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,60 +18,61 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/registry/default/ui/tooltip"
+} from "@/registry/default/ui/tooltip";
 
 export default function ComponentDetails({
   component,
 }: {
-  component: RegistryItem
+  component: RegistryItem;
 }) {
-  const originUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/origin"
-  const [code, setCode] = useState<string | null>(null)
+  const originUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/origin";
+  const [code, setCode] = useState<string | null>(null);
   const [highlightedCode, setHighlightedCode] = useState<JSX.Element | null>(
-    null
-  )
+    null,
+  );
 
   useEffect(() => {
     const handleEmptyCode = () => {
-      setCode("")
-      setHighlightedCode(null)
-    }
+      setCode("");
+      setHighlightedCode(null);
+    };
 
     const loadCode = async () => {
       try {
-        const response = await fetch(`/origin/r/${component.name}.json`)
+        const response = await fetch(`/origin/r/${component.name}.json`);
         if (!response.ok) {
-          handleEmptyCode()
-          return
+          handleEmptyCode();
+          return;
         }
 
-        const contentType = response.headers.get("content-type")
+        const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-          handleEmptyCode()
-          return
+          handleEmptyCode();
+          return;
         }
 
-        const data = await response.json()
-        const codeContent = convertRegistryPaths(data.files[0].content) || ""
-        setCode(codeContent)
+        const data = await response.json();
+        const codeContent = convertRegistryPaths(data.files[0].content) || "";
+        setCode(codeContent);
 
         // Pre-highlight the code
-        const highlighted = await highlight(codeContent, "tsx")
-        setHighlightedCode(highlighted)
+        const highlighted = await highlight(codeContent, "tsx");
+        setHighlightedCode(highlighted);
       } catch (error) {
-        console.error("Failed to load code:", error)
-        handleEmptyCode()
+        console.error("Failed to load code:", error);
+        handleEmptyCode();
       }
-    }
+    };
 
-    loadCode()
-  }, [component.name])
+    loadCode();
+  }, [component.name]);
 
   return (
     <div className="absolute top-2 right-2 flex gap-1 peer-data-comp-loading:hidden">
@@ -84,16 +85,16 @@ export default function ComponentDetails({
               <span>
                 <DialogTrigger asChild>
                   <Button
-                    variant="ghost"
+                    className="text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 lg:group-focus-within/item:opacity-100"
                     size="icon"
-                    className="text-muted-foreground/80 transition-none hover:bg-transparent hover:text-foreground disabled:opacity-100 lg:opacity-0 lg:group-focus-within/item:opacity-100 lg:group-hover/item:opacity-100"
+                    variant="ghost"
                   >
-                    <CodeIcon size={16} aria-hidden={true} />
+                    <CodeIcon aria-hidden={true} size={16} />
                   </Button>
                 </DialogTrigger>
               </span>
             </TooltipTrigger>
-            <TooltipContent className="px-2 py-1 text-xs text-muted-foreground">
+            <TooltipContent className="px-2 py-1 text-muted-foreground text-xs">
               View code
             </TooltipContent>
           </Tooltip>
@@ -108,16 +109,16 @@ export default function ComponentDetails({
           <div className="min-w-0 space-y-5">
             <ComponentCli name={component.name} />
             <div className="space-y-4">
-              <p className="text-lg font-semibold tracking-tight">Code</p>
+              <p className="font-semibold text-lg tracking-tight">Code</p>
               <div className="relative">
                 {code === "" ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     No code available. If you think this is an error, please{" "}
                     <a
-                      href="https://github.com/cosscom/coss/issues"
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
+                      href="https://github.com/cosscom/coss/issues"
+                      rel="noopener noreferrer"
+                      target="_blank"
                     >
                       open an issue
                     </a>
@@ -139,5 +140,5 @@ export default function ComponentDetails({
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["button", "loading"],
+  "description": "Loading button",
+  "files": [
+    {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Spinner } from \"@/registry/default/ui/spinner\";\n\nexport default function Particle() {\n  return (\n    <Button disabled>\n      <Spinner />\n      Loading...\n    </Button>\n  );\n}\n",
+      "path": "registry/default/particles/p-button-18.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-button-18",
+  "registryDependencies": ["@coss/button", "@coss/spinner"],
+  "type": "registry:block"
+}

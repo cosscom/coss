@@ -7,68 +7,68 @@ import {
   TimelineItem,
   TimelineSeparator,
   TimelineTitle,
-} from "@/registry/default/ui/timeline"
+} from "@/registry/default/ui/timeline";
 
 const items = [
   {
-    id: 1,
-    date: "15 minutes ago",
-    title: "Hannah Kandell",
     action: "opened a new issue",
+    date: "15 minutes ago",
     description:
       "I'm having trouble with the new component library. It's not rendering properly.",
+    id: 1,
     image: "/origin/avatar-40-01.jpg",
+    title: "Hannah Kandell",
   },
   {
-    id: 2,
-    date: "10 minutes ago",
-    title: "Chris Tompson",
     action: "commented on",
+    date: "10 minutes ago",
     description:
       "Hey Hannah, I'm having trouble with the new component library. It's not rendering properly.",
+    id: 2,
     image: "/origin/avatar-40-02.jpg",
+    title: "Chris Tompson",
   },
   {
-    id: 3,
-    date: "5 minutes ago",
-    title: "Emma Davis",
     action: "assigned you to",
+    date: "5 minutes ago",
     description:
       "The new component library is not rendering properly. Can you take a look?",
+    id: 3,
     image: "/origin/avatar-40-03.jpg",
+    title: "Emma Davis",
   },
   {
-    id: 4,
-    date: "2 minutes ago",
-    title: "Alex Morgan",
     action: "closed the issue",
+    date: "2 minutes ago",
     description: "The issue has been fixed. Please review the changes.",
+    id: 4,
     image: "/origin/avatar-40-05.jpg",
+    title: "Alex Morgan",
   },
-]
+];
 
 export default function Component() {
   return (
     <Timeline>
       {items.map((item) => (
         <TimelineItem
+          className="group-data-[orientation=vertical]/timeline:ms-10 group-data-[orientation=vertical]/timeline:not-last:pb-8"
           key={item.id}
           step={item.id}
-          className="group-data-[orientation=vertical]/timeline:ms-10 group-data-[orientation=vertical]/timeline:not-last:pb-8"
         >
           <TimelineHeader>
             <TimelineSeparator className="group-data-[orientation=vertical]/timeline:-left-7 group-data-[orientation=vertical]/timeline:h-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=vertical]/timeline:translate-y-6.5" />
             <TimelineTitle className="mt-0.5">
               {item.title}{" "}
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="font-normal text-muted-foreground text-sm">
                 {item.action}
               </span>
             </TimelineTitle>
-            <TimelineIndicator className="flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground group-data-[orientation=vertical]/timeline:-left-7">
+            <TimelineIndicator className="group-data-[orientation=vertical]/timeline:-left-7 flex size-6 items-center justify-center border-none bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground">
               <img
-                src={item.image}
                 alt={item.title}
                 className="size-6 rounded-full"
+                src={item.image}
               />
             </TimelineIndicator>
           </TimelineHeader>
@@ -79,5 +79,5 @@ export default function Component() {
         </TimelineItem>
       ))}
     </Timeline>
-  )
+  );
 }

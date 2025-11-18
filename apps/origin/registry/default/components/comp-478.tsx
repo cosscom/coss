@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
-import { useId, useMemo, useState } from "react"
 import {
-  Column,
-  ColumnDef,
-  ColumnFiltersState,
+  type Column,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedMinMaxValues,
@@ -12,28 +11,29 @@ import {
   getFacetedUniqueValues,
   getFilteredRowModel,
   getSortedRowModel,
-  RowData,
-  SortingState,
+  type RowData,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   ExternalLinkIcon,
   SearchIcon,
-} from "lucide-react"
+} from "lucide-react";
+import { useId, useMemo, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { cn } from "@/registry/default/lib/utils";
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/default/ui/select"
+} from "@/registry/default/ui/select";
 import {
   Table,
   TableBody,
@@ -41,279 +41,295 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/registry/default/ui/table"
+} from "@/registry/default/ui/table";
 
 declare module "@tanstack/react-table" {
   //allows us to define custom properties for our columns
+  // Type parameters TData and TValue must match TanStack Table's declaration exactly
+  // biome-ignore lint: Type parameters required for module augmentation compatibility
   interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "range" | "select"
+    filterVariant?: "text" | "range" | "select";
   }
 }
 
 type Item = {
-  id: string
-  keyword: string
+  id: string;
+  keyword: string;
   intents: Array<
     "Informational" | "Navigational" | "Commercial" | "Transactional"
-  >
-  volume: number
-  cpc: number
-  traffic: number
-  link: string
-}
+  >;
+  volume: number;
+  cpc: number;
+  traffic: number;
+  link: string;
+};
 
 const columns: ColumnDef<Item>[] = [
   {
-    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    id: "select",
   },
   {
-    header: "Keyword",
     accessorKey: "keyword",
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("keyword")}</div>
     ),
+    header: "Keyword",
   },
   {
-    header: "Intents",
     accessorKey: "intents",
     cell: ({ row }) => {
-      const intents = row.getValue("intents") as string[]
+      const intents = row.getValue("intents") as string[];
       return (
         <div className="flex gap-1">
           {intents.map((intent) => {
             const styles = {
+              Commercial: "bg-amber-400/20 text-amber-500",
               Informational: "bg-indigo-400/20 text-indigo-500",
               Navigational: "bg-emerald-400/20 text-emerald-500",
-              Commercial: "bg-amber-400/20 text-amber-500",
               Transactional: "bg-rose-400/20 text-rose-500",
-            }[intent]
+            }[intent];
 
             return (
               <div
-                key={intent}
                 className={cn(
-                  "flex size-5 items-center justify-center rounded text-xs font-medium",
-                  styles
+                  "flex size-5 items-center justify-center rounded font-medium text-xs",
+                  styles,
                 )}
+                key={intent}
               >
                 {intent.charAt(0)}
               </div>
-            )
+            );
           })}
         </div>
-      )
+      );
     },
     enableSorting: false,
+    filterFn: (row, id, filterValue) => {
+      const rowValue = row.getValue(id);
+      return Array.isArray(rowValue) && rowValue.includes(filterValue);
+    },
+    header: "Intents",
     meta: {
       filterVariant: "select",
     },
-    filterFn: (row, id, filterValue) => {
-      const rowValue = row.getValue(id)
-      return Array.isArray(rowValue) && rowValue.includes(filterValue)
-    },
   },
   {
-    header: "Volume",
     accessorKey: "volume",
     cell: ({ row }) => {
-      const volume = parseInt(row.getValue("volume"))
+      const volume = Number.parseInt(row.getValue("volume"), 10);
       return new Intl.NumberFormat("en-US", {
-        notation: "compact",
         maximumFractionDigits: 1,
-      }).format(volume)
+        notation: "compact",
+      }).format(volume);
     },
+    header: "Volume",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "CPC",
     accessorKey: "cpc",
     cell: ({ row }) => <div>${row.getValue("cpc")}</div>,
+    header: "CPC",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "Traffic",
     accessorKey: "traffic",
     cell: ({ row }) => {
-      const traffic = parseInt(row.getValue("traffic"))
+      const traffic = Number.parseInt(row.getValue("traffic"), 10);
       return new Intl.NumberFormat("en-US", {
-        notation: "compact",
         maximumFractionDigits: 1,
-      }).format(traffic)
+        notation: "compact",
+      }).format(traffic);
     },
+    header: "Traffic",
     meta: {
       filterVariant: "range",
     },
   },
   {
-    header: "Link",
     accessorKey: "link",
     cell: ({ row }) => (
       <a className="inline-flex items-center gap-1 hover:underline" href="#">
-        {row.getValue("link")} <ExternalLinkIcon size={12} aria-hidden="true" />
+        {row.getValue("link")} <ExternalLinkIcon aria-hidden="true" size={12} />
       </a>
     ),
     enableSorting: false,
+    header: "Link",
   },
-]
+];
 
 const items: Item[] = [
   {
-    id: "1",
-    keyword: "react components",
-    intents: ["Informational", "Navigational"],
-    volume: 2507,
     cpc: 2.5,
-    traffic: 88,
-    link: "https://coss.com/origin",
-  },
-  {
-    id: "2",
-    keyword: "buy react templates",
-    intents: ["Commercial", "Transactional"],
-    volume: 1850,
-    cpc: 4.75,
-    traffic: 65,
-    link: "https://coss.com/origin/input",
-  },
-  {
-    id: "3",
-    keyword: "react ui library",
-    intents: ["Informational", "Commercial"],
-    volume: 3200,
-    cpc: 3.25,
-    traffic: 112,
-    link: "https://coss.com/origin/badge",
-  },
-  {
-    id: "4",
-    keyword: "tailwind components download",
-    intents: ["Transactional"],
-    volume: 890,
-    cpc: 1.95,
-    traffic: 45,
-    link: "https://coss.com/origin/alert",
-  },
-  {
-    id: "5",
-    keyword: "react dashboard template free",
-    intents: ["Commercial", "Transactional"],
-    volume: 4100,
-    cpc: 5.5,
-    traffic: 156,
-    link: "https://coss.com/origin/tabs",
-  },
-  {
-    id: "6",
-    keyword: "how to use react components",
-    intents: ["Informational"],
-    volume: 1200,
-    cpc: 1.25,
-    traffic: 42,
-    link: "https://coss.com/origin/table",
-  },
-  {
-    id: "7",
-    keyword: "react ui kit premium",
-    intents: ["Commercial", "Transactional"],
-    volume: 760,
-    cpc: 6.8,
-    traffic: 28,
-    link: "https://coss.com/origin/avatar",
-  },
-  {
-    id: "8",
-    keyword: "react component documentation",
+    id: "1",
     intents: ["Informational", "Navigational"],
-    volume: 950,
-    cpc: 1.8,
-    traffic: 35,
+    keyword: "react components",
     link: "https://coss.com/origin",
+    traffic: 88,
+    volume: 2507,
   },
-]
+  {
+    cpc: 4.75,
+    id: "2",
+    intents: ["Commercial", "Transactional"],
+    keyword: "buy react templates",
+    link: "https://coss.com/origin/input",
+    traffic: 65,
+    volume: 1850,
+  },
+  {
+    cpc: 3.25,
+    id: "3",
+    intents: ["Informational", "Commercial"],
+    keyword: "react ui library",
+    link: "https://coss.com/origin/badge",
+    traffic: 112,
+    volume: 3200,
+  },
+  {
+    cpc: 1.95,
+    id: "4",
+    intents: ["Transactional"],
+    keyword: "tailwind components download",
+    link: "https://coss.com/origin/alert",
+    traffic: 45,
+    volume: 890,
+  },
+  {
+    cpc: 5.5,
+    id: "5",
+    intents: ["Commercial", "Transactional"],
+    keyword: "react dashboard template free",
+    link: "https://coss.com/origin/tabs",
+    traffic: 156,
+    volume: 4100,
+  },
+  {
+    cpc: 1.25,
+    id: "6",
+    intents: ["Informational"],
+    keyword: "how to use react components",
+    link: "https://coss.com/origin/table",
+    traffic: 42,
+    volume: 1200,
+  },
+  {
+    cpc: 6.8,
+    id: "7",
+    intents: ["Commercial", "Transactional"],
+    keyword: "react ui kit premium",
+    link: "https://coss.com/origin/avatar",
+    traffic: 28,
+    volume: 760,
+  },
+  {
+    cpc: 1.8,
+    id: "8",
+    intents: ["Informational", "Navigational"],
+    keyword: "react component documentation",
+    link: "https://coss.com/origin",
+    traffic: 35,
+    volume: 950,
+  },
+];
 
 export default function Component() {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "traffic",
       desc: false,
+      id: "traffic",
     },
-  ])
+  ]);
 
   const table = useReactTable({
-    data: items,
     columns,
-    state: {
-      sorting,
-      columnFilters,
-    },
-    onColumnFiltersChange: setColumnFilters,
+    data: items,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
-    getSortedRowModel: getSortedRowModel(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
     getFacetedRowModel: getFacetedRowModel(), // client-side faceting
     getFacetedUniqueValues: getFacetedUniqueValues(), // generate unique values for select filter/autocomplete
-    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
+    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
-    enableSortingRemoval: false,
-  })
+    state: {
+      columnFilters,
+      sorting,
+    },
+  });
+
+  const keywordColumn = table.getColumn("keyword");
+  const intentsColumn = table.getColumn("intents");
+  const volumeColumn = table.getColumn("volume");
+  const cpcColumn = table.getColumn("cpc");
+  const trafficColumn = table.getColumn("traffic");
 
   return (
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         {/* Search input */}
-        <div className="w-44">
-          <Filter column={table.getColumn("keyword")!} />
-        </div>
+        {keywordColumn && (
+          <div className="w-44">
+            <Filter column={keywordColumn} />
+          </div>
+        )}
         {/* Intents select */}
-        <div className="w-36">
-          <Filter column={table.getColumn("intents")!} />
-        </div>
+        {intentsColumn && (
+          <div className="w-36">
+            <Filter column={intentsColumn} />
+          </div>
+        )}
         {/* Volume inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("volume")!} />
-        </div>
+        {volumeColumn && (
+          <div className="w-36">
+            <Filter column={volumeColumn} />
+          </div>
+        )}
         {/* CPC inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("cpc")!} />
-        </div>
+        {cpcColumn && (
+          <div className="w-36">
+            <Filter column={cpcColumn} />
+          </div>
+        )}
         {/* Traffic inputs */}
-        <div className="w-36">
-          <Filter column={table.getColumn("traffic")!} />
-        </div>
+        {trafficColumn && (
+          <div className="w-36">
+            <Filter column={trafficColumn} />
+          </div>
+        )}
       </div>
 
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted/50">
+            <TableRow className="bg-muted/50" key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
-                    key={header.id}
-                    className="relative h-10 border-t select-none"
                     aria-sort={
                       header.column.getIsSorted() === "asc"
                         ? "ascending"
@@ -321,12 +337,14 @@ export default function Component() {
                           ? "descending"
                           : "none"
                     }
+                    className="relative h-10 select-none border-t"
+                    key={header.id}
                   >
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <div
                         className={cn(
                           header.column.getCanSort() &&
-                            "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                            "flex h-full cursor-pointer select-none items-center justify-between gap-2",
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                         onKeyDown={(e) => {
@@ -335,43 +353,43 @@ export default function Component() {
                             header.column.getCanSort() &&
                             (e.key === "Enter" || e.key === " ")
                           ) {
-                            e.preventDefault()
-                            header.column.getToggleSortingHandler()?.(e)
+                            e.preventDefault();
+                            header.column.getToggleSortingHandler()?.(e);
                           }
                         }}
                         tabIndex={header.column.getCanSort() ? 0 : undefined}
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                         {{
                           asc: (
                             <ChevronUpIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                           desc: (
                             <ChevronDownIcon
+                              aria-hidden="true"
                               className="shrink-0 opacity-60"
                               size={16}
-                              aria-hidden="true"
                             />
                           ),
                         }[header.column.getIsSorted() as string] ?? (
-                          <span className="size-4" aria-hidden="true" />
+                          <span aria-hidden="true" className="size-4" />
                         )}
                       </div>
                     ) : (
                       flexRender(
                         header.column.columnDef.header,
-                        header.getContext()
+                        header.getContext(),
                       )
                     )}
                   </TableHead>
-                )
+                );
               })}
             </TableRow>
           ))}
@@ -380,8 +398,8 @@ export default function Component() {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
-                key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                key={row.id}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -392,51 +410,53 @@ export default function Component() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No results.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-4 text-center text-muted-foreground text-sm">
         Data table with filters made with{" "}
         <a
           className="underline hover:text-foreground"
           href="https://tanstack.com/table"
-          target="_blank"
           rel="noopener noreferrer"
+          target="_blank"
         >
           TanStack Table
         </a>
       </p>
     </div>
-  )
+  );
 }
 
-function Filter({ column }: { column: Column<any, unknown> }) {
-  const id = useId()
-  const columnFilterValue = column.getFilterValue()
-  const { filterVariant } = column.columnDef.meta ?? {}
+function Filter({ column }: { column: Column<Item, unknown> }) {
+  const id = useId();
+  const columnFilterValue = column.getFilterValue();
+  const { filterVariant } = column.columnDef.meta ?? {};
   const columnHeader =
-    typeof column.columnDef.header === "string" ? column.columnDef.header : ""
+    typeof column.columnDef.header === "string" ? column.columnDef.header : "";
   const sortedUniqueValues = useMemo(() => {
-    if (filterVariant === "range") return []
+    if (filterVariant === "range") return [];
 
     // Get all unique values from the column
-    const values = Array.from(column.getFacetedUniqueValues().keys())
+    const values = Array.from(column.getFacetedUniqueValues().keys());
 
     // If the values are arrays, flatten them and get unique items
     const flattenedValues = values.reduce((acc: string[], curr) => {
       if (Array.isArray(curr)) {
-        return [...acc, ...curr]
+        acc.push(...curr);
+      } else {
+        acc.push(curr);
       }
-      return [...acc, curr]
-    }, [])
+      return acc;
+    }, []);
 
     // Get unique values and sort them
-    return Array.from(new Set(flattenedValues)).sort()
-  }, [column.getFacetedUniqueValues(), filterVariant])
+    return Array.from(new Set(flattenedValues)).sort();
+  }, [column, filterVariant]);
 
   if (filterVariant === "range") {
     return (
@@ -444,9 +464,9 @@ function Filter({ column }: { column: Column<any, unknown> }) {
         <Label>{columnHeader}</Label>
         <div className="flex">
           <Input
-            id={`${id}-range-1`}
+            aria-label={`${columnHeader} min`}
             className="flex-1 rounded-e-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-            value={(columnFilterValue as [number, number])?.[0] ?? ""}
+            id={`${id}-range-1`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
                 e.target.value ? Number(e.target.value) : undefined,
@@ -455,12 +475,12 @@ function Filter({ column }: { column: Column<any, unknown> }) {
             }
             placeholder="Min"
             type="number"
-            aria-label={`${columnHeader} min`}
+            value={(columnFilterValue as [number, number])?.[0] ?? ""}
           />
           <Input
-            id={`${id}-range-2`}
+            aria-label={`${columnHeader} max`}
             className="-ms-px flex-1 rounded-s-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-            value={(columnFilterValue as [number, number])?.[1] ?? ""}
+            id={`${id}-range-2`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
                 old?.[0],
@@ -469,11 +489,11 @@ function Filter({ column }: { column: Column<any, unknown> }) {
             }
             placeholder="Max"
             type="number"
-            aria-label={`${columnHeader} max`}
+            value={(columnFilterValue as [number, number])?.[1] ?? ""}
           />
         </div>
       </div>
-    )
+    );
   }
 
   if (filterVariant === "select") {
@@ -481,10 +501,10 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       <div className="*:not-first:mt-2">
         <Label htmlFor={`${id}-select`}>{columnHeader}</Label>
         <Select
-          value={columnFilterValue?.toString() ?? "all"}
           onValueChange={(value) => {
-            column.setFilterValue(value === "all" ? undefined : value)
+            column.setFilterValue(value === "all" ? undefined : value);
           }}
+          value={columnFilterValue?.toString() ?? "all"}
         >
           <SelectTrigger id={`${id}-select`}>
             <SelectValue />
@@ -499,7 +519,7 @@ function Filter({ column }: { column: Column<any, unknown> }) {
           </SelectContent>
         </Select>
       </div>
-    )
+    );
   }
 
   return (
@@ -507,17 +527,17 @@ function Filter({ column }: { column: Column<any, unknown> }) {
       <Label htmlFor={`${id}-input`}>{columnHeader}</Label>
       <div className="relative">
         <Input
-          id={`${id}-input`}
           className="peer ps-9"
-          value={(columnFilterValue ?? "") as string}
+          id={`${id}-input`}
           onChange={(e) => column.setFilterValue(e.target.value)}
           placeholder={`Search ${columnHeader.toLowerCase()}`}
           type="text"
+          value={(columnFilterValue ?? "") as string}
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
           <SearchIcon size={16} />
         </div>
       </div>
     </div>
-  )
+  );
 }

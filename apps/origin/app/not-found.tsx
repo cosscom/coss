@@ -1,12 +1,12 @@
-import Link from "next/link"
+import Link from "next/link";
 
-import PageHeader from "@/components/page-header"
-import { Button } from "@/registry/default/ui/button"
+import PageHeader from "@/components/page-header";
+import { Button } from "@/registry/default/ui/button";
 
 export default function NotFound() {
   return (
     <>
-      <PageHeader title="404" className="mb-6">
+      <PageHeader className="mb-6" title="404">
         The page you&apos;re looking for does not exist or is no longer here.
       </PageHeader>
       <div className="text-center">
@@ -15,5 +15,5 @@ export default function NotFound() {
         </Button>
       </div>
     </>
-  )
+  );
 }

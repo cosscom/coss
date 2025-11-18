@@ -1,4 +1,5 @@
 ![coss.com](https://github.com/user-attachments/assets/56dfe7f7-85b7-44ee-b89a-1c30c5c4a156)
+
 <h3 align="center">coss.com (formerly Origin UI)</h3>
 <p align="center">The <strong>everything but AI</strong> company.</p>
 
@@ -18,8 +19,8 @@ This repository contains multiple products and applications that make up the cos
 - **`apps/ui/`** - coss ui component library and documentation
 - **`apps/origin/`** - Legacy Origin UI components (pre-acquisition)
 - **`packages/ui/`** - Shared UI components package
-- **`packages/eslint-config/`** - ESLint configurations
 - **`packages/typescript-config/`** - TypeScript configurations
+- **`biome.json`** - Shared Biome configuration for linting and formatting
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -71,8 +72,7 @@ For local development, create a `.env.local` file in each of the app directories
 This Turborepo has some additional tools already setup for you:
 
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- [Biome](https://biomejs.dev/) for linting and formatting
 
 #### Build
 
@@ -128,7 +128,7 @@ Please see our [Contributing Guidelines](apps/ui/CONTRIBUTING.md) for more infor
 
 This repository uses a mixed licensing approach. The default license for this project is [AGPLv3.0](LICENSE).
 
-- **MIT**: The `apps/origin/` and `apps/ui/` directories are licensed under its original MIT license
+- **MIT**: The `apps/origin/` and `apps/ui/` directories are licensed under their original MIT license
 - **AGPLv3**: All other directories are licensed under the GNU Affero General Public License v3.0
 
 For detailed information, see our [Licensing documentation](LICENSING.md).
@@ -140,4 +140,4 @@ Special thanks to:
 - **[Tailwind CSS](https://tailwindcss.com/)** - For the utility-first CSS framework that powers our design system
 - **[Base UI](https://base-ui.com/)** - For providing the robust, accessible primitives that form the foundation of our components
 - **[shadcn/ui](https://ui.shadcn.com/)** - For inspiring our copy-paste approach and component philosophy
-- **[Fumadocs](https://fumadocs.dev/)** - For providing the documentation framework that powers our component docs 
+- **[Fumadocs](https://fumadocs.dev/)** - For providing the documentation framework that powers our component docs

@@ -1,27 +1,27 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="relative flex w-full items-start gap-2 rounded-md border border-input p-4 shadow-xs outline-none has-data-[state=checked]:border-primary/50">
       <Checkbox
-        id={id}
-        className="order-1 after:absolute after:inset-0"
         aria-describedby={`${id}-description`}
+        className="order-1 after:absolute after:inset-0"
+        id={id}
       />
       <div className="flex grow items-start gap-3">
         <svg
+          aria-hidden="true"
           className="shrink-0"
-          width={32}
           height={24}
           viewBox="0 0 32 24"
+          width={32}
           xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
         >
-          <rect width="32" height="24" rx="4" fill="#252525" />
+          <rect fill="#252525" height="24" rx="4" width="32" />
           <path
             d="M19.0537 6.49742H12.9282V17.5026H19.0537V6.49742Z"
             fill="#FF5A00"
@@ -38,15 +38,15 @@ export default function Component() {
         <div className="grid gap-2">
           <Label htmlFor={id}>
             Label{" "}
-            <span className="text-xs leading-[inherit] font-normal text-muted-foreground">
+            <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
               (Sublabel)
             </span>
           </Label>
-          <p id={`${id}-description`} className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs" id={`${id}-description`}>
             A short description goes here.
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["menu"],
+  "description": "Menu with checkbox",
+  "files": [
+    {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Menu,\n  MenuCheckboxItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\";\n\nexport default function Particle() {\n  return (\n    <Menu>\n      <MenuTrigger render={<Button variant=\"outline\" />}>Open menu</MenuTrigger>\n      <MenuPopup>\n        <MenuCheckboxItem defaultChecked>Auto save</MenuCheckboxItem>\n        <MenuCheckboxItem>Notifications</MenuCheckboxItem>\n      </MenuPopup>\n    </Menu>\n  );\n}\n",
+      "path": "registry/default/particles/p-menu-3.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-menu-3",
+  "registryDependencies": ["@coss/menu", "@coss/checkbox"],
+  "type": "registry:block"
+}

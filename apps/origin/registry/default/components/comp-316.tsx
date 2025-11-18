@@ -1,4 +1,4 @@
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
-import { ScrollArea } from "@/registry/default/ui/scroll-area"
+} from "@/registry/default/ui/dialog";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function Component() {
   return (
@@ -155,5 +155,5 @@ export default function Component() {
         </ScrollArea>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

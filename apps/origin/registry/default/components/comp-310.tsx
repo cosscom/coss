@@ -1,88 +1,88 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { TicketPercent, XIcon } from "lucide-react"
+import { TicketPercent, XIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 // Define the sale end date - eg: new Date('2024-12-31T23:59:59');
 const saleEndDate = new Date(
-  Date.now() + 9 * 60 * 60 * 1000 + 45 * 60 * 1000 + 24 * 1000
-) // Setting 9h 45m 24s from now for demo purposes
+  Date.now() + 9 * 60 * 60 * 1000 + 45 * 60 * 1000 + 24 * 1000,
+); // Setting 9h 45m 24s from now for demo purposes
 
 interface TimeLeft {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-  isExpired: boolean
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isExpired: boolean;
 }
 
 export default function Component() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(true);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
+    isExpired: false,
     minutes: 0,
     seconds: 0,
-    isExpired: false,
-  })
+  });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const now = new Date()
-      const difference = saleEndDate.getTime() - now.getTime()
+      const now = new Date();
+      const difference = saleEndDate.getTime() - now.getTime();
 
       if (difference <= 0) {
         setTimeLeft({
           days: 0,
           hours: 0,
+          isExpired: true,
           minutes: 0,
           seconds: 0,
-          isExpired: true,
-        })
-        return
+        });
+        return;
       }
 
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
       const hours = Math.floor(
-        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      )
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
       setTimeLeft({
         days,
         hours,
+        isExpired: false,
         minutes,
         seconds,
-        isExpired: false,
-      })
-    }
+      });
+    };
 
     // Calculate immediately and then every second
-    calculateTimeLeft()
-    const timer = setInterval(calculateTimeLeft, 1000)
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => clearInterval(timer);
+  }, []);
 
-  if (!isVisible || timeLeft.isExpired) return null
+  if (!isVisible || timeLeft.isExpired) return null;
 
   return (
     <div className="dark bg-muted px-4 py-3 text-foreground">
       <div className="flex gap-2 md:items-center">
         <div className="flex grow gap-3 md:items-center">
           <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 max-md:mt-0.5"
             aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 max-md:mt-0.5"
           >
             <TicketPercent className="opacity-80" size={16} />
           </div>
           <div className="flex grow flex-col justify-between gap-3 md:flex-row md:items-center">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Black Friday Sale!</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-medium text-sm">Black Friday Sale!</p>
+              <p className="text-muted-foreground text-sm">
                 It kicks off today and is available for just 24
                 hours—don&lsquo;t miss out!
               </p>
@@ -108,25 +108,25 @@ export default function Component() {
                   <span className="text-muted-foreground">s</span>
                 </span>
               </div>
-              <Button size="sm" className="text-sm">
+              <Button className="text-sm" size="sm">
                 Buy now
               </Button>
             </div>
           </div>
         </div>
         <Button
-          variant="ghost"
+          aria-label="Close banner"
           className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
           onClick={() => setIsVisible(false)}
-          aria-label="Close banner"
+          variant="ghost"
         >
           <XIcon
-            size={16}
-            className="opacity-60 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            size={16}
           />
         </Button>
       </div>
     </div>
-  )
+  );
 }

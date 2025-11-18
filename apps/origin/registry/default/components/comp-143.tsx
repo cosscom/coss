@@ -1,28 +1,28 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Checkbox } from "@/registry/default/ui/checkbox"
-import { Label } from "@/registry/default/ui/label"
+import { Checkbox } from "@/registry/default/ui/checkbox";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
+  const id = useId();
   return (
     <div className="flex items-start gap-2">
       <Checkbox
-        id={id}
-        className="order-1"
         aria-describedby={`${id}-description`}
+        className="order-1"
+        id={id}
       />
       <div className="grid grow gap-2">
         <Label htmlFor={id}>
           Label{" "}
-          <span className="text-xs leading-[inherit] font-normal text-muted-foreground">
+          <span className="font-normal text-muted-foreground text-xs leading-[inherit]">
             (Sublabel)
           </span>
         </Label>
-        <p id={`${id}-description`} className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs" id={`${id}-description`}>
           You can use this checkbox with a label and a description.
         </p>
       </div>
     </div>
-  )
+  );
 }

@@ -1,11 +1,10 @@
 "use client";
 
+import { Badge } from "@coss/ui/ui/badge";
+import { Button } from "@coss/ui/ui/button";
+import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@coss/ui/ui/menu";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
-
-import { Badge } from "@coss/ui/ui/badge";
-import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@coss/ui/ui/menu";
-import { Button } from "@coss/ui/ui/button";
 
 interface ProductsDropdownProps {
   items: { href: string; label: string; upcoming?: boolean }[];
@@ -58,18 +57,19 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
 
           return (
             <MenuItem
-              key={item.href}
               className="group justify-between"
+              key={item.href}
+              // biome-ignore lint/a11y/useAnchorContent: This is intentional
               render={isExternal ? <a href={href} /> : <Link href={href} />}
             >
-              <span className="font-heading text-muted-foreground in-data-highlighted:text-foreground">
+              <span className="font-heading in-data-highlighted:text-foreground text-muted-foreground">
                 {item.label}
               </span>
               {item.upcoming && (
                 <Badge
-                  variant="info"
+                  className="-me-0.5 font-medium opacity-0 group-hover:opacity-100"
                   size="sm"
-                  className="-me-0.5 opacity-0 group-hover:opacity-100 font-medium"
+                  variant="info"
                 >
                   Upcoming
                 </Badge>

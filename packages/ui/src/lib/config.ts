@@ -1,12 +1,11 @@
 export const siteConfig = {
-  name: "coss.com",
-  url: "https://coss.com",
-  ogImage: "https://coss.com/og.jpg",
   description: "coss.com - the everything but AI company.",
   links: {
-    twitter: "https://x.com/coss_com",
     github: "https://github.com/cosscom/coss",
+    twitter: "https://x.com/coss_com",
   },
+  name: "coss.com",
+  ogImage: "https://coss.com/og.jpg",
   products: [
     {
       href: "/",
@@ -53,4 +52,5 @@ export const siteConfig = {
       upcoming: true,
     },
   ],
+  url: "https://coss.com",
 };

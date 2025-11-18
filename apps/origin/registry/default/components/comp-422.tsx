@@ -1,13 +1,10 @@
-import { Badge } from "@/registry/default/ui/badge"
+import { Badge } from "@/registry/default/ui/badge";
 
 export default function Component() {
   return (
-    <Badge variant="outline" className="gap-1.5">
-      <span
-        className="size-1.5 rounded-full bg-red-500"
-        aria-hidden="true"
-      ></span>
+    <Badge className="gap-1.5" variant="outline">
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-red-500" />
       Badge
     </Badge>
-  )
+  );
 }

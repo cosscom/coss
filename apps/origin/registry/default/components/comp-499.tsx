@@ -1,22 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { WeekNumberProps } from "react-day-picker"
+import { useState } from "react";
+import type { WeekNumberProps } from "react-day-picker";
 
-import { Calendar } from "@/registry/default/ui/calendar"
+import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {
-  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <div>
       <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
         className="rounded-md border p-2"
-        fixedWeeks
-        showWeekNumber
         components={{
           WeekNumber: ({ week, ...props }: WeekNumberProps) => {
             return (
@@ -25,25 +20,30 @@ export default function Component() {
                   {week.weekNumber}
                 </span>
               </th>
-            )
+            );
           },
         }}
+        fixedWeeks
+        mode="single"
+        onSelect={setDate}
+        selected={date}
+        showWeekNumber
       />
       <p
-        className="mt-4 text-center text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-4 text-center text-muted-foreground text-xs"
+        role="region"
       >
         Weekly numbers -{" "}
         <a
           className="underline hover:text-foreground"
           href="https://daypicker.dev/"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           React DayPicker
         </a>
       </p>
     </div>
-  )
+  );
 }

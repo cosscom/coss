@@ -1,11 +1,11 @@
-import { source } from "@/lib/source"
-import { DocsSidebar } from "@/components/docs-sidebar"
-import { SidebarProvider } from "@/registry/default/ui/sidebar"
+import { DocsSidebar } from "@/components/docs-sidebar";
+import { source } from "@/lib/source";
+import { SidebarProvider } from "@/registry/default/ui/sidebar";
 
 export default function DocsLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <main className="flex flex-1 flex-col">
@@ -14,5 +14,5 @@ export default function DocsLayout({
         <div className="h-full w-full">{children}</div>
       </SidebarProvider>
     </main>
-  )
+  );
 }

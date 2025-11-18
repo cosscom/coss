@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { OTPInput, SlotProps } from "input-otp"
+import { OTPInput, type SlotProps } from "input-otp";
+import { useEffect, useRef, useState } from "react";
 
-import { cn } from "@/registry/default/lib/utils"
-import { Button } from "@/registry/default/ui/button"
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,34 +13,34 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 
-const CORRECT_CODE = "6548"
+const CORRECT_CODE = "6548";
 
 export default function Component() {
-  const [value, setValue] = useState("")
-  const [hasGuessed, setHasGuessed] = useState<undefined | boolean>(undefined)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const [value, setValue] = useState("");
+  const [hasGuessed, setHasGuessed] = useState<undefined | boolean>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (hasGuessed) {
-      closeButtonRef.current?.focus()
+      closeButtonRef.current?.focus();
     }
-  }, [hasGuessed])
+  }, [hasGuessed]);
 
   async function onSubmit(e?: React.FormEvent<HTMLFormElement>) {
-    e?.preventDefault?.()
+    e?.preventDefault?.();
 
-    inputRef.current?.select()
-    await new Promise((r) => setTimeout(r, 1_00))
+    inputRef.current?.select();
+    await new Promise((r) => setTimeout(r, 1_00));
 
-    setHasGuessed(value === CORRECT_CODE)
+    setHasGuessed(value === CORRECT_CODE);
 
-    setValue("")
+    setValue("");
     setTimeout(() => {
-      inputRef.current?.blur()
-    }, 20)
+      inputRef.current?.blur();
+    }, 20);
   }
 
   return (
@@ -51,18 +51,18 @@ export default function Component() {
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border"
           >
             <svg
+              aria-hidden="true"
               className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
               height="20"
               viewBox="0 0 32 32"
-              aria-hidden="true"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
+              <circle cx="16" cy="16" fill="none" r="12" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
@@ -80,7 +80,7 @@ export default function Component() {
         {hasGuessed ? (
           <div className="text-center">
             <DialogClose asChild>
-              <Button type="button" ref={closeButtonRef}>
+              <Button ref={closeButtonRef} type="button">
                 Close
               </Button>
             </DialogClose>
@@ -89,28 +89,28 @@ export default function Component() {
           <div className="space-y-4">
             <div className="flex justify-center">
               <OTPInput
-                id="cofirmation-code"
-                ref={inputRef}
-                value={value}
-                onChange={setValue}
                 containerClassName="flex items-center gap-3 has-disabled:opacity-50"
+                id="cofirmation-code"
                 maxLength={4}
+                onChange={setValue}
+                onComplete={onSubmit}
                 onFocus={() => setHasGuessed(undefined)}
+                ref={inputRef}
                 render={({ slots }) => (
                   <div className="flex gap-2">
                     {slots.map((slot, idx) => (
-                      <Slot key={idx} {...slot} />
+                      <Slot key={String(idx)} {...slot} />
                     ))}
                   </div>
                 )}
-                onComplete={onSubmit}
+                value={value}
               />
             </div>
             {hasGuessed === false && (
               <p
-                className="text-center text-xs text-muted-foreground"
-                role="alert"
                 aria-live="polite"
+                className="text-center text-muted-foreground text-xs"
+                role="alert"
               >
                 Invalid code. Please try again.
               </p>
@@ -124,7 +124,7 @@ export default function Component() {
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function Slot(props: SlotProps) {
@@ -132,10 +132,10 @@ function Slot(props: SlotProps) {
     <div
       className={cn(
         "flex size-9 items-center justify-center rounded-md border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow]",
-        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive }
+        { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive },
       )}
     >
       {props.char !== null && <div>{props.char}</div>}
     </div>
-  )
+  );
 }

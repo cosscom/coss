@@ -1,12 +1,12 @@
-import { PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <Button variant="outline" className="aspect-square max-sm:p-0">
-      <PlusIcon className="opacity-60 sm:-ms-1" size={16} aria-hidden="true" />
+    <Button className="aspect-square max-sm:p-0" variant="outline">
+      <PlusIcon aria-hidden="true" className="sm:-ms-1 opacity-60" size={16} />
       <span className="max-sm:sr-only">Add new</span>
     </Button>
-  )
+  );
 }

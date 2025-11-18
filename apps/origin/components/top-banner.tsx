@@ -1,8 +1,8 @@
-import { ArrowUpRightIcon } from "lucide-react"
+import { ArrowUpRightIcon } from "lucide-react";
 
 export default function TopBanner() {
-  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_UI_URL || ""
-  const gatewayHome = gatewayOrigin ? `${gatewayOrigin}/` : "/"
+  const gatewayOrigin = process.env.NEXT_PUBLIC_COSS_UI_URL || "";
+  const gatewayHome = gatewayOrigin ? `${gatewayOrigin}/` : "/";
 
   return (
     <div className="dark relative bg-zinc-900 px-4 text-foreground/80">
@@ -10,8 +10,8 @@ export default function TopBanner() {
         A new, modern UI component library built on top of Base UI. Explore the
         new{" "}
         <a
-          href={gatewayHome}
           className="group font-heading text-base text-foreground before:absolute before:inset-0 hover:underline"
+          href={gatewayHome}
         >
           <span className="inline-flex items-center gap-1">
             <span className="decoration-muted-foreground underline-offset-4 group-hover:underline">
@@ -22,5 +22,5 @@ export default function TopBanner() {
         </a>
       </p>
     </div>
-  )
+  );
 }

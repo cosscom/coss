@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/registry/default/ui/dropdown-menu"
+} from "@/registry/default/ui/dropdown-menu";
 
-type Checked = boolean
+type Checked = boolean;
 
 export default function Component() {
-  const [nextjs, setNextjs] = useState<Checked>(false)
-  const [sveltekit, setSveltekit] = useState<Checked>(true)
-  const [astro, setAstro] = useState<Checked>(false)
-  const [remix, setRemix] = useState<Checked>(false)
+  const [nextjs, setNextjs] = useState<Checked>(false);
+  const [sveltekit, setSveltekit] = useState<Checked>(true);
+  const [astro, setAstro] = useState<Checked>(false);
+  const [remix, setRemix] = useState<Checked>(false);
 
   return (
     <DropdownMenu>
@@ -25,9 +25,9 @@ export default function Component() {
         <Button variant="outline">
           Checkbox items
           <ChevronDownIcon
+            aria-hidden="true"
             className="-me-1 opacity-60"
             size={16}
-            aria-hidden="true"
           />
         </Button>
       </DropdownMenuTrigger>
@@ -43,8 +43,8 @@ export default function Component() {
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={remix}
-          onCheckedChange={setRemix}
           disabled
+          onCheckedChange={setRemix}
         >
           Remix
         </DropdownMenuCheckboxItem>
@@ -53,5 +53,5 @@ export default function Component() {
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

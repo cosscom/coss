@@ -23,7 +23,7 @@ This hook is part of the component library and doesn't require separate installa
 ## Basic Usage
 
 ```tsx
-import { useFileUpload } from "@/registry/default/hooks/use-file-upload"
+import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
 
 function FileUploadComponent() {
   const [
@@ -44,7 +44,7 @@ function FileUploadComponent() {
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024, // 5MB
     accept: "image/*",
-  })
+  });
 
   return (
     <div
@@ -73,14 +73,14 @@ function FileUploadComponent() {
       )}
 
       {errors.length > 0 && (
-        <div style={{ color: 'red' }}>
+        <div style={{ color: "red" }}>
           {errors.map((error, index) => (
             <p key={index}>{error}</p>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -90,15 +90,15 @@ function FileUploadComponent() {
 
 The `useFileUpload` hook accepts a configuration object with the following options:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxFiles` | `number` | `Infinity` | Maximum number of files allowed (only used when `multiple` is `true`) |
-| `maxSize` | `number` | `Infinity` | Maximum file size in bytes |
-| `accept` | `string` | `"*"` | Comma-separated list of accepted file types (e.g., `"image/*,application/pdf"`) |
-| `multiple` | `boolean` | `false` | Whether to allow multiple file selection |
-| `initialFiles` | `FileMetadata[]` | `[]` | Initial files to populate the uploader with |
-| `onFilesChange` | `(files: FileWithPreview[]) => void` | `undefined` | Callback function called whenever the files array changes |
-| `onFilesAdded` | `(addedFiles: FileWithPreview[]) => void` | `undefined` | Callback function called when new files are added |
+| Option          | Type                                      | Default     | Description                                                                     |
+| --------------- | ----------------------------------------- | ----------- | ------------------------------------------------------------------------------- |
+| `maxFiles`      | `number`                                  | `Infinity`  | Maximum number of files allowed (only used when `multiple` is `true`)           |
+| `maxSize`       | `number`                                  | `Infinity`  | Maximum file size in bytes                                                      |
+| `accept`        | `string`                                  | `"*"`       | Comma-separated list of accepted file types (e.g., `"image/*,application/pdf"`) |
+| `multiple`      | `boolean`                                 | `false`     | Whether to allow multiple file selection                                        |
+| `initialFiles`  | `FileMetadata[]`                          | `[]`        | Initial files to populate the uploader with                                     |
+| `onFilesChange` | `(files: FileWithPreview[]) => void`      | `undefined` | Callback function called whenever the files array changes                       |
+| `onFilesAdded`  | `(addedFiles: FileWithPreview[]) => void` | `undefined` | Callback function called when new files are added                               |
 
 ### Return Value
 
@@ -106,44 +106,44 @@ The hook returns a tuple with two elements:
 
 #### State Object
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `files` | `FileWithPreview[]` | Array of files with preview URLs |
-| `isDragging` | `boolean` | Whether files are being dragged over the drop area |
-| `errors` | `string[]` | Array of error messages |
+| Property     | Type                | Description                                        |
+| ------------ | ------------------- | -------------------------------------------------- |
+| `files`      | `FileWithPreview[]` | Array of files with preview URLs                   |
+| `isDragging` | `boolean`           | Whether files are being dragged over the drop area |
+| `errors`     | `string[]`          | Array of error messages                            |
 
 #### Actions Object
 
-| Method | Type | Description |
-|--------|------|-------------|
-| `addFiles` | `(files: FileList \| File[]) => void` | Add files programmatically |
-| `removeFile` | `(id: string) => void` | Remove a file by its ID |
-| `clearFiles` | `() => void` | Remove all files |
-| `clearErrors` | `() => void` | Clear all error messages |
-| `handleDragEnter` | `(e: DragEvent<HTMLElement>) => void` | Handle drag enter event |
-| `handleDragLeave` | `(e: DragEvent<HTMLElement>) => void` | Handle drag leave event |
-| `handleDragOver` | `(e: DragEvent<HTMLElement>) => void` | Handle drag over event |
-| `handleDrop` | `(e: DragEvent<HTMLElement>) => void` | Handle drop event |
-| `handleFileChange` | `(e: ChangeEvent<HTMLInputElement>) => void` | Handle file input change event |
-| `openFileDialog` | `() => void` | Open the file selection dialog |
-| `getInputProps` | `(props?: InputHTMLAttributes<HTMLInputElement>) => InputHTMLAttributes<HTMLInputElement> & { ref: React.Ref<HTMLInputElement> }` | Get props for the file input element |
+| Method             | Type                                                                                                                              | Description                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `addFiles`         | `(files: FileList \| File[]) => void`                                                                                             | Add files programmatically           |
+| `removeFile`       | `(id: string) => void`                                                                                                            | Remove a file by its ID              |
+| `clearFiles`       | `() => void`                                                                                                                      | Remove all files                     |
+| `clearErrors`      | `() => void`                                                                                                                      | Clear all error messages             |
+| `handleDragEnter`  | `(e: DragEvent<HTMLElement>) => void`                                                                                             | Handle drag enter event              |
+| `handleDragLeave`  | `(e: DragEvent<HTMLElement>) => void`                                                                                             | Handle drag leave event              |
+| `handleDragOver`   | `(e: DragEvent<HTMLElement>) => void`                                                                                             | Handle drag over event               |
+| `handleDrop`       | `(e: DragEvent<HTMLElement>) => void`                                                                                             | Handle drop event                    |
+| `handleFileChange` | `(e: ChangeEvent<HTMLInputElement>) => void`                                                                                      | Handle file input change event       |
+| `openFileDialog`   | `() => void`                                                                                                                      | Open the file selection dialog       |
+| `getInputProps`    | `(props?: InputHTMLAttributes<HTMLInputElement>) => InputHTMLAttributes<HTMLInputElement> & { ref: React.Ref<HTMLInputElement> }` | Get props for the file input element |
 
 ### Types
 
 ```typescript
 type FileMetadata = {
-  name: string
-  size: number
-  type: string
-  url: string
-  id: string
-}
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  id: string;
+};
 
 type FileWithPreview = {
-  file: File | FileMetadata
-  id: string
-  preview?: string
-}
+  file: File | FileMetadata;
+  id: string;
+  preview?: string;
+};
 ```
 
 ## Advanced Usage
@@ -153,110 +153,126 @@ type FileWithPreview = {
 Here's a real-world example of tracking file upload progress with server integration:
 
 ```tsx
-import { useState } from "react"
-import { useFileUpload, type FileWithPreview } from "./use-file-upload"
+import { useState } from "react";
+import { useFileUpload, type FileWithPreview } from "./use-file-upload";
 
 // Type for tracking upload progress
 type UploadProgress = {
-  fileId: string
-  progress: number
-  completed: boolean
-  error?: string
-}
+  fileId: string;
+  progress: number;
+  completed: boolean;
+  error?: string;
+};
 
 function FileUploader() {
-  const maxSize = 5 * 1024 * 1024 // 5MB
+  const maxSize = 5 * 1024 * 1024; // 5MB
 
   // State to track upload progress for each file
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
 
   // Function to handle file upload to server
   const uploadFileToServer = async (file: File): Promise<{ url: string }> => {
     return new Promise(async (resolve, reject) => {
       try {
         // Create FormData
-        const formData = new FormData()
-        formData.append('file', file)
+        const formData = new FormData();
+        formData.append("file", file);
 
         // Create XMLHttpRequest to track progress
-        const xhr = new XMLHttpRequest()
+        const xhr = new XMLHttpRequest();
 
         // Track upload progress
-        xhr.upload.addEventListener('progress', (event) => {
+        xhr.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) {
-            const progressPercent = Math.round((event.loaded / event.total) * 100)
+            const progressPercent = Math.round(
+              (event.loaded / event.total) * 100,
+            );
             // Update progress state for this file
-            setUploadProgress(prev => prev.map(item =>
-              item.fileId === file.name ? { ...item, progress: progressPercent } : item
-            ))
+            setUploadProgress((prev) =>
+              prev.map((item) =>
+                item.fileId === file.name
+                  ? { ...item, progress: progressPercent }
+                  : item,
+              ),
+            );
           }
-        })
+        });
 
         // Handle completion
-        xhr.addEventListener('load', () => {
+        xhr.addEventListener("load", () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            const response = JSON.parse(xhr.responseText)
+            const response = JSON.parse(xhr.responseText);
             // Mark as completed
-            setUploadProgress(prev => prev.map(item =>
-              item.fileId === file.name ? { ...item, completed: true } : item
-            ))
-            resolve(response)
+            setUploadProgress((prev) =>
+              prev.map((item) =>
+                item.fileId === file.name ? { ...item, completed: true } : item,
+              ),
+            );
+            resolve(response);
           } else {
             // Handle error
-            setUploadProgress(prev => prev.map(item =>
-              item.fileId === file.name ? { ...item, error: 'Upload failed' } : item
-            ))
-            reject(new Error('Upload failed'))
+            setUploadProgress((prev) =>
+              prev.map((item) =>
+                item.fileId === file.name
+                  ? { ...item, error: "Upload failed" }
+                  : item,
+              ),
+            );
+            reject(new Error("Upload failed"));
           }
-        })
+        });
 
         // Handle error
-        xhr.addEventListener('error', () => {
-          setUploadProgress(prev => prev.map(item =>
-            item.fileId === file.name ? { ...item, error: 'Network error' } : item
-          ))
-          reject(new Error('Network error'))
-        })
+        xhr.addEventListener("error", () => {
+          setUploadProgress((prev) =>
+            prev.map((item) =>
+              item.fileId === file.name
+                ? { ...item, error: "Network error" }
+                : item,
+            ),
+          );
+          reject(new Error("Network error"));
+        });
 
         // Open and send the request
-        xhr.open('POST', '/api/upload', true)
-        xhr.send(formData)
+        xhr.open("POST", "/api/upload", true);
+        xhr.send(formData);
       } catch (error) {
-        reject(error)
+        reject(error);
       }
-    })
-  }
+    });
+  };
 
   // Handle newly added files
   const handleFilesAdded = (addedFiles: FileWithPreview[]) => {
     // Initialize progress tracking for each new file
-    const newProgressItems = addedFiles.map(file => ({
+    const newProgressItems = addedFiles.map((file) => ({
       fileId: file.id,
       progress: 0,
-      completed: false
-    }))
+      completed: false,
+    }));
 
     // Add new progress items to state
-    setUploadProgress(prev => [...prev, ...newProgressItems])
+    setUploadProgress((prev) => [...prev, ...newProgressItems]);
 
     // Start upload for each file
-    addedFiles.forEach(file => {
+    addedFiles.forEach((file) => {
       if (file.file instanceof File) {
         uploadFileToServer(file.file)
-          .then(response => {
-            console.log('Upload successful:', response.url)
+          .then((response) => {
+            console.log("Upload successful:", response.url);
           })
-          .catch(error => {
-            console.error('Upload failed:', error)
-          })
+          .catch((error) => {
+            console.error("Upload failed:", error);
+          });
       }
-    })
-  }
+    });
+  };
 
   // Remove the progress tracking for the file
   const handleFileRemoved = (fileId: string) => {
-    setUploadProgress(prev => prev.filter(item => item.fileId !== fileId))
-  }
+    setUploadProgress((prev) => prev.filter((item) => item.fileId !== fileId));
+  };
 
   const [
     { files, isDragging, errors },
@@ -274,7 +290,7 @@ function FileUploader() {
     multiple: true,
     maxSize,
     onFilesAdded: handleFilesAdded,
-  })
+  });
 
   return (
     <div className="flex flex-col gap-2">
@@ -312,8 +328,8 @@ function FileUploader() {
                   size="sm"
                   onClick={() => {
                     // Clear all progress tracking
-                    setUploadProgress([])
-                    clearFiles()
+                    setUploadProgress([]);
+                    clearFiles();
                   }}
                 >
                   <Trash2Icon
@@ -328,9 +344,9 @@ function FileUploader() {
             <div className="w-full space-y-2">
               {files.map((file) => {
                 const fileProgress = uploadProgress.find(
-                  (p) => p.fileId === file.id
-                )
-                const isUploading = fileProgress && !fileProgress.completed
+                  (p) => p.fileId === file.id,
+                );
+                const isUploading = fileProgress && !fileProgress.completed;
 
                 return (
                   <div
@@ -353,7 +369,7 @@ function FileUploader() {
                             {formatBytes(
                               file.file instanceof File
                                 ? file.file.size
-                                : file.file.size
+                                : file.file.size,
                             )}
                           </p>
                         </div>
@@ -363,8 +379,8 @@ function FileUploader() {
                         variant="ghost"
                         className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
                         onClick={() => {
-                          handleFileRemoved(file.id)
-                          removeFile(file.id)
+                          handleFileRemoved(file.id);
+                          removeFile(file.id);
                         }}
                         aria-label="Remove file"
                       >
@@ -375,10 +391,10 @@ function FileUploader() {
                     {/* Upload progress bar */}
                     {fileProgress &&
                       (() => {
-                        const progress = fileProgress.progress || 0
-                        const completed = fileProgress.completed || false
+                        const progress = fileProgress.progress || 0;
+                        const completed = fileProgress.completed || false;
 
-                        if (completed) return null
+                        if (completed) return null;
 
                         return (
                           <div className="mt-1 flex items-center gap-2">
@@ -392,10 +408,10 @@ function FileUploader() {
                               {progress}%
                             </span>
                           </div>
-                        )
+                        );
                       })()}
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -429,7 +445,7 @@ function FileUploader() {
         </div>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -440,13 +456,14 @@ function FileUploader() {
 Formats a byte value into a human-readable string.
 
 ```typescript
-function formatBytes(bytes: number, decimals = 2): string
+function formatBytes(bytes: number, decimals = 2): string;
 ```
 
 Example:
+
 ```tsx
-formatBytes(1024) // "1 KB"
-formatBytes(1536, 1) // "1.5 KB"
+formatBytes(1024); // "1 KB"
+formatBytes(1536, 1); // "1.5 KB"
 ```
 
 ## Extending the Hook
@@ -477,13 +494,16 @@ const uploadWithPauseResume = (file: File) => {
 
       // Set up a Content-Range header to resume from where we left off
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      xhr.open('POST', '/api/upload', true);
-      xhr.setRequestHeader('Content-Range', `bytes ${uploadedBytes}-${file.size-1}/${file.size}`);
+      xhr.open("POST", "/api/upload", true);
+      xhr.setRequestHeader(
+        "Content-Range",
+        `bytes ${uploadedBytes}-${file.size - 1}/${file.size}`,
+      );
 
       // Set up progress tracking again
-      xhr.upload.addEventListener('progress', (event) => {
+      xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
           uploadedBytes = event.loaded;
           // Update progress UI
@@ -519,15 +539,15 @@ const uploadInChunks = (file: File, chunkSize = 1024 * 1024) => {
     const chunk = file.slice(start, end);
 
     const formData = new FormData();
-    formData.append('file', chunk);
-    formData.append('fileName', file.name);
-    formData.append('chunkIndex', currentChunk.toString());
-    formData.append('totalChunks', totalChunks.toString());
+    formData.append("file", chunk);
+    formData.append("fileName", file.name);
+    formData.append("chunkIndex", currentChunk.toString());
+    formData.append("totalChunks", totalChunks.toString());
 
     try {
-      await fetch('/api/upload-chunk', {
-        method: 'POST',
-        body: formData
+      await fetch("/api/upload-chunk", {
+        method: "POST",
+        body: formData,
       });
 
       currentChunk++;

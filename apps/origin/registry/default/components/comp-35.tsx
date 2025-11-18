@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useId } from "react"
+import { useId } from "react";
 
-import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit"
-import { Input } from "@/registry/default/ui/input"
-import { Label } from "@/registry/default/ui/label"
+import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit";
+import { Input } from "@/registry/default/ui/input";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {
-  const id = useId()
-  const maxLength = 8
+  const id = useId();
+  const maxLength = 8;
   const {
     value,
     characterCount,
     handleChange,
     maxLength: limit,
-  } = useCharacterLimit({ maxLength })
+  } = useCharacterLimit({ maxLength });
 
   return (
     <div className="*:not-first:mt-2">
       <Label htmlFor={id}>Input with characters left</Label>
       <Input
+        aria-describedby={`${id}-description`}
         id={id}
-        type="text"
-        value={value}
         maxLength={maxLength}
         onChange={handleChange}
-        aria-describedby={`${id}-description`}
+        type="text"
+        value={value}
       />
       <p
-        id={`${id}-description`}
-        className="mt-2 text-xs text-muted-foreground"
-        role="status"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        id={`${id}-description`}
+        role="status"
       >
         <span className="tabular-nums">{limit - characterCount}</span>{" "}
         characters left
       </p>
     </div>
-  )
+  );
 }

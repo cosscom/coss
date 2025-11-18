@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["switch"],
+  "description": "Basic switch",
+  "files": [
+    {
+      "content": "import { Label } from \"@/registry/default/ui/label\";\nimport { Switch } from \"@/registry/default/ui/switch\";\n\nexport default function Particle() {\n  return (\n    <Label>\n      <Switch />\n      Marketing emails\n    </Label>\n  );\n}\n",
+      "path": "registry/default/particles/p-switch-1.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-switch-1",
+  "registryDependencies": ["@coss/switch"],
+  "type": "registry:block"
+}

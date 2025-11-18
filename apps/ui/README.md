@@ -32,24 +32,18 @@ Check for linting errors:
 bun run lint
 ```
 
-Fix linting errors automatically:
-
-```sh
-bun run lint:fix
-```
-
 ### Formatting
-
-Check code formatting:
-
-```sh
-bun run format:check
-```
 
 Format code automatically:
 
 ```sh
-bun run format:write
+bun run format
+```
+
+Format code and fix linting errors:
+
+```sh
+bun run format:all
 ```
 
 ### Type Checking
@@ -62,7 +56,7 @@ bun run typecheck
 
 ## Resources
 
-- [Next.JS](https://nextjs.org/)
+- [Next.js](https://nextjs.org/)
 - [shadcn/ui](https://ui.shadcn.com/docs/registry)
 - [Fumadocs](https://fumadocs.dev/)
 

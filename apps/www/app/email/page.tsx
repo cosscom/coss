@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import { CodeBlock } from "@coss/ui/components/code-block";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "coss.com email",
   description: "open source is the foundation of all modern software",
-}
+  title: "coss.com email",
+};
 
 export default function Page() {
   const initialization = `import { coss } from '@coss';
@@ -69,44 +69,32 @@ const isValid = coss.email.utils.verifySignature({
 });`;
 
   return (
-    <main className="container w-full flex-1 mb-16 lg:mb-20">
-      <div className="mt-12 lg:mt-16 max-w-2xl mx-auto text-muted-foreground [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Initialization</h2>
-        <CodeBlock
-          code={initialization}
-          language="tsx"
-          copyButton={false}
-        />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Sending Emails</h2>
-        <CodeBlock
-          code={sendingEmails}
-          language="tsx"
-          copyButton={false}
-        />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Domains</h2>
-        <CodeBlock
-          code={domains}
-          language="tsx"
-          copyButton={false}
-        />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Templates</h2>
-        <CodeBlock
-          code={templates}
-          language="tsx"
-          copyButton={false}
-        />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Webhooks</h2>
-        <CodeBlock
-          code={webhooks}
-          language="tsx"
-          copyButton={false}
-        />
-        <h2 className="mt-12 scroll-m-20 font-heading text-2xl first:mt-0 [&+p]:!mt-4 *:[code]:text-2xl text-foreground">Utilities</h2>
-        <CodeBlock
-          code={utilities}
-          language="tsx"
-          copyButton={false}
-        />
+    <main className="container mb-16 w-full flex-1 lg:mb-20">
+      <div className="mx-auto mt-12 max-w-2xl text-muted-foreground lg:mt-16 [&_a:not([data-slot='button'])]:text-foreground [&_strong]:text-foreground">
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Initialization
+        </h2>
+        <CodeBlock code={initialization} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Sending Emails
+        </h2>
+        <CodeBlock code={sendingEmails} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Domains
+        </h2>
+        <CodeBlock code={domains} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Templates
+        </h2>
+        <CodeBlock code={templates} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Webhooks
+        </h2>
+        <CodeBlock code={webhooks} copyButton={false} language="tsx" />
+        <h2 className="[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl text-foreground first:mt-0 *:[code]:text-2xl">
+          Utilities
+        </h2>
+        <CodeBlock code={utilities} copyButton={false} language="tsx" />
       </div>
     </main>
   );

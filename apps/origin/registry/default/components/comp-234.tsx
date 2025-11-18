@@ -1,79 +1,81 @@
-import { useId } from "react"
+import { useId } from "react";
 
-import { Label } from "@/registry/default/ui/label"
-import MultipleSelector, { Option } from "@/registry/default/ui/multiselect"
+import { Label } from "@/registry/default/ui/label";
+import MultipleSelector, {
+  type Option,
+} from "@/registry/default/ui/multiselect";
 
 const frameworks: Option[] = [
   {
-    value: "next.js",
     label: "Next.js",
+    value: "next.js",
   },
   {
-    value: "sveltekit",
     label: "SvelteKit",
+    value: "sveltekit",
   },
   {
-    value: "nuxt.js",
+    disable: true,
     label: "Nuxt.js",
-    disable: true,
+    value: "nuxt.js",
   },
   {
-    value: "remix",
     label: "Remix",
+    value: "remix",
   },
   {
-    value: "astro",
     label: "Astro",
+    value: "astro",
   },
   {
-    value: "angular",
     label: "Angular",
+    value: "angular",
   },
   {
-    value: "vue",
     label: "Vue.js",
+    value: "vue",
   },
   {
-    value: "react",
     label: "React",
+    value: "react",
   },
   {
-    value: "ember",
     label: "Ember.js",
+    value: "ember",
   },
   {
-    value: "gatsby",
     label: "Gatsby",
+    value: "gatsby",
   },
   {
-    value: "eleventy",
-    label: "Eleventy",
     disable: true,
+    label: "Eleventy",
+    value: "eleventy",
   },
   {
-    value: "solid",
     label: "SolidJS",
+    value: "solid",
   },
   {
-    value: "preact",
     label: "Preact",
+    value: "preact",
   },
   {
-    value: "qwik",
     label: "Qwik",
+    value: "qwik",
   },
   {
-    value: "alpine",
     label: "Alpine.js",
+    value: "alpine",
   },
   {
-    value: "lit",
     label: "Lit",
+    value: "lit",
   },
-]
+];
 
 export default function Component() {
-  const id = useId()
+  const _id = useId();
   return (
     <div className="*:not-first:mt-2">
       <Label>Multiselect</Label>
@@ -81,28 +83,28 @@ export default function Component() {
         commandProps={{
           label: "Select frameworks",
         }}
-        value={frameworks.slice(0, 2)}
         defaultOptions={frameworks}
-        placeholder="Select frameworks"
+        emptyIndicator={<p className="text-center text-sm">No results found</p>}
         hideClearAllButton
         hidePlaceholderWhenSelected
-        emptyIndicator={<p className="text-center text-sm">No results found</p>}
+        placeholder="Select frameworks"
+        value={frameworks.slice(0, 2)}
       />
       <p
-        className="mt-2 text-xs text-muted-foreground"
-        role="region"
         aria-live="polite"
+        className="mt-2 text-muted-foreground text-xs"
+        role="region"
       >
         Inspired by{" "}
         <a
           className="underline hover:text-foreground"
           href="https://shadcnui-expansions.typeart.cc/docs/multiple-selector"
+          rel="noreferrer noopener nofollow"
           target="_blank"
-          rel="noopener nofollow"
         >
           shadcn/ui expansions
         </a>
       </p>
     </div>
-  )
+  );
 }

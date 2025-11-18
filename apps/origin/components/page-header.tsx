@@ -1,9 +1,9 @@
-import { cn } from "@/registry/default/lib/utils"
+import { cn } from "@/registry/default/lib/utils";
 
 interface PageHeaderProps {
-  title: string
-  className?: string
-  children: React.ReactNode
+  title: string;
+  className?: string;
+  children: React.ReactNode;
 }
 
 export default function PageHeader({
@@ -20,5 +20,5 @@ export default function PageHeader({
         {children}
       </p>
     </div>
-  )
+  );
 }

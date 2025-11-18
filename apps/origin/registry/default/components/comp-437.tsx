@@ -5,16 +5,16 @@ import {
   PanelsTopLeftIcon,
   SettingsIcon,
   UsersRoundIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Badge } from "@/registry/default/ui/badge"
-import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area"
+import { Badge } from "@/registry/default/ui/badge";
+import { ScrollArea, ScrollBar } from "@/registry/default/ui/scroll-area";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/registry/default/ui/tabs"
+} from "@/registry/default/ui/tabs";
 
 export default function Component() {
   return (
@@ -22,24 +22,24 @@ export default function Component() {
       <ScrollArea>
         <TabsList className="mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1 text-foreground">
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-1"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <HouseIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Overview
           </TabsTrigger>
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-2"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <PanelsTopLeftIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Projects
             <Badge
@@ -50,47 +50,47 @@ export default function Component() {
             </Badge>
           </TabsTrigger>
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-3"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <BoxIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Packages
             <Badge className="ms-1.5">New</Badge>
           </TabsTrigger>
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-4"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <UsersRoundIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Team
           </TabsTrigger>
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-5"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <ChartLine
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Insights
           </TabsTrigger>
           <TabsTrigger
+            className="after:-mb-1 relative after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:hover:bg-accent data-[state=active]:after:bg-primary"
             value="tab-6"
-            className="relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 hover:bg-accent hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent"
           >
             <SettingsIcon
+              aria-hidden="true"
               className="-ms-0.5 me-1.5 opacity-60"
               size={16}
-              aria-hidden="true"
             />
             Settings
           </TabsTrigger>
@@ -98,35 +98,35 @@ export default function Component() {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
       <TabsContent value="tab-1">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 1
         </p>
       </TabsContent>
       <TabsContent value="tab-2">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 2
         </p>
       </TabsContent>
       <TabsContent value="tab-3">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 3
         </p>
       </TabsContent>
       <TabsContent value="tab-4">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 4
         </p>
       </TabsContent>
       <TabsContent value="tab-5">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 5
         </p>
       </TabsContent>
       <TabsContent value="tab-6">
-        <p className="pt-1 text-center text-xs text-muted-foreground">
+        <p className="pt-1 text-center text-muted-foreground text-xs">
           Content for Tab 6
         </p>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

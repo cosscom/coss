@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useRef, useState } from "react"
+import { useRef, useState } from "react";
 
-import { Button } from "@/registry/default/ui/button"
+import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -12,22 +12,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/registry/default/ui/dialog"
+} from "@/registry/default/ui/dialog";
 
 export default function Component() {
-  const [hasReadToBottom, setHasReadToBottom] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const [hasReadToBottom, setHasReadToBottom] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
-    const content = contentRef.current
-    if (!content) return
+    const content = contentRef.current;
+    if (!content) return;
 
     const scrollPercentage =
-      content.scrollTop / (content.scrollHeight - content.clientHeight)
+      content.scrollTop / (content.scrollHeight - content.clientHeight);
     if (scrollPercentage >= 0.99 && !hasReadToBottom) {
-      setHasReadToBottom(true)
+      setHasReadToBottom(true);
     }
-  }
+  };
 
   return (
     <Dialog>
@@ -40,9 +40,9 @@ export default function Component() {
             Terms & Conditions
           </DialogTitle>
           <div
-            ref={contentRef}
-            onScroll={handleScroll}
             className="overflow-y-auto"
+            onScroll={handleScroll}
+            ref={contentRef}
           >
             <DialogDescription asChild>
               <div className="px-6 py-4">
@@ -157,7 +157,7 @@ export default function Component() {
         </DialogHeader>
         <DialogFooter className="border-t px-6 py-4 sm:items-center">
           {!hasReadToBottom && (
-            <span className="grow text-xs text-muted-foreground max-sm:text-center">
+            <span className="grow text-muted-foreground text-xs max-sm:text-center">
               Read all terms before accepting.
             </span>
           )}
@@ -167,12 +167,12 @@ export default function Component() {
             </Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button type="button" disabled={!hasReadToBottom}>
+            <Button disabled={!hasReadToBottom} type="button">
               I agree
             </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
