@@ -20,7 +20,7 @@ export default function Particle() {
         Open Dialog
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
-        <Form>
+        <Form className="gap-0">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
@@ -28,7 +28,7 @@ export default function Particle() {
               done.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 px-6">
             <Field>
               <FieldLabel>Name</FieldLabel>
               <Input defaultValue="Margaret Welsh" type="text" />

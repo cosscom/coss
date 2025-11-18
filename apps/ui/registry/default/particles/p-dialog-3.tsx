@@ -25,7 +25,7 @@ export default function Particle() {
             View and manage a user in your team.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
+        <div className="grid gap-4 px-6">
           <div className="grid gap-1">
             <p className="text-muted-foreground text-sm">Name</p>
             <p className="font-medium text-sm">Bora Baloglu</p>
@@ -47,7 +47,7 @@ export default function Particle() {
                   Make changes to the member&apos;s information.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 px-6">
                 <Field>
                   <FieldLabel>Name</FieldLabel>
                   <Input defaultValue="Bora Baloglu" type="text" />
