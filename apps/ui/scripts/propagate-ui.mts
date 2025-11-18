@@ -68,6 +68,8 @@ function rewriteImports(code: string): string {
   // "@/lib/*"        → "@coss/ui/lib/*"
   // "@/hooks/*"      → "@coss/ui/hooks/*"
   // "@/registry/default/ui/*" → "@coss/ui/ui/*"
+  // "@/registry/default/hooks/*" → "@coss/ui/hooks/*"
+  // "@/registry/default/lib/*" → "@coss/ui/lib/*"
   result = result.replace(/(["'])@\/lib\//g, "$1@coss/ui/lib/");
   result = result.replace(/(["'])@\/hooks\//g, "$1@coss/ui/hooks/");
   result = result.replace(
@@ -76,11 +78,11 @@ function rewriteImports(code: string): string {
   );
   result = result.replace(
     /(["'])@\/registry\/default\/hooks\//g,
-    "$1@workspace/ui/hooks/",
+    "$1@coss/ui/hooks/",
   );
   result = result.replace(
     /(["'])@\/registry\/default\/lib\//g,
-    "$1@workspace/ui/lib/",
+    "$1@coss/ui/lib/",
   );
   return result;
 }
