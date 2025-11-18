@@ -51,9 +51,9 @@ export async function ParticlesDisplay({
 
   if (filteredParticles.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-muted/50 p-8 text-center">
+      <div className="text-center">
         <p className="text-muted-foreground">
-          No components found for the selected filters.
+          No particles found for the selected filters
         </p>
       </div>
     );
