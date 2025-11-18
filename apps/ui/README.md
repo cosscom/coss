@@ -56,7 +56,7 @@ bun run typecheck
 
 ## Resources
 
-- [Next.JS](https://nextjs.org/)
+- [Next.js](https://nextjs.org/)
 - [shadcn/ui](https://ui.shadcn.com/docs/registry)
 - [Fumadocs](https://fumadocs.dev/)
 
