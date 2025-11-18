@@ -131,11 +131,16 @@ You can also pass a `className` prop to override the meta className:
 After adding your particle, run these scripts:
 
 ```bash
-# Format code and sort imports
-bun run format:all
+cd apps/ui
 
 # Build registry JSON files
 bun run registry:build
+
+# Format code and sort imports
+bun run format:all
+
+## Copy UI components to the packages folder
+bun run ui:propagate
 ```
 
 The `registry:build` command will:
