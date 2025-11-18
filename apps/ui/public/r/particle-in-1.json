@@ -1,22 +1,18 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "categories": ["input", "input group", "button", "popover"],
-  "description": "Input with start text and end tooltip",
+  "categories": ["input"],
+  "description": "Basic input",
   "files": [
     {
-      "content": "import { InfoIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput\n        aria-label=\"Set your URL\"\n        className=\"*:[input]:ps-1!\"\n        placeholder=\"coss.com\"\n        type=\"text\"\n      />\n      <InputGroupAddon>https://</InputGroupAddon>\n      <InputGroupAddon align=\"inline-end\">\n        <Popover openOnHover>\n          <PopoverTrigger\n            render={\n              <Button aria-label=\"More info\" size=\"icon-xs\" variant=\"ghost\" />\n            }\n          >\n            <InfoIcon />\n          </PopoverTrigger>\n          <PopoverPopup side=\"top\" tooltipStyle>\n            <p>The URL of your website</p>\n          </PopoverPopup>\n        </Popover>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return <Input aria-label=\"Enter text\" placeholder=\"Enter text\" type=\"text\" />;\n}\n",
       "path": "registry/default/particles/particle-in-1.tsx",
       "type": "registry:block"
     }
   ],
   "meta": {
-    "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "name": "particle-in-1",
-  "registryDependencies": [
-    "@coss/button",
-    "@coss/input-group",
-    "@coss/popover"
-  ],
+  "registryDependencies": ["@coss/input"],
   "type": "registry:block"
 }

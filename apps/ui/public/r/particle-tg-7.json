@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["toggle", "toggle group"],
+  "description": "Toggle group with disabled item",
+  "files": [
+    {
+      "content": "import { BoldIcon, ItalicIcon, UnderlineIcon } from \"lucide-react\";\n\nimport { Toggle, ToggleGroup } from \"@/registry/default/ui/toggle-group\";\n\nexport default function ParticleItem() {\n  return (\n    <ToggleGroup defaultValue={[\"bold\"]}>\n      <Toggle aria-label=\"Toggle bold\" value=\"bold\">\n        <BoldIcon />\n      </Toggle>\n      <Toggle aria-label=\"Toggle italic\" disabled value=\"italic\">\n        <ItalicIcon />\n      </Toggle>\n      <Toggle aria-label=\"Toggle underline\" value=\"underline\">\n        <UnderlineIcon />\n      </Toggle>\n    </ToggleGroup>\n  );\n}\n",
+      "path": "registry/default/particles/particle-tg-7.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-tg-7",
+  "registryDependencies": ["@coss/toggle-group"],
+  "type": "registry:block"
+}

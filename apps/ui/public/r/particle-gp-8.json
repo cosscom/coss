@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["group"],
+  "description": "Group with end text",
+  "files": [
+    {
+      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Domain input\">\n      <Input aria-label=\"Domain\" defaultValue=\"coss\" id=\"domain\" type=\"text\" />\n      <GroupSeparator />\n      <GroupText>.com</GroupText>\n    </Group>\n  );\n}\n",
+      "path": "registry/default/particles/particle-gp-8.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-gp-8",
+  "registryDependencies": ["@coss/group"],
+  "type": "registry:block"
+}

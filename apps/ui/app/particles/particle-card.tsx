@@ -129,7 +129,7 @@ export async function ParticleCard({
         </>
       }
     >
-      <div data-slot="particle-wrapper">
+      <div data-particle data-slot="preview">
         <ParticleRenderer name={name} />
       </div>
     </ParticleCardContainer>

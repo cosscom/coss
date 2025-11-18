@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["button"],
+  "dependencies": ["lucide-react"],
+  "description": "Large icon button",
+  "files": [
+    {
+      "content": "import { PlusIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button size=\"icon-lg\">\n      <PlusIcon />\n    </Button>\n  );\n}\n",
+      "path": "registry/default/particles/particle-bt-15.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-bt-15",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:block"
+}

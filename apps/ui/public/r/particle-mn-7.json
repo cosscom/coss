@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["menu"],
+  "description": "Nested menu",
+  "files": [
+    {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuSub,\n  MenuSubPopup,\n  MenuSubTrigger,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\";\n\nexport default function Particle() {\n  return (\n    <Menu>\n      <MenuTrigger render={<Button variant=\"outline\" />}>Open menu</MenuTrigger>\n      <MenuPopup>\n        <MenuItem>Item one</MenuItem>\n        <MenuSub>\n          <MenuSubTrigger>More</MenuSubTrigger>\n          <MenuSubPopup>\n            <MenuItem>Sub item A</MenuItem>\n            <MenuItem>Sub item B</MenuItem>\n          </MenuSubPopup>\n        </MenuSub>\n        <MenuItem>Item two</MenuItem>\n      </MenuPopup>\n    </Menu>\n  );\n}\n",
+      "path": "registry/default/particles/particle-mn-7.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-mn-7",
+  "registryDependencies": ["@coss/menu"],
+  "type": "registry:block"
+}

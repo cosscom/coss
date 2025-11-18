@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["slider"],
+  "description": "Range slider",
+  "files": [
+    {
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function Particle() {\n  return <Slider defaultValue={[25, 75]} />;\n}\n",
+      "path": "registry/default/particles/particle-sd-3.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "name": "particle-sd-3",
+  "registryDependencies": ["@coss/slider"],
+  "type": "registry:block"
+}

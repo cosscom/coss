@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["toggle"],
+  "description": "Large toggle",
+  "files": [
+    {
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle size=\"lg\" variant=\"outline\">\n      Large\n    </Toggle>\n  );\n}\n",
+      "path": "registry/default/particles/particle-to-5.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-to-5",
+  "registryDependencies": ["@coss/toggle"],
+  "type": "registry:block"
+}

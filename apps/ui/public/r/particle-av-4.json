@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["avatar"],
+  "description": "Avatars with different radii",
+  "files": [
+    {
+      "content": "import {\n  Avatar,\n  AvatarFallback,\n  AvatarImage,\n} from \"@/registry/default/ui/avatar\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex items-center gap-4\">\n      <Avatar className=\"rounded-md\">\n        <AvatarImage\n          alt=\"User\"\n          src=\"https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80\"\n        />\n        <AvatarFallback>AV</AvatarFallback>\n      </Avatar>\n      <Avatar className=\"rounded-xl\">\n        <AvatarImage\n          alt=\"User\"\n          src=\"https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80\"\n        />\n        <AvatarFallback>AV</AvatarFallback>\n      </Avatar>\n      <Avatar className=\"rounded-full\">\n        <AvatarImage\n          alt=\"User\"\n          src=\"https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80\"\n        />\n        <AvatarFallback>AV</AvatarFallback>\n      </Avatar>\n    </div>\n  );\n}\n",
+      "path": "registry/default/particles/particle-av-4.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-av-4",
+  "registryDependencies": ["@coss/avatar"],
+  "type": "registry:block"
+}

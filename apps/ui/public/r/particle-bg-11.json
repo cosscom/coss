@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["badge"],
+  "dependencies": ["lucide-react"],
+  "description": "Badge with icon",
+  "files": [
+    {
+      "content": "import { CheckIcon } from \"lucide-react\";\n\nimport { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function Particle() {\n  return (\n    <Badge variant=\"outline\">\n      <CheckIcon />\n      Verified\n    </Badge>\n  );\n}\n",
+      "path": "registry/default/particles/particle-bg-11.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-bg-11",
+  "registryDependencies": ["@coss/badge"],
+  "type": "registry:block"
+}

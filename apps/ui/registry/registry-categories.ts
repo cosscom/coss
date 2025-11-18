@@ -23,7 +23,7 @@ export const componentCategories = [
   "collapsible",
   "combobox",
   "dialog",
-  "empty",
+  "empty state",
   "field",
   "fieldset",
   "form",
@@ -61,6 +61,7 @@ export const componentCategories = [
 
 // Tag categories (features, states, modifiers)
 export const tagCategories = [
+  "async",
   "copy",
   "disabled",
   "error",

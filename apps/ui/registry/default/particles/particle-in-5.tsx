@@ -1,17 +1,5 @@
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/registry/default/ui/input-group";
-import { Spinner } from "@/registry/default/ui/spinner";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
-  return (
-    <InputGroup>
-      <InputGroupInput disabled placeholder="Processing…" type="search" />
-      <InputGroupAddon>
-        <Spinner />
-      </InputGroupAddon>
-    </InputGroup>
-  );
+  return <Input aria-label="File" type="file" />;
 }

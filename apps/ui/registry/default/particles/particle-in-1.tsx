@@ -1,41 +1,5 @@
-import { InfoIcon } from "lucide-react";
-
-import { Button } from "@/registry/default/ui/button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/registry/default/ui/input-group";
-import {
-  Popover,
-  PopoverPopup,
-  PopoverTrigger,
-} from "@/registry/default/ui/popover";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
-  return (
-    <InputGroup>
-      <InputGroupInput
-        aria-label="Set your URL"
-        className="*:[input]:ps-1!"
-        placeholder="coss.com"
-        type="text"
-      />
-      <InputGroupAddon>https://</InputGroupAddon>
-      <InputGroupAddon align="inline-end">
-        <Popover openOnHover>
-          <PopoverTrigger
-            render={
-              <Button aria-label="More info" size="icon-xs" variant="ghost" />
-            }
-          >
-            <InfoIcon />
-          </PopoverTrigger>
-          <PopoverPopup side="top" tooltipStyle>
-            <p>The URL of your website</p>
-          </PopoverPopup>
-        </Popover>
-      </InputGroupAddon>
-    </InputGroup>
-  );
+  return <Input aria-label="Enter text" placeholder="Enter text" type="text" />;
 }

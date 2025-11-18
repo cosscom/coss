@@ -1,5 +1,6 @@
 import { ComponentPreviewTabs } from "@/components/component-preview-tabs";
 import { ComponentSource } from "@/components/component-source";
+import { cn } from "@/lib/utils";
 import { Index } from "@/registry/__index__";
 
 interface ComponentPreviewProps
@@ -18,6 +19,7 @@ export function ComponentPreview({
   ...props
 }: ComponentPreviewProps) {
   const Component = Index[name]?.component;
+  const metaClassName = Index[name]?.meta?.className;
 
   if (!Component) {
     return (
@@ -34,7 +36,7 @@ export function ComponentPreview({
   return (
     <ComponentPreviewTabs
       align={align}
-      className={className}
+      className={cn(metaClassName, className)}
       component={<Component />}
       hideCode={hideCode}
       source={<ComponentSource collapsible={false} name={name} />}

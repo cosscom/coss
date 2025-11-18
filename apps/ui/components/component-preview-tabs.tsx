@@ -46,15 +46,14 @@ export function ComponentPreviewTabs({
         <div
           className="invisible data-[active=true]:visible"
           data-active={tab === "preview"}
-          data-slot="preview"
         >
           <div
             className={cn(
-              "preview flex h-[450px] w-full justify-center overflow-y-auto p-10 data-[align=start]:items-start data-[align=end]:items-end data-[align=center]:items-center max-sm:px-6",
+              "flex h-[450px] w-full justify-center overflow-y-auto p-10 data-[align=start]:items-start data-[align=end]:items-end data-[align=center]:items-center max-sm:px-6",
             )}
             data-align={align}
           >
-            {component}
+            <div data-slot="preview">{component}</div>
           </div>
         </div>
         <div

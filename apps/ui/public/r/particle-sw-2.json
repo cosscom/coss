@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["switch"],
+  "description": "Disabled switch",
+  "files": [
+    {
+      "content": "import { Label } from \"@/registry/default/ui/label\";\nimport { Switch } from \"@/registry/default/ui/switch\";\n\nexport default function Particle() {\n  return (\n    <Label>\n      <Switch disabled />\n      Marketing emails\n    </Label>\n  );\n}\n",
+      "path": "registry/default/particles/particle-sw-2.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "particle-sw-2",
+  "registryDependencies": ["@coss/switch"],
+  "type": "registry:block"
+}

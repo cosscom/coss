@@ -1,21 +1,7 @@
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/registry/default/ui/input-group";
-import { Kbd } from "@/registry/default/ui/kbd";
+import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
   return (
-    <InputGroup>
-      <InputGroupInput
-        aria-label="Search"
-        placeholder="Search…"
-        type="search"
-      />
-      <InputGroupAddon align="inline-end">
-        <Kbd>/</Kbd>
-      </InputGroupAddon>
-    </InputGroup>
+    <Input aria-label="Disabled" disabled placeholder="Disabled" type="text" />
   );
 }

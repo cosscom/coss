@@ -1,18 +1,18 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "categories": ["input", "input group", "loading", "spinner"],
-  "description": "Input group with start loading spinner",
+  "categories": ["input"],
+  "description": "File input",
   "files": [
     {
-      "content": "import {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n} from \"@/registry/default/ui/input-group\";\nimport { Spinner } from \"@/registry/default/ui/spinner\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupInput disabled placeholder=\"Processing…\" type=\"search\" />\n      <InputGroupAddon>\n        <Spinner />\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return <Input aria-label=\"File\" type=\"file\" />;\n}\n",
       "path": "registry/default/particles/particle-in-5.tsx",
       "type": "registry:block"
     }
   ],
   "meta": {
-    "className": "**:data-[slot=particle-wrapper]:w-full **:data-[slot=particle-wrapper]:max-w-64"
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "name": "particle-in-5",
-  "registryDependencies": ["@coss/input-group", "@coss/spinner"],
+  "registryDependencies": ["@coss/input"],
   "type": "registry:block"
 }
