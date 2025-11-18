@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["toggle"],
+  "description": "Disabled toggle",
+  "files": [
+    {
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle disabled variant=\"outline\">\n      Disabled\n    </Toggle>\n  );\n}\n",
+      "path": "registry/default/particles/p-toggle-6.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-toggle-6",
+  "registryDependencies": ["@coss/toggle"],
+  "type": "registry:block"
+}

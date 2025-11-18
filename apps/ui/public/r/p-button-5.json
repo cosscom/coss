@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["button"],
+  "description": "Destructive outline button",
+  "files": [
+    {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return <Button variant=\"destructive-outline\">Delete</Button>;\n}\n",
+      "path": "registry/default/particles/p-button-5.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-button-5",
+  "registryDependencies": ["@coss/button"],
+  "type": "registry:block"
+}

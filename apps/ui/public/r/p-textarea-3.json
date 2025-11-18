@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["textarea"],
+  "description": "Large textarea",
+  "files": [
+    {
+      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return <Textarea placeholder=\"Type your message here\" size=\"lg\" />;\n}\n",
+      "path": "registry/default/particles/p-textarea-3.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "name": "p-textarea-3",
+  "registryDependencies": ["@coss/textarea"],
+  "type": "registry:block"
+}

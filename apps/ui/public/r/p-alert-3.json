@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["alert"],
+  "dependencies": ["lucide-react"],
+  "description": "Alert with icon and action buttons",
+  "files": [
+    {
+      "content": "import { InfoIcon } from \"lucide-react\";\n\nimport {\n  Alert,\n  AlertAction,\n  AlertDescription,\n  AlertTitle,\n} from \"@/registry/default/ui/alert\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Alert>\n      <InfoIcon />\n      <AlertTitle>Heads up!</AlertTitle>\n      <AlertDescription>\n        Describe what can be done about it here.\n      </AlertDescription>\n      <AlertAction>\n        <Button size=\"xs\" variant=\"ghost\">\n          Dismiss\n        </Button>\n        <Button size=\"xs\">Ok</Button>\n      </AlertAction>\n    </Alert>\n  );\n}\n",
+      "path": "registry/default/particles/p-alert-3.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full"
+  },
+  "name": "p-alert-3",
+  "registryDependencies": ["@coss/alert", "@coss/button"],
+  "type": "registry:block"
+}

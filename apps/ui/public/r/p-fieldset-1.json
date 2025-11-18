@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["fieldset"],
+  "description": "Fieldset with multiple fields",
+  "files": [
+    {
+      "content": "import {\n  Field,\n  FieldDescription,\n  FieldLabel,\n} from \"@/registry/default/ui/field\";\nimport { Fieldset, FieldsetLegend } from \"@/registry/default/ui/fieldset\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Fieldset>\n      <FieldsetLegend>Billing Details</FieldsetLegend>\n      <Field>\n        <FieldLabel>Company</FieldLabel>\n        <Input placeholder=\"Enter company name\" type=\"text\" />\n        <FieldDescription>\n          The name that will appear on invoices.\n        </FieldDescription>\n      </Field>\n\n      <Field>\n        <FieldLabel>Tax ID</FieldLabel>\n        <Input placeholder=\"Enter tax identification number\" type=\"text\" />\n        <FieldDescription>\n          Your business tax identification number.\n        </FieldDescription>\n      </Field>\n    </Fieldset>\n  );\n}\n",
+      "path": "registry/default/particles/p-fieldset-1.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "name": "p-fieldset-1",
+  "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
+  "type": "registry:block"
+}

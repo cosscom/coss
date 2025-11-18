@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["progress"],
+  "description": "Basic progress bar",
+  "files": [
+    {
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport { Progress } from \"@/registry/default/ui/progress\";\n\nexport default function Particle() {\n  const [value, setValue] = React.useState(20);\n\n  React.useEffect(() => {\n    const interval = setInterval(() => {\n      setValue((current) =>\n        Math.min(100, Math.round(current + Math.random() * 25)),\n      );\n    }, 1000);\n    return () => clearInterval(interval);\n  }, []);\n\n  return <Progress value={value} />;\n}\n",
+      "path": "registry/default/particles/p-progress-1.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "name": "p-progress-1",
+  "registryDependencies": ["@coss/progress"],
+  "type": "registry:block"
+}
