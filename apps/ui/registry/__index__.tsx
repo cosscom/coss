@@ -1874,6 +1874,32 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/badge"],
     type: "registry:block",
   },
+  "particle-bg-13": {
+    categories: ["badge"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/particle-bg-13.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Badge with count",
+    files: [
+      {
+        path: "registry/default/particles/particle-bg-13.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "particle-bg-13",
+    registryDependencies: ["@coss/badge"],
+    type: "registry:block",
+  },
   "particle-bt-1": {
     categories: ["button"],
     component: React.lazy(async () => {
@@ -2342,6 +2368,32 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/button", "@coss/spinner"],
     type: "registry:block",
   },
+  "particle-bt-19": {
+    categories: ["button"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/particle-bt-19.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Expandable show more/less toggle button",
+    files: [
+      {
+        path: "registry/default/particles/particle-bt-19.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "particle-bt-19",
+    registryDependencies: ["@coss/button"],
+    type: "registry:block",
+  },
   "particle-bt-20": {
     categories: ["button"],
     component: React.lazy(async () => {
@@ -2469,32 +2521,6 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "particle-bt-24",
-    registryDependencies: ["@coss/button"],
-    type: "registry:block",
-  },
-  "particle-bt-25": {
-    categories: ["button"],
-    component: React.lazy(async () => {
-      const mod = await import(
-        "@/registry/default/particles/particle-bt-25.tsx"
-      );
-      const exportName =
-        Object.keys(mod).find(
-          (key) =>
-            typeof mod[key] === "function" || typeof mod[key] === "object",
-        ) || item.name;
-      return { default: mod.default || mod[exportName] };
-    }),
-    description: "Expandable show more/less toggle button",
-    files: [
-      {
-        path: "registry/default/particles/particle-bt-25.tsx",
-        target: "",
-        type: "registry:block",
-      },
-    ],
-    meta: undefined,
-    name: "particle-bt-25",
     registryDependencies: ["@coss/button"],
     type: "registry:block",
   },
@@ -4426,6 +4452,32 @@ export const Index: Record<string, any> = {
     meta: undefined,
     name: "particle-gp-14",
     registryDependencies: ["@coss/group", "@coss/select"],
+    type: "registry:block",
+  },
+  "particle-gp-15": {
+    categories: ["group", "search"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/particle-gp-15.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Group with search",
+    files: [
+      {
+        path: "registry/default/particles/particle-gp-15.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "particle-gp-15",
+    registryDependencies: ["@coss/group", "@coss/search"],
     type: "registry:block",
   },
   "particle-ig-1": {
@@ -7534,6 +7586,32 @@ export const Index: Record<string, any> = {
     meta: undefined,
     name: "particle-tg-8",
     registryDependencies: ["@coss/toggle-group"],
+    type: "registry:block",
+  },
+  "particle-tg-9": {
+    categories: ["toggle", "toggle group"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/particle-tg-9.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Toggle group with tooltips",
+    files: [
+      {
+        path: "registry/default/particles/particle-tg-9.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "particle-tg-9",
+    registryDependencies: ["@coss/toggle-group", "@coss/tooltip"],
     type: "registry:block",
   },
   "particle-to-1": {

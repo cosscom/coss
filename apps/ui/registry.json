@@ -1290,6 +1290,19 @@
       "type": "registry:block"
     },
     {
+      "categories": ["badge"],
+      "description": "Badge with count",
+      "files": [
+        {
+          "path": "registry/default/particles/particle-bg-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "particle-bg-13",
+      "registryDependencies": ["@coss/badge"],
+      "type": "registry:block"
+    },
+    {
       "categories": ["breadcrumb", "menu"],
       "description": "Breadcrumb with menu example",
       "files": [
@@ -1556,6 +1569,20 @@
     {
       "categories": ["button"],
       "dependencies": ["lucide-react"],
+      "description": "Expandable show more/less toggle button",
+      "files": [
+        {
+          "path": "registry/default/particles/particle-bt-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "particle-bt-19",
+      "registryDependencies": ["@coss/button"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["button"],
+      "dependencies": ["lucide-react"],
       "description": "Back link button with chevron",
       "files": [
         {
@@ -1620,20 +1647,6 @@
         }
       ],
       "name": "particle-bt-24",
-      "registryDependencies": ["@coss/button"],
-      "type": "registry:block"
-    },
-    {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
-      "description": "Expandable show more/less toggle button",
-      "files": [
-        {
-          "path": "registry/default/particles/particle-bt-25.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "particle-bt-25",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -2733,6 +2746,19 @@
       ],
       "name": "particle-gp-14",
       "registryDependencies": ["@coss/group", "@coss/select"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["group", "search"],
+      "description": "Group with search",
+      "files": [
+        {
+          "path": "registry/default/particles/particle-gp-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "particle-gp-15",
+      "registryDependencies": ["@coss/group", "@coss/search"],
       "type": "registry:block"
     },
     {
@@ -4610,6 +4636,19 @@
       ],
       "name": "particle-tg-8",
       "registryDependencies": ["@coss/toggle-group"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["toggle", "toggle group"],
+      "description": "Toggle group with tooltips",
+      "files": [
+        {
+          "path": "registry/default/particles/particle-tg-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "particle-tg-9",
+      "registryDependencies": ["@coss/toggle-group", "@coss/tooltip"],
       "type": "registry:block"
     },
     {
