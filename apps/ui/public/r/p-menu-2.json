@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["menu"],
+  "description": "Menu with hover",
+  "files": [
+    {
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\";\n\nexport default function Particle() {\n  return (\n    <Menu openOnHover>\n      <MenuTrigger render={<Button variant=\"outline\" />}>Hover me</MenuTrigger>\n      <MenuPopup>\n        <MenuItem>Item one</MenuItem>\n        <MenuItem>Item two</MenuItem>\n      </MenuPopup>\n    </Menu>\n  );\n}\n",
+      "path": "registry/default/particles/p-menu-2.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-menu-2",
+  "registryDependencies": ["@coss/menu"],
+  "type": "registry:block"
+}

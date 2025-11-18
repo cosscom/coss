@@ -665,14 +665,14 @@
       "description": "Basic accordion",
       "files": [
         {
-          "path": "registry/default/particles/particle-ac-1.tsx",
+          "path": "registry/default/particles/p-accordion-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
-      "name": "particle-ac-1",
+      "name": "p-accordion-1",
       "registryDependencies": ["@coss/accordion"],
       "type": "registry:block"
     },
@@ -681,14 +681,14 @@
       "description": "Accordion with one panel open",
       "files": [
         {
-          "path": "registry/default/particles/particle-ac-2.tsx",
+          "path": "registry/default/particles/p-accordion-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
-      "name": "particle-ac-2",
+      "name": "p-accordion-2",
       "registryDependencies": ["@coss/accordion"],
       "type": "registry:block"
     },
@@ -697,14 +697,14 @@
       "description": "Accordion allowing multiple panels open",
       "files": [
         {
-          "path": "registry/default/particles/particle-ac-3.tsx",
+          "path": "registry/default/particles/p-accordion-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
-      "name": "particle-ac-3",
+      "name": "p-accordion-3",
       "registryDependencies": ["@coss/accordion"],
       "type": "registry:block"
     },
@@ -713,14 +713,14 @@
       "description": "Controlled accordion",
       "files": [
         {
-          "path": "registry/default/particles/particle-ac-4.tsx",
+          "path": "registry/default/particles/p-accordion-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
-      "name": "particle-ac-4",
+      "name": "p-accordion-4",
       "registryDependencies": ["@coss/accordion", "@coss/button"],
       "type": "registry:block"
     },
@@ -729,14 +729,14 @@
       "description": "Basic alert",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-1.tsx",
+          "path": "registry/default/particles/p-alert-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-1",
+      "name": "p-alert-1",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -746,14 +746,14 @@
       "description": "Alert with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-2.tsx",
+          "path": "registry/default/particles/p-alert-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-2",
+      "name": "p-alert-2",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -763,14 +763,14 @@
       "description": "Alert with icon and action buttons",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-3.tsx",
+          "path": "registry/default/particles/p-alert-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-3",
+      "name": "p-alert-3",
       "registryDependencies": ["@coss/alert", "@coss/button"],
       "type": "registry:block"
     },
@@ -780,14 +780,14 @@
       "description": "Info alert",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-4.tsx",
+          "path": "registry/default/particles/p-alert-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-4",
+      "name": "p-alert-4",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -797,14 +797,14 @@
       "description": "Success alert",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-5.tsx",
+          "path": "registry/default/particles/p-alert-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-5",
+      "name": "p-alert-5",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -814,14 +814,14 @@
       "description": "Warning alert",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-6.tsx",
+          "path": "registry/default/particles/p-alert-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-6",
+      "name": "p-alert-6",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -831,14 +831,14 @@
       "description": "Error alert",
       "files": [
         {
-          "path": "registry/default/particles/particle-al-7.tsx",
+          "path": "registry/default/particles/p-alert-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-al-7",
+      "name": "p-alert-7",
       "registryDependencies": ["@coss/alert"],
       "type": "registry:block"
     },
@@ -847,11 +847,11 @@
       "description": "Alert dialog",
       "files": [
         {
-          "path": "registry/default/particles/particle-ad-1.tsx",
+          "path": "registry/default/particles/p-alert-dialog-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ad-1",
+      "name": "p-alert-dialog-1",
       "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
       "type": "registry:block"
     },
@@ -860,14 +860,14 @@
       "description": "Basic autocomplete",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-1.tsx",
+          "path": "registry/default/particles/p-autocomplete-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-1",
+      "name": "p-autocomplete-1",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -876,14 +876,14 @@
       "description": "Disabled autocomplete",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-2.tsx",
+          "path": "registry/default/particles/p-autocomplete-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-2",
+      "name": "p-autocomplete-2",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -892,14 +892,14 @@
       "description": "Small autocomplete",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-3.tsx",
+          "path": "registry/default/particles/p-autocomplete-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-3",
+      "name": "p-autocomplete-3",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -908,14 +908,14 @@
       "description": "Large autocomplete",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-4.tsx",
+          "path": "registry/default/particles/p-autocomplete-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-4",
+      "name": "p-autocomplete-4",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -924,14 +924,14 @@
       "description": "Autocomplete with label",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-5.tsx",
+          "path": "registry/default/particles/p-autocomplete-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-5",
+      "name": "p-autocomplete-5",
       "registryDependencies": ["@coss/autocomplete", "@coss/label"],
       "type": "registry:block"
     },
@@ -940,14 +940,14 @@
       "description": "Autocomplete autofilling the input with the highlighted item",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-6.tsx",
+          "path": "registry/default/particles/p-autocomplete-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-6",
+      "name": "p-autocomplete-6",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -956,14 +956,14 @@
       "description": "Autocomplete auto highlighting the first option",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-7.tsx",
+          "path": "registry/default/particles/p-autocomplete-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-7",
+      "name": "p-autocomplete-7",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -972,14 +972,14 @@
       "description": "Autocomplete with clear button",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-8.tsx",
+          "path": "registry/default/particles/p-autocomplete-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-8",
+      "name": "p-autocomplete-8",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -988,14 +988,14 @@
       "description": "Autocomplete with trigger and clear buttons",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-9.tsx",
+          "path": "registry/default/particles/p-autocomplete-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-9",
+      "name": "p-autocomplete-9",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -1004,14 +1004,14 @@
       "description": "Autocomplete with grouped items",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-10.tsx",
+          "path": "registry/default/particles/p-autocomplete-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-10",
+      "name": "p-autocomplete-10",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -1020,14 +1020,14 @@
       "description": "Autocomplete with limited number of results",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-11.tsx",
+          "path": "registry/default/particles/p-autocomplete-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-11",
+      "name": "p-autocomplete-11",
       "registryDependencies": ["@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -1036,14 +1036,14 @@
       "description": "Autocomplete with async items loading",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-12.tsx",
+          "path": "registry/default/particles/p-autocomplete-12.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-12",
+      "name": "p-autocomplete-12",
       "registryDependencies": ["@coss/autocomplete", "@coss/spinner"],
       "type": "registry:block"
     },
@@ -1052,14 +1052,14 @@
       "description": "Autocomplete form",
       "files": [
         {
-          "path": "registry/default/particles/particle-au-13.tsx",
+          "path": "registry/default/particles/p-autocomplete-13.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-au-13",
+      "name": "p-autocomplete-13",
       "registryDependencies": [
         "@coss/autocomplete",
         "@coss/form",
@@ -1072,11 +1072,11 @@
       "description": "Avatar with image and fallback",
       "files": [
         {
-          "path": "registry/default/particles/particle-av-1.tsx",
+          "path": "registry/default/particles/p-avatar-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-av-1",
+      "name": "p-avatar-1",
       "registryDependencies": ["@coss/avatar"],
       "type": "registry:block"
     },
@@ -1085,11 +1085,11 @@
       "description": "Fallback-only avatar",
       "files": [
         {
-          "path": "registry/default/particles/particle-av-2.tsx",
+          "path": "registry/default/particles/p-avatar-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-av-2",
+      "name": "p-avatar-2",
       "registryDependencies": ["@coss/avatar"],
       "type": "registry:block"
     },
@@ -1098,11 +1098,11 @@
       "description": "Avatars with different sizes",
       "files": [
         {
-          "path": "registry/default/particles/particle-av-3.tsx",
+          "path": "registry/default/particles/p-avatar-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-av-3",
+      "name": "p-avatar-3",
       "registryDependencies": ["@coss/avatar"],
       "type": "registry:block"
     },
@@ -1111,11 +1111,11 @@
       "description": "Avatars with different radii",
       "files": [
         {
-          "path": "registry/default/particles/particle-av-4.tsx",
+          "path": "registry/default/particles/p-avatar-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-av-4",
+      "name": "p-avatar-4",
       "registryDependencies": ["@coss/avatar"],
       "type": "registry:block"
     },
@@ -1124,11 +1124,11 @@
       "description": "Overlapping avatar group",
       "files": [
         {
-          "path": "registry/default/particles/particle-av-5.tsx",
+          "path": "registry/default/particles/p-avatar-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-av-5",
+      "name": "p-avatar-5",
       "registryDependencies": ["@coss/avatar"],
       "type": "registry:block"
     },
@@ -1137,11 +1137,11 @@
       "description": "Basic badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-1.tsx",
+          "path": "registry/default/particles/p-badge-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-1",
+      "name": "p-badge-1",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1150,11 +1150,11 @@
       "description": "Outline badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-2.tsx",
+          "path": "registry/default/particles/p-badge-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-2",
+      "name": "p-badge-2",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1163,11 +1163,11 @@
       "description": "Secondary badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-3.tsx",
+          "path": "registry/default/particles/p-badge-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-3",
+      "name": "p-badge-3",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1176,11 +1176,11 @@
       "description": "Destructive badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-4.tsx",
+          "path": "registry/default/particles/p-badge-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-4",
+      "name": "p-badge-4",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1189,11 +1189,11 @@
       "description": "Info badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-5.tsx",
+          "path": "registry/default/particles/p-badge-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-5",
+      "name": "p-badge-5",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1202,11 +1202,11 @@
       "description": "Success badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-6.tsx",
+          "path": "registry/default/particles/p-badge-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-6",
+      "name": "p-badge-6",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1215,11 +1215,11 @@
       "description": "Warning badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-7.tsx",
+          "path": "registry/default/particles/p-badge-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-7",
+      "name": "p-badge-7",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1228,11 +1228,11 @@
       "description": "Error badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-8.tsx",
+          "path": "registry/default/particles/p-badge-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-8",
+      "name": "p-badge-8",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1241,11 +1241,11 @@
       "description": "Small badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-9.tsx",
+          "path": "registry/default/particles/p-badge-9.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-9",
+      "name": "p-badge-9",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1254,11 +1254,11 @@
       "description": "Large badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-10.tsx",
+          "path": "registry/default/particles/p-badge-10.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-10",
+      "name": "p-badge-10",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1268,11 +1268,11 @@
       "description": "Badge with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-11.tsx",
+          "path": "registry/default/particles/p-badge-11.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-11",
+      "name": "p-badge-11",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1281,11 +1281,11 @@
       "description": "Badge with link",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-12.tsx",
+          "path": "registry/default/particles/p-badge-12.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-12",
+      "name": "p-badge-12",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1294,11 +1294,11 @@
       "description": "Badge with count",
       "files": [
         {
-          "path": "registry/default/particles/particle-bg-13.tsx",
+          "path": "registry/default/particles/p-badge-13.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bg-13",
+      "name": "p-badge-13",
       "registryDependencies": ["@coss/badge"],
       "type": "registry:block"
     },
@@ -1307,11 +1307,11 @@
       "description": "Breadcrumb with menu example",
       "files": [
         {
-          "path": "registry/default/particles/particle-bc-1.tsx",
+          "path": "registry/default/particles/p-breadcrumb-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bc-1",
+      "name": "p-breadcrumb-1",
       "registryDependencies": ["@coss/breadcrumb", "@coss/menu"],
       "type": "registry:block"
     },
@@ -1320,11 +1320,11 @@
       "description": "Breadcrumb with custom separator",
       "files": [
         {
-          "path": "registry/default/particles/particle-bc-2.tsx",
+          "path": "registry/default/particles/p-breadcrumb-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bc-2",
+      "name": "p-breadcrumb-2",
       "registryDependencies": ["@coss/breadcrumb"],
       "type": "registry:block"
     },
@@ -1333,11 +1333,11 @@
       "description": "Default button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-1.tsx",
+          "path": "registry/default/particles/p-button-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-1",
+      "name": "p-button-1",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1346,11 +1346,11 @@
       "description": "Outline button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-2.tsx",
+          "path": "registry/default/particles/p-button-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-2",
+      "name": "p-button-2",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1359,11 +1359,11 @@
       "description": "Secondary button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-3.tsx",
+          "path": "registry/default/particles/p-button-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-3",
+      "name": "p-button-3",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1372,11 +1372,11 @@
       "description": "Destructive button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-4.tsx",
+          "path": "registry/default/particles/p-button-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-4",
+      "name": "p-button-4",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1385,11 +1385,11 @@
       "description": "Destructive outline button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-5.tsx",
+          "path": "registry/default/particles/p-button-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-5",
+      "name": "p-button-5",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1398,11 +1398,11 @@
       "description": "Ghost button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-6.tsx",
+          "path": "registry/default/particles/p-button-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-6",
+      "name": "p-button-6",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1411,11 +1411,11 @@
       "description": "Link button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-7.tsx",
+          "path": "registry/default/particles/p-button-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-7",
+      "name": "p-button-7",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1424,11 +1424,11 @@
       "description": "Extra-small button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-8.tsx",
+          "path": "registry/default/particles/p-button-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-8",
+      "name": "p-button-8",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1437,11 +1437,11 @@
       "description": "Small button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-9.tsx",
+          "path": "registry/default/particles/p-button-9.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-9",
+      "name": "p-button-9",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1450,11 +1450,11 @@
       "description": "Large button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-10.tsx",
+          "path": "registry/default/particles/p-button-10.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-10",
+      "name": "p-button-10",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1463,11 +1463,11 @@
       "description": "Extra-large button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-11.tsx",
+          "path": "registry/default/particles/p-button-11.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-11",
+      "name": "p-button-11",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1476,11 +1476,11 @@
       "description": "Disabled button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-12.tsx",
+          "path": "registry/default/particles/p-button-12.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-12",
+      "name": "p-button-12",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1490,11 +1490,11 @@
       "description": "Icon button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-13.tsx",
+          "path": "registry/default/particles/p-button-13.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-13",
+      "name": "p-button-13",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1504,11 +1504,11 @@
       "description": "Small icon button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-14.tsx",
+          "path": "registry/default/particles/p-button-14.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-14",
+      "name": "p-button-14",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1518,11 +1518,11 @@
       "description": "Large icon button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-15.tsx",
+          "path": "registry/default/particles/p-button-15.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-15",
+      "name": "p-button-15",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1532,11 +1532,11 @@
       "description": "Button with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-16.tsx",
+          "path": "registry/default/particles/p-button-16.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-16",
+      "name": "p-button-16",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1545,11 +1545,11 @@
       "description": "Link rendered as button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-17.tsx",
+          "path": "registry/default/particles/p-button-17.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-17",
+      "name": "p-button-17",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1558,11 +1558,11 @@
       "description": "Loading button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-18.tsx",
+          "path": "registry/default/particles/p-button-18.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-18",
+      "name": "p-button-18",
       "registryDependencies": ["@coss/button", "@coss/spinner"],
       "type": "registry:block"
     },
@@ -1572,11 +1572,11 @@
       "description": "Expandable show more/less toggle button",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-19.tsx",
+          "path": "registry/default/particles/p-button-19.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-19",
+      "name": "p-button-19",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1586,11 +1586,11 @@
       "description": "Back link button with chevron",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-20.tsx",
+          "path": "registry/default/particles/p-button-20.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-20",
+      "name": "p-button-20",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1600,11 +1600,11 @@
       "description": "Card-style button with heading and description",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-21.tsx",
+          "path": "registry/default/particles/p-button-21.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-21",
+      "name": "p-button-21",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1614,11 +1614,11 @@
       "description": "Directional pad control buttons",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-22.tsx",
+          "path": "registry/default/particles/p-button-22.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-22",
+      "name": "p-button-22",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1628,11 +1628,11 @@
       "description": "Outline like button with count",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-23.tsx",
+          "path": "registry/default/particles/p-button-23.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-23",
+      "name": "p-button-23",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1642,11 +1642,11 @@
       "description": "Social login icon buttons",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-24.tsx",
+          "path": "registry/default/particles/p-button-24.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-24",
+      "name": "p-button-24",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1656,11 +1656,11 @@
       "description": "Star button with count badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-bt-26.tsx",
+          "path": "registry/default/particles/p-button-26.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-bt-26",
+      "name": "p-button-26",
       "registryDependencies": ["@coss/button"],
       "type": "registry:block"
     },
@@ -1669,14 +1669,14 @@
       "description": "Card with header, content, and footer",
       "files": [
         {
-          "path": "registry/default/particles/particle-cd-1.tsx",
+          "path": "registry/default/particles/p-card-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
       },
-      "name": "particle-cd-1",
+      "name": "p-card-1",
       "registryDependencies": [
         "@coss/card",
         "@coss/button",
@@ -1692,11 +1692,11 @@
       "description": "Basic checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cb-1.tsx",
+          "path": "registry/default/particles/p-checkbox-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cb-1",
+      "name": "p-checkbox-1",
       "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "type": "registry:block"
     },
@@ -1705,11 +1705,11 @@
       "description": "Disabled checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cb-2.tsx",
+          "path": "registry/default/particles/p-checkbox-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cb-2",
+      "name": "p-checkbox-2",
       "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "type": "registry:block"
     },
@@ -1718,11 +1718,11 @@
       "description": "Checkbox with description",
       "files": [
         {
-          "path": "registry/default/particles/particle-cb-3.tsx",
+          "path": "registry/default/particles/p-checkbox-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cb-3",
+      "name": "p-checkbox-3",
       "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "type": "registry:block"
     },
@@ -1731,11 +1731,11 @@
       "description": "Card-style checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cb-4.tsx",
+          "path": "registry/default/particles/p-checkbox-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cb-4",
+      "name": "p-checkbox-4",
       "registryDependencies": ["@coss/checkbox", "@coss/label"],
       "type": "registry:block"
     },
@@ -1744,11 +1744,11 @@
       "description": "Checkbox form",
       "files": [
         {
-          "path": "registry/default/particles/particle-cb-5.tsx",
+          "path": "registry/default/particles/p-checkbox-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cb-5",
+      "name": "p-checkbox-5",
       "registryDependencies": [
         "@coss/checkbox",
         "@coss/form",
@@ -1762,11 +1762,11 @@
       "description": "Basic checkbox group",
       "files": [
         {
-          "path": "registry/default/particles/particle-cg-1.tsx",
+          "path": "registry/default/particles/p-checkbox-group-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cg-1",
+      "name": "p-checkbox-group-1",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1779,11 +1779,11 @@
       "description": "Checkbox group with disabled items",
       "files": [
         {
-          "path": "registry/default/particles/particle-cg-2.tsx",
+          "path": "registry/default/particles/p-checkbox-group-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cg-2",
+      "name": "p-checkbox-group-2",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1796,11 +1796,11 @@
       "description": "Checkbox group with parent checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cg-3.tsx",
+          "path": "registry/default/particles/p-checkbox-group-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cg-3",
+      "name": "p-checkbox-group-3",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1813,11 +1813,11 @@
       "description": "Nested checkbox group with parent",
       "files": [
         {
-          "path": "registry/default/particles/particle-cg-4.tsx",
+          "path": "registry/default/particles/p-checkbox-group-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cg-4",
+      "name": "p-checkbox-group-4",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1830,11 +1830,11 @@
       "description": "Checkbox group form",
       "files": [
         {
-          "path": "registry/default/particles/particle-cg-5.tsx",
+          "path": "registry/default/particles/p-checkbox-group-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cg-5",
+      "name": "p-checkbox-group-5",
       "registryDependencies": [
         "@coss/checkbox-group",
         "@coss/checkbox",
@@ -1851,11 +1851,11 @@
       "description": "Basic collapsible",
       "files": [
         {
-          "path": "registry/default/particles/particle-cl-1.tsx",
+          "path": "registry/default/particles/p-collapsible-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-cl-1",
+      "name": "p-collapsible-1",
       "registryDependencies": ["@coss/collapsible"],
       "type": "registry:block"
     },
@@ -1864,14 +1864,14 @@
       "description": "Basic combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-1.tsx",
+          "path": "registry/default/particles/p-combobox-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-1",
+      "name": "p-combobox-1",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1880,14 +1880,14 @@
       "description": "Disabled combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-2.tsx",
+          "path": "registry/default/particles/p-combobox-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-2",
+      "name": "p-combobox-2",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1896,14 +1896,14 @@
       "description": "Small combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-3.tsx",
+          "path": "registry/default/particles/p-combobox-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-3",
+      "name": "p-combobox-3",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1912,14 +1912,14 @@
       "description": "Large combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-4.tsx",
+          "path": "registry/default/particles/p-combobox-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-4",
+      "name": "p-combobox-4",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1928,14 +1928,14 @@
       "description": "Combobox with label",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-5.tsx",
+          "path": "registry/default/particles/p-combobox-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-5",
+      "name": "p-combobox-5",
       "registryDependencies": ["@coss/combobox", "@coss/label"],
       "type": "registry:block"
     },
@@ -1944,14 +1944,14 @@
       "description": "Combobox auto highlighting the first option",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-6.tsx",
+          "path": "registry/default/particles/p-combobox-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-6",
+      "name": "p-combobox-6",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1960,14 +1960,14 @@
       "description": "Combobox with clear button",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-7.tsx",
+          "path": "registry/default/particles/p-combobox-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-7",
+      "name": "p-combobox-7",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1976,14 +1976,14 @@
       "description": "Combobox with grouped items",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-8.tsx",
+          "path": "registry/default/particles/p-combobox-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-8",
+      "name": "p-combobox-8",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -1992,14 +1992,14 @@
       "description": "Combobox with multiple selection",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-9.tsx",
+          "path": "registry/default/particles/p-combobox-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-9",
+      "name": "p-combobox-9",
       "registryDependencies": ["@coss/combobox"],
       "type": "registry:block"
     },
@@ -2009,14 +2009,14 @@
       "description": "Combobox with input inside popup",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-10.tsx",
+          "path": "registry/default/particles/p-combobox-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-10",
+      "name": "p-combobox-10",
       "registryDependencies": ["@coss/combobox", "@coss/button"],
       "type": "registry:block"
     },
@@ -2025,14 +2025,14 @@
       "description": "Combobox form",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-11.tsx",
+          "path": "registry/default/particles/p-combobox-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-11",
+      "name": "p-combobox-11",
       "registryDependencies": [
         "@coss/combobox",
         "@coss/form",
@@ -2046,14 +2046,14 @@
       "description": "Combobox multiple form",
       "files": [
         {
-          "path": "registry/default/particles/particle-cx-12.tsx",
+          "path": "registry/default/particles/p-combobox-12.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-cx-12",
+      "name": "p-combobox-12",
       "registryDependencies": [
         "@coss/combobox",
         "@coss/form",
@@ -2067,11 +2067,11 @@
       "description": "Dialog with form",
       "files": [
         {
-          "path": "registry/default/particles/particle-dg-1.tsx",
+          "path": "registry/default/particles/p-dialog-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-dg-1",
+      "name": "p-dialog-1",
       "registryDependencies": [
         "@coss/dialog",
         "@coss/button",
@@ -2086,11 +2086,11 @@
       "description": "Dialog opened from menu",
       "files": [
         {
-          "path": "registry/default/particles/particle-dg-2.tsx",
+          "path": "registry/default/particles/p-dialog-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-dg-2",
+      "name": "p-dialog-2",
       "registryDependencies": ["@coss/dialog", "@coss/menu", "@coss/button"],
       "type": "registry:block"
     },
@@ -2099,11 +2099,11 @@
       "description": "Nested dialogs",
       "files": [
         {
-          "path": "registry/default/particles/particle-dg-3.tsx",
+          "path": "registry/default/particles/p-dialog-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-dg-3",
+      "name": "p-dialog-3",
       "registryDependencies": [
         "@coss/dialog",
         "@coss/button",
@@ -2117,11 +2117,11 @@
       "description": "Dialog with close confirmation",
       "files": [
         {
-          "path": "registry/default/particles/particle-dg-4.tsx",
+          "path": "registry/default/particles/p-dialog-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-dg-4",
+      "name": "p-dialog-4",
       "registryDependencies": [
         "@coss/dialog",
         "@coss/alert-dialog",
@@ -2138,11 +2138,11 @@
       "description": "Empty state with icon and actions",
       "files": [
         {
-          "path": "registry/default/particles/particle-em-1.tsx",
+          "path": "registry/default/particles/p-empty-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-em-1",
+      "name": "p-empty-1",
       "registryDependencies": ["@coss/empty", "@coss/button"],
       "type": "registry:block"
     },
@@ -2151,14 +2151,14 @@
       "description": "Field with description",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-1.tsx",
+          "path": "registry/default/particles/p-field-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-1",
+      "name": "p-field-1",
       "registryDependencies": ["@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2167,14 +2167,14 @@
       "description": "Field with required indicator",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-2.tsx",
+          "path": "registry/default/particles/p-field-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-2",
+      "name": "p-field-2",
       "registryDependencies": ["@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2183,14 +2183,14 @@
       "description": "Field in disabled state",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-3.tsx",
+          "path": "registry/default/particles/p-field-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-3",
+      "name": "p-field-3",
       "registryDependencies": ["@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2199,14 +2199,14 @@
       "description": "Field showing validation error",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-4.tsx",
+          "path": "registry/default/particles/p-field-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-4",
+      "name": "p-field-4",
       "registryDependencies": ["@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2215,14 +2215,14 @@
       "description": "Show field validity state",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-5.tsx",
+          "path": "registry/default/particles/p-field-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-5",
+      "name": "p-field-5",
       "registryDependencies": ["@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2231,14 +2231,14 @@
       "description": "Input group with field",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-6.tsx",
+          "path": "registry/default/particles/p-field-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-6",
+      "name": "p-field-6",
       "registryDependencies": [
         "@coss/field",
         "@coss/button",
@@ -2251,14 +2251,14 @@
       "description": "Field with autocomplete",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-7.tsx",
+          "path": "registry/default/particles/p-field-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-7",
+      "name": "p-field-7",
       "registryDependencies": ["@coss/field", "@coss/autocomplete"],
       "type": "registry:block"
     },
@@ -2267,14 +2267,14 @@
       "description": "Field with combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-8.tsx",
+          "path": "registry/default/particles/p-field-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-8",
+      "name": "p-field-8",
       "registryDependencies": ["@coss/field", "@coss/combobox"],
       "type": "registry:block"
     },
@@ -2283,14 +2283,14 @@
       "description": "Field with multiple selection combobox",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-9.tsx",
+          "path": "registry/default/particles/p-field-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-9",
+      "name": "p-field-9",
       "registryDependencies": ["@coss/field", "@coss/combobox"],
       "type": "registry:block"
     },
@@ -2299,14 +2299,14 @@
       "description": "Field with textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-10.tsx",
+          "path": "registry/default/particles/p-field-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-10",
+      "name": "p-field-10",
       "registryDependencies": ["@coss/field", "@coss/textarea"],
       "type": "registry:block"
     },
@@ -2315,14 +2315,14 @@
       "description": "Field with select",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-11.tsx",
+          "path": "registry/default/particles/p-field-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-11",
+      "name": "p-field-11",
       "registryDependencies": ["@coss/field", "@coss/select"],
       "type": "registry:block"
     },
@@ -2331,14 +2331,14 @@
       "description": "Field with checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-12.tsx",
+          "path": "registry/default/particles/p-field-12.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-12",
+      "name": "p-field-12",
       "registryDependencies": ["@coss/field", "@coss/checkbox"],
       "type": "registry:block"
     },
@@ -2353,14 +2353,14 @@
       "description": "Field with checkbox group",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-13.tsx",
+          "path": "registry/default/particles/p-field-13.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-13",
+      "name": "p-field-13",
       "registryDependencies": [
         "@coss/field",
         "@coss/checkbox-group",
@@ -2374,14 +2374,14 @@
       "description": "Field with radio group",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-14.tsx",
+          "path": "registry/default/particles/p-field-14.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-14",
+      "name": "p-field-14",
       "registryDependencies": [
         "@coss/field",
         "@coss/radio-group",
@@ -2394,11 +2394,11 @@
       "description": "Field with toggle switch",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-15.tsx",
+          "path": "registry/default/particles/p-field-15.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-fd-15",
+      "name": "p-field-15",
       "registryDependencies": ["@coss/field", "@coss/switch"],
       "type": "registry:block"
     },
@@ -2407,14 +2407,14 @@
       "description": "Field with slider",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-16.tsx",
+          "path": "registry/default/particles/p-field-16.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-16",
+      "name": "p-field-16",
       "registryDependencies": ["@coss/field", "@coss/slider"],
       "type": "registry:block"
     },
@@ -2423,14 +2423,14 @@
       "description": "Field with number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-17.tsx",
+          "path": "registry/default/particles/p-field-17.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-17",
+      "name": "p-field-17",
       "registryDependencies": ["@coss/field", "@coss/number-field"],
       "type": "registry:block"
     },
@@ -2439,14 +2439,14 @@
       "description": "Complete form built with field",
       "files": [
         {
-          "path": "registry/default/particles/particle-fd-18.tsx",
+          "path": "registry/default/particles/p-field-18.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fd-18",
+      "name": "p-field-18",
       "registryDependencies": [
         "@coss/field",
         "@coss/select",
@@ -2462,14 +2462,14 @@
       "description": "Fieldset with multiple fields",
       "files": [
         {
-          "path": "registry/default/particles/particle-fs-1.tsx",
+          "path": "registry/default/particles/p-fieldset-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fs-1",
+      "name": "p-fieldset-1",
       "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
       "type": "registry:block"
     },
@@ -2478,14 +2478,14 @@
       "description": "Input in a form",
       "files": [
         {
-          "path": "registry/default/particles/particle-fm-1.tsx",
+          "path": "registry/default/particles/p-form-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fm-1",
+      "name": "p-form-1",
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
@@ -2500,14 +2500,14 @@
       "description": "Form with zod validation",
       "files": [
         {
-          "path": "registry/default/particles/particle-fm-2.tsx",
+          "path": "registry/default/particles/p-form-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-fm-2",
+      "name": "p-form-2",
       "registryDependencies": [
         "@coss/form",
         "@coss/field",
@@ -2521,14 +2521,14 @@
       "description": "Basic frame",
       "files": [
         {
-          "path": "registry/default/particles/particle-fr-1.tsx",
+          "path": "registry/default/particles/p-frame-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-fr-1",
+      "name": "p-frame-1",
       "registryDependencies": ["@coss/frame"],
       "type": "registry:block"
     },
@@ -2538,14 +2538,14 @@
       "description": "Frame with collapsible content and delete button",
       "files": [
         {
-          "path": "registry/default/particles/particle-fr-2.tsx",
+          "path": "registry/default/particles/p-frame-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-fr-2",
+      "name": "p-frame-2",
       "registryDependencies": [
         "@coss/frame",
         "@coss/collapsible",
@@ -2558,11 +2558,11 @@
       "description": "Keyboard shortcuts display",
       "files": [
         {
-          "path": "registry/default/particles/particle-kb-1.tsx",
+          "path": "registry/default/particles/p-kbd-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-kb-1",
+      "name": "p-kbd-1",
       "registryDependencies": ["@coss/kbd"],
       "type": "registry:block"
     },
@@ -2571,11 +2571,11 @@
       "description": "Basic group",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-1.tsx",
+          "path": "registry/default/particles/p-group-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-1",
+      "name": "p-group-1",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2584,11 +2584,11 @@
       "description": "Group with input",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-2.tsx",
+          "path": "registry/default/particles/p-group-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-2",
+      "name": "p-group-2",
       "registryDependencies": ["@coss/group", "@coss/input"],
       "type": "registry:block"
     },
@@ -2597,11 +2597,11 @@
       "description": "Small group",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-3.tsx",
+          "path": "registry/default/particles/p-group-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-3",
+      "name": "p-group-3",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2610,11 +2610,11 @@
       "description": "Large group",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-4.tsx",
+          "path": "registry/default/particles/p-group-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-4",
+      "name": "p-group-4",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2623,11 +2623,11 @@
       "description": "Group with disabled button",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-5.tsx",
+          "path": "registry/default/particles/p-group-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-5",
+      "name": "p-group-5",
       "registryDependencies": ["@coss/group", "@coss/button"],
       "type": "registry:block"
     },
@@ -2636,11 +2636,11 @@
       "description": "Group with default button",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-6.tsx",
+          "path": "registry/default/particles/p-group-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-6",
+      "name": "p-group-6",
       "registryDependencies": ["@coss/group", "@coss/button"],
       "type": "registry:block"
     },
@@ -2649,11 +2649,11 @@
       "description": "Group with start text",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-7.tsx",
+          "path": "registry/default/particles/p-group-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-7",
+      "name": "p-group-7",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2662,11 +2662,11 @@
       "description": "Group with end text",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-8.tsx",
+          "path": "registry/default/particles/p-group-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-8",
+      "name": "p-group-8",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2675,11 +2675,11 @@
       "description": "Vertical group",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-9.tsx",
+          "path": "registry/default/particles/p-group-9.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-9",
+      "name": "p-group-9",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2688,11 +2688,11 @@
       "description": "Nested groups",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-10.tsx",
+          "path": "registry/default/particles/p-group-10.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-10",
+      "name": "p-group-10",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2701,11 +2701,11 @@
       "description": "Group with popup",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-11.tsx",
+          "path": "registry/default/particles/p-group-11.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-11",
+      "name": "p-group-11",
       "registryDependencies": ["@coss/group"],
       "type": "registry:block"
     },
@@ -2714,11 +2714,11 @@
       "description": "Group with input group",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-12.tsx",
+          "path": "registry/default/particles/p-group-12.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-12",
+      "name": "p-group-12",
       "registryDependencies": ["@coss/group", "@coss/input-group"],
       "type": "registry:block"
     },
@@ -2727,11 +2727,11 @@
       "description": "Group with menu",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-13.tsx",
+          "path": "registry/default/particles/p-group-13.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-13",
+      "name": "p-group-13",
       "registryDependencies": ["@coss/group", "@coss/menu"],
       "type": "registry:block"
     },
@@ -2740,11 +2740,11 @@
       "description": "Group with select",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-14.tsx",
+          "path": "registry/default/particles/p-group-14.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-14",
+      "name": "p-group-14",
       "registryDependencies": ["@coss/group", "@coss/select"],
       "type": "registry:block"
     },
@@ -2753,11 +2753,11 @@
       "description": "Group with search",
       "files": [
         {
-          "path": "registry/default/particles/particle-gp-15.tsx",
+          "path": "registry/default/particles/p-group-15.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-gp-15",
+      "name": "p-group-15",
       "registryDependencies": ["@coss/group", "@coss/search"],
       "type": "registry:block"
     },
@@ -2766,14 +2766,14 @@
       "description": "Basic input",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-1.tsx",
+          "path": "registry/default/particles/p-input-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-1",
+      "name": "p-input-1",
       "registryDependencies": ["@coss/input"],
       "type": "registry:block"
     },
@@ -2782,14 +2782,14 @@
       "description": "Small input",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-2.tsx",
+          "path": "registry/default/particles/p-input-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-2",
+      "name": "p-input-2",
       "registryDependencies": ["@coss/input"],
       "type": "registry:block"
     },
@@ -2798,14 +2798,14 @@
       "description": "Large input",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-3.tsx",
+          "path": "registry/default/particles/p-input-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-3",
+      "name": "p-input-3",
       "registryDependencies": ["@coss/input"],
       "type": "registry:block"
     },
@@ -2814,14 +2814,14 @@
       "description": "Disabled input",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-4.tsx",
+          "path": "registry/default/particles/p-input-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-4",
+      "name": "p-input-4",
       "registryDependencies": ["@coss/input"],
       "type": "registry:block"
     },
@@ -2830,14 +2830,14 @@
       "description": "File input",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-5.tsx",
+          "path": "registry/default/particles/p-input-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-5",
+      "name": "p-input-5",
       "registryDependencies": ["@coss/input"],
       "type": "registry:block"
     },
@@ -2846,14 +2846,14 @@
       "description": "Input with label",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-6.tsx",
+          "path": "registry/default/particles/p-input-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-6",
+      "name": "p-input-6",
       "registryDependencies": ["@coss/input", "@coss/label"],
       "type": "registry:block"
     },
@@ -2862,14 +2862,14 @@
       "description": "Input with button",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-7.tsx",
+          "path": "registry/default/particles/p-input-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-7",
+      "name": "p-input-7",
       "registryDependencies": ["@coss/input", "@coss/button"],
       "type": "registry:block"
     },
@@ -2878,14 +2878,14 @@
       "description": "Input with start text and end tooltip",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-8.tsx",
+          "path": "registry/default/particles/p-input-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-8",
+      "name": "p-input-8",
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
@@ -2898,14 +2898,14 @@
       "description": "Password input with toggle visibility",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-9.tsx",
+          "path": "registry/default/particles/p-input-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-9",
+      "name": "p-input-9",
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
@@ -2918,14 +2918,14 @@
       "description": "Input group mimicking a URL bar",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-10.tsx",
+          "path": "registry/default/particles/p-input-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-10",
+      "name": "p-input-10",
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
@@ -2938,14 +2938,14 @@
       "description": "Input group with keyboard shortcut",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-11.tsx",
+          "path": "registry/default/particles/p-input-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-11",
+      "name": "p-input-11",
       "registryDependencies": ["@coss/input-group", "@coss/kbd"],
       "type": "registry:block"
     },
@@ -2954,14 +2954,14 @@
       "description": "Input group with start loading spinner",
       "files": [
         {
-          "path": "registry/default/particles/particle-in-12.tsx",
+          "path": "registry/default/particles/p-input-12.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-in-12",
+      "name": "p-input-12",
       "registryDependencies": ["@coss/input-group", "@coss/spinner"],
       "type": "registry:block"
     },
@@ -2970,14 +2970,14 @@
       "description": "Basic input group",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-1.tsx",
+          "path": "registry/default/particles/p-input-group-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-1",
+      "name": "p-input-group-1",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -2987,14 +2987,14 @@
       "description": "Input group with end icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-2.tsx",
+          "path": "registry/default/particles/p-input-group-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-2",
+      "name": "p-input-group-2",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3003,14 +3003,14 @@
       "description": "Input group with start text",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-3.tsx",
+          "path": "registry/default/particles/p-input-group-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-3",
+      "name": "p-input-group-3",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3019,14 +3019,14 @@
       "description": "Input group with end text",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-4.tsx",
+          "path": "registry/default/particles/p-input-group-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-4",
+      "name": "p-input-group-4",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3035,14 +3035,14 @@
       "description": "Input group with start and end text",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-5.tsx",
+          "path": "registry/default/particles/p-input-group-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-5",
+      "name": "p-input-group-5",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3051,14 +3051,14 @@
       "description": "Input group with number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-6.tsx",
+          "path": "registry/default/particles/p-input-group-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-6",
+      "name": "p-input-group-6",
       "registryDependencies": ["@coss/input-group", "@coss/number-field"],
       "type": "registry:block"
     },
@@ -3068,14 +3068,14 @@
       "description": "Input group with end tooltip",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-7.tsx",
+          "path": "registry/default/particles/p-input-group-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-7",
+      "name": "p-input-group-7",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3089,14 +3089,14 @@
       "description": "Input group with icon button",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-8.tsx",
+          "path": "registry/default/particles/p-input-group-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-8",
+      "name": "p-input-group-8",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3109,14 +3109,14 @@
       "description": "Input group with button",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-9.tsx",
+          "path": "registry/default/particles/p-input-group-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-9",
+      "name": "p-input-group-9",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3129,14 +3129,14 @@
       "description": "Input group with badge",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-10.tsx",
+          "path": "registry/default/particles/p-input-group-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-10",
+      "name": "p-input-group-10",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3149,14 +3149,14 @@
       "description": "Input group with keyboard shortcut",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-11.tsx",
+          "path": "registry/default/particles/p-input-group-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-11",
+      "name": "p-input-group-11",
       "registryDependencies": ["@coss/input-group", "@coss/input", "@coss/kbd"],
       "type": "registry:block"
     },
@@ -3165,14 +3165,14 @@
       "description": "Input group with inner label",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-12.tsx",
+          "path": "registry/default/particles/p-input-group-12.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-12",
+      "name": "p-input-group-12",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3185,14 +3185,14 @@
       "description": "Small input group",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-13.tsx",
+          "path": "registry/default/particles/p-input-group-13.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-13",
+      "name": "p-input-group-13",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3201,14 +3201,14 @@
       "description": "Large input group",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-14.tsx",
+          "path": "registry/default/particles/p-input-group-14.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-14",
+      "name": "p-input-group-14",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3217,14 +3217,14 @@
       "description": "Disabled input group",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-15.tsx",
+          "path": "registry/default/particles/p-input-group-15.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-15",
+      "name": "p-input-group-15",
       "registryDependencies": ["@coss/input-group", "@coss/input"],
       "type": "registry:block"
     },
@@ -3233,14 +3233,14 @@
       "description": "Input group with loading spinner",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-16.tsx",
+          "path": "registry/default/particles/p-input-group-16.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-ig-16",
+      "name": "p-input-group-16",
       "registryDependencies": [
         "@coss/input-group",
         "@coss/input",
@@ -3253,14 +3253,14 @@
       "description": "Input group with textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-ig-17.tsx",
+          "path": "registry/default/particles/p-input-group-17.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
       },
-      "name": "particle-ig-17",
+      "name": "p-input-group-17",
       "registryDependencies": ["@coss/input-group", "@coss/textarea"],
       "type": "registry:block"
     },
@@ -3269,14 +3269,14 @@
       "description": "Basic meter",
       "files": [
         {
-          "path": "registry/default/particles/particle-mt-1.tsx",
+          "path": "registry/default/particles/p-meter-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-mt-1",
+      "name": "p-meter-1",
       "registryDependencies": ["@coss/meter"],
       "type": "registry:block"
     },
@@ -3285,14 +3285,14 @@
       "description": "Simple meter",
       "files": [
         {
-          "path": "registry/default/particles/particle-mt-2.tsx",
+          "path": "registry/default/particles/p-meter-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-mt-2",
+      "name": "p-meter-2",
       "registryDependencies": ["@coss/meter"],
       "type": "registry:block"
     },
@@ -3301,14 +3301,14 @@
       "description": "Meter with formatted value",
       "files": [
         {
-          "path": "registry/default/particles/particle-mt-3.tsx",
+          "path": "registry/default/particles/p-meter-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-mt-3",
+      "name": "p-meter-3",
       "registryDependencies": ["@coss/meter"],
       "type": "registry:block"
     },
@@ -3317,14 +3317,14 @@
       "description": "Meter with range",
       "files": [
         {
-          "path": "registry/default/particles/particle-mt-4.tsx",
+          "path": "registry/default/particles/p-meter-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-mt-4",
+      "name": "p-meter-4",
       "registryDependencies": ["@coss/meter"],
       "type": "registry:block"
     },
@@ -3333,11 +3333,11 @@
       "description": "Basic menu",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-1.tsx",
+          "path": "registry/default/particles/p-menu-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-1",
+      "name": "p-menu-1",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3346,11 +3346,11 @@
       "description": "Menu with hover",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-2.tsx",
+          "path": "registry/default/particles/p-menu-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-2",
+      "name": "p-menu-2",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3359,11 +3359,11 @@
       "description": "Menu with checkbox",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-3.tsx",
+          "path": "registry/default/particles/p-menu-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-3",
+      "name": "p-menu-3",
       "registryDependencies": ["@coss/menu", "@coss/checkbox"],
       "type": "registry:block"
     },
@@ -3372,11 +3372,11 @@
       "description": "Menu with radio group",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-4.tsx",
+          "path": "registry/default/particles/p-menu-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-4",
+      "name": "p-menu-4",
       "registryDependencies": ["@coss/menu", "@coss/radio-group"],
       "type": "registry:block"
     },
@@ -3385,11 +3385,11 @@
       "description": "Menu with link",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-5.tsx",
+          "path": "registry/default/particles/p-menu-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-5",
+      "name": "p-menu-5",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3398,11 +3398,11 @@
       "description": "Menu with group labels",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-6.tsx",
+          "path": "registry/default/particles/p-menu-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-6",
+      "name": "p-menu-6",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3411,11 +3411,11 @@
       "description": "Nested menu",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-7.tsx",
+          "path": "registry/default/particles/p-menu-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-7",
+      "name": "p-menu-7",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3424,11 +3424,11 @@
       "description": "Menu close on click",
       "files": [
         {
-          "path": "registry/default/particles/particle-mn-8.tsx",
+          "path": "registry/default/particles/p-menu-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-mn-8",
+      "name": "p-menu-8",
       "registryDependencies": ["@coss/menu"],
       "type": "registry:block"
     },
@@ -3437,14 +3437,14 @@
       "description": "Basic number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-1.tsx",
+          "path": "registry/default/particles/p-number-field-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-1",
+      "name": "p-number-field-1",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3453,14 +3453,14 @@
       "description": "Small number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-2.tsx",
+          "path": "registry/default/particles/p-number-field-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-2",
+      "name": "p-number-field-2",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3469,14 +3469,14 @@
       "description": "Large number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-3.tsx",
+          "path": "registry/default/particles/p-number-field-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-3",
+      "name": "p-number-field-3",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3485,14 +3485,14 @@
       "description": "Disabled number field",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-4.tsx",
+          "path": "registry/default/particles/p-number-field-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-4",
+      "name": "p-number-field-4",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3501,14 +3501,14 @@
       "description": "Number field with label",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-5.tsx",
+          "path": "registry/default/particles/p-number-field-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-5",
+      "name": "p-number-field-5",
       "registryDependencies": ["@coss/number-field", "@coss/label"],
       "type": "registry:block"
     },
@@ -3517,14 +3517,14 @@
       "description": "Number field with scrub",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-6.tsx",
+          "path": "registry/default/particles/p-number-field-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-6",
+      "name": "p-number-field-6",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3533,14 +3533,14 @@
       "description": "Number field with range",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-7.tsx",
+          "path": "registry/default/particles/p-number-field-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-7",
+      "name": "p-number-field-7",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3549,14 +3549,14 @@
       "description": "Number field with formatted value",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-8.tsx",
+          "path": "registry/default/particles/p-number-field-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-8",
+      "name": "p-number-field-8",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3565,14 +3565,14 @@
       "description": "Number field with step",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-9.tsx",
+          "path": "registry/default/particles/p-number-field-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-9",
+      "name": "p-number-field-9",
       "registryDependencies": ["@coss/number-field"],
       "type": "registry:block"
     },
@@ -3581,14 +3581,14 @@
       "description": "Number field in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-nf-10.tsx",
+          "path": "registry/default/particles/p-number-field-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-nf-10",
+      "name": "p-number-field-10",
       "registryDependencies": [
         "@coss/number-field",
         "@coss/form",
@@ -3601,11 +3601,11 @@
       "description": "Pagination example",
       "files": [
         {
-          "path": "registry/default/particles/particle-pg-1.tsx",
+          "path": "registry/default/particles/p-pagination-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-pg-1",
+      "name": "p-pagination-1",
       "registryDependencies": ["@coss/pagination"],
       "type": "registry:block"
     },
@@ -3614,14 +3614,14 @@
       "description": "Pagination with previous and next buttons only",
       "files": [
         {
-          "path": "registry/default/particles/particle-pg-2.tsx",
+          "path": "registry/default/particles/p-pagination-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-pg-2",
+      "name": "p-pagination-2",
       "registryDependencies": ["@coss/pagination"],
       "type": "registry:block"
     },
@@ -3630,14 +3630,14 @@
       "description": "Pagination with select, and previous and next buttons",
       "files": [
         {
-          "path": "registry/default/particles/particle-pg-3.tsx",
+          "path": "registry/default/particles/p-pagination-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-pg-3",
+      "name": "p-pagination-3",
       "registryDependencies": ["@coss/pagination", "@coss/select"],
       "type": "registry:block"
     },
@@ -3646,11 +3646,11 @@
       "description": "Popover with a form",
       "files": [
         {
-          "path": "registry/default/particles/particle-po-1.tsx",
+          "path": "registry/default/particles/p-popover-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-po-1",
+      "name": "p-popover-1",
       "registryDependencies": [
         "@coss/popover",
         "@coss/button",
@@ -3666,11 +3666,11 @@
       "description": "Popover with close button",
       "files": [
         {
-          "path": "registry/default/particles/particle-po-2.tsx",
+          "path": "registry/default/particles/p-popover-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-po-2",
+      "name": "p-popover-2",
       "registryDependencies": ["@coss/popover", "@coss/button"],
       "type": "registry:block"
     },
@@ -3680,11 +3680,11 @@
       "description": "Preview card with popup",
       "files": [
         {
-          "path": "registry/default/particles/particle-pc-1.tsx",
+          "path": "registry/default/particles/p-preview-card-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-pc-1",
+      "name": "p-preview-card-1",
       "registryDependencies": ["@coss/preview-card", "@coss/button"],
       "type": "registry:block"
     },
@@ -3693,14 +3693,14 @@
       "description": "Basic progress bar",
       "files": [
         {
-          "path": "registry/default/particles/particle-pr-1.tsx",
+          "path": "registry/default/particles/p-progress-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-pr-1",
+      "name": "p-progress-1",
       "registryDependencies": ["@coss/progress"],
       "type": "registry:block"
     },
@@ -3709,14 +3709,14 @@
       "description": "Progress with label and value",
       "files": [
         {
-          "path": "registry/default/particles/particle-pr-2.tsx",
+          "path": "registry/default/particles/p-progress-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-pr-2",
+      "name": "p-progress-2",
       "registryDependencies": ["@coss/progress"],
       "type": "registry:block"
     },
@@ -3725,14 +3725,14 @@
       "description": "Progress with formatted value",
       "files": [
         {
-          "path": "registry/default/particles/particle-pr-3.tsx",
+          "path": "registry/default/particles/p-progress-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-pr-3",
+      "name": "p-progress-3",
       "registryDependencies": ["@coss/progress"],
       "type": "registry:block"
     },
@@ -3741,11 +3741,11 @@
       "description": "Basic radio group",
       "files": [
         {
-          "path": "registry/default/particles/particle-rg-1.tsx",
+          "path": "registry/default/particles/p-radio-group-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-rg-1",
+      "name": "p-radio-group-1",
       "registryDependencies": ["@coss/radio-group"],
       "type": "registry:block"
     },
@@ -3754,11 +3754,11 @@
       "description": "Disabled radio group",
       "files": [
         {
-          "path": "registry/default/particles/particle-rg-2.tsx",
+          "path": "registry/default/particles/p-radio-group-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-rg-2",
+      "name": "p-radio-group-2",
       "registryDependencies": ["@coss/radio-group"],
       "type": "registry:block"
     },
@@ -3767,11 +3767,11 @@
       "description": "Radio group with description",
       "files": [
         {
-          "path": "registry/default/particles/particle-rg-3.tsx",
+          "path": "registry/default/particles/p-radio-group-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-rg-3",
+      "name": "p-radio-group-3",
       "registryDependencies": ["@coss/radio-group"],
       "type": "registry:block"
     },
@@ -3780,11 +3780,11 @@
       "description": "Radio group card",
       "files": [
         {
-          "path": "registry/default/particles/particle-rg-4.tsx",
+          "path": "registry/default/particles/p-radio-group-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-rg-4",
+      "name": "p-radio-group-4",
       "registryDependencies": ["@coss/radio-group", "@coss/card"],
       "type": "registry:block"
     },
@@ -3793,11 +3793,11 @@
       "description": "Radio group in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-rg-5.tsx",
+          "path": "registry/default/particles/p-radio-group-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-rg-5",
+      "name": "p-radio-group-5",
       "registryDependencies": [
         "@coss/radio-group",
         "@coss/form",
@@ -3810,14 +3810,14 @@
       "description": "Basic scroll area",
       "files": [
         {
-          "path": "registry/default/particles/particle-sa-1.tsx",
+          "path": "registry/default/particles/p-scroll-area-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sa-1",
+      "name": "p-scroll-area-1",
       "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:block"
     },
@@ -3826,11 +3826,11 @@
       "description": "Horizontal scroll area",
       "files": [
         {
-          "path": "registry/default/particles/particle-sa-2.tsx",
+          "path": "registry/default/particles/p-scroll-area-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sa-2",
+      "name": "p-scroll-area-2",
       "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:block"
     },
@@ -3839,11 +3839,11 @@
       "description": "Scroll area with both directions",
       "files": [
         {
-          "path": "registry/default/particles/particle-sa-3.tsx",
+          "path": "registry/default/particles/p-scroll-area-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sa-3",
+      "name": "p-scroll-area-3",
       "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:block"
     },
@@ -3852,14 +3852,14 @@
       "description": "Basic select",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-1.tsx",
+          "path": "registry/default/particles/p-select-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-1",
+      "name": "p-select-1",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3868,14 +3868,14 @@
       "description": "Small select",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-2.tsx",
+          "path": "registry/default/particles/p-select-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-2",
+      "name": "p-select-2",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3884,14 +3884,14 @@
       "description": "Large select",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-3.tsx",
+          "path": "registry/default/particles/p-select-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-3",
+      "name": "p-select-3",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3900,14 +3900,14 @@
       "description": "Disabled select",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-4.tsx",
+          "path": "registry/default/particles/p-select-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-4",
+      "name": "p-select-4",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3916,14 +3916,14 @@
       "description": "Select without item alignment",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-5.tsx",
+          "path": "registry/default/particles/p-select-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-5",
+      "name": "p-select-5",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3932,14 +3932,14 @@
       "description": "Select with groups",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-6.tsx",
+          "path": "registry/default/particles/p-select-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-6",
+      "name": "p-select-6",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3948,14 +3948,14 @@
       "description": "Multiple select",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-7.tsx",
+          "path": "registry/default/particles/p-select-7.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-7",
+      "name": "p-select-7",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3965,14 +3965,14 @@
       "description": "Select with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-8.tsx",
+          "path": "registry/default/particles/p-select-8.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-8",
+      "name": "p-select-8",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3982,14 +3982,14 @@
       "description": "Select options with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-9.tsx",
+          "path": "registry/default/particles/p-select-9.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-9",
+      "name": "p-select-9",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -3998,14 +3998,14 @@
       "description": "Select with object values",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-10.tsx",
+          "path": "registry/default/particles/p-select-10.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-10",
+      "name": "p-select-10",
       "registryDependencies": ["@coss/select"],
       "type": "registry:block"
     },
@@ -4014,14 +4014,14 @@
       "description": "Select in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-sl-11.tsx",
+          "path": "registry/default/particles/p-select-11.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sl-11",
+      "name": "p-select-11",
       "registryDependencies": ["@coss/select", "@coss/form", "@coss/field"],
       "type": "registry:block"
     },
@@ -4030,11 +4030,11 @@
       "description": "Separator with horizontal and vertical orientations",
       "files": [
         {
-          "path": "registry/default/particles/particle-sp-1.tsx",
+          "path": "registry/default/particles/p-separator-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sp-1",
+      "name": "p-separator-1",
       "registryDependencies": ["@coss/separator"],
       "type": "registry:block"
     },
@@ -4043,11 +4043,11 @@
       "description": "Basic sheet",
       "files": [
         {
-          "path": "registry/default/particles/particle-sh-1.tsx",
+          "path": "registry/default/particles/p-sheet-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sh-1",
+      "name": "p-sheet-1",
       "registryDependencies": [
         "@coss/sheet",
         "@coss/button",
@@ -4062,11 +4062,11 @@
       "description": "Sheet inset",
       "files": [
         {
-          "path": "registry/default/particles/particle-sh-2.tsx",
+          "path": "registry/default/particles/p-sheet-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sh-2",
+      "name": "p-sheet-2",
       "registryDependencies": ["@coss/sheet", "@coss/button"],
       "type": "registry:block"
     },
@@ -4075,11 +4075,11 @@
       "description": "Sheet position",
       "files": [
         {
-          "path": "registry/default/particles/particle-sh-3.tsx",
+          "path": "registry/default/particles/p-sheet-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sh-3",
+      "name": "p-sheet-3",
       "registryDependencies": ["@coss/sheet", "@coss/button"],
       "type": "registry:block"
     },
@@ -4088,14 +4088,14 @@
       "description": "Basic skeleton",
       "files": [
         {
-          "path": "registry/default/particles/particle-sk-1.tsx",
+          "path": "registry/default/particles/p-skeleton-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
       },
-      "name": "particle-sk-1",
+      "name": "p-skeleton-1",
       "registryDependencies": ["@coss/skeleton"],
       "type": "registry:block"
     },
@@ -4104,14 +4104,14 @@
       "description": "Skeleton only",
       "files": [
         {
-          "path": "registry/default/particles/particle-sk-2.tsx",
+          "path": "registry/default/particles/p-skeleton-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
       },
-      "name": "particle-sk-2",
+      "name": "p-skeleton-2",
       "registryDependencies": ["@coss/skeleton"],
       "type": "registry:block"
     },
@@ -4120,14 +4120,14 @@
       "description": "Basic slider",
       "files": [
         {
-          "path": "registry/default/particles/particle-sd-1.tsx",
+          "path": "registry/default/particles/p-slider-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sd-1",
+      "name": "p-slider-1",
       "registryDependencies": ["@coss/slider"],
       "type": "registry:block"
     },
@@ -4136,14 +4136,14 @@
       "description": "Slider with label and value",
       "files": [
         {
-          "path": "registry/default/particles/particle-sd-2.tsx",
+          "path": "registry/default/particles/p-slider-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sd-2",
+      "name": "p-slider-2",
       "registryDependencies": ["@coss/slider"],
       "type": "registry:block"
     },
@@ -4152,14 +4152,14 @@
       "description": "Range slider",
       "files": [
         {
-          "path": "registry/default/particles/particle-sd-3.tsx",
+          "path": "registry/default/particles/p-slider-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sd-3",
+      "name": "p-slider-3",
       "registryDependencies": ["@coss/slider"],
       "type": "registry:block"
     },
@@ -4168,11 +4168,11 @@
       "description": "Vertical slider",
       "files": [
         {
-          "path": "registry/default/particles/particle-sd-4.tsx",
+          "path": "registry/default/particles/p-slider-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sd-4",
+      "name": "p-slider-4",
       "registryDependencies": ["@coss/slider"],
       "type": "registry:block"
     },
@@ -4181,14 +4181,14 @@
       "description": "Slider in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-sd-5.tsx",
+          "path": "registry/default/particles/p-slider-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-sd-5",
+      "name": "p-slider-5",
       "registryDependencies": ["@coss/slider", "@coss/form", "@coss/field"],
       "type": "registry:block"
     },
@@ -4197,11 +4197,11 @@
       "description": "Basic spinner",
       "files": [
         {
-          "path": "registry/default/particles/particle-sn-1.tsx",
+          "path": "registry/default/particles/p-spinner-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sn-1",
+      "name": "p-spinner-1",
       "registryDependencies": ["@coss/spinner"],
       "type": "registry:block"
     },
@@ -4210,11 +4210,11 @@
       "description": "Basic switch",
       "files": [
         {
-          "path": "registry/default/particles/particle-sw-1.tsx",
+          "path": "registry/default/particles/p-switch-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sw-1",
+      "name": "p-switch-1",
       "registryDependencies": ["@coss/switch"],
       "type": "registry:block"
     },
@@ -4223,11 +4223,11 @@
       "description": "Disabled switch",
       "files": [
         {
-          "path": "registry/default/particles/particle-sw-2.tsx",
+          "path": "registry/default/particles/p-switch-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sw-2",
+      "name": "p-switch-2",
       "registryDependencies": ["@coss/switch"],
       "type": "registry:block"
     },
@@ -4236,11 +4236,11 @@
       "description": "Switch with description",
       "files": [
         {
-          "path": "registry/default/particles/particle-sw-3.tsx",
+          "path": "registry/default/particles/p-switch-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sw-3",
+      "name": "p-switch-3",
       "registryDependencies": ["@coss/switch"],
       "type": "registry:block"
     },
@@ -4249,11 +4249,11 @@
       "description": "Switch card",
       "files": [
         {
-          "path": "registry/default/particles/particle-sw-4.tsx",
+          "path": "registry/default/particles/p-switch-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sw-4",
+      "name": "p-switch-4",
       "registryDependencies": ["@coss/switch", "@coss/card"],
       "type": "registry:block"
     },
@@ -4262,11 +4262,11 @@
       "description": "Switch in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-sw-5.tsx",
+          "path": "registry/default/particles/p-switch-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-sw-5",
+      "name": "p-switch-5",
       "registryDependencies": ["@coss/switch", "@coss/form", "@coss/field"],
       "type": "registry:block"
     },
@@ -4275,14 +4275,14 @@
       "description": "Basic table",
       "files": [
         {
-          "path": "registry/default/particles/particle-ta-1.tsx",
+          "path": "registry/default/particles/p-table-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-ta-1",
+      "name": "p-table-1",
       "registryDependencies": ["@coss/table"],
       "type": "registry:block"
     },
@@ -4291,14 +4291,14 @@
       "description": "Framed table",
       "files": [
         {
-          "path": "registry/default/particles/particle-ta-2.tsx",
+          "path": "registry/default/particles/p-table-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full"
       },
-      "name": "particle-ta-2",
+      "name": "p-table-2",
       "registryDependencies": ["@coss/table"],
       "type": "registry:block"
     },
@@ -4307,11 +4307,11 @@
       "description": "Basic tabs",
       "files": [
         {
-          "path": "registry/default/particles/particle-tb-1.tsx",
+          "path": "registry/default/particles/p-tabs-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tb-1",
+      "name": "p-tabs-1",
       "registryDependencies": ["@coss/tabs"],
       "type": "registry:block"
     },
@@ -4320,11 +4320,11 @@
       "description": "Tabs with underline",
       "files": [
         {
-          "path": "registry/default/particles/particle-tb-2.tsx",
+          "path": "registry/default/particles/p-tabs-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tb-2",
+      "name": "p-tabs-2",
       "registryDependencies": ["@coss/tabs"],
       "type": "registry:block"
     },
@@ -4333,14 +4333,14 @@
       "description": "Vertical tabs",
       "files": [
         {
-          "path": "registry/default/particles/particle-tb-3.tsx",
+          "path": "registry/default/particles/p-tabs-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"
       },
-      "name": "particle-tb-3",
+      "name": "p-tabs-3",
       "registryDependencies": ["@coss/tabs"],
       "type": "registry:block"
     },
@@ -4349,14 +4349,14 @@
       "description": "Vertical tabs with underline",
       "files": [
         {
-          "path": "registry/default/particles/particle-tb-4.tsx",
+          "path": "registry/default/particles/p-tabs-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"
       },
-      "name": "particle-tb-4",
+      "name": "p-tabs-4",
       "registryDependencies": ["@coss/tabs"],
       "type": "registry:block"
     },
@@ -4365,14 +4365,14 @@
       "description": "Basic textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-1.tsx",
+          "path": "registry/default/particles/p-textarea-1.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-1",
+      "name": "p-textarea-1",
       "registryDependencies": ["@coss/textarea"],
       "type": "registry:block"
     },
@@ -4381,14 +4381,14 @@
       "description": "Small textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-2.tsx",
+          "path": "registry/default/particles/p-textarea-2.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-2",
+      "name": "p-textarea-2",
       "registryDependencies": ["@coss/textarea"],
       "type": "registry:block"
     },
@@ -4397,14 +4397,14 @@
       "description": "Large textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-3.tsx",
+          "path": "registry/default/particles/p-textarea-3.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-3",
+      "name": "p-textarea-3",
       "registryDependencies": ["@coss/textarea"],
       "type": "registry:block"
     },
@@ -4413,14 +4413,14 @@
       "description": "Disabled textarea",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-4.tsx",
+          "path": "registry/default/particles/p-textarea-4.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-4",
+      "name": "p-textarea-4",
       "registryDependencies": ["@coss/textarea"],
       "type": "registry:block"
     },
@@ -4429,14 +4429,14 @@
       "description": "Textarea with label",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-5.tsx",
+          "path": "registry/default/particles/p-textarea-5.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-5",
+      "name": "p-textarea-5",
       "registryDependencies": ["@coss/textarea", "@coss/label"],
       "type": "registry:block"
     },
@@ -4445,14 +4445,14 @@
       "description": "Textarea in form",
       "files": [
         {
-          "path": "registry/default/particles/particle-tx-6.tsx",
+          "path": "registry/default/particles/p-textarea-6.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "particle-tx-6",
+      "name": "p-textarea-6",
       "registryDependencies": ["@coss/textarea", "@coss/form", "@coss/field"],
       "type": "registry:block"
     },
@@ -4461,11 +4461,11 @@
       "description": "Basic toast",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-1.tsx",
+          "path": "registry/default/particles/p-toast-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-1",
+      "name": "p-toast-1",
       "registryDependencies": ["@coss/toast"],
       "type": "registry:block"
     },
@@ -4474,11 +4474,11 @@
       "description": "Toast with status",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-2.tsx",
+          "path": "registry/default/particles/p-toast-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-2",
+      "name": "p-toast-2",
       "registryDependencies": ["@coss/toast"],
       "type": "registry:block"
     },
@@ -4487,11 +4487,11 @@
       "description": "Loading toast",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-3.tsx",
+          "path": "registry/default/particles/p-toast-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-3",
+      "name": "p-toast-3",
       "registryDependencies": ["@coss/toast"],
       "type": "registry:block"
     },
@@ -4500,11 +4500,11 @@
       "description": "Toast with action",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-4.tsx",
+          "path": "registry/default/particles/p-toast-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-4",
+      "name": "p-toast-4",
       "registryDependencies": ["@coss/toast", "@coss/button"],
       "type": "registry:block"
     },
@@ -4513,11 +4513,11 @@
       "description": "Promise toast",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-5.tsx",
+          "path": "registry/default/particles/p-toast-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-5",
+      "name": "p-toast-5",
       "registryDependencies": ["@coss/toast"],
       "type": "registry:block"
     },
@@ -4526,11 +4526,11 @@
       "description": "Toast with varying heights",
       "files": [
         {
-          "path": "registry/default/particles/particle-ts-6.tsx",
+          "path": "registry/default/particles/p-toast-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-ts-6",
+      "name": "p-toast-6",
       "registryDependencies": ["@coss/toast"],
       "type": "registry:block"
     },
@@ -4539,11 +4539,11 @@
       "description": "Basic toggle group",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-1.tsx",
+          "path": "registry/default/particles/p-toggle-group-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-1",
+      "name": "p-toggle-group-1",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4552,11 +4552,11 @@
       "description": "Small toggle group",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-2.tsx",
+          "path": "registry/default/particles/p-toggle-group-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-2",
+      "name": "p-toggle-group-2",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4565,11 +4565,11 @@
       "description": "Large toggle group",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-3.tsx",
+          "path": "registry/default/particles/p-toggle-group-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-3",
+      "name": "p-toggle-group-3",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4578,11 +4578,11 @@
       "description": "Toggle group with outline",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-4.tsx",
+          "path": "registry/default/particles/p-toggle-group-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-4",
+      "name": "p-toggle-group-4",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4591,11 +4591,11 @@
       "description": "Vertical toggle group with outline",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-5.tsx",
+          "path": "registry/default/particles/p-toggle-group-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-5",
+      "name": "p-toggle-group-5",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4604,11 +4604,11 @@
       "description": "Disabled toggle group",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-6.tsx",
+          "path": "registry/default/particles/p-toggle-group-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-6",
+      "name": "p-toggle-group-6",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4617,11 +4617,11 @@
       "description": "Toggle group with disabled item",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-7.tsx",
+          "path": "registry/default/particles/p-toggle-group-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-7",
+      "name": "p-toggle-group-7",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4630,11 +4630,11 @@
       "description": "Multiple selection toggle group",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-8.tsx",
+          "path": "registry/default/particles/p-toggle-group-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-8",
+      "name": "p-toggle-group-8",
       "registryDependencies": ["@coss/toggle-group"],
       "type": "registry:block"
     },
@@ -4643,11 +4643,11 @@
       "description": "Toggle group with tooltips",
       "files": [
         {
-          "path": "registry/default/particles/particle-tg-9.tsx",
+          "path": "registry/default/particles/p-toggle-group-9.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tg-9",
+      "name": "p-toggle-group-9",
       "registryDependencies": ["@coss/toggle-group", "@coss/tooltip"],
       "type": "registry:block"
     },
@@ -4656,11 +4656,11 @@
       "description": "Basic toggle",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-1.tsx",
+          "path": "registry/default/particles/p-toggle-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-1",
+      "name": "p-toggle-1",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4669,11 +4669,11 @@
       "description": "Toggle with outline",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-2.tsx",
+          "path": "registry/default/particles/p-toggle-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-2",
+      "name": "p-toggle-2",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4683,11 +4683,11 @@
       "description": "Toggle with icon",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-3.tsx",
+          "path": "registry/default/particles/p-toggle-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-3",
+      "name": "p-toggle-3",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4696,11 +4696,11 @@
       "description": "Small toggle",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-4.tsx",
+          "path": "registry/default/particles/p-toggle-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-4",
+      "name": "p-toggle-4",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4709,11 +4709,11 @@
       "description": "Large toggle",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-5.tsx",
+          "path": "registry/default/particles/p-toggle-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-5",
+      "name": "p-toggle-5",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4722,11 +4722,11 @@
       "description": "Disabled toggle",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-6.tsx",
+          "path": "registry/default/particles/p-toggle-6.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-6",
+      "name": "p-toggle-6",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4736,11 +4736,11 @@
       "description": "Toggle icon group",
       "files": [
         {
-          "path": "registry/default/particles/particle-to-7.tsx",
+          "path": "registry/default/particles/p-toggle-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-to-7",
+      "name": "p-toggle-7",
       "registryDependencies": ["@coss/toggle"],
       "type": "registry:block"
     },
@@ -4750,11 +4750,11 @@
       "description": "Toolbar with toggles, buttons, and select",
       "files": [
         {
-          "path": "registry/default/particles/particle-tr-1.tsx",
+          "path": "registry/default/particles/p-toolbar-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tr-1",
+      "name": "p-toolbar-1",
       "registryDependencies": [
         "@coss/toolbar",
         "@coss/toggle-group",
@@ -4769,11 +4769,11 @@
       "description": "Basic tooltip",
       "files": [
         {
-          "path": "registry/default/particles/particle-tt-1.tsx",
+          "path": "registry/default/particles/p-tooltip-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tt-1",
+      "name": "p-tooltip-1",
       "registryDependencies": ["@coss/tooltip", "@coss/button"],
       "type": "registry:block"
     },
@@ -4782,11 +4782,11 @@
       "description": "Grouped tooltips",
       "files": [
         {
-          "path": "registry/default/particles/particle-tt-2.tsx",
+          "path": "registry/default/particles/p-tooltip-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "particle-tt-2",
+      "name": "p-tooltip-2",
       "registryDependencies": ["@coss/tooltip", "@coss/button"],
       "type": "registry:block"
     },

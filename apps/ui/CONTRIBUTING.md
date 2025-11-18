@@ -15,83 +15,31 @@ Particles are composite components that use or combine multiple UI components. T
 
 ### Naming Convention
 
-Particles use the format: `particle-{category_shortcode}-{N}.tsx`
+Particles use the format: `p-{component}-{N}.tsx`
 
-- **category_shortcode**: Two-letter key for the component category (see Shortcode Map below)
+- **component**: The component name (e.g., `button`, `input`, `alert-dialog`, `input-group`)
 - **N**: Progressive number within the category (e.g., `1`, `2`, `3`)
 
 **Examples:**
-- `particle-bt-1.tsx` (first button particle)
-- `particle-in-2.tsx` (second input particle)
-- `particle-pg-1.tsx` (first pagination particle)
+- `p-button-1.tsx` (first button particle)
+- `p-input-2.tsx` (second input particle)
+- `p-pagination-1.tsx` (first pagination particle)
+- `p-alert-dialog-1.tsx` (first alert dialog particle)
+- `p-input-group-3.tsx` (third input group particle)
 
-### Shortcode Map
-
-The following shortcode map is automatically generated from `registry-particles.ts`. Use these shortcodes when naming your particle files:
-
-```json
-{
-  "accordion": "ac",
-  "alert": "al",
-  "alert dialog": "ad",
-  "autocomplete": "au",
-  "avatar": "av",
-  "badge": "bg",
-  "breadcrumb": "bc",
-  "button": "bt",
-  "card": "cd",
-  "checkbox": "cb",
-  "checkbox group": "cg",
-  "collapsible": "cl",
-  "combobox": "cx",
-  "dialog": "dg",
-  "empty state": "em",
-  "field": "fd",
-  "fieldset": "fs",
-  "form": "fm",
-  "frame": "fr",
-  "group": "gp",
-  "input": "in",
-  "input group": "ig",
-  "kbd": "kb",
-  "menu": "mn",
-  "meter": "mt",
-  "number field": "nf",
-  "pagination": "pg",
-  "popover": "po",
-  "preview card": "pc",
-  "progress": "pr",
-  "radio group": "rg",
-  "scroll area": "sa",
-  "select": "sl",
-  "separator": "sp",
-  "sheet": "sh",
-  "skeleton": "sk",
-  "slider": "sd",
-  "spinner": "sn",
-  "switch": "sw",
-  "table": "ta",
-  "tabs": "tb",
-  "textarea": "tx",
-  "toast": "ts",
-  "toggle": "to",
-  "toggle group": "tg",
-  "toolbar": "tr",
-  "tooltip": "tt"
-}
-```
+**Note:** Component names use hyphens for multi-word components (e.g., `alert-dialog`, `input-group`, `number-field`).
 
 ### Step 1: Create the Particle Component
 
 1. Create a new file in `registry/default/particles/` with the correct naming:
    ```bash
-   # Example: particle-bt-8.tsx (8th button particle)
-   touch registry/default/particles/particle-bt-8.tsx
+   # Example: p-button-8.tsx (8th button particle)
+   touch registry/default/particles/p-button-8.tsx
    ```
 
 2. Export a component named `Particle`:
    ```tsx
-   // registry/default/particles/particle-bt-8.tsx
+   // registry/default/particles/p-button-8.tsx
    import { Button } from "@/registry/default/ui/button"
 
    export default function Particle() {
@@ -119,21 +67,21 @@ Add your particle to `registry/registry-particles.ts`:
 {
   categories: categories("button"),
   description: "Button group with cancel and save actions",
-  files: [{ path: "particles/particle-bt-8.tsx", type: "registry:block" }],
-  name: "particle-bt-8",
+  files: [{ path: "particles/p-button-8.tsx", type: "registry:block" }],
+  name: "p-button-8",
   registryDependencies: ["@coss/button"],
   type: "registry:block",
 }
 ```
 
 **Important fields:**
-- `name`: The particle id (e.g., `particle-bt-8`)
+- `name`: The particle id (e.g., `p-button-8`)
 - `description`: Concise but descriptive (displays on particles page)
 - `type`: Always `"registry:block"`
 - `registryDependencies`: Array of UI components used (e.g., `["@coss/button"]`, `["@coss/input", "@coss/label"]`)
 - `dependencies`: External npm package dependencies if needed (e.g., `["lucide-react"]`)
 - `files`: Array with one file object:
-  - `path`: `"particles/particle-bt-8.tsx"`
+  - `path`: `"particles/p-button-8.tsx"`
   - `type`: `"registry:block"`
 - `categories`: Array of categories using the `categories()` helper function (e.g., `categories("button")`, `categories("input", "label")`)
   - **Important:** All valid category names are typed in `registry-categories.ts`. The `categories()` helper function ensures type safety and will show TypeScript errors if you use an invalid category name.
@@ -166,14 +114,14 @@ If you want to showcase the particle in documentation:
 2. Add your particle with `<ComponentPreview />`:
 
 ```mdx
-<ComponentPreview name="particle-bt-8" />
+<ComponentPreview name="p-button-8" />
 ```
 
 You can also pass a `className` prop to override the meta className:
 
 ```mdx
 <ComponentPreview
-  name="particle-bt-8"
+  name="p-button-8"
   className="[&_.preview>*]:w-full [&_.preview>*]:max-w-80"
 />
 ```
@@ -225,7 +173,7 @@ The `registry:build` command will:
 ### Numbering
 - Particles are numbered sequentially within each category
 - If you're adding a new particle to a category, check the highest number and increment
-- For example, if `particle-bt-26.tsx` exists, the next button particle should be `particle-bt-27.tsx`
+- For example, if `p-button-26.tsx` exists, the next button particle should be `p-button-27.tsx`
 
 ## Getting Help
 

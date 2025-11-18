@@ -7,8 +7,8 @@ This guide explains the end‑to‑end steps for adding a new component under `@
 ## 1) Create the component file
 
 - Location: `apps/ui/registry/default/particles/`
-- Naming: `particle-{category_shortcode}-{N}.tsx`
-  - **category_shortcode**: two-letter key for the component category (see Shortcode Map below)
+- Naming: `p-{component}-{N}.tsx`
+  - **component**: The component name (e.g., `button`, `input`, `alert-dialog`, `input-group`)
   - **N**: progressive number within the category (e.g. `1`, `2`, `3`)
 - Export as a functional component:
 
@@ -19,73 +19,24 @@ export default function Particle() {
 ```
 
 **Important notes:**
-- Always name the default export function `Particle` (not `ParticleBt8` or similar)
+- Always name the default export function `Particle` (not `ParticleButton8` or similar)
 - Use Base UI primitives from `@/registry/default/ui/` (e.g., `input`, `button`, `label`, etc.)
 - If a particle uses multiple UI primitives, choose the primary category for the file name
 - Keep files minimal and focused
+- Component names use hyphens for multi-word components (e.g., `alert-dialog`, `input-group`, `number-field`)
 
-### Shortcode Map
-
-The following shortcode map is automatically generated from `registry-particles.ts`:
-
-```json
-{
-  "accordion": "ac",
-  "alert": "al",
-  "alert dialog": "ad",
-  "autocomplete": "au",
-  "avatar": "av",
-  "badge": "bg",
-  "breadcrumb": "bc",
-  "button": "bt",
-  "card": "cd",
-  "checkbox": "cb",
-  "checkbox group": "cg",
-  "collapsible": "cl",
-  "combobox": "cx",
-  "dialog": "dg",
-  "empty state": "em",
-  "field": "fd",
-  "fieldset": "fs",
-  "form": "fm",
-  "frame": "fr",
-  "group": "gp",
-  "input": "in",
-  "input group": "ig",
-  "kbd": "kb",
-  "menu": "mn",
-  "meter": "mt",
-  "number field": "nf",
-  "pagination": "pg",
-  "popover": "po",
-  "preview card": "pc",
-  "progress": "pr",
-  "radio group": "rg",
-  "scroll area": "sa",
-  "select": "sl",
-  "separator": "sp",
-  "sheet": "sh",
-  "skeleton": "sk",
-  "slider": "sd",
-  "spinner": "sn",
-  "switch": "sw",
-  "table": "ta",
-  "tabs": "tb",
-  "textarea": "tx",
-  "toast": "ts",
-  "toggle": "to",
-  "toggle group": "tg",
-  "toolbar": "tr",
-  "tooltip": "tt"
-}
-```
+**Examples:**
+- `p-button-1.tsx` (first button particle)
+- `p-input-2.tsx` (second input particle)
+- `p-alert-dialog-1.tsx` (first alert dialog particle)
+- `p-input-group-3.tsx` (third input group particle)
 
 ## 2) Add a registry item
 
 Edit: `apps/ui/registry/registry-particles.ts`
 
 For each new particle, add an object with the following fields:
-- **name**: the particle id (e.g. `particle-in-6`).
+- **name**: the particle id (e.g. `p-input-6`).
 - **description**: concise, ≤ 15 words, clear to end users.
   - Example: `"Input with helper label"`.
 - **type**: `"registry:block"`.
@@ -94,7 +45,7 @@ For each new particle, add an object with the following fields:
 - **dependencies**: npm package dependencies if needed (often empty for simple particles).
   - Example: `["lucide-react"]`
 - **files**: include exactly one file pointing to the particle source:
-  - `path`: `"particles/particle-in-6.tsx"`
+  - `path`: `"particles/p-input-6.tsx"`
   - `type`: `"registry:block"`
 - **categories**: use the `categories()` helper function with category names from `registry-categories.ts`.
   - Example: `categories("input", "label")`
@@ -113,11 +64,11 @@ Example entry:
 {
   categories: categories("input", "label"),
   description: "Input with helper label",
-  files: [{ path: "particles/particle-in-6.tsx", type: "registry:block" }],
+  files: [{ path: "particles/p-input-6.tsx", type: "registry:block" }],
   meta: {
     className: "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
   },
-  name: "particle-in-6",
+  name: "p-input-6",
   registryDependencies: ["@coss/input", "@coss/label"],
   type: "registry:block",
 }
@@ -143,14 +94,14 @@ If you want to showcase the particle in documentation:
 2. Add your particle with `<ComponentPreview />`:
 
 ```mdx
-<ComponentPreview name="particle-bt-8" />
+<ComponentPreview name="p-button-8" />
 ```
 
 You can also pass a `className` prop to override the meta className:
 
 ```mdx
 <ComponentPreview
-  name="particle-bt-8"
+  name="p-button-8"
   className="[&_.preview>*]:w-full [&_.preview>*]:max-w-80"
 />
 ```
@@ -221,12 +172,12 @@ async, copy, disabled, error, file, filter, info, loading, multiselect, password
 ### Numbering
 - Particles are numbered sequentially within each category
 - If you're adding a new particle to a category, check the highest number and increment
-- For example, if `particle-bt-26.tsx` exists, the next button particle should be `particle-bt-27.tsx`
+- For example, if `p-button-26.tsx` exists, the next button particle should be `p-button-27.tsx`
 
 ## Quick checklist
 
-- Create `registry/default/particles/particle-{category_shortcode}-{N}.tsx` with `export default function Particle()`.
+- Create `registry/default/particles/p-{component}-{N}.tsx` with `export default function Particle()`.
 - Add an item to `registry/registry-particles.ts` with `name`, `description`, `type`, `registryDependencies`, optional `dependencies`, `files`, `categories` (using `categories()` helper), and optional `meta.className`.
-- (Optional) Add to documentation MDX file with `<ComponentPreview name="particle-{category_shortcode}-{N}" />`
+- (Optional) Add to documentation MDX file with `<ComponentPreview name="p-{component}-{N}" />`
 - Format code: `bun run format:all`
 - Run `bun run registry:build` from `apps/ui`

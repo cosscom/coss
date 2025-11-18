@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["badge", "success"],
+  "description": "Success badge",
+  "files": [
+    {
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function Particle() {\n  return <Badge variant=\"success\">Badge</Badge>;\n}\n",
+      "path": "registry/default/particles/p-badge-6.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-badge-6",
+  "registryDependencies": ["@coss/badge"],
+  "type": "registry:block"
+}

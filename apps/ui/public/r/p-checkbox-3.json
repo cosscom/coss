@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["checkbox"],
+  "description": "Checkbox with description",
+  "files": [
+    {
+      "content": "import * as React from \"react\";\n\nimport { Checkbox } from \"@/registry/default/ui/checkbox\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = React.useId();\n\n  return (\n    <div className=\"flex items-start gap-2\">\n      <Checkbox defaultChecked id={id} />\n      <div className=\"flex flex-col gap-1\">\n        <Label htmlFor={id}>Accept terms and conditions</Label>\n        <p className=\"text-muted-foreground text-xs\">\n          By clicking this checkbox, you agree to the terms and conditions.\n        </p>\n      </div>\n    </div>\n  );\n}\n",
+      "path": "registry/default/particles/p-checkbox-3.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-checkbox-3",
+  "registryDependencies": ["@coss/checkbox", "@coss/label"],
+  "type": "registry:block"
+}

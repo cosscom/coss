@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["alert", "success"],
+  "dependencies": ["lucide-react"],
+  "description": "Success alert",
+  "files": [
+    {
+      "content": "import { CircleCheckIcon } from \"lucide-react\";\n\nimport {\n  Alert,\n  AlertDescription,\n  AlertTitle,\n} from \"@/registry/default/ui/alert\";\n\nexport default function Particle() {\n  return (\n    <Alert variant=\"success\">\n      <CircleCheckIcon />\n      <AlertTitle>Heads up!</AlertTitle>\n      <AlertDescription>\n        Describe what can be done about it here.\n      </AlertDescription>\n    </Alert>\n  );\n}\n",
+      "path": "registry/default/particles/p-alert-5.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full"
+  },
+  "name": "p-alert-5",
+  "registryDependencies": ["@coss/alert"],
+  "type": "registry:block"
+}

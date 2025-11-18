@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "categories": ["group"],
+  "description": "Group with popup",
+  "files": [
+    {
+      "content": "import { ChevronDownIcon, GitForkIcon } from \"lucide-react\";\n\nimport { Badge } from \"@/registry/default/ui/badge\";\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\nimport {\n  Popover,\n  PopoverDescription,\n  PopoverPopup,\n  PopoverTitle,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Repository actions\">\n      <Button variant=\"outline\">\n        <GitForkIcon />\n        Fork\n        <Badge variant=\"secondary\">48</Badge>\n      </Button>\n      <GroupSeparator />\n      <Popover>\n        <PopoverTrigger\n          render={\n            <Button aria-label=\"Send options\" size=\"icon\" variant=\"outline\" />\n          }\n        >\n          <ChevronDownIcon />\n        </PopoverTrigger>\n        <PopoverPopup align=\"end\" className=\"w-64\">\n          <PopoverTitle className=\"text-base\">Existing forks</PopoverTitle>\n          <PopoverDescription>\n            You don't have any forks of this repository.\n          </PopoverDescription>\n        </PopoverPopup>\n      </Popover>\n    </Group>\n  );\n}\n",
+      "path": "registry/default/particles/p-group-11.tsx",
+      "type": "registry:block"
+    }
+  ],
+  "name": "p-group-11",
+  "registryDependencies": ["@coss/group"],
+  "type": "registry:block"
+}
