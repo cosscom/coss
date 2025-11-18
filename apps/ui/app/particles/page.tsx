@@ -6,6 +6,8 @@ import {
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { isValidRegistryCategory } from "@/registry/registry-categories";
+
 import { ParticlesDisplay } from "./particles-display";
 import SearchContainer from "./search-container";
 
@@ -14,7 +16,7 @@ const description =
 
 export const metadata: Metadata = {
   description,
-  title: "Search components",
+  title: "Browse Particles - coss ui",
 };
 
 async function ParticlesDisplayServer({
@@ -23,11 +25,31 @@ async function ParticlesDisplayServer({
   searchParams: Promise<{ tags?: string }>;
 }) {
   const params = await searchParams;
-  const selectedCategories = params.tags?.split(",").filter(Boolean) || [];
+  const rawCategories = params.tags?.split(",").filter(Boolean) || [];
 
-  if (selectedCategories.length === 0) return null;
+  // Separate valid and invalid categories
+  const validCategories = rawCategories.filter((category) =>
+    isValidRegistryCategory(category),
+  );
+  const invalidCategories = rawCategories.filter(
+    (category) => !isValidRegistryCategory(category),
+  );
 
-  return <ParticlesDisplay selectedCategories={selectedCategories} />;
+  // If there are invalid categories, show "no components found" message
+  if (invalidCategories.length > 0) {
+    return (
+      <div className="text-center">
+        <p className="text-muted-foreground">
+          No particles found for the selected filters
+        </p>
+      </div>
+    );
+  }
+
+  // If no valid categories, don't render anything
+  if (validCategories.length === 0) return null;
+
+  return <ParticlesDisplay selectedCategories={validCategories} />;
 }
 
 export default function Page({

@@ -117,3 +117,10 @@ export function getCategorySortOrder(category: string): number {
   const index = categoryDisplayOrder.indexOf(category as RegistryCategory);
   return index === -1 ? Number.POSITIVE_INFINITY : index;
 }
+
+// Helper function to validate if a string is a valid RegistryCategory
+export function isValidRegistryCategory(
+  category: string,
+): category is RegistryCategory {
+  return registryCategories.includes(category as RegistryCategory);
+}
