@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import { Index } from "@/registry/__index__";
 import { Skeleton } from "@/registry/default/ui/skeleton";
@@ -29,24 +29,27 @@ function ParticleCardSkeleton({ className }: { className?: string }) {
   );
 }
 
-export async function ParticlesDisplay({
-  selectedCategories,
-}: {
-  selectedCategories: string[];
-}) {
-  const particles = Object.values(Index).filter(
+// Cache the particles array to avoid recomputing on every render
+const getParticles = cache(() => {
+  return Object.values(Index).filter(
     (item) => item.type === "registry:block",
   ) as Array<{
     name: string;
     categories?: RegistryCategory[];
     meta?: { className?: string };
   }>;
+});
+
+export async function ParticlesDisplay({
+  selectedCategories,
+}: {
+  selectedCategories: RegistryCategory[];
+}) {
+  const particles = getParticles();
 
   const filteredParticles = particles.filter((particle) => {
     const categories = particle.categories ?? [];
-    return selectedCategories.every((value) =>
-      categories.includes(value as RegistryCategory),
-    );
+    return selectedCategories.every((value) => categories.includes(value));
   });
 
   if (filteredParticles.length === 0) {
