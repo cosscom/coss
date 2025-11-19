@@ -350,3 +350,38 @@
     }
   }
 }
+
+/* Ref: https://github.com/rudrodip/theme-toggle-effect */
+@supports (view-transition-name: none) {
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: View Transition API pseudo-element */
+  ::view-transition-group(root) {
+    animation-timing-function: var(--expo-out);
+  }
+
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: View Transition API pseudo-element */
+  ::view-transition-new(root) {
+    mask:
+      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><filter id="blur"><feGaussianBlur stdDeviation="2"/></filter></defs><circle cx="0" cy="0" r="18" fill="white" filter="url(%23blur)"/></svg>')
+      top left / 0 no-repeat;
+    mask-origin: content-box;
+    animation: scale 1s;
+    animation-fill-mode: both;
+    transform-origin: top left;
+  }
+
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: View Transition API pseudo-element */
+  ::view-transition-old(root),
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: View Transition API pseudo-element */
+    .dark::view-transition-old(root) {
+    animation: scale 1s;
+    animation-fill-mode: both;
+    transform-origin: top left;
+    z-index: -1;
+  }
+
+  @keyframes scale {
+    to {
+      mask-size: 350vmax;
+    }
+  }
+}

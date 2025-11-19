@@ -9,9 +9,18 @@ import * as React from "react";
 export function ModeSwitcher() {
   const { setTheme, resolvedTheme } = useTheme();
 
-  const toggleTheme = React.useCallback(() => {
+  const switchTheme = React.useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   }, [resolvedTheme, setTheme]);
+
+  // Ref: https://github.com/rudrodip/theme-toggle-effect
+  const toggleTheme = React.useCallback(() => {
+    if (!document.startViewTransition) {
+      switchTheme();
+    }
+
+    document.startViewTransition(switchTheme);
+  }, [switchTheme]);
 
   return (
     <Button
