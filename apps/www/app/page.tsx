@@ -64,7 +64,7 @@ export default async function Page() {
         </p>
         <p className="leading-relaxed [&:not(:first-child)]:mt-6">
           for developers we are building the coss stack, a one line{" "}
-          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
+          <code className="before:-rotate-1 before:-z-10 relative z-10 inline-block px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
             npm install @coss
           </code>{" "}
           package that includes everything you need to build your application,
