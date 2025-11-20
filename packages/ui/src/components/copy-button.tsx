@@ -8,10 +8,6 @@ import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type * as React from "react";
 
-export function copyToClipboard(value: string) {
-  navigator.clipboard.writeText(value);
-}
-
 export function CopyButton({
   value,
   className,
