@@ -17,6 +17,7 @@ export function ModeSwitcher() {
   const toggleTheme = React.useCallback(() => {
     if (!document.startViewTransition) {
       switchTheme();
+      return;
     }
 
     document.startViewTransition(switchTheme);
