@@ -105,6 +105,7 @@
         }
       ],
       "name": "alert-dialog",
+      "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:ui"
     },
     {
@@ -513,7 +514,7 @@
         }
       ],
       "name": "sheet",
-      "registryDependencies": ["@coss/dialog"],
+      "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:ui"
     },
     {
@@ -852,6 +853,19 @@
         }
       ],
       "name": "p-alert-dialog-1",
+      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["alert dialog", "dialog"],
+      "description": "Alert dialog with bare footer",
+      "files": [
+        {
+          "path": "registry/default/particles/p-alert-dialog-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-alert-dialog-2",
       "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
       "type": "registry:block"
     },
@@ -2082,6 +2096,25 @@
       "type": "registry:block"
     },
     {
+      "categories": ["dialog"],
+      "description": "Dialog with bare footer",
+      "files": [
+        {
+          "path": "registry/default/particles/p-dialog-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-dialog-6",
+      "registryDependencies": [
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
       "categories": ["dialog", "menu"],
       "description": "Dialog opened from menu",
       "files": [
@@ -2130,6 +2163,19 @@
         "@coss/field",
         "@coss/textarea"
       ],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["dialog"],
+      "description": "Dialog with long content",
+      "files": [
+        {
+          "path": "registry/default/particles/p-dialog-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-dialog-5",
+      "registryDependencies": ["@coss/dialog", "@coss/button"],
       "type": "registry:block"
     },
     {

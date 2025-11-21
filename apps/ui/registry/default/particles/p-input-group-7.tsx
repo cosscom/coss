@@ -23,8 +23,9 @@ export default function Particle() {
         type="password"
       />
       <InputGroupAddon align="inline-end">
-        <Popover openOnHover>
+        <Popover>
           <PopoverTrigger
+            openOnHover
             render={
               <Button
                 aria-label="Password requirements"

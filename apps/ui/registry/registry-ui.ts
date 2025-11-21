@@ -105,6 +105,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "alert-dialog",
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -513,7 +514,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "sheet",
-    registryDependencies: ["@coss/dialog"],
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   {

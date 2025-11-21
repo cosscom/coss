@@ -7,7 +7,7 @@ import {
 
 export default function Particle() {
   return (
-    <Accordion className="w-full" multiple={true}>
+    <Accordion className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger>What is Base UI?</AccordionTrigger>
         <AccordionPanel>

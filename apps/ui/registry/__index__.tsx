@@ -76,7 +76,7 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "alert-dialog",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   autocomplete: {
@@ -962,6 +962,32 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "p-alert-dialog-1",
+    registryDependencies: ["@coss/alert-dialog", "@coss/button"],
+    type: "registry:block",
+  },
+  "p-alert-dialog-2": {
+    categories: ["alert dialog", "dialog"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/p-alert-dialog-2.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Alert dialog with bare footer",
+    files: [
+      {
+        path: "registry/default/particles/p-alert-dialog-2.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-alert-dialog-2",
     registryDependencies: ["@coss/alert-dialog", "@coss/button"],
     type: "registry:block",
   },
@@ -3215,6 +3241,60 @@ export const Index: Record<string, any> = {
       "@coss/form",
       "@coss/field",
       "@coss/textarea",
+    ],
+    type: "registry:block",
+  },
+  "p-dialog-5": {
+    categories: ["dialog"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-dialog-5.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Dialog with long content",
+    files: [
+      {
+        path: "registry/default/particles/p-dialog-5.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-dialog-5",
+    registryDependencies: ["@coss/dialog", "@coss/button"],
+    type: "registry:block",
+  },
+  "p-dialog-6": {
+    categories: ["dialog"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-dialog-6.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Dialog with bare footer",
+    files: [
+      {
+        path: "registry/default/particles/p-dialog-6.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-dialog-6",
+    registryDependencies: [
+      "@coss/dialog",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/input",
     ],
     type: "registry:block",
   },
@@ -8013,7 +8093,7 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "sheet",
-    registryDependencies: ["@coss/dialog"],
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   skeleton: {

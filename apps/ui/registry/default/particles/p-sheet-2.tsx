@@ -8,6 +8,7 @@ import {
   SheetDescription,
   SheetFooter,
   SheetHeader,
+  SheetPanel,
   SheetPopup,
   SheetTitle,
   SheetTrigger,
@@ -20,7 +21,7 @@ export default function Particle() {
         Open Sheet
       </SheetTrigger>
       <SheetPopup inset>
-        <Form className="flex-1">
+        <Form className="h-full gap-0">
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>
@@ -28,7 +29,7 @@ export default function Particle() {
               done.
             </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col gap-4 px-4">
+          <SheetPanel className="grid gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
               <Input defaultValue="Margaret Welsh" type="text" />
@@ -37,7 +38,7 @@ export default function Particle() {
               <FieldLabel>Username</FieldLabel>
               <Input defaultValue="@maggie.welsh" type="text" />
             </Field>
-          </div>
+          </SheetPanel>
           <SheetFooter>
             <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
             <Button type="submit">Save</Button>

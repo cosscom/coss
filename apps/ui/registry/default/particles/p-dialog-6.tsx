@@ -39,7 +39,7 @@ export default function Particle() {
               <Input defaultValue="@maggie.welsh" type="text" />
             </Field>
           </DialogPanel>
-          <DialogFooter>
+          <DialogFooter variant="bare">
             <DialogClose render={<Button variant="ghost" />}>
               Cancel
             </DialogClose>

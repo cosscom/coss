@@ -153,6 +153,14 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("alert dialog", "dialog"),
+    description: "Alert dialog with bare footer",
+    files: [{ path: "particles/p-alert-dialog-2.tsx", type: "registry:block" }],
+    name: "p-alert-dialog-2",
+    registryDependencies: ["@coss/alert-dialog", "@coss/button"],
+    type: "registry:block",
+  },
+  {
     categories: categories("autocomplete", "input"),
     description: "Basic autocomplete",
     files: [{ path: "particles/p-autocomplete-1.tsx", type: "registry:block" }],
@@ -1019,6 +1027,20 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("dialog"),
+    description: "Dialog with bare footer",
+    files: [{ path: "particles/p-dialog-6.tsx", type: "registry:block" }],
+    name: "p-dialog-6",
+    registryDependencies: [
+      "@coss/dialog",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("dialog", "menu"),
     description: "Dialog opened from menu",
     files: [{ path: "particles/p-dialog-2.tsx", type: "registry:block" }],
@@ -1052,6 +1074,14 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/textarea",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("dialog"),
+    description: "Dialog with long content",
+    files: [{ path: "particles/p-dialog-5.tsx", type: "registry:block" }],
+    name: "p-dialog-5",
+    registryDependencies: ["@coss/dialog", "@coss/button"],
     type: "registry:block",
   },
   {
