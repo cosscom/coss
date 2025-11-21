@@ -16,7 +16,7 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "clean:all": "/bin/bash scripts/clean",
+    "clean:all": "/bin/bash scripts/clean.sh",
     "dev": "turbo run dev",
     "format": "biome format --write .",
     "format:all": "biome check --write --unsafe --no-errors-on-unmatched",
