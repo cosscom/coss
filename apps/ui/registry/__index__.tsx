@@ -5895,6 +5895,30 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/popover", "@coss/button"],
     type: "registry:block",
   },
+  "p-popover-3": {
+    categories: ["popover", "button", "avatar"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-popover-3.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Animated popovers",
+    files: [
+      {
+        path: "registry/default/particles/p-popover-3.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-popover-3",
+    registryDependencies: ["@coss/popover", "@coss/button", "@coss/avatar"],
+    type: "registry:block",
+  },
   "p-preview-card-1": {
     categories: ["preview card"],
     component: React.lazy(async () => {
@@ -7878,6 +7902,54 @@ export const Index: Record<string, any> = {
     meta: undefined,
     name: "p-tooltip-2",
     registryDependencies: ["@coss/tooltip", "@coss/button"],
+    type: "registry:block",
+  },
+  "p-tooltip-3": {
+    categories: ["tooltip"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tooltip-3.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Toggle group animated tooltip",
+    files: [
+      {
+        path: "registry/default/particles/p-tooltip-3.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-tooltip-3",
+    registryDependencies: ["@coss/tooltip", "@coss/toggle-group"],
+    type: "registry:block",
+  },
+  "p-tooltip-4": {
+    categories: ["tooltip"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tooltip-4.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Vertical group with animated tooltip",
+    files: [
+      {
+        path: "registry/default/particles/p-tooltip-4.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-tooltip-4",
+    registryDependencies: ["@coss/tooltip", "@coss/button", "@coss/group"],
     type: "registry:block",
   },
   pagination: {

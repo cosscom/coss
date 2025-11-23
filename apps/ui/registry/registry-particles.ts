@@ -2190,6 +2190,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("popover", "button", "avatar"),
+    dependencies: ["lucide-react"],
+    description: "Animated popovers",
+    files: [{ path: "particles/p-popover-3.tsx", type: "registry:block" }],
+    name: "p-popover-3",
+    registryDependencies: ["@coss/popover", "@coss/button", "@coss/avatar"],
+    type: "registry:block",
+  },
+  {
     categories: categories("preview card"),
     dependencies: ["lucide-react"],
     description: "Preview card with popup",
@@ -2943,6 +2952,22 @@ export const particles: ParticleItem[] = [
     files: [{ path: "particles/p-tooltip-2.tsx", type: "registry:block" }],
     name: "p-tooltip-2",
     registryDependencies: ["@coss/tooltip", "@coss/button"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("tooltip"),
+    description: "Toggle group animated tooltip",
+    files: [{ path: "particles/p-tooltip-3.tsx", type: "registry:block" }],
+    name: "p-tooltip-3",
+    registryDependencies: ["@coss/tooltip", "@coss/toggle-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("tooltip"),
+    description: "Vertical group with animated tooltip",
+    files: [{ path: "particles/p-tooltip-4.tsx", type: "registry:block" }],
+    name: "p-tooltip-4",
+    registryDependencies: ["@coss/tooltip", "@coss/button", "@coss/group"],
     type: "registry:block",
   },
 ];
