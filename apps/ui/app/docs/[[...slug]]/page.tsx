@@ -70,18 +70,21 @@ export default async function Page(props: {
           <div className="mx-auto w-full max-w-3xl">
             <div className="flex min-w-0 flex-1 flex-col gap-8">
               <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2">
-                  <h1 className="scroll-m-20 font-heading text-3xl xl:text-4xl">
-                    {doc.title}
-                  </h1>
-                  {doc.description && (
-                    <p className="text-muted-foreground sm:text-lg">
-                      {doc.description}
-                    </p>
-                  )}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <h1 className="scroll-m-20 font-heading text-3xl xl:text-4xl">
+                      {doc.title}
+                    </h1>
+                    {doc.description && (
+                      <p className="text-muted-foreground sm:text-lg">
+                        {doc.description}
+                      </p>
+                    )}
+                  </div>
+                  <DocsCopyPage page={rawContent} />
                 </div>
-                <div className="flex items-center space-x-2 pt-4">
-                  {links?.doc && (
+                {links?.doc && (
+                  <div className="flex items-center space-x-2 pt-4">
                     <Button
                       render={
                         <Link href={links.doc} rel="noreferrer" target="_blank">
@@ -95,9 +98,8 @@ export default async function Page(props: {
                       size="xs"
                       variant="outline"
                     />
-                  )}
-                  <DocsCopyPage page={rawContent} />
-                </div>
+                  </div>
+                )}
               </div>
               <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
                 <MDX components={mdxComponents} />
