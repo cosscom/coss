@@ -2794,6 +2794,22 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("toast"),
+    description: "Anchored toast with tooltip style",
+    files: [{ path: "particles/p-toast-7.tsx", type: "registry:block" }],
+    name: "p-toast-7",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toast"),
+    description: "Anchored toast",
+    files: [{ path: "particles/p-toast-8.tsx", type: "registry:block" }],
+    name: "p-toast-8",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
     categories: categories("toggle", "toggle group"),
     description: "Basic toggle group",
     files: [{ path: "particles/p-toggle-group-1.tsx", type: "registry:block" }],

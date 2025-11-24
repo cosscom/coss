@@ -7424,6 +7424,54 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/toast"],
     type: "registry:block",
   },
+  "p-toast-7": {
+    categories: ["toast"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-7.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Anchored toast with tooltip style",
+    files: [
+      {
+        path: "registry/default/particles/p-toast-7.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-toast-7",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  "p-toast-8": {
+    categories: ["toast"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-8.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Anchored toast",
+    files: [
+      {
+        path: "registry/default/particles/p-toast-8.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-toast-8",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/spinner"],
+    type: "registry:block",
+  },
   "p-toggle-1": {
     categories: ["toggle"],
     component: React.lazy(async () => {
