@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "files": [
     {
-      "content": "import { ArrowLeftIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\n\nexport default function Component() {\n  return (\n    <Button className=\"group\" variant=\"ghost\">\n      <ArrowLeftIcon\n        className=\"-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5\"\n        size={16}\n        aria-hidden=\"true\"\n      />\n      Button\n    </Button>\n  )\n}\n",
+      "content": "import { ArrowLeftIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Component() {\n  return (\n    <Button className=\"group\" variant=\"ghost\">\n      <ArrowLeftIcon\n        aria-hidden=\"true\"\n        className=\"-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform\"\n        size={16}\n      />\n      Button\n    </Button>\n  );\n}\n",
       "path": "registry/default/components/comp-85.tsx",
       "type": "registry:component"
     }

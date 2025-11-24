@@ -14,7 +14,7 @@ export default function Component() {
         style={
           {
             "--primary": "var(--color-emerald-500)",
-          } as React.CSSProperties
+          } as React.CSSProperties as any
         }
       />
       <Label

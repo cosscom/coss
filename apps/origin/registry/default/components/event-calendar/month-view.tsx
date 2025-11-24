@@ -234,7 +234,7 @@ export function MonthView({
                             style={
                               {
                                 "--event-height": `${EventHeight}px`,
-                              } as React.CSSProperties
+                              } as React.CSSProperties as any
                             }
                           >
                             <div className="space-y-2">

@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "files": [
     {
-      "content": "import { StarIcon } from \"lucide-react\"\n\nimport { Button } from \"@/registry/default/ui/button\"\n\nexport default function Component() {\n  return (\n    <Button>\n      <StarIcon className=\"-ms-1 opacity-60\" size={16} aria-hidden=\"true\" />\n      <span className=\"flex items-baseline gap-2\">\n        Star\n        <span className=\"text-xs text-primary-foreground/60\">729</span>\n      </span>\n    </Button>\n  )\n}\n",
+      "content": "import { StarIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Component() {\n  return (\n    <Button>\n      <StarIcon aria-hidden=\"true\" className=\"-ms-1 opacity-60\" size={16} />\n      <span className=\"flex items-baseline gap-2\">\n        Star\n        <span className=\"text-primary-foreground/60 text-xs\">729</span>\n      </span>\n    </Button>\n  );\n}\n",
       "path": "registry/default/components/comp-118.tsx",
       "type": "registry:component"
     }
