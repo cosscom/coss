@@ -38,6 +38,7 @@
     "@coss/select",
     "@coss/separator",
     "@coss/sheet",
+    "@coss/sidebar",
     "@coss/skeleton",
     "@coss/slider",
     "@coss/spinner",
