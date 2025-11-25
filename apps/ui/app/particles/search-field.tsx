@@ -192,6 +192,7 @@ export default function SearchField({
                 })}
                 <ComboboxInput
                   aria-label="Search components"
+                  autoFocus
                   className="ps-0"
                   showClear
                   size="lg"
