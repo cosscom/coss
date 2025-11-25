@@ -1,15 +1,19 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "categories": ["toggle"],
+  "name": "p-toggle-4",
+  "type": "registry:block",
   "description": "Small toggle",
+  "registryDependencies": [
+    "@coss/toggle"
+  ],
   "files": [
     {
-      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle size=\"sm\" variant=\"outline\">\n      Small\n    </Toggle>\n  );\n}\n",
       "path": "registry/default/particles/p-toggle-4.tsx",
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle size=\"sm\" variant=\"outline\">\n      Small\n    </Toggle>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
-  "name": "p-toggle-4",
-  "registryDependencies": ["@coss/toggle"],
-  "type": "registry:block"
+  "categories": [
+    "toggle"
+  ]
 }

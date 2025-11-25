@@ -1,5 +1,6 @@
-import { cn } from "@coss/ui/lib/utils";
 import type * as React from "react";
+
+import { cn } from "@coss/ui/lib/utils";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (

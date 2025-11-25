@@ -57,7 +57,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/accordion.tsx",
@@ -98,7 +100,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/alert-dialog.tsx",
@@ -106,11 +110,15 @@
         }
       ],
       "name": "alert-dialog",
-      "registryDependencies": ["@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/scroll-area"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/autocomplete.tsx",
@@ -118,11 +126,16 @@
         }
       ],
       "name": "autocomplete",
-      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/scroll-area"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/avatar.tsx",
@@ -153,7 +166,9 @@
           "warning-foreground": "var(--color-amber-700)"
         }
       },
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/badge.tsx",
@@ -164,7 +179,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/breadcrumb.tsx",
@@ -183,7 +200,9 @@
           "destructive-foreground": "var(--color-red-700)"
         }
       },
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/button.tsx",
@@ -205,7 +224,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/checkbox.tsx",
@@ -216,7 +237,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/checkbox-group.tsx",
@@ -227,7 +250,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/collapsible.tsx",
@@ -238,7 +263,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/combobox.tsx",
@@ -246,11 +273,16 @@
         }
       ],
       "name": "combobox",
-      "registryDependencies": ["@coss/input", "@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/scroll-area"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/dialog.tsx",
@@ -279,7 +311,9 @@
           "destructive-foreground": "var(--color-red-700)"
         }
       },
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/field.tsx",
@@ -290,7 +324,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/fieldset.tsx",
@@ -301,7 +337,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/form.tsx",
@@ -322,7 +360,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/group.tsx",
@@ -330,11 +370,15 @@
         }
       ],
       "name": "group",
-      "registryDependencies": ["@coss/separator"],
+      "registryDependencies": [
+        "@coss/separator"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/input.tsx",
@@ -352,7 +396,11 @@
         }
       ],
       "name": "input-group",
-      "registryDependencies": ["@coss/input", "@coss/field", "@coss/textarea"],
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/field",
+        "@coss/textarea"
+      ],
       "type": "registry:ui"
     },
     {
@@ -366,7 +414,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/label.tsx",
@@ -385,7 +435,9 @@
           "destructive-foreground": "var(--color-red-700)"
         }
       },
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/menu.tsx",
@@ -396,7 +448,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/meter.tsx",
@@ -407,7 +461,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/number-field.tsx",
@@ -418,7 +474,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/pagination.tsx",
@@ -426,11 +484,15 @@
         }
       ],
       "name": "pagination",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/popover.tsx",
@@ -441,7 +503,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/preview-card.tsx",
@@ -452,7 +516,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/progress.tsx",
@@ -463,7 +529,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/radio-group.tsx",
@@ -474,7 +542,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/scroll-area.tsx",
@@ -485,7 +555,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/select.tsx",
@@ -496,7 +568,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/separator.tsx",
@@ -507,7 +581,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/sheet.tsx",
@@ -515,11 +591,15 @@
         }
       ],
       "name": "sheet",
-      "registryDependencies": ["@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/scroll-area"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/sidebar.tsx",
@@ -560,7 +640,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/slider.tsx",
@@ -581,7 +663,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/switch.tsx",
@@ -592,7 +676,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/table.tsx",
@@ -603,7 +689,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/tabs.tsx",
@@ -614,7 +702,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/textarea.tsx",
@@ -625,7 +715,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/toast.tsx",
@@ -633,11 +725,15 @@
         }
       ],
       "name": "toast",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/toggle.tsx",
@@ -648,7 +744,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/toggle-group.tsx",
@@ -656,11 +754,16 @@
         }
       ],
       "name": "toggle-group",
-      "registryDependencies": ["@coss/separator", "@coss/toggle"],
+      "registryDependencies": [
+        "@coss/separator",
+        "@coss/toggle"
+      ],
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/toolbar.tsx",
@@ -671,7 +774,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["@base-ui-components/react"],
+      "dependencies": [
+        "@base-ui-components/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/tooltip.tsx",
@@ -682,7 +787,9 @@
       "type": "registry:ui"
     },
     {
-      "categories": ["accordion"],
+      "categories": [
+        "accordion"
+      ],
       "description": "Basic accordion",
       "files": [
         {
@@ -694,11 +801,15 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
       "name": "p-accordion-1",
-      "registryDependencies": ["@coss/accordion"],
+      "registryDependencies": [
+        "@coss/accordion"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["accordion"],
+      "categories": [
+        "accordion"
+      ],
       "description": "Accordion with one panel open",
       "files": [
         {
@@ -710,11 +821,15 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
       "name": "p-accordion-2",
-      "registryDependencies": ["@coss/accordion"],
+      "registryDependencies": [
+        "@coss/accordion"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["accordion"],
+      "categories": [
+        "accordion"
+      ],
       "description": "Accordion allowing multiple panels open",
       "files": [
         {
@@ -726,11 +841,15 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
       "name": "p-accordion-3",
-      "registryDependencies": ["@coss/accordion"],
+      "registryDependencies": [
+        "@coss/accordion"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["accordion"],
+      "categories": [
+        "accordion"
+      ],
       "description": "Controlled accordion",
       "files": [
         {
@@ -742,11 +861,16 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-[80%]"
       },
       "name": "p-accordion-4",
-      "registryDependencies": ["@coss/accordion", "@coss/button"],
+      "registryDependencies": [
+        "@coss/accordion",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert"],
+      "categories": [
+        "alert"
+      ],
       "description": "Basic alert",
       "files": [
         {
@@ -758,12 +882,18 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-1",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Alert with icon",
       "files": [
         {
@@ -775,12 +905,18 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-2",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Alert with icon and action buttons",
       "files": [
         {
@@ -792,12 +928,20 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-3",
-      "registryDependencies": ["@coss/alert", "@coss/button"],
+      "registryDependencies": [
+        "@coss/alert",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert", "info"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert",
+        "info"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Info alert",
       "files": [
         {
@@ -809,12 +953,19 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-4",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert", "success"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert",
+        "success"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Success alert",
       "files": [
         {
@@ -826,12 +977,19 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-5",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert", "warning"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert",
+        "warning"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Warning alert",
       "files": [
         {
@@ -843,12 +1001,19 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-6",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert", "error"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "alert",
+        "error"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Error alert",
       "files": [
         {
@@ -860,11 +1025,16 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-alert-7",
-      "registryDependencies": ["@coss/alert"],
+      "registryDependencies": [
+        "@coss/alert"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert dialog", "dialog"],
+      "categories": [
+        "alert dialog",
+        "dialog"
+      ],
       "description": "Alert dialog",
       "files": [
         {
@@ -873,11 +1043,17 @@
         }
       ],
       "name": "p-alert-dialog-1",
-      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
+      "registryDependencies": [
+        "@coss/alert-dialog",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["alert dialog", "dialog"],
+      "categories": [
+        "alert dialog",
+        "dialog"
+      ],
       "description": "Alert dialog with bare footer",
       "files": [
         {
@@ -886,11 +1062,17 @@
         }
       ],
       "name": "p-alert-dialog-2",
-      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
+      "registryDependencies": [
+        "@coss/alert-dialog",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Basic autocomplete",
       "files": [
         {
@@ -902,11 +1084,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-1",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input", "disabled"],
+      "categories": [
+        "autocomplete",
+        "input",
+        "disabled"
+      ],
       "description": "Disabled autocomplete",
       "files": [
         {
@@ -918,11 +1106,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-2",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Small autocomplete",
       "files": [
         {
@@ -934,11 +1127,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-3",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Large autocomplete",
       "files": [
         {
@@ -950,11 +1148,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-4",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete with label",
       "files": [
         {
@@ -966,11 +1169,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-5",
-      "registryDependencies": ["@coss/autocomplete", "@coss/label"],
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete autofilling the input with the highlighted item",
       "files": [
         {
@@ -982,11 +1191,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-6",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete auto highlighting the first option",
       "files": [
         {
@@ -998,11 +1212,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-7",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete with clear button",
       "files": [
         {
@@ -1014,11 +1233,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-8",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete with trigger and clear buttons",
       "files": [
         {
@@ -1030,11 +1254,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-9",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete with grouped items",
       "files": [
         {
@@ -1046,11 +1275,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-10",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input"],
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
       "description": "Autocomplete with limited number of results",
       "files": [
         {
@@ -1062,11 +1296,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-11",
-      "registryDependencies": ["@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input", "async"],
+      "categories": [
+        "autocomplete",
+        "input",
+        "async"
+      ],
       "description": "Autocomplete with async items loading",
       "files": [
         {
@@ -1078,11 +1318,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-autocomplete-12",
-      "registryDependencies": ["@coss/autocomplete", "@coss/spinner"],
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/spinner"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["autocomplete", "input", "form"],
+      "categories": [
+        "autocomplete",
+        "input",
+        "form"
+      ],
       "description": "Autocomplete form",
       "files": [
         {
@@ -1102,7 +1349,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["avatar"],
+      "categories": [
+        "avatar"
+      ],
       "description": "Avatar with image and fallback",
       "files": [
         {
@@ -1111,11 +1360,15 @@
         }
       ],
       "name": "p-avatar-1",
-      "registryDependencies": ["@coss/avatar"],
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["avatar"],
+      "categories": [
+        "avatar"
+      ],
       "description": "Fallback-only avatar",
       "files": [
         {
@@ -1124,11 +1377,15 @@
         }
       ],
       "name": "p-avatar-2",
-      "registryDependencies": ["@coss/avatar"],
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["avatar"],
+      "categories": [
+        "avatar"
+      ],
       "description": "Avatars with different sizes",
       "files": [
         {
@@ -1137,11 +1394,15 @@
         }
       ],
       "name": "p-avatar-3",
-      "registryDependencies": ["@coss/avatar"],
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["avatar"],
+      "categories": [
+        "avatar"
+      ],
       "description": "Avatars with different radii",
       "files": [
         {
@@ -1150,11 +1411,15 @@
         }
       ],
       "name": "p-avatar-4",
-      "registryDependencies": ["@coss/avatar"],
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["avatar"],
+      "categories": [
+        "avatar"
+      ],
       "description": "Overlapping avatar group",
       "files": [
         {
@@ -1163,11 +1428,15 @@
         }
       ],
       "name": "p-avatar-5",
-      "registryDependencies": ["@coss/avatar"],
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Basic badge",
       "files": [
         {
@@ -1176,11 +1445,15 @@
         }
       ],
       "name": "p-badge-1",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Outline badge",
       "files": [
         {
@@ -1189,11 +1462,15 @@
         }
       ],
       "name": "p-badge-2",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Secondary badge",
       "files": [
         {
@@ -1202,11 +1479,16 @@
         }
       ],
       "name": "p-badge-3",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge", "error"],
+      "categories": [
+        "badge",
+        "error"
+      ],
       "description": "Destructive badge",
       "files": [
         {
@@ -1215,11 +1497,16 @@
         }
       ],
       "name": "p-badge-4",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge", "info"],
+      "categories": [
+        "badge",
+        "info"
+      ],
       "description": "Info badge",
       "files": [
         {
@@ -1228,11 +1515,16 @@
         }
       ],
       "name": "p-badge-5",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge", "success"],
+      "categories": [
+        "badge",
+        "success"
+      ],
       "description": "Success badge",
       "files": [
         {
@@ -1241,11 +1533,16 @@
         }
       ],
       "name": "p-badge-6",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge", "warning"],
+      "categories": [
+        "badge",
+        "warning"
+      ],
       "description": "Warning badge",
       "files": [
         {
@@ -1254,11 +1551,16 @@
         }
       ],
       "name": "p-badge-7",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge", "error"],
+      "categories": [
+        "badge",
+        "error"
+      ],
       "description": "Error badge",
       "files": [
         {
@@ -1267,11 +1569,15 @@
         }
       ],
       "name": "p-badge-8",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Small badge",
       "files": [
         {
@@ -1280,11 +1586,15 @@
         }
       ],
       "name": "p-badge-9",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Large badge",
       "files": [
         {
@@ -1293,12 +1603,18 @@
         }
       ],
       "name": "p-badge-10",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "badge"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Badge with icon",
       "files": [
         {
@@ -1307,11 +1623,15 @@
         }
       ],
       "name": "p-badge-11",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Badge with link",
       "files": [
         {
@@ -1320,11 +1640,15 @@
         }
       ],
       "name": "p-badge-12",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["badge"],
+      "categories": [
+        "badge"
+      ],
       "description": "Badge with count",
       "files": [
         {
@@ -1333,11 +1657,16 @@
         }
       ],
       "name": "p-badge-13",
-      "registryDependencies": ["@coss/badge"],
+      "registryDependencies": [
+        "@coss/badge"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["breadcrumb", "menu"],
+      "categories": [
+        "breadcrumb",
+        "menu"
+      ],
       "description": "Breadcrumb with menu example",
       "files": [
         {
@@ -1346,11 +1675,16 @@
         }
       ],
       "name": "p-breadcrumb-1",
-      "registryDependencies": ["@coss/breadcrumb", "@coss/menu"],
+      "registryDependencies": [
+        "@coss/breadcrumb",
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["breadcrumb"],
+      "categories": [
+        "breadcrumb"
+      ],
       "description": "Breadcrumb with custom separator",
       "files": [
         {
@@ -1359,11 +1693,15 @@
         }
       ],
       "name": "p-breadcrumb-2",
-      "registryDependencies": ["@coss/breadcrumb"],
+      "registryDependencies": [
+        "@coss/breadcrumb"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Default button",
       "files": [
         {
@@ -1372,11 +1710,15 @@
         }
       ],
       "name": "p-button-1",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Outline button",
       "files": [
         {
@@ -1385,11 +1727,15 @@
         }
       ],
       "name": "p-button-2",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Secondary button",
       "files": [
         {
@@ -1398,11 +1744,15 @@
         }
       ],
       "name": "p-button-3",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Destructive button",
       "files": [
         {
@@ -1411,11 +1761,15 @@
         }
       ],
       "name": "p-button-4",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Destructive outline button",
       "files": [
         {
@@ -1424,11 +1778,15 @@
         }
       ],
       "name": "p-button-5",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Ghost button",
       "files": [
         {
@@ -1437,11 +1795,15 @@
         }
       ],
       "name": "p-button-6",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Link button",
       "files": [
         {
@@ -1450,11 +1812,15 @@
         }
       ],
       "name": "p-button-7",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Extra-small button",
       "files": [
         {
@@ -1463,11 +1829,15 @@
         }
       ],
       "name": "p-button-8",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Small button",
       "files": [
         {
@@ -1476,11 +1846,15 @@
         }
       ],
       "name": "p-button-9",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Large button",
       "files": [
         {
@@ -1489,11 +1863,15 @@
         }
       ],
       "name": "p-button-10",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Extra-large button",
       "files": [
         {
@@ -1502,11 +1880,16 @@
         }
       ],
       "name": "p-button-11",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button", "disabled"],
+      "categories": [
+        "button",
+        "disabled"
+      ],
       "description": "Disabled button",
       "files": [
         {
@@ -1515,12 +1898,18 @@
         }
       ],
       "name": "p-button-12",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Icon button",
       "files": [
         {
@@ -1529,12 +1918,18 @@
         }
       ],
       "name": "p-button-13",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Small icon button",
       "files": [
         {
@@ -1543,12 +1938,18 @@
         }
       ],
       "name": "p-button-14",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Large icon button",
       "files": [
         {
@@ -1557,12 +1958,18 @@
         }
       ],
       "name": "p-button-15",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Button with icon",
       "files": [
         {
@@ -1571,11 +1978,15 @@
         }
       ],
       "name": "p-button-16",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
+      "categories": [
+        "button"
+      ],
       "description": "Link rendered as button",
       "files": [
         {
@@ -1584,11 +1995,16 @@
         }
       ],
       "name": "p-button-17",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button", "loading"],
+      "categories": [
+        "button",
+        "loading"
+      ],
       "description": "Loading button",
       "files": [
         {
@@ -1597,12 +2013,19 @@
         }
       ],
       "name": "p-button-18",
-      "registryDependencies": ["@coss/button", "@coss/spinner"],
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/spinner"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Expandable show more/less toggle button",
       "files": [
         {
@@ -1611,12 +2034,18 @@
         }
       ],
       "name": "p-button-19",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Back link button with chevron",
       "files": [
         {
@@ -1625,12 +2054,18 @@
         }
       ],
       "name": "p-button-20",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Card-style button with heading and description",
       "files": [
         {
@@ -1639,12 +2074,18 @@
         }
       ],
       "name": "p-button-21",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Directional pad control buttons",
       "files": [
         {
@@ -1653,12 +2094,18 @@
         }
       ],
       "name": "p-button-22",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Outline like button with count",
       "files": [
         {
@@ -1667,12 +2114,18 @@
         }
       ],
       "name": "p-button-23",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["@remixicon/react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "@remixicon/react"
+      ],
       "description": "Social login icon buttons",
       "files": [
         {
@@ -1681,12 +2134,18 @@
         }
       ],
       "name": "p-button-24",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Star button with count badge",
       "files": [
         {
@@ -1695,11 +2154,15 @@
         }
       ],
       "name": "p-button-26",
-      "registryDependencies": ["@coss/button"],
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["card"],
+      "categories": [
+        "card"
+      ],
       "description": "Card with header, content, and footer",
       "files": [
         {
@@ -1722,7 +2185,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox"],
+      "categories": [
+        "checkbox"
+      ],
       "description": "Basic checkbox",
       "files": [
         {
@@ -1731,11 +2196,17 @@
         }
       ],
       "name": "p-checkbox-1",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "registryDependencies": [
+        "@coss/checkbox",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "disabled"],
+      "categories": [
+        "checkbox",
+        "disabled"
+      ],
       "description": "Disabled checkbox",
       "files": [
         {
@@ -1744,11 +2215,16 @@
         }
       ],
       "name": "p-checkbox-2",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "registryDependencies": [
+        "@coss/checkbox",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox"],
+      "categories": [
+        "checkbox"
+      ],
       "description": "Checkbox with description",
       "files": [
         {
@@ -1757,11 +2233,16 @@
         }
       ],
       "name": "p-checkbox-3",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "registryDependencies": [
+        "@coss/checkbox",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox"],
+      "categories": [
+        "checkbox"
+      ],
       "description": "Card-style checkbox",
       "files": [
         {
@@ -1770,11 +2251,17 @@
         }
       ],
       "name": "p-checkbox-4",
-      "registryDependencies": ["@coss/checkbox", "@coss/label"],
+      "registryDependencies": [
+        "@coss/checkbox",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "form"],
+      "categories": [
+        "checkbox",
+        "form"
+      ],
       "description": "Checkbox form",
       "files": [
         {
@@ -1792,7 +2279,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "checkbox group"],
+      "categories": [
+        "checkbox",
+        "checkbox group"
+      ],
       "description": "Basic checkbox group",
       "files": [
         {
@@ -1809,7 +2299,11 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "checkbox group", "disabled"],
+      "categories": [
+        "checkbox",
+        "checkbox group",
+        "disabled"
+      ],
       "description": "Checkbox group with disabled items",
       "files": [
         {
@@ -1826,7 +2320,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "checkbox group"],
+      "categories": [
+        "checkbox",
+        "checkbox group"
+      ],
       "description": "Checkbox group with parent checkbox",
       "files": [
         {
@@ -1843,7 +2340,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "checkbox group"],
+      "categories": [
+        "checkbox",
+        "checkbox group"
+      ],
       "description": "Nested checkbox group with parent",
       "files": [
         {
@@ -1860,7 +2360,11 @@
       "type": "registry:block"
     },
     {
-      "categories": ["checkbox", "checkbox group", "form"],
+      "categories": [
+        "checkbox",
+        "checkbox group",
+        "form"
+      ],
       "description": "Checkbox group form",
       "files": [
         {
@@ -1880,8 +2384,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["collapsible"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "collapsible"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Basic collapsible",
       "files": [
         {
@@ -1890,11 +2398,16 @@
         }
       ],
       "name": "p-collapsible-1",
-      "registryDependencies": ["@coss/collapsible"],
+      "registryDependencies": [
+        "@coss/collapsible"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Basic combobox",
       "files": [
         {
@@ -1906,11 +2419,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-1",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input", "disabled"],
+      "categories": [
+        "combobox",
+        "input",
+        "disabled"
+      ],
       "description": "Disabled combobox",
       "files": [
         {
@@ -1922,11 +2441,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-2",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Small combobox",
       "files": [
         {
@@ -1938,11 +2462,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-3",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Large combobox",
       "files": [
         {
@@ -1954,11 +2483,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-4",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Combobox with label",
       "files": [
         {
@@ -1970,11 +2504,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-5",
-      "registryDependencies": ["@coss/combobox", "@coss/label"],
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Combobox auto highlighting the first option",
       "files": [
         {
@@ -1986,11 +2526,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-6",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Combobox with clear button",
       "files": [
         {
@@ -2002,11 +2547,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-7",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Combobox with grouped items",
       "files": [
         {
@@ -2018,11 +2568,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-8",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
       "description": "Combobox with multiple selection",
       "files": [
         {
@@ -2034,12 +2589,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-9",
-      "registryDependencies": ["@coss/combobox"],
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Combobox with input inside popup",
       "files": [
         {
@@ -2051,11 +2613,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-combobox-10",
-      "registryDependencies": ["@coss/combobox", "@coss/button"],
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input", "form"],
+      "categories": [
+        "combobox",
+        "input",
+        "form"
+      ],
       "description": "Combobox form",
       "files": [
         {
@@ -2076,7 +2645,11 @@
       "type": "registry:block"
     },
     {
-      "categories": ["combobox", "input", "form"],
+      "categories": [
+        "combobox",
+        "input",
+        "form"
+      ],
       "description": "Combobox multiple form",
       "files": [
         {
@@ -2097,7 +2670,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["dialog"],
+      "categories": [
+        "dialog"
+      ],
       "description": "Dialog with form",
       "files": [
         {
@@ -2116,7 +2691,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["dialog"],
+      "categories": [
+        "dialog"
+      ],
       "description": "Dialog with bare footer",
       "files": [
         {
@@ -2135,7 +2712,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["dialog", "menu"],
+      "categories": [
+        "dialog",
+        "menu"
+      ],
       "description": "Dialog opened from menu",
       "files": [
         {
@@ -2144,11 +2724,17 @@
         }
       ],
       "name": "p-dialog-2",
-      "registryDependencies": ["@coss/dialog", "@coss/menu", "@coss/button"],
+      "registryDependencies": [
+        "@coss/dialog",
+        "@coss/menu",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["dialog"],
+      "categories": [
+        "dialog"
+      ],
       "description": "Nested dialogs",
       "files": [
         {
@@ -2166,7 +2752,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["dialog", "alert dialog"],
+      "categories": [
+        "dialog",
+        "alert dialog"
+      ],
       "description": "Dialog with close confirmation",
       "files": [
         {
@@ -2186,7 +2775,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["dialog"],
+      "categories": [
+        "dialog"
+      ],
       "description": "Dialog with long content",
       "files": [
         {
@@ -2195,12 +2786,19 @@
         }
       ],
       "name": "p-dialog-5",
-      "registryDependencies": ["@coss/dialog", "@coss/button"],
+      "registryDependencies": [
+        "@coss/dialog",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["empty state"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "empty state"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Empty state with icon and actions",
       "files": [
         {
@@ -2209,11 +2807,17 @@
         }
       ],
       "name": "p-empty-1",
-      "registryDependencies": ["@coss/empty", "@coss/button"],
+      "registryDependencies": [
+        "@coss/empty",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label"],
+      "categories": [
+        "field",
+        "label"
+      ],
       "description": "Field with description",
       "files": [
         {
@@ -2225,11 +2829,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-1",
-      "registryDependencies": ["@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label"],
+      "categories": [
+        "field",
+        "label"
+      ],
       "description": "Field with required indicator",
       "files": [
         {
@@ -2241,11 +2851,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-2",
-      "registryDependencies": ["@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label", "disabled"],
+      "categories": [
+        "field",
+        "label",
+        "disabled"
+      ],
       "description": "Field in disabled state",
       "files": [
         {
@@ -2257,11 +2874,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-3",
-      "registryDependencies": ["@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label", "error"],
+      "categories": [
+        "field",
+        "label",
+        "error"
+      ],
       "description": "Field showing validation error",
       "files": [
         {
@@ -2273,11 +2897,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-4",
-      "registryDependencies": ["@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field"],
+      "categories": [
+        "field"
+      ],
       "description": "Show field validity state",
       "files": [
         {
@@ -2289,11 +2918,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-5",
-      "registryDependencies": ["@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "field", "button"],
+      "categories": [
+        "input",
+        "input group",
+        "field",
+        "button"
+      ],
       "description": "Input group with field",
       "files": [
         {
@@ -2313,7 +2950,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["field", "input", "autocomplete", "label"],
+      "categories": [
+        "field",
+        "input",
+        "autocomplete",
+        "label"
+      ],
       "description": "Field with autocomplete",
       "files": [
         {
@@ -2325,11 +2967,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-7",
-      "registryDependencies": ["@coss/field", "@coss/autocomplete"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/autocomplete"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "input", "combobox", "label"],
+      "categories": [
+        "field",
+        "input",
+        "combobox",
+        "label"
+      ],
       "description": "Field with combobox",
       "files": [
         {
@@ -2341,11 +2991,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-8",
-      "registryDependencies": ["@coss/field", "@coss/combobox"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "input", "combobox", "label"],
+      "categories": [
+        "field",
+        "input",
+        "combobox",
+        "label"
+      ],
       "description": "Field with multiple selection combobox",
       "files": [
         {
@@ -2357,11 +3015,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-9",
-      "registryDependencies": ["@coss/field", "@coss/combobox"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/combobox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "textarea", "label"],
+      "categories": [
+        "field",
+        "textarea",
+        "label"
+      ],
       "description": "Field with textarea",
       "files": [
         {
@@ -2373,11 +3038,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-10",
-      "registryDependencies": ["@coss/field", "@coss/textarea"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "select", "label"],
+      "categories": [
+        "field",
+        "select",
+        "label"
+      ],
       "description": "Field with select",
       "files": [
         {
@@ -2389,11 +3061,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-11",
-      "registryDependencies": ["@coss/field", "@coss/select"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label", "checkbox"],
+      "categories": [
+        "field",
+        "label",
+        "checkbox"
+      ],
       "description": "Field with checkbox",
       "files": [
         {
@@ -2405,7 +3084,10 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-12",
-      "registryDependencies": ["@coss/field", "@coss/checkbox"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/checkbox"
+      ],
       "type": "registry:block"
     },
     {
@@ -2436,7 +3118,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["field", "radio group", "label", "fieldset"],
+      "categories": [
+        "field",
+        "radio group",
+        "label",
+        "fieldset"
+      ],
       "description": "Field with radio group",
       "files": [
         {
@@ -2456,7 +3143,11 @@
       "type": "registry:block"
     },
     {
-      "categories": ["field", "switch", "label"],
+      "categories": [
+        "field",
+        "switch",
+        "label"
+      ],
       "description": "Field with toggle switch",
       "files": [
         {
@@ -2465,11 +3156,18 @@
         }
       ],
       "name": "p-field-15",
-      "registryDependencies": ["@coss/field", "@coss/switch"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/switch"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "slider", "label"],
+      "categories": [
+        "field",
+        "slider",
+        "label"
+      ],
       "description": "Field with slider",
       "files": [
         {
@@ -2481,11 +3179,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-16",
-      "registryDependencies": ["@coss/field", "@coss/slider"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/slider"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "input", "label", "number field"],
+      "categories": [
+        "field",
+        "input",
+        "label",
+        "number field"
+      ],
       "description": "Field with number field",
       "files": [
         {
@@ -2497,11 +3203,21 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-field-17",
-      "registryDependencies": ["@coss/field", "@coss/number-field"],
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["field", "label", "form", "select", "checkbox", "button"],
+      "categories": [
+        "field",
+        "label",
+        "form",
+        "select",
+        "checkbox",
+        "button"
+      ],
       "description": "Complete form built with field",
       "files": [
         {
@@ -2524,7 +3240,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["fieldset"],
+      "categories": [
+        "fieldset"
+      ],
       "description": "Fieldset with multiple fields",
       "files": [
         {
@@ -2536,11 +3254,20 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-fieldset-1",
-      "registryDependencies": ["@coss/fieldset", "@coss/field", "@coss/input"],
+      "registryDependencies": [
+        "@coss/fieldset",
+        "@coss/field",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["form", "field", "button", "input"],
+      "categories": [
+        "form",
+        "field",
+        "button",
+        "input"
+      ],
       "description": "Input in a form",
       "files": [
         {
@@ -2561,8 +3288,17 @@
       "type": "registry:block"
     },
     {
-      "categories": ["form", "field", "button", "validation", "label", "zod"],
-      "dependencies": ["zod"],
+      "categories": [
+        "form",
+        "field",
+        "button",
+        "validation",
+        "label",
+        "zod"
+      ],
+      "dependencies": [
+        "zod"
+      ],
       "description": "Form with zod validation",
       "files": [
         {
@@ -2583,7 +3319,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["frame"],
+      "categories": [
+        "frame"
+      ],
       "description": "Basic frame",
       "files": [
         {
@@ -2595,12 +3333,19 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-frame-1",
-      "registryDependencies": ["@coss/frame"],
+      "registryDependencies": [
+        "@coss/frame"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["frame", "collapsible"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "frame",
+        "collapsible"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Frame with collapsible content and delete button",
       "files": [
         {
@@ -2620,7 +3365,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["kbd"],
+      "categories": [
+        "kbd"
+      ],
       "description": "Keyboard shortcuts display",
       "files": [
         {
@@ -2629,11 +3376,15 @@
         }
       ],
       "name": "p-kbd-1",
-      "registryDependencies": ["@coss/kbd"],
+      "registryDependencies": [
+        "@coss/kbd"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Basic group",
       "files": [
         {
@@ -2642,11 +3393,16 @@
         }
       ],
       "name": "p-group-1",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "input"],
+      "categories": [
+        "group",
+        "input"
+      ],
       "description": "Group with input",
       "files": [
         {
@@ -2655,11 +3411,16 @@
         }
       ],
       "name": "p-group-2",
-      "registryDependencies": ["@coss/group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Small group",
       "files": [
         {
@@ -2668,11 +3429,15 @@
         }
       ],
       "name": "p-group-3",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Large group",
       "files": [
         {
@@ -2681,11 +3446,16 @@
         }
       ],
       "name": "p-group-4",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "button"],
+      "categories": [
+        "group",
+        "button"
+      ],
       "description": "Group with disabled button",
       "files": [
         {
@@ -2694,11 +3464,17 @@
         }
       ],
       "name": "p-group-5",
-      "registryDependencies": ["@coss/group", "@coss/button"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "button"],
+      "categories": [
+        "group",
+        "button"
+      ],
       "description": "Group with default button",
       "files": [
         {
@@ -2707,11 +3483,16 @@
         }
       ],
       "name": "p-group-6",
-      "registryDependencies": ["@coss/group", "@coss/button"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Group with start text",
       "files": [
         {
@@ -2720,11 +3501,15 @@
         }
       ],
       "name": "p-group-7",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Group with end text",
       "files": [
         {
@@ -2733,11 +3518,15 @@
         }
       ],
       "name": "p-group-8",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Vertical group",
       "files": [
         {
@@ -2746,11 +3535,15 @@
         }
       ],
       "name": "p-group-9",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Nested groups",
       "files": [
         {
@@ -2759,11 +3552,15 @@
         }
       ],
       "name": "p-group-10",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group"],
+      "categories": [
+        "group"
+      ],
       "description": "Group with popup",
       "files": [
         {
@@ -2772,11 +3569,16 @@
         }
       ],
       "name": "p-group-11",
-      "registryDependencies": ["@coss/group"],
+      "registryDependencies": [
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "input group"],
+      "categories": [
+        "group",
+        "input group"
+      ],
       "description": "Group with input group",
       "files": [
         {
@@ -2785,11 +3587,17 @@
         }
       ],
       "name": "p-group-12",
-      "registryDependencies": ["@coss/group", "@coss/input-group"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "menu"],
+      "categories": [
+        "group",
+        "menu"
+      ],
       "description": "Group with menu",
       "files": [
         {
@@ -2798,11 +3606,17 @@
         }
       ],
       "name": "p-group-13",
-      "registryDependencies": ["@coss/group", "@coss/menu"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "select"],
+      "categories": [
+        "group",
+        "select"
+      ],
       "description": "Group with select",
       "files": [
         {
@@ -2811,11 +3625,17 @@
         }
       ],
       "name": "p-group-14",
-      "registryDependencies": ["@coss/group", "@coss/select"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["group", "search"],
+      "categories": [
+        "group",
+        "search"
+      ],
       "description": "Group with search",
       "files": [
         {
@@ -2824,11 +3644,16 @@
         }
       ],
       "name": "p-group-15",
-      "registryDependencies": ["@coss/group", "@coss/search"],
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/search"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input"],
+      "categories": [
+        "input"
+      ],
       "description": "Basic input",
       "files": [
         {
@@ -2840,11 +3665,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-1",
-      "registryDependencies": ["@coss/input"],
+      "registryDependencies": [
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input"],
+      "categories": [
+        "input"
+      ],
       "description": "Small input",
       "files": [
         {
@@ -2856,11 +3685,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-2",
-      "registryDependencies": ["@coss/input"],
+      "registryDependencies": [
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input"],
+      "categories": [
+        "input"
+      ],
       "description": "Large input",
       "files": [
         {
@@ -2872,11 +3705,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-3",
-      "registryDependencies": ["@coss/input"],
+      "registryDependencies": [
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input"],
+      "categories": [
+        "input"
+      ],
       "description": "Disabled input",
       "files": [
         {
@@ -2888,11 +3725,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-4",
-      "registryDependencies": ["@coss/input"],
+      "registryDependencies": [
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input"],
+      "categories": [
+        "input"
+      ],
       "description": "File input",
       "files": [
         {
@@ -2904,11 +3745,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-5",
-      "registryDependencies": ["@coss/input"],
+      "registryDependencies": [
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input", "label"],
+      "categories": [
+        "input",
+        "label"
+      ],
       "description": "Input with label",
       "files": [
         {
@@ -2920,11 +3766,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-6",
-      "registryDependencies": ["@coss/input", "@coss/label"],
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input", "button"],
+      "categories": [
+        "input",
+        "button"
+      ],
       "description": "Input with button",
       "files": [
         {
@@ -2936,11 +3788,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-7",
-      "registryDependencies": ["@coss/input", "@coss/button"],
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "button", "popover"],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "popover"
+      ],
       "description": "Input with start text and end tooltip",
       "files": [
         {
@@ -2960,7 +3820,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "button", "tooltip"],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "tooltip"
+      ],
       "description": "Password input with toggle visibility",
       "files": [
         {
@@ -2980,7 +3845,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "button", "popover"],
+      "categories": [
+        "input",
+        "input group",
+        "button",
+        "popover"
+      ],
       "description": "Input group mimicking a URL bar",
       "files": [
         {
@@ -3000,7 +3870,12 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "kbd", "search"],
+      "categories": [
+        "input",
+        "input group",
+        "kbd",
+        "search"
+      ],
       "description": "Input group with keyboard shortcut",
       "files": [
         {
@@ -3012,11 +3887,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-11",
-      "registryDependencies": ["@coss/input-group", "@coss/kbd"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/kbd"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input", "input group", "loading", "spinner"],
+      "categories": [
+        "input",
+        "input group",
+        "loading",
+        "spinner"
+      ],
       "description": "Input group with start loading spinner",
       "files": [
         {
@@ -3028,11 +3911,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-12",
-      "registryDependencies": ["@coss/input-group", "@coss/spinner"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/spinner"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Basic input group",
       "files": [
         {
@@ -3044,12 +3932,19 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-1",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "input group"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Input group with end icon",
       "files": [
         {
@@ -3061,11 +3956,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-2",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Input group with start text",
       "files": [
         {
@@ -3077,11 +3977,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-3",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Input group with end text",
       "files": [
         {
@@ -3093,11 +3998,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-4",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Input group with start and end text",
       "files": [
         {
@@ -3109,11 +4019,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-5",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "number field"],
+      "categories": [
+        "input group",
+        "number field"
+      ],
       "description": "Input group with number field",
       "files": [
         {
@@ -3125,12 +4041,20 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-6",
-      "registryDependencies": ["@coss/input-group", "@coss/number-field"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "tooltip"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "input group",
+        "tooltip"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Input group with end tooltip",
       "files": [
         {
@@ -3150,8 +4074,13 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "input group",
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Input group with icon button",
       "files": [
         {
@@ -3171,7 +4100,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "button"],
+      "categories": [
+        "input group",
+        "button"
+      ],
       "description": "Input group with button",
       "files": [
         {
@@ -3191,7 +4123,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "badge"],
+      "categories": [
+        "input group",
+        "badge"
+      ],
       "description": "Input group with badge",
       "files": [
         {
@@ -3211,7 +4146,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "kbd"],
+      "categories": [
+        "input group",
+        "kbd"
+      ],
       "description": "Input group with keyboard shortcut",
       "files": [
         {
@@ -3223,11 +4161,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-11",
-      "registryDependencies": ["@coss/input-group", "@coss/input", "@coss/kbd"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input",
+        "@coss/kbd"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "label"],
+      "categories": [
+        "input group",
+        "label"
+      ],
       "description": "Input group with inner label",
       "files": [
         {
@@ -3247,7 +4192,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Small input group",
       "files": [
         {
@@ -3259,11 +4206,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-13",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Large input group",
       "files": [
         {
@@ -3275,11 +4227,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-14",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group"],
+      "categories": [
+        "input group"
+      ],
       "description": "Disabled input group",
       "files": [
         {
@@ -3291,11 +4248,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-input-group-15",
-      "registryDependencies": ["@coss/input-group", "@coss/input"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/input"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "spinner"],
+      "categories": [
+        "input group",
+        "spinner"
+      ],
       "description": "Input group with loading spinner",
       "files": [
         {
@@ -3315,7 +4278,10 @@
       "type": "registry:block"
     },
     {
-      "categories": ["input group", "textarea"],
+      "categories": [
+        "input group",
+        "textarea"
+      ],
       "description": "Input group with textarea",
       "files": [
         {
@@ -3327,11 +4293,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
       },
       "name": "p-input-group-17",
-      "registryDependencies": ["@coss/input-group", "@coss/textarea"],
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["meter"],
+      "categories": [
+        "meter"
+      ],
       "description": "Basic meter",
       "files": [
         {
@@ -3343,11 +4314,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-meter-1",
-      "registryDependencies": ["@coss/meter"],
+      "registryDependencies": [
+        "@coss/meter"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["meter"],
+      "categories": [
+        "meter"
+      ],
       "description": "Simple meter",
       "files": [
         {
@@ -3359,11 +4334,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-meter-2",
-      "registryDependencies": ["@coss/meter"],
+      "registryDependencies": [
+        "@coss/meter"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["meter"],
+      "categories": [
+        "meter"
+      ],
       "description": "Meter with formatted value",
       "files": [
         {
@@ -3375,11 +4354,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-meter-3",
-      "registryDependencies": ["@coss/meter"],
+      "registryDependencies": [
+        "@coss/meter"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["meter"],
+      "categories": [
+        "meter"
+      ],
       "description": "Meter with range",
       "files": [
         {
@@ -3391,11 +4374,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-meter-4",
-      "registryDependencies": ["@coss/meter"],
+      "registryDependencies": [
+        "@coss/meter"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Basic menu",
       "files": [
         {
@@ -3404,11 +4391,15 @@
         }
       ],
       "name": "p-menu-1",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu with hover",
       "files": [
         {
@@ -3417,11 +4408,15 @@
         }
       ],
       "name": "p-menu-2",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu with checkbox",
       "files": [
         {
@@ -3430,11 +4425,16 @@
         }
       ],
       "name": "p-menu-3",
-      "registryDependencies": ["@coss/menu", "@coss/checkbox"],
+      "registryDependencies": [
+        "@coss/menu",
+        "@coss/checkbox"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu with radio group",
       "files": [
         {
@@ -3443,11 +4443,16 @@
         }
       ],
       "name": "p-menu-4",
-      "registryDependencies": ["@coss/menu", "@coss/radio-group"],
+      "registryDependencies": [
+        "@coss/menu",
+        "@coss/radio-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu with link",
       "files": [
         {
@@ -3456,11 +4461,15 @@
         }
       ],
       "name": "p-menu-5",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu with group labels",
       "files": [
         {
@@ -3469,11 +4478,15 @@
         }
       ],
       "name": "p-menu-6",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Nested menu",
       "files": [
         {
@@ -3482,11 +4495,15 @@
         }
       ],
       "name": "p-menu-7",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["menu"],
+      "categories": [
+        "menu"
+      ],
       "description": "Menu close on click",
       "files": [
         {
@@ -3495,11 +4512,15 @@
         }
       ],
       "name": "p-menu-8",
-      "registryDependencies": ["@coss/menu"],
+      "registryDependencies": [
+        "@coss/menu"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Basic number field",
       "files": [
         {
@@ -3511,11 +4532,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-1",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Small number field",
       "files": [
         {
@@ -3527,11 +4552,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-2",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Large number field",
       "files": [
         {
@@ -3543,11 +4572,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-3",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Disabled number field",
       "files": [
         {
@@ -3559,11 +4592,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-4",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field with label",
       "files": [
         {
@@ -3575,11 +4612,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-5",
-      "registryDependencies": ["@coss/number-field", "@coss/label"],
+      "registryDependencies": [
+        "@coss/number-field",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field with scrub",
       "files": [
         {
@@ -3591,11 +4633,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-6",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field with range",
       "files": [
         {
@@ -3607,11 +4653,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-7",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field with formatted value",
       "files": [
         {
@@ -3623,11 +4673,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-8",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field with step",
       "files": [
         {
@@ -3639,11 +4693,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-number-field-9",
-      "registryDependencies": ["@coss/number-field"],
+      "registryDependencies": [
+        "@coss/number-field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["number field"],
+      "categories": [
+        "number field"
+      ],
       "description": "Number field in form",
       "files": [
         {
@@ -3663,7 +4721,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["pagination"],
+      "categories": [
+        "pagination"
+      ],
       "description": "Pagination example",
       "files": [
         {
@@ -3672,11 +4732,15 @@
         }
       ],
       "name": "p-pagination-1",
-      "registryDependencies": ["@coss/pagination"],
+      "registryDependencies": [
+        "@coss/pagination"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["pagination"],
+      "categories": [
+        "pagination"
+      ],
       "description": "Pagination with previous and next buttons only",
       "files": [
         {
@@ -3688,11 +4752,16 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-pagination-2",
-      "registryDependencies": ["@coss/pagination"],
+      "registryDependencies": [
+        "@coss/pagination"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["pagination", "select"],
+      "categories": [
+        "pagination",
+        "select"
+      ],
       "description": "Pagination with select, and previous and next buttons",
       "files": [
         {
@@ -3704,11 +4773,20 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-pagination-3",
-      "registryDependencies": ["@coss/pagination", "@coss/select"],
+      "registryDependencies": [
+        "@coss/pagination",
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["popover", "button", "textarea", "form", "field"],
+      "categories": [
+        "popover",
+        "button",
+        "textarea",
+        "form",
+        "field"
+      ],
       "description": "Popover with a form",
       "files": [
         {
@@ -3727,8 +4805,13 @@
       "type": "registry:block"
     },
     {
-      "categories": ["popover", "button"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "popover",
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Popover with close button",
       "files": [
         {
@@ -3737,12 +4820,21 @@
         }
       ],
       "name": "p-popover-2",
-      "registryDependencies": ["@coss/popover", "@coss/button"],
+      "registryDependencies": [
+        "@coss/popover",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["popover", "button", "avatar"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "popover",
+        "button",
+        "avatar"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Animated popovers",
       "files": [
         {
@@ -3751,12 +4843,20 @@
         }
       ],
       "name": "p-popover-3",
-      "registryDependencies": ["@coss/popover", "@coss/button", "@coss/avatar"],
+      "registryDependencies": [
+        "@coss/popover",
+        "@coss/button",
+        "@coss/avatar"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["preview card"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "preview card"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Preview card with popup",
       "files": [
         {
@@ -3765,11 +4865,16 @@
         }
       ],
       "name": "p-preview-card-1",
-      "registryDependencies": ["@coss/preview-card", "@coss/button"],
+      "registryDependencies": [
+        "@coss/preview-card",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["progress"],
+      "categories": [
+        "progress"
+      ],
       "description": "Basic progress bar",
       "files": [
         {
@@ -3781,11 +4886,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-progress-1",
-      "registryDependencies": ["@coss/progress"],
+      "registryDependencies": [
+        "@coss/progress"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["progress"],
+      "categories": [
+        "progress"
+      ],
       "description": "Progress with label and value",
       "files": [
         {
@@ -3797,11 +4906,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-progress-2",
-      "registryDependencies": ["@coss/progress"],
+      "registryDependencies": [
+        "@coss/progress"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["progress"],
+      "categories": [
+        "progress"
+      ],
       "description": "Progress with formatted value",
       "files": [
         {
@@ -3813,11 +4926,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-progress-3",
-      "registryDependencies": ["@coss/progress"],
+      "registryDependencies": [
+        "@coss/progress"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["radio group"],
+      "categories": [
+        "radio group"
+      ],
       "description": "Basic radio group",
       "files": [
         {
@@ -3826,11 +4943,15 @@
         }
       ],
       "name": "p-radio-group-1",
-      "registryDependencies": ["@coss/radio-group"],
+      "registryDependencies": [
+        "@coss/radio-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["radio group"],
+      "categories": [
+        "radio group"
+      ],
       "description": "Disabled radio group",
       "files": [
         {
@@ -3839,11 +4960,15 @@
         }
       ],
       "name": "p-radio-group-2",
-      "registryDependencies": ["@coss/radio-group"],
+      "registryDependencies": [
+        "@coss/radio-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["radio group"],
+      "categories": [
+        "radio group"
+      ],
       "description": "Radio group with description",
       "files": [
         {
@@ -3852,11 +4977,15 @@
         }
       ],
       "name": "p-radio-group-3",
-      "registryDependencies": ["@coss/radio-group"],
+      "registryDependencies": [
+        "@coss/radio-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["radio group"],
+      "categories": [
+        "radio group"
+      ],
       "description": "Radio group card",
       "files": [
         {
@@ -3865,11 +4994,16 @@
         }
       ],
       "name": "p-radio-group-4",
-      "registryDependencies": ["@coss/radio-group", "@coss/card"],
+      "registryDependencies": [
+        "@coss/radio-group",
+        "@coss/card"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["radio group"],
+      "categories": [
+        "radio group"
+      ],
       "description": "Radio group in form",
       "files": [
         {
@@ -3886,7 +5020,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["scroll area"],
+      "categories": [
+        "scroll area"
+      ],
       "description": "Basic scroll area",
       "files": [
         {
@@ -3898,11 +5034,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-scroll-area-1",
-      "registryDependencies": ["@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/scroll-area"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["scroll area"],
+      "categories": [
+        "scroll area"
+      ],
       "description": "Horizontal scroll area",
       "files": [
         {
@@ -3911,11 +5051,15 @@
         }
       ],
       "name": "p-scroll-area-2",
-      "registryDependencies": ["@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/scroll-area"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["scroll area"],
+      "categories": [
+        "scroll area"
+      ],
       "description": "Scroll area with both directions",
       "files": [
         {
@@ -3924,11 +5068,15 @@
         }
       ],
       "name": "p-scroll-area-3",
-      "registryDependencies": ["@coss/scroll-area"],
+      "registryDependencies": [
+        "@coss/scroll-area"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Basic select",
       "files": [
         {
@@ -3940,11 +5088,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-1",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Small select",
       "files": [
         {
@@ -3956,11 +5108,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-2",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Large select",
       "files": [
         {
@@ -3972,11 +5128,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-3",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Disabled select",
       "files": [
         {
@@ -3988,11 +5148,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-4",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Select without item alignment",
       "files": [
         {
@@ -4004,11 +5168,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-5",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Select with groups",
       "files": [
         {
@@ -4020,11 +5188,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-6",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Multiple select",
       "files": [
         {
@@ -4036,12 +5208,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-7",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "select"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Select with icon",
       "files": [
         {
@@ -4053,12 +5231,18 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-8",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "select"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Select options with icon",
       "files": [
         {
@@ -4070,11 +5254,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-9",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Select with object values",
       "files": [
         {
@@ -4086,11 +5274,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-10",
-      "registryDependencies": ["@coss/select"],
+      "registryDependencies": [
+        "@coss/select"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["select"],
+      "categories": [
+        "select"
+      ],
       "description": "Select in form",
       "files": [
         {
@@ -4102,11 +5294,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-11",
-      "registryDependencies": ["@coss/select", "@coss/form", "@coss/field"],
+      "registryDependencies": [
+        "@coss/select",
+        "@coss/form",
+        "@coss/field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["separator"],
+      "categories": [
+        "separator"
+      ],
       "description": "Separator with horizontal and vertical orientations",
       "files": [
         {
@@ -4115,11 +5313,15 @@
         }
       ],
       "name": "p-separator-1",
-      "registryDependencies": ["@coss/separator"],
+      "registryDependencies": [
+        "@coss/separator"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["sheet"],
+      "categories": [
+        "sheet"
+      ],
       "description": "Basic sheet",
       "files": [
         {
@@ -4138,7 +5340,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["sheet"],
+      "categories": [
+        "sheet"
+      ],
       "description": "Sheet inset",
       "files": [
         {
@@ -4147,11 +5351,16 @@
         }
       ],
       "name": "p-sheet-2",
-      "registryDependencies": ["@coss/sheet", "@coss/button"],
+      "registryDependencies": [
+        "@coss/sheet",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["sheet"],
+      "categories": [
+        "sheet"
+      ],
       "description": "Sheet position",
       "files": [
         {
@@ -4160,11 +5369,16 @@
         }
       ],
       "name": "p-sheet-3",
-      "registryDependencies": ["@coss/sheet", "@coss/button"],
+      "registryDependencies": [
+        "@coss/sheet",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["skeleton"],
+      "categories": [
+        "skeleton"
+      ],
       "description": "Basic skeleton",
       "files": [
         {
@@ -4176,11 +5390,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
       },
       "name": "p-skeleton-1",
-      "registryDependencies": ["@coss/skeleton"],
+      "registryDependencies": [
+        "@coss/skeleton"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["skeleton"],
+      "categories": [
+        "skeleton"
+      ],
       "description": "Skeleton only",
       "files": [
         {
@@ -4192,11 +5410,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
       },
       "name": "p-skeleton-2",
-      "registryDependencies": ["@coss/skeleton"],
+      "registryDependencies": [
+        "@coss/skeleton"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["slider"],
+      "categories": [
+        "slider"
+      ],
       "description": "Basic slider",
       "files": [
         {
@@ -4208,11 +5430,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-slider-1",
-      "registryDependencies": ["@coss/slider"],
+      "registryDependencies": [
+        "@coss/slider"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["slider"],
+      "categories": [
+        "slider"
+      ],
       "description": "Slider with label and value",
       "files": [
         {
@@ -4224,11 +5450,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-slider-2",
-      "registryDependencies": ["@coss/slider"],
+      "registryDependencies": [
+        "@coss/slider"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["slider"],
+      "categories": [
+        "slider"
+      ],
       "description": "Range slider",
       "files": [
         {
@@ -4240,11 +5470,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-slider-3",
-      "registryDependencies": ["@coss/slider"],
+      "registryDependencies": [
+        "@coss/slider"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["slider"],
+      "categories": [
+        "slider"
+      ],
       "description": "Vertical slider",
       "files": [
         {
@@ -4253,11 +5487,15 @@
         }
       ],
       "name": "p-slider-4",
-      "registryDependencies": ["@coss/slider"],
+      "registryDependencies": [
+        "@coss/slider"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["slider"],
+      "categories": [
+        "slider"
+      ],
       "description": "Slider in form",
       "files": [
         {
@@ -4269,11 +5507,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-slider-5",
-      "registryDependencies": ["@coss/slider", "@coss/form", "@coss/field"],
+      "registryDependencies": [
+        "@coss/slider",
+        "@coss/form",
+        "@coss/field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["spinner"],
+      "categories": [
+        "spinner"
+      ],
       "description": "Basic spinner",
       "files": [
         {
@@ -4282,11 +5526,15 @@
         }
       ],
       "name": "p-spinner-1",
-      "registryDependencies": ["@coss/spinner"],
+      "registryDependencies": [
+        "@coss/spinner"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["switch"],
+      "categories": [
+        "switch"
+      ],
       "description": "Basic switch",
       "files": [
         {
@@ -4295,11 +5543,15 @@
         }
       ],
       "name": "p-switch-1",
-      "registryDependencies": ["@coss/switch"],
+      "registryDependencies": [
+        "@coss/switch"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["switch"],
+      "categories": [
+        "switch"
+      ],
       "description": "Disabled switch",
       "files": [
         {
@@ -4308,11 +5560,15 @@
         }
       ],
       "name": "p-switch-2",
-      "registryDependencies": ["@coss/switch"],
+      "registryDependencies": [
+        "@coss/switch"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["switch"],
+      "categories": [
+        "switch"
+      ],
       "description": "Switch with description",
       "files": [
         {
@@ -4321,11 +5577,15 @@
         }
       ],
       "name": "p-switch-3",
-      "registryDependencies": ["@coss/switch"],
+      "registryDependencies": [
+        "@coss/switch"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["switch"],
+      "categories": [
+        "switch"
+      ],
       "description": "Switch card",
       "files": [
         {
@@ -4334,11 +5594,16 @@
         }
       ],
       "name": "p-switch-4",
-      "registryDependencies": ["@coss/switch", "@coss/card"],
+      "registryDependencies": [
+        "@coss/switch",
+        "@coss/card"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["switch"],
+      "categories": [
+        "switch"
+      ],
       "description": "Switch in form",
       "files": [
         {
@@ -4347,11 +5612,17 @@
         }
       ],
       "name": "p-switch-5",
-      "registryDependencies": ["@coss/switch", "@coss/form", "@coss/field"],
+      "registryDependencies": [
+        "@coss/switch",
+        "@coss/form",
+        "@coss/field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["table"],
+      "categories": [
+        "table"
+      ],
       "description": "Basic table",
       "files": [
         {
@@ -4363,11 +5634,15 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-table-1",
-      "registryDependencies": ["@coss/table"],
+      "registryDependencies": [
+        "@coss/table"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["table"],
+      "categories": [
+        "table"
+      ],
       "description": "Framed table",
       "files": [
         {
@@ -4379,11 +5654,15 @@
         "className": "**:data-[slot=preview]:w-full"
       },
       "name": "p-table-2",
-      "registryDependencies": ["@coss/table"],
+      "registryDependencies": [
+        "@coss/table"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tabs"],
+      "categories": [
+        "tabs"
+      ],
       "description": "Basic tabs",
       "files": [
         {
@@ -4392,11 +5671,15 @@
         }
       ],
       "name": "p-tabs-1",
-      "registryDependencies": ["@coss/tabs"],
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tabs"],
+      "categories": [
+        "tabs"
+      ],
       "description": "Tabs with underline",
       "files": [
         {
@@ -4405,11 +5688,15 @@
         }
       ],
       "name": "p-tabs-2",
-      "registryDependencies": ["@coss/tabs"],
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tabs"],
+      "categories": [
+        "tabs"
+      ],
       "description": "Vertical tabs",
       "files": [
         {
@@ -4421,11 +5708,15 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"
       },
       "name": "p-tabs-3",
-      "registryDependencies": ["@coss/tabs"],
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tabs"],
+      "categories": [
+        "tabs"
+      ],
       "description": "Vertical tabs with underline",
       "files": [
         {
@@ -4437,11 +5728,15 @@
         "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"
       },
       "name": "p-tabs-4",
-      "registryDependencies": ["@coss/tabs"],
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Basic textarea",
       "files": [
         {
@@ -4453,11 +5748,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-1",
-      "registryDependencies": ["@coss/textarea"],
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Small textarea",
       "files": [
         {
@@ -4469,11 +5768,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-2",
-      "registryDependencies": ["@coss/textarea"],
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Large textarea",
       "files": [
         {
@@ -4485,11 +5788,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-3",
-      "registryDependencies": ["@coss/textarea"],
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Disabled textarea",
       "files": [
         {
@@ -4501,11 +5808,15 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-4",
-      "registryDependencies": ["@coss/textarea"],
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Textarea with label",
       "files": [
         {
@@ -4517,11 +5828,16 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-5",
-      "registryDependencies": ["@coss/textarea", "@coss/label"],
+      "registryDependencies": [
+        "@coss/textarea",
+        "@coss/label"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["textarea"],
+      "categories": [
+        "textarea"
+      ],
       "description": "Textarea in form",
       "files": [
         {
@@ -4533,11 +5849,17 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-textarea-6",
-      "registryDependencies": ["@coss/textarea", "@coss/form", "@coss/field"],
+      "registryDependencies": [
+        "@coss/textarea",
+        "@coss/form",
+        "@coss/field"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Basic toast",
       "files": [
         {
@@ -4546,11 +5868,15 @@
         }
       ],
       "name": "p-toast-1",
-      "registryDependencies": ["@coss/toast"],
+      "registryDependencies": [
+        "@coss/toast"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Toast with status",
       "files": [
         {
@@ -4559,11 +5885,15 @@
         }
       ],
       "name": "p-toast-2",
-      "registryDependencies": ["@coss/toast"],
+      "registryDependencies": [
+        "@coss/toast"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Loading toast",
       "files": [
         {
@@ -4572,11 +5902,15 @@
         }
       ],
       "name": "p-toast-3",
-      "registryDependencies": ["@coss/toast"],
+      "registryDependencies": [
+        "@coss/toast"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Toast with action",
       "files": [
         {
@@ -4585,11 +5919,16 @@
         }
       ],
       "name": "p-toast-4",
-      "registryDependencies": ["@coss/toast", "@coss/button"],
+      "registryDependencies": [
+        "@coss/toast",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Promise toast",
       "files": [
         {
@@ -4598,11 +5937,15 @@
         }
       ],
       "name": "p-toast-5",
-      "registryDependencies": ["@coss/toast"],
+      "registryDependencies": [
+        "@coss/toast"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Toast with varying heights",
       "files": [
         {
@@ -4611,11 +5954,15 @@
         }
       ],
       "name": "p-toast-6",
-      "registryDependencies": ["@coss/toast"],
+      "registryDependencies": [
+        "@coss/toast"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Anchored toast with tooltip style",
       "files": [
         {
@@ -4624,11 +5971,17 @@
         }
       ],
       "name": "p-toast-7",
-      "registryDependencies": ["@coss/toast", "@coss/button", "@coss/tooltip"],
+      "registryDependencies": [
+        "@coss/toast",
+        "@coss/button",
+        "@coss/tooltip"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toast"],
+      "categories": [
+        "toast"
+      ],
       "description": "Anchored toast",
       "files": [
         {
@@ -4637,11 +5990,18 @@
         }
       ],
       "name": "p-toast-8",
-      "registryDependencies": ["@coss/toast", "@coss/button", "@coss/spinner"],
+      "registryDependencies": [
+        "@coss/toast",
+        "@coss/button",
+        "@coss/spinner"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Basic toggle group",
       "files": [
         {
@@ -4650,11 +6010,16 @@
         }
       ],
       "name": "p-toggle-group-1",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Small toggle group",
       "files": [
         {
@@ -4663,11 +6028,16 @@
         }
       ],
       "name": "p-toggle-group-2",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Large toggle group",
       "files": [
         {
@@ -4676,11 +6046,16 @@
         }
       ],
       "name": "p-toggle-group-3",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Toggle group with outline",
       "files": [
         {
@@ -4689,11 +6064,16 @@
         }
       ],
       "name": "p-toggle-group-4",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Vertical toggle group with outline",
       "files": [
         {
@@ -4702,11 +6082,16 @@
         }
       ],
       "name": "p-toggle-group-5",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Disabled toggle group",
       "files": [
         {
@@ -4715,11 +6100,16 @@
         }
       ],
       "name": "p-toggle-group-6",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Toggle group with disabled item",
       "files": [
         {
@@ -4728,11 +6118,16 @@
         }
       ],
       "name": "p-toggle-group-7",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Multiple selection toggle group",
       "files": [
         {
@@ -4741,11 +6136,16 @@
         }
       ],
       "name": "p-toggle-group-8",
-      "registryDependencies": ["@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle", "toggle group"],
+      "categories": [
+        "toggle",
+        "toggle group"
+      ],
       "description": "Toggle group with tooltips",
       "files": [
         {
@@ -4754,11 +6154,16 @@
         }
       ],
       "name": "p-toggle-group-9",
-      "registryDependencies": ["@coss/toggle-group", "@coss/tooltip"],
+      "registryDependencies": [
+        "@coss/toggle-group",
+        "@coss/tooltip"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
+      "categories": [
+        "toggle"
+      ],
       "description": "Basic toggle",
       "files": [
         {
@@ -4767,11 +6172,15 @@
         }
       ],
       "name": "p-toggle-1",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
+      "categories": [
+        "toggle"
+      ],
       "description": "Toggle with outline",
       "files": [
         {
@@ -4780,12 +6189,18 @@
         }
       ],
       "name": "p-toggle-2",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "toggle"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Toggle with icon",
       "files": [
         {
@@ -4794,11 +6209,15 @@
         }
       ],
       "name": "p-toggle-3",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
+      "categories": [
+        "toggle"
+      ],
       "description": "Small toggle",
       "files": [
         {
@@ -4807,11 +6226,15 @@
         }
       ],
       "name": "p-toggle-4",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
+      "categories": [
+        "toggle"
+      ],
       "description": "Large toggle",
       "files": [
         {
@@ -4820,11 +6243,15 @@
         }
       ],
       "name": "p-toggle-5",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
+      "categories": [
+        "toggle"
+      ],
       "description": "Disabled toggle",
       "files": [
         {
@@ -4833,12 +6260,18 @@
         }
       ],
       "name": "p-toggle-6",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toggle"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "toggle"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Toggle icon group",
       "files": [
         {
@@ -4847,12 +6280,18 @@
         }
       ],
       "name": "p-toggle-7",
-      "registryDependencies": ["@coss/toggle"],
+      "registryDependencies": [
+        "@coss/toggle"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["toolbar"],
-      "dependencies": ["lucide-react"],
+      "categories": [
+        "toolbar"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
       "description": "Toolbar with toggles, buttons, and select",
       "files": [
         {
@@ -4871,7 +6310,9 @@
       "type": "registry:block"
     },
     {
-      "categories": ["tooltip"],
+      "categories": [
+        "tooltip"
+      ],
       "description": "Basic tooltip",
       "files": [
         {
@@ -4880,11 +6321,16 @@
         }
       ],
       "name": "p-tooltip-1",
-      "registryDependencies": ["@coss/tooltip", "@coss/button"],
+      "registryDependencies": [
+        "@coss/tooltip",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tooltip"],
+      "categories": [
+        "tooltip"
+      ],
       "description": "Grouped tooltips",
       "files": [
         {
@@ -4893,11 +6339,16 @@
         }
       ],
       "name": "p-tooltip-2",
-      "registryDependencies": ["@coss/tooltip", "@coss/button"],
+      "registryDependencies": [
+        "@coss/tooltip",
+        "@coss/button"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tooltip"],
+      "categories": [
+        "tooltip"
+      ],
       "description": "Toggle group animated tooltip",
       "files": [
         {
@@ -4906,11 +6357,16 @@
         }
       ],
       "name": "p-tooltip-3",
-      "registryDependencies": ["@coss/tooltip", "@coss/toggle-group"],
+      "registryDependencies": [
+        "@coss/tooltip",
+        "@coss/toggle-group"
+      ],
       "type": "registry:block"
     },
     {
-      "categories": ["tooltip"],
+      "categories": [
+        "tooltip"
+      ],
       "description": "Vertical group with animated tooltip",
       "files": [
         {
@@ -4919,7 +6375,11 @@
         }
       ],
       "name": "p-tooltip-4",
-      "registryDependencies": ["@coss/tooltip", "@coss/button", "@coss/group"],
+      "registryDependencies": [
+        "@coss/tooltip",
+        "@coss/button",
+        "@coss/group"
+      ],
       "type": "registry:block"
     },
     {
@@ -4983,7 +6443,10 @@
       "type": "registry:style"
     },
     {
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "files": [
         {
           "path": "registry/default/lib/utils.ts",

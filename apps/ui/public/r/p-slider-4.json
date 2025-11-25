@@ -1,15 +1,19 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "categories": ["slider"],
+  "name": "p-slider-4",
+  "type": "registry:block",
   "description": "Vertical slider",
+  "registryDependencies": [
+    "@coss/slider"
+  ],
   "files": [
     {
-      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function Particle() {\n  return <Slider defaultValue={50} orientation=\"vertical\" />;\n}\n",
       "path": "registry/default/particles/p-slider-4.tsx",
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function Particle() {\n  return <Slider defaultValue={50} orientation=\"vertical\" />;\n}\n",
       "type": "registry:block"
     }
   ],
-  "name": "p-slider-4",
-  "registryDependencies": ["@coss/slider"],
-  "type": "registry:block"
+  "categories": [
+    "slider"
+  ]
 }
