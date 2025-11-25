@@ -15,6 +15,7 @@ function MenuTrigger(props: MenuPrimitive.Trigger.Props) {
 }
 
 function MenuPopup({
+  children,
   className,
   sideOffset = 4,
   align = "center",
@@ -37,18 +38,18 @@ function MenuPopup({
         side={side}
         sideOffset={sideOffset}
       >
-        <span
+        <MenuPrimitive.Popup
           className={cn(
             "relative flex origin-(--transform-origin) rounded-lg border bg-popover bg-clip-padding shadow-lg transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
             className,
           )}
+          data-slot="menu-popup"
+          {...props}
         >
-          <MenuPrimitive.Popup
-            className="max-h-(--available-height) not-[class*='w-']:min-w-32 overflow-y-auto p-1"
-            data-slot="menu-popup"
-            {...props}
-          />
-        </span>
+          <div className="max-h-(--available-height) not-[class*='w-']:min-w-32 overflow-y-auto p-1">
+            {children}
+          </div>
+        </MenuPrimitive.Popup>
       </MenuPrimitive.Positioner>
     </MenuPrimitive.Portal>
   );
@@ -219,6 +220,7 @@ function MenuSubPopup({
       alignOffset={alignOffset}
       className={className}
       data-slot="menu-sub-content"
+      side="inline-end"
       sideOffset={sideOffset}
       {...props}
     />

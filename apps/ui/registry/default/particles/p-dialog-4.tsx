@@ -18,6 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogPopup,
   DialogTitle,
   DialogTrigger,
@@ -51,19 +52,21 @@ export default function Particle() {
           <DialogDescription>Type something and try closing.</DialogDescription>
         </DialogHeader>
         <Form
-          className="gap-0"
+          className="contents"
           onSubmit={(event) => {
             event.preventDefault();
             // Close the dialog when submitting
             setDialogOpen(false);
           }}
         >
-          <Field className="px-6">
-            <Textarea
-              onChange={(e) => setValue(e.target.value)}
-              value={value}
-            />
-          </Field>
+          <DialogPanel>
+            <Field>
+              <Textarea
+                onChange={(e) => setValue(e.target.value)}
+                value={value}
+              />
+            </Field>
+          </DialogPanel>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>
               Cancel

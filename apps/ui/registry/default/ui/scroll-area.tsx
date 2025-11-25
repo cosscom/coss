@@ -13,10 +13,10 @@ function ScrollArea({
   orientation?: "horizontal" | "vertical" | "both";
 }) {
   return (
-    <ScrollAreaPrimitive.Root className="min-h-0" {...props}>
+    <ScrollAreaPrimitive.Root className="size-full min-h-0" {...props}>
       <ScrollAreaPrimitive.Viewport
         className={cn(
-          "size-full overscroll-contain rounded-[inherit] outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+          "size-full overscroll-contain rounded-[inherit] outline-none transition-shadows focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
           className,
         )}
         data-slot="scroll-area-viewport"

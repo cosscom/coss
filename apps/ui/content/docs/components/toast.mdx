@@ -22,14 +22,16 @@ links:
 npx shadcn@latest add @coss/toast
 ```
 
-<Step>Add the `ToastProvider` to your app.</Step>
+<Step>Add the `ToastProvider` and `AnchoredToastProvider` to your app.</Step>
 
 <span data-lib="base-ui">
 ```tsx title="app/layout.tsx"
-// [!code word:import { ToastProvider } from "@/components/ui/toast"]
+// [!code word:import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast"]
 // [!code word:<ToastProvider>]
+// [!code word:<AnchoredToastProvider>]
+// [!code word:</AnchoredToastProvider>]
 // [!code word:</ToastProvider>]
-import { ToastProvider } from "@/components/ui/toast"
+import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast"
 
 export default function RootLayout({ children }) {
   return (
@@ -37,7 +39,9 @@ export default function RootLayout({ children }) {
       <head />
       <body>
         <ToastProvider>
-          <main>{children}</main>
+          <AnchoredToastProvider>
+            <main>{children}</main>
+          </AnchoredToastProvider>
         </ToastProvider>
       </body>
     </html>
@@ -64,14 +68,16 @@ npm install @base-ui-components/react
 
 <Step>Update the import paths to match your project setup.</Step>
 
-<Step>Add the `ToastProvider` to your app.</Step>
+<Step>Add the `ToastProvider` and `AnchoredToastProvider` to your app.</Step>
 
 <span data-lib="base-ui">
 ```tsx title="app/layout.tsx"
-// [!code word:import { ToastProvider } from "@/components/ui/toast"]
+// [!code word:import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast"]
 // [!code word:<ToastProvider>]
+// [!code word:<AnchoredToastProvider>]
+// [!code word:</AnchoredToastProvider>]
 // [!code word:</ToastProvider>]
-import { ToastProvider } from "@/components/ui/toast"
+import { AnchoredToastProvider, ToastProvider } from "@/components/ui/toast"
 
 export default function RootLayout({ children }) {
   return (
@@ -79,7 +85,9 @@ export default function RootLayout({ children }) {
       <head />
       <body>
         <ToastProvider>
-          <main>{children}</main>
+          <AnchoredToastProvider>
+            <main>{children}</main>
+          </AnchoredToastProvider>
         </ToastProvider>
       </body>
     </html>
@@ -95,6 +103,8 @@ export default function RootLayout({ children }) {
 </CodeTabs>
 
 ## Usage
+
+### Stacked Toasts
 
 ```tsx
 import { toastManager } from "@/components/ui/toast"
@@ -113,6 +123,33 @@ Allowed values: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-ce
 
 ```tsx
 <ToastProvider position="top-center">{children}</ToastProvider>
+```
+
+### Anchored Toasts
+
+For toasts positioned relative to a specific element, use `anchoredToastManager`. The `AnchoredToastProvider` is typically added to your app layout (alongside `ToastProvider`), so you can use `anchoredToastManager` directly in your components:
+
+```tsx
+anchoredToastManager.add({
+  title: "Copied!",
+  positionerProps: {
+    anchor: buttonRef.current,
+  },
+})
+```
+
+You can also style anchored toasts like tooltips by passing `data: { tooltipStyle: true }`. When using tooltip style, only the `title` is displayed (description and other content are ignored):
+
+```tsx
+anchoredToastManager.add({
+  title: "Copied!",
+  positionerProps: {
+    anchor: buttonRef.current,
+  },
+  data: {
+    tooltipStyle: true,
+  },
+})
 ```
 
 ## Examples
@@ -136,6 +173,14 @@ Allowed values: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-ce
 ### With Varying Heights
 
 <ComponentPreview name="p-toast-6" />
+
+### Copy Button with Anchored Toast
+
+<ComponentPreview name="p-toast-7" />
+
+### Submit Button with Error Toast
+
+<ComponentPreview name="p-toast-8" />
 
 ## Comparing with Sonner / shadcn
 

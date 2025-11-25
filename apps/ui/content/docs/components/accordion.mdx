@@ -91,13 +91,13 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 
 | Component   | Radix UI Prop                             | Base UI Prop                          |
 | ----------- | ----------------------------------------- | ------------------------------------- |
-| `Accordion` | `type` (enum, `"single"` or `"multiple"`) | `multiple` (boolean, default: `true`) |
+| `Accordion` | `type` (enum, `"single"` or `"multiple"`) | `multiple` (boolean, default: `false`) |
 | `Accordion` | `collapsible`                             | _removed_                             |
 
 ### Quick Checklist
 
-- Replace `type="single"` → `multiple={false}` on `Accordion`
-- Remove `type="multiple"` from `Accordion`
+- Replace `type="multiple"` → `multiple={true}` on `Accordion`
+- Remove `type="single"` from `Accordion`
 - Remove `collapsible` from `Accordion`
 - Always use arrays for `defaultValue`
 - Use `AccordionPanel` going forward; `AccordionContent` remains for legacy
@@ -121,9 +121,9 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
-// [!code word:multiple={false}]
+// [!code word:multiple={true}]
 // [!code word:\{\["item-1"\]\}]
-<Accordion multiple={false} defaultValue={["item-1"]}>
+<Accordion multiple={true} defaultValue={["item-1"]}>
   <AccordionItem value="item-1">
     <AccordionTrigger>Title</AccordionTrigger>
     <AccordionPanel>Content</AccordionPanel>

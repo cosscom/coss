@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogPopup,
   DialogTitle,
   DialogTrigger,
@@ -25,7 +26,7 @@ export default function Particle() {
             View and manage a user in your team.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 px-6">
+        <DialogPanel className="grid gap-4">
           <div className="grid gap-1">
             <p className="text-muted-foreground text-sm">Name</p>
             <p className="font-medium text-sm">Bora Baloglu</p>
@@ -34,7 +35,7 @@ export default function Particle() {
             <p className="text-muted-foreground text-sm">Email</p>
             <p className="font-medium text-sm">bora@example.com</p>
           </div>
-        </div>
+        </DialogPanel>
         <DialogFooter>
           <Dialog>
             <DialogTrigger render={<Button variant="outline" />}>
@@ -47,7 +48,7 @@ export default function Particle() {
                   Make changes to the member&apos;s information.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col gap-4 px-6">
+              <DialogPanel className="grid gap-4">
                 <Field>
                   <FieldLabel>Name</FieldLabel>
                   <Input defaultValue="Bora Baloglu" type="text" />
@@ -56,7 +57,7 @@ export default function Particle() {
                   <FieldLabel>Email</FieldLabel>
                   <Input defaultValue="bora@example.com" type="text" />
                 </Field>
-              </div>
+              </DialogPanel>
               <DialogFooter>
                 <DialogClose render={<Button variant="ghost" />}>
                   Cancel

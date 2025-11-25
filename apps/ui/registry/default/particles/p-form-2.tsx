@@ -36,9 +36,9 @@ async function submitForm(event: React.FormEvent<HTMLFormElement>) {
 export default function Particle() {
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<Errors>({});
-  const handleClearErrors = (next: Errors) => setErrors(next);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     const formEl = event.currentTarget;
     setLoading(true);
     const response = await submitForm(event);
@@ -56,12 +56,7 @@ export default function Particle() {
   };
 
   return (
-    <Form
-      className="max-w-64"
-      errors={errors}
-      onClearErrors={handleClearErrors}
-      onSubmit={onSubmit}
-    >
+    <Form className="max-w-64" errors={errors} onSubmit={onSubmit}>
       <Field name="name">
         <FieldLabel>Name</FieldLabel>
         <Input disabled={loading} placeholder="Enter name" />

@@ -51,6 +51,7 @@ npm install @base-ui-components/react
 ```tsx
 import {
   Tooltip,
+  TooltipCreateHandle,
   TooltipPopup,
   TooltipProvider,
   TooltipTrigger,
@@ -66,32 +67,26 @@ import {
 </Tooltip>
 ```
 
-**Grouping Tooltips**
-
-To group multiple tooltips so they appear instantly after the first one is opened, wrap them in `TooltipProvider`. The grouping logic ensures that once a tooltip becomes visible, the adjacent tooltips will be shown instantly.
-
-```tsx
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger render={<Button variant="outline" />}>
-      Tooltip 1
-    </TooltipTrigger>
-    <TooltipPopup>Content 1</TooltipPopup>
-  </Tooltip>
-  <Tooltip>
-    <TooltipTrigger render={<Button variant="outline" />}>
-      Tooltip 2
-    </TooltipTrigger>
-    <TooltipPopup>Content 2</TooltipPopup>
-  </Tooltip>
-</TooltipProvider>
-```
-
 ## Examples
 
 ### Grouped Tooltips
 
+To group multiple tooltips so they appear instantly after the first one is opened, wrap them in `TooltipProvider`. The grouping logic ensures that once a tooltip becomes visible, the adjacent tooltips will be shown instantly.
+
 <ComponentPreview name="p-tooltip-2" />
+
+### Animated Tooltips
+
+You can create animated tooltips that smoothly transition between different triggers using detached triggers. This pattern allows multiple triggers to share a single tooltip popup, with automatic animations for position, size, and content changes.
+
+To create detached triggers:
+
+1. Create a handle using `TooltipCreateHandle`
+2. Attach the same handle to multiple `TooltipTrigger` components
+3. Each trigger provides a `payload` prop containing the content component
+4. Use a single `Tooltip` component with the handle to render the popup
+
+<ComponentPreview name="p-tooltip-3" />
 
 ## Comparing with Radix / shadcn
 

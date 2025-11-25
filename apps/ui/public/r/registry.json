@@ -105,6 +105,7 @@
         }
       ],
       "name": "alert-dialog",
+      "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:ui"
     },
     {
@@ -513,7 +514,7 @@
         }
       ],
       "name": "sheet",
-      "registryDependencies": ["@coss/dialog"],
+      "registryDependencies": ["@coss/scroll-area"],
       "type": "registry:ui"
     },
     {
@@ -852,6 +853,19 @@
         }
       ],
       "name": "p-alert-dialog-1",
+      "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["alert dialog", "dialog"],
+      "description": "Alert dialog with bare footer",
+      "files": [
+        {
+          "path": "registry/default/particles/p-alert-dialog-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-alert-dialog-2",
       "registryDependencies": ["@coss/alert-dialog", "@coss/button"],
       "type": "registry:block"
     },
@@ -2082,6 +2096,25 @@
       "type": "registry:block"
     },
     {
+      "categories": ["dialog"],
+      "description": "Dialog with bare footer",
+      "files": [
+        {
+          "path": "registry/default/particles/p-dialog-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-dialog-6",
+      "registryDependencies": [
+        "@coss/dialog",
+        "@coss/button",
+        "@coss/form",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
       "categories": ["dialog", "menu"],
       "description": "Dialog opened from menu",
       "files": [
@@ -2130,6 +2163,19 @@
         "@coss/field",
         "@coss/textarea"
       ],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["dialog"],
+      "description": "Dialog with long content",
+      "files": [
+        {
+          "path": "registry/default/particles/p-dialog-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-dialog-5",
+      "registryDependencies": ["@coss/dialog", "@coss/button"],
       "type": "registry:block"
     },
     {
@@ -3675,6 +3721,20 @@
       "type": "registry:block"
     },
     {
+      "categories": ["popover", "button", "avatar"],
+      "dependencies": ["lucide-react"],
+      "description": "Animated popovers",
+      "files": [
+        {
+          "path": "registry/default/particles/p-popover-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-popover-3",
+      "registryDependencies": ["@coss/popover", "@coss/button", "@coss/avatar"],
+      "type": "registry:block"
+    },
+    {
       "categories": ["preview card"],
       "dependencies": ["lucide-react"],
       "description": "Preview card with popup",
@@ -4535,6 +4595,32 @@
       "type": "registry:block"
     },
     {
+      "categories": ["toast"],
+      "description": "Anchored toast with tooltip style",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-7",
+      "registryDependencies": ["@coss/toast", "@coss/button", "@coss/tooltip"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["toast"],
+      "description": "Anchored toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-8",
+      "registryDependencies": ["@coss/toast", "@coss/button", "@coss/spinner"],
+      "type": "registry:block"
+    },
+    {
       "categories": ["toggle", "toggle group"],
       "description": "Basic toggle group",
       "files": [
@@ -4788,6 +4874,32 @@
       ],
       "name": "p-tooltip-2",
       "registryDependencies": ["@coss/tooltip", "@coss/button"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["tooltip"],
+      "description": "Toggle group animated tooltip",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tooltip-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tooltip-3",
+      "registryDependencies": ["@coss/tooltip", "@coss/toggle-group"],
+      "type": "registry:block"
+    },
+    {
+      "categories": ["tooltip"],
+      "description": "Vertical group with animated tooltip",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tooltip-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tooltip-4",
+      "registryDependencies": ["@coss/tooltip", "@coss/button", "@coss/group"],
       "type": "registry:block"
     },
     {
