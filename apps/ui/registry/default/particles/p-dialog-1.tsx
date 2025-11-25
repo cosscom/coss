@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogPopup,
   DialogTitle,
   DialogTrigger,
@@ -20,7 +21,7 @@ export default function Particle() {
         Open Dialog
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
-        <Form className="gap-0">
+        <Form className="contents">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
@@ -28,7 +29,7 @@ export default function Particle() {
               done.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4 px-6">
+          <DialogPanel className="grid gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
               <Input defaultValue="Margaret Welsh" type="text" />
@@ -37,7 +38,7 @@ export default function Particle() {
               <FieldLabel>Username</FieldLabel>
               <Input defaultValue="@maggie.welsh" type="text" />
             </Field>
-          </div>
+          </DialogPanel>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>
               Cancel

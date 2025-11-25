@@ -82,6 +82,19 @@ Use the `tooltipStyle` prop to make a popover look like a tooltip. This is recom
 
 <ComponentPreview name="p-input-group-7" />
 
+### Animated Popovers
+
+You can create animated popovers that smoothly transition between different triggers using detached triggers. This pattern allows multiple triggers to share a single popover popup, with automatic animations for position, size, and content changes.
+
+To create detached triggers:
+
+1. Create a handle using `PopoverCreateHandle`
+2. Attach the same handle to multiple `PopoverTrigger` components
+3. Each trigger provides a `payload` prop containing the content component
+4. Use a single `Popover` component with the handle to render the popup
+
+<ComponentPreview name="p-popover-3" />
+
 ## Comparing with Radix / shadcn
 
 If you’re already familiar with Radix UI and shadcn/ui, this guide highlights the small differences and similarities so you can get started with **coss ui** quickly.

@@ -14,10 +14,6 @@ import {
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
 
-export function copyToClipboard(value: string) {
-  navigator.clipboard.writeText(value);
-}
-
 export function CopyRegistry({
   value,
   className,

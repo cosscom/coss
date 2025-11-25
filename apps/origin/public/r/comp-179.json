@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "files": [
     {
-      "content": "\"use client\"\n\nimport { useId, useState } from \"react\"\n\nimport { Label } from \"@/registry/default/ui/label\"\nimport { Switch } from \"@/registry/default/ui/switch\"\n\nexport default function Component() {\n  const id = useId()\n  const [checked, setChecked] = useState<boolean>(true)\n\n  return (\n    <div className=\"inline-flex items-center gap-2\">\n      <Switch\n        id={id}\n        checked={checked}\n        onCheckedChange={setChecked}\n        aria-label=\"Toggle switch\"\n      />\n      <Label htmlFor={id} className=\"text-sm font-medium\">\n        {checked ? \"On\" : \"Off\"}\n      </Label>\n    </div>\n  )\n}\n",
+      "content": "\"use client\";\n\nimport { useId, useState } from \"react\";\n\nimport { Label } from \"@/registry/default/ui/label\";\nimport { Switch } from \"@/registry/default/ui/switch\";\n\nexport default function Component() {\n  const id = useId();\n  const [checked, setChecked] = useState<boolean>(true);\n\n  return (\n    <div className=\"inline-flex items-center gap-2\">\n      <Switch\n        aria-label=\"Toggle switch\"\n        checked={checked}\n        id={id}\n        onCheckedChange={setChecked}\n      />\n      <Label className=\"font-medium text-sm\" htmlFor={id}>\n        {checked ? \"On\" : \"Off\"}\n      </Label>\n    </div>\n  );\n}\n",
       "path": "registry/default/components/comp-179.tsx",
       "type": "registry:component"
     }

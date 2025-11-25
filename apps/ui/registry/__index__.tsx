@@ -76,7 +76,7 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "alert-dialog",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   autocomplete: {
@@ -962,6 +962,32 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "p-alert-dialog-1",
+    registryDependencies: ["@coss/alert-dialog", "@coss/button"],
+    type: "registry:block",
+  },
+  "p-alert-dialog-2": {
+    categories: ["alert dialog", "dialog"],
+    component: React.lazy(async () => {
+      const mod = await import(
+        "@/registry/default/particles/p-alert-dialog-2.tsx"
+      );
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Alert dialog with bare footer",
+    files: [
+      {
+        path: "registry/default/particles/p-alert-dialog-2.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-alert-dialog-2",
     registryDependencies: ["@coss/alert-dialog", "@coss/button"],
     type: "registry:block",
   },
@@ -3215,6 +3241,60 @@ export const Index: Record<string, any> = {
       "@coss/form",
       "@coss/field",
       "@coss/textarea",
+    ],
+    type: "registry:block",
+  },
+  "p-dialog-5": {
+    categories: ["dialog"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-dialog-5.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Dialog with long content",
+    files: [
+      {
+        path: "registry/default/particles/p-dialog-5.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-dialog-5",
+    registryDependencies: ["@coss/dialog", "@coss/button"],
+    type: "registry:block",
+  },
+  "p-dialog-6": {
+    categories: ["dialog"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-dialog-6.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Dialog with bare footer",
+    files: [
+      {
+        path: "registry/default/particles/p-dialog-6.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-dialog-6",
+    registryDependencies: [
+      "@coss/dialog",
+      "@coss/button",
+      "@coss/form",
+      "@coss/field",
+      "@coss/input",
     ],
     type: "registry:block",
   },
@@ -5815,6 +5895,30 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/popover", "@coss/button"],
     type: "registry:block",
   },
+  "p-popover-3": {
+    categories: ["popover", "button", "avatar"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-popover-3.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Animated popovers",
+    files: [
+      {
+        path: "registry/default/particles/p-popover-3.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-popover-3",
+    registryDependencies: ["@coss/popover", "@coss/button", "@coss/avatar"],
+    type: "registry:block",
+  },
   "p-preview-card-1": {
     categories: ["preview card"],
     component: React.lazy(async () => {
@@ -7320,6 +7424,54 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/toast"],
     type: "registry:block",
   },
+  "p-toast-7": {
+    categories: ["toast"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-7.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Anchored toast with tooltip style",
+    files: [
+      {
+        path: "registry/default/particles/p-toast-7.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-toast-7",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  "p-toast-8": {
+    categories: ["toast"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-8.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Anchored toast",
+    files: [
+      {
+        path: "registry/default/particles/p-toast-8.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-toast-8",
+    registryDependencies: ["@coss/toast", "@coss/button", "@coss/spinner"],
+    type: "registry:block",
+  },
   "p-toggle-1": {
     categories: ["toggle"],
     component: React.lazy(async () => {
@@ -7800,6 +7952,54 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/tooltip", "@coss/button"],
     type: "registry:block",
   },
+  "p-tooltip-3": {
+    categories: ["tooltip"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tooltip-3.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Toggle group animated tooltip",
+    files: [
+      {
+        path: "registry/default/particles/p-tooltip-3.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-tooltip-3",
+    registryDependencies: ["@coss/tooltip", "@coss/toggle-group"],
+    type: "registry:block",
+  },
+  "p-tooltip-4": {
+    categories: ["tooltip"],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tooltip-4.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "Vertical group with animated tooltip",
+    files: [
+      {
+        path: "registry/default/particles/p-tooltip-4.tsx",
+        target: "",
+        type: "registry:block",
+      },
+    ],
+    meta: undefined,
+    name: "p-tooltip-4",
+    registryDependencies: ["@coss/tooltip", "@coss/button", "@coss/group"],
+    type: "registry:block",
+  },
   pagination: {
     categories: undefined,
     component: React.lazy(async () => {
@@ -8013,7 +8213,38 @@ export const Index: Record<string, any> = {
     ],
     meta: undefined,
     name: "sheet",
-    registryDependencies: ["@coss/dialog"],
+    registryDependencies: ["@coss/scroll-area"],
+    type: "registry:ui",
+  },
+  sidebar: {
+    categories: undefined,
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/sidebar.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "",
+    files: [
+      {
+        path: "registry/default/ui/sidebar.tsx",
+        target: "",
+        type: "registry:ui",
+      },
+    ],
+    meta: undefined,
+    name: "sidebar",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input",
+      "@coss/separator",
+      "@coss/sheet",
+      "@coss/skeleton",
+      "@coss/tooltip",
+    ],
     type: "registry:ui",
   },
   skeleton: {

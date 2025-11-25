@@ -53,7 +53,10 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
+  SheetPanel,
+  SheetPopup,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
@@ -70,8 +73,57 @@ import {
         and remove your data from our servers.
       </SheetDescription>
     </SheetHeader>
+    <SheetPanel>Content</SheetPanel>
+    <SheetFooter>
+      <SheetClose>Close</SheetClose>
+    </SheetFooter>
   </SheetPopup>
 </Sheet>
+```
+
+**SheetPanel Scrolling**
+
+The `SheetPanel` component automatically wraps its content in a `ScrollArea` component. This means that if the content exceeds the sheet's maximum height, it will become scrollable automatically. The scrollbar will appear when needed, providing a smooth scrolling experience.
+
+```tsx
+<SheetPanel>
+  {/* Long content that will scroll if it exceeds the sheet height */}
+  <div>...</div>
+</SheetPanel>
+```
+
+**SheetPopup Props**
+
+The `SheetPopup` component supports the following props:
+
+- `side`: Controls which side of the screen the sheet opens from. Options: `"top"`, `"bottom"`, `"left"`, `"right"` (default: `"right"`)
+- `inset`: When `true`, adds spacing around the sheet on desktop screens (default: `false`)
+
+```tsx
+// Right side sheet (default)
+<SheetPopup side="right">
+  ...
+</SheetPopup>
+
+// Left side sheet
+<SheetPopup side="left">
+  ...
+</SheetPopup>
+
+// Top sheet
+<SheetPopup side="top">
+  ...
+</SheetPopup>
+
+// Bottom sheet
+<SheetPopup side="bottom">
+  ...
+</SheetPopup>
+
+// Sheet with inset spacing
+<SheetPopup side="right" inset>
+  ...
+</SheetPopup>
 ```
 
 ## Examples
@@ -92,8 +144,9 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 
 - Replace `asChild` → `render` on `SheetTrigger` and closing buttons
 - Prefer `SheetPopup`; `SheetContent` remains for legacy
+- Use `SheetPanel` to wrap main content between `SheetHeader` and `SheetFooter`
 - If you used `asChild` on any other parts, switch to the `render` prop
-- `SheetPopup` supports an `inset` prop for adding internal padding
+- `SheetPopup` supports `side` and `inset` props for positioning and spacing
 
 ### Comparison Example
 
@@ -122,6 +175,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
 // [!code word:render]
+// [!code word:<SheetPanel>Content</SheetPanel>]
 <Sheet>
   <SheetTrigger render={<Button variant="outline" />}>
     Show Sheet
@@ -131,6 +185,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
       <SheetTitle>Sheet Title</SheetTitle>
       <SheetDescription>Sheet Description</SheetDescription>
     </SheetHeader>
+    <SheetPanel>Content</SheetPanel>
     <SheetFooter>
       <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
     </SheetFooter>

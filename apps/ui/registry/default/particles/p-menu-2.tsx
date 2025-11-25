@@ -8,8 +8,10 @@ import {
 
 export default function Particle() {
   return (
-    <Menu openOnHover>
-      <MenuTrigger render={<Button variant="outline" />}>Hover me</MenuTrigger>
+    <Menu>
+      <MenuTrigger openOnHover render={<Button variant="outline" />}>
+        Hover me
+      </MenuTrigger>
       <MenuPopup>
         <MenuItem>Item one</MenuItem>
         <MenuItem>Item two</MenuItem>

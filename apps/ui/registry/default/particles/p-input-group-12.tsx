@@ -23,9 +23,10 @@ export default function Particle() {
         <Label className="text-foreground" htmlFor="email-1">
           Email
         </Label>
-        <Popover openOnHover>
+        <Popover>
           <PopoverTrigger
             className="ml-auto"
+            openOnHover
             render={<Button className="-m-1" size="icon-xs" variant="ghost" />}
           >
             <InfoIcon />

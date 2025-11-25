@@ -9,7 +9,7 @@ export function SiteFooter() {
       />
       <div className="container flex w-full items-center justify-center gap-2 px-4 sm:px-6">
         <p>
-          © 2025{" "}
+          © {new Date().getFullYear()}{" "}
           <Link className="font-heading text-foreground text-lg" href="/">
             coss.com
           </Link>{" "}

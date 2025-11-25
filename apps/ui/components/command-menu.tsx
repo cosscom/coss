@@ -1,6 +1,5 @@
 "use client";
 
-import { copyToClipboard } from "@coss/ui/components/copy-button";
 import {
   ArrowTurnBackwardIcon,
   Atom01Icon,
@@ -25,6 +24,7 @@ import { useIsMac } from "@/hooks/use-is-mac";
 import { useMutationObserver } from "@/hooks/use-mutation-observer";
 import type { source } from "@/lib/source";
 import { cn } from "@/lib/utils";
+import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard";
 import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
@@ -47,6 +47,7 @@ export function CommandMenu({
   const router = useRouter();
   const isMac = useIsMac();
   const [config] = useConfig();
+  const { copyToClipboard } = useCopyToClipboard();
   const [open, setOpen] = React.useState(false);
   const [selectedType, setSelectedType] = React.useState<
     "page" | "component" | null
@@ -116,7 +117,7 @@ export function CommandMenu({
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [copyPayload, runCommand, selectedType]);
+  }, [copyPayload, runCommand, selectedType, copyToClipboard]);
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>

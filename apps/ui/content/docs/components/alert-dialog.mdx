@@ -54,6 +54,7 @@ import {
   AlertDialog,
   AlertDialogClose,
   AlertDialogDescription,
+  AlertDialogPanel,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogPopup,
@@ -73,6 +74,7 @@ import {
         and remove your data from our servers.
       </AlertDialogDescription>
     </AlertDialogHeader>
+    <AlertDialogPanel>Content</AlertDialogPanel>
     <AlertDialogFooter>
       <AlertDialogClose>Cancel</AlertDialogClose>
       <AlertDialogClose>Delete Account</AlertDialogClose>
@@ -81,7 +83,32 @@ import {
 </AlertDialog>
 ```
 
+**AlertDialogFooter Variant**
+
+The `AlertDialogFooter` component supports a `variant` prop to control its styling:
+
+- `default` (default): Includes a border-top, background color, and padding
+- `bare`: Removes the border and background for a minimal appearance
+
+```tsx
+// Default variant (with border and background)
+<AlertDialogFooter>
+  <AlertDialogClose>Cancel</AlertDialogClose>
+  <AlertDialogClose>Delete</AlertDialogClose>
+</AlertDialogFooter>
+
+// Bare variant (no border or background)
+<AlertDialogFooter variant="bare">
+  <AlertDialogClose>Cancel</AlertDialogClose>
+  <AlertDialogClose>Delete</AlertDialogClose>
+</AlertDialogFooter>
+```
+
 ## Examples
+
+### Alert Dialog with Bare Footer
+
+<ComponentPreview name="p-alert-dialog-2" />
 
 ### Close Confirmation
 
@@ -96,6 +123,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 - Replace `asChild` → `render` on `AlertDialogTrigger` and closing buttons
 - Replace `AlertDialogAction` and `AlertDialogCancel` → `AlertDialogClose`
 - Prefer `AlertDialogPopup`; `AlertDialogContent` remains for legacy
+- Use `AlertDialogPanel` to wrap main content between `AlertDialogHeader` and `AlertDialogFooter`
 - If you used `asChild` on any other parts, switch to the `render` prop
 
 ### Comparison Example
@@ -129,6 +157,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ```tsx title="coss ui"
 // [!code word:render]
 // [!code word:AlertDialogClose]
+// [!code word:<AlertDialogPanel>Content</AlertDialogPanel>]
 <AlertDialog>
   <AlertDialogTrigger render={<Button variant="outline" />}>
     Show Dialog
@@ -141,6 +170,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
         account and remove your data from our servers.
       </AlertDialogDescription>
     </AlertDialogHeader>
+    <AlertDialogPanel>Content</AlertDialogPanel>
     <AlertDialogFooter>
       <AlertDialogClose render={<Button variant="ghost" />}>
         Cancel
