@@ -8216,6 +8216,37 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
+  sidebar: {
+    categories: undefined,
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/sidebar.tsx");
+      const exportName =
+        Object.keys(mod).find(
+          (key) =>
+            typeof mod[key] === "function" || typeof mod[key] === "object",
+        ) || item.name;
+      return { default: mod.default || mod[exportName] };
+    }),
+    description: "",
+    files: [
+      {
+        path: "registry/default/ui/sidebar.tsx",
+        target: "",
+        type: "registry:ui",
+      },
+    ],
+    meta: undefined,
+    name: "sidebar",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input",
+      "@coss/separator",
+      "@coss/sheet",
+      "@coss/skeleton",
+      "@coss/tooltip",
+    ],
+    type: "registry:ui",
+  },
   skeleton: {
     categories: undefined,
     component: React.lazy(async () => {

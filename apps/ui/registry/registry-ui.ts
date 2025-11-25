@@ -40,6 +40,7 @@ export const ui: Registry["items"] = [
       "@coss/select",
       "@coss/separator",
       "@coss/sheet",
+      "@coss/sidebar",
       "@coss/skeleton",
       "@coss/slider",
       "@coss/spinner",
@@ -515,6 +516,25 @@ export const ui: Registry["items"] = [
     ],
     name: "sheet",
     registryDependencies: ["@coss/scroll-area"],
+    type: "registry:ui",
+  },
+  {
+    dependencies: ["@base-ui-components/react"],
+    files: [
+      {
+        path: "ui/sidebar.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "sidebar",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input",
+      "@coss/separator",
+      "@coss/sheet",
+      "@coss/skeleton",
+      "@coss/tooltip",
+    ],
     type: "registry:ui",
   },
   {
