@@ -47,21 +47,21 @@ export default function Component() {
           />
         </div>
       </div>
-      fileName && (
-      <div className="inline-flex gap-2 text-xs">
-        <p aria-live="polite" className="truncate text-muted-foreground">
-          {fileName}
-        </p>{" "}
-        <button
-          aria-label={`Remove ${fileName}`}
-          className="font-medium text-destructive hover:underline"
-          onClick={() => removeFile(files[0]?.id)}
-          type="button"
-        >
-          Remove
-        </button>
-      </div>
-      )
+      {fileName && (
+        <div className="inline-flex gap-2 text-xs">
+          <p aria-live="polite" className="truncate text-muted-foreground">
+            {fileName}
+          </p>{" "}
+          <button
+            aria-label={`Remove ${fileName}`}
+            className="font-medium text-destructive hover:underline"
+            onClick={() => removeFile(files[0]?.id)}
+            type="button"
+          >
+            Remove
+          </button>
+        </div>
+      )}
       <p
         aria-live="polite"
         className="mt-2 text-muted-foreground text-xs"
