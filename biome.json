@@ -26,7 +26,12 @@
       "!**/.turbo",
       "!**/.next",
       "!**/apps/**/*/.next",
-      "!**/apps/**/*/.source"
+      "!**/apps/**/*/.source",
+      "!**/apps/ui/public/r",
+      "!**/apps/origin/public/r",
+      "!**/packages/ui/src/ui",
+      "!**/packages/ui/src/lib",
+      "!**/packages/ui/src/hooks"
     ]
   },
   "formatter": {
