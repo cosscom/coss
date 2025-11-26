@@ -352,7 +352,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "input-group",
-    registryDependencies: ["@coss/input", "@coss/field", "@coss/textarea"],
+    registryDependencies: ["@coss/field", "@coss/input", "@coss/textarea"],
     type: "registry:ui",
   },
   {
