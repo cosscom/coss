@@ -321,7 +321,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-autocomplete-13",
-    registryDependencies: ["@coss/autocomplete", "@coss/button", "@coss/field", "@coss/form"],
+    registryDependencies: [
+      "@coss/autocomplete",
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+    ],
     type: "registry:block",
   },
   {
@@ -1432,7 +1437,13 @@ export const particles: ParticleItem[] = [
     description: "Group with input",
     files: [{ path: "particles/p-group-2.tsx", type: "registry:block" }],
     name: "p-group-2",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input", "@coss/tooltip", "@coss/use-copy-to-clipboard"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/input",
+      "@coss/tooltip",
+      "@coss/use-copy-to-clipboard",
+    ],
     type: "registry:block",
   },
   {
@@ -1504,7 +1515,12 @@ export const particles: ParticleItem[] = [
     description: "Group with popup",
     files: [{ path: "particles/p-group-11.tsx", type: "registry:block" }],
     name: "p-group-11",
-    registryDependencies: ["@coss/badge", "@coss/button", "@coss/group", "@coss/popover"],
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/button",
+      "@coss/group",
+      "@coss/popover",
+    ],
     type: "registry:block",
   },
   {
@@ -1512,7 +1528,12 @@ export const particles: ParticleItem[] = [
     description: "Group with input group",
     files: [{ path: "particles/p-group-12.tsx", type: "registry:block" }],
     name: "p-group-12",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input-group", "@coss/tooltip"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
     type: "registry:block",
   },
   {
@@ -1528,7 +1549,12 @@ export const particles: ParticleItem[] = [
     description: "Group with select",
     files: [{ path: "particles/p-group-14.tsx", type: "registry:block" }],
     name: "p-group-14",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/number-field", "@coss/select"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/number-field",
+      "@coss/select",
+    ],
     type: "registry:block",
   },
   {
@@ -1536,7 +1562,12 @@ export const particles: ParticleItem[] = [
     description: "Group with search",
     files: [{ path: "particles/p-group-15.tsx", type: "registry:block" }],
     name: "p-group-15",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input", "@coss/select"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/input",
+      "@coss/select",
+    ],
     type: "registry:block",
   },
   {
@@ -1778,7 +1809,11 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-group-7",
-    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/popover"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/popover",
+    ],
     type: "registry:block",
   },
   {
@@ -1791,7 +1826,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-group-8",
-    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/tooltip", "@coss/use-copy-to-clipboard"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+      "@coss/use-copy-to-clipboard",
+    ],
     type: "registry:block",
   },
   {
@@ -1839,7 +1879,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-group-12",
-    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/label", "@coss/popover"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/label",
+      "@coss/popover",
+    ],
     type: "registry:block",
   },
   {
@@ -1899,7 +1944,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
     },
     name: "p-input-group-17",
-    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/menu", "@coss/tooltip"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/menu",
+      "@coss/tooltip",
+    ],
     type: "registry:block",
   },
   {
@@ -2124,6 +2174,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("number field"),
+    dependencies: ["zod"],
     description: "Number field in form",
     files: [
       { path: "particles/p-number-field-10.tsx", type: "registry:block" },
@@ -2133,8 +2184,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-number-field-10",
-    dependencies: ["zod"],
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/number-field"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/number-field",
+    ],
     type: "registry:block",
   },
   {
@@ -2281,7 +2336,13 @@ export const particles: ParticleItem[] = [
     description: "Radio group in form",
     files: [{ path: "particles/p-radio-group-5.tsx", type: "registry:block" }],
     name: "p-radio-group-5",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/fieldset", "@coss/form", "@coss/radio-group"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/fieldset",
+      "@coss/form",
+      "@coss/radio-group",
+    ],
     type: "registry:block",
   },
   {
@@ -2443,7 +2504,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-select-11",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/select"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/select",
+    ],
     type: "registry:block",
   },
   {
@@ -2473,7 +2539,13 @@ export const particles: ParticleItem[] = [
     description: "Sheet inset",
     files: [{ path: "particles/p-sheet-2.tsx", type: "registry:block" }],
     name: "p-sheet-2",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/input", "@coss/sheet"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/sheet",
+    ],
     type: "registry:block",
   },
   {
@@ -2561,7 +2633,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-5",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/slider"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/slider",
+    ],
     type: "registry:block",
   },
   {
@@ -2609,7 +2686,12 @@ export const particles: ParticleItem[] = [
     description: "Switch in form",
     files: [{ path: "particles/p-switch-5.tsx", type: "registry:block" }],
     name: "p-switch-5",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/switch"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/switch",
+    ],
     type: "registry:block",
   },
   {
@@ -2743,7 +2825,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-textarea-6",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/form", "@coss/textarea"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/textarea",
+    ],
     type: "registry:block",
   },
   {
@@ -2799,7 +2886,12 @@ export const particles: ParticleItem[] = [
     description: "Anchored toast with tooltip style",
     files: [{ path: "particles/p-toast-7.tsx", type: "registry:block" }],
     name: "p-toast-7",
-    registryDependencies: ["@coss/button", "@coss/toast", "@coss/tooltip", "@coss/use-copy-to-clipboard"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/toast",
+      "@coss/tooltip",
+      "@coss/use-copy-to-clipboard",
+    ],
     type: "registry:block",
   },
   {

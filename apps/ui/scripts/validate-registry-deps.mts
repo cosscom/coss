@@ -2,10 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 // Path to particles directory
-const particlesDir = path.join(
-  process.cwd(),
-  "registry/default/particles",
-);
+const particlesDir = path.join(process.cwd(), "registry/default/particles");
 
 // Path to registry UI components directory
 const registryUIDir = path.join(process.cwd(), "registry/default/ui");
@@ -17,7 +14,10 @@ const registryHooksDir = path.join(process.cwd(), "registry/default/hooks");
 const registryLibDir = path.join(process.cwd(), "registry/default/lib");
 
 // Path to registry files
-const registryParticlesFile = path.join(process.cwd(), "registry/registry-particles.ts");
+const registryParticlesFile = path.join(
+  process.cwd(),
+  "registry/registry-particles.ts",
+);
 const registryUIFile = path.join(process.cwd(), "registry/registry-ui.ts");
 
 // Map component name to @coss package name
@@ -44,14 +44,17 @@ function parseImports(content: string): {
   // Match import statements - more comprehensive pattern
   const importRegex =
     /import\s+(?:type\s+)?(?:[\w*{}\s,]+from\s+)?["']([^"']+)["']/g;
-  let match;
+  let match: RegExpExecArray | null = importRegex.exec(content);
 
-  while ((match = importRegex.exec(content)) !== null) {
+  while (match !== null) {
     const importPath = match[1];
     importPaths.push(importPath);
+    match = importRegex.exec(content);
 
     // Check if it's a registry UI component import (@/registry/default/ui/*)
-    const registryUIMatch = importPath.match(/@\/registry\/default\/ui\/([^/]+)/);
+    const registryUIMatch = importPath.match(
+      /@\/registry\/default\/ui\/([^/]+)/,
+    );
     if (registryUIMatch) {
       const componentName = registryUIMatch[1];
       registryDeps.add(getRegistryPackageName(componentName));
@@ -59,7 +62,9 @@ function parseImports(content: string): {
     }
 
     // Check if it's a registry hook import (@/registry/default/hooks/*)
-    const registryHookMatch = importPath.match(/@\/registry\/default\/hooks\/([^/]+)/);
+    const registryHookMatch = importPath.match(
+      /@\/registry\/default\/hooks\/([^/]+)/,
+    );
     if (registryHookMatch) {
       const hookName = registryHookMatch[1].replace(/\.ts$/, ""); // Remove .ts extension if present
       registryDeps.add(getRegistryPackageName(hookName));
@@ -67,7 +72,9 @@ function parseImports(content: string): {
     }
 
     // Check if it's a registry lib import (@/registry/default/lib/*)
-    const registryLibMatch = importPath.match(/@\/registry\/default\/lib\/([^/]+)/);
+    const registryLibMatch = importPath.match(
+      /@\/registry\/default\/lib\/([^/]+)/,
+    );
     if (registryLibMatch) {
       const libName = registryLibMatch[1].replace(/\.ts$/, ""); // Remove .ts extension if present
       registryDeps.add(getRegistryPackageName(libName));
@@ -115,9 +122,9 @@ function parseImports(content: string): {
   }
 
   return {
-    registryDependencies: Array.from(registryDeps).sort(),
     dependencies: Array.from(deps).sort(),
     importPaths,
+    registryDependencies: Array.from(registryDeps).sort(),
   };
 }
 
@@ -130,39 +137,37 @@ function extractRegistryItemDeps(itemContent: string): {
   const deps: string[] = [];
 
   // Extract registryDependencies
-  const regDepsMatch = itemContent.match(/registryDependencies:\s*\[([^\]]*)\]/);
+  const regDepsMatch = itemContent.match(
+    /registryDependencies:\s*\[([^\]]*)\]/,
+  );
   if (regDepsMatch) {
-    regDepsMatch[1]
-      .split(",")
-      .forEach((item) => {
-        const cleaned = item.trim().replace(/["']/g, "").replace(/\n/g, "");
-        if (cleaned) {
-          regDeps.push(cleaned);
-        }
-      });
+    regDepsMatch[1].split(",").forEach((item) => {
+      const cleaned = item.trim().replace(/["']/g, "").replace(/\n/g, "");
+      if (cleaned) {
+        regDeps.push(cleaned);
+      }
+    });
   }
 
   // Extract dependencies (exclude lucide-react, next, and class-variance-authority)
   const depsMatch = itemContent.match(/dependencies:\s*\[([^\]]*)\]/);
   if (depsMatch) {
-    depsMatch[1]
-      .split(",")
-      .forEach((item) => {
-        const cleaned = item.trim().replace(/["']/g, "").replace(/\n/g, "");
-        if (
-          cleaned &&
-          cleaned !== "lucide-react" &&
-          cleaned !== "next" &&
-          cleaned !== "class-variance-authority"
-        ) {
-          deps.push(cleaned);
-        }
-      });
+    depsMatch[1].split(",").forEach((item) => {
+      const cleaned = item.trim().replace(/["']/g, "").replace(/\n/g, "");
+      if (
+        cleaned &&
+        cleaned !== "lucide-react" &&
+        cleaned !== "next" &&
+        cleaned !== "class-variance-authority"
+      ) {
+        deps.push(cleaned);
+      }
+    });
   }
 
   return {
-    registryDependencies: regDeps.sort(),
     dependencies: deps.sort(),
+    registryDependencies: regDeps.sort(),
   };
 }
 
@@ -174,8 +179,9 @@ async function getRegistryComponentImports(
   componentName: string,
 ): Promise<Set<string>> {
   // Check cache first
-  if (registryComponentImportsCache.has(componentName)) {
-    return registryComponentImportsCache.get(componentName)!;
+  const cached = registryComponentImportsCache.get(componentName);
+  if (cached) {
+    return cached;
   }
 
   const imports = new Set<string>();
@@ -193,17 +199,15 @@ async function getRegistryComponentImports(
       // Extract all import paths
       const importRegex =
         /import\s+(?:type\s+)?(?:[\w*{}\s,]+from\s+)?["']([^"']+)["']/g;
-      let match;
+      let match: RegExpExecArray | null = importRegex.exec(content);
 
-      while ((match = importRegex.exec(content)) !== null) {
+      while (match !== null) {
         imports.add(match[1]);
+        match = importRegex.exec(content);
       }
       // If we successfully read the file, break
       break;
-    } catch (error) {
-      // Continue to next path
-      continue;
-    }
+    } catch (_error) {}
   }
 
   registryComponentImportsCache.set(componentName, imports);
@@ -235,10 +239,7 @@ async function isDependencyCoveredByRegistry(
 
     // Check if the dependency is a parent package of any import
     // e.g., dep is "@base-ui-components/react" and component imports "@base-ui-components/react/autocomplete"
-    if (dep.includes("/")) {
-      // If dep has a path, check exact match (already done above)
-      continue;
-    } else {
+    if (!dep.includes("/")) {
       // If dep is a base package, check if any import starts with it
       for (const importPath of componentImports) {
         if (importPath.startsWith(`${dep}/`) || importPath === dep) {
@@ -267,7 +268,7 @@ async function filterDependenciesCoveredByRegistry(
     if (isCoveredByRegistry) {
       continue;
     }
-    
+
     filtered.push(dep);
   }
   return filtered;
@@ -276,13 +277,13 @@ async function filterDependenciesCoveredByRegistry(
 // Check if a dependency matches (handles sub-paths like @base-ui-components/react/accordion matching @base-ui-components/react)
 function dependencyMatches(expected: string, actual: string): boolean {
   if (expected === actual) return true;
-  
+
   // Check if expected is a sub-path of actual (e.g., @base-ui-components/react/accordion matches @base-ui-components/react)
-  if (expected.startsWith(actual + "/")) return true;
-  
+  if (expected.startsWith(`${actual}/`)) return true;
+
   // Check if actual is a sub-path of expected (e.g., @base-ui-components/react matches @base-ui-components/react/accordion)
-  if (actual.startsWith(expected + "/")) return true;
-  
+  if (actual.startsWith(`${expected}/`)) return true;
+
   return false;
 }
 
@@ -310,7 +311,7 @@ function compareArrays(
     }
   }
 
-  return { missing, extra };
+  return { extra, missing };
 }
 
 // Find object boundaries in registry content for a given component name
@@ -388,7 +389,7 @@ function findRegistryItemBounds(
     objEnd++;
   }
 
-  return { start: objStart, end: objEnd };
+  return { end: objEnd, start: objStart };
 }
 
 // Report validation errors for a component
@@ -405,7 +406,8 @@ function reportValidationErrors(
 
   const hasRegDepsIssues =
     regDepsDiff.missing.length > 0 || regDepsDiff.extra.length > 0;
-  const hasDepsIssues = depsDiff.missing.length > 0 || depsDiff.extra.length > 0;
+  const hasDepsIssues =
+    depsDiff.missing.length > 0 || depsDiff.extra.length > 0;
 
   if (hasRegDepsIssues) {
     if (regDepsDiff.missing.length > 0) {
@@ -443,10 +445,8 @@ async function validateRegistryItem(
   registryContent: string,
 ): Promise<boolean> {
   const content = await fs.readFile(componentFile, "utf8");
-  const {
-    registryDependencies: expectedRegDeps,
-    dependencies: expectedDeps,
-  } = parseImports(content);
+  const { registryDependencies: expectedRegDeps, dependencies: expectedDeps } =
+    parseImports(content);
 
   const bounds = findRegistryItemBounds(componentName, registryContent);
   if (!bounds) {
@@ -564,6 +564,3 @@ try {
   console.error("❌ Error:", error);
   process.exit(1);
 }
-
-
-
