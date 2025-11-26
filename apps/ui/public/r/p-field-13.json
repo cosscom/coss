@@ -4,9 +4,9 @@
   "type": "registry:block",
   "description": "Field with checkbox group",
   "registryDependencies": [
-    "@coss/field",
-    "@coss/checkbox-group",
     "@coss/checkbox",
+    "@coss/checkbox-group",
+    "@coss/field",
     "@coss/fieldset"
   ],
   "files": [
@@ -20,9 +20,9 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "field",
-    "checkbox group",
     "checkbox",
+    "checkbox group",
+    "field",
     "fieldset",
     "label"
   ]

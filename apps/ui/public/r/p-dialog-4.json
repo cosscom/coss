@@ -4,11 +4,11 @@
   "type": "registry:block",
   "description": "Dialog with close confirmation",
   "registryDependencies": [
-    "@coss/dialog",
     "@coss/alert-dialog",
     "@coss/button",
-    "@coss/form",
+    "@coss/dialog",
     "@coss/field",
+    "@coss/form",
     "@coss/textarea"
   ],
   "files": [
@@ -19,7 +19,7 @@
     }
   ],
   "categories": [
-    "dialog",
-    "alert dialog"
+    "alert dialog",
+    "dialog"
   ]
 }

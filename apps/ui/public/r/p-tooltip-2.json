@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Grouped tooltips",
   "registryDependencies": [
-    "@coss/tooltip",
-    "@coss/button"
+    "@coss/toggle-group",
+    "@coss/tooltip"
   ],
   "files": [
     {

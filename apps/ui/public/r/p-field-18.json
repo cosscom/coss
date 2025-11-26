@@ -4,12 +4,12 @@
   "type": "registry:block",
   "description": "Complete form built with field",
   "registryDependencies": [
-    "@coss/field",
-    "@coss/select",
+    "@coss/button",
     "@coss/checkbox",
+    "@coss/field",
     "@coss/form",
     "@coss/input",
-    "@coss/button"
+    "@coss/select"
   ],
   "files": [
     {
@@ -22,11 +22,11 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "field",
-    "label",
-    "form",
-    "select",
+    "button",
     "checkbox",
-    "button"
+    "field",
+    "form",
+    "label",
+    "select"
   ]
 }

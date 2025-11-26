@@ -4,9 +4,11 @@
   "type": "registry:block",
   "description": "Radio group in form",
   "registryDependencies": [
-    "@coss/radio-group",
+    "@coss/button",
+    "@coss/field",
+    "@coss/fieldset",
     "@coss/form",
-    "@coss/field"
+    "@coss/radio-group"
   ],
   "files": [
     {

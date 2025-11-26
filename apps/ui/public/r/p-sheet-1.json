@@ -4,11 +4,11 @@
   "type": "registry:block",
   "description": "Basic sheet",
   "registryDependencies": [
-    "@coss/sheet",
     "@coss/button",
-    "@coss/form",
     "@coss/field",
-    "@coss/input"
+    "@coss/form",
+    "@coss/input",
+    "@coss/sheet"
   ],
   "files": [
     {

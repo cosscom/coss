@@ -19,7 +19,7 @@
   },
   "categories": [
     "field",
-    "select",
-    "label"
+    "label",
+    "select"
   ]
 }

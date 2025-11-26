@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Fieldset with multiple fields",
   "registryDependencies": [
-    "@coss/fieldset",
     "@coss/field",
+    "@coss/fieldset",
     "@coss/input"
   ],
   "files": [

@@ -7,9 +7,10 @@
     "lucide-react"
   ],
   "registryDependencies": [
+    "@coss/button",
     "@coss/input-group",
-    "@coss/input",
-    "@coss/button"
+    "@coss/tooltip",
+    "@coss/use-copy-to-clipboard"
   ],
   "files": [
     {
@@ -22,7 +23,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "input group",
-    "button"
+    "button",
+    "input group"
   ]
 }

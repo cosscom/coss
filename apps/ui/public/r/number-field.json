@@ -5,6 +5,9 @@
   "dependencies": [
     "@base-ui-components/react"
   ],
+  "registryDependencies": [
+    "@coss/label"
+  ],
   "files": [
     {
       "path": "registry/default/ui/number-field.tsx",

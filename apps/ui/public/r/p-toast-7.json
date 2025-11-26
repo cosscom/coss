@@ -4,9 +4,10 @@
   "type": "registry:block",
   "description": "Anchored toast with tooltip style",
   "registryDependencies": [
-    "@coss/toast",
     "@coss/button",
-    "@coss/tooltip"
+    "@coss/toast",
+    "@coss/tooltip",
+    "@coss/use-copy-to-clipboard"
   ],
   "files": [
     {

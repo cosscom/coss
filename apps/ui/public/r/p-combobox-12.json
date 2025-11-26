@@ -4,10 +4,10 @@
   "type": "registry:block",
   "description": "Combobox multiple form",
   "registryDependencies": [
+    "@coss/button",
     "@coss/combobox",
-    "@coss/form",
     "@coss/field",
-    "@coss/button"
+    "@coss/form"
   ],
   "files": [
     {
@@ -21,7 +21,7 @@
   },
   "categories": [
     "combobox",
-    "input",
-    "form"
+    "form",
+    "input"
   ]
 }

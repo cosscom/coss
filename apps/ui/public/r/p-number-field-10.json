@@ -3,10 +3,14 @@
   "name": "p-number-field-10",
   "type": "registry:block",
   "description": "Number field in form",
+  "dependencies": [
+    "zod"
+  ],
   "registryDependencies": [
-    "@coss/number-field",
+    "@coss/button",
+    "@coss/field",
     "@coss/form",
-    "@coss/field"
+    "@coss/number-field"
   ],
   "files": [
     {

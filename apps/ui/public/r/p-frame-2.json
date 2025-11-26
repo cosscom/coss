@@ -7,9 +7,9 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/frame",
+    "@coss/button",
     "@coss/collapsible",
-    "@coss/button"
+    "@coss/frame"
   ],
   "files": [
     {
@@ -22,7 +22,7 @@
     "className": "**:data-[slot=preview]:w-full"
   },
   "categories": [
-    "frame",
-    "collapsible"
+    "collapsible",
+    "frame"
   ]
 }

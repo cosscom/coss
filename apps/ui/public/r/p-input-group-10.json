@@ -4,9 +4,8 @@
   "type": "registry:block",
   "description": "Input group with badge",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input",
-    "@coss/badge"
+    "@coss/badge",
+    "@coss/input-group"
   ],
   "files": [
     {
@@ -19,7 +18,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "input group",
-    "badge"
+    "badge",
+    "input group"
   ]
 }

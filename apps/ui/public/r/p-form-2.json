@@ -7,9 +7,9 @@
     "zod"
   ],
   "registryDependencies": [
-    "@coss/form",
-    "@coss/field",
     "@coss/button",
+    "@coss/field",
+    "@coss/form",
     "@coss/input"
   ],
   "files": [
@@ -23,11 +23,11 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "form",
-    "field",
     "button",
-    "validation",
+    "field",
+    "form",
     "label",
+    "validation",
     "zod"
   ]
 }

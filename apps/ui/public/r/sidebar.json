@@ -2,16 +2,15 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "sidebar",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
   "registryDependencies": [
     "@coss/button",
     "@coss/input",
     "@coss/separator",
     "@coss/sheet",
     "@coss/skeleton",
-    "@coss/tooltip"
+    "@coss/tooltip",
+    "@coss/use-mobile",
+    "@coss/utils"
   ],
   "files": [
     {

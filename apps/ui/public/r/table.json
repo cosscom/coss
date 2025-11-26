@@ -2,9 +2,6 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "table",
   "type": "registry:ui",
-  "dependencies": [
-    "@base-ui-components/react"
-  ],
   "files": [
     {
       "path": "registry/default/ui/table.tsx",

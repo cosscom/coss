@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Nested dialogs",
   "registryDependencies": [
-    "@coss/dialog",
     "@coss/button",
+    "@coss/dialog",
     "@coss/field",
     "@coss/input"
   ],

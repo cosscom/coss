@@ -4,9 +4,10 @@
   "type": "registry:block",
   "description": "Select in form",
   "registryDependencies": [
-    "@coss/select",
+    "@coss/button",
+    "@coss/field",
     "@coss/form",
-    "@coss/field"
+    "@coss/select"
   ],
   "files": [
     {

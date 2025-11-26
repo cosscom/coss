@@ -7,8 +7,7 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input"
+    "@coss/input-group"
   ],
   "files": [
     {

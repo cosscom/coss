@@ -4,8 +4,11 @@
   "type": "registry:block",
   "description": "Group with input",
   "registryDependencies": [
+    "@coss/button",
     "@coss/group",
-    "@coss/input"
+    "@coss/input",
+    "@coss/tooltip",
+    "@coss/use-copy-to-clipboard"
   ],
   "files": [
     {

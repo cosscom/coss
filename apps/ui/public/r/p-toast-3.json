@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Loading toast",
   "registryDependencies": [
+    "@coss/button",
     "@coss/toast"
   ],
   "files": [

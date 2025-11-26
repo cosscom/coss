@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Input with button",
   "registryDependencies": [
-    "@coss/input",
-    "@coss/button"
+    "@coss/button",
+    "@coss/input"
   ],
   "files": [
     {
@@ -18,7 +18,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "input",
-    "button"
+    "button",
+    "input"
   ]
 }

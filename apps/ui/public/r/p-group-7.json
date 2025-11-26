@@ -4,7 +4,9 @@
   "type": "registry:block",
   "description": "Group with start text",
   "registryDependencies": [
-    "@coss/group"
+    "@coss/group",
+    "@coss/input",
+    "@coss/label"
   ],
   "files": [
     {

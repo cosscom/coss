@@ -4,11 +4,11 @@
   "type": "registry:block",
   "description": "Popover with a form",
   "registryDependencies": [
-    "@coss/popover",
     "@coss/button",
-    "@coss/textarea",
+    "@coss/field",
     "@coss/form",
-    "@coss/field"
+    "@coss/popover",
+    "@coss/textarea"
   ],
   "files": [
     {
@@ -18,10 +18,10 @@
     }
   ],
   "categories": [
-    "popover",
     "button",
-    "textarea",
+    "field",
     "form",
-    "field"
+    "popover",
+    "textarea"
   ]
 }

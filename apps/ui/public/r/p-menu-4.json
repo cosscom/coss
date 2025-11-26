@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Menu with radio group",
   "registryDependencies": [
-    "@coss/menu",
-    "@coss/radio-group"
+    "@coss/button",
+    "@coss/menu"
   ],
   "files": [
     {

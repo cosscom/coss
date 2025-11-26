@@ -4,8 +4,11 @@
   "type": "registry:block",
   "description": "Sheet inset",
   "registryDependencies": [
-    "@coss/sheet",
-    "@coss/button"
+    "@coss/button",
+    "@coss/field",
+    "@coss/form",
+    "@coss/input",
+    "@coss/sheet"
   ],
   "files": [
     {

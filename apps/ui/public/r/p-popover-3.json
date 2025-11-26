@@ -7,9 +7,9 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/popover",
+    "@coss/avatar",
     "@coss/button",
-    "@coss/avatar"
+    "@coss/popover"
   ],
   "files": [
     {
@@ -19,8 +19,8 @@
     }
   ],
   "categories": [
-    "popover",
+    "avatar",
     "button",
-    "avatar"
+    "popover"
   ]
 }

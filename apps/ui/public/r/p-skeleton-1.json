@@ -4,6 +4,8 @@
   "type": "registry:block",
   "description": "Basic skeleton",
   "registryDependencies": [
+    "@coss/avatar",
+    "@coss/button",
     "@coss/skeleton"
   ],
   "files": [

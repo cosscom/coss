@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Menu with group labels",
   "registryDependencies": [
+    "@coss/button",
     "@coss/menu"
   ],
   "files": [

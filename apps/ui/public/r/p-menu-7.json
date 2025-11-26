@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Nested menu",
   "registryDependencies": [
+    "@coss/button",
     "@coss/menu"
   ],
   "files": [

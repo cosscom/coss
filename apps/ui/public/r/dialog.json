@@ -5,6 +5,9 @@
   "dependencies": [
     "@base-ui-components/react"
   ],
+  "registryDependencies": [
+    "@coss/scroll-area"
+  ],
   "files": [
     {
       "path": "registry/default/ui/dialog.tsx",

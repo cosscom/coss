@@ -4,8 +4,7 @@
   "type": "registry:block",
   "description": "Basic input group",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input"
+    "@coss/input-group"
   ],
   "files": [
     {

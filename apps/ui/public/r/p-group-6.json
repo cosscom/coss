@@ -4,8 +4,9 @@
   "type": "registry:block",
   "description": "Group with default button",
   "registryDependencies": [
+    "@coss/button",
     "@coss/group",
-    "@coss/button"
+    "@coss/menu"
   ],
   "files": [
     {
@@ -15,7 +16,7 @@
     }
   ],
   "categories": [
-    "group",
-    "button"
+    "button",
+    "group"
   ]
 }

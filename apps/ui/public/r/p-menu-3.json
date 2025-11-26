@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Menu with checkbox",
   "registryDependencies": [
-    "@coss/menu",
-    "@coss/checkbox"
+    "@coss/button",
+    "@coss/menu"
   ],
   "files": [
     {

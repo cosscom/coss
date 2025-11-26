@@ -5,6 +5,7 @@
   "description": "Breadcrumb with menu example",
   "registryDependencies": [
     "@coss/breadcrumb",
+    "@coss/button",
     "@coss/menu"
   ],
   "files": [

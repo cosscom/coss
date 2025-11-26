@@ -5,7 +5,6 @@
   "description": "Input group with keyboard shortcut",
   "registryDependencies": [
     "@coss/input-group",
-    "@coss/input",
     "@coss/kbd"
   ],
   "files": [

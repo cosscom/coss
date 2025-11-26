@@ -4,9 +4,9 @@
   "type": "registry:block",
   "description": "Anchored toast",
   "registryDependencies": [
-    "@coss/toast",
     "@coss/button",
-    "@coss/spinner"
+    "@coss/spinner",
+    "@coss/toast"
   ],
   "files": [
     {

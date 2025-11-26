@@ -5,7 +5,6 @@
   "description": "Input group with loading spinner",
   "registryDependencies": [
     "@coss/input-group",
-    "@coss/input",
     "@coss/spinner"
   ],
   "files": [

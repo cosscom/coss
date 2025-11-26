@@ -4,10 +4,10 @@
   "type": "registry:block",
   "description": "Dialog with form",
   "registryDependencies": [
-    "@coss/dialog",
     "@coss/button",
-    "@coss/form",
+    "@coss/dialog",
     "@coss/field",
+    "@coss/form",
     "@coss/input"
   ],
   "files": [

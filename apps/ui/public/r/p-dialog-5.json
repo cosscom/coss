@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Dialog with long content",
   "registryDependencies": [
-    "@coss/dialog",
-    "@coss/button"
+    "@coss/button",
+    "@coss/dialog"
   ],
   "files": [
     {

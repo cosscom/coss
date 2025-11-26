@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Radio group card",
   "registryDependencies": [
-    "@coss/radio-group",
-    "@coss/card"
+    "@coss/label",
+    "@coss/radio-group"
   ],
   "files": [
     {

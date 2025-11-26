@@ -7,10 +7,10 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/toolbar",
-    "@coss/toggle-group",
     "@coss/button",
     "@coss/select",
+    "@coss/toggle-group",
+    "@coss/toolbar",
     "@coss/tooltip"
   ],
   "files": [

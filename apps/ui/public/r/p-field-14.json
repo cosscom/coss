@@ -5,8 +5,8 @@
   "description": "Field with radio group",
   "registryDependencies": [
     "@coss/field",
-    "@coss/radio-group",
-    "@coss/fieldset"
+    "@coss/fieldset",
+    "@coss/radio-group"
   ],
   "files": [
     {
@@ -20,8 +20,8 @@
   },
   "categories": [
     "field",
-    "radio group",
+    "fieldset",
     "label",
-    "fieldset"
+    "radio group"
   ]
 }

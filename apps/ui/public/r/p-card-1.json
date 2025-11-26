@@ -4,10 +4,10 @@
   "type": "registry:block",
   "description": "Card with header, content, and footer",
   "registryDependencies": [
-    "@coss/card",
     "@coss/button",
-    "@coss/form",
+    "@coss/card",
     "@coss/field",
+    "@coss/form",
     "@coss/input",
     "@coss/select"
   ],

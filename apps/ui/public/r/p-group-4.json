@@ -4,7 +4,9 @@
   "type": "registry:block",
   "description": "Large group",
   "registryDependencies": [
-    "@coss/group"
+    "@coss/button",
+    "@coss/group",
+    "@coss/menu"
   ],
   "files": [
     {

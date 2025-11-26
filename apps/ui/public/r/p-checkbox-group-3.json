@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Checkbox group with parent checkbox",
   "registryDependencies": [
-    "@coss/checkbox-group",
     "@coss/checkbox",
+    "@coss/checkbox-group",
     "@coss/label"
   ],
   "files": [

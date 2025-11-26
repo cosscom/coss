@@ -5,8 +5,9 @@
   "description": "Autocomplete form",
   "registryDependencies": [
     "@coss/autocomplete",
-    "@coss/form",
-    "@coss/field"
+    "@coss/button",
+    "@coss/field",
+    "@coss/form"
   ],
   "files": [
     {
@@ -20,7 +21,7 @@
   },
   "categories": [
     "autocomplete",
-    "input",
-    "form"
+    "form",
+    "input"
   ]
 }

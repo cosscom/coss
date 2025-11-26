@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Switch with description",
   "registryDependencies": [
+    "@coss/label",
     "@coss/switch"
   ],
   "files": [

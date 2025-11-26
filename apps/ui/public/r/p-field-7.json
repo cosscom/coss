@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Field with autocomplete",
   "registryDependencies": [
-    "@coss/field",
-    "@coss/autocomplete"
+    "@coss/autocomplete",
+    "@coss/field"
   ],
   "files": [
     {
@@ -18,9 +18,9 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
+    "autocomplete",
     "field",
     "input",
-    "autocomplete",
     "label"
   ]
 }

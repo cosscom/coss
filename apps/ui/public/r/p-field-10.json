@@ -19,7 +19,7 @@
   },
   "categories": [
     "field",
-    "textarea",
-    "label"
+    "label",
+    "textarea"
   ]
 }

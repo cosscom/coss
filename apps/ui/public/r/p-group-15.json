@@ -4,8 +4,10 @@
   "type": "registry:block",
   "description": "Group with search",
   "registryDependencies": [
+    "@coss/button",
     "@coss/group",
-    "@coss/search"
+    "@coss/input",
+    "@coss/select"
   ],
   "files": [
     {

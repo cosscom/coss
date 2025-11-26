@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Basic menu",
   "registryDependencies": [
+    "@coss/button",
     "@coss/menu"
   ],
   "files": [

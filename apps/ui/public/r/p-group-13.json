@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Group with menu",
   "registryDependencies": [
+    "@coss/button",
     "@coss/group",
     "@coss/menu"
   ],

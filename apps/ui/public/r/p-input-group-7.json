@@ -7,9 +7,9 @@
     "lucide-react"
   ],
   "registryDependencies": [
+    "@coss/button",
     "@coss/input-group",
-    "@coss/input",
-    "@coss/tooltip"
+    "@coss/popover"
   ],
   "files": [
     {

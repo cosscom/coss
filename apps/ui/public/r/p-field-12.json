@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Field with checkbox",
   "registryDependencies": [
-    "@coss/field",
-    "@coss/checkbox"
+    "@coss/checkbox",
+    "@coss/field"
   ],
   "files": [
     {
@@ -18,8 +18,8 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
+    "checkbox",
     "field",
-    "label",
-    "checkbox"
+    "label"
   ]
 }

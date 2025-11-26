@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Basic table",
   "registryDependencies": [
+    "@coss/badge",
     "@coss/table"
   ],
   "files": [

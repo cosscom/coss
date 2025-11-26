@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Toggle group animated tooltip",
   "registryDependencies": [
-    "@coss/tooltip",
-    "@coss/toggle-group"
+    "@coss/toggle-group",
+    "@coss/tooltip"
   ],
   "files": [
     {

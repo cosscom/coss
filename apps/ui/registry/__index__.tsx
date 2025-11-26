@@ -47,7 +47,7 @@ export const Index: Record<string, any> = {
     name: "alert-dialog",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: undefined,
     files: [{
       path: "registry/default/ui/alert-dialog.tsx",
       type: "registry:ui",
@@ -245,7 +245,7 @@ export const Index: Record<string, any> = {
     name: "dialog",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/dialog.tsx",
       type: "registry:ui",
@@ -389,7 +389,7 @@ export const Index: Record<string, any> = {
     name: "input-group",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/input","@coss/field","@coss/textarea"],
+    registryDependencies: ["@coss/input","@coss/textarea"],
     files: [{
       path: "registry/default/ui/input-group.tsx",
       type: "registry:ui",
@@ -479,7 +479,7 @@ export const Index: Record<string, any> = {
     name: "number-field",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/label"],
     files: [{
       path: "registry/default/ui/number-field.tsx",
       type: "registry:ui",
@@ -659,7 +659,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile","@coss/utils"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -1343,7 +1343,7 @@ export const Index: Record<string, any> = {
     name: "p-autocomplete-13",
     description: "Autocomplete form",
     type: "registry:block",
-    registryDependencies: ["@coss/autocomplete","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/field","@coss/form"],
     files: [{
       path: "registry/default/particles/p-autocomplete-13.tsx",
       type: "registry:block",
@@ -1354,7 +1354,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["autocomplete","input","form"],
+    categories: ["autocomplete","form","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-avatar-1": {
@@ -1685,7 +1685,7 @@ export const Index: Record<string, any> = {
     name: "p-breadcrumb-1",
     description: "Breadcrumb with menu example",
     type: "registry:block",
-    registryDependencies: ["@coss/breadcrumb","@coss/menu"],
+    registryDependencies: ["@coss/breadcrumb","@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-breadcrumb-1.tsx",
       type: "registry:block",
@@ -2171,7 +2171,7 @@ export const Index: Record<string, any> = {
     name: "p-card-1",
     description: "Card with header, content, and footer",
     type: "registry:block",
-    registryDependencies: ["@coss/card","@coss/button","@coss/form","@coss/field","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-card-1.tsx",
       type: "registry:block",
@@ -2261,7 +2261,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-5",
     description: "Checkbox form",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox","@coss/form","@coss/field","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/field","@coss/form"],
     files: [{
       path: "registry/default/particles/p-checkbox-5.tsx",
       type: "registry:block",
@@ -2279,7 +2279,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-1",
     description: "Basic checkbox group",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox-group","@coss/checkbox","@coss/label"],
+    registryDependencies: ["@coss/checkbox","@coss/checkbox-group","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-1.tsx",
       type: "registry:block",
@@ -2297,7 +2297,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-2",
     description: "Checkbox group with disabled items",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox-group","@coss/checkbox","@coss/label"],
+    registryDependencies: ["@coss/checkbox","@coss/checkbox-group","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-2.tsx",
       type: "registry:block",
@@ -2315,7 +2315,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-3",
     description: "Checkbox group with parent checkbox",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox-group","@coss/checkbox","@coss/label"],
+    registryDependencies: ["@coss/checkbox","@coss/checkbox-group","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-3.tsx",
       type: "registry:block",
@@ -2333,7 +2333,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-4",
     description: "Nested checkbox group with parent",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox-group","@coss/checkbox","@coss/label"],
+    registryDependencies: ["@coss/checkbox","@coss/checkbox-group","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-4.tsx",
       type: "registry:block",
@@ -2351,7 +2351,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-5",
     description: "Checkbox group form",
     type: "registry:block",
-    registryDependencies: ["@coss/checkbox-group","@coss/checkbox","@coss/form","@coss/field","@coss/fieldset","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-5.tsx",
       type: "registry:block",
@@ -2549,7 +2549,7 @@ export const Index: Record<string, any> = {
     name: "p-combobox-10",
     description: "Combobox with input inside popup",
     type: "registry:block",
-    registryDependencies: ["@coss/combobox","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/combobox"],
     files: [{
       path: "registry/default/particles/p-combobox-10.tsx",
       type: "registry:block",
@@ -2567,7 +2567,7 @@ export const Index: Record<string, any> = {
     name: "p-combobox-11",
     description: "Combobox form",
     type: "registry:block",
-    registryDependencies: ["@coss/combobox","@coss/form","@coss/field","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
     files: [{
       path: "registry/default/particles/p-combobox-11.tsx",
       type: "registry:block",
@@ -2578,14 +2578,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["combobox","input","form"],
+    categories: ["combobox","form","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-combobox-12": {
     name: "p-combobox-12",
     description: "Combobox multiple form",
     type: "registry:block",
-    registryDependencies: ["@coss/combobox","@coss/form","@coss/field","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
     files: [{
       path: "registry/default/particles/p-combobox-12.tsx",
       type: "registry:block",
@@ -2596,14 +2596,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["combobox","input","form"],
+    categories: ["combobox","form","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-dialog-1": {
     name: "p-dialog-1",
     description: "Dialog with form",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/button","@coss/form","@coss/field","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-dialog-1.tsx",
       type: "registry:block",
@@ -2621,7 +2621,7 @@ export const Index: Record<string, any> = {
     name: "p-dialog-6",
     description: "Dialog with bare footer",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/button","@coss/form","@coss/field","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-dialog-6.tsx",
       type: "registry:block",
@@ -2639,7 +2639,7 @@ export const Index: Record<string, any> = {
     name: "p-dialog-2",
     description: "Dialog opened from menu",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/menu","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-dialog-2.tsx",
       type: "registry:block",
@@ -2657,7 +2657,7 @@ export const Index: Record<string, any> = {
     name: "p-dialog-3",
     description: "Nested dialogs",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/button","@coss/field","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/field","@coss/input"],
     files: [{
       path: "registry/default/particles/p-dialog-3.tsx",
       type: "registry:block",
@@ -2675,7 +2675,7 @@ export const Index: Record<string, any> = {
     name: "p-dialog-4",
     description: "Dialog with close confirmation",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/alert-dialog","@coss/button","@coss/form","@coss/field","@coss/textarea"],
+    registryDependencies: ["@coss/alert-dialog","@coss/button","@coss/dialog","@coss/field","@coss/form","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-dialog-4.tsx",
       type: "registry:block",
@@ -2686,14 +2686,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["dialog","alert dialog"],
+    categories: ["alert dialog","dialog"],
     meta: undefined,
   },
   "p-dialog-5": {
     name: "p-dialog-5",
     description: "Dialog with long content",
     type: "registry:block",
-    registryDependencies: ["@coss/dialog","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/dialog"],
     files: [{
       path: "registry/default/particles/p-dialog-5.tsx",
       type: "registry:block",
@@ -2711,7 +2711,7 @@ export const Index: Record<string, any> = {
     name: "p-empty-1",
     description: "Empty state with icon and actions",
     type: "registry:block",
-    registryDependencies: ["@coss/empty","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/empty"],
     files: [{
       path: "registry/default/particles/p-empty-1.tsx",
       type: "registry:block",
@@ -2819,7 +2819,7 @@ export const Index: Record<string, any> = {
     name: "p-field-6",
     description: "Input group with field",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/button","@coss/input-group"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-field-6.tsx",
       type: "registry:block",
@@ -2830,14 +2830,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","field","button"],
+    categories: ["button","field","input","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-7": {
     name: "p-field-7",
     description: "Field with autocomplete",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/autocomplete"],
+    registryDependencies: ["@coss/autocomplete","@coss/field"],
     files: [{
       path: "registry/default/particles/p-field-7.tsx",
       type: "registry:block",
@@ -2848,14 +2848,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","input","autocomplete","label"],
+    categories: ["autocomplete","field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-8": {
     name: "p-field-8",
     description: "Field with combobox",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/combobox"],
+    registryDependencies: ["@coss/combobox","@coss/field"],
     files: [{
       path: "registry/default/particles/p-field-8.tsx",
       type: "registry:block",
@@ -2866,14 +2866,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","input","combobox","label"],
+    categories: ["combobox","field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-9": {
     name: "p-field-9",
     description: "Field with multiple selection combobox",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/combobox"],
+    registryDependencies: ["@coss/combobox","@coss/field"],
     files: [{
       path: "registry/default/particles/p-field-9.tsx",
       type: "registry:block",
@@ -2884,7 +2884,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","input","combobox","label"],
+    categories: ["combobox","field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-10": {
@@ -2902,7 +2902,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","textarea","label"],
+    categories: ["field","label","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-11": {
@@ -2920,14 +2920,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","select","label"],
+    categories: ["field","label","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-12": {
     name: "p-field-12",
     description: "Field with checkbox",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/checkbox"],
+    registryDependencies: ["@coss/checkbox","@coss/field"],
     files: [{
       path: "registry/default/particles/p-field-12.tsx",
       type: "registry:block",
@@ -2938,14 +2938,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label","checkbox"],
+    categories: ["checkbox","field","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-13": {
     name: "p-field-13",
     description: "Field with checkbox group",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/checkbox-group","@coss/checkbox","@coss/fieldset"],
+    registryDependencies: ["@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset"],
     files: [{
       path: "registry/default/particles/p-field-13.tsx",
       type: "registry:block",
@@ -2956,14 +2956,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","checkbox group","checkbox","fieldset","label"],
+    categories: ["checkbox","checkbox group","field","fieldset","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-14": {
     name: "p-field-14",
     description: "Field with radio group",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/radio-group","@coss/fieldset"],
+    registryDependencies: ["@coss/field","@coss/fieldset","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-field-14.tsx",
       type: "registry:block",
@@ -2974,7 +2974,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","radio group","label","fieldset"],
+    categories: ["field","fieldset","label","radio group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-15": {
@@ -2992,7 +2992,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","switch","label"],
+    categories: ["field","label","switch"],
     meta: undefined,
   },
   "p-field-16": {
@@ -3010,7 +3010,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","slider","label"],
+    categories: ["field","label","slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-17": {
@@ -3035,7 +3035,7 @@ export const Index: Record<string, any> = {
     name: "p-field-18",
     description: "Complete form built with field",
     type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/select","@coss/checkbox","@coss/form","@coss/input","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-field-18.tsx",
       type: "registry:block",
@@ -3046,14 +3046,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label","form","select","checkbox","button"],
+    categories: ["button","checkbox","field","form","label","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-fieldset-1": {
     name: "p-fieldset-1",
     description: "Fieldset with multiple fields",
     type: "registry:block",
-    registryDependencies: ["@coss/fieldset","@coss/field","@coss/input"],
+    registryDependencies: ["@coss/field","@coss/fieldset","@coss/input"],
     files: [{
       path: "registry/default/particles/p-fieldset-1.tsx",
       type: "registry:block",
@@ -3071,7 +3071,7 @@ export const Index: Record<string, any> = {
     name: "p-form-1",
     description: "Input in a form",
     type: "registry:block",
-    registryDependencies: ["@coss/form","@coss/field","@coss/button","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-form-1.tsx",
       type: "registry:block",
@@ -3082,14 +3082,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["form","field","button","input"],
+    categories: ["button","field","form","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-form-2": {
     name: "p-form-2",
     description: "Form with zod validation",
     type: "registry:block",
-    registryDependencies: ["@coss/form","@coss/field","@coss/button","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-form-2.tsx",
       type: "registry:block",
@@ -3100,7 +3100,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["form","field","button","validation","label","zod"],
+    categories: ["button","field","form","label","validation","zod"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-frame-1": {
@@ -3125,7 +3125,7 @@ export const Index: Record<string, any> = {
     name: "p-frame-2",
     description: "Frame with collapsible content and delete button",
     type: "registry:block",
-    registryDependencies: ["@coss/frame","@coss/collapsible","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/collapsible","@coss/frame"],
     files: [{
       path: "registry/default/particles/p-frame-2.tsx",
       type: "registry:block",
@@ -3136,7 +3136,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["frame","collapsible"],
+    categories: ["collapsible","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full"},
   },
   "p-kbd-1": {
@@ -3161,7 +3161,7 @@ export const Index: Record<string, any> = {
     name: "p-group-1",
     description: "Basic group",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-1.tsx",
       type: "registry:block",
@@ -3179,7 +3179,7 @@ export const Index: Record<string, any> = {
     name: "p-group-2",
     description: "Group with input",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/input","@coss/tooltip","@coss/use-copy-to-clipboard"],
     files: [{
       path: "registry/default/particles/p-group-2.tsx",
       type: "registry:block",
@@ -3197,7 +3197,7 @@ export const Index: Record<string, any> = {
     name: "p-group-3",
     description: "Small group",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-3.tsx",
       type: "registry:block",
@@ -3215,7 +3215,7 @@ export const Index: Record<string, any> = {
     name: "p-group-4",
     description: "Large group",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-4.tsx",
       type: "registry:block",
@@ -3233,7 +3233,7 @@ export const Index: Record<string, any> = {
     name: "p-group-5",
     description: "Group with disabled button",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-5.tsx",
       type: "registry:block",
@@ -3244,14 +3244,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group","button"],
+    categories: ["button","group"],
     meta: undefined,
   },
   "p-group-6": {
     name: "p-group-6",
     description: "Group with default button",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-6.tsx",
       type: "registry:block",
@@ -3262,14 +3262,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group","button"],
+    categories: ["button","group"],
     meta: undefined,
   },
   "p-group-7": {
     name: "p-group-7",
     description: "Group with start text",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
     files: [{
       path: "registry/default/particles/p-group-7.tsx",
       type: "registry:block",
@@ -3287,7 +3287,7 @@ export const Index: Record<string, any> = {
     name: "p-group-8",
     description: "Group with end text",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/group","@coss/input"],
     files: [{
       path: "registry/default/particles/p-group-8.tsx",
       type: "registry:block",
@@ -3305,7 +3305,7 @@ export const Index: Record<string, any> = {
     name: "p-group-9",
     description: "Vertical group",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group"],
     files: [{
       path: "registry/default/particles/p-group-9.tsx",
       type: "registry:block",
@@ -3323,7 +3323,7 @@ export const Index: Record<string, any> = {
     name: "p-group-10",
     description: "Nested groups",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group"],
     files: [{
       path: "registry/default/particles/p-group-10.tsx",
       type: "registry:block",
@@ -3341,7 +3341,7 @@ export const Index: Record<string, any> = {
     name: "p-group-11",
     description: "Group with popup",
     type: "registry:block",
-    registryDependencies: ["@coss/group"],
+    registryDependencies: ["@coss/badge","@coss/button","@coss/group","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-group-11.tsx",
       type: "registry:block",
@@ -3359,7 +3359,7 @@ export const Index: Record<string, any> = {
     name: "p-group-12",
     description: "Group with input group",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input-group"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/input-group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-group-12.tsx",
       type: "registry:block",
@@ -3377,7 +3377,7 @@ export const Index: Record<string, any> = {
     name: "p-group-13",
     description: "Group with menu",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-group-13.tsx",
       type: "registry:block",
@@ -3395,7 +3395,7 @@ export const Index: Record<string, any> = {
     name: "p-group-14",
     description: "Group with select",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/number-field","@coss/select"],
     files: [{
       path: "registry/default/particles/p-group-14.tsx",
       type: "registry:block",
@@ -3413,7 +3413,7 @@ export const Index: Record<string, any> = {
     name: "p-group-15",
     description: "Group with search",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/search"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-group-15.tsx",
       type: "registry:block",
@@ -3539,7 +3539,7 @@ export const Index: Record<string, any> = {
     name: "p-input-7",
     description: "Input with button",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/input"],
     files: [{
       path: "registry/default/particles/p-input-7.tsx",
       type: "registry:block",
@@ -3550,7 +3550,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","button"],
+    categories: ["button","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-8": {
@@ -3568,7 +3568,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","button","popover"],
+    categories: ["button","input","input group","popover"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-9": {
@@ -3586,7 +3586,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","button","tooltip"],
+    categories: ["button","input","input group","tooltip"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-10": {
@@ -3604,7 +3604,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","button","popover"],
+    categories: ["button","input","input group","popover"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-11": {
@@ -3640,14 +3640,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","loading","spinner"],
+    categories: ["input","input group","spinner","loading"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-1": {
     name: "p-input-group-1",
     description: "Basic input group",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-1.tsx",
       type: "registry:block",
@@ -3665,7 +3665,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-2",
     description: "Input group with end icon",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-2.tsx",
       type: "registry:block",
@@ -3683,7 +3683,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-3",
     description: "Input group with start text",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-3.tsx",
       type: "registry:block",
@@ -3701,7 +3701,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-4",
     description: "Input group with end text",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-4.tsx",
       type: "registry:block",
@@ -3719,7 +3719,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-5",
     description: "Input group with start and end text",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-5.tsx",
       type: "registry:block",
@@ -3755,7 +3755,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-7",
     description: "Input group with end tooltip",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-input-group-7.tsx",
       type: "registry:block",
@@ -3773,7 +3773,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-8",
     description: "Input group with icon button",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip","@coss/use-copy-to-clipboard"],
     files: [{
       path: "registry/default/particles/p-input-group-8.tsx",
       type: "registry:block",
@@ -3784,14 +3784,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input group","button"],
+    categories: ["button","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-9": {
     name: "p-input-group-9",
     description: "Input group with button",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-9.tsx",
       type: "registry:block",
@@ -3802,14 +3802,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input group","button"],
+    categories: ["button","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-10": {
     name: "p-input-group-10",
     description: "Input group with badge",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/badge"],
+    registryDependencies: ["@coss/badge","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-10.tsx",
       type: "registry:block",
@@ -3820,14 +3820,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input group","badge"],
+    categories: ["badge","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-11": {
     name: "p-input-group-11",
     description: "Input group with keyboard shortcut",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/kbd"],
+    registryDependencies: ["@coss/input-group","@coss/kbd"],
     files: [{
       path: "registry/default/particles/p-input-group-11.tsx",
       type: "registry:block",
@@ -3845,7 +3845,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-12",
     description: "Input group with inner label",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/label"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/label","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-input-group-12.tsx",
       type: "registry:block",
@@ -3863,7 +3863,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-13",
     description: "Small input group",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-13.tsx",
       type: "registry:block",
@@ -3881,7 +3881,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-14",
     description: "Large input group",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-14.tsx",
       type: "registry:block",
@@ -3899,7 +3899,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-15",
     description: "Disabled input group",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-15.tsx",
       type: "registry:block",
@@ -3917,7 +3917,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-16",
     description: "Input group with loading spinner",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/input","@coss/spinner"],
+    registryDependencies: ["@coss/input-group","@coss/spinner"],
     files: [{
       path: "registry/default/particles/p-input-group-16.tsx",
       type: "registry:block",
@@ -3935,7 +3935,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-17",
     description: "Input group with textarea",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/textarea"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/menu","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-input-group-17.tsx",
       type: "registry:block",
@@ -4025,7 +4025,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-1",
     description: "Basic menu",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-1.tsx",
       type: "registry:block",
@@ -4043,7 +4043,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-2",
     description: "Menu with hover",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-2.tsx",
       type: "registry:block",
@@ -4061,7 +4061,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-3",
     description: "Menu with checkbox",
     type: "registry:block",
-    registryDependencies: ["@coss/menu","@coss/checkbox"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-3.tsx",
       type: "registry:block",
@@ -4079,7 +4079,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-4",
     description: "Menu with radio group",
     type: "registry:block",
-    registryDependencies: ["@coss/menu","@coss/radio-group"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-4.tsx",
       type: "registry:block",
@@ -4097,7 +4097,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-5",
     description: "Menu with link",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-5.tsx",
       type: "registry:block",
@@ -4115,7 +4115,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-6",
     description: "Menu with group labels",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-6.tsx",
       type: "registry:block",
@@ -4133,7 +4133,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-7",
     description: "Nested menu",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-7.tsx",
       type: "registry:block",
@@ -4151,7 +4151,7 @@ export const Index: Record<string, any> = {
     name: "p-menu-8",
     description: "Menu close on click",
     type: "registry:block",
-    registryDependencies: ["@coss/menu"],
+    registryDependencies: ["@coss/button","@coss/menu"],
     files: [{
       path: "registry/default/particles/p-menu-8.tsx",
       type: "registry:block",
@@ -4241,7 +4241,7 @@ export const Index: Record<string, any> = {
     name: "p-number-field-5",
     description: "Number field with label",
     type: "registry:block",
-    registryDependencies: ["@coss/number-field","@coss/label"],
+    registryDependencies: ["@coss/label","@coss/number-field"],
     files: [{
       path: "registry/default/particles/p-number-field-5.tsx",
       type: "registry:block",
@@ -4331,7 +4331,7 @@ export const Index: Record<string, any> = {
     name: "p-number-field-10",
     description: "Number field in form",
     type: "registry:block",
-    registryDependencies: ["@coss/number-field","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/number-field"],
     files: [{
       path: "registry/default/particles/p-number-field-10.tsx",
       type: "registry:block",
@@ -4367,7 +4367,7 @@ export const Index: Record<string, any> = {
     name: "p-pagination-2",
     description: "Pagination with previous and next buttons only",
     type: "registry:block",
-    registryDependencies: ["@coss/pagination"],
+    registryDependencies: ["@coss/button","@coss/pagination"],
     files: [{
       path: "registry/default/particles/p-pagination-2.tsx",
       type: "registry:block",
@@ -4385,7 +4385,7 @@ export const Index: Record<string, any> = {
     name: "p-pagination-3",
     description: "Pagination with select, and previous and next buttons",
     type: "registry:block",
-    registryDependencies: ["@coss/pagination","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/pagination","@coss/select"],
     files: [{
       path: "registry/default/particles/p-pagination-3.tsx",
       type: "registry:block",
@@ -4403,7 +4403,7 @@ export const Index: Record<string, any> = {
     name: "p-popover-1",
     description: "Popover with a form",
     type: "registry:block",
-    registryDependencies: ["@coss/popover","@coss/button","@coss/textarea","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/popover","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-popover-1.tsx",
       type: "registry:block",
@@ -4414,14 +4414,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["popover","button","textarea","form","field"],
+    categories: ["button","field","form","popover","textarea"],
     meta: undefined,
   },
   "p-popover-2": {
     name: "p-popover-2",
     description: "Popover with close button",
     type: "registry:block",
-    registryDependencies: ["@coss/popover","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-popover-2.tsx",
       type: "registry:block",
@@ -4432,14 +4432,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["popover","button"],
+    categories: ["button","popover"],
     meta: undefined,
   },
   "p-popover-3": {
     name: "p-popover-3",
     description: "Animated popovers",
     type: "registry:block",
-    registryDependencies: ["@coss/popover","@coss/button","@coss/avatar"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-popover-3.tsx",
       type: "registry:block",
@@ -4450,14 +4450,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["popover","button","avatar"],
+    categories: ["avatar","button","popover"],
     meta: undefined,
   },
   "p-preview-card-1": {
     name: "p-preview-card-1",
     description: "Preview card with popup",
     type: "registry:block",
-    registryDependencies: ["@coss/preview-card","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/preview-card"],
     files: [{
       path: "registry/default/particles/p-preview-card-1.tsx",
       type: "registry:block",
@@ -4529,7 +4529,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-1",
     description: "Basic radio group",
     type: "registry:block",
-    registryDependencies: ["@coss/radio-group"],
+    registryDependencies: ["@coss/label","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-radio-group-1.tsx",
       type: "registry:block",
@@ -4547,7 +4547,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-2",
     description: "Disabled radio group",
     type: "registry:block",
-    registryDependencies: ["@coss/radio-group"],
+    registryDependencies: ["@coss/label","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-radio-group-2.tsx",
       type: "registry:block",
@@ -4565,7 +4565,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-3",
     description: "Radio group with description",
     type: "registry:block",
-    registryDependencies: ["@coss/radio-group"],
+    registryDependencies: ["@coss/label","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-radio-group-3.tsx",
       type: "registry:block",
@@ -4583,7 +4583,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-4",
     description: "Radio group card",
     type: "registry:block",
-    registryDependencies: ["@coss/radio-group","@coss/card"],
+    registryDependencies: ["@coss/label","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-radio-group-4.tsx",
       type: "registry:block",
@@ -4601,7 +4601,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-5",
     description: "Radio group in form",
     type: "registry:block",
-    registryDependencies: ["@coss/radio-group","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/fieldset","@coss/form","@coss/radio-group"],
     files: [{
       path: "registry/default/particles/p-radio-group-5.tsx",
       type: "registry:block",
@@ -4853,7 +4853,7 @@ export const Index: Record<string, any> = {
     name: "p-select-11",
     description: "Select in form",
     type: "registry:block",
-    registryDependencies: ["@coss/select","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/select"],
     files: [{
       path: "registry/default/particles/p-select-11.tsx",
       type: "registry:block",
@@ -4889,7 +4889,7 @@ export const Index: Record<string, any> = {
     name: "p-sheet-1",
     description: "Basic sheet",
     type: "registry:block",
-    registryDependencies: ["@coss/sheet","@coss/button","@coss/form","@coss/field","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/input","@coss/sheet"],
     files: [{
       path: "registry/default/particles/p-sheet-1.tsx",
       type: "registry:block",
@@ -4907,7 +4907,7 @@ export const Index: Record<string, any> = {
     name: "p-sheet-2",
     description: "Sheet inset",
     type: "registry:block",
-    registryDependencies: ["@coss/sheet","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/input","@coss/sheet"],
     files: [{
       path: "registry/default/particles/p-sheet-2.tsx",
       type: "registry:block",
@@ -4925,7 +4925,7 @@ export const Index: Record<string, any> = {
     name: "p-sheet-3",
     description: "Sheet position",
     type: "registry:block",
-    registryDependencies: ["@coss/sheet","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/sheet"],
     files: [{
       path: "registry/default/particles/p-sheet-3.tsx",
       type: "registry:block",
@@ -4943,7 +4943,7 @@ export const Index: Record<string, any> = {
     name: "p-skeleton-1",
     description: "Basic skeleton",
     type: "registry:block",
-    registryDependencies: ["@coss/skeleton"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/skeleton"],
     files: [{
       path: "registry/default/particles/p-skeleton-1.tsx",
       type: "registry:block",
@@ -4997,7 +4997,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-2",
     description: "Slider with label and value",
     type: "registry:block",
-    registryDependencies: ["@coss/slider"],
+    registryDependencies: ["@coss/label","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-2.tsx",
       type: "registry:block",
@@ -5051,7 +5051,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-5",
     description: "Slider in form",
     type: "registry:block",
-    registryDependencies: ["@coss/slider","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-5.tsx",
       type: "registry:block",
@@ -5087,7 +5087,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-1",
     description: "Basic switch",
     type: "registry:block",
-    registryDependencies: ["@coss/switch"],
+    registryDependencies: ["@coss/label","@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-1.tsx",
       type: "registry:block",
@@ -5105,7 +5105,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-2",
     description: "Disabled switch",
     type: "registry:block",
-    registryDependencies: ["@coss/switch"],
+    registryDependencies: ["@coss/label","@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-2.tsx",
       type: "registry:block",
@@ -5123,7 +5123,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-3",
     description: "Switch with description",
     type: "registry:block",
-    registryDependencies: ["@coss/switch"],
+    registryDependencies: ["@coss/label","@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-3.tsx",
       type: "registry:block",
@@ -5141,7 +5141,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-4",
     description: "Switch card",
     type: "registry:block",
-    registryDependencies: ["@coss/switch","@coss/card"],
+    registryDependencies: ["@coss/label","@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-4.tsx",
       type: "registry:block",
@@ -5159,7 +5159,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-5",
     description: "Switch in form",
     type: "registry:block",
-    registryDependencies: ["@coss/switch","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-5.tsx",
       type: "registry:block",
@@ -5177,7 +5177,7 @@ export const Index: Record<string, any> = {
     name: "p-table-1",
     description: "Basic table",
     type: "registry:block",
-    registryDependencies: ["@coss/table"],
+    registryDependencies: ["@coss/badge","@coss/table"],
     files: [{
       path: "registry/default/particles/p-table-1.tsx",
       type: "registry:block",
@@ -5195,7 +5195,7 @@ export const Index: Record<string, any> = {
     name: "p-table-2",
     description: "Framed table",
     type: "registry:block",
-    registryDependencies: ["@coss/table"],
+    registryDependencies: ["@coss/badge","@coss/frame","@coss/table"],
     files: [{
       path: "registry/default/particles/p-table-2.tsx",
       type: "registry:block",
@@ -5357,7 +5357,7 @@ export const Index: Record<string, any> = {
     name: "p-textarea-5",
     description: "Textarea with label",
     type: "registry:block",
-    registryDependencies: ["@coss/textarea","@coss/label"],
+    registryDependencies: ["@coss/label","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-textarea-5.tsx",
       type: "registry:block",
@@ -5375,7 +5375,7 @@ export const Index: Record<string, any> = {
     name: "p-textarea-6",
     description: "Textarea in form",
     type: "registry:block",
-    registryDependencies: ["@coss/textarea","@coss/form","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-textarea-6.tsx",
       type: "registry:block",
@@ -5393,7 +5393,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-1",
     description: "Basic toast",
     type: "registry:block",
-    registryDependencies: ["@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-1.tsx",
       type: "registry:block",
@@ -5411,7 +5411,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-2",
     description: "Toast with status",
     type: "registry:block",
-    registryDependencies: ["@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-2.tsx",
       type: "registry:block",
@@ -5429,7 +5429,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-3",
     description: "Loading toast",
     type: "registry:block",
-    registryDependencies: ["@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-3.tsx",
       type: "registry:block",
@@ -5447,7 +5447,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-4",
     description: "Toast with action",
     type: "registry:block",
-    registryDependencies: ["@coss/toast","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-4.tsx",
       type: "registry:block",
@@ -5465,7 +5465,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-5",
     description: "Promise toast",
     type: "registry:block",
-    registryDependencies: ["@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-5.tsx",
       type: "registry:block",
@@ -5483,7 +5483,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-6",
     description: "Toast with varying heights",
     type: "registry:block",
-    registryDependencies: ["@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-6.tsx",
       type: "registry:block",
@@ -5501,7 +5501,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-7",
     description: "Anchored toast with tooltip style",
     type: "registry:block",
-    registryDependencies: ["@coss/toast","@coss/button","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip","@coss/use-copy-to-clipboard"],
     files: [{
       path: "registry/default/particles/p-toast-7.tsx",
       type: "registry:block",
@@ -5519,7 +5519,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-8",
     description: "Anchored toast",
     type: "registry:block",
-    registryDependencies: ["@coss/toast","@coss/button","@coss/spinner"],
+    registryDependencies: ["@coss/button","@coss/spinner","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-8.tsx",
       type: "registry:block",
@@ -5825,7 +5825,7 @@ export const Index: Record<string, any> = {
     name: "p-toolbar-1",
     description: "Toolbar with toggles, buttons, and select",
     type: "registry:block",
-    registryDependencies: ["@coss/toolbar","@coss/toggle-group","@coss/button","@coss/select","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/select","@coss/toggle-group","@coss/toolbar","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-toolbar-1.tsx",
       type: "registry:block",
@@ -5843,7 +5843,7 @@ export const Index: Record<string, any> = {
     name: "p-tooltip-1",
     description: "Basic tooltip",
     type: "registry:block",
-    registryDependencies: ["@coss/tooltip","@coss/button"],
+    registryDependencies: ["@coss/button","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-tooltip-1.tsx",
       type: "registry:block",
@@ -5861,7 +5861,7 @@ export const Index: Record<string, any> = {
     name: "p-tooltip-2",
     description: "Grouped tooltips",
     type: "registry:block",
-    registryDependencies: ["@coss/tooltip","@coss/button"],
+    registryDependencies: ["@coss/toggle-group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-tooltip-2.tsx",
       type: "registry:block",
@@ -5879,7 +5879,7 @@ export const Index: Record<string, any> = {
     name: "p-tooltip-3",
     description: "Toggle group animated tooltip",
     type: "registry:block",
-    registryDependencies: ["@coss/tooltip","@coss/toggle-group"],
+    registryDependencies: ["@coss/toggle-group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-tooltip-3.tsx",
       type: "registry:block",
@@ -5897,7 +5897,7 @@ export const Index: Record<string, any> = {
     name: "p-tooltip-4",
     description: "Vertical group with animated tooltip",
     type: "registry:block",
-    registryDependencies: ["@coss/tooltip","@coss/button","@coss/group"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-tooltip-4.tsx",
       type: "registry:block",

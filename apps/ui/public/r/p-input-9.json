@@ -19,9 +19,9 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
+    "button",
     "input",
     "input group",
-    "button",
     "tooltip"
   ]
 }

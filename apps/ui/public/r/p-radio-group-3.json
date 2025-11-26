@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Radio group with description",
   "registryDependencies": [
+    "@coss/label",
     "@coss/radio-group"
   ],
   "files": [

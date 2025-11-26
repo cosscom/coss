@@ -4,6 +4,7 @@
   "type": "registry:block",
   "description": "Nested groups",
   "registryDependencies": [
+    "@coss/button",
     "@coss/group"
   ],
   "files": [

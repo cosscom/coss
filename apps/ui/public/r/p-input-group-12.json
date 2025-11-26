@@ -4,9 +4,10 @@
   "type": "registry:block",
   "description": "Input group with inner label",
   "registryDependencies": [
+    "@coss/button",
     "@coss/input-group",
-    "@coss/input",
-    "@coss/label"
+    "@coss/label",
+    "@coss/popover"
   ],
   "files": [
     {

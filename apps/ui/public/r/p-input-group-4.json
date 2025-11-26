@@ -4,8 +4,7 @@
   "type": "registry:block",
   "description": "Input group with end text",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input"
+    "@coss/input-group"
   ],
   "files": [
     {

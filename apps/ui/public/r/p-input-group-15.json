@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "Disabled input group",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/input"
+    "@coss/button",
+    "@coss/input-group"
   ],
   "files": [
     {
