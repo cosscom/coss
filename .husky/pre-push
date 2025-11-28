@@ -1,6 +1,6 @@
 #!/bin/sh
 # Format all files first
-bun format:all
+bun format:all || exit $?
 
 # Then build registry and propagate UI components
 cd apps/ui
