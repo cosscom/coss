@@ -1,13 +1,14 @@
 import { mergeProps } from "@base-ui-components/react/merge-props";
 import { useRender } from "@base-ui-components/react/use-render";
-import { cn } from "@coss/ui/lib/utils";
-import { type Button, buttonVariants } from "@coss/ui/ui/button";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MoreHorizontalIcon,
 } from "lucide-react";
 import type * as React from "react";
+
+import { cn } from "@coss/ui/lib/utils";
+import { type Button, buttonVariants } from "@coss/ui/ui/button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

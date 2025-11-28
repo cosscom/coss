@@ -106,7 +106,6 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "alert-dialog",
-    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -258,6 +257,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "dialog",
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -352,7 +352,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "input-group",
-    registryDependencies: ["@coss/input", "@coss/field", "@coss/textarea"],
+    registryDependencies: ["@coss/input", "@coss/textarea"],
     type: "registry:ui",
   },
   {
@@ -366,7 +366,6 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
     files: [
       {
         path: "ui/label.tsx",
@@ -415,10 +414,10 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "number-field",
+    registryDependencies: ["@coss/label"],
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
     files: [
       {
         path: "ui/pagination.tsx",
@@ -519,7 +518,6 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
     files: [
       {
         path: "ui/sidebar.tsx",
@@ -534,6 +532,8 @@ export const ui: Registry["items"] = [
       "@coss/sheet",
       "@coss/skeleton",
       "@coss/tooltip",
+      "@coss/use-mobile",
+      "@coss/utils",
     ],
     type: "registry:ui",
   },
@@ -592,7 +592,6 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
     files: [
       {
         path: "ui/table.tsx",

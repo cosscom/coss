@@ -1,11 +1,12 @@
 "use client";
 
 import { Combobox as ComboboxPrimitive } from "@base-ui-components/react/combobox";
+import { ChevronsUpDownIcon, XIcon } from "lucide-react";
+import * as React from "react";
+
 import { cn } from "@coss/ui/lib/utils";
 import { Input } from "@coss/ui/ui/input";
 import { ScrollArea } from "@coss/ui/ui/scroll-area";
-import { ChevronsUpDownIcon, XIcon } from "lucide-react";
-import * as React from "react";
 
 const ComboboxContext = React.createContext<{
   chipsRef: React.RefObject<HTMLDivElement | null> | null;

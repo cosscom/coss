@@ -1,15 +1,20 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "categories": ["menu"],
+  "name": "p-menu-8",
+  "type": "registry:block",
   "description": "Menu close on click",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/menu"
+  ],
   "files": [
     {
-      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\";\n\nexport default function Particle() {\n  return (\n    <Menu>\n      <MenuTrigger render={<Button variant=\"outline\" />}>Open menu</MenuTrigger>\n      <MenuPopup>\n        <MenuItem closeOnClick>Profile</MenuItem>\n        <MenuItem closeOnClick>Settings</MenuItem>\n        <MenuItem closeOnClick>Log out</MenuItem>\n      </MenuPopup>\n    </Menu>\n  );\n}\n",
       "path": "registry/default/particles/p-menu-8.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Menu,\n  MenuItem,\n  MenuPopup,\n  MenuTrigger,\n} from \"@/registry/default/ui/menu\";\n\nexport default function Particle() {\n  return (\n    <Menu>\n      <MenuTrigger render={<Button variant=\"outline\" />}>Open menu</MenuTrigger>\n      <MenuPopup>\n        <MenuItem closeOnClick>Profile</MenuItem>\n        <MenuItem closeOnClick>Settings</MenuItem>\n        <MenuItem closeOnClick>Log out</MenuItem>\n      </MenuPopup>\n    </Menu>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
-  "name": "p-menu-8",
-  "registryDependencies": ["@coss/menu"],
-  "type": "registry:block"
+  "categories": [
+    "menu"
+  ]
 }

@@ -46,7 +46,8 @@
     "format:all": "biome check --write --unsafe --no-errors-on-unmatched",
     "lint": "biome lint .",
     "postinstall": "fumadocs-mdx",
-    "registry:build": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/build-registry.mts && biome format --write registry",
+    "registry:build": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/build-registry.mts",
+    "registry:validate-deps": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/validate-registry-deps.mts",
     "start": "next start --port 4000",
     "typecheck": "tsc --noEmit",
     "ui:propagate": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/propagate-ui.mts"

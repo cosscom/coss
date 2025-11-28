@@ -133,11 +133,11 @@ After adding your particle, run these scripts:
 ```bash
 cd apps/ui
 
-# Build registry JSON files
-bun run registry:build
-
 # Format code and sort imports
 bun run format:all
+
+# Build registry JSON files
+bun run registry:build
 
 ## Copy UI components to the packages folder
 bun run ui:propagate
