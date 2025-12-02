@@ -2739,6 +2739,23 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("table"),
+    dependencies: ["@tanstack/react-table"],
+    description: "Table with TanStack Table and checkboxes",
+    files: [{ path: "particles/p-table-3.tsx", type: "registry:block" }],
+    meta: {
+      className: "**:data-[slot=preview]:w-full",
+    },
+    name: "p-table-3",
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/checkbox",
+      "@coss/frame",
+      "@coss/table",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("tabs"),
     description: "Basic tabs",
     files: [{ path: "particles/p-tabs-1.tsx", type: "registry:block" }],

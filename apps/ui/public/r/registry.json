@@ -5746,6 +5746,32 @@
     },
     {
       "categories": [
+        "table"
+      ],
+      "dependencies": [
+        "@tanstack/react-table"
+      ],
+      "description": "Table with TanStack Table and checkboxes",
+      "files": [
+        {
+          "path": "registry/default/particles/p-table-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full"
+      },
+      "name": "p-table-3",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/checkbox",
+        "@coss/frame",
+        "@coss/table"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "tabs"
       ],
       "description": "Basic tabs",
