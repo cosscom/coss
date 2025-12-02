@@ -1405,6 +1405,28 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("frame"),
+    description: "Frame with multiple separated panels",
+    files: [{ path: "particles/p-frame-3.tsx", type: "registry:block" }],
+    meta: {
+      className: "**:data-[slot=preview]:w-full",
+    },
+    name: "p-frame-3",
+    registryDependencies: ["@coss/frame"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("frame"),
+    description: "Frame with multiple stacked panels",
+    files: [{ path: "particles/p-frame-4.tsx", type: "registry:block" }],
+    meta: {
+      className: "**:data-[slot=preview]:w-full",
+    },
+    name: "p-frame-4",
+    registryDependencies: ["@coss/frame"],
+    type: "registry:block",
+  },
+  {
     categories: categories("collapsible", "frame"),
     dependencies: ["lucide-react"],
     description: "Frame with collapsible content and delete button",

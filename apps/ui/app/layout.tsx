@@ -42,7 +42,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             <AnchoredToastProvider>
-              <div className="before:-z-10 relative flex min-h-svh flex-col overflow-clip [--header-height:4rem] before:pointer-events-none before:absolute before:inset-0 before:bg-sidebar">
+              <div className="relative flex min-h-svh flex-col overflow-clip [--header-height:4rem]">
                 <div
                   aria-hidden="true"
                   className="before:-left-3 after:-right-3 container pointer-events-none absolute inset-0 z-45 before:absolute before:inset-y-0 before:w-px before:bg-border/50 after:absolute after:inset-y-0 after:w-px after:bg-border/50"

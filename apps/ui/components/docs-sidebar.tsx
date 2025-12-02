@@ -44,14 +44,15 @@ export function DocsSidebar({
                       item.type === "page" && (
                         <SidebarMenuItem key={item.url}>
                           <SidebarMenuButton
-                            className="from-secondary to-secondary/64 ps-3.5 text-sidebar-foreground/64 hover:bg-transparent active:bg-transparent data-[active=true]:bg-gradient-to-tr"
+                            className="ps-3.5 hover:bg-transparent active:bg-transparent"
                             isActive={item.url === pathname}
                             render={<Link href={item.url} />}
                           >
                             {item.name}
-                            {PAGES_NEW.includes(item.url) && (
-                              <Badge variant="info">New</Badge>
-                            )}
+                            {PAGES_NEW.length > 0 &&
+                              PAGES_NEW.includes(item.url as never) && (
+                                <Badge variant="info">New</Badge>
+                              )}
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
