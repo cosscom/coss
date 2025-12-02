@@ -1,6 +1,5 @@
 "use client";
 
-import type * as React from "react";
 import { useState } from "react";
 import type { WeekNumberProps } from "react-day-picker";
 
@@ -16,7 +15,7 @@ export default function Component() {
         components={{
           WeekNumber: ({ week, ...props }: WeekNumberProps) => {
             return (
-              <th {...(props as React.ComponentProps<"th">)}>
+              <th {...props}>
                 <span className="inline-flex size-9 items-center justify-center">
                   {week.weekNumber}
                 </span>
