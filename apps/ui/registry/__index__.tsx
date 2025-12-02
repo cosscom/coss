@@ -3121,6 +3121,42 @@ export const Index: Record<string, any> = {
     categories: ["frame"],
     meta: {"className":"**:data-[slot=preview]:w-full"},
   },
+  "p-frame-3": {
+    name: "p-frame-3",
+    description: "Frame with multiple separated panels",
+    type: "registry:block",
+    registryDependencies: ["@coss/frame"],
+    files: [{
+      path: "registry/default/particles/p-frame-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-frame-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["frame"],
+    meta: {"className":"**:data-[slot=preview]:w-full"},
+  },
+  "p-frame-4": {
+    name: "p-frame-4",
+    description: "Frame with multiple stacked panels",
+    type: "registry:block",
+    registryDependencies: ["@coss/frame"],
+    files: [{
+      path: "registry/default/particles/p-frame-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-frame-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["frame"],
+    meta: {"className":"**:data-[slot=preview]:w-full"},
+  },
   "p-frame-2": {
     name: "p-frame-2",
     description: "Frame with collapsible content and delete button",

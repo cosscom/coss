@@ -77,9 +77,10 @@ export function MobileNav({
                               onOpenChange={setOpen}
                             >
                               {item.name}
-                              {PAGES_NEW.includes(item.url) && (
-                                <Badge variant="info">New</Badge>
-                              )}
+                              {PAGES_NEW.length > 0 &&
+                                PAGES_NEW.includes(item.url as never) && (
+                                  <Badge variant="info">New</Badge>
+                                )}
                             </MobileLink>
                           );
                         }

@@ -111,7 +111,7 @@ export default function Particle() {
       <TableFooter>
         <TableRow>
           <TableCell colSpan={3}>Total Budget</TableCell>
-          <TableCell className="text-right font-medium">$39,550</TableCell>
+          <TableCell className="text-right">$39,550</TableCell>
         </TableRow>
       </TableFooter>
     </Table>

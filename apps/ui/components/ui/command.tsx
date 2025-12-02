@@ -64,7 +64,7 @@ function CommandInput({
       <div className="relative inline-flex w-full rounded-md bg-muted bg-clip-padding text-base/5 outline-none ring-ring/24 transition-[color,background-color,box-shadow,border-color] has-focus-visible:border-ring sm:text-sm dark:bg-input/32 dark:bg-clip-border">
         <CommandPrimitive.Input
           className={cn(
-            "w-full min-w-0 px-[calc(--spacing(3)-1px)] py-[calc(--spacing(2.5)-1px)] ps-9 outline-none placeholder:text-muted-foreground/64",
+            "w-full min-w-0 px-[calc(--spacing(3)-1px)] py-[calc(--spacing(2.5)-1px)] ps-9 outline-none placeholder:text-muted-foreground/72",
             className,
           )}
           data-slot="command-input-wrapper"

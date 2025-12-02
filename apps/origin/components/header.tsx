@@ -26,7 +26,7 @@ export default function Header() {
           </a>
           <Link
             aria-label="Home"
-            className="text-muted-foreground/64 hover:text-muted-foreground"
+            className="text-muted-foreground/72 hover:text-muted-foreground"
             href="/"
           >
             origin
