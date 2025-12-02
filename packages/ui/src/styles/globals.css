@@ -80,7 +80,11 @@
   --secondary: --alpha(var(--color-black) / 4%);
   --secondary-foreground: var(--color-zinc-800);
   --muted: --alpha(var(--color-black) / 4%);
-  --muted-foreground: var(--color-zinc-500);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-zinc-500) 90%,
+    var(--color-black)
+  );
   --accent: --alpha(var(--color-black) / 4%);
   --accent-foreground: var(--color-zinc-800);
   --destructive: var(--color-red-500);
@@ -132,7 +136,11 @@
   --secondary: --alpha(var(--color-white) / 6%);
   --secondary-foreground: var(--color-zinc-200);
   --muted: --alpha(var(--color-white) / 6%);
-  --muted-foreground: var(--color-zinc-500);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-zinc-500) 90%,
+    var(--color-white)
+  );
   --accent: --alpha(var(--color-white) / 6%);
   --accent-foreground: var(--color-zinc-200);
   --destructive: var(--color-red-500);
