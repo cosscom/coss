@@ -17,7 +17,11 @@ import {
 export default function Particle() {
   return (
     <InputGroup>
-      <InputGroupInput placeholder="Enter email" defaultValue="hello@coss.com" type="email" />
+      <InputGroupInput
+        defaultValue="hello@coss.com"
+        placeholder="Enter email"
+        type="email"
+      />
       <InputGroupAddon align="inline-end">
         <Badge variant="info">Primary</Badge>
         <Menu>
@@ -37,4 +41,3 @@ export default function Particle() {
     </InputGroup>
   );
 }
-

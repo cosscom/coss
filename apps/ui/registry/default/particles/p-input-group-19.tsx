@@ -13,19 +13,21 @@ import { Toggle } from "@/registry/default/ui/toggle";
 export default function Particle() {
   return (
     <InputGroup>
-      <InputGroupTextarea className="*:pt-1!" placeholder="Tell us about yourself…" />
-      <InputGroupAddon align="block-start" className="px-2 py-2 gap-1">
-        <Toggle size="sm" aria-label="Toggle bold">
+      <InputGroupTextarea
+        className="*:pt-1!"
+        placeholder="Tell us about yourself…"
+      />
+      <InputGroupAddon align="block-start" className="gap-1 px-2 py-2">
+        <Toggle aria-label="Toggle bold" size="sm">
           <BoldIcon />
         </Toggle>
-        <Toggle size="sm" aria-label="Toggle italic">
+        <Toggle aria-label="Toggle italic" size="sm">
           <ItalicIcon />
         </Toggle>
-        <Button variant="ghost" size="icon-sm" aria-label="Link">
+        <Button aria-label="Link" size="icon-sm" variant="ghost">
           <LinkIcon />
         </Button>
       </InputGroupAddon>
     </InputGroup>
   );
 }
-

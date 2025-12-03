@@ -4382,14 +4382,15 @@
     },
     {
       "categories": [
+        "button",
         "input group",
-        "label",
-        "textarea"
+        "textarea",
+        "toggle"
       ],
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Input group with textarea, label, and formatting buttons",
+      "description": "Input group with textarea and formatting buttons",
       "files": [
         {
           "path": "registry/default/particles/p-input-group-19.tsx",
@@ -4403,7 +4404,7 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/input-group",
-        "@coss/label"
+        "@coss/toggle"
       ],
       "type": "registry:block"
     },

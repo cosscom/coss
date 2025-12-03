@@ -4005,9 +4005,9 @@ export const Index: Record<string, any> = {
   },
   "p-input-group-19": {
     name: "p-input-group-19",
-    description: "Input group with textarea, label, and formatting buttons",
+    description: "Input group with textarea and formatting buttons",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/label"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/toggle"],
     files: [{
       path: "registry/default/particles/p-input-group-19.tsx",
       type: "registry:block",
@@ -4018,7 +4018,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input group","label","textarea"],
+    categories: ["button","input group","textarea","toggle"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
   },
   "p-meter-1": {

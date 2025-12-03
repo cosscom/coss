@@ -2002,11 +2002,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
     },
     name: "p-input-group-19",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/input-group",
-      "@coss/toggle",
-    ],
+    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/toggle"],
     type: "registry:block",
   },
   {
