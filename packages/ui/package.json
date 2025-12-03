@@ -18,7 +18,7 @@
     "@turbo/gen": "^2.6.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
-    "next": "^16.0.3",
+    "next": "16.0.7",
     "react": "^19.2.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
