@@ -1,6 +1,7 @@
 import {
   Frame,
   FrameDescription,
+  FrameFooter,
   FrameHeader,
   FramePanel,
   FrameTitle,
@@ -17,6 +18,9 @@ export default function Particle() {
         <h2 className="font-semibold text-sm">Section title</h2>
         <p className="text-muted-foreground text-sm">Section description</p>
       </FramePanel>
+      <FrameFooter>
+        <p className="text-muted-foreground text-sm">Footer</p>
+      </FrameFooter>
     </Frame>
   );
 }

@@ -15,7 +15,8 @@
     }
   ],
   "meta": {
-    "className": "**:data-[slot=preview]:w-full"
+    "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+    "colSpan": 2
   },
   "categories": [
     "table"

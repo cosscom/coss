@@ -2721,36 +2721,71 @@ export const particles: ParticleItem[] = [
     description: "Basic table",
     files: [{ path: "particles/p-table-1.tsx", type: "registry:block" }],
     meta: {
-      className: "**:data-[slot=preview]:w-full",
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
     },
     name: "p-table-1",
     registryDependencies: ["@coss/badge", "@coss/table"],
     type: "registry:block",
   },
   {
-    categories: categories("table"),
+    categories: categories("frame", "table"),
     description: "Framed table",
     files: [{ path: "particles/p-table-2.tsx", type: "registry:block" }],
     meta: {
-      className: "**:data-[slot=preview]:w-full",
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
     },
     name: "p-table-2",
     registryDependencies: ["@coss/badge", "@coss/frame", "@coss/table"],
     type: "registry:block",
   },
   {
-    categories: categories("table"),
+    categories: categories("checkbox", "table", "tanstack"),
     dependencies: ["@tanstack/react-table"],
     description: "Table with TanStack Table and checkboxes",
     files: [{ path: "particles/p-table-3.tsx", type: "registry:block" }],
     meta: {
-      className: "**:data-[slot=preview]:w-full",
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
     },
     name: "p-table-3",
     registryDependencies: [
       "@coss/badge",
       "@coss/checkbox",
       "@coss/frame",
+      "@coss/table",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "checkbox",
+      "pagination",
+      "select",
+      "table",
+      "tanstack",
+    ),
+    dependencies: ["@tanstack/react-table", "lucide-react"],
+    description: "Table with TanStack Table, sorting, and pagination",
+    files: [{ path: "particles/p-table-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
+    },
+    name: "p-table-4",
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/button",
+      "@coss/checkbox",
+      "@coss/frame",
+      "@coss/label",
+      "@coss/pagination",
+      "@coss/select",
       "@coss/table",
     ],
     type: "registry:block",

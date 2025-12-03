@@ -36,7 +36,7 @@ const getParticles = cache(() => {
   ) as Array<{
     name: string;
     categories?: RegistryCategory[];
-    meta?: { className?: string };
+    meta?: { className?: string; colSpan?: number };
   }>;
 });
 
@@ -66,12 +66,17 @@ export async function ParticlesDisplay({
     <div className="grid flex-1 items-stretch gap-9 pb-12 lg:grid-cols-2 lg:gap-6 xl:gap-9">
       {filteredParticles.map((particle) => {
         const className = particle.meta?.className as string | undefined;
+        const colSpan = particle.meta?.colSpan as number | undefined;
         return (
           <Suspense
             fallback={<ParticleCardSkeleton className={className} />}
             key={particle.name}
           >
-            <ParticleCard className={className} name={particle.name} />
+            <ParticleCard
+              className={className}
+              colSpan={colSpan}
+              name={particle.name}
+            />
           </Suspense>
         );
       })}

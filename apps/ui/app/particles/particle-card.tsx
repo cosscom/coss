@@ -34,9 +34,11 @@ function ParticleRenderer({ name }: { name: string }) {
 export async function ParticleCard({
   name,
   className,
+  colSpan,
 }: {
   name: string;
   className?: string;
+  colSpan?: number;
 }) {
   const cossuiUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/ui";
 
@@ -49,11 +51,12 @@ export async function ParticleCard({
   return (
     <ParticleCardContainer
       className={className}
+      colSpan={colSpan}
       footer={
         <>
           <p className="flex flex-1 gap-1 truncate text-muted-foreground text-xs">
             <HugeiconsIcon
-              className="size-3 h-[1lh] shrink-0"
+              className="size-3 h-lh shrink-0"
               icon={InformationCircleIcon}
               strokeWidth={2}
             />
