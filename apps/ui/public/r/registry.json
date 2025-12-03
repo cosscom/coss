@@ -4354,6 +4354,61 @@
     },
     {
       "categories": [
+        "badge",
+        "input group",
+        "menu"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Input group with badge and menu",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-group-18.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-input-group-18",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/menu"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input group",
+        "label",
+        "textarea"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Input group with textarea, label, and formatting buttons",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-group-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
+      },
+      "name": "p-input-group-19",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "meter"
       ],
       "description": "Basic meter",

@@ -1975,6 +1975,41 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("badge", "input group", "menu"),
+    dependencies: ["lucide-react"],
+    description: "Input group with badge and menu",
+    files: [{ path: "particles/p-input-group-18.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-18",
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/menu",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "toggle"),
+    dependencies: ["lucide-react"],
+    description: "Input group with textarea and formatting buttons",
+    files: [{ path: "particles/p-input-group-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-input-group-19",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/toggle",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("meter"),
     description: "Basic meter",
     files: [{ path: "particles/p-meter-1.tsx", type: "registry:block" }],

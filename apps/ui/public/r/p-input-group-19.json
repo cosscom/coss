@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-input-group-19",
+  "type": "registry:block",
+  "description": "Input group with textarea, label, and formatting buttons",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/input-group",
+    "@coss/label"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-input-group-19.tsx",
+      "content": "\"use client\";\n\nimport { BoldIcon, ItalicIcon, LinkIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupTextarea,\n} from \"@/registry/default/ui/input-group\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupTextarea id=\"about\" placeholder=\"Tell us about yourself…\" />\n      <InputGroupAddon align=\"block-start\">\n        <Label className=\"text-foreground\" htmlFor=\"about\">\n          About\n        </Label>\n        <div className=\"ml-auto flex items-center gap-1\">\n          <Button aria-label=\"Bold\" size=\"icon-xs\" variant=\"ghost\">\n            <BoldIcon className=\"size-4\" />\n          </Button>\n          <Button aria-label=\"Italic\" size=\"icon-xs\" variant=\"ghost\">\n            <ItalicIcon className=\"size-4\" />\n          </Button>\n          <Button aria-label=\"Link\" size=\"icon-xs\" variant=\"ghost\">\n            <LinkIcon className=\"size-4\" />\n          </Button>\n        </div>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
+  },
+  "categories": [
+    "input group",
+    "label",
+    "textarea"
+  ]
+}
