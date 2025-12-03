@@ -239,6 +239,8 @@ export default function Particle() {
                             header.column.getToggleSortingHandler()?.(e);
                           }
                         }}
+                        role="button"
+                        tabIndex={0}
                       >
                         {flexRender(
                           header.column.columnDef.header,
