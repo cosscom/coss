@@ -3985,6 +3985,42 @@ export const Index: Record<string, any> = {
     categories: ["input group","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
   },
+  "p-input-group-18": {
+    name: "p-input-group-18",
+    description: "Input group with badge and menu",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/button","@coss/input-group","@coss/menu"],
+    files: [{
+      path: "registry/default/particles/p-input-group-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge","input group","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-19": {
+    name: "p-input-group-19",
+    description: "Mini editor built with input group and toggle",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/toggle"],
+    files: [{
+      path: "registry/default/particles/p-input-group-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","textarea","toggle"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
   "p-meter-1": {
     name: "p-meter-1",
     description: "Basic meter",
