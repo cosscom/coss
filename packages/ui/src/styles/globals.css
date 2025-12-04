@@ -118,6 +118,14 @@
   --code: var(--color-white);
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
+  /* --text-xs: 0.8125rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.25rem;  
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.75rem; */
 }
 
 .dark {
