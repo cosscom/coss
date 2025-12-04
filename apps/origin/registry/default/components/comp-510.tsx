@@ -20,10 +20,11 @@ export default function Component() {
   useEffect(() => {
     const generateMockPriceData = () => {
       const data: Record<string, number> = {};
+      const todayDate = new Date();
 
       for (let i = 0; i < 180; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
+        const date = new Date(todayDate);
+        date.setDate(todayDate.getDate() + i);
         const dateKey = format(date, "yyyy-MM-dd");
         const randomPrice = Math.floor(Math.random() * (200 - 80 + 1)) + 80;
         data[dateKey] = randomPrice;
@@ -31,7 +32,7 @@ export default function Component() {
       return data;
     };
     setMockPriceData(generateMockPriceData());
-  }, [today]);
+  }, []);
 
   const isDateDisabled = (date: Date) => {
     return !mockPriceData[format(date, "yyyy-MM-dd")];
