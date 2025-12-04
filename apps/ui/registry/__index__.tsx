@@ -4005,7 +4005,7 @@ export const Index: Record<string, any> = {
   },
   "p-input-group-19": {
     name: "p-input-group-19",
-    description: "Input group with textarea and formatting buttons",
+    description: "Mini editor built with input group and toggle",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/input-group","@coss/toggle"],
     files: [{

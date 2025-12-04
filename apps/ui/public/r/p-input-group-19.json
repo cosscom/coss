@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-19",
   "type": "registry:block",
-  "description": "Input group with textarea and formatting buttons",
+  "description": "Mini editor built with input group and toggle",
   "dependencies": [
     "lucide-react"
   ],
@@ -14,7 +14,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-group-19.tsx",
-      "content": "\"use client\";\n\nimport { BoldIcon, ItalicIcon, LinkIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupTextarea,\n} from \"@/registry/default/ui/input-group\";\nimport { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupTextarea\n        className=\"*:pt-1!\"\n        placeholder=\"Tell us about yourself…\"\n      />\n      <InputGroupAddon align=\"block-start\" className=\"gap-1 px-2 py-2\">\n        <Toggle aria-label=\"Toggle bold\" size=\"sm\">\n          <BoldIcon />\n        </Toggle>\n        <Toggle aria-label=\"Toggle italic\" size=\"sm\">\n          <ItalicIcon />\n        </Toggle>\n        <Button aria-label=\"Link\" size=\"icon-sm\" variant=\"ghost\">\n          <LinkIcon />\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { BoldIcon, ItalicIcon, LinkIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupTextarea,\n} from \"@/registry/default/ui/input-group\";\nimport { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupTextarea placeholder=\"Tell us about yourself…\" />\n      <InputGroupAddon\n        align=\"block-start\"\n        className=\"gap-1 rounded-t-lg border-b bg-muted/50 p-2!\"\n      >\n        <Toggle aria-label=\"Toggle bold\" size=\"sm\">\n          <BoldIcon />\n        </Toggle>\n        <Toggle aria-label=\"Toggle italic\" size=\"sm\">\n          <ItalicIcon />\n        </Toggle>\n        <Button aria-label=\"Link\" size=\"icon-sm\" variant=\"ghost\">\n          <LinkIcon />\n        </Button>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "type": "registry:block"
     }
   ],

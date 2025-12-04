@@ -13,11 +13,11 @@ import { Toggle } from "@/registry/default/ui/toggle";
 export default function Particle() {
   return (
     <InputGroup>
-      <InputGroupTextarea
-        className="*:pt-1!"
-        placeholder="Tell us about yourself…"
-      />
-      <InputGroupAddon align="block-start" className="gap-1 px-2 py-2">
+      <InputGroupTextarea placeholder="Tell us about yourself…" />
+      <InputGroupAddon
+        align="block-start"
+        className="gap-1 rounded-t-lg border-b bg-muted/50 p-2!"
+      >
         <Toggle aria-label="Toggle bold" size="sm">
           <BoldIcon />
         </Toggle>

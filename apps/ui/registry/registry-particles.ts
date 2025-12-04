@@ -1995,7 +1995,7 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("button", "input group", "textarea", "toggle"),
     dependencies: ["lucide-react"],
-    description: "Input group with textarea and formatting buttons",
+    description: "Mini editor built with input group and toggle",
     files: [{ path: "particles/p-input-group-19.tsx", type: "registry:block" }],
     meta: {
       className:
