@@ -5261,7 +5261,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["table"],
-    meta: {"className":"**:data-[slot=preview]:w-full"},
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
   },
   "p-table-2": {
     name: "p-table-2",
@@ -5278,8 +5278,44 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["table"],
-    meta: {"className":"**:data-[slot=preview]:w-full"},
+    categories: ["frame","table"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-table-3": {
+    name: "p-table-3",
+    description: "Table with TanStack Table and checkboxes",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/checkbox","@coss/frame","@coss/table"],
+    files: [{
+      path: "registry/default/particles/p-table-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-table-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["checkbox","table","tanstack"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-table-4": {
+    name: "p-table-4",
+    description: "Table with TanStack Table, sorting, and pagination",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/frame","@coss/label","@coss/pagination","@coss/select","@coss/table"],
+    files: [{
+      path: "registry/default/particles/p-table-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-table-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["checkbox","pagination","select","table","tanstack"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
   },
   "p-tabs-1": {
     name: "p-tabs-1",

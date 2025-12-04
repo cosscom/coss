@@ -3,16 +3,19 @@ import { cn } from "@/lib/utils";
 export function ParticleCardContainer({
   children,
   className,
+  colSpan,
   footer,
 }: {
   children: React.ReactNode;
   className?: string;
+  colSpan?: number;
   footer: React.ReactNode;
 }) {
   return (
     <div
       className={cn(
         "after:-inset-[5px] after:-z-1 relative flex min-w-0 flex-col rounded-xl border bg-muted/50 bg-clip-padding shadow-black/5 shadow-sm after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/50 after:bg-clip-padding dark:after:bg-background/72",
+        colSpan === 2 && "lg:col-span-2",
         className,
       )}
     >
