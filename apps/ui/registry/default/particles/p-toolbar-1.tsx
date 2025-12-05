@@ -115,7 +115,6 @@ export default function Particle() {
               <TooltipTrigger
                 render={
                   <ToolbarButton
-                    nativeButton={false}
                     render={
                       <SelectTrigger>
                         <SelectValue />

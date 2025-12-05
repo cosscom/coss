@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-17.tsx",
-      "content": "import Link from \"next/link\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return <Button render={<Link href=\"/\" />}>Link</Button>;\n}\n",
+      "content": "import Link from \"next/link\";\n\nimport { ButtonLink } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex gap-2\">\n      <ButtonLink href=\"/\">Link</ButtonLink>\n      <ButtonLink render={<Link href=\"/\" />}>Next.js Link</ButtonLink>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],

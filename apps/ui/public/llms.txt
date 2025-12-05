@@ -17,7 +17,8 @@
 - [Avatar](https://coss.com/ui/docs/components/avatar.md): A visual representation of a user or entity.
 - [Badge](https://coss.com/ui/docs/components/badge.md): A small status indicator or label component.
 - [Breadcrumb](https://coss.com/ui/docs/components/breadcrumb.md): Displays the path to the current resource using a hierarchy of links.
-- [Button](https://coss.com/ui/docs/components/button.md): A button or a component that looks like a button.
+- [Button](https://coss.com/ui/docs/components/button.md): A button component that can be rendered as another tag or focusable when disabled.
+- [Button Link](https://coss.com/ui/docs/components/button-link.md): A link component that looks like a button.
 - [Card](https://coss.com/ui/docs/components/card.md): A content container for grouping related information.
 - [Checkbox](https://coss.com/ui/docs/components/checkbox.md): A binary toggle input for selecting one or multiple options.
 - [Checkbox Group](https://coss.com/ui/docs/components/checkbox-group.md): A collection of related checkboxes with group-level control.
