@@ -13,7 +13,7 @@ import {
 } from "@/registry/default/ui/tooltip";
 
 export default function Particle() {
-  const copyButtonRef = React.useRef<HTMLButtonElement>(null);
+  const copyButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const toastTimeout = 2000;
 
   const { copyToClipboard, isCopied } = useCopyToClipboard({
@@ -46,6 +46,7 @@ export default function Particle() {
           <Button
             aria-label="Copy link"
             disabled={isCopied}
+            focusableWhenDisabled
             onClick={handleCopy}
             ref={copyButtonRef}
             size="icon"
@@ -53,11 +54,7 @@ export default function Particle() {
           />
         }
       >
-        {isCopied ? (
-          <CheckIcon className="size-4" />
-        ) : (
-          <CopyIcon className="size-4" />
-        )}
+        {isCopied ? <CheckIcon /> : <CopyIcon />}
       </TooltipTrigger>
       <TooltipPopup>
         <p>Copy to clipboard</p>

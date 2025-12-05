@@ -2,6 +2,7 @@
 
 import { Button as ButtonPrimitive } from "@base-ui-components/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
+import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
@@ -50,7 +51,9 @@ function Button({
   variant,
   size,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> &
+  React.ComponentPropsWithRef<typeof ButtonPrimitive>) {
   return (
     <ButtonPrimitive
       className={cn(buttonVariants({ className, size, variant }))}
