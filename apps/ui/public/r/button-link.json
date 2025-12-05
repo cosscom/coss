@@ -5,6 +5,9 @@
   "dependencies": [
     "@base-ui-components/react"
   ],
+  "registryDependencies": [
+    "@coss/button"
+  ],
   "files": [
     {
       "path": "registry/default/ui/button-link.tsx",

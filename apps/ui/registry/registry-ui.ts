@@ -202,6 +202,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button-link",
+    registryDependencies: ["@coss/button"],
     type: "registry:ui",
   },
   {

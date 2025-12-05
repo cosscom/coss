@@ -155,7 +155,7 @@ export const Index: Record<string, any> = {
     name: "button-link",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/button"],
     files: [{
       path: "registry/default/ui/button-link.tsx",
       type: "registry:ui",
