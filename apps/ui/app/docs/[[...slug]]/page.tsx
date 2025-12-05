@@ -12,7 +12,7 @@ import { DocsTableOfContents } from "@/components/docs-toc";
 import { SiteFooter } from "@/components/site-footer";
 import { source } from "@/lib/source";
 import { mdxComponents } from "@/mdx-components";
-import { ButtonLink } from "@/registry/default/ui/button-link";
+import { ButtonLink } from "@/registry/default/ui/button";
 
 export const revalidate = false;
 export const dynamic = "force-static";

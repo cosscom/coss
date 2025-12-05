@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ButtonLink } from "@/registry/default/ui/button-link";
+import { ButtonLink } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (

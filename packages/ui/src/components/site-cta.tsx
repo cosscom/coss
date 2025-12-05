@@ -1,4 +1,4 @@
-import { ButtonLink } from "@coss/ui/ui/button-link";
+import { ButtonLink } from "@coss/ui/ui/button";
 import Link from "next/link";
 
 export function SiteCta() {

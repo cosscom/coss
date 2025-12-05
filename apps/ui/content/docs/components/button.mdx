@@ -62,25 +62,33 @@ npm install @base-ui-components/react
 ## Usage
 
 ```tsx
-import { Button } from "@/components/ui/button"
+import { Button, ButtonLink } from "@/components/ui/button"
 ```
 
 ```tsx
-<Button>Button</Button>
+// Render a native button element
+<Button>Action</Button>
+
+// Render a div of role="button" that looks like a button
+<Button render={<div />} nativeButton={false}>Action</Button>
+
+// Render an anchor tag that looks like a button
+<ButtonLink href="/about">About</ButtonLink>
+
+// Render a custom component (e.g., Next.js Link) that looks like a button
+<ButtonLink render={<Link href="/about" />}>About</ButtonLink>
 ```
 
-## Link
+`ButtonLink` was introduced because the Base UI `Button` component adds attributes (like `role="button"`) that are incompatible with anchor tags when using the `render` prop.
 
-You can use the [`render`](https://base-ui.com/react/utils/use-render#migrating-from-radix-ui) prop to make another component look like a button. Here's an example of a link that looks like a button.
+For links styled as buttons, always use `ButtonLink` instead of `Button` with `render`:
 
 ```tsx
-import Link from "next/link"
+// Correct: Use ButtonLink for links
+<ButtonLink render={<Link href="/about" />}>About</ButtonLink>
 
-import { Button } from "@/components/ui/button"
-
-export function LinkAsButton() {
-  return <Button render={<Link href="/login" />}>Login</Button>
-}
+// Incorrect: Button adds incompatible attributes to anchor elements
+<Button render={<Link href="/about" />}>About</Button>
 ```
 
 ## Examples
@@ -151,18 +159,40 @@ export function LinkAsButton() {
 
 ### With Link
 
-<Alert>
-  <AlertTitle>Use ButtonLink for Links</AlertTitle>
-  <AlertDescription>
-    For links that look like buttons, use the <a href="/docs/components/button-link" className="underline">ButtonLink</a> component instead of using `Button` with the `render` prop. `ButtonLink` is specifically designed for this use case and renders an `<a>` tag by default.
-  </AlertDescription>
-</Alert>
-
 <ComponentPreview name="p-button-17" />
 
 ### Loading
 
 <ComponentPreview name="p-button-18" />
+
+## API Reference
+
+### Button
+
+`Button` supports the following props:
+
+| Prop        | Type                                                          | Default   | Description                                    |
+| :---------- | :------------------------------------------------------------ | :-------- | :--------------------------------------------- |
+| `variant`   | `"default" \| "destructive" \| "outline" \| "ghost" \| ...` | `"default"` | The visual style variant                       |
+| `size`      | `"xs" \| "sm" \| "default" \| "lg" \| "xl" \| "icon" \| ...` | `"default"` | The size of the button                         |
+| `render`    | `ReactElement \| ((props) => ReactElement)`                   | -         | Custom element to render                       |
+| `className` | `string`                                                      | -         | Additional CSS classes                          |
+
+All standard button (`<button>`) element props are also supported.
+
+### ButtonLink
+
+`ButtonLink` supports the same `variant` and `size` props as `Button`, plus standard anchor (`<a>`) element props.
+
+| Prop        | Type                                                          | Default   | Description                                    |
+| :---------- | :------------------------------------------------------------ | :-------- | :--------------------------------------------- |
+| `href`      | `string`                                                      | -         | The URL the link points to                     |
+| `variant`   | `"default" \| "destructive" \| "outline" \| "ghost" \| ...` | `"default"` | The visual style variant                       |
+| `size`      | `"xs" \| "sm" \| "default" \| "lg" \| "xl" \| "icon" \| ...` | `"default"` | The size of the button                         |
+| `render`    | `ReactElement \| ((props) => ReactElement)`                   | -         | Custom element to render (e.g., Next.js `Link`) |
+| `className` | `string`                                                      | -         | Additional CSS classes                          |
+
+All standard anchor (`<a>`) element props are also supported. By default, `ButtonLink` renders an `<a>` element. Use the `render` prop to render a different component like Next.js `Link`.
 
 ## Comparing with Radix / shadcn
 
@@ -171,7 +201,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Quick Checklist
 
 - Replace `asChild` → `render` on `Button`
-- For links styled as buttons, use [`ButtonLink`](/docs/components/button-link) instead of `Button` with `render`
+- For links styled as buttons, use `ButtonLink` instead of `Button` with `render`
 
 ### Additional Notes
 
@@ -206,28 +236,27 @@ We've added a new `destructive-outline` variant for better UX patterns:
 ```tsx title="shadcn/ui"
 // [!code word:asChild]
 <Button asChild>
-  <a href="/login">Login</a>
+  <a href="/login">Link</a>
 </Button>
 
 <Button asChild>
-  <Link href="/login">Login</Link>
+  <Link href="/login">Next.js Link</Link>
 </Button>
 ```
 </span>
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
+// [!code word:ButtonLink]
 // [!code word:render:3]
 // [!code word:nativeButton:3]
 // For custom components:
-<Button render={<div />} nativeButton={false}>Action</Button>
-
 // For links (renders <a>):
-import { ButtonLink } from "@/components/ui/button-link"
-<ButtonLink href="/login">Login</ButtonLink>
+import { ButtonLink } from "@/components/ui/button"
+<ButtonLink href="/login">Link</ButtonLink>
 
 // For Next.js Link:
-import { ButtonLink } from "@/components/ui/button-link"
-<ButtonLink render={<Link href="/login" />}>Login</ButtonLink>
+import { ButtonLink } from "@/components/ui/button"
+<ButtonLink render={<Link href="/login" />}>Next.js Link</ButtonLink>
 ```
 </span>

@@ -1,5 +1,5 @@
 import { siteConfig } from "@coss/ui/lib/config";
-import { ButtonLink } from "@coss/ui/ui/button-link";
+import { ButtonLink } from "@coss/ui/ui/button";
 import { Skeleton } from "@coss/ui/ui/skeleton";
 import { GithubIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";

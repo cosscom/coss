@@ -1,6 +1,8 @@
 "use client";
 
 import { Button as ButtonPrimitive } from "@base-ui-components/react/button";
+import { mergeProps } from "@base-ui-components/react/merge-props";
+import { useRender } from "@base-ui-components/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
@@ -63,4 +65,23 @@ function Button({
   );
 }
 
-export { Button, buttonVariants };
+function ButtonLink({
+  className,
+  variant,
+  size,
+  render,
+  ...props
+}: useRender.ComponentProps<"a"> & VariantProps<typeof buttonVariants>) {
+  const defaultProps = {
+    className: cn(buttonVariants({ className, size, variant })),
+    "data-slot": "button",
+  };
+
+  return useRender({
+    defaultTagName: "a",
+    props: mergeProps<"a">(defaultProps, props),
+    render,
+  });
+}
+
+export { Button, ButtonLink, buttonVariants };

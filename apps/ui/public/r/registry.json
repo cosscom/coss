@@ -12,7 +12,6 @@
         "@coss/badge",
         "@coss/breadcrumb",
         "@coss/button",
-        "@coss/button-link",
         "@coss/card",
         "@coss/checkbox",
         "@coss/checkbox-group",
@@ -208,22 +207,6 @@
         }
       ],
       "name": "button",
-      "type": "registry:ui"
-    },
-    {
-      "dependencies": [
-        "@base-ui-components/react"
-      ],
-      "files": [
-        {
-          "path": "registry/default/ui/button-link.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "name": "button-link",
-      "registryDependencies": [
-        "@coss/button"
-      ],
       "type": "registry:ui"
     },
     {
@@ -2007,7 +1990,7 @@
       ],
       "name": "p-button-17",
       "registryDependencies": [
-        "@coss/button-link"
+        "@coss/button"
       ],
       "type": "registry:block"
     },
