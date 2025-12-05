@@ -151,6 +151,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "button-link": {
+    name: "button-link",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/ui/button-link.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/button-link.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "card": {
     name: "card",
     description: "",
@@ -2009,7 +2027,7 @@ export const Index: Record<string, any> = {
     name: "p-button-17",
     description: "Link rendered as button",
     type: "registry:block",
-    registryDependencies: ["@coss/button"],
+    registryDependencies: ["@coss/button-link"],
     files: [{
       path: "registry/default/particles/p-button-17.tsx",
       type: "registry:block",

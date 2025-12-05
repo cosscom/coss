@@ -12,7 +12,7 @@ import { DocsTableOfContents } from "@/components/docs-toc";
 import { SiteFooter } from "@/components/site-footer";
 import { source } from "@/lib/source";
 import { mdxComponents } from "@/mdx-components";
-import { Button } from "@/registry/default/ui/button";
+import { ButtonLink } from "@/registry/default/ui/button-link";
 
 export const revalidate = false;
 export const dynamic = "force-static";
@@ -82,7 +82,7 @@ export default async function Page(props: {
                 </div>
                 <div className="flex items-center space-x-2 pt-4">
                   {links?.doc && (
-                    <Button
+                    <ButtonLink
                       render={
                         <Link href={links.doc} rel="noreferrer" target="_blank">
                           <HugeiconsIcon
@@ -105,7 +105,7 @@ export default async function Page(props: {
             </div>
             <div className="hidden items-center gap-2 pt-8 sm:flex">
               {neighbours.previous && (
-                <Button
+                <ButtonLink
                   className="shadow-none"
                   render={
                     <Link href={neighbours.previous.url}>
@@ -117,7 +117,7 @@ export default async function Page(props: {
                 />
               )}
               {neighbours.next && (
-                <Button
+                <ButtonLink
                   className="ms-auto shadow-none"
                   render={
                     <Link href={neighbours.next.url}>

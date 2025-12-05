@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/registry/default/ui/button";
+import { ButtonLink } from "@/registry/default/ui/button-link";
 
 export function MainNav({
   items,
@@ -18,7 +18,7 @@ export function MainNav({
   return (
     <nav className={cn("items-center gap-2", className)} {...props}>
       {items.map((item) => (
-        <Button
+        <ButtonLink
           data-pressed={pathname.includes(item.href) || undefined}
           key={item.href}
           render={
@@ -30,7 +30,7 @@ export function MainNav({
           variant="ghost"
         >
           {item.label}
-        </Button>
+        </ButtonLink>
       ))}
     </nav>
   );

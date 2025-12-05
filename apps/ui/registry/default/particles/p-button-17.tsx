@@ -1,7 +1,12 @@
 import Link from "next/link";
 
-import { Button } from "@/registry/default/ui/button";
+import { ButtonLink } from "@/registry/default/ui/button-link";
 
 export default function Particle() {
-  return <Button render={<Link href="/" />}>Link</Button>;
+  return (
+    <div className="flex gap-2">
+      <ButtonLink href="/">Link</ButtonLink>
+      <ButtonLink render={<Link href="/" />}>Next.js Link</ButtonLink>
+    </div>
+  );
 }

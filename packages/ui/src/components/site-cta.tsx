@@ -1,11 +1,11 @@
-import { Button } from "@coss/ui/ui/button";
+import { ButtonLink } from "@coss/ui/ui/button-link";
 import Link from "next/link";
 
 export function SiteCta() {
   return (
     <section>
       <div className="container flex w-full items-center justify-center gap-2 px-4 sm:px-6">
-        <Button
+        <ButtonLink
           render={
             // biome-ignore lint(a11y/useAnchorContent): knwon
             <a
@@ -16,10 +16,13 @@ export function SiteCta() {
           }
         >
           Join the waitlist
-        </Button>
-        <Button render={<Link href="https://cal.com/jobs" />} variant="outline">
+        </ButtonLink>
+        <ButtonLink
+          render={<Link href="https://cal.com/jobs" />}
+          variant="outline"
+        >
           Join the company
-        </Button>
+        </ButtonLink>
       </div>
     </section>
   );

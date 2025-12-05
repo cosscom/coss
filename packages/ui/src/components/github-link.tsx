@@ -1,5 +1,5 @@
 import { siteConfig } from "@coss/ui/lib/config";
-import { Button } from "@coss/ui/ui/button";
+import { ButtonLink } from "@coss/ui/ui/button-link";
 import { Skeleton } from "@coss/ui/ui/skeleton";
 import { GithubIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -8,7 +8,7 @@ import * as React from "react";
 
 export function GitHubLink() {
   return (
-    <Button
+    <ButtonLink
       className="relative h-8 shadow-none max-sm:w-8"
       render={
         <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">

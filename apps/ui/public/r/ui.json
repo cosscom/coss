@@ -11,6 +11,7 @@
     "@coss/badge",
     "@coss/breadcrumb",
     "@coss/button",
+    "@coss/button-link",
     "@coss/card",
     "@coss/checkbox",
     "@coss/checkbox-group",

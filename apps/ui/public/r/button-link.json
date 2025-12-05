@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button-link",
+  "type": "registry:ui",
+  "dependencies": [
+    "@base-ui-components/react"
+  ],
+  "files": [
+    {
+      "path": "registry/default/ui/button-link.tsx",
+      "content": "\"use client\";\n\nimport { mergeProps } from \"@base-ui-components/react/merge-props\";\nimport { useRender } from \"@base-ui-components/react/use-render\";\nimport type { VariantProps } from \"class-variance-authority\";\n\nimport { cn } from \"@/lib/utils\";\n\nimport { buttonVariants } from \"./button\";\n\ninterface ButtonLinkProps extends useRender.ComponentProps<\"a\"> {\n  variant?: VariantProps<typeof buttonVariants>[\"variant\"];\n  size?: VariantProps<typeof buttonVariants>[\"size\"];\n}\n\nfunction ButtonLink({\n  className,\n  variant,\n  size,\n  render,\n  ...props\n}: ButtonLinkProps) {\n  const defaultProps = {\n    className: cn(buttonVariants({ className, size, variant })),\n    \"data-slot\": \"button\",\n  };\n\n  return useRender({\n    defaultTagName: \"a\",\n    props: mergeProps<\"a\">(defaultProps, props),\n    render,\n  });\n}\n\nexport { ButtonLink };\n",
+      "type": "registry:ui"
+    }
+  ]
+}

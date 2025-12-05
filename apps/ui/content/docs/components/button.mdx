@@ -1,6 +1,6 @@
 ---
 title: Button
-description: A button or a component that looks like a button.
+description: A button component that can be rendered as another tag or focusable when disabled.
 ---
 
 <ComponentPreview name="p-button-1" />
@@ -151,6 +151,13 @@ export function LinkAsButton() {
 
 ### With Link
 
+<Alert>
+  <AlertTitle>Use ButtonLink for Links</AlertTitle>
+  <AlertDescription>
+    For links that look like buttons, use the <a href="/docs/components/button-link" className="underline">ButtonLink</a> component instead of using `Button` with the `render` prop. `ButtonLink` is specifically designed for this use case and renders an `<a>` tag by default.
+  </AlertDescription>
+</Alert>
+
 <ComponentPreview name="p-button-17" />
 
 ### Loading
@@ -164,6 +171,7 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Quick Checklist
 
 - Replace `asChild` → `render` on `Button`
+- For links styled as buttons, use [`ButtonLink`](/docs/components/button-link) instead of `Button` with `render`
 
 ### Additional Notes
 
@@ -198,6 +206,10 @@ We've added a new `destructive-outline` variant for better UX patterns:
 ```tsx title="shadcn/ui"
 // [!code word:asChild]
 <Button asChild>
+  <a href="/login">Login</a>
+</Button>
+
+<Button asChild>
   <Link href="/login">Login</Link>
 </Button>
 ```
@@ -205,9 +217,17 @@ We've added a new `destructive-outline` variant for better UX patterns:
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
-// [!code word:render]
-<Button render={<Link href="/login" />}>Login</Button>
-```
-</span
+// [!code word:render:3]
+// [!code word:nativeButton:3]
+// For custom components:
+<Button render={<div />} nativeButton={false}>Action</Button>
 
->
+// For links (renders <a>):
+import { ButtonLink } from "@/components/ui/button-link"
+<ButtonLink href="/login">Login</ButtonLink>
+
+// For Next.js Link:
+import { ButtonLink } from "@/components/ui/button-link"
+<ButtonLink render={<Link href="/login" />}>Login</ButtonLink>
+```
+</span>

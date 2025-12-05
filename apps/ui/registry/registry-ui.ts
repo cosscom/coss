@@ -12,6 +12,7 @@ export const ui: Registry["items"] = [
       "@coss/badge",
       "@coss/breadcrumb",
       "@coss/button",
+      "@coss/button-link",
       "@coss/card",
       "@coss/checkbox",
       "@coss/checkbox-group",
@@ -190,6 +191,17 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button",
+    type: "registry:ui",
+  },
+  {
+    dependencies: ["@base-ui-components/react"],
+    files: [
+      {
+        path: "ui/button-link.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "button-link",
     type: "registry:ui",
   },
   {

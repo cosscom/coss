@@ -1,3 +1,5 @@
+"use client";
+
 import { mergeProps } from "@base-ui-components/react/merge-props";
 import { useRender } from "@base-ui-components/react/use-render";
 import {
