@@ -21,6 +21,11 @@ jobs:
     uses: ./.github/workflows/lint.yml
     secrets: inherit
 
+  typecheck:
+    name: Typecheck
+    uses: ./.github/workflows/typecheck.yml
+    secrets: inherit
+
   test:
     name: Test
     uses: ./.github/workflows/test.yml
@@ -28,6 +33,6 @@ jobs:
 
   build:
     name: Build
-    needs: [lint, test, format]
+    needs: [lint, test, format, typecheck]
     uses: ./.github/workflows/build.yml
     secrets: inherit

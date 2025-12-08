@@ -17,6 +17,10 @@
     "lint": {
       "cache": true,
       "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "cache": true,
+      "dependsOn": ["^typecheck"]
     }
   },
   "ui": "tui"
