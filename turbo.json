@@ -18,9 +18,9 @@
       "cache": true,
       "dependsOn": ["^lint"]
     },
-    "type-check": {
+    "typecheck": {
       "cache": true,
-      "dependsOn": ["^type-check"]
+      "dependsOn": ["^typecheck"]
     }
   },
   "ui": "tui"

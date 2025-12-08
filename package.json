@@ -22,7 +22,7 @@
     "lint": "turbo run lint --",
     "prepare": "husky",
     "test": "bun test --pass-with-no-tests",
-    "type-check": "turbo run type-check"
+    "typecheck": "turbo run typecheck"
   },
   "version": "0.0.1",
   "workspaces": [

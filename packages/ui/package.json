@@ -40,7 +40,7 @@
   "scripts": {
     "clean": "rm -rf node_modules",
     "lint": "biome lint src",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
   "version": "0.0.0"
