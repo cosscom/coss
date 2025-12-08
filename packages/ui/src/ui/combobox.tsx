@@ -309,7 +309,7 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
         className,
       )}
       data-slot="combobox-chips"
-      ref={chipsRef}
+      ref={chipsRef ?? undefined}
       {...props}
     />
   );
