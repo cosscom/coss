@@ -32,8 +32,7 @@ function Toggle({
   variant,
   size,
   ...props
-}: Omit<TogglePrimitive.Props, "className"> &
-  VariantProps<typeof toggleVariants> & { className?: string }) {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
   return (
     <TogglePrimitive
       className={cn(toggleVariants({ className, size, variant }))}

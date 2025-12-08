@@ -1,8 +1,8 @@
-import { Loader2Icon, type LucideProps } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-function Spinner({ className, ...props }: LucideProps) {
+function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (
     <Loader2Icon
       aria-label="Loading"
