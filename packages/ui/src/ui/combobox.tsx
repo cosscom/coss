@@ -9,7 +9,7 @@ import { Input } from "@coss/ui/ui/input";
 import { ScrollArea } from "@coss/ui/ui/scroll-area";
 
 const ComboboxContext = React.createContext<{
-  chipsRef: React.RefObject<HTMLDivElement> | null;
+  chipsRef: React.RefObject<HTMLDivElement | null> | null;
   multiple: boolean;
 }>({
   chipsRef: null,
@@ -24,7 +24,7 @@ type ComboboxRootProps<
 function Combobox<ItemValue, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<ItemValue, Multiple>,
 ) {
-  const chipsRef = React.useRef<HTMLDivElement>(null);
+  const chipsRef = React.useRef<HTMLDivElement | null>(null);
   return (
     <ComboboxContext.Provider value={{ chipsRef, multiple: !!props.multiple }}>
       <ComboboxPrimitive.Root
@@ -309,7 +309,7 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
         className,
       )}
       data-slot="combobox-chips"
-      ref={chipsRef}
+      ref={chipsRef as React.Ref<HTMLDivElement> | undefined}
       {...props}
     />
   );
