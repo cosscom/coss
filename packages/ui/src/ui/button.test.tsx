@@ -1,80 +1,75 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 
-type UseRenderConfig = {
-  defaultTagName: string;
-  render?: (...args: unknown[]) => unknown;
-  props: Record<string, unknown>;
+type ButtonRenderCall = Record<string, unknown> & {
+  className?: string;
+  "data-slot"?: string;
+  type?: "button" | "submit" | "reset";
+  render?: unknown;
+  disabled?: boolean;
+  "aria-label"?: string;
 };
 
-const useRenderCalls: UseRenderConfig[] = [];
-const mergePropsCalls: Array<
-  [Record<string, unknown>, Record<string, unknown>]
-> = [];
+const buttonRenderCalls: ButtonRenderCall[] = [];
+const cnCalls: string[][] = [];
 
-function useRenderMock(config: UseRenderConfig) {
-  useRenderCalls.push(config);
+function mockButtonPrimitive(props: ButtonRenderCall) {
+  buttonRenderCalls.push(props);
   return null;
 }
 
-function mergePropsMock(
-  defaults: Record<string, unknown>,
-  overrides: Record<string, unknown> = {},
-) {
-  mergePropsCalls.push([defaults, overrides]);
-  return { ...defaults, ...overrides };
+const ButtonPrimitiveMock = Object.assign(mockButtonPrimitive, {
+  Props: {} as Record<string, unknown>,
+});
+
+function cnMock(...inputs: string[]) {
+  cnCalls.push(inputs);
+  return inputs.filter(Boolean).join(" ");
 }
 
-mock.module("@base-ui-components/react/use-render", () => ({
-  useRender: useRenderMock,
+mock.module("@base-ui-components/react/button", () => ({
+  Button: ButtonPrimitiveMock,
 }));
 
-mock.module("@base-ui-components/react/merge-props", () => ({
-  mergeProps: mergePropsMock,
+mock.module("@coss/ui/lib/utils", () => ({
+  cn: cnMock,
 }));
 
-const { Button } = await import("./button");
+const { Button: ButtonComponent } = await import("./button");
 
-function lastUseRenderCall() {
-  const lastCall = useRenderCalls[useRenderCalls.length - 1];
-  if (!lastCall) {
-    throw new Error("useRender was not called");
-  }
-  return lastCall;
+// Mock the Button component to track render calls
+function Button(props: Parameters<typeof ButtonComponent>[0]) {
+  const element = ButtonComponent(props);
+  (element.type as (props: unknown) => unknown)(element.props);
 }
 
-function lastMergePropsCall() {
-  const lastCall = mergePropsCalls[mergePropsCalls.length - 1];
+function lastButtonCall() {
+  const lastCall = buttonRenderCalls[buttonRenderCalls.length - 1];
   if (!lastCall) {
-    throw new Error("mergeProps was not called");
+    throw new Error("Button was not called");
   }
   return lastCall;
 }
 
 describe("Button", () => {
   beforeEach(() => {
-    useRenderCalls.length = 0;
-    mergePropsCalls.length = 0;
+    buttonRenderCalls.length = 0;
+    cnCalls.length = 0;
   });
 
-  test("sets base attributes and defaults type to button", () => {
+  test("sets base attributes with data-slot", () => {
     Button({ children: "Default label" });
 
-    const call = lastUseRenderCall();
-    expect(call.defaultTagName).toBe("button");
-    expect(call.props["data-slot"]).toBe("button");
-    expect(call.props.type).toBe("button");
+    const call = lastButtonCall();
+    expect(call["data-slot"]).toBe("button");
   });
 
-  test("omits the default type when a custom render is provided", () => {
-    const render = () => null;
+  test("accepts custom render function", () => {
+    const render = <span />;
     Button({ render, type: "submit" });
 
-    const [defaults, overrides] = lastMergePropsCall();
-    expect(defaults.type).toBeUndefined();
-    expect(overrides.type).toBe("submit");
-
-    const call = lastUseRenderCall();
+    const call = lastButtonCall();
     expect(call.render).toBe(render);
+    expect(call.type).toBe("submit");
   });
 
   test("merges variants, sizes, and custom className", () => {
@@ -84,10 +79,28 @@ describe("Button", () => {
       variant: "destructive",
     });
 
-    const call = lastUseRenderCall();
-    const className = call.props.className as string;
+    const call = lastButtonCall();
+    const className = call.className as string;
     expect(className).toContain("border-destructive");
     expect(className).toContain("min-h-9");
     expect(className).toContain("custom-class");
+  });
+
+  test("applies default variant and size styles", () => {
+    Button({});
+
+    const call = lastButtonCall();
+    const className = call.className as string;
+    expect(className).toContain("border-primary");
+    expect(className).toContain("bg-primary");
+    expect(className).toContain("min-h-8");
+  });
+
+  test("passes through additional props", () => {
+    Button({ "aria-label": "Custom button", disabled: true });
+
+    const call = lastButtonCall();
+    expect(call["aria-label"]).toBe("Custom button");
+    expect(call.disabled).toBe(true);
   });
 });
