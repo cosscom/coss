@@ -115,7 +115,7 @@ try {
   const { updated } = await rewriteImportsInDir(targetRoot);
 
   console.log(
-    `✅ UI primitives syncedd successfully! (${updated} file(s) updated with rewritten imports)`,
+    `✅ UI primitives synced successfully! (${updated} file(s) updated with rewritten imports)`,
   );
 } catch (error) {
   console.error(error);
