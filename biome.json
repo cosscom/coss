@@ -32,7 +32,7 @@
       "!**/apps/ui/public/r",
       "!**/apps/ui/registry/__index__.tsx",
       "!**/apps/ui/registry.json",
-      "!**/packages/ui/src/ui",
+      "!**/packages/ui/src/components",
       "!**/packages/ui/src/lib",
       "!**/packages/ui/src/hooks"
     ]

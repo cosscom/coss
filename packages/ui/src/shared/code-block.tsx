@@ -1,6 +1,6 @@
-import { CopyButton } from "@coss/ui/components/copy-button";
-import { getIconForLanguageExtension } from "@coss/ui/components/icons";
 import { highlightCode } from "@coss/ui/lib/highlight-code";
+import { CopyButton } from "@coss/ui/shared/copy-button";
+import { getIconForLanguageExtension } from "@coss/ui/shared/icons";
 
 export async function CodeBlock({
   code,

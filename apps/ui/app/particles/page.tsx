@@ -2,7 +2,7 @@ import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header";
+} from "@coss/ui/shared/page-header";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 

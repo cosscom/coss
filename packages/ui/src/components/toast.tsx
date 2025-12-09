@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@coss/ui/lib/utils";
-import { buttonVariants } from "@coss/ui/ui/button";
+import { buttonVariants } from "@coss/ui/components/button";
 
 const toastManager = Toast.createToastManager();
 const anchoredToastManager = Toast.createToastManager();

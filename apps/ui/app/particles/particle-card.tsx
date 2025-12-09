@@ -1,4 +1,4 @@
-import { Icons } from "@coss/ui/components/icons";
+import { Icons } from "@coss/ui/shared/icons";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cache } from "react";

@@ -1,8 +1,8 @@
-import { GitHubLink } from "@coss/ui/components/github-link";
-import { ModeSwitcher } from "@coss/ui/components/mode-switcher";
-import { ProductLabel } from "@coss/ui/components/product-label";
-import { ProductsDropdown } from "@coss/ui/components/products-dropdown";
 import { siteConfig } from "@coss/ui/lib/config";
+import { GitHubLink } from "@coss/ui/shared/github-link";
+import { ModeSwitcher } from "@coss/ui/shared/mode-switcher";
+import { ProductLabel } from "@coss/ui/shared/product-label";
+import { ProductsDropdown } from "@coss/ui/shared/products-dropdown";
 import Link from "next/link";
 
 export function SiteHeader({

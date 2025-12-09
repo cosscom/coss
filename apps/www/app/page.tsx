@@ -1,5 +1,5 @@
-import { CodeBlock } from "@coss/ui/components/code-block";
-import { PageHeader, PageHeaderHeading } from "@coss/ui/components/page-header";
+import { CodeBlock } from "@coss/ui/shared/code-block";
+import { PageHeader, PageHeaderHeading } from "@coss/ui/shared/page-header";
 
 export default async function Page() {
   const code = `"dependencies": {

@@ -6,11 +6,11 @@ import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
-import { Separator } from "@coss/ui/ui/separator";
+import { Separator } from "@coss/ui/components/separator";
 import {
   Toggle as ToggleComponent,
   type toggleVariants,
-} from "@coss/ui/ui/toggle";
+} from "@coss/ui/components/toggle";
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>

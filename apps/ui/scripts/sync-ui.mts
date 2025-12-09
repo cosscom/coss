@@ -14,7 +14,7 @@ async function resolvePaths() {
   const targetDirs = {
     hooks: path.join(targetRoot, "hooks"),
     lib: path.join(targetRoot, "lib"),
-    ui: path.join(targetRoot, "ui"),
+    ui: path.join(targetRoot, "components"),
   };
   return { sourceDirs, sourceRoot, targetDirs, targetRoot };
 }
@@ -67,14 +67,14 @@ function rewriteImports(code: string): string {
   // Rewrite paths according to rules
   // "@/lib/*"        → "@coss/ui/lib/*"
   // "@/hooks/*"      → "@coss/ui/hooks/*"
-  // "@/registry/default/ui/*" → "@coss/ui/ui/*"
+  // "@/registry/default/ui/*" → "@coss/ui/components/*"
   // "@/registry/default/hooks/*" → "@coss/ui/hooks/*"
   // "@/registry/default/lib/*" → "@coss/ui/lib/*"
   result = result.replace(/(["'])@\/lib\//g, "$1@coss/ui/lib/");
   result = result.replace(/(["'])@\/hooks\//g, "$1@coss/ui/hooks/");
   result = result.replace(
     /(["'])@\/registry\/default\/ui\//g,
-    "$1@coss/ui/ui/",
+    "$1@coss/ui/components/",
   );
   result = result.replace(
     /(["'])@\/registry\/default\/hooks\//g,
@@ -115,7 +115,7 @@ try {
   const { updated } = await rewriteImportsInDir(targetRoot);
 
   console.log(
-    `✅ UI primitives propagated successfully! (${updated} file(s) updated with rewritten imports)`,
+    `✅ UI primitives synced successfully! (${updated} file(s) updated with rewritten imports)`,
   );
 } catch (error) {
   console.error(error);

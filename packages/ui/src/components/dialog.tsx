@@ -3,7 +3,7 @@
 import { Dialog as DialogPrimitive } from "@base-ui-components/react/dialog";
 import { XIcon } from "lucide-react";
 import { cn } from "@coss/ui/lib/utils";
-import { ScrollArea } from "@coss/ui/ui/scroll-area";
+import { ScrollArea } from "@coss/ui/components/scroll-area";
 
 const Dialog = DialogPrimitive.Root;
 

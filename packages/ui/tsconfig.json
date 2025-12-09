@@ -8,7 +8,7 @@
     "paths": {
       "@coss/ui/*": ["./src/*"]
     },
-    "types": ["next", "react", "node"]
+    "types": ["next", "react", "node", "bun-types"]
   },
   "exclude": ["node_modules", "dist"],
   "extends": "@coss/typescript-config/react-library.json",

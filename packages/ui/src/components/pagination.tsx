@@ -8,7 +8,7 @@ import {
 import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
-import { type Button, buttonVariants } from "@coss/ui/ui/button";
+import { type Button, buttonVariants } from "@coss/ui/components/button";
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

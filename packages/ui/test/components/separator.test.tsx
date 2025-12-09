@@ -4,7 +4,7 @@ type SeparatorRenderCall = {
   className?: string;
   "data-slot"?: string;
   orientation?: "horizontal" | "vertical";
-  props: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
 const separatorRenderCalls: SeparatorRenderCall[] = [];
@@ -32,7 +32,9 @@ mock.module("@coss/ui/lib/utils", () => ({
   cn: cnMock,
 }));
 
-const { Separator: SeparatorComponent } = await import("./separator");
+const { Separator: SeparatorComponent } = await import(
+  "../../src/components/separator"
+);
 
 // Mock the Separator component to track render calls
 function Separator(props: Parameters<typeof SeparatorComponent>[0]) {
@@ -99,9 +101,11 @@ describe("Separator", () => {
   });
 
   test("passes through additional props", () => {
-    Separator({ "aria-label": "Custom divider" } as SeparatorRenderCall);
+    Separator({ "aria-label": "Custom divider" });
 
     const call = lastSeparatorCall();
-    expect(call["aria-label"]).toBe("Custom divider");
+    expect((call as Record<string, unknown>)["aria-label"]).toBe(
+      "Custom divider",
+    );
   });
 });

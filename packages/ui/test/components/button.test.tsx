@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
+import * as React from "react";
 
 type UseRenderConfig = {
   defaultTagName: string;
@@ -32,7 +33,7 @@ mock.module("@base-ui-components/react/merge-props", () => ({
   mergeProps: mergePropsMock,
 }));
 
-const { Button } = await import("./button");
+const { Button } = await import("../../src/components/button");
 
 function lastUseRenderCall() {
   const lastCall = useRenderCalls[useRenderCalls.length - 1];
@@ -66,7 +67,7 @@ describe("Button", () => {
   });
 
   test("omits the default type when a custom render is provided", () => {
-    const render = () => null;
+    const render = () => React.createElement("div");
     Button({ render, type: "submit" });
 
     const [defaults, overrides] = lastMergePropsCall();

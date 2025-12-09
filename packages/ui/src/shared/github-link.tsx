@@ -1,6 +1,6 @@
+import { Button } from "@coss/ui/components/button";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import { siteConfig } from "@coss/ui/lib/config";
-import { Button } from "@coss/ui/ui/button";
-import { Skeleton } from "@coss/ui/ui/skeleton";
 import { GithubIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";

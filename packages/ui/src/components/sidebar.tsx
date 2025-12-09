@@ -8,22 +8,22 @@ import * as React from "react";
 
 import { useIsMobile } from "@coss/ui/hooks/use-mobile";
 import { cn } from "@coss/ui/lib/utils";
-import { Button } from "@coss/ui/ui/button";
-import { Input } from "@coss/ui/ui/input";
-import { Separator } from "@coss/ui/ui/separator";
+import { Button } from "@coss/ui/components/button";
+import { Input } from "@coss/ui/components/input";
+import { Separator } from "@coss/ui/components/separator";
 import {
   Sheet,
   SheetDescription,
   SheetHeader,
   SheetPopup,
   SheetTitle,
-} from "@coss/ui/ui/sheet";
-import { Skeleton } from "@coss/ui/ui/skeleton";
+} from "@coss/ui/components/sheet";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@coss/ui/ui/tooltip";
+} from "@coss/ui/components/tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
