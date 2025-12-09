@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { ThemeProvider } from "@coss/ui/components/theme-provider";
+import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
 

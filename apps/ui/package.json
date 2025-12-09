@@ -51,7 +51,7 @@
     "registry:validate-deps": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/validate-registry-deps.mts",
     "start": "next start --port 4000",
     "typecheck": "tsc --noEmit",
-    "ui:propagate": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/propagate-ui.mts"
+    "ui:sync": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/sync-ui.mts"
   },
   "type": "module",
   "version": "0.1.0"

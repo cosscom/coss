@@ -1,5 +1,5 @@
-import { SiteHeader as WorkspaceSiteHeader } from "@coss/ui/components/site-header";
-import { Separator } from "@coss/ui/ui/separator";
+import { Separator } from "@coss/ui/components/separator";
+import { SiteHeader as WorkspaceSiteHeader } from "@coss/ui/shared/site-header";
 
 import { CommandMenu } from "@/components/command-menu";
 import { MainNav } from "@/components/main-nav";

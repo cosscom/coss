@@ -1,4 +1,4 @@
-import { CodeBlock } from "@coss/ui/components/code-block";
+import { CodeBlock } from "@coss/ui/shared/code-block";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

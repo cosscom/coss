@@ -1,9 +1,9 @@
+import { Button } from "@coss/ui/components/button";
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
-} from "@coss/ui/components/page-header";
-import { Button } from "@coss/ui/ui/button";
+} from "@coss/ui/shared/page-header";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

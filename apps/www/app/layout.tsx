@@ -1,9 +1,9 @@
 import "./globals.css";
 
-import { SiteCta } from "@coss/ui/components/site-cta";
-import { SiteFooter } from "@coss/ui/components/site-footer";
-import { SiteHeader } from "@coss/ui/components/site-header";
-import { ThemeProvider } from "@coss/ui/components/theme-provider";
+import { SiteCta } from "@coss/ui/shared/site-cta";
+import { SiteFooter } from "@coss/ui/shared/site-footer";
+import { SiteHeader } from "@coss/ui/shared/site-header";
+import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
 
