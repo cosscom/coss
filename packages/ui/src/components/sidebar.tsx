@@ -2,6 +2,12 @@
 
 import { mergeProps } from "@base-ui-components/react/merge-props";
 import { useRender } from "@base-ui-components/react/use-render";
+import { cva, type VariantProps } from "class-variance-authority";
+import { PanelLeftIcon } from "lucide-react";
+import * as React from "react";
+
+import { useIsMobile } from "@coss/ui/hooks/use-mobile";
+import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/components/button";
 import { Input } from "@coss/ui/components/input";
 import { Separator } from "@coss/ui/components/separator";
@@ -18,11 +24,6 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
-import { useIsMobile } from "@coss/ui/hooks/use-mobile";
-import { cn } from "@coss/ui/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
-import * as React from "react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
