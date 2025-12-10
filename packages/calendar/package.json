@@ -1,0 +1,36 @@
+{
+  "name": "@coss/calendar",
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cosscom/coss"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf node_modules",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
+    "publish-npm": "bun run build && npm publish --access public"
+  },
+  "devDependencies": {
+    "@coss/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}
