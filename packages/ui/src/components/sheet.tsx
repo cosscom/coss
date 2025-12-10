@@ -160,9 +160,13 @@ function SheetDescription({
   );
 }
 
-function SheetPanel({ className, ...props }: React.ComponentProps<"div">) {
+function SheetPanel({
+  className,
+  scrollFade = true,
+  ...props
+}: React.ComponentProps<"div"> & { scrollFade?: boolean }) {
   return (
-    <ScrollArea>
+    <ScrollArea scrollFade={scrollFade}>
       <div
         className={cn(
           "px-6 in-[[data-slot=sheet-popup]:has([data-slot=sheet-header])]:pt-1 in-[[data-slot=sheet-popup]:not(:has([data-slot=sheet-header]))]:pt-6 in-[[data-slot=sheet-popup]:not(:has([data-slot=sheet-footer]))]:pb-6! in-[[data-slot=sheet-popup]:not(:has([data-slot=sheet-footer].border-t))]:pb-1 pb-6",

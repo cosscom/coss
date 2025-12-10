@@ -2427,6 +2427,26 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("scroll area"),
+    description: "Scroll area with fading edges",
+    files: [{ path: "particles/p-scroll-area-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-scroll-area-4",
+    registryDependencies: ["@coss/scroll-area"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("scroll area"),
+    description: "Horizontal scroll area with scrollbar gutter",
+    files: [{ path: "particles/p-scroll-area-5.tsx", type: "registry:block" }],
+    name: "p-scroll-area-5",
+    registryDependencies: ["@coss/scroll-area"],
+    type: "registry:block",
+  },
+  {
     categories: categories("select"),
     description: "Basic select",
     files: [{ path: "particles/p-select-1.tsx", type: "registry:block" }],

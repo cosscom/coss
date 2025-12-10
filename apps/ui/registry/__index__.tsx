@@ -4741,6 +4741,42 @@ export const Index: Record<string, any> = {
     categories: ["scroll area"],
     meta: undefined,
   },
+  "p-scroll-area-4": {
+    name: "p-scroll-area-4",
+    description: "Scroll area with fading edges",
+    type: "registry:block",
+    registryDependencies: ["@coss/scroll-area"],
+    files: [{
+      path: "registry/default/particles/p-scroll-area-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-scroll-area-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["scroll area"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-scroll-area-5": {
+    name: "p-scroll-area-5",
+    description: "Horizontal scroll area with scrollbar gutter",
+    type: "registry:block",
+    registryDependencies: ["@coss/scroll-area"],
+    files: [{
+      path: "registry/default/particles/p-scroll-area-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-scroll-area-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["scroll area"],
+    meta: undefined,
+  },
   "p-select-1": {
     name: "p-select-1",
     description: "Basic select",
