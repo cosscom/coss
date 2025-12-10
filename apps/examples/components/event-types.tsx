@@ -212,7 +212,7 @@ export function EventTypes() {
                               }
                             />
                           }
-                        ></MenuTrigger>
+                        />
                         <MenuPopup align="end">
                           <MenuItem>Edit</MenuItem>
                           <MenuItem>Duplicate</MenuItem>
