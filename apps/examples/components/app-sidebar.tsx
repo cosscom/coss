@@ -174,12 +174,14 @@ export function AppSidebar({
         <div className="flex flex-col items-center justify-between gap-0.5 px-2 lg:flex-row">
           <SidebarMenuButton
             className="w-fit justify-center md:max-lg:p-0"
-            render={<Link href="/" />}
-          >
-            <h1 className="font-heading text-[0.9375rem] text-foreground leading-none lg:text-lg">
-              Cal<span className="max-lg:sr-only">.com</span>
-            </h1>
-          </SidebarMenuButton>
+            render={
+              <Link href="/">
+                <h1 className="font-heading text-[0.9375rem] text-foreground leading-none lg:text-lg">
+                  Cal<span className="max-lg:sr-only">.com</span>
+                </h1>
+              </Link>
+            }
+          />
           <div className="flex flex-col items-center gap-0.5 lg:flex-row">
             <SidebarMenuButton
               aria-label="Search"
@@ -189,16 +191,18 @@ export function AppSidebar({
             </SidebarMenuButton>
             <SidebarMenuButton
               className="size-8 justify-center p-0"
-              render={<a href="#" />}
-            >
-              <Avatar className="size-6">
-                <AvatarImage
-                  alt="Luke Tracy"
-                  src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
-                />
-                <AvatarFallback>CC</AvatarFallback>
-              </Avatar>
-            </SidebarMenuButton>
+              render={
+                <a href="#">
+                  <Avatar className="size-6">
+                    <AvatarImage
+                      alt="Luke Tracy"
+                      src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
+                    />
+                    <AvatarFallback>CC</AvatarFallback>
+                  </Avatar>
+                </a>
+              }
+            />
             <Menu>
               <MenuTrigger
                 render={

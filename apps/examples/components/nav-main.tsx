@@ -14,7 +14,7 @@ import {
   MenuTrigger,
 } from "@coss/ui/components/menu";
 import { TooltipTrigger } from "@coss/ui/components/tooltip";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useRef } from "react";
 import {
@@ -77,7 +77,14 @@ function MenuWithTooltipDisable({
           <MenuGroup>
             <MenuGroupLabel>{item.title}</MenuGroupLabel>
             {items.map((subItem) => (
-              <MenuItem key={subItem.title} render={<a href={subItem.url} />}>
+              <MenuItem
+                key={subItem.title}
+                render={
+                  <a href={subItem.url}>
+                    <span>{subItem.title}</span>
+                  </a>
+                }
+              >
                 {subItem.title}
               </MenuItem>
             ))}
@@ -94,7 +101,7 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon: any;
+    icon: LucideIcon;
     isActive?: boolean;
     badge?: string;
     items?: {
@@ -169,10 +176,12 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton
                             className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-linear-to-tr"
-                            render={<a href={subItem.url} />}
-                          >
-                            <span>{subItem.title}</span>
-                          </SidebarMenuSubButton>
+                            render={
+                              <a href={subItem.url}>
+                                <span>{subItem.title}</span>
+                              </a>
+                            }
+                          />
                         </SidebarMenuSubItem>
                       ))}
                     </SidebarMenuSub>
@@ -182,17 +191,19 @@ export function NavMain({
                 <SidebarMenuButton
                   className="font-medium text-sidebar-foreground"
                   isActive={item.isActive}
-                  render={<a href={item.url} />}
+                  render={
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                      {item.badge && (
+                        <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                          {item.badge}
+                        </SidebarMenuBadge>
+                      )}
+                    </a>
+                  }
                   tooltip={item.title}
-                >
-                  <item.icon />
-                  <span>{item.title}</span>
-                  {item.badge && (
-                    <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                      {item.badge}
-                    </SidebarMenuBadge>
-                  )}
-                </SidebarMenuButton>
+                />
               )}
             </Collapsible>
           );
