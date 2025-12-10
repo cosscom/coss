@@ -38,7 +38,8 @@ export function useIsBetweenMdAndLg() {
     };
     mql.addEventListener("change", onChange);
     setIsBetween(
-      window.innerWidth >= MOBILE_BREAKPOINT && window.innerWidth < LG_BREAKPOINT,
+      window.innerWidth >= MOBILE_BREAKPOINT &&
+        window.innerWidth < LG_BREAKPOINT,
     );
     return () => mql.removeEventListener("change", onChange);
   }, []);

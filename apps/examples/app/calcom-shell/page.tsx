@@ -1,9 +1,6 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
-import { EventTypes } from "@/components/event-types"
+import { AppSidebar } from "@/components/app-sidebar";
+import { EventTypes } from "@/components/event-types";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Page() {
   return (
@@ -13,5 +10,5 @@ export default function Page() {
         <EventTypes />
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

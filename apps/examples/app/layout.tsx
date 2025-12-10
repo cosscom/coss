@@ -1,7 +1,7 @@
 import "./globals.css";
 
-import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import { ToastProvider } from "@coss/ui/components/toast";
+import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
 
@@ -33,9 +33,7 @@ export default function RootLayout({
         className={`${fontHeading.variable} ${fontSans.variable} bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </ThemeProvider>
       </body>
     </html>

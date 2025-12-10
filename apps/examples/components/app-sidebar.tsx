@@ -1,71 +1,85 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  Link2Icon,
-  CalendarIcon,
-  ClockFadingIcon,
-  UsersRoundIcon,
-  ContactRoundIcon,
-  Grid2x2Plus,
-  RouteIcon,
-  WorkflowIcon,
-  ActivityIcon,
-  ExternalLinkIcon,
-  CopyIcon,
-  GiftIcon,
-  SettingsIcon,
-  UserRoundIcon,
-  MoonStarIcon,
-  MilestoneIcon,
-  MessageCircleQuestionMarkIcon,
-  MonitorDownIcon,
-  SearchIcon,
-  LogOutIcon,
-  GaugeIcon,
-} from "lucide-react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@coss/ui/components/avatar"
+} from "@coss/ui/components/avatar";
 import {
   Menu,
-  MenuPopup,
   MenuGroup,
+  MenuGroupLabel,
   MenuItem,
+  MenuPopup,
   MenuSeparator,
   MenuTrigger,
-  MenuGroupLabel,
-} from "@coss/ui/components/menu"
+} from "@coss/ui/components/menu";
+import {
+  ActivityIcon,
+  CalendarIcon,
+  ClockFadingIcon,
+  ContactRoundIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+  GaugeIcon,
+  GiftIcon,
+  Grid2x2Plus,
+  Link2Icon,
+  LogOutIcon,
+  MessageCircleQuestionMarkIcon,
+  MilestoneIcon,
+  MonitorDownIcon,
+  MoonStarIcon,
+  RouteIcon,
+  SearchIcon,
+  SettingsIcon,
+  UserRoundIcon,
+  UsersRoundIcon,
+  WorkflowIcon,
+} from "lucide-react";
+import Link from "next/link";
+import type * as React from "react";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarMenuButton,
-} from "@/components/ui/sidebar"
-import { useIsBetweenMdAndLg, useIsMobile } from "@/hooks/use-mobile"
-import Link from "next/link"
+} from "@/components/ui/sidebar";
+import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 const data = {
-  user: {
-    name: "Pasquale",
-    email: "pasqua@example.com",
-    avatar: "",
-  },
-  navMain: [
+  navFooter: [
     {
-      title: "Event Types",
+      icon: ExternalLinkIcon,
+      title: "View public page",
       url: "#",
-      icon: Link2Icon,
-      isActive: true,
     },
     {
-      title: "Bookings",
+      icon: CopyIcon,
+      title: "Copy public page link",
       url: "#",
+    },
+    {
+      icon: GiftIcon,
+      title: "Refer and earn",
+      url: "#",
+    },
+    {
+      icon: SettingsIcon,
+      title: "Settings",
+      url: "#",
+    },
+  ],
+  navMain: [
+    {
+      icon: Link2Icon,
+      isActive: true,
+      title: "Event Types",
+      url: "#",
+    },
+    {
       icon: CalendarIcon,
       items: [
         {
@@ -89,25 +103,25 @@ const data = {
           url: "#",
         },
       ],
+      title: "Bookings",
+      url: "#",
     },
     {
+      icon: ClockFadingIcon,
       title: "Availability",
       url: "#",
-      icon: ClockFadingIcon,
     },
     {
+      icon: ContactRoundIcon,
       title: "Members",
       url: "#",
-      icon: ContactRoundIcon,
     },
     {
+      icon: UsersRoundIcon,
       title: "Teams",
       url: "#",
-      icon: UsersRoundIcon,
     },
     {
-      title: "Apps",
-      url: "#",
       icon: Grid2x2Plus,
       items: [
         {
@@ -119,47 +133,32 @@ const data = {
           url: "#",
         },
       ],
+      title: "Apps",
+      url: "#",
     },
     {
+      icon: RouteIcon,
       title: "Routing",
       url: "#",
-      icon: RouteIcon,
     },
     {
+      badge: "Cal.ai",
+      icon: WorkflowIcon,
       title: "Workflows",
       url: "#",
-      icon: WorkflowIcon,
-      badge: "Cal.ai",
     },
     {
+      icon: ActivityIcon,
       title: "Insights",
       url: "#",
-      icon: ActivityIcon,
     },
   ],
-  navFooter: [
-    {
-      title: "View public page",
-      url: "#",
-      icon: ExternalLinkIcon,
-    },
-    {
-      title: "Copy public page link",
-      url: "#",
-      icon: CopyIcon,
-    },
-    {
-      title: "Refer and earn",
-      url: "#",
-      icon: GiftIcon,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
-    },
-  ],
-}
+  user: {
+    avatar: "",
+    email: "pasqua@example.com",
+    name: "Pasquale",
+  },
+};
 
 export function AppSidebar({
   variant,
@@ -167,22 +166,31 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & {
   variant?: never;
 }) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg()
+  const isBetweenMdAndLg = useIsBetweenMdAndLg();
 
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-0.5 px-2">
-          <SidebarMenuButton className="w-fit justify-center md:max-lg:p-0" render={<Link href="/" />}>
-            <h1 className="font-heading text-[0.9375rem] lg:text-lg leading-none text-foreground">
+        <div className="flex flex-col items-center justify-between gap-0.5 px-2 lg:flex-row">
+          <SidebarMenuButton
+            className="w-fit justify-center md:max-lg:p-0"
+            render={<Link href="/" />}
+          >
+            <h1 className="font-heading text-[0.9375rem] text-foreground leading-none lg:text-lg">
               Cal<span className="max-lg:sr-only">.com</span>
-            </h1>          
-          </SidebarMenuButton>          
-          <div className="flex flex-col lg:flex-row items-center gap-0.5">
-            <SidebarMenuButton className="size-8 p-0 justify-center max-lg:order-1" aria-label="Search">
+            </h1>
+          </SidebarMenuButton>
+          <div className="flex flex-col items-center gap-0.5 lg:flex-row">
+            <SidebarMenuButton
+              aria-label="Search"
+              className="size-8 justify-center p-0 max-lg:order-1"
+            >
               <SearchIcon />
             </SidebarMenuButton>
-            <SidebarMenuButton className="size-8 p-0 justify-center" render={<a href="#" />}>         
+            <SidebarMenuButton
+              className="size-8 justify-center p-0"
+              render={<a href="#" />}
+            >
               <Avatar className="size-6">
                 <AvatarImage
                   alt="Luke Tracy"
@@ -190,9 +198,13 @@ export function AppSidebar({
                 />
                 <AvatarFallback>CC</AvatarFallback>
               </Avatar>
-            </SidebarMenuButton>             
+            </SidebarMenuButton>
             <Menu>
-              <MenuTrigger render={<SidebarMenuButton className="relative size-8 p-0 justify-center" />}>
+              <MenuTrigger
+                render={
+                  <SidebarMenuButton className="relative size-8 justify-center p-0" />
+                }
+              >
                 <Avatar className="size-6">
                   <AvatarImage
                     alt="Luke Tracy"
@@ -200,10 +212,14 @@ export function AppSidebar({
                   />
                   <AvatarFallback>LT</AvatarFallback>
                 </Avatar>
-                <span className="absolute bottom-px right-px size-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
+                <span className="absolute right-px bottom-px size-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
                 <span className="sr-only">User menu</span>
               </MenuTrigger>
-              <MenuPopup side={isBetweenMdAndLg ? "right" : "bottom"} alignOffset={isBetweenMdAndLg ? -3 : undefined} align="start">
+              <MenuPopup
+                align="start"
+                alignOffset={isBetweenMdAndLg ? -3 : undefined}
+                side={isBetweenMdAndLg ? "right" : "bottom"}
+              >
                 <MenuGroup>
                   <MenuGroupLabel>Luke Tracy</MenuGroupLabel>
                   <MenuItem>
@@ -236,7 +252,7 @@ export function AppSidebar({
                   <MenuItem>
                     <GaugeIcon className="opacity-72" />
                     Platform
-                  </MenuItem>                  
+                  </MenuItem>
                 </MenuGroup>
                 <MenuSeparator />
                 <MenuItem>
@@ -244,18 +260,17 @@ export function AppSidebar({
                   Sign out
                 </MenuItem>
               </MenuPopup>
-            </Menu>           
+            </Menu>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navFooter} className="mt-auto" />
+        <NavSecondary className="mt-auto" items={data.navFooter} />
         <div className="px-3 pb-4 text-[0.625rem] text-sidebar-foreground/50 max-lg:hidden">
           © 2025 Cal.com, Inc. v.5.9.6-h-2701b4d
-        </div>        
+        </div>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
-

@@ -1,20 +1,12 @@
-"use client"
-
-import {
-  Folder,
-  MoreHorizontal,
-  Share,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react"
+"use client";
 
 import {
   Menu,
-  MenuPopup,
   MenuItem,
+  MenuPopup,
   MenuSeparator,
   MenuTrigger,
-} from "@coss/ui/components/menu"
+} from "@coss/ui/components/menu";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -22,19 +14,26 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@coss/ui/components/sidebar"
-import { useIsMobile } from "@/hooks/use-mobile"
+} from "@coss/ui/components/sidebar";
+import {
+  Folder,
+  type LucideIcon,
+  MoreHorizontal,
+  Share,
+  Trash2,
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function NavProjects({
   projects,
 }: {
   projects: {
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
+    name: string;
+    url: string;
+    icon: LucideIcon;
+  }[];
 }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -52,9 +51,9 @@ export function NavProjects({
                 <span className="sr-only">More</span>
               </MenuTrigger>
               <MenuPopup
+                align={isMobile ? "end" : "start"}
                 className="w-48"
                 side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
               >
                 <MenuItem>
                   <Folder className="text-muted-foreground" />
@@ -81,5 +80,5 @@ export function NavProjects({
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

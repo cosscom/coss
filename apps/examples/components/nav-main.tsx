@@ -1,12 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useEffect, useRef } from "react"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@coss/ui/components/collapsible"
+} from "@coss/ui/components/collapsible";
 import {
   Menu,
   MenuGroup,
@@ -14,7 +12,11 @@ import {
   MenuItem,
   MenuPopup,
   MenuTrigger,
-} from "@coss/ui/components/menu"
+} from "@coss/ui/components/menu";
+import { TooltipTrigger } from "@coss/ui/components/tooltip";
+import { ChevronRightIcon } from "lucide-react";
+import type * as React from "react";
+import { useEffect, useRef } from "react";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -26,12 +28,8 @@ import {
   SidebarMenuSubItem,
   sidebarTooltipHandle,
   useSidebarMenuOpen,
-} from "@/components/ui/sidebar"
-import {
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip"
-import { useIsBetweenMdAndLg } from "@/hooks/use-mobile"
-import { ChevronRightIcon } from "lucide-react"
+} from "@/components/ui/sidebar";
+import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 function MenuWithTooltipDisable({
   item,
@@ -39,45 +37,43 @@ function MenuWithTooltipDisable({
   TooltipContent,
   items,
 }: {
-  item: { title: string; isActive?: boolean; badge?: string }
-  menuButton: React.ReactElement<Record<string, unknown>>
-  TooltipContent: React.ComponentType
-  items: { title: string; url: string }[]
+  item: { title: string; isActive?: boolean; badge?: string };
+  menuButton: React.ReactElement<Record<string, unknown>>;
+  TooltipContent: React.ComponentType;
+  items: { title: string; url: string }[];
 }) {
-  const { registerMenu } = useSidebarMenuOpen()
-  const unregisterRef = useRef<(() => void) | null>(null)
+  const { registerMenu } = useSidebarMenuOpen();
+  const unregisterRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     return () => {
       if (unregisterRef.current) {
-        unregisterRef.current()
+        unregisterRef.current();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   return (
     <SidebarMenuItem>
       <Menu
         onOpenChange={(open) => {
           if (open) {
-            unregisterRef.current = registerMenu()
+            unregisterRef.current = registerMenu();
           } else {
             if (unregisterRef.current) {
-              unregisterRef.current()
-              unregisterRef.current = null
+              unregisterRef.current();
+              unregisterRef.current = null;
             }
           }
         }}
       >
         <TooltipTrigger
-          className="after:absolute after:top-0 after:-bottom-1 after:-inset-x-1"
+          className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
           handle={sidebarTooltipHandle}
           payload={TooltipContent}
-          render={
-            <MenuTrigger render={menuButton} />
-          }
+          render={<MenuTrigger render={menuButton} />}
         />
-        <MenuPopup side="right" align="start" alignOffset={-3}>
+        <MenuPopup align="start" alignOffset={-3} side="right">
           <MenuGroup>
             <MenuGroupLabel>{item.title}</MenuGroupLabel>
             {items.map((subItem) => (
@@ -89,25 +85,25 @@ function MenuWithTooltipDisable({
         </MenuPopup>
       </Menu>
     </SidebarMenuItem>
-  )
+  );
 }
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon: any
-    isActive?: boolean
-    badge?: string
+    title: string;
+    url: string;
+    icon: any;
+    isActive?: boolean;
+    badge?: string;
     items?: {
-      title: string
-      url: string
-    }[]
-  }[]
+      title: string;
+      url: string;
+    }[];
+  }[];
 }) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg()
+  const isBetweenMdAndLg = useIsBetweenMdAndLg();
 
   return (
     <SidebarGroup>
@@ -129,25 +125,33 @@ export function NavMain({
 
             return (
               <MenuWithTooltipDisable
-                key={item.title}
                 item={item}
+                items={item.items}
+                key={item.title}
                 menuButton={menuButton}
                 TooltipContent={TooltipContent}
-                items={item.items}
               />
-            )
+            );
           }
 
           // Show Collapsible in expanded mode or for items without children
           return (
             <Collapsible
+              defaultOpen={item.isActive}
               key={item.title}
               render={<SidebarMenuItem />}
-              defaultOpen={item.isActive}
             >
               {item.items?.length ? (
                 <>
-                  <CollapsibleTrigger className="font-medium text-sidebar-foreground justify-between" render={<SidebarMenuButton tooltip={item.title} isActive={item.isActive} />}>
+                  <CollapsibleTrigger
+                    className="justify-between font-medium text-sidebar-foreground"
+                    render={
+                      <SidebarMenuButton
+                        isActive={item.isActive}
+                        tooltip={item.title}
+                      />
+                    }
+                  >
                     <span className="flex items-center gap-2">
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
@@ -157,13 +161,16 @@ export function NavMain({
                         {item.badge}
                       </SidebarMenuBadge>
                     )}
-                    <ChevronRightIcon className="transition-transform in-data-open:rotate-90 opacity-72" />
+                    <ChevronRightIcon className="in-data-open:rotate-90 opacity-72 transition-transform" />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <SidebarMenuSub className="mx-0 px-0 border-none gap-0.5">
+                    <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
                       {item.items.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton className="ps-8.5 from-secondary to-secondary/64 hover:bg-transparent active:bg-transparent data-[active=true]:bg-linear-to-tr" render={<a href={subItem.url} />}>
+                          <SidebarMenuSubButton
+                            className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-linear-to-tr"
+                            render={<a href={subItem.url} />}
+                          >
                             <span>{subItem.title}</span>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -174,9 +181,9 @@ export function NavMain({
               ) : (
                 <SidebarMenuButton
                   className="font-medium text-sidebar-foreground"
+                  isActive={item.isActive}
                   render={<a href={item.url} />}
                   tooltip={item.title}
-                  isActive={item.isActive}
                 >
                   <item.icon />
                   <span>{item.title}</span>
@@ -188,9 +195,9 @@ export function NavMain({
                 </SidebarMenuButton>
               )}
             </Collapsible>
-          )
+          );
         })}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

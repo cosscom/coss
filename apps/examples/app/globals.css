@@ -1,9 +1,17 @@
 @import "@coss/ui/globals.css";
 
 :root {
-  --sidebar-foreground: color-mix(in srgb, var(--color-zinc-800) 80%, var(--sidebar));
+  --sidebar-foreground: color-mix(
+    in srgb,
+    var(--color-zinc-800) 80%,
+    var(--sidebar)
+  );
 }
 
 .dark {
-  --sidebar-foreground: color-mix(in srgb, var(--color-zinc-200) 80%, var(--sidebar));
+  --sidebar-foreground: color-mix(
+    in srgb,
+    var(--color-zinc-200) 80%,
+    var(--sidebar)
+  );
 }

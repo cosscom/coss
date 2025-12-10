@@ -2,10 +2,6 @@
 
 import { mergeProps } from "@base-ui-components/react/merge-props";
 import { useRender } from "@base-ui-components/react/use-render";
-import * as React from "react";
-
-import { useIsBetweenMdAndLg, useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@coss/ui/lib/utils";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
@@ -16,8 +12,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { cn } from "@coss/ui/lib/utils";
+import * as React from "react";
+import { useIsBetweenMdAndLg, useIsMobile } from "@/hooks/use-mobile";
 
-type SidebarTooltipHandle = ReturnType<typeof TooltipCreateHandle<React.ComponentType>>;
+type SidebarTooltipHandle = ReturnType<
+  typeof TooltipCreateHandle<React.ComponentType>
+>;
 
 export const sidebarTooltipHandle: SidebarTooltipHandle =
   TooltipCreateHandle<React.ComponentType>();
@@ -59,10 +60,10 @@ function SidebarProvider({
           {children}
           <Tooltip handle={sidebarTooltipHandle}>
             {({ payload: Payload }) => (
-              <TooltipPopup 
-                align="center" 
-                side="right"
+              <TooltipPopup
+                align="center"
                 className={openMenuCount > 0 ? "hidden" : undefined}
+                side="right"
               >
                 {Payload !== undefined && <Payload />}
               </TooltipPopup>
@@ -108,19 +109,21 @@ function Sidebar({
   );
 }
 
-function SidebarInset({ className, children, ...props }: React.ComponentProps<"main">) {
+function SidebarInset({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"main">) {
   return (
     <main
       className={cn(
-        "relative flex w-full flex-1 flex-col md:my-2 md:me-2 min-w-0 bg-clip-padding dark:bg-clip-border md:border bg-background md:rounded-2xl before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] shadow-lg shadow-black/5",
+        "relative flex w-full min-w-0 flex-1 flex-col bg-background bg-clip-padding shadow-black/5 shadow-lg before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] md:my-2 md:me-2 md:rounded-2xl md:border dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
         className,
       )}
       data-slot="sidebar-inset"
       {...props}
     >
-        <div className="p-4 md:p-6">
-          {children}
-        </div>
+      <div className="p-4 md:p-6">{children}</div>
     </main>
   );
 }
@@ -135,7 +138,6 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
 
 function SidebarSeparator({
   className,
@@ -154,7 +156,12 @@ function SidebarSeparator({
 function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <ScrollArea scrollFade>
-      <div className={cn("flex h-full flex-col gap-2 px-2", className)} data-sidebar="content" data-slot="sidebar-content" {...props} />
+      <div
+        className={cn("flex h-full flex-col gap-2 px-2", className)}
+        data-sidebar="content"
+        data-slot="sidebar-content"
+        {...props}
+      />
     </ScrollArea>
   );
 }
@@ -162,7 +169,10 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
 function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("relative flex w-full min-w-0 flex-col px-2 py-2", className)}
+      className={cn(
+        "relative flex w-full min-w-0 flex-col px-2 py-2",
+        className,
+      )}
       data-sidebar="group"
       data-slot="sidebar-group"
       {...props}
@@ -289,14 +299,11 @@ function SidebarMenuButton({
   }
 
   // Convert string tooltip to a component
-  const TooltipContent =
-    typeof tooltip === "string"
-      ? () => tooltip
-      : tooltip;
+  const TooltipContent = typeof tooltip === "string" ? () => tooltip : tooltip;
 
   return (
     <TooltipTrigger
-      className="after:absolute after:top-0 after:-bottom-1 after:-inset-x-1"
+      className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
       handle={sidebarTooltipHandle}
       payload={TooltipContent}
       render={buttonElement as React.ReactElement<Record<string, unknown>>}
@@ -339,7 +346,7 @@ function SidebarMenuBadge({
   return (
     <div
       className={cn(
-        "pointer-events-none absolute right-1 top-1.5 flex h-5 min-w-5 select-none items-center justify-center rounded-lg px-1 font-medium text-sidebar-foreground text-xs tabular-nums",
+        "pointer-events-none absolute top-1.5 right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-lg px-1 font-medium text-sidebar-foreground text-xs tabular-nums",
         "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
         "md:max-lg:hidden",
         className,

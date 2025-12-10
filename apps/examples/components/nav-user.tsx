@@ -1,21 +1,10 @@
-"use client"
-
-import {
-  User,
-  Settings,
-  Moon,
-  BookOpen,
-  HelpCircle,
-  Download,
-  LogOut,
-  ChevronsUpDown,
-} from "lucide-react"
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@coss/ui/components/avatar"
+} from "@coss/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,38 +13,52 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@coss/ui/components/menu"
+} from "@coss/ui/components/menu";
+import {
+  BookOpen,
+  ChevronsUpDown,
+  Download,
+  HelpCircle,
+  LogOut,
+  Moon,
+  Settings,
+  User,
+} from "lucide-react";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useIsMobile } from "@/hooks/use-mobile"
+} from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  }
+    name: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
   const initials = user.name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-12" />}>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton className="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" />
+            }
+          >
             <Avatar className="size-8 rounded-full">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage alt={user.name} src={user.avatar} />
               <AvatarFallback className="rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
                 {initials}
               </AvatarFallback>
@@ -66,21 +69,25 @@ export function NavUser({
             <ChevronsUpDown className="ml-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
+            align="end"
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
-            align="end"
             sideOffset={4}
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-full">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-full">{initials}</AvatarFallback>
+                    <AvatarImage alt={user.name} src={user.avatar} />
+                    <AvatarFallback className="rounded-full">
+                      {initials}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                    <span className="truncate text-muted-foreground text-xs">
+                      {user.email}
+                    </span>
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -124,5 +131,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
