@@ -334,10 +334,7 @@ export const mdxComponents = {
     <TabsTab className={cn("rounded-lg", className)} {...props} />
   ),
   table: ({ className, ...props }: React.ComponentProps<"table">) => (
-    <ScrollArea
-      className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5"
-      orientation="horizontal"
-    >
+    <ScrollArea className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5">
       <table
         className={cn("relative w-full border-none text-sm", className)}
         {...props}

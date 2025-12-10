@@ -2,7 +2,7 @@ import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function Particle() {
   return (
-    <ScrollArea className="h-80 max-w-80 rounded-md border" orientation="both">
+    <ScrollArea className="h-80 max-w-80 rounded-lg border">
       <p className="min-w-100 p-4">
         Just as suddenly as it had begun, the sensation stopped, leaving Alice
         feeling slightly disoriented. She looked around and realized that the
