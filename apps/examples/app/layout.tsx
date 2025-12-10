@@ -3,17 +3,18 @@ import "./globals.css";
 import { ToastProvider } from "@coss/ui/components/toast";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
+import localFont from "next/font/local";
 
-const fontSans = FontSans({
-  subsets: ["latin"],
+const fontSans = localFont({
+  display: "swap",
+  src: "../../../public/fonts/CalSansUI[MODE,wght].woff2",
   variable: "--font-sans",
 });
 
-const fontHeading = FontHeading({
-  subsets: ["latin"],
+const fontHeading = localFont({
+  display: "swap",
+  src: "../../../public/fonts/CalSans-Regular.woff2",
   variable: "--font-heading",
-  weight: "400",
 });
 
 export const metadata: Metadata = {
