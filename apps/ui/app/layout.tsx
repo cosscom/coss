@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
+import localFont from "next/font/local";
 
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -10,23 +10,22 @@ import {
   ToastProvider,
 } from "@/registry/default/ui/toast";
 
-const fontSans = FontSans({
-  subsets: ["latin"],
+const fontSans = localFont({
+  display: "swap",
+  src: "../../../public/fonts/CalSansUI[MODE,wght].woff2",
   variable: "--font-sans",
 });
 
-const fontHeading = FontHeading({
-  subsets: ["latin"],
+const fontHeading = localFont({
+  display: "swap",
+  src: "../../../public/fonts/CalSans-Regular.woff2",
   variable: "--font-heading",
-  weight: "400",
 });
 
 export const metadata: Metadata = {
-  description:
-    "coss ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
+  description: "Page description",
   metadataBase: new URL("https://coss.com"),
-  title:
-    "coss ui - A new, modern UI component library built on top of Base UI. Built for developers and AI.",
+  title: "Page title",
 };
 
 export default function RootLayout({
