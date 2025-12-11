@@ -1,10 +1,10 @@
 "use client";
 
 import type * as React from "react";
+import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { HeaderActions } from "@/components/header-actions";
 import {
   Sidebar,
   SidebarContent,

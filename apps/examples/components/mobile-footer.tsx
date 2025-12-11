@@ -25,15 +25,18 @@ export function MobileFooter() {
           key={item.title}
         >
           <item.icon className="size-4" />
-          <span className="text-[0.625rem] font-medium">{item.title}</span>
+          <span className="font-medium text-[0.625rem]">{item.title}</span>
         </Link>
       ))}
       <Menu>
         <MenuTrigger
           render={
-            <button className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-sidebar-foreground hover:text-sidebar-accent-foreground">
+            <button
+              className="flex flex-1 flex-col items-center justify-center gap-1 py-2 text-sidebar-foreground hover:text-sidebar-accent-foreground"
+              type="button"
+            >
               <EllipsisIcon className="size-4" />
-              <span className="text-[0.625rem] font-medium">More</span>
+              <span className="font-medium text-[0.625rem]">More</span>
             </button>
           }
         />

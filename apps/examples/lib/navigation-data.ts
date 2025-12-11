@@ -8,11 +8,11 @@ import {
   GiftIcon,
   Grid2x2Plus,
   Link2Icon,
+  type LucideIcon,
   RouteIcon,
   SettingsIcon,
   UsersRoundIcon,
   WorkflowIcon,
-  type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {

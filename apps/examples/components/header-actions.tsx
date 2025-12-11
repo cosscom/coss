@@ -11,7 +11,7 @@ import { UserMenu } from "@/components/user-menu";
 
 export function HeaderActions() {
   return (
-    <div className="flex md:flex-col items-center gap-0.5 lg:flex-row">
+    <div className="flex items-center gap-0.5 md:flex-col lg:flex-row">
       <SidebarMenuButton
         aria-label="Search"
         className="size-8 justify-center p-0 md:max-lg:order-1"

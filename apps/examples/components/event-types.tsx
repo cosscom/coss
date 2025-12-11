@@ -142,7 +142,7 @@ export function EventTypes() {
                 <div className="flex items-center justify-between gap-2">
                   {/* Content */}
                   <div className="flex flex-col gap-0.5">
-                    <div className="flex items-start md:items-center gap-1 md:gap-2 flex-col md:flex-row">
+                    <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2">
                       <h2 className="font-semibold text-sm">
                         <a
                           className="before:absolute before:inset-0"
@@ -271,19 +271,20 @@ export function EventTypes() {
                         <MenuItem variant="destructive">Delete</MenuItem>
                         <MenuSeparator />
                         <MenuItem
-                          closeOnClick={false}
                           className="flex-row justify-between"
-                          render={<Field render={<FieldLabel />} />}>
-                            {isHidden ? "Show" : "Hide"}
-                            <Switch
-                              checked={!isHidden}
-                              onCheckedChange={(checked) => {
-                                handleHiddenToggle(eventType.id, !checked);
-                              }}
-                            />
+                          closeOnClick={false}
+                          render={<Field render={<FieldLabel />} />}
+                        >
+                          {isHidden ? "Show" : "Hide"}
+                          <Switch
+                            checked={!isHidden}
+                            onCheckedChange={(checked) => {
+                              handleHiddenToggle(eventType.id, !checked);
+                            }}
+                          />
                         </MenuItem>
                       </MenuPopup>
-                    </Menu>                      
+                    </Menu>
                   </div>
                 </div>
               </CardPanel>

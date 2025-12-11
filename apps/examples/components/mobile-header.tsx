@@ -1,7 +1,7 @@
 "use client";
 
-import { Logo } from "@/components/logo";
 import { HeaderActions } from "@/components/header-actions";
+import { Logo } from "@/components/logo";
 
 export function MobileHeader() {
   return (
