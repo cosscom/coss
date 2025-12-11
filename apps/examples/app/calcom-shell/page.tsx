@@ -1,14 +1,18 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { EventTypes } from "@/components/event-types";
+import { MobileFooter } from "@/components/mobile-footer";
+import { MobileHeader } from "@/components/mobile-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Page() {
   return (
     <SidebarProvider>
+      <MobileHeader />
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="max-md:pt-14 max-md:pb-16">
         <EventTypes />
       </SidebarInset>
+      <MobileFooter />
     </SidebarProvider>
   );
 }

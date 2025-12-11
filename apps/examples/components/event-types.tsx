@@ -3,6 +3,7 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
+import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Group, GroupSeparator } from "@coss/ui/components/group";
 import {
   InputGroup,
@@ -61,17 +62,41 @@ const eventTypes = [
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 4,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 5,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 6,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
 ];
 
 export function EventTypes() {
-  const [enabledStates, setEnabledStates] = useState<Record<number, boolean>>(
-    Object.fromEntries(eventTypes.map((et) => [et.id, et.enabled])),
+  const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
+    Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
   );
 
-  const handleToggle = (id: number) => {
-    setEnabledStates((prev) => ({
+  const handleHiddenToggle = (id: number, checked: boolean) => {
+    setHiddenStates((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [id]: checked,
     }));
   };
 
@@ -107,7 +132,7 @@ export function EventTypes() {
 
       <div className="mt-4 *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-last:border-b-0 *:not-last:before:hidden *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none dark:*:not-first:before:hidden dark:*:first:before:block">
         {eventTypes.map((eventType) => {
-          const isEnabled = enabledStates[eventType.id];
+          const isHidden = hiddenStates[eventType.id];
           return (
             <Card
               className="py-5 transition-colors has-[a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]"
@@ -117,7 +142,7 @@ export function EventTypes() {
                 <div className="flex items-center justify-between gap-2">
                   {/* Content */}
                   <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start md:items-center gap-1 md:gap-2 flex-col md:flex-row">
                       <h2 className="font-semibold text-sm">
                         <a
                           className="before:absolute before:inset-0"
@@ -131,16 +156,14 @@ export function EventTypes() {
                         {eventType.duration}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <p className="text-muted-foreground text-xs">
-                        {eventType.path}
-                      </p>
-                    </div>
+                    <p className="text-muted-foreground text-xs max-md:hidden">
+                      {eventType.path}
+                    </p>
                   </div>
                   {/* Actions */}
                   <div className="-m-6 relative flex items-center gap-4 p-6">
                     <div className="flex items-center gap-2">
-                      {!isEnabled ? (
+                      {isHidden ? (
                         <Badge
                           className="pointer-events-none"
                           size="sm"
@@ -151,21 +174,23 @@ export function EventTypes() {
                       ) : null}
                       <Tooltip>
                         <TooltipTrigger
+                          className="max-md:hidden"
                           render={
                             <Switch
-                              checked={isEnabled}
-                              onCheckedChange={() => handleToggle(eventType.id)}
+                              checked={!isHidden}
+                              onCheckedChange={(checked) =>
+                                handleHiddenToggle(eventType.id, !checked)
+                              }
                             />
                           }
                         />
                         <TooltipPopup sideOffset={11}>
-                          {isEnabled
-                            ? "Disable event type"
-                            : "Enable event type"}
+                          {isHidden ? "Show on profile" : "Hide from profile"}
                         </TooltipPopup>
                       </Tooltip>
                     </div>
-                    <Group>
+                    {/* Desktop: Group of buttons */}
+                    <Group className="max-md:hidden">
                       <TooltipTrigger
                         handle={tooltipHandle}
                         payload={() => "Preview"}
@@ -222,6 +247,43 @@ export function EventTypes() {
                         </MenuPopup>
                       </Menu>
                     </Group>
+                    {/* Mobile: Single menu button with all actions */}
+                    <Menu>
+                      <MenuTrigger
+                        className="md:hidden"
+                        render={
+                          <Button
+                            aria-label="More options"
+                            size="icon"
+                            variant="outline"
+                          >
+                            <EllipsisIcon />
+                          </Button>
+                        }
+                      />
+                      <MenuPopup align="end">
+                        <MenuItem>Preview</MenuItem>
+                        <MenuItem>Copy link to event</MenuItem>
+                        <MenuItem>Share</MenuItem>
+                        <MenuItem>Edit</MenuItem>
+                        <MenuItem>Duplicate</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem variant="destructive">Delete</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem
+                          closeOnClick={false}
+                          className="flex-row justify-between"
+                          render={<Field render={<FieldLabel />} />}>
+                            {isHidden ? "Show" : "Hide"}
+                            <Switch
+                              checked={!isHidden}
+                              onCheckedChange={(checked) => {
+                                handleHiddenToggle(eventType.id, !checked);
+                              }}
+                            />
+                        </MenuItem>
+                      </MenuPopup>
+                    </Menu>                      
                   </div>
                 </div>
               </CardPanel>
