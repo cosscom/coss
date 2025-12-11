@@ -36,7 +36,11 @@ export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
 
   return (
     <Menu>
-      <MenuTrigger render={<SidebarMenuButton className="relative p-0 lg:size-8 shrink-0 justify-center" />}>
+      <MenuTrigger
+        render={
+          <SidebarMenuButton className="relative shrink-0 justify-center p-0 lg:size-8" />
+        }
+      >
         <Avatar className="lg:size-6">
           <AvatarImage
             alt="Luke Tracy"
@@ -44,7 +48,7 @@ export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
           />
           <AvatarFallback>LT</AvatarFallback>
         </Avatar>
-        <span className="absolute right-[3px] bottom-[3px] lg:right-0.5 lg:bottom-0.5 size-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
+        <span className="absolute right-[3px] bottom-[3px] size-2.5 rounded-full border-2 border-sidebar bg-emerald-500 lg:right-0.5 lg:bottom-0.5" />
         <span className="sr-only">User menu</span>
       </MenuTrigger>
       <MenuPopup

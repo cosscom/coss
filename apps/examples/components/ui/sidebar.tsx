@@ -123,7 +123,7 @@ function SidebarInset({
       data-slot="sidebar-inset"
       {...props}
     >
-      <div className="p-4 md:p-6 max-md:pb-8">{children}</div>
+      <div className="p-4 max-md:pb-8 md:p-6">{children}</div>
     </main>
   );
 }
@@ -242,7 +242,7 @@ function SidebarGroupContent({
 function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   return (
     <ul
-      className={cn("flex lg:w-full min-w-0 flex-col gap-1", className)}
+      className={cn("flex min-w-0 flex-col gap-1 lg:w-full", className)}
       data-sidebar="menu"
       data-slot="sidebar-menu"
       {...props}

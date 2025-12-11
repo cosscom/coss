@@ -5,7 +5,6 @@ import type * as React from "react";
 
 import {
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -34,7 +33,9 @@ export function NavSecondary({
               render={
                 <a href={item.url}>
                   <item.icon />
-                  <span className="lg:inline md:max-lg:hidden">{item.title}</span>
+                  <span className="md:max-lg:hidden lg:inline">
+                    {item.title}
+                  </span>
                 </a>
               }
               tooltip={isBetweenMdAndLg ? item.title : undefined}

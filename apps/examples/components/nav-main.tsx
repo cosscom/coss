@@ -15,7 +15,7 @@ import {
 } from "@coss/ui/components/menu";
 import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
-import type * as React from "react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import {
   SidebarGroup,
@@ -30,7 +30,6 @@ import {
   useSidebarMenuOpen,
 } from "@/components/ui/sidebar";
 import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
-import Link from "next/link";
 
 function NavItemWithSubmenu({
   item,
@@ -76,7 +75,7 @@ function NavItemWithSubmenu({
           }
         }}
       >
-        <div className="md:max-lg:block hidden">
+        <div className="hidden md:max-lg:block">
           <TooltipTrigger
             className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
             handle={sidebarTooltipHandle}
@@ -182,7 +181,7 @@ function NavItemSimple({
         render={
           <a href={item.url}>
             <item.icon />
-            <span className="lg:inline md:max-lg:hidden">{item.title}</span>
+            <span className="md:max-lg:hidden lg:inline">{item.title}</span>
             {item.badge && (
               <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 {item.badge}
