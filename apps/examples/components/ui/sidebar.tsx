@@ -123,7 +123,7 @@ function SidebarInset({
       data-slot="sidebar-inset"
       {...props}
     >
-      <div className="p-4 md:p-6">{children}</div>
+      <div className="p-4 md:p-6 max-md:pb-8">{children}</div>
     </main>
   );
 }
@@ -170,7 +170,7 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "relative flex w-full min-w-0 flex-col px-2 py-2",
+        "relative flex w-full min-w-0 flex-col items-center px-2 py-2",
         className,
       )}
       data-sidebar="group"
@@ -242,7 +242,7 @@ function SidebarGroupContent({
 function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   return (
     <ul
-      className={cn("flex w-full min-w-0 flex-col gap-1", className)}
+      className={cn("flex lg:w-full min-w-0 flex-col gap-1", className)}
       data-sidebar="menu"
       data-slot="sidebar-menu"
       {...props}
@@ -278,7 +278,7 @@ function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button cursor-pointer flex w-full items-center gap-2 overflow-hidden rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground md:max-lg:size-8 md:max-lg:p-2 h-8 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
+      "peer/menu-button cursor-pointer flex w-full items-center gap-2 overflow-hidden rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate md:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-5 [&>svg]:shrink-0",
       className,
     ),
     "data-active": isActive,

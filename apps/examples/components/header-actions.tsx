@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Avatar,
   AvatarFallback,
@@ -14,22 +15,22 @@ export function HeaderActions() {
     <div className="flex items-center gap-0.5 md:flex-col lg:flex-row">
       <SidebarMenuButton
         aria-label="Search"
-        className="size-8 justify-center p-0 md:max-lg:order-1"
+        className="lg:size-8 justify-center shrink-0 p-0 md:max-lg:order-1 text-sidebar-foreground/80"
       >
         <SearchIcon />
       </SidebarMenuButton>
       <SidebarMenuButton
-        className="size-8 justify-center p-0"
+        className="p-0 lg:size-8 shrink-0 justify-center"
         render={
-          <a href="#">
-            <Avatar className="size-6">
+          <Link href="#">
+            <Avatar className="lg:size-6">
               <AvatarImage
                 alt="Luke Tracy"
                 src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
               />
               <AvatarFallback>CC</AvatarFallback>
             </Avatar>
-          </a>
+          </Link>
         }
       />
       <UserMenu />

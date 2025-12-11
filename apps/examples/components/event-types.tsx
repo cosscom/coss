@@ -86,6 +86,38 @@ const eventTypes = [
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 7,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 8,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 9,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
+  {
+    duration: "15m",
+    enabled: false,
+    hidden: true,
+    id: 10,
+    path: "/pasquale/secret",
+    title: "Secret Meeting",
+  },
 ];
 
 export function EventTypes() {
@@ -106,11 +138,11 @@ export function EventTypes() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-xl leading-none">Event Types</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm max-md:hidden">
             Create events to share for people to book on your calendar.
           </p>
         </div>
-        <Button>
+        <Button className="max-md:hidden">
           <PlusIcon className="-ms-1 opacity-72" />
           New
         </Button>
@@ -118,7 +150,7 @@ export function EventTypes() {
 
       {/* Search */}
       <div className="mt-6">
-        <InputGroup className="max-w-64">
+        <InputGroup className="md:max-w-64">
           <InputGroupInput
             aria-label="Search"
             placeholder="Search…"

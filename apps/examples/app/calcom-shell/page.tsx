@@ -9,7 +9,7 @@ export default function Page() {
     <SidebarProvider>
       <MobileHeader />
       <AppSidebar />
-      <SidebarInset className="max-md:pt-14 max-md:pb-16">
+      <SidebarInset className="max-md:pt-14">
         <EventTypes />
       </SidebarInset>
       <MobileFooter />

@@ -34,29 +34,17 @@ interface UserMenuProps {
 export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
   const isBetweenMdAndLg = useIsBetweenMdAndLg();
 
-  const Wrapper = variant === "sidebar" ? SidebarMenuButton : "button";
-
   return (
     <Menu>
-      <MenuTrigger
-        render={
-          <Wrapper
-            className={
-              variant === "sidebar"
-                ? "relative size-8 justify-center p-0"
-                : "relative flex size-8 items-center justify-center rounded-lg"
-            }
-          />
-        }
-      >
-        <Avatar className="size-6">
+      <MenuTrigger render={<SidebarMenuButton className="relative p-0 lg:size-8 shrink-0 justify-center" />}>
+        <Avatar className="lg:size-6">
           <AvatarImage
             alt="Luke Tracy"
             src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80"
           />
           <AvatarFallback>LT</AvatarFallback>
         </Avatar>
-        <span className="absolute right-px bottom-px size-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
+        <span className="absolute right-[3px] bottom-[3px] lg:right-0.5 lg:bottom-0.5 size-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
         <span className="sr-only">User menu</span>
       </MenuTrigger>
       <MenuPopup

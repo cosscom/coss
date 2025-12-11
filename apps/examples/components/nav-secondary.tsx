@@ -1,3 +1,5 @@
+"use client";
+
 import type { LucideIcon } from "lucide-react";
 import type * as React from "react";
 
@@ -8,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 export function NavSecondary({
   items,
@@ -19,25 +22,26 @@ export function NavSecondary({
     icon: LucideIcon;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+
   return (
     <SidebarGroup {...props}>
-      <SidebarGroupContent>
-        <SidebarMenu className="gap-0.5">
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                className="font-medium text-sidebar-foreground"
-                render={
-                  <a href={item.url}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                }
-              />
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
+      <SidebarMenu className="gap-0.5">
+        {items.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton
+              className="font-medium text-sidebar-foreground"
+              render={
+                <a href={item.url}>
+                  <item.icon />
+                  <span className="lg:inline md:max-lg:hidden">{item.title}</span>
+                </a>
+              }
+              tooltip={isBetweenMdAndLg ? item.title : undefined}
+            />
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
     </SidebarGroup>
   );
 }
