@@ -47,7 +47,7 @@ export default function Component() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                     d="M4 12L20 12"
                   />
                   <path
@@ -55,7 +55,7 @@ export default function Component() {
                     d="M4 12H20"
                   />
                   <path
-                    className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                    className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-135"
                     d="M4 12H20"
                   />
                 </svg>
@@ -65,7 +65,7 @@ export default function Component() {
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, _index) => (
-                    <NavigationMenuItem className="w-full" key={link.href}>
+                    <NavigationMenuItem className="w-full" key={link.label}>
                       <NavigationMenuLink
                         active={link.active}
                         className="py-1.5"
@@ -88,7 +88,7 @@ export default function Component() {
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
                 {navigationLinks.map((link, _index) => (
-                  <NavigationMenuItem key={link.href}>
+                  <NavigationMenuItem key={link.label}>
                     <NavigationMenuLink
                       active={link.active}
                       className="py-1.5 font-medium text-muted-foreground hover:text-primary"

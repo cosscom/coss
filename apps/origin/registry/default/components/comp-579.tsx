@@ -44,7 +44,7 @@ export default function Component() {
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[315deg]"
+                      className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                       d="M4 12L20 12"
                     />
                     <path
@@ -52,7 +52,7 @@ export default function Component() {
                       d="M4 12H20"
                     />
                     <path
-                      className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-[135deg]"
+                      className="origin-center translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-y-0 group-aria-expanded:rotate-135"
                       d="M4 12H20"
                     />
                   </svg>
@@ -67,8 +67,8 @@ export default function Component() {
                         key={String(index)}
                       >
                         <NavigationMenuLink
-                          active={link.active}
                           className="py-1.5"
+                          data-active={link.active ? "" : undefined}
                           href={link.href}
                         >
                           {link.label}
@@ -91,8 +91,8 @@ export default function Component() {
                 {navigationLinks.map((link, index) => (
                   <NavigationMenuItem className="h-full" key={String(index)}>
                     <NavigationMenuLink
-                      active={link.active}
-                      className="h-full justify-center rounded-none border-transparent border-y-2 border-b-primary py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
+                      className="h-full justify-center rounded-none border-transparent border-y-2 py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
+                      data-active={link.active ? "" : undefined}
                       href={link.href}
                     >
                       {link.label}
