@@ -23,29 +23,31 @@ export default function Particle() {
 
   return (
     <Form className="max-w-[160px]" onSubmit={onSubmit}>
-      <Field
-        className="gap-4"
-        name="frameworks"
-        render={(props) => <Fieldset {...props} />}
-      >
+      <Fieldset className="gap-4">
         <FieldsetLegend className="font-medium text-sm">
           Frameworks
         </FieldsetLegend>
         <CheckboxGroup defaultValue={["next"]} disabled={loading}>
-          <FieldLabel>
-            <Checkbox value="next" />
-            Next.js
-          </FieldLabel>
-          <FieldLabel>
-            <Checkbox value="vite" />
-            Vite
-          </FieldLabel>
-          <FieldLabel>
-            <Checkbox value="astro" />
-            Astro
-          </FieldLabel>
+          <Field name="frameworks">
+            <FieldLabel>
+              <Checkbox value="next" />
+              Next.js
+            </FieldLabel>
+          </Field>
+          <Field name="frameworks">
+            <FieldLabel>
+              <Checkbox value="vite" />
+              Vite
+            </FieldLabel>
+          </Field>
+          <Field name="frameworks">
+            <FieldLabel>
+              <Checkbox value="astro" />
+              Astro
+            </FieldLabel>
+          </Field>
         </CheckboxGroup>
-      </Field>
+      </Fieldset>
       <Button disabled={loading} type="submit">
         Submit
       </Button>
