@@ -58,7 +58,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -101,7 +101,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -114,7 +114,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -131,7 +131,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -164,7 +164,7 @@
         }
       },
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -177,7 +177,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -198,7 +198,7 @@
         }
       },
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -222,7 +222,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -235,7 +235,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -248,7 +248,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -261,7 +261,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -278,7 +278,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -312,7 +312,7 @@
         }
       },
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -325,7 +325,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -338,7 +338,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -361,7 +361,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -377,7 +377,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -432,7 +432,7 @@
         }
       },
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -445,7 +445,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -458,7 +458,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -487,7 +487,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -500,7 +500,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -513,7 +513,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -526,7 +526,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -539,7 +539,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -552,7 +552,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -565,7 +565,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -578,7 +578,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -636,7 +636,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -659,7 +659,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -682,7 +682,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -695,7 +695,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -708,7 +708,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -724,7 +724,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -737,7 +737,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -754,7 +754,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
@@ -767,7 +767,7 @@
     },
     {
       "dependencies": [
-        "@base-ui-components/react"
+        "@base-ui/react"
       ],
       "files": [
         {
