@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "registry/default/ui/label.tsx",
-      "content": "import type * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nfunction Label({ className, ...props }: React.ComponentProps<\"label\">) {\n  return (\n    <label\n      className={cn(\"inline-flex items-center gap-2 text-sm/4\", className)}\n      data-slot=\"label\"\n      {...props}\n    />\n  );\n}\n\nexport { Label };\n",
+      "content": "import { mergeProps } from \"@base-ui-components/react/merge-props\";\nimport { useRender } from \"@base-ui-components/react/use-render\";\n\nimport { cn } from \"@coss/ui/lib/utils\";\n\nfunction Label({\n  className,\n  render,\n  ...props\n}: useRender.ComponentProps<\"label\">) {\n  const defaultProps = {\n    className: cn(\"inline-flex items-center gap-2 text-sm/4\", className),\n    \"data-slot\": \"label\",\n  };\n\n  return useRender({\n    defaultTagName: \"label\",\n    props: mergeProps<\"label\">(defaultProps, props),\n    render,\n  });\n}\n\nexport { Label };\n",
       "type": "registry:ui"
     }
   ]
