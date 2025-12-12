@@ -25,11 +25,11 @@ function mergePropsMock(
   return { ...defaults, ...overrides };
 }
 
-mock.module("@base-ui-components/react/use-render", () => ({
+mock.module("@base-ui/react/use-render", () => ({
   useRender: useRenderMock,
 }));
 
-mock.module("@base-ui-components/react/merge-props", () => ({
+mock.module("@base-ui/react/merge-props", () => ({
   mergeProps: mergePropsMock,
 }));
 

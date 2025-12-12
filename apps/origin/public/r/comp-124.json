@@ -1,17 +1,22 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comp-124",
+  "type": "registry:component",
+  "registryDependencies": [
+    "https://coss.com/origin/r/button.json"
+  ],
   "files": [
     {
-      "content": "import { ChevronLeftIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Component() {\n  return (\n    <Button className=\"gap-1\" variant=\"link\">\n      <ChevronLeftIcon aria-hidden=\"true\" className=\"opacity-60\" size={16} />\n      Go back\n    </Button>\n  );\n}\n",
       "path": "registry/default/components/comp-124.tsx",
+      "content": "import { ChevronLeftIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Component() {\n  return (\n    <Button className=\"gap-1\" variant=\"link\">\n      <ChevronLeftIcon aria-hidden=\"true\" className=\"opacity-60\" size={16} />\n      Go back\n    </Button>\n  );\n}\n",
       "type": "registry:component"
     }
   ],
   "meta": {
     "style": 2,
-    "tags": ["button", "back"]
-  },
-  "name": "comp-124",
-  "registryDependencies": ["https://coss.com/origin/r/button.json"],
-  "type": "registry:component"
+    "tags": [
+      "button",
+      "back"
+    ]
+  }
 }
