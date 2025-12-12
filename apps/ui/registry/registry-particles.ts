@@ -1207,7 +1207,8 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "label", "textarea"),
+    categories: categories("field", "label", "textarea", "zod"),
+    dependencies: ["zod"],
     description: "Field with textarea",
     files: [{ path: "particles/p-field-10.tsx", type: "registry:block" }],
     meta: {

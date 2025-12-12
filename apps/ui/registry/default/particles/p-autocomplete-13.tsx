@@ -44,9 +44,9 @@ export default function Particle() {
 
   return (
     <Form className="max-w-64" onSubmit={onSubmit}>
-      <Field>
+      <Field name="item">
         <FieldLabel>Favorite item</FieldLabel>
-        <Autocomplete disabled={loading} items={items} name="item" required>
+        <Autocomplete disabled={loading} items={items} required>
           <AutocompleteInput placeholder="Search items…" />
           <AutocompletePopup>
             <AutocompleteEmpty>No items found.</AutocompleteEmpty>

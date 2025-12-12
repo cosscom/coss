@@ -3019,7 +3019,11 @@
       "categories": [
         "field",
         "label",
-        "textarea"
+        "textarea",
+        "zod"
+      ],
+      "dependencies": [
+        "zod"
       ],
       "description": "Field with textarea",
       "files": [

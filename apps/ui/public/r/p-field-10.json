@@ -3,6 +3,9 @@
   "name": "p-field-10",
   "type": "registry:block",
   "description": "Field with textarea",
+  "dependencies": [
+    "zod"
+  ],
   "registryDependencies": [
     "@coss/field",
     "@coss/textarea"
@@ -20,6 +23,7 @@
   "categories": [
     "field",
     "label",
-    "textarea"
+    "textarea",
+    "zod"
   ]
 }
