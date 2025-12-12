@@ -1,10 +1,9 @@
 "use client";
 
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { cn } from "@coss/ui/lib/utils";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import type * as React from "react";
-
-import { cn } from "@coss/ui/lib/utils";
 
 const Menu = MenuPrimitive.Root;
 
@@ -28,13 +27,11 @@ function MenuPopup({
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
   side?: MenuPrimitive.Positioner.Props["side"];
 }) {
-  const defaultAlignOffset = align !== "center" ? -4 : undefined;
-
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         align={align}
-        alignOffset={alignOffset ?? defaultAlignOffset}
+        alignOffset={alignOffset}
         className="z-50"
         data-slot="menu-positioner"
         side={side}
@@ -216,7 +213,7 @@ function MenuSubPopup({
   sideOffset?: MenuPrimitive.Positioner.Props["sideOffset"];
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
 }) {
-  const defaultAlignOffset = align !== "center" ? -4 : undefined;
+  const defaultAlignOffset = align !== "center" ? -5 : undefined;
 
   return (
     <MenuPopup
