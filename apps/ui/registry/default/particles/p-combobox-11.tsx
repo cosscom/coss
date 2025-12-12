@@ -43,9 +43,9 @@ export default function Particle() {
 
   return (
     <Form className="max-w-64" onSubmit={onSubmit}>
-      <Field>
+      <Field name="item">
         <FieldLabel>Favorite item</FieldLabel>
-        <Combobox disabled={loading} items={items} name="item" required>
+        <Combobox disabled={loading} items={items} required>
           <ComboboxInput placeholder="Select an item..." />
           <ComboboxPopup>
             <ComboboxEmpty>No results found.</ComboboxEmpty>

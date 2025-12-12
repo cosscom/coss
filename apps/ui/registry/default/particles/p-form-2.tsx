@@ -39,14 +39,13 @@ export default function Particle() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formEl = event.currentTarget;
+    const formData = new FormData(event.currentTarget);
     setLoading(true);
     const response = await submitForm(event);
     await new Promise((r) => setTimeout(r, 800));
     setErrors(response.errors);
     setLoading(false);
     if (Object.keys(response.errors).length === 0) {
-      const formData = new FormData(formEl);
       alert(
         `Name: ${String(formData.get("name") || "")}\nAge: ${String(
           formData.get("age") || "",
