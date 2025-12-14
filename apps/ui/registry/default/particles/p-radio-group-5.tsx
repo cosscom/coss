@@ -28,10 +28,7 @@ export default function Particle() {
   return (
     <Form className="max-w-xl" onSubmit={onSubmit}>
       <Field name="frameworks">
-        <Fieldset
-          className="gap-4"
-          render={(props) => <RadioGroup {...props} defaultValue="next" />}
-        >
+        <Fieldset className="gap-4" render={<RadioGroup defaultValue="next" />}>
           <FieldsetLegend className="font-medium text-sm">
             Frameworks
           </FieldsetLegend>

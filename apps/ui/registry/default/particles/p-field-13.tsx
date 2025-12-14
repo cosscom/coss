@@ -10,9 +10,7 @@ export default function Particle() {
     <Field name="frameworks">
       <Fieldset
         className="gap-4"
-        render={(props) => (
-          <CheckboxGroup {...props} defaultValue={["react"]} />
-        )}
+        render={<CheckboxGroup defaultValue={["react"]} />}
       >
         <FieldsetLegend className="font-medium text-sm">
           Frameworks

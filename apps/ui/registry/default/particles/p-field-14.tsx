@@ -12,10 +12,7 @@ import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 export default function Particle() {
   return (
     <Field name="plan">
-      <Fieldset
-        className="gap-4"
-        render={(props) => <RadioGroup {...props} defaultValue="free" />}
-      >
+      <Fieldset className="gap-4" render={<RadioGroup defaultValue="free" />}>
         <FieldsetLegend className="font-medium text-sm">
           Choose Plan
         </FieldsetLegend>
