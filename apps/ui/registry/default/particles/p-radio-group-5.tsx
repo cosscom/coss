@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldItem, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
 import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
@@ -22,25 +22,27 @@ export default function Particle() {
 
   return (
     <Form className="max-w-[160px]" onSubmit={onSubmit}>
-      <Field
-        className="gap-4"
-        name="frameworks"
-        render={(props) => <Fieldset {...props} />}
-      >
-        <FieldsetLegend className="font-medium text-sm">
-          Frameworks
-        </FieldsetLegend>
-        <RadioGroup defaultValue="next">
-          <FieldLabel>
-            <Radio disabled={loading} value="next" /> Next.js
-          </FieldLabel>
-          <FieldLabel>
-            <Radio disabled={loading} value="vite" /> Vite
-          </FieldLabel>
-          <FieldLabel>
-            <Radio disabled={loading} value="astro" /> Astro
-          </FieldLabel>
-        </RadioGroup>
+      <Field name="frameworks">
+        <Fieldset
+          className="gap-4"
+          render={(props) => <RadioGroup {...props} defaultValue="next" />}
+        >
+          <FieldsetLegend className="font-medium text-sm">
+            Frameworks
+          </FieldsetLegend>
+          <FieldItem>
+            <Radio disabled={loading} value="next" />
+            <FieldLabel>Next.js</FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <Radio disabled={loading} value="vite" />
+            <FieldLabel>Vite</FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <Radio disabled={loading} value="astro" />
+            <FieldLabel>Astro</FieldLabel>
+          </FieldItem>
+        </Fieldset>
       </Field>
       <Button disabled={loading} type="submit">
         Submit

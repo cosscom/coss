@@ -5,10 +5,14 @@ import * as React from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldItem,
+  FieldLabel,
+} from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
-import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
   const [loading, setLoading] = React.useState(false);
@@ -23,29 +27,33 @@ export default function Particle() {
   };
 
   return (
-    <Form className="max-w-[160px]" onSubmit={onSubmit}>
-      <Field
-        className="gap-4"
-        name="frameworks"
-        render={(props) => <Fieldset {...props} />}
-      >
-        <Label className="font-normal" render={<FieldsetLegend />}>
-          Frameworks
-        </Label>
-        <CheckboxGroup defaultValue={["next"]} disabled={loading}>
-          <FieldLabel>
+    <Form className="max-w-xl" onSubmit={onSubmit}>
+      <Field name="frameworks">
+        <Fieldset
+          className="gap-4"
+          render={<CheckboxGroup defaultValue={["next"]} disabled={loading} />}
+        >
+          <FieldsetLegend className="font-medium text-sm">
+            Frameworks
+          </FieldsetLegend>
+          <FieldItem>
             <Checkbox value="next" />
-            Next.js
-          </FieldLabel>
-          <FieldLabel>
+            <div className="flex flex-col items-start gap-2">
+              <FieldLabel>Next.js</FieldLabel>
+              <FieldDescription>
+                Next.js is a React framework for building web applications.
+              </FieldDescription>
+            </div>
+          </FieldItem>
+          <FieldItem>
             <Checkbox value="vite" />
-            Vite
-          </FieldLabel>
-          <FieldLabel>
+            <FieldLabel>Vite</FieldLabel>
+          </FieldItem>
+          <FieldItem>
             <Checkbox value="astro" />
-            Astro
-          </FieldLabel>
-        </CheckboxGroup>
+            <FieldLabel>Astro</FieldLabel>
+          </FieldItem>
+        </Fieldset>
       </Field>
       <Button disabled={loading} type="submit">
         Submit
