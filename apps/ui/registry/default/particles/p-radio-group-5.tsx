@@ -45,16 +45,12 @@ export default function Particle() {
             </div>
           </FieldItem>
           <FieldItem>
-            <FieldLabel>
-              <Radio disabled={loading} value="vite" />
-              Vite
-            </FieldLabel>
+            <Radio disabled={loading} value="vite" />
+            <FieldLabel>Vite</FieldLabel>
           </FieldItem>
           <FieldItem>
-            <FieldLabel>
-              <Radio disabled={loading} value="astro" />
-              Astro
-            </FieldLabel>
+            <Radio disabled={loading} value="astro" />
+            <FieldLabel>Astro</FieldLabel>
           </FieldItem>
         </Fieldset>
       </Field>
