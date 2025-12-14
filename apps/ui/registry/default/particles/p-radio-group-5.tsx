@@ -3,7 +3,12 @@
 import * as React from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Field, FieldItem, FieldLabel } from "@/registry/default/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldItem,
+  FieldLabel,
+} from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
 import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
@@ -21,7 +26,7 @@ export default function Particle() {
   };
 
   return (
-    <Form className="max-w-[160px]" onSubmit={onSubmit}>
+    <Form className="max-w-xl" onSubmit={onSubmit}>
       <Field name="frameworks">
         <Fieldset
           className="gap-4"
@@ -32,15 +37,24 @@ export default function Particle() {
           </FieldsetLegend>
           <FieldItem>
             <Radio disabled={loading} value="next" />
-            <FieldLabel>Next.js</FieldLabel>
+            <div className="flex flex-col items-start gap-2">
+              <FieldLabel> Next.js</FieldLabel>
+              <FieldDescription>
+                Next.js is a React framework for building web applications.
+              </FieldDescription>
+            </div>
           </FieldItem>
           <FieldItem>
-            <Radio disabled={loading} value="vite" />
-            <FieldLabel>Vite</FieldLabel>
+            <FieldLabel>
+              <Radio disabled={loading} value="vite" />
+              Vite
+            </FieldLabel>
           </FieldItem>
           <FieldItem>
-            <Radio disabled={loading} value="astro" />
-            <FieldLabel>Astro</FieldLabel>
+            <FieldLabel>
+              <Radio disabled={loading} value="astro" />
+              Astro
+            </FieldLabel>
           </FieldItem>
         </Fieldset>
       </Field>
