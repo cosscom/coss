@@ -101,7 +101,7 @@ function AutocompleteItem({
   return (
     <AutocompletePrimitive.Item
       className={cn(
-        "flex min-h-[calc(--spacing(7)+var(--scale-offset))] cursor-default select-none items-center rounded-sm px-2 py-1 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64",
+        "flex min-h-[calc(--spacing(7)+var(--scale-offset))] cursor-default select-none items-center rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:text-sm",
         className,
       )}
       data-slot="autocomplete-item"
@@ -161,7 +161,7 @@ function AutocompleteEmpty({
   return (
     <AutocompletePrimitive.Empty
       className={cn(
-        "not-empty:p-2 text-center text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) text-muted-foreground",
+        "not-empty:p-2 text-center text-base text-muted-foreground sm:text-sm",
         className,
       )}
       data-slot="autocomplete-empty"

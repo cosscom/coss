@@ -6,7 +6,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "[&_svg]:-mx-0.5 relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border bg-clip-padding font-medium text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:opacity-80",
+  "[&_svg]:-mx-0.5 relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border bg-clip-padding font-medium text-base outline-none transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 sm:text-sm sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:opacity-80",
   {
     defaultVariants: {
       size: "default",
@@ -25,8 +25,8 @@ const buttonVariants = cva(
           "size-[calc(--spacing(6)+var(--scale-offset))] rounded-md before:rounded-[calc(var(--radius-md)-1px)] not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)] not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)]",
         lg: "h-[calc(--spacing(9)+var(--scale-offset))] px-[calc(--spacing(3.5)-1px)]",
         sm: "h-[calc(--spacing(7)+var(--scale-offset))] gap-1.5 px-[calc(--spacing(2.5)-1px)]",
-        xl: "h-[calc(--spacing(10)+var(--scale-offset))] px-[calc(--spacing(4)-1px)] text-[calc(var(--text-base)+var(--scale-offset)/2)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4.5)+var(--scale-offset)/2)]",
-        xs: "h-[calc(--spacing(6)+var(--scale-offset))] gap-1 rounded-md px-[calc(--spacing(2)-1px)] text-[calc(var(--text-xs)+var(--scale-offset)/2)] before:rounded-[calc(var(--radius-md)-1px)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)]",
+        xl: "h-[calc(--spacing(10)+var(--scale-offset))] px-[calc(--spacing(4)-1px)] text-lg sm:text-base [&_svg:not([class*='size-'])]:size-[calc(--spacing(4.5)+var(--scale-offset)/2)]",
+        xs: "h-[calc(--spacing(6)+var(--scale-offset))] gap-1 rounded-md px-[calc(--spacing(2)-1px)] text-sm before:rounded-[calc(var(--radius-md)-1px)] sm:text-xs [&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)]",
       },
       variant: {
         default:

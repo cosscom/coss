@@ -14,8 +14,8 @@ const badgeVariants = cva(
     variants: {
       size: {
         default:
-          "h-[calc(--spacing(5)+var(--scale-offset))] min-w-[calc(--spacing(5)+var(--scale-offset))] px-[calc(--spacing(1)-1px)] text-[calc(var(--text-xs)+var(--scale-offset)/2)]",
-        lg: "h-[calc(--spacing(6)+var(--scale-offset))] min-w-[calc(--spacing(6)+var(--scale-offset))] px-[calc(--spacing(1.5)-1px)] text-[calc(var(--text-sm)+var(--scale-offset)/2)]",
+          "h-[calc(--spacing(5)+var(--scale-offset))] min-w-[calc(--spacing(5)+var(--scale-offset))] px-[calc(--spacing(1)-1px)] text-sm sm:text-xs",
+        lg: "h-[calc(--spacing(6)+var(--scale-offset))] min-w-[calc(--spacing(6)+var(--scale-offset))] px-[calc(--spacing(1.5)-1px)] text-base sm:text-sm",
         sm: "h-[calc(--spacing(4)+var(--scale-offset))] min-w-[calc(--spacing(4)+var(--scale-offset))] rounded-[calc(var(--radius-sm)-2px)] px-[calc(--spacing(1)-1px)] text-[calc(.625rem+var(--scale-offset)/2)]",
       },
       variant: {

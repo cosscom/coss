@@ -21,7 +21,7 @@ function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
   return (
     <FieldPrimitive.Label
       className={cn(
-        "inline-flex items-center gap-2 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/[calc(--spacing(4)+var(--scale-offset)/2)]",
+        "inline-flex items-center gap-2 text-base sm:text-sm/[calc(--spacing(4)+var(--scale-offset)/2)]",
         className,
       )}
       data-slot="field-label"

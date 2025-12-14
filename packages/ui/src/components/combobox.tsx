@@ -53,7 +53,7 @@ function ComboboxInput({
     return (
       <ComboboxPrimitive.Input
         className={cn(
-          "min-w-12 flex-1 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none [[data-slot=combobox-chip]+&]:ps-0.5",
+          "min-w-12 flex-1 text-base outline-none sm:text-sm [[data-slot=combobox-chip]+&]:ps-0.5",
           sizeValue === "sm" ? "ps-1.5" : "ps-2",
           className,
         )}
@@ -160,7 +160,7 @@ function ComboboxItem({
   return (
     <ComboboxPrimitive.Item
       className={cn(
-        "grid min-h-[calc(--spacing(7)+var(--scale-offset))] in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "grid min-h-[calc(--spacing(7)+var(--scale-offset))] in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:text-sm [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       data-slot="combobox-item"
@@ -229,7 +229,7 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
   return (
     <ComboboxPrimitive.Empty
       className={cn(
-        "not-empty:p-2 text-center text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) text-muted-foreground",
+        "not-empty:p-2 text-center text-base text-muted-foreground sm:text-sm",
         className,
       )}
       data-slot="combobox-empty"
@@ -305,7 +305,7 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
   return (
     <ComboboxPrimitive.Chips
       className={cn(
-        "relative inline-flex min-h-[calc(--spacing(8)+var(--scale-offset))] w-full flex-wrap gap-1 rounded-lg border border-input bg-background bg-clip-padding p-[calc(--spacing(1)-1px)] text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) shadow-xs outline-none ring-ring/24 transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] *:min-h-[calc(--spacing(6)+var(--scale-offset))] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-within:border-ring focus-within:ring-[3px] has-disabled:pointer-events-none has-data-[size=lg]:min-h-[calc(--spacing(9)+var(--scale-offset))] has-data-[size=sm]:min-h-[calc(--spacing(7)+var(--scale-offset))] has-aria-invalid:border-destructive/36 has-disabled:opacity-64 has-[:disabled,:focus-within,[aria-invalid]]:shadow-none focus-within:has-aria-invalid:border-destructive/64 focus-within:has-aria-invalid:ring-destructive/16 has-data-[size=lg]:*:min-h-[calc(--spacing(7)+var(--scale-offset))] has-data-[size=sm]:*:min-h-[calc(--spacing(5)+var(--scale-offset))] dark:not-has-disabled:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border dark:has-aria-invalid:ring-destructive/24 dark:not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]",
+        "relative inline-flex min-h-[calc(--spacing(8)+var(--scale-offset))] w-full flex-wrap gap-1 rounded-lg border border-input bg-background bg-clip-padding p-[calc(--spacing(1)-1px)] text-base shadow-xs outline-none ring-ring/24 transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] *:min-h-[calc(--spacing(6)+var(--scale-offset))] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-within:border-ring focus-within:ring-[3px] has-disabled:pointer-events-none has-data-[size=lg]:min-h-[calc(--spacing(9)+var(--scale-offset))] has-data-[size=sm]:min-h-[calc(--spacing(7)+var(--scale-offset))] has-aria-invalid:border-destructive/36 has-disabled:opacity-64 has-[:disabled,:focus-within,[aria-invalid]]:shadow-none focus-within:has-aria-invalid:border-destructive/64 focus-within:has-aria-invalid:ring-destructive/16 has-data-[size=lg]:*:min-h-[calc(--spacing(7)+var(--scale-offset))] has-data-[size=sm]:*:min-h-[calc(--spacing(5)+var(--scale-offset))] sm:text-sm dark:not-has-disabled:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border dark:has-aria-invalid:ring-destructive/24 dark:not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]",
         className,
       )}
       data-slot="combobox-chips"
@@ -318,7 +318,7 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
 function ComboboxChip({ children, ...props }: ComboboxPrimitive.Chip.Props) {
   return (
     <ComboboxPrimitive.Chip
-      className="flex items-center rounded-[calc(var(--radius-md)-1px)] bg-accent ps-2 font-medium text-[calc(var(--text-xs)+var(--scale-offset)/2)]/(--text-xs--line-height) text-accent-foreground outline-none [&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)]"
+      className="flex items-center rounded-[calc(var(--radius-md)-1px)] bg-accent ps-2 font-medium text-accent-foreground text-sm outline-none sm:text-xs/(--text-xs--line-height) [&_svg:not([class*='size-'])]:size-[calc(--spacing(3.5)+var(--scale-offset)/2)]"
       data-slot="combobox-chip"
       {...props}
     >
