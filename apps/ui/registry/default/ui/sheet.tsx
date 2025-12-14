@@ -73,7 +73,7 @@ function SheetPopup({
       <SheetViewport inset={inset} side={side}>
         <SheetPrimitive.Popup
           className={cn(
-            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover bg-clip-padding text-popover-foreground shadow-lg transition-[opacity,translate] duration-200 ease-in-out will-change-transform [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 max-sm:before:hidden dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]",
+            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover bg-clip-padding text-popover-foreground shadow-lg transition-[opacity,translate] duration-200 ease-in-out will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 max-sm:before:hidden dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]",
             side === "bottom" &&
               "row-start-2 border-t data-ending-style:translate-y-8 data-starting-style:translate-y-8",
             side === "top" &&
@@ -91,7 +91,7 @@ function SheetPopup({
         >
           {children}
           {showCloseButton && (
-            <SheetPrimitive.Close className="absolute end-2 top-2 inline-flex size-[calc(--spacing(7)+var(--scale-offset))] shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-80 outline-none transition-[color,background-color,box-shadow,opacity] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0">
+            <SheetPrimitive.Close className="absolute end-2 top-2 inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-80 outline-none transition-[color,background-color,box-shadow,opacity] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:size-7 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
               <XIcon />
               <span className="sr-only">Close</span>
             </SheetPrimitive.Close>

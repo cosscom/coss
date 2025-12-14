@@ -7,10 +7,7 @@ import { cn } from "@/lib/utils";
 function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   return (
     <FieldPrimitive.Root
-      className={cn(
-        "flex flex-col items-start gap-2 [--scale-offset:var(--ui-scale-offset-mobile,0rem)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]",
-        className,
-      )}
+      className={cn("flex flex-col items-start gap-2", className)}
       data-slot="field"
       {...props}
     />
@@ -21,7 +18,7 @@ function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
   return (
     <FieldPrimitive.Label
       className={cn(
-        "inline-flex items-center gap-2 text-base sm:text-sm/[calc(--spacing(4)+var(--scale-offset)/2)]",
+        "inline-flex items-center gap-2 text-base/4.5 sm:text-sm/4",
         className,
       )}
       data-slot="field-label"

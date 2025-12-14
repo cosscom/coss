@@ -35,7 +35,7 @@ function MenuPopup({
       <MenuPrimitive.Positioner
         align={align}
         alignOffset={alignOffset ?? defaultAlignOffset}
-        className="z-50 [--scale-offset:var(--ui-scale-offset-mobile,0rem)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]"
+        className="z-50"
         data-slot="menu-positioner"
         side={side}
         sideOffset={sideOffset}
@@ -73,7 +73,7 @@ function MenuItem({
   return (
     <MenuPrimitive.Item
       className={cn(
-        "[&_svg]:-mx-0.5 flex min-h-[calc(--spacing(7)+var(--scale-offset))] cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-inset:ps-8 data-[variant=destructive]:text-destructive-foreground data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:text-sm [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "[&_svg]:-mx-0.5 flex min-h-8 cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-inset:ps-8 data-[variant=destructive]:text-destructive-foreground data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       data-inset={inset}
@@ -94,7 +94,7 @@ function MenuCheckboxItem({
     <MenuPrimitive.CheckboxItem
       checked={checked}
       className={cn(
-        "grid min-h-[calc(--spacing(7)+var(--scale-offset))] in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:text-sm [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "grid min-h-8 in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       data-slot="menu-checkbox-item"
@@ -132,7 +132,7 @@ function MenuRadioItem({
   return (
     <MenuPrimitive.RadioItem
       className={cn(
-        "grid min-h-[calc(--spacing(7)+var(--scale-offset))] in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:text-sm [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "grid min-h-8 in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       data-slot="menu-radio-item"
@@ -216,7 +216,7 @@ function MenuSubTrigger({
   return (
     <MenuPrimitive.SubmenuTrigger
       className={cn(
-        "flex min-h-[calc(--spacing(7)+var(--scale-offset))] items-center gap-2 rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-popup-open:bg-accent data-inset:ps-8 data-highlighted:text-accent-foreground data-popup-open:text-accent-foreground data-disabled:opacity-64 sm:text-sm [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none",
+        "flex min-h-8 items-center gap-2 rounded-sm px-2 py-1 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-popup-open:bg-accent data-inset:ps-8 data-highlighted:text-accent-foreground data-popup-open:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
         className,
       )}
       data-inset={inset}

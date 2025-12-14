@@ -6,7 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@coss/ui/lib/utils";
 
 const toggleVariants = cva(
-  "[&_svg]:-mx-0.5 relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border font-medium text-base outline-none transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 data-pressed:bg-accent data-pressed:text-accent-foreground data-pressed:transition-none sm:text-sm dark:data-pressed:bg-input/80 dark:hover:bg-accent sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:opacity-80",
+  "[&_svg]:-mx-0.5 relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border font-medium text-base outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 data-pressed:bg-accent data-pressed:text-accent-foreground data-pressed:transition-none sm:text-sm dark:data-pressed:bg-input/80 dark:hover:bg-accent [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:opacity-80",
   {
     defaultVariants: {
       size: "default",
@@ -14,10 +14,9 @@ const toggleVariants = cva(
     },
     variants: {
       size: {
-        default:
-          "h-[calc(--spacing(8)+var(--scale-offset))] min-w-[calc(--spacing(8)+var(--scale-offset))] px-[calc(--spacing(2)-1px)]",
-        lg: "h-[calc(--spacing(9)+var(--scale-offset))] min-w-[calc(--spacing(9)+var(--scale-offset))] px-[calc(--spacing(2.5)-1px)]",
-        sm: "h-[calc(--spacing(7)+var(--scale-offset))] min-w-[calc(--spacing(7)+var(--scale-offset))] px-[calc(--spacing(1.5)-1px)]",
+        default: "h-9 min-w-9 px-[calc(--spacing(2)-1px)] sm:h-8 sm:min-w-8",
+        lg: "h-10 min-w-10 px-[calc(--spacing(2.5)-1px)] sm:h-9 sm:min-w-9",
+        sm: "h-8 min-w-8 px-[calc(--spacing(1.5)-1px)] sm:h-7 sm:min-w-7",
       },
       variant: {
         default: "border-transparent",
