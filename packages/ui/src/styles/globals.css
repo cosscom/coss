@@ -119,7 +119,7 @@
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
   --ui-scale-offset: 0rem;
-  --ui-scale-offset-mobile: 0.25rem;  
+  --ui-scale-offset-mobile: 0.25rem;
 }
 
 .dark {
