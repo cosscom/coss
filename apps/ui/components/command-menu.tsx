@@ -170,7 +170,7 @@ export function CommandMenu({
                     value={`Navigation ${item.label}`}
                   >
                     <HugeiconsIcon
-                      className="opacity-72"
+                      className="opacity-80"
                       icon={BookOpen02Icon}
                       strokeWidth={2}
                     />
@@ -208,13 +208,13 @@ export function CommandMenu({
                         >
                           {isComponent ? (
                             <HugeiconsIcon
-                              className="opacity-72"
+                              className="opacity-80"
                               icon={Atom01Icon}
                               strokeWidth={2}
                             />
                           ) : (
                             <HugeiconsIcon
-                              className="opacity-72"
+                              className="opacity-80"
                               icon={BookOpen02Icon}
                               strokeWidth={2}
                             />

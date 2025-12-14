@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-20.tsx",
-      "content": "import { ChevronLeftIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"link\">\n      <ChevronLeftIcon aria-hidden=\"true\" className=\"opacity-72\" />\n      Go back\n    </Button>\n  );\n}\n",
+      "content": "import { ChevronLeftIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"link\">\n      <ChevronLeftIcon aria-hidden=\"true\" className=\"opacity-80\" />\n      Go back\n    </Button>\n  );\n}\n",
       "type": "registry:block"
     }
   ],

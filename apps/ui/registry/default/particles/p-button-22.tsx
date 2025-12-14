@@ -28,7 +28,7 @@ export default function Particle() {
         <ChevronLeftIcon aria-hidden="true" />
       </Button>
       <div aria-hidden="true" className="flex items-center justify-center">
-        <CircleIcon className="size-4 opacity-72" />
+        <CircleIcon className="size-4 opacity-80" />
       </div>
       <Button aria-label="Pan camera right" size="icon" variant="outline">
         <ChevronRightIcon aria-hidden="true" />

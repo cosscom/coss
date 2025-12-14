@@ -16,7 +16,7 @@ export default function Particle() {
       </div>
       <ChevronRightIcon
         aria-hidden="true"
-        className="opacity-72 transition-transform group-hover:translate-x-0.5"
+        className="opacity-80 transition-transform group-hover:translate-x-0.5"
       />
     </Button>
   );

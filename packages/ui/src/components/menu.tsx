@@ -73,7 +73,7 @@ function MenuItem({
   return (
     <MenuPrimitive.Item
       className={cn(
-        "flex min-h-[calc(--spacing(7)+var(--scale-offset))] cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-inset:ps-8 data-[variant=destructive]:text-destructive-foreground data-highlighted:text-accent-foreground data-disabled:opacity-64 [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "[&_svg]:-mx-0.5 flex min-h-[calc(--spacing(7)+var(--scale-offset))] cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-inset:ps-8 data-[variant=destructive]:text-destructive-foreground data-highlighted:text-accent-foreground data-disabled:opacity-64 [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       data-inset={inset}
@@ -224,7 +224,7 @@ function MenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon className="-me-0.5 ms-auto" />
+      <ChevronRightIcon className="-me-0.5 ms-auto opacity-80" />
     </MenuPrimitive.SubmenuTrigger>
   );
 }

@@ -170,7 +170,7 @@ const columns: ColumnDef<Flight>[] = [
     accessorKey: "terminal",
     cell: ({ row }) => (
       <Badge className="font-normal tabular-nums" size="lg" variant="outline">
-        <PlaneTakeoffIcon className="shrink-0 opacity-72" />
+        <PlaneTakeoffIcon className="shrink-0 opacity-80" />
         <span>{row.getValue("terminal")}</span>
       </Badge>
     ),
@@ -250,13 +250,13 @@ export default function Particle() {
                           asc: (
                             <ChevronUpIcon
                               aria-hidden="true"
-                              className="size-4 shrink-0 opacity-72"
+                              className="size-4 shrink-0 opacity-80"
                             />
                           ),
                           desc: (
                             <ChevronDownIcon
                               aria-hidden="true"
-                              className="size-4 shrink-0 opacity-72"
+                              className="size-4 shrink-0 opacity-80"
                             />
                           ),
                         }[header.column.getIsSorted() as string] ?? null}

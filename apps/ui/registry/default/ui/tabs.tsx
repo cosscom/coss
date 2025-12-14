@@ -58,7 +58,7 @@ function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
     <TabsPrimitive.Tab
       className={cn(
-        "flex shrink-0 grow cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-transparent font-medium text-[calc(var(--text-sm)+var(--scale-offset)/2)] outline-none transition-[color,background-color,box-shadow] [--scale-offset:var(--ui-scale-offset-mobile,0rem)] focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-64 sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "[&_svg]:-mx-0.5 flex shrink-0 grow cursor-pointer items-center justify-center whitespace-nowrap rounded-md border border-transparent font-medium text-[calc(var(--text-sm)+var(--scale-offset)/2)] outline-none transition-[color,background-color,box-shadow] [--scale-offset:var(--ui-scale-offset-mobile,0rem)] focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-64 sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0",
         "hover:text-muted-foreground data-active:text-foreground",
         "h-[calc(--spacing(8)+var(--scale-offset))] gap-1.5 px-[calc(--spacing(2.5)-1px)]",
         "data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start",

@@ -445,7 +445,7 @@ export default function Particle() {
       >
         <ComboboxValue />
         <div className="flex">
-          <ChevronsUpDownIcon className="-me-1 size-4 opacity-72" />
+          <ChevronsUpDownIcon className="-me-1 size-4 opacity-80" />
         </div>
       </ComboboxTrigger>
       <ComboboxPopup aria-label="Select country">
