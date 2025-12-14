@@ -1,13 +1,16 @@
 "use client";
 
-import { Field as FieldPrimitive } from "@base-ui/react/field";
+import { Field as FieldPrimitive } from "@base-ui-components/react/field";
 
 import { cn } from "@coss/ui/lib/utils";
 
 function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   return (
     <FieldPrimitive.Root
-      className={cn("flex flex-col items-start gap-2", className)}
+      className={cn(
+        "flex flex-col items-start gap-2 [--scale-offset:var(--ui-scale-offset-mobile,0rem)] sm:[--scale-offset:var(--ui-scale-offset,0rem)]",
+        className,
+      )}
       data-slot="field"
       {...props}
     />
@@ -17,7 +20,10 @@ function Field({ className, ...props }: FieldPrimitive.Root.Props) {
 function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
   return (
     <FieldPrimitive.Label
-      className={cn("inline-flex items-center gap-2 text-sm/4", className)}
+      className={cn(
+        "inline-flex items-center gap-2 text-[calc(var(--text-sm)+var(--scale-offset)/2)]/[calc(--spacing(4)+var(--scale-offset)/2)]",
+        className,
+      )}
       data-slot="field-label"
       {...props}
     />

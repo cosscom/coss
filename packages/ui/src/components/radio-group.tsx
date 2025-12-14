@@ -1,7 +1,7 @@
 "use client";
 
-import { Radio as RadioPrimitive } from "@base-ui/react/radio";
-import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
+import { Radio as RadioPrimitive } from "@base-ui-components/react/radio";
+import { RadioGroup as RadioGroupPrimitive } from "@base-ui-components/react/radio-group";
 
 import { cn } from "@coss/ui/lib/utils";
 
@@ -19,14 +19,14 @@ function Radio({ className, ...props }: RadioPrimitive.Root.Props) {
   return (
     <RadioPrimitive.Root
       className={cn(
-        "relative inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-input bg-background bg-clip-padding shadow-xs outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-full not-data-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/48 data-disabled:cursor-not-allowed data-disabled:opacity-64 dark:not-data-checked:bg-input/32 dark:bg-clip-border dark:aria-invalid:ring-destructive/24 dark:not-data-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] [[data-disabled],[data-checked],[aria-invalid]]:shadow-none",
+        "relative inline-flex size-[calc(--spacing(4)+var(--scale-offset)/2)] shrink-0 items-center justify-center rounded-full border border-input bg-background bg-clip-padding shadow-xs outline-none transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:rounded-full not-data-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/48 data-disabled:opacity-64 dark:not-data-checked:bg-input/32 dark:bg-clip-border dark:aria-invalid:ring-destructive/24 dark:not-data-disabled:not-data-checked:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] sm:[--scale-offset:var(--ui-scale-offset,0rem)] [[data-disabled],[data-checked],[aria-invalid]]:shadow-none",
         className,
       )}
       data-slot="radio"
       {...props}
     >
       <RadioPrimitive.Indicator
-        className="-inset-px absolute flex size-4 items-center justify-center rounded-full before:size-1.5 before:rounded-full before:bg-primary-foreground data-unchecked:hidden data-checked:bg-primary"
+        className="-inset-px absolute flex size-[calc(--spacing(4)+var(--scale-offset)/2)] items-center justify-center rounded-full before:size-[calc(--spacing(1.5)+var(--scale-offset)/2)] before:rounded-full before:bg-primary-foreground data-unchecked:hidden data-checked:bg-primary"
         data-slot="radio-indicator"
       />
     </RadioPrimitive.Root>

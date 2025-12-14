@@ -10,7 +10,7 @@ export default function Particle() {
     <InputGroup>
       <InputGroupInput
         aria-label="Enter your domain"
-        className="*:[input]:ps-1!"
+        className="*:[input]:px-0!"
         placeholder="coss"
         type="text"
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { NumberField as NumberFieldPrimitive } from "@base-ui/react/number-field";
+import { NumberField as NumberFieldPrimitive } from "@base-ui-components/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import * as React from "react";
 
@@ -42,7 +42,7 @@ function NumberFieldGroup({
   return (
     <NumberFieldPrimitive.Group
       className={cn(
-        "relative flex w-full justify-between rounded-lg border border-input bg-background bg-clip-padding text-sm shadow-xs ring-ring/24 transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-within:border-ring focus-within:ring-[3px] has-aria-invalid:border-destructive/36 focus-within:has-aria-invalid:border-destructive/64 focus-within:has-aria-invalid:ring-destructive/48 data-disabled:pointer-events-none data-disabled:opacity-64 dark:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border dark:has-aria-invalid:ring-destructive/24 dark:not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 [[data-disabled],:focus-within,[aria-invalid]]:shadow-none",
+        "relative flex w-full justify-between rounded-lg border border-input bg-background bg-clip-padding text-[calc(var(--text-sm)+var(--scale-offset)/2)]/(--text-sm--line-height) shadow-xs ring-ring/24 transition-shadow [--scale-offset:var(--ui-scale-offset-mobile,0rem)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)] focus-within:border-ring focus-within:ring-[3px] has-aria-invalid:border-destructive/36 focus-within:has-aria-invalid:border-destructive/64 focus-within:has-aria-invalid:ring-destructive/48 data-disabled:pointer-events-none data-disabled:opacity-64 dark:bg-input/32 dark:not-in-data-[slot=group]:bg-clip-border dark:has-aria-invalid:ring-destructive/24 dark:not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/8%)] sm:[--scale-offset:var(--ui-scale-offset,0rem)] [&_svg:not([class*='size-'])]:size-[calc(--spacing(4)+var(--scale-offset)/2)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [[data-disabled],:focus-within,[aria-invalid]]:shadow-none",
         className,
       )}
       data-slot="number-field-group"
@@ -94,7 +94,7 @@ function NumberFieldInput({
   return (
     <NumberFieldPrimitive.Input
       className={cn(
-        "w-full min-w-0 flex-1 bg-transparent in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)] px-[calc(--spacing(3)-1px)] in-data-[size=lg]:py-[calc(--spacing(2)-1px)] in-data-[size=sm]:py-[calc(--spacing(1)-1px)] py-[calc(--spacing(1.5)-1px)] text-center tabular-nums outline-none",
+        "h-[calc(--spacing(8)-2px+var(--scale-offset))] in-data-[size=lg]:h-[calc(--spacing(9)-2px+var(--scale-offset))] in-data-[size=sm]:h-[calc(--spacing(7)-2px+var(--scale-offset))] w-full min-w-0 grow bg-transparent in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)] px-[calc(--spacing(3)-1px)] text-center tabular-nums in-data-[size=lg]:leading-[calc(--spacing(9)-2px+var(--scale-offset))] in-data-[size=sm]:leading-[calc(--spacing(7)-2px+var(--scale-offset))] leading-[calc(--spacing(8)-2px+var(--scale-offset))] outline-none",
         className,
       )}
       data-slot="number-field-input"

@@ -45,7 +45,7 @@ export function CopyRegistry({
                 strokeWidth={2}
               />
             ) : (
-              <Icons.mcp className="size-3.5" />
+              <Icons.mcp />
             )}
           </Button>
         }
