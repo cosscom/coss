@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
 
 import Footer from "@/components/footer";
 import Header from "@/components/header";
@@ -10,16 +10,15 @@ import { Toaster } from "@/registry/default/ui/toaster";
 
 import "./globals.css";
 
-const fontSans = localFont({
-  display: "swap",
-  src: "../../../public/fonts/CalSansUI[MODE,wght].woff2",
+const fontSans = FontSans({
+  subsets: ["latin"],
   variable: "--font-sans",
 });
 
-const fontHeading = localFont({
-  display: "swap",
-  src: "../../../public/fonts/CalSans-Regular.woff2",
+const fontHeading = FontHeading({
+  subsets: ["latin"],
   variable: "--font-heading",
+  weight: "400",
 });
 
 export const viewport: Viewport = {

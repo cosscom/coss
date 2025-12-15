@@ -1,26 +1,14 @@
 import "./globals.css";
 
+import { fontHeading, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 
 import { SiteHeader } from "@/components/site-header";
 import {
   AnchoredToastProvider,
   ToastProvider,
 } from "@/registry/default/ui/toast";
-
-const fontSans = localFont({
-  display: "swap",
-  src: "../../../public/fonts/CalSansUI[MODE,wght].woff2",
-  variable: "--font-sans",
-});
-
-const fontHeading = localFont({
-  display: "swap",
-  src: "../../../public/fonts/CalSans-Regular.woff2",
-  variable: "--font-heading",
-});
 
 export const metadata: Metadata = {
   description:
