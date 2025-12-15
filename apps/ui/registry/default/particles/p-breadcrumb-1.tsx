@@ -42,7 +42,7 @@ export default function Particle() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink render={<Link href="/docs/components" />}>
+          <BreadcrumbLink render={<Link href="/docs/" />}>
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>
