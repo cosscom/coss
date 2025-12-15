@@ -1,6 +1,6 @@
 "use client";
 
-import { Toast } from "@base-ui-components/react/toast";
+import { Toast } from "@base-ui/react/toast";
 import {
   CircleAlertIcon,
   CircleCheckIcon,
@@ -9,7 +9,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 import { buttonVariants } from "@/registry/default/ui/button";
 
 const toastManager = Toast.createToastManager();
@@ -134,7 +134,7 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
                       className="[&>svg]:h-lh [&>svg]:w-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
                       data-slot="toast-icon"
                     >
-                      <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-72" />
+                      <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-80" />
                     </div>
                   )}
 
@@ -180,7 +180,10 @@ function AnchoredToasts() {
 
   return (
     <Toast.Portal data-slot="toast-portal-anchored">
-      <Toast.Viewport className="outline-0" data-slot="toast-viewport-anchored">
+      <Toast.Viewport
+        className="outline-none"
+        data-slot="toast-viewport-anchored"
+      >
         {toasts.map((toast) => {
           const Icon = toast.type
             ? TOAST_ICONS[toast.type as keyof typeof TOAST_ICONS]
@@ -223,7 +226,7 @@ function AnchoredToasts() {
                           className="[&>svg]:h-lh [&>svg]:w-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
                           data-slot="toast-icon"
                         >
-                          <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-72" />
+                          <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-80" />
                         </div>
                       )}
 

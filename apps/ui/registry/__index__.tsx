@@ -245,7 +245,7 @@ export const Index: Record<string, any> = {
     name: "dialog",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/dialog.tsx",
       type: "registry:ui",
@@ -641,7 +641,7 @@ export const Index: Record<string, any> = {
     name: "sheet",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/sheet.tsx",
       type: "registry:ui",
@@ -2351,7 +2351,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-5",
     description: "Checkbox group form",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-5.tsx",
       type: "registry:block",
@@ -4414,7 +4414,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["number field"],
+    categories: ["number field","form","field","zod"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-pagination-1": {
@@ -4735,6 +4735,42 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-scroll-area-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["scroll area"],
+    meta: undefined,
+  },
+  "p-scroll-area-4": {
+    name: "p-scroll-area-4",
+    description: "Scroll area with fading edges",
+    type: "registry:block",
+    registryDependencies: ["@coss/scroll-area"],
+    files: [{
+      path: "registry/default/particles/p-scroll-area-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-scroll-area-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["scroll area"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-scroll-area-5": {
+    name: "p-scroll-area-5",
+    description: "Horizontal scroll area with scrollbar gutter",
+    type: "registry:block",
+    registryDependencies: ["@coss/scroll-area"],
+    files: [{
+      path: "registry/default/particles/p-scroll-area-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-scroll-area-5.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -5303,7 +5339,7 @@ export const Index: Record<string, any> = {
     name: "p-table-4",
     description: "Table with TanStack Table, sorting, and pagination",
     type: "registry:block",
-    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/frame","@coss/label","@coss/pagination","@coss/select","@coss/table"],
+    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/frame","@coss/pagination","@coss/select","@coss/table"],
     files: [{
       path: "registry/default/particles/p-table-4.tsx",
       type: "registry:block",

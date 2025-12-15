@@ -1,8 +1,8 @@
 "use client";
 
-import { Collapsible as CollapsiblePrimitive } from "@base-ui-components/react/collapsible";
+import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 
 function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
   return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />;

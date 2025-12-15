@@ -850,6 +850,7 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/fieldset",
       "@coss/form",
+      "@coss/label",
     ],
     type: "registry:block",
   },
@@ -2226,7 +2227,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "form", "field", "zod"),
     dependencies: ["zod"],
     description: "Number field in form",
     files: [
@@ -2423,6 +2424,26 @@ export const particles: ParticleItem[] = [
     description: "Scroll area with both directions",
     files: [{ path: "particles/p-scroll-area-3.tsx", type: "registry:block" }],
     name: "p-scroll-area-3",
+    registryDependencies: ["@coss/scroll-area"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("scroll area"),
+    description: "Scroll area with fading edges",
+    files: [{ path: "particles/p-scroll-area-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-scroll-area-4",
+    registryDependencies: ["@coss/scroll-area"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("scroll area"),
+    description: "Horizontal scroll area with scrollbar gutter",
+    files: [{ path: "particles/p-scroll-area-5.tsx", type: "registry:block" }],
+    name: "p-scroll-area-5",
     registryDependencies: ["@coss/scroll-area"],
     type: "registry:block",
   },
@@ -2814,7 +2835,6 @@ export const particles: ParticleItem[] = [
       "@coss/button",
       "@coss/checkbox",
       "@coss/frame",
-      "@coss/label",
       "@coss/pagination",
       "@coss/select",
       "@coss/table",

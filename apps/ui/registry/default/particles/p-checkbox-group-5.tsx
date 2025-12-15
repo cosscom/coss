@@ -8,6 +8,7 @@ import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
   const [loading, setLoading] = React.useState(false);
@@ -28,9 +29,9 @@ export default function Particle() {
         name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
-        <FieldsetLegend className="font-medium text-sm">
+        <Label className="font-normal" render={<FieldsetLegend />}>
           Frameworks
-        </FieldsetLegend>
+        </Label>
         <CheckboxGroup defaultValue={["next"]} disabled={loading}>
           <FieldLabel>
             <Checkbox value="next" />

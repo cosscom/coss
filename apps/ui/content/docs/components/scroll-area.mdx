@@ -31,7 +31,7 @@ npx shadcn@latest add @coss/scroll-area
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install @base-ui-components/react
+npm install @base-ui/react
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -69,9 +69,21 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 ## Examples
 
+### Scroll Fade
+
+Use `scrollFade` to mask the viewport edges so content subtly fades in and out as you scroll, hinting that more content is available without adding extra UI chrome.
+
+<ComponentPreview name="p-scroll-area-4" />
+
 ### Horizontal Scroll
 
 <ComponentPreview name="p-scroll-area-2" />
+
+### Scrollbar Gutter
+
+Enable `scrollbarGutter` to reserve space for the scrollbar when overflow appears, preventing layout shifts as the bar shows or hides.
+
+<ComponentPreview name="p-scroll-area-5" />
 
 ### Both Scrollbars
 
@@ -84,7 +96,3 @@ If you’re already familiar with Radix UI and shadcn/ui, this guide highlights 
 ### Quick Checklist
 
 - If you used `asChild` on parts, switch to the `render` prop
-
-### Additional Notes
-
-Compared to shadcn/ui, our `ScrollArea` adds `orientation="both"`, which renders both vertical and horizontal scrollbars (and the corner). Use it when content can overflow on both axes.

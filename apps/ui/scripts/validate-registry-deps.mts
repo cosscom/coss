@@ -230,15 +230,15 @@ async function isDependencyCoveredByRegistry(
     const componentImports = await getRegistryComponentImports(componentName);
 
     // Check if the dependency (or a parent package) is imported
-    // For example, if dep is "@base-ui-components/react/autocomplete"
-    // and component imports "@base-ui-components/react/autocomplete", it's covered
-    // Or if dep is "@base-ui-components/react" and component imports any "@base-ui-components/react/*", it's covered
+    // For example, if dep is "@base-ui/react/autocomplete"
+    // and component imports "@base-ui/react/autocomplete", it's covered
+    // Or if dep is "@base-ui/react" and component imports any "@base-ui/react/*", it's covered
     if (componentImports.has(dep)) {
       return true;
     }
 
     // Check if the dependency is a parent package of any import
-    // e.g., dep is "@base-ui-components/react" and component imports "@base-ui-components/react/autocomplete"
+    // e.g., dep is "@base-ui/react" and component imports "@base-ui/react/autocomplete"
     if (!dep.includes("/")) {
       // If dep is a base package, check if any import starts with it
       for (const importPath of componentImports) {
@@ -274,14 +274,14 @@ async function filterDependenciesCoveredByRegistry(
   return filtered;
 }
 
-// Check if a dependency matches (handles sub-paths like @base-ui-components/react/accordion matching @base-ui-components/react)
+// Check if a dependency matches (handles sub-paths like @base-ui/react/accordion matching @base-ui/react)
 function dependencyMatches(expected: string, actual: string): boolean {
   if (expected === actual) return true;
 
-  // Check if expected is a sub-path of actual (e.g., @base-ui-components/react/accordion matches @base-ui-components/react)
+  // Check if expected is a sub-path of actual (e.g., @base-ui/react/accordion matches @base-ui/react)
   if (expected.startsWith(`${actual}/`)) return true;
 
-  // Check if actual is a sub-path of expected (e.g., @base-ui-components/react matches @base-ui-components/react/accordion)
+  // Check if actual is a sub-path of expected (e.g., @base-ui/react matches @base-ui/react/accordion)
   if (actual.startsWith(`${expected}/`)) return true;
 
   return false;

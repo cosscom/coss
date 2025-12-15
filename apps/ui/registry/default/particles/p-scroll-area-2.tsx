@@ -2,7 +2,7 @@ import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export default function Particle() {
   return (
-    <ScrollArea className="max-w-96 rounded-md border" orientation="horizontal">
+    <ScrollArea className="max-w-96 rounded-lg border">
       <div className="flex w-max gap-4 p-4">
         {Array.from({ length: 20 }).map((_, i) => (
           <div

@@ -94,7 +94,7 @@ function UserCardSkeleton() {
           <Skeleton className="my-0.5 h-4 w-1/2" />
         </div>
       </div>
-      <Skeleton className="h-6 w-17" />
+      <Skeleton className="h-7 w-19 sm:h-6 sm:w-17" />
     </>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { Fieldset as FieldsetPrimitive } from "@base-ui-components/react/fieldset";
+import { Fieldset as FieldsetPrimitive } from "@base-ui/react/fieldset";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 
 function Fieldset({ className, ...props }: FieldsetPrimitive.Root.Props) {
   return (

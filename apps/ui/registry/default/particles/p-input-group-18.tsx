@@ -32,7 +32,7 @@ export default function Particle() {
           >
             <EllipsisIcon />
           </MenuTrigger>
-          <MenuPopup align="end" sideOffset={8}>
+          <MenuPopup align="end" alignOffset={-4} sideOffset={8}>
             <MenuItem disabled>Make Primary</MenuItem>
             <MenuItem variant="destructive">Delete</MenuItem>
           </MenuPopup>

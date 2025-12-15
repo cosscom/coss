@@ -140,7 +140,7 @@ bun run format:all
 bun run registry:build
 
 ## Copy UI components to the packages folder
-bun run ui:propagate
+bun run ui:sync
 ```
 
 The `registry:build` command will:

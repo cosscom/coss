@@ -1,8 +1,8 @@
 "use client";
 
-import { Toolbar as ToolbarPrimitive } from "@base-ui-components/react/toolbar";
+import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 
 function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
   return (

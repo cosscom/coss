@@ -1,9 +1,9 @@
-import { mergeProps } from "@base-ui-components/react/merge-props";
-import { useRender } from "@base-ui-components/react/use-render";
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 import type * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
@@ -71,7 +71,7 @@ function BreadcrumbSeparator({
   return (
     <li
       aria-hidden="true"
-      className={cn("opacity-72 [&>svg]:size-4", className)}
+      className={cn("opacity-80 [&>svg]:size-4", className)}
       data-slot="breadcrumb-separator"
       role="presentation"
       {...props}

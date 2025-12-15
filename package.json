@@ -7,7 +7,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "bun": ">=1.3.1"
   },
   "license": "AGPL-3.0-or-later",
   "name": "cosscom",
@@ -21,7 +21,8 @@
     "format:all": "biome check --write --unsafe --no-errors-on-unmatched",
     "lint": "turbo run lint --",
     "prepare": "husky",
-    "test": "bun test --pass-with-no-tests"
+    "test": "bun test --pass-with-no-tests",
+    "typecheck": "turbo run typecheck"
   },
   "version": "0.0.1",
   "workspaces": [

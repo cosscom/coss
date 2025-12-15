@@ -1,5 +1,5 @@
-import { CopyButton } from "@coss/ui/components/copy-button";
-import { getIconForLanguageExtension } from "@coss/ui/components/icons";
+import { CopyButton } from "@coss/ui/shared/copy-button";
+import { getIconForLanguageExtension } from "@coss/ui/shared/icons";
 import { InfoIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -334,10 +334,7 @@ export const mdxComponents = {
     <TabsTab className={cn("rounded-lg", className)} {...props} />
   ),
   table: ({ className, ...props }: React.ComponentProps<"table">) => (
-    <ScrollArea
-      className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5"
-      orientation="horizontal"
-    >
+    <ScrollArea className="my-6 w-full [&+[data-slot=scroll-area-scrollbar]]:translate-y-2.5">
       <table
         className={cn("relative w-full border-none text-sm", className)}
         {...props}
