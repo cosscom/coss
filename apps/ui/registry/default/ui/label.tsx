@@ -1,7 +1,7 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 
-import { cn } from "@coss/ui/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 
 function Label({
   className,
