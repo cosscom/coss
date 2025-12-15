@@ -170,7 +170,7 @@ const columns: ColumnDef<Flight>[] = [
     accessorKey: "terminal",
     cell: ({ row }) => (
       <Badge className="font-normal tabular-nums" size="lg" variant="outline">
-        <PlaneTakeoffIcon className="shrink-0 opacity-80" />
+        <PlaneTakeoffIcon />
         <span>{row.getValue("terminal")}</span>
       </Badge>
     ),

@@ -32,22 +32,22 @@ export default function Particle() {
         <MenuGroup>
           <MenuGroupLabel>Playback</MenuGroupLabel>
           <MenuItem>
-            <PlayIcon className="opacity-80" />
+            <PlayIcon />
             Play
             <MenuShortcut>⌘P</MenuShortcut>
           </MenuItem>
           <MenuItem disabled>
-            <PauseIcon className="opacity-80" />
+            <PauseIcon />
             Pause
             <MenuShortcut>⇧⌘P</MenuShortcut>
           </MenuItem>
           <MenuItem>
-            <SkipBackIcon className="opacity-80" />
+            <SkipBackIcon />
             Previous
             <MenuShortcut>⌘[</MenuShortcut>
           </MenuItem>
           <MenuItem>
-            <SkipForwardIcon className="opacity-80" />
+            <SkipForwardIcon />
             Next
             <MenuShortcut>⌘]</MenuShortcut>
           </MenuItem>
