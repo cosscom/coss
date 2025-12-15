@@ -3,6 +3,7 @@
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
 import { cn } from "@coss/ui/lib/utils";
+import { Button } from "@coss/ui/components/button";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
 const Sheet = SheetPrimitive.Root;
@@ -91,9 +92,12 @@ function SheetPopup({
         >
           {children}
           {showCloseButton && (
-            <SheetPrimitive.Close className="absolute end-2 top-2 inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-80 outline-none transition-[color,background-color,box-shadow,opacity] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:size-7 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
+            <SheetPrimitive.Close
+              aria-label="Close"
+              className="absolute end-2 top-2"
+              render={<Button size="icon" variant="ghost" />}
+            >
               <XIcon />
-              <span className="sr-only">Close</span>
             </SheetPrimitive.Close>
           )}
         </SheetPrimitive.Popup>
