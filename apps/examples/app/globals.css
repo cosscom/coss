@@ -23,7 +23,3 @@
     var(--sidebar)
   );
 }
-
-html {
-  @apply max-md:text-[18px];
-}
