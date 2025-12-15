@@ -28,7 +28,7 @@ export default function Particle() {
         <SelectValue>
           {(item) => (
             <span className="flex items-center gap-2">
-              <item.icon className="size-4 opacity-72" />
+              <item.icon />
               <span className="truncate">{item.label}</span>
             </span>
           )}
@@ -38,7 +38,7 @@ export default function Particle() {
         {items.map((item) => (
           <SelectItem key={item.value} value={item}>
             <span className="flex items-center gap-2">
-              <item.icon className="size-4 opacity-72" />
+              <item.icon />
               <span className="truncate">{item.label}</span>
             </span>
           </SelectItem>

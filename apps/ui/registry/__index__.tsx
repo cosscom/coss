@@ -245,7 +245,7 @@ export const Index: Record<string, any> = {
     name: "dialog",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/dialog.tsx",
       type: "registry:ui",
@@ -641,7 +641,7 @@ export const Index: Record<string, any> = {
     name: "sheet",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/sheet.tsx",
       type: "registry:ui",
@@ -2351,7 +2351,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-5",
     description: "Checkbox group form",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form","@coss/label"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-5.tsx",
       type: "registry:block",
@@ -5339,7 +5339,7 @@ export const Index: Record<string, any> = {
     name: "p-table-4",
     description: "Table with TanStack Table, sorting, and pagination",
     type: "registry:block",
-    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/frame","@coss/label","@coss/pagination","@coss/select","@coss/table"],
+    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/frame","@coss/pagination","@coss/select","@coss/table"],
     files: [{
       path: "registry/default/particles/p-table-4.tsx",
       type: "registry:block",

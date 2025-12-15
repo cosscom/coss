@@ -8,6 +8,7 @@ import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
+import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
   const [loading, setLoading] = React.useState(false);
@@ -23,31 +24,29 @@ export default function Particle() {
 
   return (
     <Form className="max-w-[160px]" onSubmit={onSubmit}>
-      <Fieldset className="gap-4">
-        <FieldsetLegend className="font-medium text-sm">
+      <Field
+        className="gap-4"
+        name="frameworks"
+        render={(props) => <Fieldset {...props} />}
+      >
+        <Label className="font-normal" render={<FieldsetLegend />}>
           Frameworks
-        </FieldsetLegend>
+        </Label>
         <CheckboxGroup defaultValue={["next"]} disabled={loading}>
-          <Field name="frameworks">
-            <FieldLabel>
-              <Checkbox value="next" />
-              Next.js
-            </FieldLabel>
-          </Field>
-          <Field name="frameworks">
-            <FieldLabel>
-              <Checkbox value="vite" />
-              Vite
-            </FieldLabel>
-          </Field>
-          <Field name="frameworks">
-            <FieldLabel>
-              <Checkbox value="astro" />
-              Astro
-            </FieldLabel>
-          </Field>
+          <FieldLabel>
+            <Checkbox value="next" />
+            Next.js
+          </FieldLabel>
+          <FieldLabel>
+            <Checkbox value="vite" />
+            Vite
+          </FieldLabel>
+          <FieldLabel>
+            <Checkbox value="astro" />
+            Astro
+          </FieldLabel>
         </CheckboxGroup>
-      </Fieldset>
+      </Field>
       <Button disabled={loading} type="submit">
         Submit
       </Button>

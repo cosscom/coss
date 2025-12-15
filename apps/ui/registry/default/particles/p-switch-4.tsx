@@ -12,7 +12,7 @@ export default function Particle() {
       htmlFor={id}
     >
       <div className="flex flex-col gap-1">
-        <p className="text-sm leading-4">Enable notifications</p>
+        <p>Enable notifications</p>
         <p className="text-muted-foreground text-xs">
           You can enable or disable notifications at any time.
         </p>

@@ -71,7 +71,7 @@ function BreadcrumbSeparator({
   return (
     <li
       aria-hidden="true"
-      className={cn("opacity-72 [&>svg]:size-4", className)}
+      className={cn("opacity-80 [&>svg]:size-4", className)}
       data-slot="breadcrumb-separator"
       role="presentation"
       {...props}

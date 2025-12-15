@@ -88,7 +88,7 @@ describe("Button", () => {
     const call = lastUseRenderCall();
     const className = call.props.className as string;
     expect(className).toContain("border-destructive");
-    expect(className).toContain("min-h-9");
+    expect(className).toContain("h-10");
     expect(className).toContain("custom-class");
   });
 });

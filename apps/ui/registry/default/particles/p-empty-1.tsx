@@ -24,7 +24,7 @@ export default function Particle() {
         <div className="flex gap-2">
           <Button size="sm">Create meeting</Button>
           <Button size="sm" variant="outline">
-            <BookIcon className="opacity-72" />
+            <BookIcon />
             View docs
           </Button>
         </div>

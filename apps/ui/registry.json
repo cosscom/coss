@@ -288,6 +288,7 @@
       ],
       "name": "dialog",
       "registryDependencies": [
+        "@coss/button",
         "@coss/scroll-area"
       ],
       "type": "registry:ui"
@@ -413,6 +414,9 @@
       "type": "registry:ui"
     },
     {
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/label.tsx",
@@ -588,6 +592,7 @@
       ],
       "name": "sheet",
       "registryDependencies": [
+        "@coss/button",
         "@coss/scroll-area"
       ],
       "type": "registry:ui"
@@ -2373,7 +2378,8 @@
         "@coss/checkbox-group",
         "@coss/field",
         "@coss/fieldset",
-        "@coss/form"
+        "@coss/form",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
@@ -5901,7 +5907,6 @@
         "@coss/button",
         "@coss/checkbox",
         "@coss/frame",
-        "@coss/label",
         "@coss/pagination",
         "@coss/select",
         "@coss/table"

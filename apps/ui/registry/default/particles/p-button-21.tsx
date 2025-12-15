@@ -5,10 +5,10 @@ import { Button } from "@/registry/default/ui/button";
 export default function Particle() {
   return (
     <Button
-      className="group h-auto gap-4 px-4 py-3 text-left"
+      className="group h-auto! gap-4 px-4 py-3 text-left"
       variant="outline"
     >
-      <div className="space-y-1">
+      <div className="flex flex-col gap-0.5">
         <h3>Talent Agency</h3>
         <p className="whitespace-break-spaces font-normal text-muted-foreground">
           Matches for your roster
@@ -16,7 +16,7 @@ export default function Particle() {
       </div>
       <ChevronRightIcon
         aria-hidden="true"
-        className="opacity-72 transition-transform group-hover:translate-x-0.5"
+        className="transition-transform group-hover:translate-x-0.5"
       />
     </Button>
   );

@@ -2,7 +2,8 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 const Dialog = DialogPrimitive.Root;
@@ -71,9 +72,12 @@ function DialogPopup({
         >
           {children}
           {showCloseButton && (
-            <DialogPrimitive.Close className="absolute end-2 top-2 inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-72 outline-none transition-[color,background-color,box-shadow,opacity] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0">
+            <DialogPrimitive.Close
+              aria-label="Close"
+              className="absolute end-2 top-2"
+              render={<Button size="icon" variant="ghost" />}
+            >
               <XIcon />
-              <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           )}
         </DialogPrimitive.Popup>
