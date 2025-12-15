@@ -3,7 +3,6 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
-import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Group, GroupSeparator } from "@coss/ui/components/group";
 import {
   InputGroup,
@@ -12,6 +11,7 @@ import {
 } from "@coss/ui/components/input-group";
 import {
   Menu,
+  MenuCheckboxItem,
   MenuItem,
   MenuPopup,
   MenuSeparator,
@@ -302,19 +302,15 @@ export function EventTypes() {
                         <MenuSeparator />
                         <MenuItem variant="destructive">Delete</MenuItem>
                         <MenuSeparator />
-                        <MenuItem
-                          className="flex-row justify-between"
-                          closeOnClick={false}
-                          render={<Field render={<FieldLabel />} />}
+                        <MenuCheckboxItem
+                          className="grid-cols-[1fr_1rem] pe-2 *:[.col-start-1]:col-start-2 *:[.col-start-2]:col-start-1 *:[.col-start-2]:-order-1"
+                          checked={!isHidden}
+                          onCheckedChange={(checked) => {
+                            handleHiddenToggle(eventType.id, !checked);
+                          }}
                         >
-                          {isHidden ? "Show" : "Hide"}
-                          <Switch
-                            checked={!isHidden}
-                            onCheckedChange={(checked) => {
-                              handleHiddenToggle(eventType.id, !checked);
-                            }}
-                          />
-                        </MenuItem>
+                          Show on profile
+                        </MenuCheckboxItem>
                       </MenuPopup>
                     </Menu>
                   </div>
