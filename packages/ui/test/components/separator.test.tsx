@@ -24,7 +24,7 @@ function cnMock(...inputs: string[]) {
   return inputs.filter(Boolean).join(" ");
 }
 
-mock.module("@base-ui-components/react/separator", () => ({
+mock.module("@base-ui/react/separator", () => ({
   Separator: SeparatorPrimitiveMock,
 }));
 

@@ -10,7 +10,7 @@ export default function Particle() {
     <InputGroup>
       <InputGroupInput
         aria-label="Set your URL"
-        className="*:[input]:ps-1!"
+        className="*:[input]:ps-0!"
         placeholder="coss"
         type="search"
       />

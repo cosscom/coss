@@ -850,6 +850,7 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/fieldset",
       "@coss/form",
+      "@coss/label",
     ],
     type: "registry:block",
   },
@@ -2226,7 +2227,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "form", "field", "zod"),
     dependencies: ["zod"],
     description: "Number field in form",
     files: [
@@ -2834,7 +2835,6 @@ export const particles: ParticleItem[] = [
       "@coss/button",
       "@coss/checkbox",
       "@coss/frame",
-      "@coss/label",
       "@coss/pagination",
       "@coss/select",
       "@coss/table",

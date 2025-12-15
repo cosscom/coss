@@ -25,11 +25,11 @@ function mergePropsMock(
   return { ...defaults, ...overrides };
 }
 
-mock.module("@base-ui-components/react/use-render", () => ({
+mock.module("@base-ui/react/use-render", () => ({
   useRender: useRenderMock,
 }));
 
-mock.module("@base-ui-components/react/merge-props", () => ({
+mock.module("@base-ui/react/merge-props", () => ({
   mergeProps: mergePropsMock,
 }));
 
@@ -88,7 +88,7 @@ describe("Button", () => {
     const call = lastUseRenderCall();
     const className = call.props.className as string;
     expect(className).toContain("border-destructive");
-    expect(className).toContain("min-h-9");
+    expect(className).toContain("h-10");
     expect(className).toContain("custom-class");
   });
 });

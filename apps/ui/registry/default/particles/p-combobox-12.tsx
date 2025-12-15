@@ -49,15 +49,9 @@ export default function Particle() {
 
   return (
     <Form className="max-w-64" onSubmit={onSubmit}>
-      <Field>
+      <Field name="items">
         <FieldLabel>Favorite items</FieldLabel>
-        <Combobox
-          disabled={loading}
-          items={items}
-          multiple
-          name="items"
-          required
-        >
+        <Combobox disabled={loading} items={items} multiple required>
           <ComboboxChips>
             <ComboboxValue>
               {(value: { value: string; label: string }[]) => (

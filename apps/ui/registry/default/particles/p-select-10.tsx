@@ -22,7 +22,7 @@ export default function Particle() {
       defaultValue={items[0]}
       itemToStringValue={(item) => item.value}
     >
-      <SelectTrigger>
+      <SelectTrigger className="py-1">
         <SelectValue>
           {(item) => (
             <span className="flex flex-col">

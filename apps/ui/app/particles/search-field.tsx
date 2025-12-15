@@ -157,7 +157,7 @@ export default function SearchField({
       >
         <ComboboxChips className="rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl">
           <HugeiconsIcon
-            className="ms-[calc(--spacing(2)-1px)] me-[calc(--spacing(2)-1px)] size-5 shrink-0 opacity-72"
+            className="ms-[calc(--spacing(2)-1px)] me-[calc(--spacing(2)-1px)] size-5 shrink-0 opacity-80"
             icon={Search01Icon}
             strokeWidth={2}
           />
@@ -174,13 +174,13 @@ export default function SearchField({
                       <div className="flex items-center gap-1.5">
                         {isComponent ? (
                           <HugeiconsIcon
-                            className="size-3.5 opacity-72"
+                            className="opacity-80"
                             icon={Atom01Icon}
                             strokeWidth={2}
                           />
                         ) : (
                           <HugeiconsIcon
-                            className="size-3.5 opacity-72"
+                            className="opacity-80"
                             icon={LabelIcon}
                             strokeWidth={2}
                           />
@@ -227,13 +227,13 @@ export default function SearchField({
                           <div className="flex items-center gap-2">
                             {isComponent ? (
                               <HugeiconsIcon
-                                className="opacity-72"
+                                className="opacity-80"
                                 icon={Atom01Icon}
                                 strokeWidth={2}
                               />
                             ) : (
                               <HugeiconsIcon
-                                className="opacity-72"
+                                className="opacity-80"
                                 icon={LabelIcon}
                                 strokeWidth={2}
                               />

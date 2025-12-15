@@ -57,7 +57,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/accordion.tsx",
@@ -98,7 +98,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/alert-dialog.tsx",
@@ -109,7 +109,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/autocomplete.tsx",
@@ -121,7 +121,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/avatar.tsx",
@@ -152,7 +152,7 @@ export const ui: Registry["items"] = [
         "warning-foreground": "var(--color-amber-700)",
       },
     },
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/badge.tsx",
@@ -163,7 +163,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/breadcrumb.tsx",
@@ -182,7 +182,7 @@ export const ui: Registry["items"] = [
         "destructive-foreground": "var(--color-red-700)",
       },
     },
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/button.tsx",
@@ -204,7 +204,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/checkbox.tsx",
@@ -215,7 +215,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/checkbox-group.tsx",
@@ -226,7 +226,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/collapsible.tsx",
@@ -237,7 +237,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/combobox.tsx",
@@ -249,7 +249,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/dialog.tsx",
@@ -257,7 +257,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "dialog",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -279,7 +279,7 @@ export const ui: Registry["items"] = [
         "destructive-foreground": "var(--color-red-700)",
       },
     },
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/field.tsx",
@@ -290,7 +290,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/fieldset.tsx",
@@ -301,7 +301,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/form.tsx",
@@ -322,7 +322,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/group.tsx",
@@ -334,7 +334,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/input.tsx",
@@ -366,6 +366,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/label.tsx",
@@ -384,7 +385,7 @@ export const ui: Registry["items"] = [
         "destructive-foreground": "var(--color-red-700)",
       },
     },
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/menu.tsx",
@@ -395,7 +396,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/meter.tsx",
@@ -406,7 +407,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/number-field.tsx",
@@ -429,7 +430,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/popover.tsx",
@@ -440,7 +441,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/preview-card.tsx",
@@ -451,7 +452,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/progress.tsx",
@@ -462,7 +463,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/radio-group.tsx",
@@ -473,7 +474,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/scroll-area.tsx",
@@ -484,7 +485,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/select.tsx",
@@ -495,7 +496,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/separator.tsx",
@@ -506,7 +507,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/sheet.tsx",
@@ -514,7 +515,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "sheet",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -560,7 +561,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/slider.tsx",
@@ -581,7 +582,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/switch.tsx",
@@ -602,7 +603,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/tabs.tsx",
@@ -613,7 +614,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/textarea.tsx",
@@ -624,7 +625,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/toast.tsx",
@@ -636,7 +637,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/toggle.tsx",
@@ -647,7 +648,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/toggle-group.tsx",
@@ -659,7 +660,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/toolbar.tsx",
@@ -670,7 +671,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui-components/react"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/tooltip.tsx",
