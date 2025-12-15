@@ -303,8 +303,8 @@ export function EventTypes() {
                         <MenuItem variant="destructive">Delete</MenuItem>
                         <MenuSeparator />
                         <MenuCheckboxItem
-                          className="grid-cols-[1fr_1rem] pe-2 *:[.col-start-1]:col-start-2 *:[.col-start-2]:col-start-1 *:[.col-start-2]:-order-1"
                           checked={!isHidden}
+                          className="*:[.col-start-2]:-order-1 grid-cols-[1fr_1rem] pe-2 *:[.col-start-1]:col-start-2 *:[.col-start-2]:col-start-1"
                           onCheckedChange={(checked) => {
                             handleHiddenToggle(eventType.id, !checked);
                           }}
