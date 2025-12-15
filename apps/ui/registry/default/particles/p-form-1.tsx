@@ -20,11 +20,10 @@ export default function Particle() {
 
   return (
     <Form className="max-w-64" onSubmit={onSubmit}>
-      <Field>
+      <Field name="email">
         <FieldLabel>Email</FieldLabel>
         <Input
           disabled={loading}
-          name="email"
           placeholder="you@example.com"
           required
           type="email"

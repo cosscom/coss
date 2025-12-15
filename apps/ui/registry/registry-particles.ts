@@ -2227,7 +2227,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "form", "field", "zod"),
     dependencies: ["zod"],
     description: "Number field in form",
     files: [

@@ -42,27 +42,20 @@ export default function Particle() {
   };
   return (
     <Form onSubmit={onSubmit}>
-      <Field>
+      <Field name="fullName">
         <FieldLabel>
           Full Name <span className="text-destructive">*</span>
         </FieldLabel>
-        <Input
-          disabled={loading}
-          name="fullName"
-          placeholder="John Doe"
-          required
-          type="text"
-        />
+        <Input disabled={loading} placeholder="John Doe" required type="text" />
         <FieldError>Please enter a valid name.</FieldError>
       </Field>
 
-      <Field>
+      <Field name="email">
         <FieldLabel>
           Email <span className="text-destructive">*</span>
         </FieldLabel>
         <Input
           disabled={loading}
-          name="email"
           placeholder="john@example.com"
           required
           type="email"
@@ -70,7 +63,7 @@ export default function Particle() {
         <FieldError>Please enter a valid email.</FieldError>
       </Field>
 
-      <Field>
+      <Field name="role">
         <FieldLabel>Role</FieldLabel>
         <Select
           disabled={loading}
@@ -81,7 +74,6 @@ export default function Particle() {
             { label: "Product Manager", value: "manager" },
             { label: "Other", value: "other" },
           ]}
-          name="role"
         >
           <SelectTrigger>
             <SelectValue />
@@ -96,9 +88,9 @@ export default function Particle() {
         <FieldDescription>This is an optional field</FieldDescription>
       </Field>
 
-      <Field>
+      <Field name="newsletter">
         <div className="flex items-center gap-2">
-          <Checkbox disabled={loading} name="newsletter" />
+          <Checkbox disabled={loading} />
           <FieldLabel className="cursor-pointer">
             Subscribe to newsletter
           </FieldLabel>
