@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-frame-3",
-  "type": "registry:block",
   "description": "Frame with multiple separated panels",
   "registryDependencies": [
     "@coss/frame"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "frame"
-  ]
+  ],
+  "type": "registry:block"
 }

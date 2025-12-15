@@ -31,21 +31,28 @@ import {
 } from "@/components/ui/sidebar";
 import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
-function NavItemWithSubmenu({
-  item,
-}: {
-  item: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-    isActive?: boolean;
-    badge?: string;
-    items: {
-      title: string;
-      url: string;
-    }[];
-  };
-}) {
+type BaseNavItem = {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  isActive?: boolean;
+  badge?: string;
+};
+
+type NavSubItem = {
+  title: string;
+  url: string;
+};
+
+type NavItemWithChildren = BaseNavItem & { items: NavSubItem[] };
+type NavItemLeaf = BaseNavItem & { items?: undefined };
+type NavItem = NavItemLeaf | NavItemWithChildren;
+
+function hasSubItems(item: NavItem): item is NavItemWithChildren {
+  return Array.isArray(item.items) && item.items.length > 0;
+}
+
+function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
   const isBetweenMdAndLg = useIsBetweenMdAndLg();
   const { registerMenu } = useSidebarMenuOpen();
   const unregisterRef = useRef<(() => void) | null>(null);
@@ -160,17 +167,7 @@ function NavItemWithSubmenu({
   );
 }
 
-function NavItemSimple({
-  item,
-}: {
-  item: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-    isActive?: boolean;
-    badge?: string;
-  };
-}) {
+function NavItemSimple({ item }: { item: NavItemLeaf }) {
   const isBetweenMdAndLg = useIsBetweenMdAndLg();
 
   return (
@@ -195,27 +192,13 @@ function NavItemSimple({
   );
 }
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-    isActive?: boolean;
-    badge?: string;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}) {
+export function NavMain({ items }: { items: NavItem[] }) {
   return (
     <SidebarGroup>
       <SidebarMenu className="gap-0.5">
         {items.map((item) =>
-          item.items?.length ? (
-            <NavItemWithSubmenu item={item as any} key={item.title} />
+          hasSubItems(item) ? (
+            <NavItemWithSubmenu item={item} key={item.title} />
           ) : (
             <NavItemSimple item={item} key={item.title} />
           ),

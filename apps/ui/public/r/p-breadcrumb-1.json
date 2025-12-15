@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-breadcrumb-1",
-  "type": "registry:block",
   "description": "Breadcrumb with menu example",
   "registryDependencies": [
     "@coss/breadcrumb",
@@ -18,5 +17,6 @@
   "categories": [
     "breadcrumb",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

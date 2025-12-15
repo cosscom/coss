@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-14",
-  "type": "registry:block",
   "description": "Field with radio group",
   "registryDependencies": [
     "@coss/field",
@@ -23,5 +22,6 @@
     "fieldset",
     "label",
     "radio group"
-  ]
+  ],
+  "type": "registry:block"
 }

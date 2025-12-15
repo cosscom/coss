@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-pagination-1",
-  "type": "registry:block",
   "description": "Pagination example",
   "registryDependencies": [
     "@coss/pagination"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "pagination"
-  ]
+  ],
+  "type": "registry:block"
 }

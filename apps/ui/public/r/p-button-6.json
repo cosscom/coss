@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-6",
-  "type": "registry:block",
   "description": "Ghost button",
   "registryDependencies": [
     "@coss/button"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

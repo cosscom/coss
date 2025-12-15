@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-badge-3",
-  "type": "registry:block",
   "description": "Secondary badge",
   "registryDependencies": [
     "@coss/badge"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

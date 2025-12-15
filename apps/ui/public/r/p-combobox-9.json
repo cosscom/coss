@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-combobox-9",
-  "type": "registry:block",
   "description": "Combobox with multiple selection",
   "registryDependencies": [
     "@coss/combobox"
@@ -19,5 +18,6 @@
   "categories": [
     "combobox",
     "input"
-  ]
+  ],
+  "type": "registry:block"
 }

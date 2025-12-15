@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-table-4",
-  "type": "registry:block",
   "description": "Table with TanStack Table, sorting, and pagination",
   "dependencies": [
     "@tanstack/react-table",
@@ -33,5 +32,6 @@
     "select",
     "table",
     "tanstack"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-dialog-2",
-  "type": "registry:block",
   "description": "Dialog opened from menu",
   "registryDependencies": [
     "@coss/button",
@@ -18,5 +17,6 @@
   "categories": [
     "dialog",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

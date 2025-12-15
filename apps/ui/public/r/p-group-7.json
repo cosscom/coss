@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-7",
-  "type": "registry:block",
   "description": "Group with start text",
   "registryDependencies": [
     "@coss/group",
@@ -17,5 +16,6 @@
   ],
   "categories": [
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

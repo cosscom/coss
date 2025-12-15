@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-8",
-  "type": "registry:block",
   "description": "Field with combobox",
   "registryDependencies": [
     "@coss/combobox",
@@ -22,5 +21,6 @@
     "field",
     "input",
     "label"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-accordion-3",
-  "type": "registry:block",
   "description": "Accordion allowing multiple panels open",
   "registryDependencies": [
     "@coss/accordion"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "accordion"
-  ]
+  ],
+  "type": "registry:block"
 }

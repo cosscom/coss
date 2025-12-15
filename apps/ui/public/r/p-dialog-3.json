@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-dialog-3",
-  "type": "registry:block",
   "description": "Nested dialogs",
   "registryDependencies": [
     "@coss/button",
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "dialog"
-  ]
+  ],
+  "type": "registry:block"
 }

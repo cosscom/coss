@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-preview-card-1",
-  "type": "registry:block",
   "description": "Preview card with popup",
   "dependencies": [
     "lucide-react"
@@ -19,5 +18,6 @@
   ],
   "categories": [
     "preview card"
-  ]
+  ],
+  "type": "registry:block"
 }

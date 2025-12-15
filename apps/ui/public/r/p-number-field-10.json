@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-number-field-10",
-  "type": "registry:block",
   "description": "Number field in form",
   "dependencies": [
     "zod"
@@ -27,5 +26,6 @@
     "form",
     "field",
     "zod"
-  ]
+  ],
+  "type": "registry:block"
 }

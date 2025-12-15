@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-5",
-  "type": "registry:block",
   "description": "Show field validity state",
   "registryDependencies": [
     "@coss/field",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "field"
-  ]
+  ],
+  "type": "registry:block"
 }

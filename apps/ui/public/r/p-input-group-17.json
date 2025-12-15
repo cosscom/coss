@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-17",
-  "type": "registry:block",
   "description": "Input group with textarea",
   "registryDependencies": [
     "@coss/button",
@@ -22,5 +21,6 @@
   "categories": [
     "input group",
     "textarea"
-  ]
+  ],
+  "type": "registry:block"
 }

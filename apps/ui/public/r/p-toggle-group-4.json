@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toggle-group-4",
-  "type": "registry:block",
   "description": "Toggle group with outline",
   "registryDependencies": [
     "@coss/toggle-group"
@@ -16,5 +15,6 @@
   "categories": [
     "toggle",
     "toggle group"
-  ]
+  ],
+  "type": "registry:block"
 }
