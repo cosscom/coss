@@ -9,7 +9,8 @@
     "@coss/checkbox-group",
     "@coss/field",
     "@coss/fieldset",
-    "@coss/form"
+    "@coss/form",
+    "@coss/label"
   ],
   "files": [
     {

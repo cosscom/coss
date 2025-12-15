@@ -12,7 +12,6 @@
     "@coss/button",
     "@coss/checkbox",
     "@coss/frame",
-    "@coss/label",
     "@coss/pagination",
     "@coss/select",
     "@coss/table"

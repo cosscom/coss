@@ -257,7 +257,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "dialog",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
     type: "registry:ui",
   },
   {
@@ -366,6 +366,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/label.tsx",
@@ -514,7 +515,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "sheet",
-    registryDependencies: ["@coss/scroll-area"],
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
     type: "registry:ui",
   },
   {
