@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "colors-zinc",
-  "type": "registry:style",
   "cssVars": {
     "light": {
       "accent": "--alpha(var(--color-black) / 4%)",
@@ -57,5 +56,6 @@
       "warning": "var(--color-amber-500)",
       "warning-foreground": "var(--color-amber-400)"
     }
-  }
+  },
+  "type": "registry:style"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-number-field-5",
-  "type": "registry:block",
   "description": "Number field with label",
   "registryDependencies": [
     "@coss/label",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "number field"
-  ]
+  ],
+  "type": "registry:block"
 }

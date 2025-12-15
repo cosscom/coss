@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-autocomplete-6",
-  "type": "registry:block",
   "description": "Autocomplete autofilling the input with the highlighted item",
   "registryDependencies": [
     "@coss/autocomplete"
@@ -19,5 +18,6 @@
   "categories": [
     "autocomplete",
     "input"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "field",
-  "type": "registry:ui",
   "dependencies": [
     "@base-ui/react"
   ],
@@ -19,5 +18,6 @@
     "dark": {
       "destructive-foreground": "var(--color-red-400)"
     }
-  }
+  },
+  "type": "registry:ui"
 }

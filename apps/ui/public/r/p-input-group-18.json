@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-18",
-  "type": "registry:block",
   "description": "Input group with badge and menu",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
     "badge",
     "input group",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

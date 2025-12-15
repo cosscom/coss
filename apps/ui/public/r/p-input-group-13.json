@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-13",
-  "type": "registry:block",
   "description": "Small input group",
   "registryDependencies": [
     "@coss/input-group"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "input group"
-  ]
+  ],
+  "type": "registry:block"
 }

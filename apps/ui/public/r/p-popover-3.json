@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-popover-3",
-  "type": "registry:block",
   "description": "Animated popovers",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
     "avatar",
     "button",
     "popover"
-  ]
+  ],
+  "type": "registry:block"
 }

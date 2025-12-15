@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-10",
-  "type": "registry:block",
   "description": "Nested groups",
   "registryDependencies": [
     "@coss/button",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-17",
-  "type": "registry:block",
   "description": "Field with number field",
   "registryDependencies": [
     "@coss/field",
@@ -22,5 +21,6 @@
     "input",
     "label",
     "number field"
-  ]
+  ],
+  "type": "registry:block"
 }

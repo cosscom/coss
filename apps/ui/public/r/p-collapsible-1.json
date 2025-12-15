@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-collapsible-1",
-  "type": "registry:block",
   "description": "Basic collapsible",
   "dependencies": [
     "lucide-react"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "collapsible"
-  ]
+  ],
+  "type": "registry:block"
 }

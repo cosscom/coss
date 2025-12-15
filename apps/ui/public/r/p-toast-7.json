@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-7",
-  "type": "registry:block",
   "description": "Anchored toast with tooltip style",
   "registryDependencies": [
     "@coss/button",
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "toast"
-  ]
+  ],
+  "type": "registry:block"
 }

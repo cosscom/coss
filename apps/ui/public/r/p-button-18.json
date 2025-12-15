@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-18",
-  "type": "registry:block",
   "description": "Loading button",
   "registryDependencies": [
     "@coss/button",
@@ -17,5 +16,6 @@
   "categories": [
     "button",
     "loading"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-empty-1",
-  "type": "registry:block",
   "description": "Empty state with icon and actions",
   "dependencies": [
     "lucide-react"
@@ -19,5 +18,6 @@
   ],
   "categories": [
     "empty state"
-  ]
+  ],
+  "type": "registry:block"
 }

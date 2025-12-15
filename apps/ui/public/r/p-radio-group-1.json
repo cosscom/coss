@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-radio-group-1",
-  "type": "registry:block",
   "description": "Basic radio group",
   "registryDependencies": [
     "@coss/label",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "radio group"
-  ]
+  ],
+  "type": "registry:block"
 }

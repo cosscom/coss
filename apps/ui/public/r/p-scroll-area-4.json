@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-scroll-area-4",
-  "type": "registry:block",
   "description": "Scroll area with fading edges",
   "registryDependencies": [
     "@coss/scroll-area"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "scroll area"
-  ]
+  ],
+  "type": "registry:block"
 }

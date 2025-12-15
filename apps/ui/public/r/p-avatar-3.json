@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-avatar-3",
-  "type": "registry:block",
   "description": "Avatars with different sizes",
   "registryDependencies": [
     "@coss/avatar"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "avatar"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-10",
-  "type": "registry:block",
   "description": "Field with textarea",
   "registryDependencies": [
     "@coss/field",
@@ -21,5 +20,6 @@
     "field",
     "label",
     "textarea"
-  ]
+  ],
+  "type": "registry:block"
 }

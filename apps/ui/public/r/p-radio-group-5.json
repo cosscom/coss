@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-radio-group-5",
-  "type": "registry:block",
   "description": "Radio group in form",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
   ],
   "categories": [
     "radio group"
-  ]
+  ],
+  "type": "registry:block"
 }

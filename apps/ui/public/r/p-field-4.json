@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-4",
-  "type": "registry:block",
   "description": "Field showing validation error",
   "registryDependencies": [
     "@coss/field",
@@ -21,5 +20,6 @@
     "field",
     "label",
     "error"
-  ]
+  ],
+  "type": "registry:block"
 }

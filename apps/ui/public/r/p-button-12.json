@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-12",
-  "type": "registry:block",
   "description": "Disabled button",
   "registryDependencies": [
     "@coss/button"
@@ -16,5 +15,6 @@
   "categories": [
     "button",
     "disabled"
-  ]
+  ],
+  "type": "registry:block"
 }

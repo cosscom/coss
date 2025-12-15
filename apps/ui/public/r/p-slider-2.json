@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-2",
-  "type": "registry:block",
   "description": "Slider with label and value",
   "registryDependencies": [
     "@coss/label",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-table-3",
-  "type": "registry:block",
   "description": "Table with TanStack Table and checkboxes",
   "dependencies": [
     "@tanstack/react-table"
@@ -27,5 +26,6 @@
     "checkbox",
     "table",
     "tanstack"
-  ]
+  ],
+  "type": "registry:block"
 }

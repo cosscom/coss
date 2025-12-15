@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-5",
-  "type": "registry:block",
   "description": "Slider in form",
   "registryDependencies": [
     "@coss/button",
@@ -21,5 +20,6 @@
   },
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

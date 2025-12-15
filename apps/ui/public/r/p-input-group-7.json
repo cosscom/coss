@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-7",
-  "type": "registry:block",
   "description": "Input group with end tooltip",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
   "categories": [
     "input group",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

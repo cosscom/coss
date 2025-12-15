@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-menu-2",
-  "type": "registry:block",
   "description": "Menu with hover",
   "registryDependencies": [
     "@coss/button",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "ui",
-  "type": "registry:ui",
   "registryDependencies": [
     "@coss/accordion",
     "@coss/alert",
@@ -52,5 +51,6 @@
     "@coss/toggle-group",
     "@coss/toolbar",
     "@coss/tooltip"
-  ]
+  ],
+  "type": "registry:ui"
 }

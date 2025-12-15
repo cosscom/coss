@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-autocomplete-2",
-  "type": "registry:block",
   "description": "Disabled autocomplete",
   "registryDependencies": [
     "@coss/autocomplete"
@@ -20,5 +19,6 @@
     "autocomplete",
     "input",
     "disabled"
-  ]
+  ],
+  "type": "registry:block"
 }
