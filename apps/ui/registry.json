@@ -210,7 +210,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [],
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/card.tsx",
