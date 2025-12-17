@@ -241,6 +241,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "command": {
+    name: "command",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/ui/command.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/command.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "dialog": {
     name: "dialog",
     description: "",
@@ -659,7 +677,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile","@coss/utils"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -1351,6 +1369,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-autocomplete-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","form","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-14": {
+    name: "p-autocomplete-14",
+    description: "Autocomplete form",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-14.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2598,6 +2634,60 @@ export const Index: Record<string, any> = {
     }),
     categories: ["combobox","form","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-13": {
+    name: "p-combobox-13",
+    description: "Combobox with start addon",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-14": {
+    name: "p-combobox-14",
+    description: "Combobox multiple with start addon",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-command-1": {
+    name: "p-command-1",
+    description: "Command palette with dialog",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/command","@coss/kbd"],
+    files: [{
+      path: "registry/default/particles/p-command-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-command-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["command","dialog"],
+    meta: undefined,
   },
   "p-dialog-1": {
     name: "p-dialog-1",
