@@ -1,15 +1,12 @@
 import "./globals.css";
 
+import { fontMono } from "@coss/ui/fonts";
 import { SiteCta } from "@coss/ui/shared/site-cta";
 import { SiteFooter } from "@coss/ui/shared/site-footer";
 import { SiteHeader } from "@coss/ui/shared/site-header";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import {
-  Cal_Sans as FontHeading,
-  Geist_Mono as FontMono,
-  Inter as FontSans,
-} from "next/font/google";
+import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -20,11 +17,6 @@ const fontHeading = FontHeading({
   subsets: ["latin"],
   variable: "--font-heading",
   weight: "400",
-});
-
-const fontMono = FontMono({
-  subsets: ["latin"],
-  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
