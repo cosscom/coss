@@ -5,7 +5,11 @@ import { SiteFooter } from "@coss/ui/shared/site-footer";
 import { SiteHeader } from "@coss/ui/shared/site-header";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
+import {
+  Cal_Sans as FontHeading,
+  Geist_Mono as FontMono,
+  Inter as FontSans,
+} from "next/font/google";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -16,6 +20,11 @@ const fontHeading = FontHeading({
   subsets: ["latin"],
   variable: "--font-heading",
   weight: "400",
+});
+
+const fontMono = FontMono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontHeading.variable} bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <div className="relative flex min-h-svh flex-col overflow-clip [--header-height:4rem]">

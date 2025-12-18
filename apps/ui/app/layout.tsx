@@ -2,7 +2,11 @@ import "./globals.css";
 
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
+import {
+  Cal_Sans as FontHeading,
+  Geist_Mono as FontMono,
+  Inter as FontSans,
+} from "next/font/google";
 
 import { SiteHeader } from "@/components/site-header";
 import {
@@ -21,6 +25,11 @@ const fontHeading = FontHeading({
   weight: "400",
 });
 
+const fontMono = FontMono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
 export const metadata: Metadata = {
   description:
     "coss ui is a collection of accessible, and composable React components. Built on top of Base UI and styled with Tailwind CSS,",
@@ -37,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontHeading.variable} bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <ToastProvider>
