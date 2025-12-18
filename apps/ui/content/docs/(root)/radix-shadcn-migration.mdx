@@ -1,5 +1,5 @@
 ---
-title: Radix / shadcn Migrating
+title: Radix / shadcn Migration
 description: A comprehensive guide for migrating from Radix UI and shadcn/ui to coss ui components.
 ---
 
@@ -348,6 +348,18 @@ We've added a new `destructive-outline` variant for better UX patterns:
 </Collapsible>
 ```
 </span>
+
+### Command
+
+The API is significantly different from shadcn/ui (cmdk). Please review both docs before migrating: [cmdk Docs](https://cmdk.paco.me/) and [shadcn/ui Command](https://ui.shadcn.com/docs/components/command), and our Base UI Autocomplete docs.
+
+**Key Differences:**
+
+- No `cmdk` dependency - built entirely with Base UI's Autocomplete and Dialog components
+- Data-driven approach - pass an `items` array to `Command` and use render functions instead of manually composing `CommandItem` children
+- Use `CommandCollection` within `CommandGroup` when rendering grouped data with the items pattern
+- Use `CommandDialog`, `CommandDialogTrigger`, and `CommandDialogPopup` for dialog functionality instead of composing separate Dialog components
+- `CommandGroup` uses `<CommandGroupLabel>` as a child instead of a `heading` prop
 
 ### Dialog
 
