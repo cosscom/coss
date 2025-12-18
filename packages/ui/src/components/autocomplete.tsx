@@ -145,7 +145,7 @@ function AutocompleteGroup({
 }: AutocompletePrimitive.Group.Props) {
   return (
     <AutocompletePrimitive.Group
-      className={className}
+      className={cn("[[role=group]+&]:mt-1.5", className)}
       data-slot="autocomplete-group"
       {...props}
     />
@@ -211,7 +211,7 @@ function AutocompleteList({
     <ScrollArea scrollbarGutter scrollFade>
       <AutocompletePrimitive.List
         className={cn(
-          "not-empty:scroll-py-1 not-empty:px-1 not-empty:py-1 in-data-has-overflow-y:pe-3",
+          "not-empty:scroll-py-1 not-empty:p-1 in-data-has-overflow-y:pe-3",
           className,
         )}
         data-slot="autocomplete-list"

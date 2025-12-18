@@ -86,7 +86,7 @@ export default function Particle() {
           <CommandPanel>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandList>
-              {(group: Group, index: number) => (
+              {(group: Group, _index: number) => (
                 <React.Fragment key={group.value}>
                   <CommandGroup items={group.items}>
                     <CommandGroupLabel>{group.value}</CommandGroupLabel>
@@ -105,7 +105,7 @@ export default function Particle() {
                       )}
                     </CommandCollection>
                   </CommandGroup>
-                  {index < groupedItems.length - 1 && <CommandSeparator />}
+                  <CommandSeparator />
                 </React.Fragment>
               )}
             </CommandList>

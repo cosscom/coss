@@ -208,7 +208,9 @@ export default function SearchField({
           <ComboboxList>
             {(group: (typeof groupedItems)[number]) => (
               <React.Fragment key={group.type}>
-                {group.type === "disabled" && <ComboboxSeparator />}
+                {group.type === "disabled" && (
+                  <ComboboxSeparator className="my-2" />
+                )}
                 <ComboboxGroup items={group.items}>
                   <ComboboxGroupLabel>
                     {group.type === "enabled"

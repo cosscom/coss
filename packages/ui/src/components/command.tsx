@@ -142,7 +142,7 @@ function CommandList({
 }: React.ComponentProps<typeof AutocompleteList>) {
   return (
     <AutocompleteList
-      className={cn("not-empty:px-2", className)}
+      className={cn("not-empty:scroll-py-2 not-empty:p-2", className)}
       data-slot="command-list"
       {...props}
     />
@@ -165,7 +165,7 @@ function CommandEmpty({
 function CommandPanel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className="relative mx-1 min-h-0 rounded-xl border bg-popover bg-clip-padding py-1 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]"
+      className="-mx-px relative min-h-0 rounded-t-xl border bg-popover bg-clip-padding shadow-xs [clip-path:inset(0_1px)] before:pointer-events-none before:absolute before:inset-0 before:rounded-t-[calc(var(--radius-xl)-1px)] **:data-[slot=scroll-area-scrollbar]:mt-2 dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]"
       {...props}
     />
   );
@@ -175,7 +175,13 @@ function CommandGroup({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteGroup>) {
-  return <AutocompleteGroup data-slot="command-group" {...props} />;
+  return (
+    <AutocompleteGroup
+      className={className}
+      data-slot="command-group"
+      {...props}
+    />
+  );
 }
 
 function CommandGroupLabel({
@@ -240,7 +246,7 @@ function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 rounded-b-[calc(var(--radius-2xl)-1px)] px-[calc(--spacing(5.5)-1px)] py-3 text-muted-foreground text-xs",
+        "flex items-center justify-between gap-2 rounded-b-[calc(var(--radius-2xl)-1px)] px-5 py-3 text-muted-foreground text-xs",
         className,
       )}
       data-slot="command-footer"

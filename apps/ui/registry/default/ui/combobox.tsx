@@ -218,7 +218,7 @@ function ComboboxSeparator({
 function ComboboxGroup({ className, ...props }: ComboboxPrimitive.Group.Props) {
   return (
     <ComboboxPrimitive.Group
-      className={className}
+      className={cn("[[role=group]+&]:mt-1.5", className)}
       data-slot="combobox-group"
       {...props}
     />

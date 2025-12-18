@@ -29,7 +29,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/registry/default/ui/command";
 import { Kbd, KbdGroup } from "@/registry/default/ui/kbd";
 
@@ -201,31 +200,26 @@ export function CommandMenu({
           <CommandPanel>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandList>
-              {(group: PageGroup, index: number) => (
-                <React.Fragment key={group.value}>
-                  <CommandGroup items={group.items}>
-                    <CommandGroupLabel>{group.value}</CommandGroupLabel>
-                    <CommandCollection>
-                      {(item: PageItem) => (
-                        <CommandItem
-                          key={item.value}
-                          onClick={() => handleItemClick(item)}
-                          value={item.value}
-                        >
-                          <HugeiconsIcon
-                            className="mr-2 h-4 w-4 opacity-80"
-                            icon={
-                              item.isComponent ? Atom01Icon : BookOpen02Icon
-                            }
-                            strokeWidth={2}
-                          />
-                          <span className="flex-1">{item.label}</span>
-                        </CommandItem>
-                      )}
-                    </CommandCollection>
-                  </CommandGroup>
-                  {index < groupedItems.length - 1 && <CommandSeparator />}
-                </React.Fragment>
+              {(group: PageGroup, _index: number) => (
+                <CommandGroup items={group.items} key={group.value}>
+                  <CommandGroupLabel>{group.value}</CommandGroupLabel>
+                  <CommandCollection>
+                    {(item: PageItem) => (
+                      <CommandItem
+                        key={item.value}
+                        onClick={() => handleItemClick(item)}
+                        value={item.value}
+                      >
+                        <HugeiconsIcon
+                          className="mr-2 h-4 w-4 opacity-80"
+                          icon={item.isComponent ? Atom01Icon : BookOpen02Icon}
+                          strokeWidth={2}
+                        />
+                        <span className="flex-1">{item.label}</span>
+                      </CommandItem>
+                    )}
+                  </CommandCollection>
+                </CommandGroup>
               )}
             </CommandList>
           </CommandPanel>

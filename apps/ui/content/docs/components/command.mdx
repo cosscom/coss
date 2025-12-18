@@ -63,6 +63,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandPanel,
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command"
@@ -101,13 +102,15 @@ const items = [
 
 ### Command
 
-The root component that wraps the autocomplete functionality. It's an alias for `Autocomplete.Root`.
+The root component that wraps the autocomplete functionality. It's an alias for `Autocomplete.Root` with sensible defaults for command palette behavior: `autoHighlight="always"`, `keepHighlight={true}`, and `open={true}`.
 
-| Prop       | Type                                   | Description                                      |
-| ---------- | -------------------------------------- | ------------------------------------------------ |
-| `items`    | `readonly unknown[]`                   | The array of items to display in the command     |
-| `open`     | `boolean`                              | Controls whether the command is open             |
-| `...props` | `React.ComponentProps<typeof Command>` | All Base UI Autocomplete props are supported     |
+| Prop            | Type                                   | Default     | Description                                      |
+| --------------- | -------------------------------------- | ----------- | ------------------------------------------------ |
+| `items`         | `readonly unknown[]`                   | -           | The array of items to display in the command     |
+| `open`          | `boolean`                              | `true`      | Controls whether the command is open             |
+| `autoHighlight` | `boolean \| "always"`                  | `"always"`  | Controls automatic highlighting of items         |
+| `keepHighlight` | `boolean`                              | `true`      | Whether to maintain highlight state              |
+| `...props`      | `React.ComponentProps<typeof Command>` | -           | All Base UI Autocomplete props are supported     |
 
 ### CommandDialog
 
@@ -157,6 +160,15 @@ A scrollable container for command items. It wraps `AutocompleteList` with scrol
 | `className` | `string`                          | Additional CSS classes to apply to the component |
 | `...props`  | Base UI Autocomplete List props   | All standard autocomplete list attributes are supported |
 
+### CommandPanel
+
+A container component that provides styling for command content outside of dialogs. Useful when building standalone command interfaces with a bordered, elevated appearance.
+
+| Prop        | Type                          | Description                                      |
+| ----------- | ----------------------------- | ------------------------------------------------ |
+| `className` | `string`                      | Additional CSS classes to apply to the component |
+| `...props`  | `React.ComponentProps<'div'>` | All standard div attributes are supported        |
+
 ### CommandEmpty
 
 Displays a message when no results are found.
@@ -197,11 +209,11 @@ An individual selectable command item. Extends `AutocompleteItem`.
 
 ### CommandSeparator
 
-A visual separator between command groups or items.
+A visual separator between command groups or items. Includes default vertical spacing with `my-2` className.
 
 | Prop        | Type                                   | Description                                      |
 | ----------- | -------------------------------------- | ------------------------------------------------ |
-| `className` | `string`                               | Additional CSS classes to apply to the component |
+| `className` | `string`                               | Additional CSS classes to apply to the component (default includes `my-2`) |
 | `...props`  | Base UI Autocomplete Separator props   | All standard autocomplete separator attributes are supported |
 
 ### CommandShortcut
