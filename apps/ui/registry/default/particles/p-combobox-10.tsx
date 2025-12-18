@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDownIcon } from "lucide-react";
+import { ChevronsUpDownIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -452,6 +452,7 @@ export default function Particle() {
             className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
             placeholder="e.g. United Kingdom"
             showTrigger={false}
+            startAddon={<SearchIcon />}
           />
         </div>
         <ComboboxEmpty>No countries found.</ComboboxEmpty>

@@ -330,6 +330,20 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("autocomplete", "form", "input"),
+    description: "Autocomplete form",
+    files: [
+      { path: "particles/p-autocomplete-14.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-autocomplete-14",
+    registryDependencies: ["@coss/autocomplete"],
+    type: "registry:block",
+  },
+  {
     categories: categories("avatar"),
     description: "Avatar with image and fallback",
     files: [{ path: "particles/p-avatar-1.tsx", type: "registry:block" }],
@@ -1016,6 +1030,41 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/form",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input"),
+    dependencies: ["lucide-react"],
+    description: "Combobox with start addon",
+    files: [{ path: "particles/p-combobox-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-13",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input"),
+    dependencies: ["lucide-react"],
+    description: "Combobox multiple with start addon",
+    files: [{ path: "particles/p-combobox-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-14",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("command", "dialog"),
+    dependencies: ["lucide-react"],
+    description: "Command palette with dialog",
+    files: [{ path: "particles/p-command-1.tsx", type: "registry:block" }],
+    name: "p-command-1",
+    registryDependencies: ["@coss/button", "@coss/command", "@coss/kbd"],
     type: "registry:block",
   },
   {

@@ -24,6 +24,7 @@
 - [Checkbox Group](https://coss.com/ui/docs/components/checkbox-group.md): A collection of related checkboxes with group-level control.
 - [Collapsible](https://coss.com/ui/docs/components/collapsible.md): A component that toggles visibility of content sections.
 - [Combobox](https://coss.com/ui/docs/components/combobox.md): An input combined with a list of predefined items to select.
+- [Command](https://coss.com/ui/docs/components/command.md): A command palette component built with Dialog and Autocomplete for searching and executing commands.
 - [Dialog](https://coss.com/ui/docs/components/dialog.md): A modal overlay for displaying content that requires user interaction.
 - [Empty](https://coss.com/ui/docs/components/empty.md): A container for displaying empty state information.
 - [Field](https://coss.com/ui/docs/components/field.md): A wrapper component for form inputs with labels and validation.

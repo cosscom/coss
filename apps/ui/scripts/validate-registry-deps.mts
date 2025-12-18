@@ -77,13 +77,19 @@ function parseImports(content: string): {
     );
     if (registryLibMatch) {
       const libName = registryLibMatch[1].replace(/\.ts$/, ""); // Remove .ts extension if present
-      registryDeps.add(getRegistryPackageName(libName));
+      // Skip utils as it's a common utility file that shouldn't be treated as a dependency
+      if (libName !== "utils") {
+        registryDeps.add(getRegistryPackageName(libName));
+      }
       continue;
     }
 
     // Check if it's already a @coss import
     if (importPath.startsWith("@coss/")) {
-      registryDeps.add(importPath);
+      // Skip @coss/utils as it's a common utility that shouldn't be treated as a dependency
+      if (importPath !== "@coss/utils") {
+        registryDeps.add(importPath);
+      }
       continue;
     }
 
@@ -143,7 +149,8 @@ function extractRegistryItemDeps(itemContent: string): {
   if (regDepsMatch) {
     regDepsMatch[1].split(",").forEach((item) => {
       const cleaned = item.trim().replace(/["']/g, "").replace(/\n/g, "");
-      if (cleaned) {
+      // Skip @coss/utils as it's a common utility that shouldn't be validated
+      if (cleaned && cleaned !== "@coss/utils") {
         regDeps.push(cleaned);
       }
     });
