@@ -180,7 +180,10 @@
   }
 }
 
-code, kbd, samp, pre {
+code,
+kbd,
+samp,
+pre {
   font-family: var(--font-mono);
 }
 
