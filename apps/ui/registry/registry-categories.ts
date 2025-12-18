@@ -22,6 +22,7 @@ export const componentCategories = [
   "checkbox group",
   "collapsible",
   "combobox",
+  "command",
   "dialog",
   "empty state",
   "field",

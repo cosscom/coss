@@ -155,12 +155,16 @@ export default function SearchField({
         open={open}
         value={selectedItems}
       >
-        <ComboboxChips className="rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl">
-          <HugeiconsIcon
-            className="ms-[calc(--spacing(2)-1px)] me-[calc(--spacing(2)-1px)] size-5 shrink-0 opacity-80"
-            icon={Search01Icon}
-            strokeWidth={2}
-          />
+        <ComboboxChips
+          className="**:data-[slot=combobox-start-addon]:[&_svg]:-me-0.5 rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl"
+          startAddon={
+            <HugeiconsIcon
+              className="size-5.5 sm:size-5"
+              icon={Search01Icon}
+              strokeWidth={2}
+            />
+          }
+        >
           <ComboboxValue>
             {(
               value: { value: string; label: string; isComponent?: boolean }[],
@@ -193,8 +197,6 @@ export default function SearchField({
                 <ComboboxInput
                   aria-label="Search components"
                   autoFocus
-                  className="ps-0"
-                  showClear
                   size="lg"
                 />
               </>
@@ -206,7 +208,9 @@ export default function SearchField({
           <ComboboxList>
             {(group: (typeof groupedItems)[number]) => (
               <React.Fragment key={group.type}>
-                {group.type === "disabled" && <ComboboxSeparator />}
+                {group.type === "disabled" && (
+                  <ComboboxSeparator className="my-2" />
+                )}
                 <ComboboxGroup items={group.items}>
                   <ComboboxGroupLabel>
                     {group.type === "enabled"
