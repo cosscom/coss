@@ -25,8 +25,6 @@ function Combobox<ItemValue, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<ItemValue, Multiple>,
 ) {
   const chipsRef = React.useRef<Element | null>(null);
-  const chipsRef = React.useRef<HTMLDivElement | null>(null);
-
   return (
     <ComboboxContext.Provider value={{ chipsRef, multiple: !!props.multiple }}>
       <ComboboxPrimitive.Root
