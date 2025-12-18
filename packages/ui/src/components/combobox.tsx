@@ -9,7 +9,7 @@ import { Input } from "@coss/ui/components/input";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
 const ComboboxContext = React.createContext<{
-  chipsRef: React.RefObject<HTMLDivElement | null> | null;
+  chipsRef: React.RefObject<Element | null> | null;
   multiple: boolean;
 }>({
   chipsRef: null,
@@ -24,6 +24,7 @@ type ComboboxRootProps<
 function Combobox<ItemValue, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<ItemValue, Multiple>,
 ) {
+  const chipsRef = React.useRef<Element | null>(null);
   const chipsRef = React.useRef<HTMLDivElement | null>(null);
 
   return (
@@ -343,7 +344,7 @@ function ComboboxChips({
           input.focus();
         }
       }}
-      ref={chipsRef}
+      ref={chipsRef as React.Ref<HTMLDivElement> | null}
       {...props}
     >
       {startAddon && (
