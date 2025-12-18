@@ -1,5 +1,6 @@
 "use client";
 
+import { CommandPanel } from "@coss/ui/components/command";
 import {
   ArrowTurnBackwardIcon,
   Atom01Icon,
@@ -197,33 +198,37 @@ export function CommandMenu({
           }}
         >
           <CommandInput placeholder="Search documentation…" />
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandList>
-            {(group: PageGroup, index: number) => (
-              <React.Fragment key={group.value}>
-                <CommandGroup items={group.items}>
-                  <CommandGroupLabel>{group.value}</CommandGroupLabel>
-                  <CommandCollection>
-                    {(item: PageItem) => (
-                      <CommandItem
-                        key={item.value}
-                        onClick={() => handleItemClick(item)}
-                        value={item.value}
-                      >
-                        <HugeiconsIcon
-                          className="mr-2 h-4 w-4 opacity-80"
-                          icon={item.isComponent ? Atom01Icon : BookOpen02Icon}
-                          strokeWidth={2}
-                        />
-                        <span className="flex-1">{item.label}</span>
-                      </CommandItem>
-                    )}
-                  </CommandCollection>
-                </CommandGroup>
-                {index < groupedItems.length - 1 && <CommandSeparator />}
-              </React.Fragment>
-            )}
-          </CommandList>
+          <CommandPanel>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandList>
+              {(group: PageGroup, index: number) => (
+                <React.Fragment key={group.value}>
+                  <CommandGroup items={group.items}>
+                    <CommandGroupLabel>{group.value}</CommandGroupLabel>
+                    <CommandCollection>
+                      {(item: PageItem) => (
+                        <CommandItem
+                          key={item.value}
+                          onClick={() => handleItemClick(item)}
+                          value={item.value}
+                        >
+                          <HugeiconsIcon
+                            className="mr-2 h-4 w-4 opacity-80"
+                            icon={
+                              item.isComponent ? Atom01Icon : BookOpen02Icon
+                            }
+                            strokeWidth={2}
+                          />
+                          <span className="flex-1">{item.label}</span>
+                        </CommandItem>
+                      )}
+                    </CommandCollection>
+                  </CommandGroup>
+                  {index < groupedItems.length - 1 && <CommandSeparator />}
+                </React.Fragment>
+              )}
+            </CommandList>
+          </CommandPanel>
           <CommandFooter>
             <div className="flex items-center gap-2">
               <span>Go to Page</span>

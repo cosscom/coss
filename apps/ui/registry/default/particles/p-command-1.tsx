@@ -16,6 +16,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandPanel,
   CommandSeparator,
   CommandShortcut,
 } from "@/registry/default/ui/command";
@@ -82,31 +83,33 @@ export default function Particle() {
       <CommandDialogPopup>
         <Command items={groupedItems}>
           <CommandInput placeholder="Search for apps and commands..." />
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandList>
-            {(group: Group, index: number) => (
-              <React.Fragment key={group.value}>
-                <CommandGroup items={group.items}>
-                  <CommandGroupLabel>{group.value}</CommandGroupLabel>
-                  <CommandCollection>
-                    {(item: Item) => (
-                      <CommandItem
-                        key={item.value}
-                        onClick={() => handleItemClick(item)}
-                        value={item.value}
-                      >
-                        <span className="flex-1">{item.label}</span>
-                        {item.shortcut && (
-                          <CommandShortcut>{item.shortcut}</CommandShortcut>
-                        )}
-                      </CommandItem>
-                    )}
-                  </CommandCollection>
-                </CommandGroup>
-                {index < groupedItems.length - 1 && <CommandSeparator />}
-              </React.Fragment>
-            )}
-          </CommandList>
+          <CommandPanel>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandList>
+              {(group: Group, index: number) => (
+                <React.Fragment key={group.value}>
+                  <CommandGroup items={group.items}>
+                    <CommandGroupLabel>{group.value}</CommandGroupLabel>
+                    <CommandCollection>
+                      {(item: Item) => (
+                        <CommandItem
+                          key={item.value}
+                          onClick={() => handleItemClick(item)}
+                          value={item.value}
+                        >
+                          <span className="flex-1">{item.label}</span>
+                          {item.shortcut && (
+                            <CommandShortcut>{item.shortcut}</CommandShortcut>
+                          )}
+                        </CommandItem>
+                      )}
+                    </CommandCollection>
+                  </CommandGroup>
+                  {index < groupedItems.length - 1 && <CommandSeparator />}
+                </React.Fragment>
+              )}
+            </CommandList>
+          </CommandPanel>
           <CommandFooter>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
