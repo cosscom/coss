@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { fontMono } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
@@ -37,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontHeading.variable} bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <ToastProvider>
