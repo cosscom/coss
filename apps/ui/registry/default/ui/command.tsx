@@ -1,5 +1,6 @@
 "use client";
 
+import type { Autocomplete as AutocompleteType } from "@base-ui/react/autocomplete";
 import { Dialog as CommandDialogPrimitive } from "@base-ui/react/dialog";
 import { SearchIcon } from "lucide-react";
 import * as React from "react";
@@ -16,13 +17,39 @@ import {
   AutocompleteSeparator,
 } from "@/registry/default/ui/autocomplete";
 
-const CommandInputContext = React.createContext<{
+const CommandContext = React.createContext<{
   inputRef: React.RefObject<HTMLInputElement | null> | null;
+  dialogOnOpenChange?: (open: boolean) => void;
 }>({
+  dialogOnOpenChange: undefined,
   inputRef: null,
 });
 
-const CommandDialog = CommandDialogPrimitive.Root;
+function CommandDialog({
+  onOpenChange,
+  ...props
+}: CommandDialogPrimitive.Root.Props) {
+  const handleClose = React.useCallback(
+    (open: boolean) => {
+      onOpenChange?.(
+        open,
+        {} as CommandDialogPrimitive.Root.ChangeEventDetails,
+      );
+    },
+    [onOpenChange],
+  );
+
+  return (
+    <CommandContext.Provider
+      value={{
+        dialogOnOpenChange: onOpenChange ? handleClose : undefined,
+        inputRef: null,
+      }}
+    >
+      <CommandDialogPrimitive.Root onOpenChange={onOpenChange} {...props} />
+    </CommandContext.Provider>
+  );
+}
 
 const CommandDialogPortal = CommandDialogPrimitive.Portal;
 
@@ -73,6 +100,7 @@ function CommandDialogPopup({
   ...props
 }: CommandDialogPrimitive.Popup.Props) {
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const context = React.useContext(CommandContext);
 
   return (
     <CommandDialogPortal>
@@ -87,9 +115,9 @@ function CommandDialogPopup({
           initialFocus={inputRef}
           {...props}
         >
-          <CommandInputContext.Provider value={{ inputRef }}>
+          <CommandContext.Provider value={{ ...context, inputRef }}>
             {children}
-          </CommandInputContext.Provider>
+          </CommandContext.Provider>
         </CommandDialogPrimitive.Popup>
       </CommandDialogViewport>
     </CommandDialogPortal>
@@ -100,13 +128,36 @@ function Command({
   autoHighlight = "always",
   keepHighlight = true,
   open = true,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof Autocomplete>) {
+  const { dialogOnOpenChange } = React.useContext(CommandContext);
+
+  const handleOpenChange = React.useCallback(
+    (
+      newOpen: boolean,
+      eventDetails: AutocompleteType.Root.ChangeEventDetails,
+    ) => {
+      if (
+        !newOpen &&
+        eventDetails.reason === "escape-key" &&
+        dialogOnOpenChange
+      ) {
+        dialogOnOpenChange(false);
+      }
+      onOpenChange?.(newOpen, eventDetails);
+    },
+    [dialogOnOpenChange, onOpenChange],
+  );
+
+  const shouldHandleEscape = dialogOnOpenChange || onOpenChange;
+
   return (
     <Autocomplete
       autoHighlight={autoHighlight}
       keepHighlight={keepHighlight}
-      open={open}
+      onOpenChange={shouldHandleEscape ? handleOpenChange : undefined}
+      {...(dialogOnOpenChange ? { open } : {})}
       {...props}
     />
   );
@@ -117,7 +168,7 @@ function CommandInput({
   placeholder = undefined,
   ...props
 }: React.ComponentProps<typeof AutocompleteInput>) {
-  const { inputRef } = React.useContext(CommandInputContext);
+  const { inputRef } = React.useContext(CommandContext);
 
   return (
     <div className="px-2.5 py-1.5">

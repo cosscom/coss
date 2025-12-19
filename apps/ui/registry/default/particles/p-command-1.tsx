@@ -131,10 +131,7 @@ export default function Particle() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <KbdGroup>
-                <Kbd>⌘</Kbd>
-                <Kbd>K</Kbd>
-              </KbdGroup>
+              <Kbd>Esc</Kbd>
               <span>Close</span>
             </div>
           </CommandFooter>
