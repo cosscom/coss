@@ -360,7 +360,7 @@ pre {
 
     [data-lib="radix-ui"] & {
       &::before {
-        background-color: --alpha(var(--color-error) / 20%);
+        background-color: --alpha(var(--color-destructive) / 20%);
       }
     }
 

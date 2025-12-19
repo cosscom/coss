@@ -211,13 +211,3 @@ Use the `render` prop to render a custom component as the text, for example a la
   <Input id="domain" placeholder="example.com" />
 </Group>
 ```
-
-## Comparing with shadcn
-
-If you're already familiar with shadcn's ButtonGroup, this guide highlights the small differences and similarities so you can get started with **coss ui** quickly.
-
-### Quick Checklist
-
-- Prefer `Group*` component names; `ButtonGroup*` remain for compatibility
-- `GroupSeparator` is **always required** between controls, including outline buttons (unlike shadcn where separators are optional for outline buttons). This ensures consistent focus state handling and better accessibility
-- If you used `asChild` on `ButtonGroupText`, switch to the `render` prop for custom components
