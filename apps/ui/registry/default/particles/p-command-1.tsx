@@ -66,7 +66,6 @@ export default function Particle() {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
-        console.log("down");
       }
     };
 
