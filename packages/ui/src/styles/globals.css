@@ -184,7 +184,7 @@
   samp,
   pre {
     font-family: var(--font-mono);
-  }  
+  }
 }
 
 @utility no-scrollbar {
