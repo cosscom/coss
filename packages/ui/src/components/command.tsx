@@ -1,9 +1,8 @@
 "use client";
 
-import type { Autocomplete as AutocompleteType } from "@base-ui/react/autocomplete";
 import { Dialog as CommandDialogPrimitive } from "@base-ui/react/dialog";
 import { SearchIcon } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import {
   Autocomplete,
@@ -17,39 +16,7 @@ import {
   AutocompleteSeparator,
 } from "@coss/ui/components/autocomplete";
 
-const CommandContext = React.createContext<{
-  inputRef: React.RefObject<HTMLInputElement | null> | null;
-  dialogOnOpenChange?: (open: boolean) => void;
-}>({
-  dialogOnOpenChange: undefined,
-  inputRef: null,
-});
-
-function CommandDialog({
-  onOpenChange,
-  ...props
-}: CommandDialogPrimitive.Root.Props) {
-  const handleClose = React.useCallback(
-    (open: boolean) => {
-      onOpenChange?.(
-        open,
-        {} as CommandDialogPrimitive.Root.ChangeEventDetails,
-      );
-    },
-    [onOpenChange],
-  );
-
-  return (
-    <CommandContext.Provider
-      value={{
-        dialogOnOpenChange: onOpenChange ? handleClose : undefined,
-        inputRef: null,
-      }}
-    >
-      <CommandDialogPrimitive.Root onOpenChange={onOpenChange} {...props} />
-    </CommandContext.Provider>
-  );
-}
+const CommandDialog = CommandDialogPrimitive.Root;
 
 const CommandDialogPortal = CommandDialogPrimitive.Portal;
 
@@ -99,9 +66,6 @@ function CommandDialogPopup({
   children,
   ...props
 }: CommandDialogPrimitive.Popup.Props) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const context = React.useContext(CommandContext);
-
   return (
     <CommandDialogPortal>
       <CommandDialogBackdrop />
@@ -112,12 +76,9 @@ function CommandDialogPopup({
             className,
           )}
           data-slot="command-dialog-popup"
-          initialFocus={inputRef}
           {...props}
         >
-          <CommandContext.Provider value={{ ...context, inputRef }}>
-            {children}
-          </CommandContext.Provider>
+          {children}
         </CommandDialogPrimitive.Popup>
       </CommandDialogViewport>
     </CommandDialogPortal>
@@ -127,37 +88,14 @@ function CommandDialogPopup({
 function Command({
   autoHighlight = "always",
   keepHighlight = true,
-  open = true,
-  onOpenChange,
   ...props
 }: React.ComponentProps<typeof Autocomplete>) {
-  const { dialogOnOpenChange } = React.useContext(CommandContext);
-
-  const handleOpenChange = React.useCallback(
-    (
-      newOpen: boolean,
-      eventDetails: AutocompleteType.Root.ChangeEventDetails,
-    ) => {
-      if (
-        !newOpen &&
-        eventDetails.reason === "escape-key" &&
-        dialogOnOpenChange
-      ) {
-        dialogOnOpenChange(false);
-      }
-      onOpenChange?.(newOpen, eventDetails);
-    },
-    [dialogOnOpenChange, onOpenChange],
-  );
-
-  const shouldHandleEscape = dialogOnOpenChange || onOpenChange;
-
   return (
     <Autocomplete
       autoHighlight={autoHighlight}
+      inline
       keepHighlight={keepHighlight}
-      onOpenChange={shouldHandleEscape ? handleOpenChange : undefined}
-      {...(dialogOnOpenChange ? { open } : {})}
+      open
       {...props}
     />
   );
@@ -168,17 +106,15 @@ function CommandInput({
   placeholder = undefined,
   ...props
 }: React.ComponentProps<typeof AutocompleteInput>) {
-  const { inputRef } = React.useContext(CommandContext);
-
   return (
     <div className="px-2.5 py-1.5">
       <AutocompleteInput
+        autoFocus
         className={cn(
           "border-transparent! bg-transparent! shadow-none before:hidden has-focus-visible:ring-0",
           className,
         )}
         placeholder={placeholder}
-        ref={inputRef}
         size="lg"
         startAddon={<SearchIcon />}
         {...props}
