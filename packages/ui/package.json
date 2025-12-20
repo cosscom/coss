@@ -26,6 +26,7 @@
   },
   "exports": {
     "./components/*": "./src/components/*.tsx",
+    "./fonts": "./src/fonts/index.ts",
     "./globals.css": "./src/styles/globals.css",
     "./hooks/*": "./src/hooks/*.ts",
     "./lib/*": "./src/lib/*.ts",
