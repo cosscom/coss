@@ -3682,7 +3682,8 @@
       "name": "p-group-8",
       "registryDependencies": [
         "@coss/group",
-        "@coss/input"
+        "@coss/input",
+        "@coss/label"
       ],
       "type": "registry:block"
     },

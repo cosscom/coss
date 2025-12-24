@@ -1563,7 +1563,7 @@ export const particles: ParticleItem[] = [
     description: "Group with end text",
     files: [{ path: "particles/p-group-8.tsx", type: "registry:block" }],
     name: "p-group-8",
-    registryDependencies: ["@coss/group", "@coss/input"],
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
     type: "registry:block",
   },
   {
