@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/registry/default/ui/separator";
 
 const groupVariants = cva(
-  "flex w-fit *:focus-visible:z-10 has-[>[data-slot=group]]:gap-2 *:has-focus-visible:z-10",
+  "flex w-fit *:focus-visible:z-10 has-[>[data-slot=group]]:gap-2 *:has-focus-visible:z-10 dark:*:[[data-slot=button]:hover~[data-slot=separator]:not([data-slot]:hover~[data-slot=separator]~[data-slot=separator]),[data-slot][data-pressed]~[data-slot=separator]:not([data-slot][data-pressed]~[data-slot=separator]~[data-slot=separator])]:before:bg-input/64 dark:*:[[data-slot=separator]:has(~[data-slot=button]:hover):not(:has(~[data-slot=separator]~[data-slot]:hover)),[data-slot=separator]:has(~[data-slot][data-pressed]):not(:has(~[data-slot=separator]~[data-slot][data-pressed]))]:before:bg-input/64",
   {
     defaultVariants: {
       orientation: "horizontal",
@@ -15,8 +15,9 @@ const groupVariants = cva(
     variants: {
       orientation: {
         horizontal:
-          "*:[[data-slot]~[data-slot]]:before:-start-[0.5px] *:data-slot:has-[~[data-slot]]:before:-end-[0.5px] *:[[data-slot]~[data-slot]]:rounded-s-none *:data-slot:has-[~[data-slot]]:rounded-e-none *:[[data-slot]~[data-slot]]:border-s-0 *:data-slot:has-[~[data-slot]]:border-e-0 *:[[data-slot]~[data-slot]]:before:rounded-s-none *:data-slot:has-[~[data-slot]]:before:rounded-e-none *:after:absolute *:after:start-full *:after:h-full *:after:w-px *:pointer-coarse:after:min-w-auto",
-        vertical: "*:[[data-slot]~[data-slot]]:before:-top-[0.5px] *:data-slot:has-[~[data-slot]]:before:-bottom-[0.5px] flex-col *:[[data-slot]~[data-slot]]:rounded-t-none *:data-slot:has-[~[data-slot]]:rounded-b-none *:[[data-slot]~[data-slot]]:border-t-0 *:data-slot:has-[~[data-slot]]:border-b-0 *:data-slot:has-[~[data-slot]]:before:hidden *:[[data-slot]~[data-slot]]:before:rounded-t-none *:data-slot:has-[~[data-slot]]:before:rounded-b-none *:after:absolute *:after:top-full *:after:h-px *:pointer-coarse:after:min-h-auto *:after:w-full dark:*:last:before:hidden dark:*:first:before:block",
+          "*:[[data-slot]~[data-slot]:not([data-slot=separator])]:before:-start-[0.5px] *:data-slot:not-data-[slot=separator]:has-[~[data-slot]]:before:-end-[0.5px] *:after:absolute *:after:start-full *:after:h-full *:after:w-px *:pointer-coarse:after:min-w-auto *:data-slot:has-[~[data-slot]]:rounded-e-none *:data-slot:has-[~[data-slot]]:border-e-0 *:data-slot:has-[~[data-slot]]:before:rounded-e-none *:[[data-slot]~[data-slot]]:rounded-s-none *:[[data-slot]~[data-slot]]:border-s-0 *:[[data-slot]~[data-slot]]:before:rounded-s-none",
+        vertical:
+          "*:[[data-slot]~[data-slot]:not([data-slot=separator])]:before:-top-[0.5px] *:data-slot:not-data-[slot=separator]:has-[~[data-slot]]:before:-bottom-[0.5px] flex-col *:after:absolute *:after:top-full *:after:h-px *:pointer-coarse:after:min-h-auto *:after:w-full *:data-slot:has-[~[data-slot]]:rounded-b-none *:data-slot:has-[~[data-slot]]:border-b-0 *:data-slot:not-data-[slot=separator]:has-[~[data-slot]]:before:hidden *:data-slot:has-[~[data-slot]]:before:rounded-b-none dark:*:last:before:hidden dark:*:first:before:block *:[[data-slot]~[data-slot]]:rounded-t-none *:[[data-slot]~[data-slot]]:border-t-0 *:[[data-slot]~[data-slot]]:before:rounded-t-none",
       },
     },
   },
@@ -52,7 +53,7 @@ function GroupText({
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
     className: cn(
-      "relative inline-flex items-center whitespace-nowrap rounded-lg border border-border bg-muted bg-clip-padding px-[calc(--spacing(3)-1px)] text-muted-foreground text-base sm:text-sm shadow-xs outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:bg-input/64 dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 [&_svg]:-mx-0.5",
+      "relative inline-flex items-center whitespace-nowrap rounded-lg border border-border bg-muted bg-clip-padding dark:bg-clip-border px-[calc(--spacing(3)-1px)] text-muted-foreground text-base sm:text-sm shadow-xs outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:bg-input/64 dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 [&_svg]:-mx-0.5",
       className,
     ),
     "data-slot": "group-text",
@@ -74,7 +75,7 @@ function GroupSeparator({
   return (
     <Separator
       className={cn(
-        "[[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&]:-translate-x-px pointer-events-none relative z-20 has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:translate-x-px has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:bg-ring [[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=number-field]:focus-within+&]:bg-ring",
+        "[[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&]:-translate-x-px pointer-events-none relative before:absolute before:inset-0 has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:translate-x-px has-[+[data-slot=input-control]:focus-within,+[data-slot=select-trigger]:focus-visible+*,+[data-slot=number-field]:focus-within]:bg-ring dark:before:bg-input/32 [[data-slot=input-control]:focus-within+&,[data-slot=select-trigger]:focus-visible+*+&,[data-slot=number-field]:focus-within+&]:bg-ring",
         className,
       )}
       orientation={orientation}

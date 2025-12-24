@@ -3413,7 +3413,7 @@ export const Index: Record<string, any> = {
     name: "p-group-8",
     description: "Group with end text",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input"],
+    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
     files: [{
       path: "registry/default/particles/p-group-8.tsx",
       type: "registry:block",
