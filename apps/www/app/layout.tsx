@@ -1,23 +1,11 @@
 import "./globals.css";
 
-import { fontMono } from "@coss/ui/fonts";
+import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
 import { SiteCta } from "@coss/ui/shared/site-cta";
 import { SiteFooter } from "@coss/ui/shared/site-footer";
 import { SiteHeader } from "@coss/ui/shared/site-header";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
-
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-const fontHeading = FontHeading({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  weight: "400",
-});
 
 export const metadata: Metadata = {
   description: "coss.com - the everything but AI company",
