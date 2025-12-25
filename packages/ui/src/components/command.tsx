@@ -2,7 +2,7 @@
 
 import { Dialog as CommandDialogPrimitive } from "@base-ui/react/dialog";
 import { SearchIcon } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import {
   Autocomplete,
@@ -15,12 +15,6 @@ import {
   AutocompleteList,
   AutocompleteSeparator,
 } from "@coss/ui/components/autocomplete";
-
-const CommandInputContext = React.createContext<{
-  inputRef: React.RefObject<HTMLInputElement | null> | null;
-}>({
-  inputRef: null,
-});
 
 const CommandDialog = CommandDialogPrimitive.Root;
 
@@ -72,8 +66,6 @@ function CommandDialogPopup({
   children,
   ...props
 }: CommandDialogPrimitive.Popup.Props) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
   return (
     <CommandDialogPortal>
       <CommandDialogBackdrop />
@@ -84,12 +76,9 @@ function CommandDialogPopup({
             className,
           )}
           data-slot="command-dialog-popup"
-          initialFocus={inputRef}
           {...props}
         >
-          <CommandInputContext.Provider value={{ inputRef }}>
-            {children}
-          </CommandInputContext.Provider>
+          {children}
         </CommandDialogPrimitive.Popup>
       </CommandDialogViewport>
     </CommandDialogPortal>
@@ -99,14 +88,14 @@ function CommandDialogPopup({
 function Command({
   autoHighlight = "always",
   keepHighlight = true,
-  open = true,
   ...props
 }: React.ComponentProps<typeof Autocomplete>) {
   return (
     <Autocomplete
       autoHighlight={autoHighlight}
+      inline
       keepHighlight={keepHighlight}
-      open={open}
+      open
       {...props}
     />
   );
@@ -117,17 +106,15 @@ function CommandInput({
   placeholder = undefined,
   ...props
 }: React.ComponentProps<typeof AutocompleteInput>) {
-  const { inputRef } = React.useContext(CommandInputContext);
-
   return (
     <div className="px-2.5 py-1.5">
       <AutocompleteInput
+        autoFocus
         className={cn(
           "border-transparent! bg-transparent! shadow-none before:hidden has-focus-visible:ring-0",
           className,
         )}
         placeholder={placeholder}
-        ref={inputRef}
         size="lg"
         startAddon={<SearchIcon />}
         {...props}
@@ -231,9 +218,9 @@ function CommandSeparator({
 
 function CommandShortcut({ className, ...props }: React.ComponentProps<"kbd">) {
   return (
-    <span
+    <kbd
       className={cn(
-        "ms-auto font-medium text-muted-foreground/72 text-xs tracking-widest",
+        "ms-auto font-medium font-sans text-muted-foreground/72 text-xs tracking-widest",
         className,
       )}
       data-slot="command-shortcut"

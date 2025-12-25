@@ -8,7 +8,7 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { ComponentProps } from "react";
 import * as React from "react";
 import { useConfig } from "@/hooks/use-config";
@@ -53,7 +53,6 @@ export function CommandMenu({
   tree: typeof source.pageTree;
   navItems?: { href: string; label: string }[];
 }) {
-  const router = useRouter();
   const isMac = useIsMac();
   const [config] = useConfig();
   const { copyToClipboard } = useCopyToClipboard();
@@ -142,14 +141,6 @@ export function CommandMenu({
     [packageManager],
   );
 
-  const handleItemClick = React.useCallback(
-    (item: PageItem) => {
-      setOpen(false);
-      router.push(item.url);
-    },
-    [router],
-  );
-
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
@@ -206,9 +197,14 @@ export function CommandMenu({
                   <CommandCollection>
                     {(item: PageItem) => (
                       <CommandItem
+                        className="flex w-full items-center"
                         key={item.value}
-                        onClick={() => handleItemClick(item)}
-                        value={item.value}
+                        render={
+                          <Link
+                            href={item.url}
+                            onNavigate={() => setOpen(false)}
+                          />
+                        }
                       >
                         <HugeiconsIcon
                           className="mr-2 h-4 w-4 opacity-80"
@@ -225,13 +221,13 @@ export function CommandMenu({
           </CommandPanel>
           <CommandFooter>
             <div className="flex items-center gap-2">
-              <span>Go to Page</span>
+              <span className="whitespace-nowrap">Go to Page</span>
               <Kbd>
                 <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
               </Kbd>
             </div>
             {copyPayload && (
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate font-mono">{copyPayload}</span>
                 <KbdGroup>
                   <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
