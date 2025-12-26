@@ -2435,7 +2435,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group"),
+    categories: categories("radio group", "form"),
     description: "Radio group in form",
     files: [{ path: "particles/p-radio-group-5.tsx", type: "registry:block" }],
     name: "p-radio-group-5",

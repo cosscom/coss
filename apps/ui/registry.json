@@ -5245,7 +5245,8 @@
     },
     {
       "categories": [
-        "radio group"
+        "radio group",
+        "form"
       ],
       "description": "Radio group in form",
       "files": [

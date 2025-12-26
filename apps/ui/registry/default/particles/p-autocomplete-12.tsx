@@ -85,7 +85,7 @@ export default function Particle() {
     status = (
       <span className="flex items-center justify-between gap-2 text-muted-foreground">
         Searching...
-        <Spinner />
+        <Spinner className="size-4.5 sm:size-4" />
       </span>
     );
   } else if (error) {

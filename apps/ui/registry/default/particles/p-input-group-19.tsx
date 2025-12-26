@@ -16,7 +16,7 @@ export default function Particle() {
       <InputGroupTextarea placeholder="Tell us about yourself…" />
       <InputGroupAddon
         align="block-start"
-        className="gap-1 rounded-t-lg border-b bg-muted/50 p-2!"
+        className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
       >
         <Toggle aria-label="Toggle bold" size="sm">
           <BoldIcon />

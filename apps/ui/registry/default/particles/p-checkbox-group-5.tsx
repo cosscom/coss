@@ -5,10 +5,9 @@ import * as React from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldItem, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
-import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
   const [loading, setLoading] = React.useState(false);
@@ -29,20 +28,26 @@ export default function Particle() {
         name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
-        <Label render={<FieldsetLegend />}>Frameworks</Label>
+        <FieldsetLegend>Frameworks</FieldsetLegend>
         <CheckboxGroup defaultValue={["next"]} disabled={loading}>
-          <FieldLabel>
-            <Checkbox value="next" />
-            Next.js
-          </FieldLabel>
-          <FieldLabel>
-            <Checkbox value="vite" />
-            Vite
-          </FieldLabel>
-          <FieldLabel>
-            <Checkbox value="astro" />
-            Astro
-          </FieldLabel>
+          <FieldItem>
+            <FieldLabel>
+              <Checkbox value="next" />
+              Next.js
+            </FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <FieldLabel>
+              <Checkbox value="vite" />
+              Vite
+            </FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <FieldLabel>
+              <Checkbox value="astro" />
+              Astro
+            </FieldLabel>
+          </FieldItem>
         </CheckboxGroup>
       </Field>
       <Button disabled={loading} type="submit">

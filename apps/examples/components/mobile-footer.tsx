@@ -28,7 +28,7 @@ export function MobileFooter() {
         isHidden ? "translate-y-full" : "translate-y-0",
       )}
     >
-      <div className="pointer-events-auto relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover/80 p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
+      <div className="pointer-events-auto relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover/80 p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
         {primaryNavItems.map((item) => (
           <Link
             aria-current={item.isActive ? "page" : undefined}

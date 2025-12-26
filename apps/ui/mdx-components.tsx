@@ -155,7 +155,7 @@ export const mdxComponents = {
       <h2
         {...props}
         className={cn(
-          "[&+p]:!mt-4 mt-12 scroll-m-20 font-heading text-2xl first:mt-0 lg:mt-16 *:[code]:text-2xl",
+          "mt-12 scroll-m-20 font-heading text-2xl first:mt-0 lg:mt-16 [&+p]:mt-4! *:[code]:text-2xl",
           className,
         )}
         id={id}

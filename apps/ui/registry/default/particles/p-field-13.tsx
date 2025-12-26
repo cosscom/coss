@@ -2,32 +2,36 @@
 
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldItem, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 
 export default function Particle() {
   return (
-    <Fieldset className="gap-4">
+    <Field
+      className="gap-4"
+      name="frameworks"
+      render={(props) => <Fieldset {...props} />}
+    >
       <FieldsetLegend className="font-medium text-sm">
         Frameworks
       </FieldsetLegend>
       <CheckboxGroup defaultValue={["react"]}>
-        <Field name="frameworks">
+        <FieldItem>
           <FieldLabel>
             <Checkbox value="react" /> React
           </FieldLabel>
-        </Field>
-        <Field name="frameworks">
+        </FieldItem>
+        <FieldItem>
           <FieldLabel>
             <Checkbox value="vue" /> Vue
           </FieldLabel>
-        </Field>
-        <Field name="frameworks">
+        </FieldItem>
+        <FieldItem>
           <FieldLabel>
             <Checkbox value="svelte" /> Svelte
           </FieldLabel>
-        </Field>
+        </FieldItem>
       </CheckboxGroup>
-    </Fieldset>
+    </Field>
   );
 }
