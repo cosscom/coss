@@ -13,6 +13,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { source } from "@/lib/source";
 import { mdxComponents } from "@/mdx-components";
 import { Button } from "@/registry/default/ui/button";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export const revalidate = false;
 export const dynamic = "force-static";
@@ -133,10 +134,15 @@ export default async function Page(props: {
         </div>
       </div>
       <div className="sticky top-(--header-height) z-30 ms-auto hidden h-[calc(100svh-var(--header-height))] w-72 flex-col overflow-hidden overscroll-none xl:flex">
-        <div className="no-scrollbar flex min-h-0 flex-col gap-2 overflow-y-auto py-2">
-          <div className="h-(--top-spacing) shrink-0" />
-          {doc.toc?.length ? <DocsTableOfContents toc={doc.toc} /> : null}
-        </div>
+        <ScrollArea
+          className="**:data-[slot=scroll-area-scrollbar]:hidden"
+          scrollFade
+        >
+          <div className="flex min-h-0 flex-col gap-2 py-2">
+            <div className="h-(--top-spacing) shrink-0" />
+            {doc.toc?.length ? <DocsTableOfContents toc={doc.toc} /> : null}
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );

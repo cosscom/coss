@@ -11,6 +11,7 @@ import * as React from "react";
 
 import { useConfig } from "@/hooks/use-config";
 import { Button } from "@/registry/default/ui/button";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 import {
   Tooltip,
@@ -53,7 +54,7 @@ export function CodeBlockCommand({
   }, [packageManager, tabs, copyToClipboard]);
 
   return (
-    <div className="overflow-x-auto">
+    <div>
       <Tabs
         className="gap-0"
         onValueChange={(value) => {
@@ -80,10 +81,14 @@ export function CodeBlockCommand({
             })}
           </TabsList>
         </div>
-        <div className="no-scrollbar overflow-x-auto">
+        <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:data-[orientation=horizontal]:mx-2 **:data-[slot=scroll-area-scrollbar]:data-[orientation=vertical]:my-2">
           {Object.entries(tabs).map(([key, value]) => {
             return (
-              <TabsPanel className="mt-0 px-4 py-3.5" key={key} value={key}>
+              <TabsPanel
+                className="mt-0 w-max px-4 py-3.5"
+                key={key}
+                value={key}
+              >
                 <pre>
                   <code
                     className="relative font-mono text-[.8125rem] leading-none"
@@ -95,7 +100,7 @@ export function CodeBlockCommand({
               </TabsPanel>
             );
           })}
-        </div>
+        </ScrollArea>
       </Tabs>
       <Tooltip>
         <TooltipTrigger

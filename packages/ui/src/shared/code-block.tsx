@@ -1,3 +1,4 @@
+import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { highlightCode } from "@coss/ui/lib/highlight-code";
 import { CopyButton } from "@coss/ui/shared/copy-button";
 import { getIconForLanguageExtension } from "@coss/ui/shared/icons";
@@ -32,7 +33,9 @@ export async function CodeBlock({
         </figcaption>
       )}
       {copyButton && <CopyButton value={code} />}
-      <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+      <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:data-[orientation=horizontal]:mx-2 **:data-[slot=scroll-area-scrollbar]:data-[orientation=vertical]:my-2">
+        <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+      </ScrollArea>
     </figure>
   );
 }
