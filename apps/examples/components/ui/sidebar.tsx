@@ -123,7 +123,7 @@ function SidebarInset({
       data-slot="sidebar-inset"
       {...props}
     >
-      <div className="p-4 max-md:pb-8 md:p-6">{children}</div>
+      <div className="p-4 max-md:pb-8 md:p-6 lg:px-8">{children}</div>
     </main>
   );
 }
