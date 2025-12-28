@@ -9,6 +9,16 @@
 }
 
 .dark {
+  --background: color-mix(
+    in srgb,
+    var(--color-neutral-950) 97%,
+    var(--color-white)
+  );
+  --sidebar: color-mix(
+    in srgb,
+    var(--color-neutral-950) 96%,
+    var(--color-white)
+  );
   --sidebar-foreground: color-mix(
     in srgb,
     var(--color-zinc-200) 80%,

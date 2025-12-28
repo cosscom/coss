@@ -137,7 +137,7 @@ export function EventTypes() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-xl leading-none">Event Types</h1>
+          <h1 className="font-heading text-lg leading-none">Event Types</h1>
           <p className="text-muted-foreground text-sm max-md:hidden">
             Create events to share for people to book on your calendar.
           </p>
@@ -175,7 +175,7 @@ export function EventTypes() {
                   {/* Content */}
                   <div className="flex flex-col gap-0.5">
                     <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2">
-                      <h2 className="font-semibold text-sm">
+                      <h2 className="font-medium text-sm">
                         <a
                           className="before:absolute before:inset-0"
                           href={eventType.path}

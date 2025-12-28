@@ -122,7 +122,7 @@ export const mdxComponents = {
     return (
       <figcaption
         className={cn(
-          "flex items-center gap-2 text-code-foreground [&_svg]:size-5 [&_svg]:text-code-foreground [&_svg]:opacity-70 sm:[&_svg]:size-4",
+          "flex items-center gap-2 text-code-foreground text-sm [&_svg]:size-4.5 [&_svg]:text-code-foreground [&_svg]:opacity-70 sm:[&_svg]:size-4",
           className,
         )}
         {...props}
@@ -274,7 +274,7 @@ export const mdxComponents = {
       <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:data-[orientation=horizontal]:mx-2 **:data-[slot=scroll-area-scrollbar]:data-[orientation=vertical]:my-2">
         <pre
           className={cn(
-            "w-max min-w-0 px-4 py-3.5 text-[.8125rem] outline-none has-data-[slot=tabs]:p-0 has-data-highlighted-line:px-0 has-data-line-numbers:px-0",
+            "w-max min-w-full px-4 py-3.5 text-[.8125rem] outline-none has-data-[slot=tabs]:p-0 has-data-highlighted-line:px-0 has-data-line-numbers:px-0",
             className,
           )}
           {...props}
