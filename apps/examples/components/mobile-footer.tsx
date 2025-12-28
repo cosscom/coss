@@ -28,11 +28,11 @@ export function MobileFooter() {
         isHidden ? "translate-y-full" : "translate-y-0",
       )}
     >
-      <div className="pointer-events-auto relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover/80 p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
+      <div className="pointer-events-auto relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
         {primaryNavItems.map((item) => (
           <Link
             aria-current={item.isActive ? "page" : undefined}
-            className="flex size-10 items-center justify-center rounded-full text-sidebar-foreground/80 aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
+            className="flex size-11 items-center justify-center rounded-full text-sidebar-foreground/80 aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-sidebar-accent-foreground"
             href={item.url}
             key={item.title}
           >
@@ -41,12 +41,11 @@ export function MobileFooter() {
         ))}
         <Menu>
           <MenuTrigger
-            render={
-              <Button className="size-10 rounded-full" variant="ghost">
-                <EllipsisIcon className="size-5" />
-              </Button>
-            }
-          />
+            aria-label="More options"
+            render={<Button className="size-11 rounded-full" variant="ghost" />}
+          >
+            <EllipsisIcon className="size-5" />
+          </MenuTrigger>
           <MenuPopup side="top" sideOffset={8}>
             <MenuGroup>
               {remainingMainItems.map((item) => (
@@ -78,7 +77,7 @@ export function MobileFooter() {
           </MenuPopup>
         </Menu>
       </div>
-      <Button className="size-11 rounded-full">
+      <Button className="size-12 rounded-full">
         <PlusIcon className="size-5" />
       </Button>
     </footer>
