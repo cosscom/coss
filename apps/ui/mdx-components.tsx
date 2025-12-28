@@ -80,7 +80,7 @@ export const mdxComponents = {
       return (
         <code
           className={cn(
-            "relative rounded-md bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs outline-none",
+            "relative rounded-md bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none",
             className,
           )}
           {...props}
