@@ -279,6 +279,8 @@ function AutocompleteTrigger({
   );
 }
 
+const useAutocompleteFilter = AutocompletePrimitive.useFilter;
+
 export {
   Autocomplete,
   AutocompleteInput,
@@ -295,4 +297,5 @@ export {
   AutocompleteStatus,
   AutocompleteRow,
   AutocompleteCollection,
+  useAutocompleteFilter,
 };

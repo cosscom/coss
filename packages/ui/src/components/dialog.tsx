@@ -6,6 +6,8 @@ import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/components/button";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
+const DialogCreateHandle = DialogPrimitive.createHandle;
+
 const Dialog = DialogPrimitive.Root;
 
 const DialogPortal = DialogPrimitive.Portal;
@@ -173,6 +175,7 @@ function DialogPanel({
 }
 
 export {
+  DialogCreateHandle,
   Dialog,
   DialogTrigger,
   DialogPortal,

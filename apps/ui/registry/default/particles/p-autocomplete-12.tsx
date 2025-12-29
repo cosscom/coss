@@ -1,6 +1,5 @@
 "use client";
 
-import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import * as React from "react";
 
 import {
@@ -10,6 +9,7 @@ import {
   AutocompleteList,
   AutocompletePopup,
   AutocompleteStatus,
+  useAutocompleteFilter,
 } from "@/registry/default/ui/autocomplete";
 import { Spinner } from "@/registry/default/ui/spinner";
 
@@ -47,7 +47,7 @@ export default function Particle() {
   const [searchResults, setSearchResults] = React.useState<Movie[]>([]);
   const [error, setError] = React.useState<string | null>(null);
 
-  const { contains } = AutocompletePrimitive.useFilter({ sensitivity: "base" });
+  const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
   React.useEffect(() => {
     if (!searchValue) {

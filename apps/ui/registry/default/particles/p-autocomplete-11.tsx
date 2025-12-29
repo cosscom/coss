@@ -1,6 +1,5 @@
 "use client";
 
-import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import * as React from "react";
 
 import {
@@ -11,6 +10,7 @@ import {
   AutocompleteList,
   AutocompletePopup,
   AutocompleteStatus,
+  useAutocompleteFilter,
 } from "@/registry/default/ui/autocomplete";
 
 // Limit results demo
@@ -45,7 +45,7 @@ const manyTags: SimpleTag[] = [
 
 export default function Particle() {
   const [value, setValue] = React.useState("");
-  const { contains } = AutocompletePrimitive.useFilter({ sensitivity: "base" });
+  const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
   const totalMatches = React.useMemo(() => {
     const trimmed = value.trim();

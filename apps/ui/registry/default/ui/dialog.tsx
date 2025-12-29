@@ -6,6 +6,8 @@ import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
+const DialogCreateHandle = DialogPrimitive.createHandle;
+
 const Dialog = DialogPrimitive.Root;
 
 const DialogPortal = DialogPrimitive.Portal;
@@ -173,6 +175,7 @@ function DialogPanel({
 }
 
 export {
+  DialogCreateHandle,
   Dialog,
   DialogTrigger,
   DialogPortal,

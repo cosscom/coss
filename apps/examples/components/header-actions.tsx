@@ -5,20 +5,27 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
+import { CommandDialogTrigger } from "@coss/ui/components/command";
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
+import { commandHandle } from "@/components/app-command";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/user-menu";
 
 export function HeaderActions() {
   return (
     <div className="flex items-center gap-0.5 md:flex-col lg:flex-row">
-      <SidebarMenuButton
-        aria-label="Search"
-        className="shrink-0 justify-center p-0 text-sidebar-foreground/80 md:max-lg:order-1 lg:size-8"
+      <CommandDialogTrigger
+        handle={commandHandle}
+        render={
+          <SidebarMenuButton
+            aria-label="Search"
+            className="shrink-0 justify-center p-0 text-sidebar-foreground/80 md:max-lg:order-1 lg:size-8"
+          />
+        }
       >
         <SearchIcon />
-      </SidebarMenuButton>
+      </CommandDialogTrigger>
       <SidebarMenuButton
         className="shrink-0 justify-center p-0 lg:size-8"
         render={

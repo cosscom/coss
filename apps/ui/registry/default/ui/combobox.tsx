@@ -385,6 +385,8 @@ function ComboboxChipRemove(props: ComboboxPrimitive.ChipRemove.Props) {
   );
 }
 
+const useComboboxFilter = ComboboxPrimitive.useFilter;
+
 export {
   Combobox,
   ComboboxInput,
@@ -403,4 +405,5 @@ export {
   ComboboxCollection,
   ComboboxChips,
   ComboboxChip,
+  useComboboxFilter,
 };

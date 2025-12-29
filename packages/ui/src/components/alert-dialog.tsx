@@ -4,6 +4,8 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 
 import { cn } from "@coss/ui/lib/utils";
 
+const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle;
+
 const AlertDialog = AlertDialogPrimitive.Root;
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
@@ -147,6 +149,7 @@ function AlertDialogClose(props: AlertDialogPrimitive.Close.Props) {
 }
 
 export {
+  AlertDialogCreateHandle,
   AlertDialog,
   AlertDialogPortal,
   AlertDialogBackdrop,

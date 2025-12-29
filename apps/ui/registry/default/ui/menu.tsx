@@ -5,6 +5,8 @@ import { ChevronRightIcon } from "lucide-react";
 import type * as React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
+const MenuCreateHandle = MenuPrimitive.createHandle;
+
 const Menu = MenuPrimitive.Root;
 
 const MenuPortal = MenuPrimitive.Portal;
@@ -253,6 +255,8 @@ function MenuSubPopup({
 }
 
 export {
+  MenuCreateHandle,
+  MenuCreateHandle as DropdownMenuCreateHandle,
   Menu,
   Menu as DropdownMenu,
   MenuPortal,
