@@ -24,11 +24,13 @@ export function MobileFooter() {
   return (
     <footer
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 pb-4 transition-transform duration-500 ease-in-out before:absolute before:inset-0 before:bg-linear-to-t before:from-background md:hidden",
-        isHidden ? "translate-y-full" : "translate-y-0",
+        "before:-bottom-1 fixed inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 pb-4 transition-transform duration-500 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:h-[200%] before:bg-linear-to-t before:from-60% before:from-background before:transition-opacity before:duration-500 before:ease-in-out md:hidden",
+        isHidden
+          ? "translate-y-full before:opacity-0"
+          : "translate-y-0 before:opacity-100",
       )}
     >
-      <div className="pointer-events-auto relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
+      <div className="relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
         {primaryNavItems.map((item) => (
           <Link
             aria-current={item.isActive ? "page" : undefined}
