@@ -79,7 +79,7 @@ export function MobileFooter() {
           </MenuPopup>
         </Menu>
       </div>
-      <Button className="size-12 rounded-full">
+      <Button className="size-12 sm:size-12 rounded-full">
         <PlusIcon className="size-5" />
       </Button>
     </footer>
