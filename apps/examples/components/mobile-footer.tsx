@@ -12,6 +12,7 @@ import {
 import { cn } from "@coss/ui/lib/utils";
 import { EllipsisIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
+import { WorkflowBadge } from "@/components/workflows-badge";
 import { useScrollHide } from "@/hooks/use-scroll-hide";
 import { navFooterItems, navMainItems } from "@/lib/navigation-data";
 
@@ -57,6 +58,7 @@ export function MobileFooter() {
                     <a href={item.url}>
                       <item.icon className="opacity-72" />
                       <span>{item.title}</span>
+                      {item.title === "Workflows" && <WorkflowBadge />}
                     </a>
                   }
                 />
@@ -79,7 +81,7 @@ export function MobileFooter() {
           </MenuPopup>
         </Menu>
       </div>
-      <Button className="size-12 sm:size-12 rounded-full">
+      <Button className="size-12 rounded-full sm:size-12">
         <PlusIcon className="size-5" />
       </Button>
     </footer>

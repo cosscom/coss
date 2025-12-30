@@ -20,7 +20,6 @@ import { useEffect, useRef } from "react";
 import {
   SidebarGroup,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -29,6 +28,7 @@ import {
   sidebarTooltipHandle,
   useSidebarMenuOpen,
 } from "@/components/ui/sidebar";
+import { WorkflowBadge } from "@/components/workflows-badge";
 import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 type BaseNavItem = {
@@ -36,7 +36,6 @@ type BaseNavItem = {
   url: string;
   icon: LucideIcon;
   isActive?: boolean;
-  badge?: string;
 };
 
 type NavSubItem = {
@@ -90,13 +89,11 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             render={
               <MenuTrigger
                 render={
-                  <SidebarMenuButton isActive={item.isActive}>
+                  <SidebarMenuButton
+                    aria-label={item.title}
+                    isActive={item.isActive}
+                  >
                     <item.icon />
-                    {item.badge && (
-                      <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                        {item.badge}
-                      </SidebarMenuBadge>
-                    )}
                   </SidebarMenuButton>
                 }
               />
@@ -139,11 +136,6 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             <item.icon className="size-4" />
             <span>{item.title}</span>
           </span>
-          {item.badge && (
-            <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              {item.badge}
-            </SidebarMenuBadge>
-          )}
           <ChevronRightIcon className="in-data-open:rotate-90 opacity-72 transition-transform" />
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -178,12 +170,8 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
         render={
           <a href={item.url}>
             <item.icon />
-            <span className="md:max-lg:hidden lg:inline">{item.title}</span>
-            {item.badge && (
-              <SidebarMenuBadge className="bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                {item.badge}
-              </SidebarMenuBadge>
-            )}
+            <span className="max-lg:hidden">{item.title}</span>
+            {item.title === "Workflows" && <WorkflowBadge />}
           </a>
         }
         tooltip={isBetweenMdAndLg ? item.title : undefined}

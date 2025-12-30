@@ -16,7 +16,7 @@ export default async function Page() {
       <PageHeader>
         <PageHeaderHeading>
           the{" "}
-          <span className="before:-inset-x-1 before:-rotate-1 before:mix-blend-hard-ligt relative z-4 before:pointer-events-none before:absolute before:inset-y-0 before:z-4 before:bg-gradient-to-r before:from-blue-500 before:via-purple-500 before:to-orange-500 before:opacity-16">
+          <span className="before:-inset-x-1 before:-rotate-1 relative z-4 before:pointer-events-none before:absolute before:inset-y-0 before:z-4 before:bg-gradient-to-r before:from-blue-500 before:via-purple-500 before:to-orange-500 before:opacity-16 before:mix-blend-hard-light">
             everything but AI
           </span>{" "}
           company.

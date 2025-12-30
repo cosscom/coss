@@ -103,7 +103,6 @@ export const navMainItems: NavItem[] = [
     url: "#",
   },
   {
-    badge: "Cal.ai",
     icon: WorkflowIcon,
     title: "Workflows",
     url: "#",

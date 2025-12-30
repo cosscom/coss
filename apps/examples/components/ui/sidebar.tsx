@@ -339,25 +339,6 @@ function SidebarMenuAction({
   });
 }
 
-function SidebarMenuBadge({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  return (
-    <div
-      className={cn(
-        "pointer-events-none absolute top-1.5 right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-lg px-1 font-medium text-sidebar-foreground text-xs tabular-nums",
-        "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
-        "md:max-lg:hidden",
-        className,
-      )}
-      data-sidebar="menu-badge"
-      data-slot="sidebar-menu-badge"
-      {...props}
-    />
-  );
-}
-
 function SidebarMenuSkeleton({
   className,
   showIcon = false,
@@ -463,7 +444,6 @@ export {
   SidebarInset,
   SidebarMenu,
   SidebarMenuAction,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
