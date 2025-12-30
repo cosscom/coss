@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { cn } from "@coss/ui/lib/utils";
 import {
   ClockIcon,
   EllipsisIcon,
@@ -34,7 +35,6 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useState } from "react";
-
 import { AddEventTypeDialog } from "./add-event-type-dialog";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
@@ -42,7 +42,6 @@ const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 const eventTypes = [
   {
     duration: "15m",
-    enabled: true,
     hidden: false,
     id: 1,
     path: "/pasquale/15min",
@@ -50,7 +49,6 @@ const eventTypes = [
   },
   {
     duration: "30m",
-    enabled: true,
     hidden: false,
     id: 2,
     path: "/pasquale/30min",
@@ -58,47 +56,41 @@ const eventTypes = [
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 3,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 4,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 5,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 6,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 7,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
     hidden: true,
     id: 8,
     path: "/pasquale/secret",
@@ -106,15 +98,13 @@ const eventTypes = [
   },
   {
     duration: "15m",
-    enabled: false,
-    hidden: true,
+    hidden: false,
     id: 9,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
   {
     duration: "15m",
-    enabled: false,
     hidden: true,
     id: 10,
     path: "/pasquale/secret",
@@ -174,10 +164,14 @@ export function EventTypes() {
             >
               <CardPanel className="px-5">
                 <div className="flex items-center justify-between gap-2">
-                  {/* Content */}
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-2">
-                      <h2 className="font-medium text-sm">
+                  <div
+                    className={cn(
+                      "flex flex-col items-start gap-1 transition-opacity",
+                      isHidden && "opacity-63",
+                    )}
+                  >
+                    <div>
+                      <h2 className="inline font-medium text-sm">
                         <a
                           className="before:absolute before:inset-0"
                           href={eventType.path}
@@ -185,15 +179,19 @@ export function EventTypes() {
                           {eventType.title}
                         </a>
                       </h2>
-                      <Badge className="pointer-events-none" variant="outline">
-                        <ClockIcon className="opacity-72" />
-                        {eventType.duration}
-                      </Badge>
+                      <p className="ms-1 inline text-muted-foreground text-xs max-md:hidden">
+                        {eventType.path}
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-xs max-md:hidden">
-                      {eventType.path}
-                    </p>
+                    <Badge
+                      className="pointer-events-none tabular-nums"
+                      variant="outline"
+                    >
+                      <ClockIcon className="opacity-72" />
+                      {eventType.duration}
+                    </Badge>
                   </div>
+
                   {/* Actions */}
                   <div className="-m-6 relative flex items-center gap-4 p-6">
                     <div className="flex items-center gap-2">
