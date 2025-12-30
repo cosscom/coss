@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { AddEventTypeDialog } from "./add-event-type-dialog";
+
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
 const eventTypes = [
@@ -142,10 +144,10 @@ export function EventTypes() {
             Create events to share for people to book on your calendar.
           </p>
         </div>
-        <Button className="max-md:hidden">
+        <AddEventTypeDialog className="max-md:hidden">
           <PlusIcon className="-ms-1 opacity-72" />
           New
-        </Button>
+        </AddEventTypeDialog>
       </div>
 
       {/* Search */}
