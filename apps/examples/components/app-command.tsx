@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useAutocompleteFilter } from "@coss/ui/components/autocomplete";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -20,21 +19,22 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@coss/ui/components/command";
-import { Kbd, KbdGroup } from "@coss/ui/components/kbd";
 import { Input } from "@coss/ui/components/input";
+import { Kbd, KbdGroup } from "@coss/ui/components/kbd";
+import { ScrollArea } from "@coss/ui/components/scroll-area";
+import { Skeleton } from "@coss/ui/components/skeleton";
+import { Spinner } from "@coss/ui/components/spinner";
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
   ArrowUpIcon,
-  CornerDownLeftIcon,
   CircleQuestionMarkIcon,
+  CornerDownLeftIcon,
   SparklesIcon,
 } from "lucide-react";
+import Link from "next/link";
 import * as React from "react";
-import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { markdownToSafeHTML } from "@/lib/markdown-to-safe-html";
-import { Spinner } from "@coss/ui/components/spinner";
-import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   MOCK_AI_RESPONSE,
   MOCK_REFERENCE_LINKS,
@@ -244,13 +244,13 @@ interface AIState {
 }
 
 const initialAIState: AIState = {
+  error: null,
+  isGenerating: false,
   mode: false,
   query: "",
-  submittedQuery: "",
-  response: "",
   referenceLinks: [],
-  isGenerating: false,
-  error: null,
+  response: "",
+  submittedQuery: "",
 };
 
 export function AppCommand() {
@@ -299,12 +299,12 @@ export function AppCommand() {
 
       setAIState((prev) => ({
         ...prev,
-        submittedQuery: query,
-        query: "",
-        response: "",
-        referenceLinks: [],
-        isGenerating: true,
         error: null,
+        isGenerating: true,
+        query: "",
+        referenceLinks: [],
+        response: "",
+        submittedQuery: query,
       }));
 
       try {
@@ -322,9 +322,9 @@ export function AppCommand() {
 
         setAIState((prev) => ({
           ...prev,
-          response: MOCK_AI_RESPONSE,
-          referenceLinks: MOCK_REFERENCE_LINKS,
           isGenerating: false,
+          referenceLinks: MOCK_REFERENCE_LINKS,
+          response: MOCK_AI_RESPONSE,
         }));
       } catch (error) {
         // Ignore abort errors - component cleanup handles this
@@ -337,8 +337,8 @@ export function AppCommand() {
 
         setAIState((prev) => ({
           ...prev,
-          isGenerating: false,
           error: "Failed to generate response. Please try again.",
+          isGenerating: false,
         }));
       }
     },
@@ -359,7 +359,6 @@ export function AppCommand() {
       aiInputRef.current?.focus();
     }
   }, [searchQuery, handleGenerateAI]);
-
 
   const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
@@ -443,9 +442,9 @@ export function AppCommand() {
     () =>
       !searchQuery.trim() ||
       commandGroups.some((group) =>
-        group.items.some((item) => filterItem(item, searchQuery))
+        group.items.some((item) => filterItem(item, searchQuery)),
       ),
-    [searchQuery, filterItem]
+    [searchQuery, filterItem],
   );
 
   const handleOpenChange = React.useCallback(
@@ -467,11 +466,13 @@ export function AppCommand() {
     >
       <CommandDialogPopup className="outline-none">
         {!aiState.mode ? (
-          <Command key={commandResetKeyRef.current} filter={filterItem} items={commandGroups}>
+          <Command
+            filter={filterItem}
+            items={commandGroups}
+            key={commandResetKeyRef.current}
+          >
             <div className="relative flex items-center *:first:flex-1">
               <CommandInput
-                ref={searchInputRef}
-                value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Tab") {
@@ -484,25 +485,32 @@ export function AppCommand() {
                   }
                 }}
                 placeholder="Type a command or search..."
+                ref={searchInputRef}
+                value={searchQuery}
               />
               <Button
-                className="rounded-md text-sm sm:text-xs me-2.5 not-hover:text-muted-foreground"
+                className="me-2.5 rounded-md not-hover:text-muted-foreground text-sm sm:text-xs"
+                onClick={handleAskAI}
                 size="sm"
                 variant="ghost"
-                onClick={handleAskAI}
               >
                 <SparklesIcon className="size-4 sm:size-3.5" />
                 Ask AI
-                <Kbd className="ms-0.5 -me-1.5">Tab</Kbd>
+                <Kbd className="-me-1.5 ms-0.5">Tab</Kbd>
               </Button>
             </div>
             <CommandPanel>
               <CommandEmpty className="not-empty:py-12">
                 {searchQuery.trim() && (
-                  <div className="flex flex-col flex-wrap gap-2 wrap-break-word">
+                  <div className="wrap-break-word flex flex-col flex-wrap gap-2">
                     <p>No results found.</p>
-                    <p>Press <Kbd>Enter</Kbd> to ask AI about:<br /> {" "}
-                    <strong className="font-medium text-foreground">{searchQuery}</strong></p>
+                    <p>
+                      Press <Kbd>Enter</Kbd> to ask AI about:
+                      <br />{" "}
+                      <strong className="font-medium text-foreground">
+                        {searchQuery}
+                      </strong>
+                    </p>
                   </div>
                 )}
               </CommandEmpty>
@@ -559,7 +567,7 @@ export function AppCommand() {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center gap-2 ms-auto">
+                <div className="ms-auto flex items-center gap-2">
                   <Kbd>Esc</Kbd>
                   <span>Close</span>
                 </div>
@@ -577,10 +585,9 @@ export function AppCommand() {
                     data-slot="autocomplete-start-addon"
                   >
                     <SparklesIcon />
-                  </div>              
+                  </div>
                   <Input
-                    ref={aiInputRef}
-                    size="lg"
+                    aria-label="AI query input"
                     className="border-transparent! bg-transparent! shadow-none before:hidden has-focus-visible:ring-0 *:data-[slot=input]:ps-[calc(--spacing(8.5)-1px)] sm:*:data-[slot=input]:ps-[calc(--spacing(8)-1px)]"
                     disabled={aiState.isGenerating}
                     onChange={(e) =>
@@ -596,38 +603,42 @@ export function AppCommand() {
                       }
                     }}
                     placeholder="Ask AI anything…"
+                    ref={aiInputRef}
+                    size="lg"
                     value={aiState.query}
-                    aria-label="AI query input"
                   />
                 </div>
               </div>
               <Button
-                className="rounded-md text-sm sm:text-xs me-2.5 not-hover:text-muted-foreground"
+                className="me-2.5 rounded-md not-hover:text-muted-foreground text-sm sm:text-xs"
+                onClick={handleBackToSearch}
                 size="sm"
                 variant="ghost"
-                onClick={handleBackToSearch}
               >
                 <ArrowLeftIcon className="size-4 sm:size-3.5" />
                 Back to search
-                <Kbd className="ms-0.5 -me-1.5">Esc</Kbd>
-              </Button>              
+                <Kbd className="-me-1.5 ms-0.5">Esc</Kbd>
+              </Button>
             </div>
             <CommandPanel>
               <ScrollArea scrollbarGutter scrollFade>
                 <div className="p-5">
-                  {!aiState.isGenerating && !aiState.response && !aiState.error && (
-                    <div className="flex items-center justify-center py-12">
-                      <p className="text-sm text-muted-foreground">
-                        Ask AI anything and press <Kbd>Enter</Kbd> to get started.
-                      </p>
-                    </div>
-                  )}
+                  {!aiState.isGenerating &&
+                    !aiState.response &&
+                    !aiState.error && (
+                      <div className="flex items-center justify-center py-12">
+                        <p className="text-muted-foreground text-sm">
+                          Ask AI anything and press <Kbd>Enter</Kbd> to get
+                          started.
+                        </p>
+                      </div>
+                    )}
 
                   {aiState.error && (
                     <div
-                      className="text-sm text-destructive"
-                      role="alert"
                       aria-live="polite"
+                      className="text-destructive text-sm"
+                      role="alert"
                     >
                       {aiState.error}
                     </div>
@@ -666,11 +677,11 @@ export function AppCommand() {
                   {aiState.response && !aiState.isGenerating && (
                     <>
                       <div
-                        className="text-sm text-muted-foreground **:[p]:not-first:mt-3 **:[p]:leading-relaxed **:[h1,h2,h3]:text-base **:[ul]:my-3 **:[ul]:ms-4 **:[ul]:list-disc **:[code]:rounded-md **:[code]:bg-muted **:[code]:px-[0.3rem] **:[code]:py-[0.2rem] **:[code]:font-mono **:[h1,h2,h3]:not-first:mt-4 **:[h1,h2,h3,strong,a]:font-medium **:[h1,h2,h3,strong,a]:text-foreground **:[a]:underline **:[a]:underline-offset-4"
+                        aria-live="polite"
+                        className="text-muted-foreground text-sm **:[a]:underline **:[a]:underline-offset-4 **:[code]:rounded-md **:[code]:bg-muted **:[code]:px-[0.3rem] **:[code]:py-[0.2rem] **:[code]:font-mono **:[h1,h2,h3,strong,a]:font-medium **:[h1,h2,h3,strong,a]:text-foreground **:[h1,h2,h3]:not-first:mt-4 **:[h1,h2,h3]:text-base **:[p]:not-first:mt-3 **:[p]:leading-relaxed **:[ul]:my-3 **:[ul]:ms-4 **:[ul]:list-disc"
                         dangerouslySetInnerHTML={{
                           __html: markdownToSafeHTML(aiState.response),
                         }}
-                        aria-live="polite"
                       />
                       {aiState.referenceLinks.length > 0 && (
                         <div className="mt-8 flex flex-wrap gap-2">
@@ -678,8 +689,8 @@ export function AppCommand() {
                             <Button
                               key={`${link.url}-${index}`}
                               render={<Link href={link.url} />}
-                              variant="secondary"
                               size="sm"
+                              variant="secondary"
                             >
                               {link.title}
                             </Button>
@@ -694,15 +705,15 @@ export function AppCommand() {
 
             <CommandFooter>
               {aiState.isGenerating ? (
-                <div className="flex items-center gap-2" aria-live="polite">
-                  <div className="h-5 flex items-center justify-center">
+                <div aria-live="polite" className="flex items-center gap-2">
+                  <div className="flex h-5 items-center justify-center">
                     <Spinner className="size-3" />
                   </div>
                   <span className="animate-pulse">Generating response…</span>
                 </div>
               ) : aiState.response ? (
                 <div className="flex items-center gap-2">
-                  <div className="h-5 flex items-center justify-center">
+                  <div className="flex h-5 items-center justify-center">
                     <CircleQuestionMarkIcon className="size-3" />
                   </div>
                   You asked: <span>&quot;{aiState.submittedQuery}&quot;</span>
