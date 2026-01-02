@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useAutocompleteFilter } from "@coss/ui/components/autocomplete";
+import { Button } from "@coss/ui/components/button";
 import {
   Command,
   CommandCollection,
@@ -19,8 +21,25 @@ import {
   CommandShortcut,
 } from "@coss/ui/components/command";
 import { Kbd, KbdGroup } from "@coss/ui/components/kbd";
-import { ArrowDownIcon, ArrowUpIcon, CornerDownLeftIcon } from "lucide-react";
+import { Input } from "@coss/ui/components/input";
+import {
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowUpIcon,
+  CornerDownLeftIcon,
+  CircleQuestionMarkIcon,
+  SparklesIcon,
+} from "lucide-react";
 import * as React from "react";
+import { ScrollArea } from "@coss/ui/components/scroll-area";
+import { markdownToSafeHTML } from "@/lib/markdown-to-safe-html";
+import { Spinner } from "@coss/ui/components/spinner";
+import { Skeleton } from "@coss/ui/components/skeleton";
+import {
+  MOCK_AI_RESPONSE,
+  MOCK_REFERENCE_LINKS,
+  type ReferenceLink,
+} from "@/lib/mock-ai-data";
 
 interface Item {
   value: string;
@@ -214,17 +233,142 @@ const commandGroups: Group[] = [
 export const commandHandle: ReturnType<typeof CommandCreateHandle> =
   CommandCreateHandle();
 
+interface AIState {
+  mode: boolean;
+  query: string;
+  submittedQuery: string;
+  response: string;
+  referenceLinks: ReferenceLink[];
+  isGenerating: boolean;
+  error: string | null;
+}
+
+const initialAIState: AIState = {
+  mode: false,
+  query: "",
+  submittedQuery: "",
+  response: "",
+  referenceLinks: [],
+  isGenerating: false,
+  error: null,
+};
+
 export function AppCommand() {
   const [open, setOpen] = React.useState(false);
+  const [aiState, setAIState] = React.useState<AIState>(initialAIState);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const aiInputRef = React.useRef<HTMLInputElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
+  const commandResetKeyRef = React.useRef(0);
 
-  function handleItemClick(_item: Item) {
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  const resetAIState = React.useCallback(() => {
+    abortControllerRef.current?.abort();
+    setAIState(initialAIState);
+  }, []);
+
+  const handleItemClick = React.useCallback(() => {
     setOpen(false);
-  }
+  }, []);
+
+  const handleBackToSearch = React.useCallback(() => {
+    resetAIState();
+    setSearchQuery("");
+    // Force Command remount to reset Autocomplete's internal query state
+    commandResetKeyRef.current += 1;
+    // Focus search input after state updates
+    searchInputRef.current?.focus();
+  }, [resetAIState]);
+
+  const handleGenerateAI = React.useCallback(
+    async (queryOverride?: string) => {
+      const query = queryOverride || aiState.query;
+      if (!query.trim()) return;
+
+      // Abort any ongoing request
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      setAIState((prev) => ({
+        ...prev,
+        submittedQuery: query,
+        query: "",
+        response: "",
+        referenceLinks: [],
+        isGenerating: true,
+        error: null,
+      }));
+
+      try {
+        // Simulate AI response - in production, this would call an API
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(resolve, 1500);
+          controller.signal.addEventListener("abort", () => {
+            clearTimeout(timeout);
+            reject(new Error("aborted"));
+          });
+        });
+
+        // Don't update state if request was aborted
+        if (controller.signal.aborted) return;
+
+        setAIState((prev) => ({
+          ...prev,
+          response: MOCK_AI_RESPONSE,
+          referenceLinks: MOCK_REFERENCE_LINKS,
+          isGenerating: false,
+        }));
+      } catch (error) {
+        // Ignore abort errors - component cleanup handles this
+        if (error instanceof Error && error.message === "aborted") {
+          return;
+        }
+
+        // Only update if not aborted
+        if (controller.signal.aborted) return;
+
+        setAIState((prev) => ({
+          ...prev,
+          isGenerating: false,
+          error: "Failed to generate response. Please try again.",
+        }));
+      }
+    },
+    [aiState.query],
+  );
+
+  const handleAskAI = React.useCallback(() => {
+    const currentQuery = searchQuery;
+    setSearchQuery("");
+
+    if (currentQuery.trim()) {
+      // If there's a query, ask AI immediately
+      setAIState((prev) => ({ ...prev, mode: true }));
+      handleGenerateAI(currentQuery);
+    } else {
+      // If no query, just switch to AI mode
+      setAIState((prev) => ({ ...prev, mode: true, query: "" }));
+      aiInputRef.current?.focus();
+    }
+  }, [searchQuery, handleGenerateAI]);
+
 
   const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
   const filterItem = React.useCallback(
-    (itemValue: unknown, query: string) => {
+    (itemValue: unknown, query: string): boolean => {
+      if (typeof itemValue !== "object" || itemValue === null) {
+        return false;
+      }
+
       const item = itemValue as Item;
 
       // Search in label
@@ -260,7 +404,12 @@ export function AppCommand() {
         }
 
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen((open) => {
+          if (!open) {
+            setSearchQuery("");
+          }
+          return !open;
+        });
       }
     };
 
@@ -268,64 +417,307 @@ export function AppCommand() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  React.useEffect(() => {
+    if (!open || !aiState.mode) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleBackToSearch();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape, true);
+    return () => document.removeEventListener("keydown", handleEscape, true);
+  }, [open, aiState.mode, handleBackToSearch]);
+
+  React.useEffect(() => {
+    if (aiState.mode && !aiState.isGenerating) {
+      // Focus AI input when switching to AI mode or after response
+      aiInputRef.current?.focus();
+    }
+  }, [aiState.mode, aiState.isGenerating]);
+
+  const hasResults = React.useMemo(
+    () =>
+      !searchQuery.trim() ||
+      commandGroups.some((group) =>
+        group.items.some((item) => filterItem(item, searchQuery))
+      ),
+    [searchQuery, filterItem]
+  );
+
+  const handleOpenChange = React.useCallback(
+    (newOpen: boolean) => {
+      setOpen(newOpen);
+      if (!newOpen) {
+        setSearchQuery("");
+        resetAIState();
+      }
+    },
+    [resetAIState],
+  );
+
   return (
-    <CommandDialog handle={commandHandle} onOpenChange={setOpen} open={open}>
-      <CommandDialogPopup>
-        <Command filter={filterItem} items={commandGroups}>
-          <CommandInput placeholder="Type a command or search..." />
-          <CommandPanel>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandList>
-              {(group: Group) => (
-                <React.Fragment key={group.value}>
-                  <CommandGroup items={group.items}>
-                    <CommandGroupLabel>{group.value}</CommandGroupLabel>
-                    <CommandCollection>
-                      {(item: Item) => (
-                        <CommandItem
-                          key={item.value}
-                          onClick={() => handleItemClick(item)}
-                          value={item.value}
-                        >
-                          <span className="flex-1">{item.label}</span>
-                          {item.shortcut && (
-                            <CommandShortcut>{item.shortcut}</CommandShortcut>
-                          )}
-                        </CommandItem>
-                      )}
-                    </CommandCollection>
-                  </CommandGroup>
-                  <CommandSeparator />
-                </React.Fragment>
+    <CommandDialog
+      handle={commandHandle}
+      onOpenChange={handleOpenChange}
+      open={open}
+    >
+      <CommandDialogPopup className="outline-none">
+        {!aiState.mode ? (
+          <Command key={commandResetKeyRef.current} filter={filterItem} items={commandGroups}>
+            <div className="relative flex items-center *:first:flex-1">
+              <CommandInput
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Tab") {
+                    e.preventDefault();
+                    handleAskAI();
+                  }
+                  if (e.key === "Enter" && !hasResults && searchQuery.trim()) {
+                    e.preventDefault();
+                    handleAskAI();
+                  }
+                }}
+                placeholder="Type a command or search..."
+              />
+              <Button
+                className="rounded-md text-sm sm:text-xs me-2.5 not-hover:text-muted-foreground"
+                size="sm"
+                variant="ghost"
+                onClick={handleAskAI}
+              >
+                <SparklesIcon className="size-4 sm:size-3.5" />
+                Ask AI
+                <Kbd className="ms-0.5 -me-1.5">Tab</Kbd>
+              </Button>
+            </div>
+            <CommandPanel>
+              <CommandEmpty className="not-empty:py-12">
+                {searchQuery.trim() && (
+                  <div className="flex flex-col flex-wrap gap-2 wrap-break-word">
+                    <p>No results found.</p>
+                    <p>Press <Kbd>Enter</Kbd> to ask AI about:<br /> {" "}
+                    <strong className="font-medium text-foreground">{searchQuery}</strong></p>
+                  </div>
+                )}
+              </CommandEmpty>
+              <CommandList>
+                {(group: Group) => (
+                  <React.Fragment key={group.value}>
+                    <CommandGroup items={group.items}>
+                      <CommandGroupLabel>{group.value}</CommandGroupLabel>
+                      <CommandCollection>
+                        {(item: Item) => (
+                          <CommandItem
+                            key={item.value}
+                            onClick={handleItemClick}
+                            value={item.value}
+                          >
+                            <span className="flex-1">{item.label}</span>
+                            {item.shortcut && (
+                              <CommandShortcut>{item.shortcut}</CommandShortcut>
+                            )}
+                          </CommandItem>
+                        )}
+                      </CommandCollection>
+                    </CommandGroup>
+                    <CommandSeparator />
+                  </React.Fragment>
+                )}
+              </CommandList>
+            </CommandPanel>
+            <CommandFooter>
+              {hasResults ? (
+                <>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <KbdGroup>
+                        <Kbd>
+                          <ArrowUpIcon />
+                        </Kbd>
+                        <Kbd>
+                          <ArrowDownIcon />
+                        </Kbd>
+                      </KbdGroup>
+                      <span>Navigate</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Kbd>
+                        <CornerDownLeftIcon />
+                      </Kbd>
+                      <span>Open</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Kbd>Esc</Kbd>
+                    <span>Close</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 ms-auto">
+                  <Kbd>Esc</Kbd>
+                  <span>Close</span>
+                </div>
               )}
-            </CommandList>
-          </CommandPanel>
-          <CommandFooter>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <KbdGroup>
-                  <Kbd>
-                    <ArrowUpIcon />
-                  </Kbd>
-                  <Kbd>
-                    <ArrowDownIcon />
-                  </Kbd>
-                </KbdGroup>
-                <span>Navigate</span>
+            </CommandFooter>
+          </Command>
+        ) : (
+          <Command>
+            <div className="flex items-center *:first:flex-1">
+              <div className="px-2.5 py-1.5">
+                <div className="relative w-full">
+                  <div
+                    aria-hidden="true"
+                    className="[&_svg]:-mx-0.5 pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4"
+                    data-slot="autocomplete-start-addon"
+                  >
+                    <SparklesIcon />
+                  </div>              
+                  <Input
+                    ref={aiInputRef}
+                    size="lg"
+                    className="border-transparent! bg-transparent! shadow-none before:hidden has-focus-visible:ring-0 *:data-[slot=input]:ps-[calc(--spacing(8.5)-1px)] sm:*:data-[slot=input]:ps-[calc(--spacing(8)-1px)]"
+                    disabled={aiState.isGenerating}
+                    onChange={(e) =>
+                      setAIState((prev) => ({ ...prev, query: e.target.value }))
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !aiState.isGenerating) {
+                        handleGenerateAI();
+                      }
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        handleBackToSearch();
+                      }
+                    }}
+                    placeholder="Ask AI anything…"
+                    value={aiState.query}
+                    aria-label="AI query input"
+                  />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Kbd>
-                  <CornerDownLeftIcon />
-                </Kbd>
-                <span>Open</span>
-              </div>
+              <Button
+                className="rounded-md text-sm sm:text-xs me-2.5 not-hover:text-muted-foreground"
+                size="sm"
+                variant="ghost"
+                onClick={handleBackToSearch}
+              >
+                <ArrowLeftIcon className="size-4 sm:size-3.5" />
+                Back to search
+                <Kbd className="ms-0.5 -me-1.5">Esc</Kbd>
+              </Button>              
             </div>
-            <div className="flex items-center gap-2">
-              <Kbd>Esc</Kbd>
-              <span>Close</span>
-            </div>
-          </CommandFooter>
-        </Command>
+            <CommandPanel>
+              <ScrollArea scrollbarGutter scrollFade>
+                <div className="p-5">
+                  {!aiState.isGenerating && !aiState.response && !aiState.error && (
+                    <div className="flex items-center justify-center py-12">
+                      <p className="text-sm text-muted-foreground">
+                        Ask AI anything and press <Kbd>Enter</Kbd> to get started.
+                      </p>
+                    </div>
+                  )}
+
+                  {aiState.error && (
+                    <div
+                      className="text-sm text-destructive"
+                      role="alert"
+                      aria-live="polite"
+                    >
+                      {aiState.error}
+                    </div>
+                  )}
+
+                  {aiState.isGenerating && (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/4" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                      </div>
+                    </div>
+                  )}
+
+                  {aiState.response && !aiState.isGenerating && (
+                    <>
+                      <div
+                        className="text-sm text-muted-foreground **:[p]:not-first:mt-3 **:[p]:leading-relaxed **:[h1,h2,h3]:text-base **:[ul]:my-3 **:[ul]:ms-4 **:[ul]:list-disc **:[code]:rounded-md **:[code]:bg-muted **:[code]:px-[0.3rem] **:[code]:py-[0.2rem] **:[code]:font-mono **:[h1,h2,h3]:not-first:mt-4 **:[h1,h2,h3,strong,a]:font-medium **:[h1,h2,h3,strong,a]:text-foreground **:[a]:underline **:[a]:underline-offset-4"
+                        dangerouslySetInnerHTML={{
+                          __html: markdownToSafeHTML(aiState.response),
+                        }}
+                        aria-live="polite"
+                      />
+                      {aiState.referenceLinks.length > 0 && (
+                        <div className="mt-8 flex flex-wrap gap-2">
+                          {aiState.referenceLinks.map((link, index) => (
+                            <Button
+                              key={`${link.url}-${index}`}
+                              render={<Link href={link.url} />}
+                              variant="secondary"
+                              size="sm"
+                            >
+                              {link.title}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </ScrollArea>
+            </CommandPanel>
+
+            <CommandFooter>
+              {aiState.isGenerating ? (
+                <div className="flex items-center gap-2" aria-live="polite">
+                  <div className="h-5 flex items-center justify-center">
+                    <Spinner className="size-3" />
+                  </div>
+                  <span className="animate-pulse">Generating response…</span>
+                </div>
+              ) : aiState.response ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-5 flex items-center justify-center">
+                    <CircleQuestionMarkIcon className="size-3" />
+                  </div>
+                  You asked: <span>&quot;{aiState.submittedQuery}&quot;</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Kbd>
+                    <CornerDownLeftIcon />
+                  </Kbd>
+                  <span>Ask AI</span>
+                </div>
+              )}
+            </CommandFooter>
+          </Command>
+        )}
       </CommandDialogPopup>
     </CommandDialog>
   );
