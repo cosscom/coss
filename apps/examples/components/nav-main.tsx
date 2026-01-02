@@ -145,9 +145,9 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
                 <SidebarMenuSubButton
                   className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-linear-to-tr"
                   render={
-                    <a href={subItem.url}>
+                    <Link href={subItem.url}>
                       <span>{subItem.title}</span>
-                    </a>
+                    </Link>
                   }
                 />
               </SidebarMenuSubItem>
@@ -168,11 +168,11 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
         className="font-medium text-sidebar-foreground"
         isActive={item.isActive}
         render={
-          <a href={item.url}>
+          <Link href={item.url}>
             <item.icon />
             <span className="max-lg:hidden">{item.title}</span>
             {item.title === "Workflows" && <WorkflowBadge />}
-          </a>
+          </Link>
         }
         tooltip={isBetweenMdAndLg ? item.title : undefined}
       />

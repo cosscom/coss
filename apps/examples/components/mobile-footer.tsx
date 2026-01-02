@@ -55,11 +55,11 @@ export function MobileFooter() {
                 <MenuItem
                   key={item.title}
                   render={
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon className="opacity-72" />
                       <span>{item.title}</span>
                       {item.title === "Workflows" && <WorkflowBadge />}
-                    </a>
+                    </Link>
                   }
                 />
               ))}
@@ -70,10 +70,10 @@ export function MobileFooter() {
                 <MenuItem
                   key={item.title}
                   render={
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon className="opacity-72" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   }
                 />
               ))}

@@ -7,6 +7,8 @@ export function useScrollHide(threshold = DEFAULT_SCROLL_THRESHOLD) {
   const lastScrollY = React.useRef(0);
 
   React.useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
     const handleScroll = () => {
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
