@@ -464,7 +464,7 @@ export function AppCommand() {
       onOpenChange={handleOpenChange}
       open={open}
     >
-      <CommandDialogPopup className="outline-none">
+      <CommandDialogPopup>
         {!aiState.mode ? (
           <Command
             filter={filterItem}
