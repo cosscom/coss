@@ -82,7 +82,7 @@ export default async function Page() {
           to achieve that, we are partnering up with the best-in-class coss
           companies in the space to offer a unified infrastructure API, react
           package and a single{" "}
-          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-muted">
+          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-[.8125rem] outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-muted">
             .env
           </code>{" "}
           environment key:{" "}

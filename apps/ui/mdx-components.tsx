@@ -80,7 +80,7 @@ export const mdxComponents = {
       return (
         <code
           className={cn(
-            "relative rounded-md bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm outline-none",
+            "relative rounded-md bg-muted px-[0.3rem] py-[0.2rem] font-mono text-[.8125rem] text-muted-foreground outline-none",
             className,
           )}
           {...props}
@@ -122,7 +122,7 @@ export const mdxComponents = {
     return (
       <figcaption
         className={cn(
-          "flex items-center gap-2 text-code-foreground text-sm [&_svg]:size-4.5 [&_svg]:text-code-foreground [&_svg]:opacity-70 sm:[&_svg]:size-4",
+          "flex items-center gap-2 text-[.8125rem] text-code-foreground [&_svg]:size-4.5 [&_svg]:text-code-foreground [&_svg]:opacity-70 sm:[&_svg]:size-4",
           className,
         )}
         {...props}
