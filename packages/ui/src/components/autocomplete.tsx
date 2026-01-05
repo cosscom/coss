@@ -26,7 +26,7 @@ function AutocompleteInput({
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
-    <div className="relative not-has-[>*.w-full]:w-fit w-full">
+    <div className="relative not-has-[>*.w-full]:w-fit w-full has-disabled:opacity-64">
       {startAddon && (
         <div
           aria-hidden="true"
