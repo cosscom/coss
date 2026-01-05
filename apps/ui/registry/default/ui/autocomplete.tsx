@@ -23,7 +23,7 @@ function AutocompleteInput({
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
-    <div className="relative w-full">
+    <div className="relative not-has-[>*.w-full]:w-fit w-full">
       <AutocompletePrimitive.Input
         className={cn(
           sizeValue === "sm"

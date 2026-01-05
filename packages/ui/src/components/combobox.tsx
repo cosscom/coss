@@ -66,7 +66,7 @@ function ComboboxInput({
   }
   // single mode
   return (
-    <div className={cn("relative w-full has-disabled:opacity-64", className)}>
+    <div className="relative not-has-[>*.w-full]:w-fit w-full has-disabled:opacity-64">
       <ComboboxPrimitive.Input
         className={cn(
           sizeValue === "sm"
