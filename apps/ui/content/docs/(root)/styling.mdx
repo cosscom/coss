@@ -202,3 +202,33 @@ We've introduced additional color variables beyond the standard shadcn/ui palett
 - `--warning-foreground`: Foreground color for warning states
 
 These additional variables ensure consistent styling across components that need to communicate different states or levels of importance.
+
+## Base UI Setup
+
+Since this library is built on Base UI, you need to configure CSS isolation to ensure portaled components (Dialogs, Popovers, Selects, etc.) render correctly above page content.
+
+### Application Root Isolation
+
+Add `isolation: isolate` to your application's root wrapper div. This creates a separate stacking context so portaled components always appear above page contents without z-index conflicts.
+
+```tsx title="app/layout.tsx"
+<body>
+  <div className="isolate relative flex min-h-svh flex-col">
+    {children}
+  </div>
+</body>
+```
+
+### iOS Safari Compatibility
+
+For iOS Safari 26+ compatibility, add `position: relative` to the body element. This ensures backdrops properly cover the visual viewport after page scrolling.
+
+```tsx title="app/layout.tsx"
+<body className="relative">
+  <div className="isolate relative flex min-h-svh flex-col">
+    {children}
+  </div>
+</body>
+```
+
+These styles ensure Base UI components maintain proper rendering hierarchy and visual layering throughout your application. Without isolation, you may experience z-index conflicts where page content appears above modal dialogs or popovers.
