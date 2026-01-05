@@ -625,6 +625,7 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/input",
+        "@coss/scroll-area",
         "@coss/separator",
         "@coss/sheet",
         "@coss/skeleton",
@@ -2416,8 +2417,7 @@
         "@coss/checkbox-group",
         "@coss/field",
         "@coss/fieldset",
-        "@coss/form",
-        "@coss/label"
+        "@coss/form"
       ],
       "type": "registry:block"
     },

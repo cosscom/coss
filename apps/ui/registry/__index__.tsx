@@ -677,7 +677,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -2387,7 +2387,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-5",
     description: "Checkbox group form",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form","@coss/label"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-5.tsx",
       type: "registry:block",

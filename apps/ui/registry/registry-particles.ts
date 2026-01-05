@@ -864,7 +864,6 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/fieldset",
       "@coss/form",
-      "@coss/label",
     ],
     type: "registry:block",
   },
