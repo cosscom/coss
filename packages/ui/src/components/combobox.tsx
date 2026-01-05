@@ -70,7 +70,7 @@ function ComboboxInput({
 
   // single mode
   return (
-    <div className="relative w-full has-disabled:opacity-64">
+    <div className="relative not-has-[>*.w-full]:w-fit w-full has-disabled:opacity-64">
       {startAddon && (
         <div
           aria-hidden="true"
