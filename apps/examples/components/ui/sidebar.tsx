@@ -51,7 +51,7 @@ function SidebarProvider({
       <TooltipProvider delay={150} timeout={0}>
         <div
           className={cn(
-            "group/sidebar-wrapper flex min-h-svh w-full bg-sidebar [--sidebar-width:4rem] lg:[--sidebar-width:16rem]",
+            "group/sidebar-wrapper isolate flex min-h-svh w-full bg-sidebar [--sidebar-width:4rem] lg:[--sidebar-width:16rem]",
             className,
           )}
           data-slot="sidebar-wrapper"

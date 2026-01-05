@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontHeading.variable} ${fontSans.variable} bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontHeading.variable} ${fontSans.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <ToastProvider>{children}</ToastProvider>

@@ -184,9 +184,6 @@
 }
 
 @layer base {
-  body {
-    @apply font-normal text-base;
-  }
   * {
     @apply border-border outline-ring/50;
   }
