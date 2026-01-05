@@ -9,8 +9,7 @@
     "@coss/sheet",
     "@coss/skeleton",
     "@coss/tooltip",
-    "@coss/use-mobile",
-    "@coss/utils"
+    "@coss/use-mobile"
   ],
   "files": [
     {

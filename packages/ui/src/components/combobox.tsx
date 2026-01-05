@@ -9,7 +9,7 @@ import { Input } from "@coss/ui/components/input";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
 const ComboboxContext = React.createContext<{
-  chipsRef: React.RefObject<HTMLDivElement | null> | null;
+  chipsRef: React.RefObject<Element | null> | null;
   multiple: boolean;
 }>({
   chipsRef: null,
@@ -24,7 +24,7 @@ type ComboboxRootProps<
 function Combobox<ItemValue, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<ItemValue, Multiple>,
 ) {
-  const chipsRef = React.useRef<HTMLDivElement | null>(null);
+  const chipsRef = React.useRef<Element | null>(null);
   return (
     <ComboboxContext.Provider value={{ chipsRef, multiple: !!props.multiple }}>
       <ComboboxPrimitive.Root
@@ -38,12 +38,15 @@ function ComboboxInput({
   className,
   showTrigger = true,
   showClear = false,
+  startAddon,
   size,
   ...props
 }: Omit<ComboboxPrimitive.Input.Props, "size"> & {
   showTrigger?: boolean;
   showClear?: boolean;
+  startAddon?: React.ReactNode;
   size?: "sm" | "default" | "lg" | number;
+  ref?: React.Ref<HTMLInputElement>;
 }) {
   const { multiple } = React.useContext(ComboboxContext);
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
@@ -64,11 +67,23 @@ function ComboboxInput({
       />
     );
   }
+
   // single mode
   return (
     <div className="relative not-has-[>*.w-full]:w-fit w-full has-disabled:opacity-64">
+      {startAddon && (
+        <div
+          aria-hidden="true"
+          className="[&_svg]:-mx-0.5 pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4"
+          data-slot="combobox-start-addon"
+        >
+          {startAddon}
+        </div>
+      )}
       <ComboboxPrimitive.Input
         className={cn(
+          startAddon &&
+            "data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-1px)]",
           sizeValue === "sm"
             ? "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-6.5"
             : "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-7",
@@ -202,7 +217,7 @@ function ComboboxSeparator({
 function ComboboxGroup({ className, ...props }: ComboboxPrimitive.Group.Props) {
   return (
     <ComboboxPrimitive.Group
-      className={className}
+      className={cn("[[role=group]+&]:mt-1.5", className)}
       data-slot="combobox-group"
       {...props}
     />
@@ -299,7 +314,14 @@ function ComboboxCollection(props: ComboboxPrimitive.Collection.Props) {
   );
 }
 
-function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
+function ComboboxChips({
+  className,
+  children,
+  startAddon,
+  ...props
+}: ComboboxPrimitive.Chips.Props & {
+  startAddon?: React.ReactNode;
+}) {
   const { chipsRef } = React.useContext(ComboboxContext);
 
   return (
@@ -309,9 +331,31 @@ function ComboboxChips({ className, ...props }: ComboboxPrimitive.Chips.Props) {
         className,
       )}
       data-slot="combobox-chips"
-      ref={chipsRef}
+      onMouseDown={(e) => {
+        const target = e.target as HTMLElement;
+        const isChip = target.closest('[data-slot="combobox-chip"]');
+        if (isChip || !chipsRef?.current) return;
+        e.preventDefault();
+        const input: HTMLInputElement | null =
+          chipsRef.current.querySelector("input");
+        if (input && !chipsRef.current.querySelector("input:focus")) {
+          input.focus();
+        }
+      }}
+      ref={chipsRef as React.Ref<HTMLDivElement> | null}
       {...props}
-    />
+    >
+      {startAddon && (
+        <div
+          aria-hidden="true"
+          className="[&_svg]:-ms-0.5 [&_svg]:-me-1.5 flex shrink-0 items-center ps-2 opacity-80 has-[~[data-size=sm]]:has-[+[data-slot=combobox-chip]]:pe-1.5 has-[~[data-size=sm]]:ps-1.5 has-[+[data-slot=combobox-chip]]:pe-2 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none"
+          data-slot="combobox-start-addon"
+        >
+          {startAddon}
+        </div>
+      )}
+      {children}
+    </ComboboxPrimitive.Chips>
   );
 }
 

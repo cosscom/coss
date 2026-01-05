@@ -1,5 +1,6 @@
 "use client";
 
+import { CommandPanel } from "@coss/ui/components/command";
 import {
   ArrowTurnBackwardIcon,
   Atom01Icon,
@@ -10,37 +11,45 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import * as React from "react";
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { useConfig } from "@/hooks/use-config";
 import { useIsMac } from "@/hooks/use-is-mac";
-import { useMutationObserver } from "@/hooks/use-mutation-observer";
 import type { source } from "@/lib/source";
-import { cn } from "@/lib/utils";
 import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard";
 import { Button } from "@/registry/default/ui/button";
 import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogPopup,
-  DialogTitle,
-  DialogTrigger,
-} from "@/registry/default/ui/dialog";
-import { Separator } from "@/registry/default/ui/separator";
+  Command,
+  CommandCollection,
+  CommandDialog,
+  CommandDialogPopup,
+  CommandDialogTrigger,
+  CommandEmpty,
+  CommandFooter,
+  CommandGroup,
+  CommandGroupLabel,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/registry/default/ui/command";
+import { Kbd, KbdGroup } from "@/registry/default/ui/kbd";
+
+interface PageItem {
+  value: string;
+  label: string;
+  url: string;
+  isComponent: boolean;
+  keywords?: string[];
+}
+
+interface PageGroup {
+  value: string;
+  items: PageItem[];
+}
 
 export function CommandMenu({
   tree,
   navItems,
   ...props
-}: ComponentProps<typeof Dialog> & {
+}: ComponentProps<typeof CommandDialog> & {
   tree: typeof source.pageTree;
   navItems?: { href: string; label: string }[];
 }) {
@@ -55,9 +64,57 @@ export function CommandMenu({
   const [copyPayload, setCopyPayload] = React.useState("");
   const packageManager = config.packageManager || "pnpm";
 
+  // Convert tree structure to grouped items
+  const groupedItems = React.useMemo<PageGroup[]>(() => {
+    const groups: PageGroup[] = [];
+
+    // Add nav items group
+    if (navItems && navItems.length > 0) {
+      groups.push({
+        items: navItems.map((item) => ({
+          isComponent: false,
+          keywords: ["nav", "navigation", item.label.toLowerCase()],
+          label: item.label,
+          url: item.href,
+          value: `Navigation ${item.label}`,
+        })),
+        value: "Pages",
+      });
+    }
+
+    // Add tree groups
+    tree.children.forEach((group) => {
+      if (group.type === "folder") {
+        const items: PageItem[] = [];
+        group.children.forEach((item) => {
+          if (item.type === "page") {
+            const isComponent = item.url.includes("/components/");
+            const itemName = item.name?.toString() || "";
+            items.push({
+              isComponent,
+              keywords: isComponent ? ["component"] : undefined,
+              label: itemName,
+              url: item.url,
+              value: itemName ? `${group.name} ${itemName}` : "",
+            });
+          }
+        });
+        if (items.length > 0) {
+          groups.push({
+            items,
+            value:
+              typeof group.name === "string" ? group.name : String(group.name),
+          });
+        }
+      }
+    });
+
+    return groups;
+  }, [tree, navItems]);
+
   const handlePageHighlight = React.useCallback(
-    (isComponent: boolean, item: { url: string; name?: React.ReactNode }) => {
-      if (isComponent) {
+    (item: PageItem) => {
+      if (item.isComponent) {
         const componentName = item.url.split("/").pop();
         setSelectedType("component");
         const registryItem = `@coss/${componentName}`;
@@ -85,10 +142,13 @@ export function CommandMenu({
     [packageManager],
   );
 
-  const runCommand = React.useCallback((command: () => unknown) => {
-    setOpen(false);
-    command();
-  }, []);
+  const handleItemClick = React.useCallback(
+    (item: PageItem) => {
+      setOpen(false);
+      router.push(item.url);
+    },
+    [router],
+  );
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -107,191 +167,81 @@ export function CommandMenu({
       }
 
       if (e.key === "c" && (e.metaKey || e.ctrlKey)) {
-        runCommand(() => {
-          if (selectedType === "page" || selectedType === "component") {
-            copyToClipboard(copyPayload);
-          }
-        });
+        if (selectedType === "page" || selectedType === "component") {
+          copyToClipboard(copyPayload);
+        }
       }
     };
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [copyPayload, runCommand, selectedType, copyToClipboard]);
+  }, [copyPayload, selectedType, copyToClipboard]);
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
-      <DialogTrigger
-        render={
-          <Button onClick={() => setOpen(true)} variant="outline" {...props}>
-            <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
-            <div className="gap-1 sm:flex">
-              <CommandMenuKbd>{isMac ? "⌘" : "Ctrl"}</CommandMenuKbd>
-              <CommandMenuKbd className="aspect-square">K</CommandMenuKbd>
-            </div>
-          </Button>
-        }
-      />
-      <DialogPopup className="p-3 pb-13 sm:max-w-xl" showCloseButton={false}>
-        <DialogHeader className="sr-only">
-          <DialogTitle>Search documentation...</DialogTitle>
-          <DialogDescription>Search for a command to run...</DialogDescription>
-        </DialogHeader>
+    <CommandDialog onOpenChange={setOpen} open={open} {...props}>
+      <CommandDialogTrigger render={<Button variant="outline" />}>
+        <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
+        <KbdGroup className="gap-1">
+          <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
+          <Kbd className="aspect-square">K</Kbd>
+        </KbdGroup>
+      </CommandDialogTrigger>
+      <CommandDialogPopup>
         <Command
-          filter={(value, search, keywords) => {
-            const extendValue = `${value} ${keywords?.join(" ") || ""}`;
-            if (extendValue.toLowerCase().includes(search.toLowerCase())) {
-              return 1;
+          items={groupedItems}
+          onItemHighlighted={(highlightedValue) => {
+            const item = highlightedValue as PageItem | null;
+            if (item) {
+              handlePageHighlight(item);
             }
-            return 0;
           }}
         >
           <CommandInput placeholder="Search documentation…" />
-          <CommandList className="no-scrollbar min-h-76 scroll-pt-2 scroll-pb-1.5 pt-1">
-            <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
-              No results found.
-            </CommandEmpty>
-            {navItems && navItems.length > 0 && (
-              <CommandGroup
-                className="!p-0 [&_[cmdk-group-heading]]:!px-2 [&_[cmdk-group-heading]]:!pt-4 [&_[cmdk-group-heading]]:!pb-1.5 [&_[cmdk-group-heading]]:scroll-mt-16"
-                heading="Pages"
-              >
-                {navItems.map((item) => (
-                  <CommandMenuItem
-                    key={item.href}
-                    keywords={["nav", "navigation", item.label.toLowerCase()]}
-                    onHighlight={() => {
-                      setSelectedType("page");
-                      setCopyPayload("");
-                    }}
-                    onSelect={() => {
-                      runCommand(() => router.push(item.href));
-                    }}
-                    value={`Navigation ${item.label}`}
-                  >
-                    <HugeiconsIcon
-                      className="opacity-80"
-                      icon={BookOpen02Icon}
-                      strokeWidth={2}
-                    />
-                    {item.label}
-                  </CommandMenuItem>
-                ))}
-              </CommandGroup>
-            )}
-            {tree.children.map((group) => (
-              <CommandGroup
-                className="!p-0 [&_[cmdk-group-heading]]:!px-2 [&_[cmdk-group-heading]]:!pt-4 [&_[cmdk-group-heading]]:!pb-1.5 [&_[cmdk-group-heading]]:scroll-mt-16"
-                heading={group.name}
-                key={group.$id}
-              >
-                {group.type === "folder" &&
-                  group.children.map((item) => {
-                    if (item.type === "page") {
-                      const isComponent = item.url.includes("/components/");
-
-                      return (
-                        <CommandMenuItem
-                          key={item.url}
-                          keywords={isComponent ? ["component"] : undefined}
-                          onHighlight={() =>
-                            handlePageHighlight(isComponent, item)
-                          }
-                          onSelect={() => {
-                            runCommand(() => router.push(item.url));
-                          }}
-                          value={
-                            item.name?.toString()
-                              ? `${group.name} ${item.name}`
-                              : ""
-                          }
-                        >
-                          {isComponent ? (
-                            <HugeiconsIcon
-                              className="opacity-80"
-                              icon={Atom01Icon}
-                              strokeWidth={2}
-                            />
-                          ) : (
-                            <HugeiconsIcon
-                              className="opacity-80"
-                              icon={BookOpen02Icon}
-                              strokeWidth={2}
-                            />
-                          )}
-                          {item.name}
-                        </CommandMenuItem>
-                      );
-                    }
-                    return null;
-                  })}
-              </CommandGroup>
-            ))}
-          </CommandList>
-        </Command>
-        <div className="absolute inset-x-0 bottom-0 z-20 flex items-center gap-2 rounded-b-xl border-t bg-muted px-4 py-3 text-muted-foreground text-xs">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <CommandMenuKbd>
-              <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
-            </CommandMenuKbd>{" "}
-            {selectedType === "page" || selectedType === "component"
-              ? "Go to Page"
-              : null}
-          </div>
-          {copyPayload && (
-            <>
-              <Separator className="!h-4" orientation="vertical" />
-              <div className="flex min-w-0 items-center gap-1">
-                <CommandMenuKbd>{isMac ? "⌘" : "Ctrl"}</CommandMenuKbd>
-                <CommandMenuKbd>C</CommandMenuKbd>
-                <span className="truncate">{copyPayload}</span>
+          <CommandPanel>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandList>
+              {(group: PageGroup, _index: number) => (
+                <CommandGroup items={group.items} key={group.value}>
+                  <CommandGroupLabel>{group.value}</CommandGroupLabel>
+                  <CommandCollection>
+                    {(item: PageItem) => (
+                      <CommandItem
+                        key={item.value}
+                        onClick={() => handleItemClick(item)}
+                        value={item.value}
+                      >
+                        <HugeiconsIcon
+                          className="mr-2 h-4 w-4 opacity-80"
+                          icon={item.isComponent ? Atom01Icon : BookOpen02Icon}
+                          strokeWidth={2}
+                        />
+                        <span className="flex-1">{item.label}</span>
+                      </CommandItem>
+                    )}
+                  </CommandCollection>
+                </CommandGroup>
+              )}
+            </CommandList>
+          </CommandPanel>
+          <CommandFooter>
+            <div className="flex items-center gap-2">
+              <span>Go to Page</span>
+              <Kbd>
+                <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
+              </Kbd>
+            </div>
+            {copyPayload && (
+              <div className="flex items-center gap-2">
+                <span className="truncate font-mono">{copyPayload}</span>
+                <KbdGroup>
+                  <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
+                  <Kbd>C</Kbd>
+                </KbdGroup>
               </div>
-            </>
-          )}
-        </div>
-      </DialogPopup>
-    </Dialog>
-  );
-}
-
-function CommandMenuItem({
-  children,
-  onHighlight,
-  ...props
-}: React.ComponentProps<typeof CommandItem> & {
-  onHighlight?: () => void;
-  "data-selected"?: string;
-  "aria-selected"?: string;
-}) {
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  useMutationObserver(ref, (mutations) => {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.type === "attributes" &&
-        mutation.attributeName === "aria-selected" &&
-        ref.current?.getAttribute("aria-selected") === "true"
-      ) {
-        onHighlight?.();
-      }
-    });
-  });
-
-  return (
-    <CommandItem ref={ref} {...props}>
-      {children}
-    </CommandItem>
-  );
-}
-
-function CommandMenuKbd({ className, ...props }: React.ComponentProps<"kbd">) {
-  return (
-    <kbd
-      className={cn(
-        "pointer-events-none flex h-5 select-none items-center justify-center gap-1 rounded border bg-background px-1 font-medium font-sans text-[0.7rem] text-muted-foreground [&_svg:not([class*='size-'])]:size-3",
-        className,
-      )}
-      {...props}
-    />
+            )}
+          </CommandFooter>
+        </Command>
+      </CommandDialogPopup>
+    </CommandDialog>
   );
 }

@@ -17,6 +17,7 @@
         "@coss/checkbox-group",
         "@coss/collapsible",
         "@coss/combobox",
+        "@coss/command",
         "@coss/dialog",
         "@coss/empty",
         "@coss/field",
@@ -210,7 +211,9 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [],
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/card.tsx",
@@ -273,6 +276,22 @@
       "registryDependencies": [
         "@coss/input",
         "@coss/scroll-area"
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/command.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "command",
+      "registryDependencies": [
+        "@coss/autocomplete"
       ],
       "type": "registry:ui"
     },
@@ -612,8 +631,7 @@
         "@coss/sheet",
         "@coss/skeleton",
         "@coss/tooltip",
-        "@coss/use-mobile",
-        "@coss/utils"
+        "@coss/use-mobile"
       ],
       "type": "registry:ui"
     },
@@ -1343,6 +1361,28 @@
         "@coss/button",
         "@coss/field",
         "@coss/form"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "form",
+        "input"
+      ],
+      "description": "Autocomplete form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-14",
+      "registryDependencies": [
+        "@coss/autocomplete"
       ],
       "type": "registry:block"
     },
@@ -2666,6 +2706,77 @@
         "@coss/combobox",
         "@coss/field",
         "@coss/form"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox with start addon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-13",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox multiple with start addon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-14",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "command",
+        "dialog"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Command palette with dialog",
+      "files": [
+        {
+          "path": "registry/default/particles/p-command-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-command-1",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/command",
+        "@coss/kbd"
       ],
       "type": "registry:block"
     },

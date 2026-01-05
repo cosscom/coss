@@ -17,6 +17,7 @@ export const ui: Registry["items"] = [
       "@coss/checkbox-group",
       "@coss/collapsible",
       "@coss/combobox",
+      "@coss/command",
       "@coss/dialog",
       "@coss/empty",
       "@coss/field",
@@ -193,7 +194,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: [],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/card.tsx",
@@ -246,6 +247,18 @@ export const ui: Registry["items"] = [
     ],
     name: "combobox",
     registryDependencies: ["@coss/input", "@coss/scroll-area"],
+    type: "registry:ui",
+  },
+  {
+    dependencies: ["@base-ui/react"],
+    files: [
+      {
+        path: "ui/command.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "command",
+    registryDependencies: ["@coss/autocomplete"],
     type: "registry:ui",
   },
   {
@@ -534,7 +547,6 @@ export const ui: Registry["items"] = [
       "@coss/skeleton",
       "@coss/tooltip",
       "@coss/use-mobile",
-      "@coss/utils",
     ],
     type: "registry:ui",
   },
