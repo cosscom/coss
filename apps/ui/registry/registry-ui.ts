@@ -194,7 +194,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: [],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/card.tsx",
