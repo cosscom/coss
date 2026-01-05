@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-progress-2",
+  "type": "registry:block",
   "description": "Progress with label and value",
   "registryDependencies": [
     "@coss/progress"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "progress"
-  ],
-  "type": "registry:block"
+  ]
 }

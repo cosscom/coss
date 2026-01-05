@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-combobox-10",
+  "type": "registry:block",
   "description": "Combobox with input inside popup",
   "dependencies": [
     "lucide-react"
@@ -22,6 +23,5 @@
   "categories": [
     "combobox",
     "input"
-  ],
-  "type": "registry:block"
+  ]
 }

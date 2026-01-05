@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-switch-5",
+  "type": "registry:block",
   "description": "Switch in form",
   "registryDependencies": [
     "@coss/button",
@@ -17,6 +18,5 @@
   ],
   "categories": [
     "switch"
-  ],
-  "type": "registry:block"
+  ]
 }

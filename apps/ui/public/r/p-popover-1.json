@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-popover-1",
+  "type": "registry:block",
   "description": "Popover with a form",
   "registryDependencies": [
     "@coss/button",
@@ -22,6 +23,5 @@
     "form",
     "popover",
     "textarea"
-  ],
-  "type": "registry:block"
+  ]
 }

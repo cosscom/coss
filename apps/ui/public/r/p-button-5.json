@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-5",
+  "type": "registry:block",
   "description": "Destructive outline button",
   "registryDependencies": [
     "@coss/button"
@@ -14,6 +15,5 @@
   ],
   "categories": [
     "button"
-  ],
-  "type": "registry:block"
+  ]
 }

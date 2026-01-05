@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-16",
+  "type": "registry:block",
   "description": "Field with slider",
   "registryDependencies": [
     "@coss/field",
@@ -20,6 +21,5 @@
     "field",
     "label",
     "slider"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-breadcrumb-2",
+  "type": "registry:block",
   "description": "Breadcrumb with custom separator",
   "registryDependencies": [
     "@coss/breadcrumb"
@@ -14,6 +15,5 @@
   ],
   "categories": [
     "breadcrumb"
-  ],
-  "type": "registry:block"
+  ]
 }

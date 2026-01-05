@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toggle-7",
+  "type": "registry:block",
   "description": "Toggle icon group",
   "dependencies": [
     "lucide-react"
@@ -17,6 +18,5 @@
   ],
   "categories": [
     "toggle"
-  ],
-  "type": "registry:block"
+  ]
 }

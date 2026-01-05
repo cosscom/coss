@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "skeleton",
+  "type": "registry:ui",
   "files": [
     {
       "path": "registry/default/ui/skeleton.tsx",
@@ -19,6 +20,5 @@
         "background-position": "-200% 0"
       }
     }
-  },
-  "type": "registry:ui"
+  }
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-switch-3",
+  "type": "registry:block",
   "description": "Switch with description",
   "registryDependencies": [
     "@coss/label",
@@ -15,6 +16,5 @@
   ],
   "categories": [
     "switch"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-combobox-2",
+  "type": "registry:block",
   "description": "Disabled combobox",
   "registryDependencies": [
     "@coss/combobox"
@@ -19,6 +20,5 @@
     "combobox",
     "input",
     "disabled"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-alert-1",
+  "type": "registry:block",
   "description": "Basic alert",
   "registryDependencies": [
     "@coss/alert"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "alert"
-  ],
-  "type": "registry:block"
+  ]
 }

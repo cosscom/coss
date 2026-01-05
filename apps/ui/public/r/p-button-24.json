@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-24",
+  "type": "registry:block",
   "description": "Social login icon buttons",
   "dependencies": [
     "@remixicon/react"
@@ -17,6 +18,5 @@
   ],
   "categories": [
     "button"
-  ],
-  "type": "registry:block"
+  ]
 }

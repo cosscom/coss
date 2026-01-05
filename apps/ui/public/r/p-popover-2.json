@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-popover-2",
+  "type": "registry:block",
   "description": "Popover with close button",
   "dependencies": [
     "lucide-react"
@@ -19,6 +20,5 @@
   "categories": [
     "button",
     "popover"
-  ],
-  "type": "registry:block"
+  ]
 }

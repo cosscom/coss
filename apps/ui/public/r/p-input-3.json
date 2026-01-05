@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-3",
+  "type": "registry:block",
   "description": "Large input",
   "registryDependencies": [
     "@coss/input"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "input"
-  ],
-  "type": "registry:block"
+  ]
 }

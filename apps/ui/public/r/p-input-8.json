@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-8",
+  "type": "registry:block",
   "description": "Input with start text and end tooltip",
   "registryDependencies": [
     "@coss/button",
@@ -22,6 +23,5 @@
     "input",
     "input group",
     "popover"
-  ],
-  "type": "registry:block"
+  ]
 }

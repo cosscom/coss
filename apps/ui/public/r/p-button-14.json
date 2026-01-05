@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-14",
+  "type": "registry:block",
   "description": "Small icon button",
   "dependencies": [
     "lucide-react"
@@ -17,6 +18,5 @@
   ],
   "categories": [
     "button"
-  ],
-  "type": "registry:block"
+  ]
 }

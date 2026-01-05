@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-select-11",
+  "type": "registry:block",
   "description": "Select in form",
   "registryDependencies": [
     "@coss/button",
@@ -20,6 +21,5 @@
   },
   "categories": [
     "select"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-4",
+  "type": "registry:block",
   "description": "Disabled textarea",
   "registryDependencies": [
     "@coss/textarea"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "textarea"
-  ],
-  "type": "registry:block"
+  ]
 }

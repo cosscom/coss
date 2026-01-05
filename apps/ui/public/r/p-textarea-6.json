@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-6",
+  "type": "registry:block",
   "description": "Textarea in form",
   "registryDependencies": [
     "@coss/button",
@@ -20,6 +21,5 @@
   },
   "categories": [
     "textarea"
-  ],
-  "type": "registry:block"
+  ]
 }

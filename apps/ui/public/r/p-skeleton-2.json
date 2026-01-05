@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-skeleton-2",
+  "type": "registry:block",
   "description": "Skeleton only",
   "registryDependencies": [
     "@coss/skeleton"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "skeleton"
-  ],
-  "type": "registry:block"
+  ]
 }

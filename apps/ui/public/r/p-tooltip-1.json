@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tooltip-1",
+  "type": "registry:block",
   "description": "Basic tooltip",
   "registryDependencies": [
     "@coss/button",
@@ -15,6 +16,5 @@
   ],
   "categories": [
     "tooltip"
-  ],
-  "type": "registry:block"
+  ]
 }

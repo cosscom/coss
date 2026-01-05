@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-18",
+  "type": "registry:block",
   "description": "Complete form built with field",
   "registryDependencies": [
     "@coss/button",
@@ -27,6 +28,5 @@
     "form",
     "label",
     "select"
-  ],
-  "type": "registry:block"
+  ]
 }

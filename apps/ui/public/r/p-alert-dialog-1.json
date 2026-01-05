@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-alert-dialog-1",
+  "type": "registry:block",
   "description": "Alert dialog",
   "registryDependencies": [
     "@coss/alert-dialog",
@@ -16,6 +17,5 @@
   "categories": [
     "alert dialog",
     "dialog"
-  ],
-  "type": "registry:block"
+  ]
 }

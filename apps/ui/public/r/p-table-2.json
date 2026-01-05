@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-table-2",
+  "type": "registry:block",
   "description": "Framed table",
   "registryDependencies": [
     "@coss/badge",
@@ -21,6 +22,5 @@
   "categories": [
     "frame",
     "table"
-  ],
-  "type": "registry:block"
+  ]
 }

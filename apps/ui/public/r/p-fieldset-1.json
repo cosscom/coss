@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-fieldset-1",
+  "type": "registry:block",
   "description": "Fieldset with multiple fields",
   "registryDependencies": [
     "@coss/field",
@@ -19,6 +20,5 @@
   },
   "categories": [
     "fieldset"
-  ],
-  "type": "registry:block"
+  ]
 }

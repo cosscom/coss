@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toolbar-1",
+  "type": "registry:block",
   "description": "Toolbar with toggles, buttons, and select",
   "dependencies": [
     "lucide-react"
@@ -21,6 +22,5 @@
   ],
   "categories": [
     "toolbar"
-  ],
-  "type": "registry:block"
+  ]
 }

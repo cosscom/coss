@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-menu-1",
+  "type": "registry:block",
   "description": "Basic menu",
   "registryDependencies": [
     "@coss/button",
@@ -15,6 +16,5 @@
   ],
   "categories": [
     "menu"
-  ],
-  "type": "registry:block"
+  ]
 }

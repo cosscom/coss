@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-6",
+  "type": "registry:block",
   "description": "Input group with field",
   "registryDependencies": [
     "@coss/button",
@@ -22,6 +23,5 @@
     "field",
     "input",
     "input group"
-  ],
-  "type": "registry:block"
+  ]
 }

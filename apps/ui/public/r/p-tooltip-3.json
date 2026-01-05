@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tooltip-3",
+  "type": "registry:block",
   "description": "Toggle group animated tooltip",
   "registryDependencies": [
     "@coss/toggle-group",
@@ -15,6 +16,5 @@
   ],
   "categories": [
     "tooltip"
-  ],
-  "type": "registry:block"
+  ]
 }

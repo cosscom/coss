@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-form-2",
+  "type": "registry:block",
   "description": "Form with zod validation",
   "dependencies": [
     "zod"
@@ -28,6 +29,5 @@
     "label",
     "validation",
     "zod"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-meter-4",
+  "type": "registry:block",
   "description": "Meter with range",
   "registryDependencies": [
     "@coss/meter"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "meter"
-  ],
-  "type": "registry:block"
+  ]
 }

@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-15",
+  "type": "registry:block",
   "description": "Field with toggle switch",
   "registryDependencies": [
     "@coss/field",
@@ -17,6 +18,5 @@
     "field",
     "label",
     "switch"
-  ],
-  "type": "registry:block"
+  ]
 }

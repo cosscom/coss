@@ -1,6 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-frame-1",
+  "type": "registry:block",
   "description": "Basic frame",
   "registryDependencies": [
     "@coss/frame"
@@ -17,6 +18,5 @@
   },
   "categories": [
     "frame"
-  ],
-  "type": "registry:block"
+  ]
 }
