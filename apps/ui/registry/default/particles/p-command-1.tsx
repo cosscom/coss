@@ -77,7 +77,10 @@ export default function Particle() {
     <CommandDialog onOpenChange={setOpen} open={open}>
       <CommandDialogTrigger render={<Button variant="outline" />}>
         Open Command Palette
-        <Kbd>⌘J</Kbd>
+        <KbdGroup>
+          <Kbd>⌘</Kbd>
+          <Kbd>J</Kbd>
+        </KbdGroup>
       </CommandDialogTrigger>
       <CommandDialogPopup>
         <Command items={groupedItems}>

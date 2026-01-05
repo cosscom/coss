@@ -2782,6 +2782,34 @@
     },
     {
       "categories": [
+        "command",
+        "dialog"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Command palette with AI assistant",
+      "files": [
+        {
+          "path": "registry/default/particles/p-command-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-command-2",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/button",
+        "@coss/command",
+        "@coss/input",
+        "@coss/kbd",
+        "@coss/scroll-area",
+        "@coss/skeleton",
+        "@coss/spinner"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "dialog"
       ],
       "description": "Dialog with form",

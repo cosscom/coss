@@ -2689,6 +2689,24 @@ export const Index: Record<string, any> = {
     categories: ["command","dialog"],
     meta: undefined,
   },
+  "p-command-2": {
+    name: "p-command-2",
+    description: "Command palette with AI assistant",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/command","@coss/input","@coss/kbd","@coss/scroll-area","@coss/skeleton","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-command-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-command-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["command","dialog"],
+    meta: undefined,
+  },
   "p-dialog-1": {
     name: "p-dialog-1",
     description: "Dialog with form",
