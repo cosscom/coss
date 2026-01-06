@@ -4690,6 +4690,25 @@
     },
     {
       "categories": [
+        "menu",
+        "switch"
+      ],
+      "description": "Menu with checkbox items as switches",
+      "files": [
+        {
+          "path": "registry/default/particles/p-menu-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-menu-9",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "menu"
       ],
       "description": "Menu with radio group",
@@ -5940,6 +5959,24 @@
         "@coss/button",
         "@coss/field",
         "@coss/form",
+        "@coss/switch"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "switch"
+      ],
+      "description": "Small switch",
+      "files": [
+        {
+          "path": "registry/default/particles/p-switch-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-switch-6",
+      "registryDependencies": [
+        "@coss/label",
         "@coss/switch"
       ],
       "type": "registry:block"

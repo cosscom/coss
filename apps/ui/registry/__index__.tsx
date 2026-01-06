@@ -4255,6 +4255,24 @@ export const Index: Record<string, any> = {
     categories: ["menu"],
     meta: undefined,
   },
+  "p-menu-9": {
+    name: "p-menu-9",
+    description: "Menu with checkbox items as switches",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/menu"],
+    files: [{
+      path: "registry/default/particles/p-menu-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-menu-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["menu","switch"],
+    meta: undefined,
+  },
   "p-menu-4": {
     name: "p-menu-4",
     description: "Menu with radio group",
@@ -5383,6 +5401,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-switch-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch"],
+    meta: undefined,
+  },
+  "p-switch-6": {
+    name: "p-switch-6",
+    description: "Small switch",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/switch"],
+    files: [{
+      path: "registry/default/particles/p-switch-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-6.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

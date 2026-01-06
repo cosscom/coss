@@ -2145,6 +2145,14 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("menu", "switch"),
+    description: "Menu with checkbox items as switches",
+    files: [{ path: "particles/p-menu-9.tsx", type: "registry:block" }],
+    name: "p-menu-9",
+    registryDependencies: ["@coss/button", "@coss/menu"],
+    type: "registry:block",
+  },
+  {
     categories: categories("menu"),
     description: "Menu with radio group",
     files: [{ path: "particles/p-menu-4.tsx", type: "registry:block" }],
@@ -2832,6 +2840,14 @@ export const particles: ParticleItem[] = [
       "@coss/form",
       "@coss/switch",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("switch"),
+    description: "Small switch",
+    files: [{ path: "particles/p-switch-6.tsx", type: "registry:block" }],
+    name: "p-switch-6",
+    registryDependencies: ["@coss/label", "@coss/switch"],
     type: "registry:block",
   },
   {

@@ -167,7 +167,7 @@ export function EventTypes() {
                   <div
                     className={cn(
                       "flex flex-col items-start gap-1 transition-opacity",
-                      isHidden && "opacity-63",
+                      isHidden && "opacity-64",
                     )}
                   >
                     <div>
@@ -304,10 +304,10 @@ export function EventTypes() {
                         <MenuSeparator />
                         <MenuCheckboxItem
                           checked={!isHidden}
-                          className="*:[.col-start-2]:-order-1 grid-cols-[1fr_1rem] pe-2 *:[.col-start-1]:col-start-2 *:[.col-start-2]:col-start-1"
                           onCheckedChange={(checked) => {
                             handleHiddenToggle(eventType.id, !checked);
                           }}
+                          variant="switch"
                         >
                           Show on profile
                         </MenuCheckboxItem>
