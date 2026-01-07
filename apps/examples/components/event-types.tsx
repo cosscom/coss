@@ -36,6 +36,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "./app-header";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
@@ -126,22 +132,22 @@ export function EventTypes() {
 
   return (
     <TooltipProvider delay={150} timeout={0}>
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-lg leading-none">Event Types</h1>
-          <p className="text-muted-foreground text-sm max-md:hidden">
+      <AppHeader>
+        <AppHeaderContent title="Event Types">
+          <AppHeaderDescription>
             Create events to share for people to book on your calendar.
-          </p>
-        </div>
-        <AddEventTypeDialog className="max-md:hidden">
-          <PlusIcon className="-ms-1 opacity-72" />
-          New
-        </AddEventTypeDialog>
-      </div>
+          </AppHeaderDescription>
+        </AppHeaderContent>
+        <AppHeaderActions>
+          <AddEventTypeDialog className="max-md:hidden">
+            <PlusIcon className="-ms-1 opacity-72" />
+            New
+          </AddEventTypeDialog>
+        </AppHeaderActions>
+      </AppHeader>
 
       {/* Search */}
-      <div className="mt-6">
+      <div>
         <InputGroup className="md:max-w-64">
           <InputGroupInput
             aria-label="Search"

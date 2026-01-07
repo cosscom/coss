@@ -4,6 +4,11 @@ import { ToastProvider } from "@coss/ui/components/toast";
 import { fontHeading, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
+import { AppCommand } from "@/components/app-command";
+import { AppSidebar } from "@/components/app-sidebar";
+import { MobileFooter } from "@/components/mobile-footer";
+import { MobileHeader } from "@/components/mobile-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
   description: "coss.com - the everything but AI company",
@@ -22,7 +27,15 @@ export default function RootLayout({
         className={`${fontHeading.variable} ${fontSans.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <AppCommand />
+            <SidebarProvider>
+              <MobileHeader />
+              <AppSidebar />
+              <SidebarInset className="max-md:pt-14">{children}</SidebarInset>
+              <MobileFooter />
+            </SidebarProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

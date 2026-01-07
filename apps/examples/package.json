@@ -27,7 +27,7 @@
   "scripts": {
     "build": "next build",
     "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf .next",
-    "dev": "next dev",
+    "dev": "next dev --port 4002",
     "lint": "biome lint .",
     "start": "next start",
     "typecheck": "tsc --noEmit"

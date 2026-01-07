@@ -16,7 +16,8 @@ import {
 import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -66,6 +67,24 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
 
   const TooltipContent = () => item.title;
 
+  /* Collapsible version for expanded sidebar */
+  const pathname = usePathname();
+  const isActive = useMemo(
+    () => item.items.some((subItem) => pathname.startsWith(subItem.url)),
+    [item.items, pathname],
+  );
+
+  const [isExpanded, setIsExpanded] = useState<boolean>(
+    !!(isActive || item.isActive),
+  );
+
+  // Auto-expand when active
+  useEffect(() => {
+    if (isActive) {
+      setIsExpanded(true);
+    }
+  }, [isActive]);
+
   return (
     <SidebarMenuItem>
       {/* Menu version for collapsed sidebar (md-lg breakpoint) */}
@@ -91,7 +110,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
                 render={
                   <SidebarMenuButton
                     aria-label={item.title}
-                    isActive={item.isActive}
+                    isActive={isActive || item.isActive}
                   >
                     <item.icon />
                   </SidebarMenuButton>
@@ -120,14 +139,14 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
       {/* Collapsible version for expanded sidebar */}
       <Collapsible
         className="md:max-lg:hidden"
-        defaultOpen={item.isActive}
+        onOpenChange={setIsExpanded}
+        open={isExpanded}
         render={<div />}
       >
         <CollapsibleTrigger
           className="justify-between font-medium text-sidebar-foreground"
           render={
             <SidebarMenuButton
-              isActive={item.isActive}
               tooltip={isBetweenMdAndLg ? item.title : undefined}
             />
           }
@@ -143,7 +162,8 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             {item.items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
-                  className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-linear-to-tr"
+                  className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+                  isActive={pathname.startsWith(subItem.url)}
                   render={
                     <Link href={subItem.url}>
                       <span>{subItem.title}</span>
@@ -161,12 +181,14 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
 
 function NavItemSimple({ item }: { item: NavItemLeaf }) {
   const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const pathname = usePathname();
+  const isActive = pathname.startsWith(item.url);
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         className="font-medium text-sidebar-foreground"
-        isActive={item.isActive}
+        isActive={isActive}
         render={
           <Link href={item.url}>
             <item.icon />

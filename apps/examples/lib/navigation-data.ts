@@ -36,81 +36,80 @@ export interface User {
 export const navMainItems: NavItem[] = [
   {
     icon: Link2Icon,
-    isActive: true,
     title: "Event Types",
-    url: "#",
+    url: "/event-types",
   },
   {
     icon: CalendarIcon,
     items: [
       {
         title: "Upcoming",
-        url: "#",
+        url: "/booking/upcoming",
       },
       {
         title: "Unconfirmed",
-        url: "#",
+        url: "/booking/unconfirmed",
       },
       {
         title: "Recurring",
-        url: "#",
+        url: "/booking/recurring",
       },
       {
         title: "Past",
-        url: "#",
+        url: "/booking/past",
       },
       {
         title: "Canceled",
-        url: "#",
+        url: "/booking/canceled",
       },
     ],
     title: "Bookings",
-    url: "#",
+    url: "/booking",
   },
   {
     icon: ClockFadingIcon,
     title: "Availability",
-    url: "#",
+    url: "/availability",
   },
   {
     icon: ContactRoundIcon,
     title: "Members",
-    url: "#",
+    url: "/members",
   },
   {
     icon: UsersRoundIcon,
     title: "Teams",
-    url: "#",
+    url: "/teams",
   },
   {
     icon: Grid2x2Plus,
     items: [
       {
         title: "App Store",
-        url: "#",
+        url: "/apps/store",
       },
       {
         title: "Installed Apps",
-        url: "#",
+        url: "/apps/installed",
       },
     ],
     title: "Apps",
-    url: "#",
+    url: "/apps",
   },
   {
     icon: RouteIcon,
     title: "Routing",
-    url: "#",
+    url: "/routing",
   },
   {
     icon: WorkflowIcon,
     title: "Workflows",
-    url: "#",
+    url: "/workflows",
   },
   {
     icon: ActivityIcon,
     title: "Insights",
-    url: "#",
+    url: "/insights",
   },
 ];
 
@@ -118,7 +117,7 @@ export const navFooterItems: NavItem[] = [
   {
     icon: ExternalLinkIcon,
     title: "View public page",
-    url: "#",
+    url: "/public",
   },
   {
     icon: CopyIcon,
@@ -128,12 +127,12 @@ export const navFooterItems: NavItem[] = [
   {
     icon: GiftIcon,
     title: "Refer and earn",
-    url: "#",
+    url: "/refer",
   },
   {
     icon: SettingsIcon,
     title: "Settings",
-    url: "#",
+    url: "/settings",
   },
 ];
 
