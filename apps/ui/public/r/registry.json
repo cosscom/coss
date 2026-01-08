@@ -3513,7 +3513,8 @@
       },
       "name": "p-frame-4",
       "registryDependencies": [
-        "@coss/frame"
+        "@coss/frame",
+        "@coss/separator"
       ],
       "type": "registry:block"
     },

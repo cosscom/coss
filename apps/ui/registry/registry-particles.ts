@@ -1490,7 +1490,7 @@ export const particles: ParticleItem[] = [
       className: "**:data-[slot=preview]:w-full",
     },
     name: "p-frame-4",
-    registryDependencies: ["@coss/frame"],
+    registryDependencies: ["@coss/frame", "@coss/separator"],
     type: "registry:block",
   },
   {
