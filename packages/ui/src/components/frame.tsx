@@ -4,16 +4,13 @@ import { cn } from "@coss/ui/lib/utils";
 
 function Frame({
   className,
-  stackedPanels = false,
   ...props
-}: React.ComponentProps<"div"> & { stackedPanels?: boolean }) {
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
         "relative flex flex-col rounded-2xl bg-muted/72 p-1",
-        stackedPanels
-          ? "*:has-[+[data-slot=frame-panel]]:rounded-b-none *:has-[+[data-slot=frame-panel]]:before:hidden dark:*:has-[+[data-slot=frame-panel]]:before:block *:[[data-slot=frame-panel]+[data-slot=frame-panel]]:rounded-t-none *:[[data-slot=frame-panel]+[data-slot=frame-panel]]:border-t-0 dark:*:[[data-slot=frame-panel]+[data-slot=frame-panel]]:before:hidden"
-          : "*:[[data-slot=frame-panel]+[data-slot=frame-panel]]:mt-1",
+        "*:[[data-slot=frame-panel]+[data-slot=frame-panel]]:mt-1",
         className,
       )}
       data-slot="frame"
@@ -26,7 +23,7 @@ function FramePanel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "relative rounded-xl border bg-background not-dark:bg-clip-padding p-5 shadow-xs/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        "relative rounded-xl border bg-background bg-clip-padding p-5 shadow-xs/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
         className,
       )}
       data-slot="frame-panel"
