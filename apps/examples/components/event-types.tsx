@@ -12,6 +12,7 @@ import {
 import {
   Menu,
   MenuCheckboxItem,
+  MenuGroup,
   MenuItem,
   MenuPopup,
   MenuSeparator,
@@ -34,7 +35,7 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
 import {
   AppHeader,
@@ -131,11 +132,8 @@ export function EventTypes() {
             const isHidden = hiddenStates[eventType.id];
             const isLast = index === eventTypes.length - 1;
             return (
-              <>
-                <div
-                  className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]"
-                  key={eventType.id}
-                >
+              <Fragment key={eventType.id}>
+                <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Info */}
                     <div
@@ -172,30 +170,11 @@ export function EventTypes() {
 
                     {/* Right: Actions */}
                     <div className="relative flex items-center gap-3">
-                      {/* <div className="flex items-center gap-2">
-                        {isHidden ? (
-                          <Badge size="sm" variant="warning">
-                            Hidden
-                          </Badge>
-                        ) : null}
-                        <Tooltip>
-                          <TooltipTrigger
-                            className="max-md:hidden"
-                            render={
-                              <Switch
-                                className="[--thumb-size:--spacing(4.5)] sm:[--thumb-size:--spacing(3.5)]"
-                                checked={!isHidden}
-                                onCheckedChange={(checked) =>
-                                  handleHiddenToggle(eventType.id, !checked)
-                                }
-                              />
-                            }
-                          />
-                          <TooltipPopup sideOffset={11}>
-                            {isHidden ? "Show on profile" : "Hide from profile"}
-                          </TooltipPopup>
-                        </Tooltip>
-                      </div> */}
+                      {isHidden ? (
+                        <Badge size="sm" variant="warning">
+                          Hidden
+                        </Badge>
+                      ) : null}
 
                       {/* Primary actions */}
                       <div className="flex items-center max-md:hidden">
@@ -251,6 +230,18 @@ export function EventTypes() {
                             <MenuItem>Duplicate</MenuItem>
                             <MenuItem>Embed</MenuItem>
                             <MenuSeparator />
+                            <MenuGroup>
+                              <MenuCheckboxItem
+                                checked={!isHidden}
+                                onCheckedChange={(checked) => {
+                                  handleHiddenToggle(eventType.id, !checked);
+                                }}
+                                variant="switch"
+                              >
+                                Show on profile
+                              </MenuCheckboxItem>
+                            </MenuGroup>
+                            <MenuSeparator />
                             <MenuItem variant="destructive">Delete</MenuItem>
                           </MenuPopup>
                         </Menu>
@@ -277,24 +268,26 @@ export function EventTypes() {
                           <MenuItem>Edit</MenuItem>
                           <MenuItem>Duplicate</MenuItem>
                           <MenuSeparator />
-                          <MenuItem variant="destructive">Delete</MenuItem>
+                          <MenuGroup>
+                            <MenuCheckboxItem
+                              checked={!isHidden}
+                              onCheckedChange={(checked) => {
+                                handleHiddenToggle(eventType.id, !checked);
+                              }}
+                              variant="switch"
+                            >
+                              Show on profile
+                            </MenuCheckboxItem>
+                          </MenuGroup>
                           <MenuSeparator />
-                          <MenuCheckboxItem
-                            checked={!isHidden}
-                            onCheckedChange={(checked) => {
-                              handleHiddenToggle(eventType.id, !checked);
-                            }}
-                            variant="switch"
-                          >
-                            Show on profile
-                          </MenuCheckboxItem>
+                          <MenuItem variant="destructive">Delete</MenuItem>
                         </MenuPopup>
                       </Menu>
                     </div>
                   </div>
                 </div>
                 {!isLast && <Separator />}
-              </>
+              </Fragment>
             );
           })}
         </FramePanel>
