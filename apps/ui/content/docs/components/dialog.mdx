@@ -77,12 +77,38 @@ import {
 </Dialog>
 ```
 
-**DialogFooter Variant**
+## API Reference
 
-The `DialogFooter` component supports a `variant` prop to control its styling:
+### Dialog
 
-- `default` (default): Includes a border-top, background color, and padding
-- `bare`: Removes the border and background for a minimal appearance
+Root component. Alias for `Dialog.Root` from Base UI.
+
+### DialogTrigger
+
+Trigger button that opens the dialog. Alias for `Dialog.Trigger` from Base UI.
+
+### DialogPopup
+
+Popup container that displays the dialog content. Also exported as `DialogContent`.
+
+| Prop                  | Type      | Default | Description                                      |
+| --------------------- | --------- | ------- | ------------------------------------------------ |
+| `showCloseButton`     | `boolean` | `true`  | When true, displays a close button in the top-right corner |
+| `bottomStickOnMobile` | `boolean` | `true`  | When true, sticks to the bottom of the screen on mobile devices |
+
+### DialogHeader
+
+Container for the dialog title and description.
+
+### DialogFooter
+
+Footer section for action buttons.
+
+| Prop        | Type                     | Default     | Description                                      |
+| ----------- | ------------------------ | ----------- | ------------------------------------------------ |
+| `variant`   | `"default" \| "bare"`    | `"default"` | Controls the footer styling. `default` includes border and background, `bare` removes them |
+
+**Example:**
 
 ```tsx
 // Default variant (with border and background)
@@ -98,9 +124,23 @@ The `DialogFooter` component supports a `variant` prop to control its styling:
 </DialogFooter>
 ```
 
-**DialogPanel Scrolling**
+### DialogTitle
 
-The `DialogPanel` component automatically wraps its content in a `ScrollArea` component. This means that if the content exceeds the dialog's maximum height, it will become scrollable automatically. The scrollbar will appear when needed, providing a smooth scrolling experience.
+Title component. Alias for `Dialog.Title` from Base UI.
+
+### DialogDescription
+
+Description component. Alias for `Dialog.Description` from Base UI.
+
+### DialogPanel
+
+Scrollable content container. Automatically wraps content in a `ScrollArea` component.
+
+| Prop         | Type      | Default | Description                                      |
+| ------------ | --------- | ------- | ------------------------------------------------ |
+| `scrollFade` | `boolean` | `true`  | When true, shows a fade effect at scroll edges   |
+
+**Example:**
 
 ```tsx
 <DialogPanel>
@@ -108,6 +148,22 @@ The `DialogPanel` component automatically wraps its content in a `ScrollArea` co
   <div>...</div>
 </DialogPanel>
 ```
+
+### DialogClose
+
+Close button component. Alias for `Dialog.Close` from Base UI.
+
+### DialogPortal
+
+Portal component for rendering outside the DOM hierarchy. Alias for `Dialog.Portal` from Base UI.
+
+### DialogBackdrop
+
+Backdrop/overlay component. Also exported as `DialogOverlay`. Alias for `Dialog.Backdrop` from Base UI.
+
+### DialogViewport
+
+Viewport component for positioning. Alias for `Dialog.Viewport` from Base UI.
 
 ## Examples
 

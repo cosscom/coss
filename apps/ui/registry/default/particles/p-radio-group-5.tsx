@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldItem, FieldLabel } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Form } from "@/registry/default/ui/form";
 import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
@@ -31,15 +31,21 @@ export default function Particle() {
           Frameworks
         </FieldsetLegend>
         <RadioGroup defaultValue="next">
-          <FieldLabel>
-            <Radio disabled={loading} value="next" /> Next.js
-          </FieldLabel>
-          <FieldLabel>
-            <Radio disabled={loading} value="vite" /> Vite
-          </FieldLabel>
-          <FieldLabel>
-            <Radio disabled={loading} value="astro" /> Astro
-          </FieldLabel>
+          <FieldItem>
+            <FieldLabel>
+              <Radio disabled={loading} value="next" /> Next.js
+            </FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <FieldLabel>
+              <Radio disabled={loading} value="vite" /> Vite
+            </FieldLabel>
+          </FieldItem>
+          <FieldItem>
+            <FieldLabel>
+              <Radio disabled={loading} value="astro" /> Astro
+            </FieldLabel>
+          </FieldItem>
         </RadioGroup>
       </Field>
       <Button disabled={loading} type="submit">

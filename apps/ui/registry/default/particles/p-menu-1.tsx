@@ -66,6 +66,8 @@ export default function Particle() {
           </MenuRadioGroup>
         </MenuGroup>
         <MenuSeparator />
+        <MenuCheckboxItem variant="switch">Auto save</MenuCheckboxItem>
+        <MenuSeparator />
         <MenuSub>
           <MenuSubTrigger>Add to Playlist</MenuSubTrigger>
           <MenuSubPopup>

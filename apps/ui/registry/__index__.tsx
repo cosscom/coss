@@ -677,7 +677,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -2387,7 +2387,7 @@ export const Index: Record<string, any> = {
     name: "p-checkbox-group-5",
     description: "Checkbox group form",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form","@coss/label"],
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/field","@coss/fieldset","@coss/form"],
     files: [{
       path: "registry/default/particles/p-checkbox-group-5.tsx",
       type: "registry:block",
@@ -2683,6 +2683,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-command-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["command","dialog"],
+    meta: undefined,
+  },
+  "p-command-2": {
+    name: "p-command-2",
+    description: "Command palette with AI assistant",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/command","@coss/input","@coss/kbd","@coss/scroll-area","@coss/skeleton","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-command-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-command-2.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3413,7 +3431,7 @@ export const Index: Record<string, any> = {
     name: "p-group-8",
     description: "Group with end text",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input"],
+    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
     files: [{
       path: "registry/default/particles/p-group-8.tsx",
       type: "registry:block",
@@ -4237,6 +4255,24 @@ export const Index: Record<string, any> = {
     categories: ["menu"],
     meta: undefined,
   },
+  "p-menu-9": {
+    name: "p-menu-9",
+    description: "Menu with checkbox items as switches",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/menu"],
+    files: [{
+      path: "registry/default/particles/p-menu-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-menu-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["menu","switch"],
+    meta: undefined,
+  },
   "p-menu-4": {
     name: "p-menu-4",
     description: "Menu with radio group",
@@ -4774,7 +4810,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["radio group"],
+    categories: ["radio group","form"],
     meta: undefined,
   },
   "p-scroll-area-1": {
@@ -5365,6 +5401,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-switch-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch"],
+    meta: undefined,
+  },
+  "p-switch-6": {
+    name: "p-switch-6",
+    description: "Small switch",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/switch"],
+    files: [{
+      path: "registry/default/particles/p-switch-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-6.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

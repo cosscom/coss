@@ -81,23 +81,27 @@ import {
 </Sheet>
 ```
 
-**SheetPanel Scrolling**
+## API Reference
 
-The `SheetPanel` component automatically wraps its content in a `ScrollArea` component. This means that if the content exceeds the sheet's maximum height, it will become scrollable automatically. The scrollbar will appear when needed, providing a smooth scrolling experience.
+### Sheet
 
-```tsx
-<SheetPanel>
-  {/* Long content that will scroll if it exceeds the sheet height */}
-  <div>...</div>
-</SheetPanel>
-```
+Root component. Alias for `Dialog.Root` from Base UI.
 
-**SheetPopup Props**
+### SheetTrigger
 
-The `SheetPopup` component supports the following props:
+Trigger button that opens the sheet. Alias for `Dialog.Trigger` from Base UI.
 
-- `side`: Controls which side of the screen the sheet opens from. Options: `"top"`, `"bottom"`, `"left"`, `"right"` (default: `"right"`)
-- `inset`: When `true`, adds spacing around the sheet on desktop screens (default: `false`)
+### SheetPopup
+
+Popup container that displays the sheet content. Also exported as `SheetContent`.
+
+| Prop              | Type                                      | Default   | Description                                      |
+| ----------------- | ----------------------------------------- | --------- | ------------------------------------------------ |
+| `side`            | `"right" \| "left" \| "top" \| "bottom"`  | `"right"` | Controls which side of the screen the sheet opens from |
+| `inset`           | `boolean`                                 | `false`   | When true, adds spacing around the sheet on desktop screens |
+| `showCloseButton` | `boolean`                                 | `true`    | When true, displays a close button in the top-right corner |
+
+**Example:**
 
 ```tsx
 // Right side sheet (default)
@@ -125,6 +129,55 @@ The `SheetPopup` component supports the following props:
   ...
 </SheetPopup>
 ```
+
+### SheetHeader
+
+Container for the sheet title and description.
+
+### SheetFooter
+
+Footer section for action buttons.
+
+| Prop        | Type                     | Default     | Description                                      |
+| ----------- | ------------------------ | ----------- | ------------------------------------------------ |
+| `variant`   | `"default" \| "bare"`    | `"default"` | Controls the footer styling. `default` includes border and background, `bare` removes them |
+
+### SheetTitle
+
+Title component. Alias for `Dialog.Title` from Base UI.
+
+### SheetDescription
+
+Description component. Alias for `Dialog.Description` from Base UI.
+
+### SheetPanel
+
+Scrollable content container. Automatically wraps content in a `ScrollArea` component.
+
+| Prop         | Type      | Default | Description                                      |
+| ------------ | --------- | ------- | ------------------------------------------------ |
+| `scrollFade` | `boolean` | `true`  | When true, shows a fade effect at scroll edges   |
+
+**Example:**
+
+```tsx
+<SheetPanel>
+  {/* Long content that will scroll if it exceeds the sheet height */}
+  <div>...</div>
+</SheetPanel>
+```
+
+### SheetClose
+
+Close button component. Alias for `Dialog.Close` from Base UI.
+
+### SheetPortal
+
+Portal component for rendering outside the DOM hierarchy. Alias for `Dialog.Portal` from Base UI.
+
+### SheetBackdrop
+
+Backdrop/overlay component. Also exported as `SheetOverlay`. Alias for `Dialog.Backdrop` from Base UI.
 
 ## Examples
 

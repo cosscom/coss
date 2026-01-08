@@ -17,7 +17,11 @@ export default function Particle() {
           You can enable or disable notifications at any time.
         </p>
       </div>
-      <Switch defaultChecked id={id} />
+      <Switch
+        className="[--thumb-size:--spacing(4)] sm:[--thumb-size:--spacing(3)]"
+        defaultChecked
+        id={id}
+      />
     </Label>
   );
 }

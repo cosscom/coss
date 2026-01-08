@@ -3,6 +3,7 @@
 import {
   Field,
   FieldDescription,
+  FieldItem,
   FieldLabel,
 } from "@/registry/default/ui/field";
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
@@ -19,15 +20,21 @@ export default function Particle() {
         Choose Plan
       </FieldsetLegend>
       <RadioGroup defaultValue="free">
-        <FieldLabel>
-          <Radio value="free" /> Free
-        </FieldLabel>
-        <FieldLabel>
-          <Radio value="pro" /> Pro
-        </FieldLabel>
-        <FieldLabel>
-          <Radio value="enterprise" /> Enterprise
-        </FieldLabel>
+        <FieldItem>
+          <FieldLabel>
+            <Radio value="free" /> Free
+          </FieldLabel>
+        </FieldItem>
+        <FieldItem>
+          <FieldLabel>
+            <Radio value="pro" /> Pro
+          </FieldLabel>
+        </FieldItem>
+        <FieldItem>
+          <FieldLabel>
+            <Radio value="enterprise" /> Enterprise
+          </FieldLabel>
+        </FieldItem>
       </RadioGroup>
       <FieldDescription>Select the plan that fits your needs.</FieldDescription>
     </Field>

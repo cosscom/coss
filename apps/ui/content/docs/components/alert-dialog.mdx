@@ -83,12 +83,37 @@ import {
 </AlertDialog>
 ```
 
-**AlertDialogFooter Variant**
+## API Reference
 
-The `AlertDialogFooter` component supports a `variant` prop to control its styling:
+### AlertDialog
 
-- `default` (default): Includes a border-top, background color, and padding
-- `bare`: Removes the border and background for a minimal appearance
+Root component. Alias for `AlertDialog.Root` from Base UI.
+
+### AlertDialogTrigger
+
+Trigger button that opens the alert dialog. Alias for `AlertDialog.Trigger` from Base UI.
+
+### AlertDialogPopup
+
+Popup container that displays the alert dialog content. Also exported as `AlertDialogContent`.
+
+| Prop                  | Type      | Default | Description                                      |
+| --------------------- | --------- | ------- | ------------------------------------------------ |
+| `bottomStickOnMobile` | `boolean` | `true`  | When true, sticks to the bottom of the screen on mobile devices |
+
+### AlertDialogHeader
+
+Container for the alert dialog title and description.
+
+### AlertDialogFooter
+
+Footer section for action buttons.
+
+| Prop        | Type                     | Default     | Description                                      |
+| ----------- | ------------------------ | ----------- | ------------------------------------------------ |
+| `variant`   | `"default" \| "bare"`    | `"default"` | Controls the footer styling. `default` includes border and background, `bare` removes them |
+
+**Example:**
 
 ```tsx
 // Default variant (with border and background)
@@ -103,6 +128,30 @@ The `AlertDialogFooter` component supports a `variant` prop to control its styli
   <AlertDialogClose>Delete</AlertDialogClose>
 </AlertDialogFooter>
 ```
+
+### AlertDialogTitle
+
+Title component. Alias for `AlertDialog.Title` from Base UI.
+
+### AlertDialogDescription
+
+Description component. Alias for `AlertDialog.Description` from Base UI.
+
+### AlertDialogClose
+
+Close button component. Alias for `AlertDialog.Close` from Base UI.
+
+### AlertDialogPortal
+
+Portal component for rendering outside the DOM hierarchy. Alias for `AlertDialog.Portal` from Base UI.
+
+### AlertDialogBackdrop
+
+Backdrop/overlay component. Also exported as `AlertDialogOverlay`. Alias for `AlertDialog.Backdrop` from Base UI.
+
+### AlertDialogViewport
+
+Viewport component for positioning. Alias for `AlertDialog.Viewport` from Base UI.
 
 ## Examples
 

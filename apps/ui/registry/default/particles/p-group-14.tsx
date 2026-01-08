@@ -51,8 +51,7 @@ export default function Particle() {
           <SelectPopup className="min-w-48">
             {currencies.map((curr) => (
               <SelectItem key={curr.value} value={curr}>
-                {curr.value}{" "}
-                <span className="text-muted-foreground">{curr.label}</span>
+                {curr.value} <span className="ms-1">{curr.label}</span>
               </SelectItem>
             ))}
           </SelectPopup>
@@ -60,6 +59,7 @@ export default function Particle() {
         <GroupSeparator />
         <NumberField
           aria-label="Enter the amount"
+          className="gap-0"
           defaultValue={10}
           render={<NumberFieldGroup />}
         >

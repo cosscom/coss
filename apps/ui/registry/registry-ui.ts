@@ -542,6 +542,7 @@ export const ui: Registry["items"] = [
     registryDependencies: [
       "@coss/button",
       "@coss/input",
+      "@coss/scroll-area",
       "@coss/separator",
       "@coss/sheet",
       "@coss/skeleton",

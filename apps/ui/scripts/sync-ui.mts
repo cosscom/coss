@@ -23,6 +23,35 @@ async function ensureDirExists(dir: string) {
   await fs.mkdir(dir, { recursive: true });
 }
 
+async function copyAndRewriteFile(from: string, to: string) {
+  const content = await fs.readFile(from, "utf8");
+
+  // Only rewrite TypeScript/JavaScript files
+  if (/(\.tsx|\.ts|\.mts|\.cts|\.jsx|\.js)$/.test(from)) {
+    const rewritten = rewriteImports(content);
+    await fs.writeFile(to, rewritten, "utf8");
+  } else {
+    // Copy non-code files as-is
+    await fs.copyFile(from, to);
+  }
+}
+
+async function copyDirectoryRecursive(from: string, to: string) {
+  await ensureDirExists(to);
+  const entries = await fs.readdir(from, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fromPath = path.join(from, entry.name);
+    const toPath = path.join(to, entry.name);
+
+    if (entry.isDirectory()) {
+      await copyDirectoryRecursive(fromPath, toPath);
+    } else {
+      await copyAndRewriteFile(fromPath, toPath);
+    }
+  }
+}
+
 async function copyRegistryTrees() {
   const { sourceRoot, sourceDirs, targetDirs } = await resolvePaths();
 
@@ -43,23 +72,8 @@ async function copyRegistryTrees() {
       // Skip silently if the subtree doesn't exist
       continue;
     }
-    await ensureDirExists(to);
-    await fs.cp(from, to, { force: true, recursive: true });
+    await copyDirectoryRecursive(from, to);
   }
-}
-
-async function getAllFiles(dir: string): Promise<string[]> {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(
-    entries.map(async (entry) => {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        return getAllFiles(fullPath);
-      }
-      return [fullPath];
-    }),
-  );
-  return files.flat();
 }
 
 function rewriteImports(code: string): string {
@@ -87,19 +101,16 @@ function rewriteImports(code: string): string {
   return result;
 }
 
-async function rewriteImportsInDir(dir: string): Promise<{ updated: number }> {
-  const allFiles = await getAllFiles(dir);
-  let updated = 0;
-  for (const file of allFiles) {
-    if (!/(\.tsx|\.ts|\.mts|\.cts)$/.test(file)) continue;
-    const original = await fs.readFile(file, "utf8");
-    const transformed = rewriteImports(original);
-    if (transformed !== original) {
-      await fs.writeFile(file, transformed);
-      updated++;
-    }
+async function invalidatePackageCache() {
+  const { targetRoot } = await resolvePaths();
+  const packageJsonPath = path.join(targetRoot, "../package.json");
+  try {
+    // Touch package.json to invalidate Next.js module cache
+    const now = new Date();
+    await fs.utimes(packageJsonPath, now, now);
+  } catch {
+    // Ignore if package.json doesn't exist or can't be touched
   }
-  return { updated };
 }
 
 try {
@@ -112,10 +123,10 @@ try {
   console.log(`└─ Target root: ${targetRoot}`);
 
   await copyRegistryTrees();
-  const { updated } = await rewriteImportsInDir(targetRoot);
+  await invalidatePackageCache();
 
   console.log(
-    `✅ UI primitives synced successfully! (${updated} file(s) updated with rewritten imports)`,
+    "✅ UI primitives synced successfully! (imports rewritten during copy)",
   );
 } catch (error) {
   console.error(error);

@@ -66,7 +66,6 @@ export default function Particle() {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
-        console.log("down");
       }
     };
 
@@ -78,7 +77,10 @@ export default function Particle() {
     <CommandDialog onOpenChange={setOpen} open={open}>
       <CommandDialogTrigger render={<Button variant="outline" />}>
         Open Command Palette
-        <Kbd>⌘J</Kbd>
+        <KbdGroup>
+          <Kbd>⌘</Kbd>
+          <Kbd>J</Kbd>
+        </KbdGroup>
       </CommandDialogTrigger>
       <CommandDialogPopup>
         <Command items={groupedItems}>
@@ -131,10 +133,7 @@ export default function Particle() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <KbdGroup>
-                <Kbd>⌘</Kbd>
-                <Kbd>K</Kbd>
-              </KbdGroup>
+              <Kbd>Esc</Kbd>
               <span>Close</span>
             </div>
           </CommandFooter>

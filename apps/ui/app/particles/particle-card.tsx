@@ -81,7 +81,7 @@ export async function ParticleCard({
             <Sheet>
               <SheetTrigger
                 render={
-                  <Button className="text-xs" size="sm" variant="outline" />
+                  <Button className="text-sm" size="sm" variant="outline" />
                 }
               >
                 View code
@@ -120,7 +120,7 @@ export async function ParticleCard({
                       />
                     </div>
                     <ComponentSource
-                      className="*:data-rehype-pretty-code-figure:no-scrollbar h-full overflow-hidden *:data-rehype-pretty-code-figure:mt-0 *:data-rehype-pretty-code-figure:max-h-full *:data-rehype-pretty-code-figure:overflow-y-auto"
+                      className="flex min-h-0 flex-1 flex-col *:data-rehype-pretty-code-figure:mt-0"
                       collapsible={false}
                       name={name}
                     />
