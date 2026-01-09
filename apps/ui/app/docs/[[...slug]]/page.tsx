@@ -1,10 +1,5 @@
-import {
-  ArrowLeft02Icon,
-  ArrowRight02Icon,
-  LinkSquare02Icon,
-} from "@hugeicons/core-free-icons";
+import { LinkSquare02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { findNeighbour } from "fumadocs-core/page-tree";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocsCopyPage } from "@/components/docs-copy-page";
@@ -57,7 +52,6 @@ export default async function Page(props: {
   const doc = page.data;
   const rawContent = await page.data.getText("raw");
   const MDX = doc.body;
-  const neighbours = await findNeighbour(source.pageTree, page.url);
 
   const links = doc.links;
 
@@ -105,35 +99,6 @@ export default async function Page(props: {
                 <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
                   <MDX components={mdxComponents} />
                 </div>
-              </div>
-              <div className="hidden items-center gap-2 pt-8 sm:flex">
-                {neighbours.previous && (
-                  <Button
-                    className="shadow-none"
-                    render={
-                      <Link href={neighbours.previous.url}>
-                        <HugeiconsIcon icon={ArrowLeft02Icon} strokeWidth={2} />{" "}
-                        {neighbours.previous.name}
-                      </Link>
-                    }
-                    variant="outline"
-                  />
-                )}
-                {neighbours.next && (
-                  <Button
-                    className="ms-auto shadow-none"
-                    render={
-                      <Link href={neighbours.next.url}>
-                        {neighbours.next.name}{" "}
-                        <HugeiconsIcon
-                          icon={ArrowRight02Icon}
-                          strokeWidth={2}
-                        />
-                      </Link>
-                    }
-                    variant="outline"
-                  />
-                )}
               </div>
             </div>
           </div>
