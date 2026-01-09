@@ -3251,7 +3251,7 @@ export const Index: Record<string, any> = {
     name: "p-frame-4",
     description: "Frame with multiple stacked panels",
     type: "registry:block",
-    registryDependencies: ["@coss/frame"],
+    registryDependencies: ["@coss/frame","@coss/separator"],
     files: [{
       path: "registry/default/particles/p-frame-4.tsx",
       type: "registry:block",

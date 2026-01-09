@@ -2,8 +2,8 @@
 
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
-import { Group, GroupSeparator } from "@coss/ui/components/group";
+import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
+
 import {
   InputGroup,
   InputGroupAddon,
@@ -12,12 +12,13 @@ import {
 import {
   Menu,
   MenuCheckboxItem,
+  MenuGroup,
   MenuItem,
   MenuPopup,
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { Switch } from "@coss/ui/components/switch";
+import { Separator } from "@coss/ui/components/separator";
 import {
   Tooltip,
   TooltipCreateHandle,
@@ -34,7 +35,7 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
 import {
   AppHeader,
@@ -64,41 +65,6 @@ const eventTypes = [
     duration: "15m",
     hidden: false,
     id: 3,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 4,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 5,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 6,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 7,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: true,
-    id: 8,
     path: "/pasquale/secret",
     title: "Secret Meeting",
   },
@@ -160,24 +126,23 @@ export function EventTypes() {
         </InputGroup>
       </div>
 
-      <div className="mt-4 *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-last:border-b-0 *:not-last:before:hidden *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none dark:*:not-first:before:hidden dark:*:first:before:block">
-        {eventTypes.map((eventType) => {
-          const isHidden = hiddenStates[eventType.id];
-          return (
-            <Card
-              className="py-5 transition-colors has-[a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]"
-              key={eventType.id}
-            >
-              <CardPanel className="px-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div
-                    className={cn(
-                      "flex flex-col items-start gap-1 transition-opacity",
-                      isHidden && "opacity-64",
-                    )}
-                  >
-                    <div>
-                      <h2 className="inline font-medium text-sm">
+      <Frame className="mt-4">
+        <FramePanel className="p-0">
+          {eventTypes.map((eventType, index) => {
+            const isHidden = hiddenStates[eventType.id];
+            const isLast = index === eventTypes.length - 1;
+            return (
+              <Fragment key={eventType.id}>
+                <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Left: Info */}
+                    <div
+                      className={cn(
+                        "flex min-w-0 flex-1 flex-col gap-0.5 transition-opacity",
+                        isHidden && "opacity-64",
+                      )}
+                    >
+                      <h2 className="truncate font-medium text-sm">
                         <a
                           className="before:absolute before:inset-0"
                           href={eventType.path}
@@ -185,152 +150,153 @@ export function EventTypes() {
                           {eventType.title}
                         </a>
                       </h2>
-                      <p className="ms-1 inline text-muted-foreground text-xs max-md:hidden">
-                        {eventType.path}
-                      </p>
-                    </div>
-                    <Badge
-                      className="pointer-events-none tabular-nums"
-                      variant="outline"
-                    >
-                      <ClockIcon className="opacity-72" />
-                      {eventType.duration}
-                    </Badge>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="-m-6 relative flex items-center gap-4 p-6">
-                    <div className="flex items-center gap-2">
-                      {isHidden ? (
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <p className="truncate text-muted-foreground text-xs">
+                          {eventType.path}
+                        </p>
+                        <span className="text-muted-foreground/32 text-xs">
+                          •
+                        </span>
                         <Badge
-                          className="pointer-events-none"
+                          className="pointer-events-none tabular-nums"
                           size="sm"
                           variant="outline"
                         >
+                          <ClockIcon className="opacity-72" />
+                          {eventType.duration}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="relative flex items-center gap-3">
+                      {isHidden ? (
+                        <Badge size="sm" variant="warning">
                           Hidden
                         </Badge>
                       ) : null}
-                      <Tooltip>
+
+                      {/* Primary actions */}
+                      <div className="flex items-center max-md:hidden">
                         <TooltipTrigger
-                          className="max-md:hidden"
+                          handle={tooltipHandle}
+                          payload={() => "Preview"}
                           render={
-                            <Switch
-                              checked={!isHidden}
-                              onCheckedChange={(checked) =>
-                                handleHiddenToggle(eventType.id, !checked)
-                              }
-                            />
+                            <Button
+                              aria-label="Preview"
+                              size="icon"
+                              variant="ghost"
+                            >
+                              <EyeIcon />
+                            </Button>
                           }
                         />
-                        <TooltipPopup sideOffset={11}>
-                          {isHidden ? "Show on profile" : "Hide from profile"}
-                        </TooltipPopup>
-                      </Tooltip>
-                    </div>
-                    {/* Desktop: Group of buttons */}
-                    <Group className="max-md:hidden">
-                      <TooltipTrigger
-                        handle={tooltipHandle}
-                        payload={() => "Preview"}
-                        render={
-                          <Button
-                            aria-label="Preview"
-                            size="icon"
-                            variant="outline"
-                          >
-                            <EyeIcon />
-                          </Button>
-                        }
-                      />
-                      <GroupSeparator />
-                      <TooltipTrigger
-                        handle={tooltipHandle}
-                        payload={() => "Copy link"}
-                        render={
-                          <Button
-                            aria-label="Copy link"
-                            size="icon"
-                            variant="outline"
-                          >
-                            <Link2Icon />
-                            <span className="sr-only">Copy link</span>
-                          </Button>
-                        }
-                      />
-                      <GroupSeparator />
+
+                        <TooltipTrigger
+                          handle={tooltipHandle}
+                          payload={() => "Copy link"}
+                          render={
+                            <Button
+                              aria-label="Copy link"
+                              size="icon"
+                              variant="ghost"
+                            >
+                              <Link2Icon />
+                              <span className="sr-only">Copy link</span>
+                            </Button>
+                          }
+                        />
+
+                        <Menu>
+                          <MenuTrigger
+                            render={
+                              <TooltipTrigger
+                                handle={tooltipHandle}
+                                payload={() => "More options"}
+                                render={
+                                  <Button
+                                    aria-label="More options"
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <EllipsisIcon />
+                                  </Button>
+                                }
+                              />
+                            }
+                          />
+                          <MenuPopup align="end">
+                            <MenuItem>Edit</MenuItem>
+                            <MenuItem>Duplicate</MenuItem>
+                            <MenuItem>Embed</MenuItem>
+                            <MenuSeparator />
+                            <MenuGroup>
+                              <MenuCheckboxItem
+                                checked={!isHidden}
+                                onCheckedChange={(checked) => {
+                                  handleHiddenToggle(eventType.id, !checked);
+                                }}
+                                variant="switch"
+                              >
+                                Show on profile
+                              </MenuCheckboxItem>
+                            </MenuGroup>
+                            <MenuSeparator />
+                            <MenuItem variant="destructive">Delete</MenuItem>
+                          </MenuPopup>
+                        </Menu>
+                      </div>
+
+                      {/* Mobile Trigger */}
                       <Menu>
                         <MenuTrigger
+                          className="md:hidden"
                           render={
-                            <TooltipTrigger
-                              handle={tooltipHandle}
-                              payload={() => "More options"}
-                              render={
-                                <Button
-                                  aria-label="More options"
-                                  size="icon"
-                                  variant="outline"
-                                >
-                                  <EllipsisIcon />
-                                </Button>
-                              }
-                            />
+                            <Button
+                              aria-label="More options"
+                              size="icon"
+                              variant="ghost"
+                            >
+                              <EllipsisIcon />
+                            </Button>
                           }
                         />
                         <MenuPopup align="end">
+                          <MenuItem>Preview</MenuItem>
+                          <MenuItem>Copy link to event</MenuItem>
+                          <MenuItem>Share</MenuItem>
                           <MenuItem>Edit</MenuItem>
                           <MenuItem>Duplicate</MenuItem>
-                          <MenuItem>Embed</MenuItem>
+                          <MenuSeparator />
+                          <MenuGroup>
+                            <MenuCheckboxItem
+                              checked={!isHidden}
+                              onCheckedChange={(checked) => {
+                                handleHiddenToggle(eventType.id, !checked);
+                              }}
+                              variant="switch"
+                            >
+                              Show on profile
+                            </MenuCheckboxItem>
+                          </MenuGroup>
                           <MenuSeparator />
                           <MenuItem variant="destructive">Delete</MenuItem>
                         </MenuPopup>
                       </Menu>
-                    </Group>
-                    {/* Mobile: Single menu button with all actions */}
-                    <Menu>
-                      <MenuTrigger
-                        className="md:hidden"
-                        render={
-                          <Button
-                            aria-label="More options"
-                            size="icon"
-                            variant="outline"
-                          >
-                            <EllipsisIcon />
-                          </Button>
-                        }
-                      />
-                      <MenuPopup align="end">
-                        <MenuItem>Preview</MenuItem>
-                        <MenuItem>Copy link to event</MenuItem>
-                        <MenuItem>Share</MenuItem>
-                        <MenuItem>Edit</MenuItem>
-                        <MenuItem>Duplicate</MenuItem>
-                        <MenuSeparator />
-                        <MenuItem variant="destructive">Delete</MenuItem>
-                        <MenuSeparator />
-                        <MenuCheckboxItem
-                          checked={!isHidden}
-                          onCheckedChange={(checked) => {
-                            handleHiddenToggle(eventType.id, !checked);
-                          }}
-                          variant="switch"
-                        >
-                          Show on profile
-                        </MenuCheckboxItem>
-                      </MenuPopup>
-                    </Menu>
+                    </div>
                   </div>
                 </div>
-              </CardPanel>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* No more results */}
-      <div className="mt-6 text-center text-muted-foreground/64 text-sm">
-        No more results
-      </div>
+                {!isLast && <Separator />}
+              </Fragment>
+            );
+          })}
+        </FramePanel>
+        <FrameFooter>
+          <div className="text-center text-muted-foreground/72 text-sm">
+            No more results
+          </div>
+        </FrameFooter>
+      </Frame>
 
       <Tooltip handle={tooltipHandle}>
         {({ payload: Payload }) => (

@@ -5,21 +5,25 @@ import {
   FramePanel,
   FrameTitle,
 } from "@/registry/default/ui/frame";
+import { Separator } from "@/registry/default/ui/separator";
 
 export default function Particle() {
   return (
-    <Frame className="w-full" stackedPanels>
+    <Frame className="w-full">
       <FrameHeader>
         <FrameTitle>Section header</FrameTitle>
         <FrameDescription>Brief description about the section</FrameDescription>
       </FrameHeader>
-      <FramePanel>
-        <h2 className="font-semibold text-sm">Stacked panel</h2>
-        <p className="text-muted-foreground text-sm">Section description</p>
-      </FramePanel>
-      <FramePanel>
-        <h2 className="font-semibold text-sm">Stacked panel</h2>
-        <p className="text-muted-foreground text-sm">Section description</p>
+      <FramePanel className="p-0">
+        <div className="p-5">
+          <h2 className="font-semibold text-sm">Stacked panel</h2>
+          <p className="text-muted-foreground text-sm">Section description</p>
+        </div>
+        <Separator />
+        <div className="p-5">
+          <h2 className="font-semibold text-sm">Stacked panel</h2>
+          <p className="text-muted-foreground text-sm">Section description</p>
+        </div>
       </FramePanel>
     </Frame>
   );
