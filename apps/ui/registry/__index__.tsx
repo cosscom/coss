@@ -5409,7 +5409,7 @@ export const Index: Record<string, any> = {
   },
   "p-switch-6": {
     name: "p-switch-6",
-    description: "Small switch",
+    description: "Custom size switch",
     type: "registry:block",
     registryDependencies: ["@coss/label","@coss/switch"],
     files: [{
