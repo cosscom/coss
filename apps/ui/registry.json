@@ -5977,7 +5977,6 @@
       ],
       "name": "p-switch-6",
       "registryDependencies": [
-        "@coss/label",
         "@coss/switch"
       ],
       "type": "registry:block"

@@ -5411,7 +5411,7 @@ export const Index: Record<string, any> = {
     name: "p-switch-6",
     description: "Custom size switch",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/switch"],
+    registryDependencies: ["@coss/switch"],
     files: [{
       path: "registry/default/particles/p-switch-6.tsx",
       type: "registry:block",
