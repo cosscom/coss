@@ -2844,10 +2844,10 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("switch"),
-    description: "Small switch",
+    description: "Custom size switch",
     files: [{ path: "particles/p-switch-6.tsx", type: "registry:block" }],
     name: "p-switch-6",
-    registryDependencies: ["@coss/label", "@coss/switch"],
+    registryDependencies: ["@coss/switch"],
     type: "registry:block",
   },
   {

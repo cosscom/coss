@@ -5968,7 +5968,7 @@
       "categories": [
         "switch"
       ],
-      "description": "Small switch",
+      "description": "Custom size switch",
       "files": [
         {
           "path": "registry/default/particles/p-switch-6.tsx",
@@ -5977,7 +5977,6 @@
       ],
       "name": "p-switch-6",
       "registryDependencies": [
-        "@coss/label",
         "@coss/switch"
       ],
       "type": "registry:block"
