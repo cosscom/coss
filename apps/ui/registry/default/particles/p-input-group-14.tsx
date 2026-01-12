@@ -16,7 +16,7 @@ export default function Particle() {
         type="search"
       />
       <InputGroupAddon>
-        <SearchIcon />
+        <SearchIcon aria-hidden="true" />
       </InputGroupAddon>
     </InputGroup>
   );

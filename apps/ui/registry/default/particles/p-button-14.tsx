@@ -4,8 +4,8 @@ import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
   return (
-    <Button size="icon-sm">
-      <PlusIcon />
+    <Button aria-label="Add" size="icon-sm">
+      <PlusIcon aria-hidden="true" />
     </Button>
   );
 }

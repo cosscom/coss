@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { CheckboxGroup } from "@/registry/default/ui/checkbox-group";
@@ -20,8 +20,8 @@ const userManagementPermissions = [
 ];
 
 export default function Particle() {
-  const [mainValue, setMainValue] = React.useState<string[]>([]);
-  const [managementValue, setManagementValue] = React.useState<string[]>([]);
+  const [mainValue, setMainValue] = useState<string[]>([]);
+  const [managementValue, setManagementValue] = useState<string[]>([]);
 
   const managementIsPartial =
     managementValue.length > 0 &&

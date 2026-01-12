@@ -21,19 +21,19 @@ export default function Particle() {
       <GroupSeparator className="bg-primary/72" />
       <Menu>
         <MenuTrigger render={<Button aria-label="Copy options" size="icon" />}>
-          <ChevronDownIcon className="size-4" />
+          <ChevronDownIcon aria-hidden="true" className="size-4" />
         </MenuTrigger>
         <MenuPopup align="end">
           <MenuItem>
-            <ShareIcon />
+            <ShareIcon aria-hidden="true" />
             Share link
           </MenuItem>
           <MenuItem>
-            <DownloadIcon />
+            <DownloadIcon aria-hidden="true" />
             Download
           </MenuItem>
           <MenuItem>
-            <EditIcon />
+            <EditIcon aria-hidden="true" />
             Duplicate
           </MenuItem>
         </MenuPopup>

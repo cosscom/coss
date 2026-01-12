@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/registry/default/ui/button";
@@ -24,7 +25,7 @@ const schema = z.object({
 
 type Errors = Record<string, string | string[]>;
 
-async function submitForm(event: React.FormEvent<HTMLFormElement>) {
+async function submitForm(event: FormEvent<HTMLFormElement>) {
   event.preventDefault();
 
   const formData = new FormData(event.currentTarget);
@@ -42,9 +43,9 @@ async function submitForm(event: React.FormEvent<HTMLFormElement>) {
 }
 
 export default function Particle() {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     setLoading(true);
     const response = await submitForm(event);
     await new Promise((r) => setTimeout(r, 800));

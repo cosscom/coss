@@ -21,7 +21,7 @@ export default function Particle() {
     >
       <Group aria-label="Attachments">
         <Button aria-label="Attach file" size="icon" variant="outline">
-          <PaperclipIcon />
+          <PaperclipIcon aria-hidden="true" />
         </Button>
       </Group>
       <Group aria-label="Message input">
@@ -38,7 +38,7 @@ export default function Particle() {
                   />
                 }
               >
-                <MicIcon />
+                <MicIcon aria-hidden="true" />
               </TooltipTrigger>
               <TooltipContent>Voice Mode</TooltipContent>
             </Tooltip>

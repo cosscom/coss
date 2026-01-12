@@ -5,7 +5,7 @@ import { Button } from "@/registry/default/ui/button";
 export default function Particle() {
   return (
     <Button>
-      <DownloadIcon />
+      <DownloadIcon aria-hidden="true" />
       Download
     </Button>
   );

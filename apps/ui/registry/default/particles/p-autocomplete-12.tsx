@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Autocomplete,
@@ -42,14 +43,14 @@ async function searchMovies(
 }
 
 export default function Particle() {
-  const [searchValue, setSearchValue] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [searchResults, setSearchResults] = React.useState<Movie[]>([]);
-  const [error, setError] = React.useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!searchValue) {
       setSearchResults([]);
       setIsLoading(false);
@@ -80,7 +81,7 @@ export default function Particle() {
     };
   }, [searchValue, contains]);
 
-  let status: React.ReactNode = `${searchResults.length} result${searchResults.length === 1 ? "" : "s"} found`;
+  let status: ReactNode = `${searchResults.length} result${searchResults.length === 1 ? "" : "s"} found`;
   if (isLoading) {
     status = (
       <span className="flex items-center justify-between gap-2 text-muted-foreground">

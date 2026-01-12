@@ -1,7 +1,7 @@
 "use client";
 
 import { BellIcon, UserIcon } from "lucide-react";
-
+import type { ComponentType } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/registry/default/ui/popover";
 
-const popoverHandle = PopoverCreateHandle<React.ComponentType>();
+const popoverHandle = PopoverCreateHandle<ComponentType>();
 
 const NotificationsContent = () => {
   return (
@@ -61,16 +61,18 @@ export default function Particle() {
       <PopoverTrigger
         handle={popoverHandle}
         payload={NotificationsContent}
-        render={<Button size="icon" variant="outline" />}
+        render={
+          <Button aria-label="Notifications" size="icon" variant="outline" />
+        }
       >
-        <BellIcon aria-label="Notifications" />
+        <BellIcon aria-hidden="true" />
       </PopoverTrigger>
       <PopoverTrigger
         handle={popoverHandle}
         payload={ProfileContent}
-        render={<Button size="icon" variant="outline" />}
+        render={<Button aria-label="Profile" size="icon" variant="outline" />}
       >
-        <UserIcon aria-label="Profile" />
+        <UserIcon aria-hidden="true" />
       </PopoverTrigger>
       <Popover handle={popoverHandle}>
         {({ payload: Payload }) => (

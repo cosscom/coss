@@ -2201,6 +2201,27 @@
     },
     {
       "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Button group with QR code icon and sign in",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-27.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-27",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card"
       ],
       "description": "Card with header, content, and footer",

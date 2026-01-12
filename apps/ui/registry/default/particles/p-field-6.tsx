@@ -16,7 +16,7 @@ export default function Particle() {
         <InputGroupInput placeholder="Your best email" type="email" />
         <InputGroupAddon align="inline-end">
           <Button aria-label="Subscribe" size="icon-xs" variant="ghost">
-            <ArrowRightIcon />
+            <ArrowRightIcon aria-hidden="true" />
           </Button>
         </InputGroupAddon>
       </InputGroup>

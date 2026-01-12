@@ -1,10 +1,10 @@
-import * as React from "react";
+import { useId } from "react";
 
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
-  const id = React.useId();
+  const id = useId();
 
   return (
     <div className="flex items-start gap-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { LinkIcon, MailIcon, Share2Icon } from "lucide-react";
+import type { ComponentType } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { Group, GroupSeparator } from "@/registry/default/ui/group";
@@ -12,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
 
-const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
+const tooltipHandle = TooltipCreateHandle<ComponentType>();
 
 const ShareLinkContent = () => {
   return <span>Copy shareable link</span>;
@@ -37,7 +38,7 @@ export default function Particle() {
             <Button aria-label="Copy link" size="icon" variant="outline" />
           }
         >
-          <LinkIcon />
+          <LinkIcon aria-hidden="true" />
         </TooltipTrigger>
         <GroupSeparator orientation="horizontal" />
         <TooltipTrigger
@@ -51,7 +52,7 @@ export default function Particle() {
             />
           }
         >
-          <MailIcon />
+          <MailIcon aria-hidden="true" />
         </TooltipTrigger>
         <GroupSeparator orientation="horizontal" />
         <TooltipTrigger
@@ -65,7 +66,7 @@ export default function Particle() {
             />
           }
         >
-          <Share2Icon />
+          <Share2Icon aria-hidden="true" />
         </TooltipTrigger>
       </Group>
       <Tooltip handle={tooltipHandle}>

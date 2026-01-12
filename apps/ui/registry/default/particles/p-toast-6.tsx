@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { toastManager } from "@/registry/default/ui/toast";
@@ -13,7 +13,7 @@ const TEXTS = [
 ];
 
 export default function Particle() {
-  const [count, setCount] = React.useState(0);
+  const [count, setCount] = useState(0);
 
   function createToast() {
     setCount((prev) => prev + 1);

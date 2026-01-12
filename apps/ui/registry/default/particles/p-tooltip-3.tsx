@@ -1,6 +1,7 @@
 "use client";
 
 import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+import type { ComponentType } from "react";
 
 import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group";
 import {
@@ -11,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
 
-const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
+const tooltipHandle = TooltipCreateHandle<ComponentType>();
 
 const BoldContent = () => {
   return <span>Make text bold</span>;
@@ -35,7 +36,7 @@ export default function Particle() {
           payload={BoldContent}
           render={<Toggle aria-label="Toggle bold" value="bold" />}
         >
-          <BoldIcon />
+          <BoldIcon aria-hidden="true" />
         </TooltipTrigger>
         <TooltipTrigger
           className="after:absolute after:left-full after:h-full after:w-1"
@@ -43,7 +44,7 @@ export default function Particle() {
           payload={ItalicContent}
           render={<Toggle aria-label="Toggle italic" value="italic" />}
         >
-          <ItalicIcon />
+          <ItalicIcon aria-hidden="true" />
         </TooltipTrigger>
         <TooltipTrigger
           className="after:absolute after:left-full after:h-full after:w-1"
@@ -51,7 +52,7 @@ export default function Particle() {
           payload={UnderlineContent}
           render={<Toggle aria-label="Toggle underline" value="underline" />}
         >
-          <UnderlineIcon />
+          <UnderlineIcon aria-hidden="true" />
         </TooltipTrigger>
       </ToggleGroup>
 

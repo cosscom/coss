@@ -63,7 +63,7 @@ export default function Particle() {
       </Select>
       <GroupSeparator />
       <Button aria-label="Search" size="icon" variant="outline">
-        <SearchIcon />
+        <SearchIcon aria-hidden="true" />
       </Button>
     </Group>
   );

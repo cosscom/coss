@@ -1,186 +1,1207 @@
-### Adding a new particle component (registry/default/particles)
+# Particle Component Development Guide for @coss/ui
 
-This guide explains the end‑to‑end steps for adding a new component under `@particles/` and making it available in the app and registry.
+This guide provides comprehensive instructions for creating new particle components that match the existing library's patterns and best practices. Use this when creating equivalents of origin components or building new particles from scratch.
 
-—
+---
 
-## 1) Create the component file
+## 1. File Structure and Naming
 
-- Location: `apps/ui/registry/default/particles/`
-- Naming: `p-{component}-{N}.tsx`
-  - **component**: The component name (e.g., `button`, `input`, `alert-dialog`, `input-group`)
-  - **N**: progressive number within the category (e.g. `1`, `2`, `3`)
-- Export as a functional component:
+**Location:** `apps/ui/registry/default/particles/`
 
-```tsx
-export default function Particle() {
-  // ...
-}
-```
-
-**Important notes:**
-- Always name the default export function `Particle` (not `ParticleButton8` or similar)
-- Use Base UI primitives from `@/registry/default/ui/` (e.g., `input`, `button`, `label`, etc.)
-- If a particle uses multiple UI primitives, choose the primary category for the file name
-- Keep files minimal and focused
-- Component names use hyphens for multi-word components (e.g., `alert-dialog`, `input-group`, `number-field`)
+**Naming Convention:** `p-{component}-{N}.tsx`
+- `{component}`: The primary component name (e.g., `button`, `input`, `alert-dialog`, `input-group`)
+- `{N}`: Sequential number within the category (e.g., `1`, `2`, `3`)
+- Use hyphens for multi-word components (e.g., `alert-dialog`, `input-group`, `number-field`)
 
 **Examples:**
 - `p-button-1.tsx` (first button particle)
-- `p-input-2.tsx` (second input particle)
-- `p-alert-dialog-1.tsx` (first alert dialog particle)
-- `p-input-group-3.tsx` (third input group particle)
+- `p-input-group-15.tsx` (fifteenth input group particle)
+- `p-alert-dialog-2.tsx` (second alert dialog particle)
 
-## 2) Add a registry item
+**Important:**
+- Always name the default export function `Particle` (not `ParticleButton8` or similar)
+- If a particle uses multiple UI primitives, choose the primary category for the file name
+- Keep files minimal and focused on demonstrating one pattern or feature
 
-Edit: `apps/ui/registry/registry-particles.ts`
+---
 
-For each new particle, add an object with the following fields:
-- **name**: the particle id (e.g. `p-input-6`).
-- **description**: concise, ≤ 15 words, clear to end users.
-  - Example: `"Input with helper label"`.
-- **type**: `"registry:block"`.
-- **registryDependencies**: Array of `@coss/*` package names for the UI primitives used.
-  - Example: `["@coss/input", "@coss/label"]`
-- **dependencies**: npm package dependencies if needed (often empty for simple particles).
-  - Example: `["lucide-react"]`
-- **files**: include exactly one file pointing to the particle source:
-  - `path`: `"particles/p-input-6.tsx"`
-  - `type`: `"registry:block"`
-- **categories**: use the `categories()` helper function with category names from `registry-categories.ts`.
-  - Example: `categories("input", "label")`
-  - **Important:** All valid category names are typed in `registry-categories.ts`. The `categories()` helper function ensures type safety and will show TypeScript errors if you use an invalid category name.
-  - Category names use spaces (e.g., `"input group"`, `"alert dialog"`) not hyphens, as defined in `registry-categories.ts`
-- **meta** (optional): object with `className` property for wrapper styling:
-  ```tsx
-  meta: {
-    className: "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-  }
-  ```
+## 2. Function Signature
 
-Example entry:
+**Always use this exact signature:**
 
 ```tsx
-{
-  categories: categories("input", "label"),
-  description: "Input with helper label",
-  files: [{ path: "particles/p-input-6.tsx", type: "registry:block" }],
-  meta: {
-    className: "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-  },
-  name: "p-input-6",
-  registryDependencies: ["@coss/input", "@coss/label"],
-  type: "registry:block",
+export default function Particle() {
+  return (
+    // JSX here
+  );
 }
 ```
 
-**Important:**
-- All valid category names are typed in `registry-categories.ts`
-- Category names must match exactly as defined in `registry-categories.ts` (e.g., `"input group"` not `"input-group"`, `"alert dialog"` not `"alert-dialog"`)
-- The `categories()` helper function ensures type safety - TypeScript will error if you use an invalid category
-- `meta.className` is applied to the preview wrapper via `ComponentPreview`
+**Never:**
+- Use named exports like `export function ParticleButton8()`
+- Add parameters to the Particle function
+- Export multiple components from one file
 
-**meta.className Property:**
-The `meta.className` property adds CSS classes to the particle preview wrapper. This is useful for:
-- Responsive sizing: `"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"`
-- Full width components: `"**:data-[slot=preview]:w-full"`
-- Custom layouts and spacing
+---
 
-## 3) Add to Documentation (Optional)
+## 3. "use client" Directive
 
-If you want to showcase the particle in documentation:
+**Only add `"use client";` at the top when the particle uses:**
 
-1. Find the relevant MDX file in `content/docs/components/`
-2. Add your particle with `<ComponentPreview />`:
+- React hooks (`useState`, `useEffect`, `useCallback`, `useMemo`, `useRef`, etc.)
+- Event handlers that modify state (`onClick`, `onChange`, etc. that call `setState`)
+- Browser APIs (`window`, `document`, `localStorage`, etc.)
+- Context providers/consumers that require client-side rendering
+- Form submissions or interactive state management
 
-```mdx
-<ComponentPreview name="p-button-8" />
+**Do NOT add `"use client"` for:**
+- Stateless components
+- Components that only render UI without interactivity
+- Components using controlled props (state managed externally)
+- Simple compositions of UI primitives
+
+**Examples:**
+
+```tsx
+// ✅ Needs "use client" - uses useState
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/registry/default/ui/button";
+
+export default function Particle() {
+  const [loading, setLoading] = useState(false);
+  return <Button onClick={() => setLoading(true)}>Click</Button>;
+}
 ```
 
-You can also pass a `className` prop to override the meta className:
+```tsx
+// ✅ Does NOT need "use client" - stateless
+import { Button } from "@/registry/default/ui/button";
 
-```mdx
-<ComponentPreview
-  name="p-button-8"
-  className="[&_.preview>*]:w-full [&_.preview>*]:max-w-80"
+export default function Particle() {
+  return <Button>Click me</Button>;
+}
+```
+
+---
+
+## 4. Import Patterns
+
+### Icons
+
+**Import specific icons from `lucide-react`:**
+
+```tsx
+import { ChevronRightIcon, PlusIcon, XIcon } from "lucide-react";
+```
+
+**Never:**
+- Import entire icon libraries (`import * from "lucide-react"`)
+- Use icon components from other libraries (only use `lucide-react`)
+
+### Components
+
+**Import from `@/registry/default/ui/{component}`:**
+
+```tsx
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
+import {
+  Dialog,
+  DialogPopup,
+  DialogTrigger,
+  DialogTitle,
+} from "@/registry/default/ui/dialog";
+```
+
+**Important:** Always use the `@/registry/default/ui/` path, never `@coss/ui/components/` in particles.
+
+### React
+
+**Always use named imports for React hooks:**
+
+```tsx
+import { useState, useEffect, useId, useRef, useCallback, useMemo } from "react";
+```
+
+**Then use hooks directly:**
+
+```tsx
+const id = useId();
+const [state, setState] = useState(false);
+const ref = useRef(null);
+```
+
+**Never:**
+- Import React namespace (`import * as React`) - always use named imports
+- Import React for stateless components (components without hooks or state)
+
+---
+
+## 5. Icon Handling and Accessibility
+
+### Icon Sizing
+
+**Never use numeric `size` props on icons:**
+
+```tsx
+// ❌ Never do this
+<Icon size={16} />
+<Icon size={20} />
+```
+
+**Icons use default sizing from their parent context (Button, Badge, etc.), or use Tailwind classes when explicit sizing is needed:**
+
+```tsx
+// ✅ Default sizing (no size prop needed)
+<Button>
+  <PlusIcon aria-hidden="true" />
+  Add Item
+</Button>
+
+// ✅ Explicit sizing with Tailwind classes (when needed)
+<EllipsisIcon className="size-4" />
+<UsersRoundIcon className="size-3 shrink-0" />
+<ChevronDownIcon className="size-4" />
+```
+
+**Common Tailwind size classes for icons:**
+- `size-3` - Small icons (12px)
+- `size-4` - Default icon size (16px) - most common
+- `size-3.5` - Between small and default (14px)
+
+### Icon Opacity Patterns
+
+**Icons inside Buttons:**
+- Icons in buttons typically don't need explicit opacity classes - the Button component handles this
+- For decorative icons in buttons with text, use `aria-hidden="true"` without opacity
+- For icon-only buttons, use `aria-label` on the button, `aria-hidden="true"` on the icon
+
+```tsx
+// ✅ Icon-only button
+<Button aria-label="Close" size="icon" variant="ghost">
+  <XIcon aria-hidden="true" />
+</Button>
+
+// ✅ Button with icon and text
+<Button>
+  <PlusIcon aria-hidden="true" />
+  Add Item
+</Button>
+
+// ✅ Custom opacity for decorative icon (rare)
+<Button variant="outline">
+  <ThumbsUpIcon aria-hidden="true" className="opacity-60" />
+  Like
+</Button>
+```
+
+**Icons inside Badges:**
+- Icons in badges are decorative (the text label provides the meaning)
+- Use `aria-hidden="true"` for decorative icons
+
+```tsx
+// ✅ Badge with icon
+<Badge variant="outline">
+  <CheckIcon aria-hidden="true" />
+  Verified
+</Badge>
+```
+
+**Icons inside Input Groups:**
+- Icons in `InputGroupAddon` are decorative (the input's aria-label or placeholder provides meaning)
+- Use `aria-hidden="true"` for decorative icons
+
+```tsx
+// ✅ Input group with icon
+<InputGroup>
+  <InputGroupInput aria-label="Search" placeholder="Search" type="search" />
+  <InputGroupAddon>
+    <SearchIcon aria-hidden="true" />
+  </InputGroupAddon>
+</InputGroup>
+```
+
+**Icons inside Alerts:**
+- Icons in alerts are semantic (they convey the alert type/severity)
+- Do NOT use `aria-hidden` - screen readers should announce the icon's meaning
+
+```tsx
+// ✅ Alert with icon (semantic, no aria-hidden)
+<Alert>
+  <InfoIcon />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>Description here.</AlertDescription>
+</Alert>
+```
+
+**Icons inside Menu Items:**
+- Icons in menu items are decorative (the text label provides the meaning)
+- Use `aria-hidden="true"` for decorative icons
+
+```tsx
+// ✅ Menu item with icon
+<MenuItem>
+  <EditIcon aria-hidden="true" />
+  Edit
+</MenuItem>
+```
+
+**Icons inside Command/Input with decorative overlays:**
+- For decorative icons positioned absolutely (like search icons in inputs), use `opacity-80` and `aria-hidden="true"`
+
+```tsx
+// ✅ Decorative icon overlay
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-3 opacity-80"
+>
+  <SearchIcon />
+</div>
+```
+
+### aria-label Usage
+
+**Use `aria-label` when:**
+- An interactive element has no visible text label (icon-only buttons, icon-only toggles)
+- An input has no visible label
+- The element's purpose isn't clear from visual context alone
+
+```tsx
+// ✅ Icon-only button
+<Button aria-label="Close" size="icon" variant="ghost">
+  <XIcon aria-hidden="true" />
+</Button>
+
+// ✅ Input without visible label
+<InputGroupInput aria-label="Search items" placeholder="Search…" type="search" />
+
+// ✅ Toggle without visible label
+<Toggle aria-label="Toggle bold" value="bold">
+  <BoldIcon />
+</Toggle>
+```
+
+**Do NOT use `aria-label` when:**
+- The element has visible text that describes its purpose
+- The element is decorative (use `aria-hidden="true"` instead)
+
+### aria-hidden Usage
+
+**Use `aria-hidden="true"` when:**
+- An icon is decorative and doesn't add semantic meaning
+- The icon is redundant with visible text or labels
+- The icon is purely visual decoration
+- **Icon-only buttons**: Always use `aria-hidden="true"` on the icon when the button has `aria-label`
+- **Buttons with text + icon**: Use `aria-hidden="true"` on decorative icons (most common case)
+- **Badges with icons**: Use `aria-hidden="true"` (text provides meaning)
+- **Input groups**: Use `aria-hidden="true"` on icons in `InputGroupAddon` (input label/placeholder provides meaning)
+- **Menu items**: Use `aria-hidden="true"` on icons (text provides meaning)
+
+```tsx
+// ✅ Icon-only button (button has aria-label, icon is decorative)
+<Button aria-label="Close" size="icon" variant="ghost">
+  <XIcon aria-hidden="true" />
+</Button>
+
+// ✅ Button with text + decorative icon
+<Button>
+  <PlusIcon aria-hidden="true" />
+  Add Item
+</Button>
+
+// ✅ Badge with decorative icon
+<Badge>
+  <CheckIcon aria-hidden="true" />
+  Verified
+</Badge>
+
+// ✅ Input group with decorative icon
+<InputGroup>
+  <InputGroupInput aria-label="Search" placeholder="Search" type="search" />
+  <InputGroupAddon>
+    <SearchIcon aria-hidden="true" />
+  </InputGroupAddon>
+</InputGroup>
+
+// ✅ Menu item with decorative icon
+<MenuItem>
+  <EditIcon aria-hidden="true" />
+  Edit
+</MenuItem>
+```
+
+**Do NOT use `aria-hidden` when:**
+- The icon conveys important semantic information (e.g., alert icons that indicate severity/type)
+- The icon is the only content AND the parent doesn't have `aria-label` (use `aria-label` on parent instead)
+
+---
+
+## 6. Accessibility Best Practices
+
+### Inputs Without Visible Labels
+
+**Always use `aria-label` for inputs without visible labels:**
+
+```tsx
+<InputGroupInput
+  aria-label="Subscribe to our newsletter"
+  placeholder="Your email"
+  type="email"
 />
 ```
 
-## 4) Build the registry
+### Input Type Attribute
 
-Run from `apps/ui` directory:
+**Always specify the `type` attribute explicitly on Input and InputGroupInput components:**
 
-```bash
-# Format code and sort imports
-bun run format:all
+```tsx
+// ✅ Always specify type
+<Input type="text" placeholder="Enter name" />
+<Input type="email" placeholder="your@email.com" />
+<Input type="password" placeholder="Enter password" />
+<Input type="search" placeholder="Search…" />
+<Input type="file" />
 
-# Build registry JSON files
-bun run registry:build
-
-## Copy UI components to the packages folder
-bun run ui:propagate
+// ❌ Never omit type
+<Input placeholder="Enter text" />
 ```
 
-The `registry:build` command will:
-- Generate `registry/__index__.tsx` with all particles
-- Generate `registry.json` and `public/r/registry.json`
-- Build individual JSON files for each particle in `public/r/`
+**Common types:**
+- `type="text"` - Default text input (always specify explicitly)
+- `type="email"` - Email input with validation
+- `type="password"` - Password input (hidden characters)
+- `type="search"` - Search input
+- `type="file"` - File upload input
 
-—
+**Important:** Even for text inputs, always specify `type="text"` explicitly for clarity and consistency.
 
-## Approved categories (tags)
+### Labeling Checkboxes, Radio Groups, and Switches
 
-All valid category names are typed in `registry-categories.ts`. Use these only for the `categories` field in `registry-particles.ts`. Category names must match exactly as defined in `registry-categories.ts`:
+**Pattern 1: Simple label (checkbox/radio/switch directly with label text)**
+
+Wrap both the control and label text in a `<Label>` component:
+
+```tsx
+// ✅ Checkbox
+<Label>
+  <Checkbox />
+  Accept terms and conditions
+</Label>
+
+// ✅ Radio
+<Label>
+  <Radio value="next" />
+  Next.js
+</Label>
+
+// ✅ Switch
+<Label>
+  <Switch />
+  Marketing emails
+</Label>
+```
+
+**Pattern 2: Label with additional content (description text)**
+
+When you have additional content like description text, use `id` and `htmlFor`:
+
+```tsx
+import { useId } from "react";
+
+export default function Particle() {
+  const id = useId();
+  
+  return (
+    <div className="flex items-start gap-2">
+      <Checkbox id={id} />
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id}>Accept terms and conditions</Label>
+        <p className="text-muted-foreground text-xs">
+          By clicking this checkbox, you agree to the terms.
+        </p>
+      </div>
+    </div>
+  );
+}
+```
+
+**Pattern 3: Checkbox/Radio Groups**
+
+Each option in a group should be wrapped in its own `<Label>`:
+
+```tsx
+// ✅ Checkbox Group
+<CheckboxGroup aria-label="Select frameworks" defaultValue={["next"]}>
+  <Label>
+    <Checkbox value="next" />
+    Next.js
+  </Label>
+  <Label>
+    <Checkbox value="vite" />
+    Vite
+  </Label>
+  <Label>
+    <Checkbox value="astro" />
+    Astro
+  </Label>
+</CheckboxGroup>
+
+// ✅ Radio Group
+<RadioGroup defaultValue="next">
+  <Label>
+    <Radio value="next" />
+    Next.js
+  </Label>
+  <Label>
+    <Radio value="vite" />
+    Vite
+  </Label>
+</RadioGroup>
+```
+
+**Pattern 4: In Form Fields**
+
+When using Field components, place the checkbox/radio inside `FieldLabel`:
+
+```tsx
+<Field name="terms">
+  <FieldLabel>
+    <Checkbox value="yes" />
+    Accept terms and conditions
+  </FieldLabel>
+</Field>
+```
+
+**Important:**
+- Always wrap checkbox/radio/switch controls with their label text in a `<Label>` component
+- Only use `id`/`htmlFor` pattern when you have additional content (like description text) that needs to be outside the label
+- In groups, each option gets its own `<Label>` wrapper
+- Never use `aria-label` on checkboxes/radios/switches when they have visible labels - the `<Label>` component handles the association automatically
+
+### Form Fields
+
+**Use Field components for proper form structure:**
+
+```tsx
+<Field>
+  <FieldLabel>Password</FieldLabel>
+  <Input type="password" required />
+  <FieldError>Please fill out this field.</FieldError>
+</Field>
+```
+
+---
+
+## 7. State Management
+
+### Static Data
+
+**Define static data outside the function:**
+
+```tsx
+const items = [
+  { label: "Next.js", value: "next" },
+  { label: "Vite", value: "vite" },
+  { label: "Astro", value: "astro" },
+];
+
+export default function Particle() {
+  return (
+    <Select items={items}>
+      {/* ... */}
+    </Select>
+  );
+}
+```
+
+### Stateful Particles
+
+**When state is needed, add `"use client"` and use React hooks:**
+
+```tsx
+"use client";
+
+import * as React from "react";
+import { Button } from "@/registry/default/ui/button";
+
+export default function Particle() {
+  const [loading, setLoading] = React.useState(false);
+  
+  const handleClick = async () => {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+  };
+
+  return (
+    <Button disabled={loading} onClick={handleClick}>
+      {loading ? "Loading..." : "Submit"}
+    </Button>
+  );
+}
+```
+
+**Prefer:**
+- `React.useState` over importing `useState` from "react"
+- Descriptive state variable names
+- Clear handler function names
+
+---
+
+## 8. Styling Patterns
+
+### Tailwind Classes
+
+**Use Tailwind classes directly. Common patterns:**
+
+- **Layout:** `flex`, `grid`, `gap-2`, `items-center`, `justify-between`
+- **Spacing:** `p-4`, `px-3`, `py-2`, `gap-4`
+- **Text:** `text-sm`, `text-muted-foreground`, `font-medium`
+- **Sizing:** `w-full`, `max-w-xs`, `h-auto!` (use `!` for important overrides)
+- **Custom overrides:** `className="pe-0"`, `className="*:[input]:px-0!"`
+
+### Semantic Color Tokens
+
+**Always use semantic color tokens, never raw colors:**
+
+```tsx
+// ✅ Good
+className="text-muted-foreground"
+className="bg-destructive text-destructive-foreground"
+
+// ❌ Bad
+className="text-gray-500"
+className="bg-red-500 text-white"
+```
+
+### Important Overrides
+
+**Use `!` suffix for important overrides when needed:**
+
+```tsx
+className="border-transparent! bg-transparent! shadow-none"
+className="h-auto!"
+```
+
+---
+
+## 9. Composition Patterns
+
+### Simple Composition
+
+**Single component with props:**
+
+```tsx
+export default function Particle() {
+  return <Button variant="outline">Click me</Button>;
+}
+```
+
+### Nested Composition
+
+**Multiple components composed together:**
+
+```tsx
+export default function Particle() {
+  return (
+    <Card className="w-full max-w-xs">
+      <CardHeader>
+        <CardTitle>Title</CardTitle>
+      </CardHeader>
+      <CardPanel>
+        <Input placeholder="Enter text" type="text" />
+      </CardPanel>
+      <CardFooter>
+        <Button>Submit</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+### Trigger-Based Components
+
+**Menu/Dialog/Popover patterns:**
+
+```tsx
+export default function Particle() {
+  return (
+    <Menu>
+      <MenuTrigger render={<Button variant="outline" />}>
+        Open Menu
+      </MenuTrigger>
+      <MenuPopup>
+        <MenuItem>Edit</MenuItem>
+        <MenuItem>Delete</MenuItem>
+      </MenuPopup>
+    </Menu>
+  );
+}
+```
+
+**Important:** Always use `render` prop instead of `asChild` (Base UI pattern, not Radix).
+
+### Group Components
+
+**Use Group for connected button groups:**
+
+```tsx
+import { Group, GroupSeparator } from "@/registry/default/ui/group";
+
+export default function Particle() {
+  return (
+    <Group aria-label="File actions">
+      <Button variant="outline">
+        <FilesIcon />
+        Files
+      </Button>
+      <GroupSeparator />
+      <Button variant="outline">
+        <FilmIcon />
+        Media
+      </Button>
+      <GroupSeparator />
+      <Menu>
+        <MenuTrigger render={<Button aria-label="Menu" size="icon" variant="outline" />}>
+          <EllipsisIcon className="size-4" />
+        </MenuTrigger>
+        <MenuPopup align="end">
+          <MenuItem>Edit</MenuItem>
+        </MenuPopup>
+      </Menu>
+    </Group>
+  );
+}
+```
+
+**Important:** `GroupSeparator` is **always required** between controls in Group, including outline buttons.
+
+---
+
+## 10. Migration from Origin (shadcn/Radix) to coss (Base UI)
+
+### Understanding the Migration
+
+When creating a particle equivalent to an origin component:
+
+1. **Read the origin component** (`apps/origin/registry/default/ui/{component}.tsx`)
+2. **Check the migration guide** (`apps/ui/content/docs/(root)/radix-shadcn-migration.mdx`)
+3. **Compare the primitives:**
+   - Origin uses Radix UI primitives
+   - coss uses Base UI primitives
+   - Understand why certain classes were used in origin
+4. **Look at existing particles** in the same category for consistency
+5. **Understand the differences:**
+   - `asChild` → `render` prop
+   - `*Content` → `*Popup` or `*Panel`
+   - `onSelect` → `onClick` (Menu)
+   - `type="multiple"` → `multiple={true}`
+   - Size differences (coss is more compact)
+
+### Key Migration Patterns
+
+**asChild → render:**
+
+```tsx
+// Origin (Radix)
+<DropdownMenuTrigger asChild>
+  <Button>Open</Button>
+</DropdownMenuTrigger>
+
+// coss (Base UI)
+<MenuTrigger render={<Button />}>Open</MenuTrigger>
+```
+
+**Component naming:**
+
+```tsx
+// Origin
+<DialogContent>
+  <DialogHeader>...</DialogHeader>
+</DialogContent>
+
+// coss
+<DialogPopup>
+  <DialogHeader>...</DialogHeader>
+  <DialogPanel>Content</DialogPanel>
+</DialogPopup>
+```
+
+**Menu items:**
+
+```tsx
+// Origin
+<DropdownMenuItem onSelect={() => console.log("clicked")}>
+  Item
+</DropdownMenuItem>
+
+// coss
+<MenuItem onClick={() => console.log("clicked")}>
+  Item
+</MenuItem>
+```
+
+**Select with items:**
+
+```tsx
+// Origin
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Select..." />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="next">Next.js</SelectItem>
+  </SelectContent>
+</Select>
+
+// coss
+<Select items={[
+  { label: "Select...", value: null },
+  { label: "Next.js", value: "next" },
+]}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectPopup>
+    {items.map((item) => (
+      <SelectItem key={item.value} value={item}>
+        {item.label}
+      </SelectItem>
+    ))}
+  </SelectPopup>
+</Select>
+```
+
+### Size Mapping
+
+**When migrating, map sizes to preserve visual appearance:**
+
+| Component | shadcn/ui Size | coss ui Size |
+|-----------|----------------|--------------|
+| Button    | `default` (36px) | `lg` (36px) |
+| Button    | `sm` (32px) | `default` (32px) |
+| Input     | `default` (36px) | `lg` (36px) |
+| Input     | `sm` (32px) | `default` (32px) |
+| Select    | `default` (36px) | `lg` (36px) |
+| Select    | `sm` (32px) | `default` (32px) |
+
+**coss ui is more compact by default, so use larger sizes to match shadcn/ui appearance.**
+
+### Understanding Class Overrides
+
+**When you see custom classes in origin components:**
+
+1. **Check what the class overrides** - look at the default styles in both libraries
+2. **Understand why it was needed** - was it a Radix limitation? A design choice?
+3. **Check if Base UI needs the same override** - Base UI might handle it differently
+4. **Look at existing coss particles** - see if similar patterns exist
+
+**Example:**
+
+```tsx
+// Origin might have:
+className="[&_svg]:size-4 [&_svg]:pointer-events-none"
+
+// coss might handle this automatically, or need:
+className="[&_svg:not([class*='size-'])]:size-4"
+```
+
+---
+
+## 11. Registry Metadata
+
+**Add entry to `apps/ui/registry/registry-particles.ts`:**
+
+```tsx
+{
+  name: "p-button-25",
+  description: "Button with loading state",
+  type: "registry:block",
+  categories: categories("button", "loading"),
+  dependencies: ["lucide-react"],  // only if using icons
+  registryDependencies: ["@coss/button", "@coss/spinner"],
+  files: [{ path: "particles/p-button-25.tsx", type: "registry:block" }],
+  meta: {
+    className: "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+  },
+}
+```
+
+**Required fields:**
+- `name`: Must match filename without `.tsx` (e.g., `"p-button-25"`)
+- `description`: Brief description (≤ 15 words), focus on what it does, not implementation
+- `type`: Always `"registry:block"`
+- `categories`: Use `categories()` helper with valid categories from `registry-categories.ts`
+- `registryDependencies`: Array of `@coss/{component}` package names
+- `files`: Array with `path` and `type: "registry:block"`
+
+**Optional fields:**
+- `dependencies`: External npm packages (e.g., `["lucide-react"]` for icons)
+- `meta.className`: Preview container styling (e.g., `"**:data-[slot=preview]:w-full"`)
+
+**Category names:**
+- Use spaces, not hyphens (e.g., `"input group"`, `"alert dialog"`, `"empty state"`)
+- All valid categories are typed in `registry-categories.ts`
+- The `categories()` helper ensures type safety
+
+---
+
+## 12. Valid Categories
 
 **Component categories:**
-accordion, alert, alert dialog, autocomplete, avatar, badge, breadcrumb, button, card, checkbox, checkbox group, collapsible, combobox, dialog, empty state, field, fieldset, form, frame, group, input, input group, kbd, label, menu, meter, number field, pagination, popover, preview card, progress, radio group, scroll area, select, separator, sheet, skeleton, slider, spinner, switch, table, tabs, textarea, toast, toggle, toggle group, toolbar, tooltip
+accordion, alert, alert dialog, autocomplete, avatar, badge, breadcrumb, button, card, checkbox, checkbox group, collapsible, combobox, command, dialog, empty state, field, fieldset, form, frame, group, input, input group, kbd, label, menu, meter, number field, pagination, popover, preview card, progress, radio group, scroll area, select, separator, sheet, skeleton, slider, spinner, switch, table, tabs, textarea, toast, toggle, toggle group, toolbar, tooltip
 
 **Tag categories:**
 async, copy, disabled, error, file, filter, info, loading, multiselect, password, search, sort, success, tag, tanstack, text editor, time, upload, validation, warning, zod
 
-**Important notes:**
-- All category names are typed in `registry-categories.ts` - refer to this file for the complete list
-- Category names use spaces (e.g., `"input group"`, `"alert dialog"`, `"empty state"`) not hyphens
-- The `categories()` helper function provides type safety - TypeScript will error if you use an invalid category
+**Important:** All category names are typed in `registry-categories.ts`. Use the `categories()` helper function for type safety.
 
-—
+**Adding New Categories:**
 
-## Guidelines
+If you need a category that doesn't exist, you can add it to `apps/ui/registry/registry-categories.ts`. Categories are divided into:
+- **Component categories**: Main UI components (e.g., `"input"`, `"button"`) - add to `componentCategories` array
+- **Tag categories**: Additional tags/features (e.g., `"loading"`, `"disabled"`) - add to `tagCategories` array
 
-### Code Style
-- Use TypeScript
-- Follow existing naming conventions
-- Use meaningful, descriptive names
-- Keep components focused and single-purpose
-- Always export as `export default function Particle()`
+After adding a new category, it will be available for use with the `categories()` helper function.
 
-### Categories
-- All valid category names are typed in `registry-categories.ts`
-- Use categories that correspond to actual components
-- For composite components, include all relevant categories
-- Categories are used for filtering on the particles page
-- Category names must match exactly as defined in `registry-categories.ts` (use spaces, not hyphens)
-- The `categories()` helper function ensures type safety - TypeScript will error if you use an invalid category
+---
 
-### Descriptions
-- Keep descriptions concise but informative (≤ 15 words recommended)
-- Focus on what the component does, not how it's implemented
-- Descriptions appear on the particles page
+## 13. React and Next.js Best Practices
 
-### Dependencies
-- Be accurate with `dependencies` and `registryDependencies` - these are used for installation
-- `registryDependencies` should reference `@coss/*` package names
-- `dependencies` should list external npm packages (e.g., `["lucide-react"]`)
+### React Patterns
 
-### Numbering
-- Particles are numbered sequentially within each category
-- If you're adding a new particle to a category, check the highest number and increment
-- For example, if `p-button-26.tsx` exists, the next button particle should be `p-button-27.tsx`
+**Use modern React patterns:**
 
-## Quick checklist
+```tsx
+// ✅ Prefer function components
+export default function Particle() {
+  return <Button>Click</Button>;
+}
 
-- Create `registry/default/particles/p-{component}-{N}.tsx` with `export default function Particle()`.
-- Add an item to `registry/registry-particles.ts` with `name`, `description`, `type`, `registryDependencies`, optional `dependencies`, `files`, `categories` (using `categories()` helper), and optional `meta.className`.
-- (Optional) Add to documentation MDX file with `<ComponentPreview name="p-{component}-{N}" />`
-- Format code: `bun run format:all`
-- Run `bun run registry:build` from `apps/ui`
+// ✅ Use React.useId() for form associations
+const id = React.useId();
+
+// ✅ Use descriptive variable names
+const [isLoading, setIsLoading] = useState(false);
+
+// ✅ Extract complex logic to handlers
+const handleSubmit = async () => {
+  setIsLoading(true);
+  // ...
+  setIsLoading(false);
+};
+```
+
+### Next.js Considerations
+
+**Particles should be framework-agnostic, but consider:**
+
+- Avoid Next.js-specific APIs (`next/link`, `next/image`) unless the particle specifically demonstrates Next.js integration
+- Use standard HTML elements and React patterns
+- For navigation, use standard `<a>` tags or demonstrate with `render` prop
+
+---
+
+## 14. Consistency with Existing Particles
+
+**Before creating a new particle:**
+
+1. **Search existing particles** in the same category
+2. **Review patterns** used in similar particles
+3. **Match the style** and composition approach
+4. **Use consistent naming** and structure
+5. **Follow the same icon/accessibility patterns**
+
+**Example workflow:**
+
+```bash
+# 1. Find existing particles in category
+ls apps/ui/registry/default/particles/p-button-*.tsx
+
+# 2. Read a few examples
+cat apps/ui/registry/default/particles/p-button-1.tsx
+cat apps/ui/registry/default/particles/p-button-18.tsx
+
+# 3. Check registry for numbering
+grep "p-button" apps/ui/registry/registry-particles.ts
+
+# 4. Create new particle following patterns
+```
+
+---
+
+## 15. Best Practices Summary
+
+### Code Quality
+
+- ✅ Keep particles focused on demonstrating one feature or pattern
+- ✅ Use realistic placeholder text and data
+- ✅ Prefer composition over complexity
+- ✅ Don't add comments unless explaining something non-obvious
+- ✅ Use semantic color tokens (`text-muted-foreground`) not raw colors
+- ✅ Test that the particle renders correctly before committing
+
+### Accessibility
+
+- ✅ Always provide `aria-label` for icon-only interactive elements
+- ✅ Use `aria-hidden="true"` for decorative icons
+- ✅ Pair labels with inputs using `React.useId()`
+- ✅ Use Field components for proper form structure
+
+### Performance
+
+- ✅ Define static data outside the component function
+- ✅ Only add `"use client"` when actually needed
+- ✅ Avoid unnecessary re-renders
+- ✅ Use appropriate React patterns (hooks, memoization when needed)
+
+### Consistency
+
+- ✅ Follow existing patterns in the same category
+- ✅ Use consistent icon opacity and accessibility patterns
+- ✅ Match the styling approach of similar particles
+- ✅ Use the same import patterns
+
+---
+
+## 16. Building and Validating the Registry
+
+After creating a particle and adding it to the registry, you must build and validate:
+
+### Build Steps
+
+**From the `apps/ui` directory, run these commands in order:**
+
+```bash
+cd apps/ui
+
+# 1. Format code and sort imports
+bun run format:all
+
+# 2. Validate registry dependencies
+bun run registry:validate-deps
+
+# 3. Build registry JSON files
+bun run registry:build
+
+# 4. Copy UI components to packages folder (if needed)
+bun run ui:sync
+```
+
+### What Each Command Does
+
+**`bun run format:all`:**
+- Formats code with Prettier
+- Sorts imports automatically
+- Ensures consistent code style
+
+**`bun run registry:validate-deps`:**
+- Validates that all `registryDependencies` in `registry-particles.ts` are correct
+- Ensures dependencies match what's actually imported in particle files
+- Catches missing or incorrect dependency declarations
+- **Important:** Run this before `registry:build` to catch dependency errors early
+
+**`bun run registry:build`:**
+- Generates `registry/__index__.tsx` with all particles
+- Generates `registry.json` and `public/r/registry.json`
+- Builds individual JSON files for each particle in `public/r/`
+- **Note:** See `apps/ui/CONTRIBUTING.md` for more details on the build process
+
+**`bun run ui:sync`:**
+- Copies UI components from `apps/ui/registry/default/ui/` to `packages/ui/src/components/`
+- Only needed if you've modified UI primitives
+- Not needed for creating new particles (only for modifying base components)
+
+### Additional Resources
+
+- **Contributing Guide:** See `apps/ui/CONTRIBUTING.md` for detailed information about building the registry and contributing guidelines
+- **Category Management:** New categories can be added to `apps/ui/registry/registry-categories.ts` if needed (see section 12 for details)
+
+---
+
+## 17. Quick Checklist
+
+When creating a new particle:
+
+- [ ] Created `apps/ui/registry/default/particles/p-{component}-{N}.tsx`
+- [ ] Used `export default function Particle()` signature
+- [ ] Added `"use client"` only if using hooks/state/event handlers
+- [ ] Imported components from `@/registry/default/ui/{component}`
+- [ ] Imported specific icons from `lucide-react`
+- [ ] Used `aria-label` for icon-only interactive elements
+- [ ] Used `aria-hidden="true"` for decorative icons
+- [ ] Applied appropriate icon opacity (or none) based on context
+- [ ] Specified `type` attribute explicitly on all Input and InputGroupInput components
+- [ ] Used semantic color tokens
+- [ ] Followed composition patterns from similar particles
+- [ ] Added entry to `apps/ui/registry/registry-particles.ts`
+- [ ] Used `categories()` helper with valid category names
+- [ ] Included all `@coss/*` dependencies in `registryDependencies`
+- [ ] Added `dependencies: ["lucide-react"]` if using icons
+- [ ] Set appropriate `meta.className` if needed
+- [ ] Formatted code: `bun run format:all`
+- [ ] Validated dependencies: `bun run registry:validate-deps` from `apps/ui`
+- [ ] Built registry: `bun run registry:build` from `apps/ui`
+- [ ] Copied UI components: `bun run ui:sync` from `apps/ui` (if needed)
+
+---
+
+## 18. Migration Workflow for Origin Components
+
+When asked to create an equivalent of an origin component:
+
+1. **Read the origin component:**
+   - `apps/origin/registry/default/ui/{component}.tsx`
+   - Understand its structure and patterns
+   - Note any custom classes or overrides
+
+2. **Check the migration guide:**
+   - `apps/ui/content/docs/(root)/radix-shadcn-migration.mdx`
+   - Find the component's migration section
+   - Understand prop mappings and API differences
+
+3. **Review existing particles:**
+   - Look at particles in the same category
+   - Understand common patterns
+   - See how similar features are implemented
+
+4. **Compare primitives:**
+   - Check what Radix primitive the origin uses
+   - Check what Base UI primitive coss uses
+   - Understand why classes were overridden in origin
+   - Determine if the same override is needed in coss
+
+5. **Create the particle:**
+   - Follow all patterns from this guide
+   - Use Base UI API (render prop, not asChild)
+   - Match the visual appearance
+   - Ensure accessibility is maintained
+
+6. **Test and verify:**
+   - Ensure it renders correctly
+   - Check accessibility
+   - Verify it matches the origin component's functionality
+   - Ensure it follows coss patterns
+
+---
+
+## 19. Common Patterns Reference
+
+### Button with Icon
+
+```tsx
+// Icon-only button
+<Button aria-label="Close" size="icon" variant="ghost">
+  <XIcon aria-hidden="true" />
+</Button>
+
+// Button with icon and text
+<Button>
+  <PlusIcon aria-hidden="true" />
+  Add Item
+</Button>
+```
+
+### Input with Label
+
+```tsx
+<Field>
+  <FieldLabel>Email</FieldLabel>
+  <Input type="email" placeholder="your@email.com" />
+  <FieldError>Invalid email</FieldError>
+</Field>
+```
+
+### Menu with Trigger
+
+```tsx
+<Menu>
+  <MenuTrigger render={<Button variant="outline" />}>
+    Open Menu
+  </MenuTrigger>
+  <MenuPopup>
+    <MenuItem closeOnClick>Edit</MenuItem>
+    <MenuItem closeOnClick>Delete</MenuItem>
+  </MenuPopup>
+</Menu>
+```
+
+### Select with Items
+
+```tsx
+const items = [
+  { label: "Select...", value: null },
+  { label: "Next.js", value: "next" },
+  { label: "Vite", value: "vite" },
+];
+
+<Select items={items}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectPopup>
+    {items.map((item) => (
+      <SelectItem key={item.value} value={item}>
+        {item.label}
+      </SelectItem>
+    ))}
+  </SelectPopup>
+</Select>
+```
+
+### Dialog Pattern
+
+```tsx
+<Dialog>
+  <DialogTrigger render={<Button variant="outline" />}>
+    Open Dialog
+  </DialogTrigger>
+  <DialogPopup>
+    <DialogHeader>
+      <DialogTitle>Title</DialogTitle>
+      <DialogDescription>Description</DialogDescription>
+    </DialogHeader>
+    <DialogPanel>Content here</DialogPanel>
+    <DialogFooter>
+      <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+      <DialogClose render={<Button />}>Confirm</DialogClose>
+    </DialogFooter>
+  </DialogPopup>
+</Dialog>
+```
+
+---
+
+## 20. Troubleshooting
+
+### Common Issues
+
+**Issue: Component doesn't render**
+- Check if `"use client"` is needed
+- Verify imports are correct
+- Ensure default export is `Particle`
+
+**Issue: Icons not showing**
+- Verify icon imports are specific (not `import *`)
+- Check if icon library is in dependencies
+
+**Issue: Styling doesn't match**
+- Check if using semantic tokens
+- Verify size mapping (shadcn → coss)
+- Compare with similar particles
+
+**Issue: Accessibility warnings**
+- Add `aria-label` for icon-only interactive elements
+- Add `aria-hidden="true"` for decorative icons
+- Use `React.useId()` for label-input pairs
+
+**Issue: Registry build fails**
+- Check category names match `registry-categories.ts` exactly
+- Verify `registryDependencies` use `@coss/*` format
+- Ensure `name` matches filename without `.tsx`
+
+---
+
+This guide should enable autonomous creation of particles that match the existing library's patterns, style, and best practices. Always refer to existing particles in the same category for consistency.

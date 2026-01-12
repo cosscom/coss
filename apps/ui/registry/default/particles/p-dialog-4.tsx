@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -28,9 +28,9 @@ import { Form } from "@/registry/default/ui/form";
 import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function Particle() {
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [value, setValue] = useState("");
 
   return (
     <Dialog

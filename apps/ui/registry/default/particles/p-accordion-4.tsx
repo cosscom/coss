@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import {
   Accordion,
@@ -11,7 +11,7 @@ import {
 import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
-  const [value, setValue] = React.useState<string[]>([]);
+  const [value, setValue] = useState<string[]>([]);
 
   return (
     <div className="flex w-full flex-col gap-4">

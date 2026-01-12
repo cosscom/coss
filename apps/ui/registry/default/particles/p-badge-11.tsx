@@ -5,7 +5,7 @@ import { Badge } from "@/registry/default/ui/badge";
 export default function Particle() {
   return (
     <Badge variant="outline">
-      <CheckIcon />
+      <CheckIcon aria-hidden="true" />
       Verified
     </Badge>
   );

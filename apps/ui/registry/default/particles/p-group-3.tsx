@@ -21,12 +21,12 @@ export default function Particle() {
   return (
     <Group aria-label="File actions">
       <Button size="sm" variant="outline">
-        <FilesIcon />
+        <FilesIcon aria-hidden="true" />
         Files
       </Button>
       <GroupSeparator />
       <Button size="sm" variant="outline">
-        <FilmIcon />
+        <FilmIcon aria-hidden="true" />
         Media
       </Button>
       <GroupSeparator />
@@ -34,23 +34,23 @@ export default function Particle() {
         <MenuTrigger
           render={<Button aria-label="Menu" size="icon-sm" variant="outline" />}
         >
-          <EllipsisIcon className="size-4" />
+          <EllipsisIcon aria-hidden="true" className="size-4" />
         </MenuTrigger>
         <MenuPopup align="end">
           <MenuItem>
-            <EditIcon />
+            <EditIcon aria-hidden="true" />
             Edit
           </MenuItem>
           <MenuItem>
-            <ArchiveIcon />
+            <ArchiveIcon aria-hidden="true" />
             Archive
           </MenuItem>
           <MenuItem>
-            <ShareIcon />
+            <ShareIcon aria-hidden="true" />
             Share
           </MenuItem>
           <MenuItem variant="destructive">
-            <TrashIcon />
+            <TrashIcon aria-hidden="true" />
             Delete
           </MenuItem>
         </MenuPopup>

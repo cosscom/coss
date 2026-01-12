@@ -731,6 +731,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button"),
+    dependencies: ["lucide-react"],
+    description: "Button group with QR code icon and sign in",
+    files: [{ path: "particles/p-button-27.tsx", type: "registry:block" }],
+    name: "p-button-27",
+    registryDependencies: ["@coss/button", "@coss/group"],
+    type: "registry:block",
+  },
+  {
     categories: categories("card"),
     description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],

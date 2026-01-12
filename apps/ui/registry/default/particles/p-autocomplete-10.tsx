@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { Fragment } from "react";
 
 import {
   Autocomplete,
@@ -96,7 +96,7 @@ export default function Particle() {
         <AutocompleteEmpty>No tags found.</AutocompleteEmpty>
         <AutocompleteList>
           {(group: TagGroup) => (
-            <React.Fragment key={group.value}>
+            <Fragment key={group.value}>
               <AutocompleteGroup items={group.items}>
                 <AutocompleteGroupLabel>{group.value}</AutocompleteGroupLabel>
                 <AutocompleteCollection>
@@ -108,7 +108,7 @@ export default function Particle() {
                 </AutocompleteCollection>
               </AutocompleteGroup>
               {group.value !== "Team" && <AutocompleteSeparator />}
-            </React.Fragment>
+            </Fragment>
           )}
         </AutocompleteList>
       </AutocompletePopup>

@@ -1,15 +1,15 @@
 "use client";
 
-import * as React from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { Spinner } from "@/registry/default/ui/spinner";
 import { anchoredToastManager } from "@/registry/default/ui/toast";
 
 export default function Particle() {
-  const submitRef = React.useRef<HTMLButtonElement>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const toastIdRef = React.useRef<string | null>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const toastIdRef = useRef<string | null>(null);
 
   function handleSubmit() {
     if (!submitRef.current || isSubmitting) return;
