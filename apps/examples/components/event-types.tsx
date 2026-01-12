@@ -172,6 +172,14 @@ export function EventTypes() {
             return (
               <Fragment key={eventType.id}>
                 <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                  {getEventTypeColor(eventType) && (
+                    <div
+                      className="absolute inset-y-0 start-0 w-[3px] bg-current"
+                      style={{
+                        color: getEventTypeColor(eventType) ?? undefined,
+                      }}
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Info */}
                     <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -179,15 +187,6 @@ export function EventTypes() {
                       <div className="flex flex-col gap-1">
                         {/* Title with URL inline */}
                         <div className="flex items-center gap-2">
-                          {getEventTypeColor(eventType) && (
-                            <div
-                              className="size-2.5 rounded-[3px] bg-current"
-                              style={{
-                                color:
-                                  getEventTypeColor(eventType) ?? undefined,
-                              }}
-                            />
-                          )}
                           <h2 className="truncate font-medium text-sm">
                             <a
                               className="before:absolute before:inset-0"
