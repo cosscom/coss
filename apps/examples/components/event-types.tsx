@@ -172,6 +172,14 @@ export function EventTypes() {
             return (
               <Fragment key={eventType.id}>
                 <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                  {getEventTypeColor(eventType) && (
+                    <div
+                      className="absolute inset-y-0 start-0 w-0.5 bg-current"
+                      style={{
+                        color: getEventTypeColor(eventType) ?? undefined,
+                      }}
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Info */}
                     <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -187,20 +195,6 @@ export function EventTypes() {
                               {eventType.title}
                             </a>
                           </h2>
-                          {getEventTypeColor(eventType) && (
-                            <svg
-                              className="shrink-0"
-                              fill="none"
-                              height="10"
-                              width="15"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M0 2.5C0 1.11929 1.11929 0 2.5 0H10.242C11.0644 0 11.8342 0.404477 12.3008 1.08174L14.6092 4.4327C14.8445 4.77429 14.8445 5.22571 14.6092 5.56731L12.3008 8.91826C11.8342 9.59552 11.0644 10 10.242 10H2.5C1.11929 10 0 8.88071 0 7.5V2.5Z"
-                                fill={getEventTypeColor(eventType) ?? undefined}
-                              />
-                            </svg>
-                          )}
                           <span className="text-muted-foreground text-xs">
                             {eventPath}
                           </span>
