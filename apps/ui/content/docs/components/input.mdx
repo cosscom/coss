@@ -56,6 +56,17 @@ import { Input } from "@/components/ui/input"
 <Input />
 ```
 
+## API Reference
+
+### Input
+
+Styled wrapper for `Input` from Base UI with custom size options.
+
+| Prop       | Type                                  | Default     | Description                                      |
+| ---------- | ------------------------------------- | ----------- | ------------------------------------------------ |
+| `size`     | `"sm" \| "default" \| "lg" \| number` | `"default"` | Controls the input height. Number values are passed to the native `size` attribute |
+| `unstyled` | `boolean`                             | `false`     | When true, removes all default styling           |
+
 ## Examples
 
 For accessible labelling and validation, prefer using the `Field` component to wrap inputs, or the `FieldControl` component. See some [related examples](/ui/docs/components/field).

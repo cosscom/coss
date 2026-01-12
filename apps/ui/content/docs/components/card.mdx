@@ -60,3 +60,39 @@ import {
   <CardFooter>Footer</CardFooter>
 </Card>
 ```
+
+## API Reference
+
+This is a custom component using Base UI's `useRender` hook, not a direct Base UI wrapper.
+
+### Card
+
+Root container for the card. Supports the `render` prop.
+
+| Prop     | Type                   | Default | Description                                      |
+| -------- | ---------------------- | ------- | ------------------------------------------------ |
+| `render` | `React.ReactElement`   | -       | Render as a different element                    |
+
+### CardHeader
+
+Header section container. Supports the `render` prop.
+
+### CardTitle
+
+Title text for the card. Supports the `render` prop.
+
+### CardDescription
+
+Description text for the card. Supports the `render` prop.
+
+### CardAction
+
+Container for action buttons in the header. Automatically positions to the right. Supports the `render` prop.
+
+### CardPanel
+
+Main content area of the card. Also exported as `CardContent`. Supports the `render` prop.
+
+### CardFooter
+
+Footer section for the card. Supports the `render` prop.

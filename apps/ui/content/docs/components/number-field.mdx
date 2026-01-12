@@ -73,6 +73,44 @@ import {
 </NumberField>
 ```
 
+## API Reference
+
+### NumberField
+
+Root component. Styled wrapper for `NumberField.Root` from Base UI.
+
+| Prop   | Type                        | Default     | Description                                      |
+| ------ | --------------------------- | ----------- | ------------------------------------------------ |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` | Controls the size of all child components via context |
+
+### NumberFieldGroup
+
+Container for the input and buttons. Styled wrapper for `NumberField.Group` from Base UI.
+
+### NumberFieldInput
+
+Input element for the number value. Styled wrapper for `NumberField.Input` from Base UI.
+
+### NumberFieldIncrement
+
+Button to increment the value. Styled wrapper for `NumberField.Increment` from Base UI with plus icon.
+
+### NumberFieldDecrement
+
+Button to decrement the value. Styled wrapper for `NumberField.Decrement` from Base UI with minus icon.
+
+### NumberFieldScrubArea
+
+Draggable area for scrubbing the value. Styled wrapper for `NumberField.ScrubArea` from Base UI.
+
+| Prop    | Type     | Default | Description                                      |
+| ------- | -------- | ------- | ------------------------------------------------ |
+| `label` | `string` | -       | Label text displayed in the scrub area           |
+
+### NumberFieldScrubAreaCursor
+
+Cursor indicator for the scrub area. Styled wrapper for `NumberField.ScrubAreaCursor` from Base UI.
+
 ## Examples
 
 For accessible labelling and validation, prefer using the `Field` component to wrap number fields. See the related example: [Number field](/ui/docs/components/field#number-field).

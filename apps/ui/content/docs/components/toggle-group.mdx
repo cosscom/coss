@@ -57,6 +57,21 @@ import { Toggle, ToggleGroup } from "@/components/ui/toggle-group"
 </ToggleGroup>
 ```
 
+## API Reference
+
+### ToggleGroup
+
+Root component. Styled wrapper for `ToggleGroup.Root` from Base UI. Provides shared variant and size to child toggles via context.
+
+| Prop      | Type                          | Default     | Description                                      |
+| --------- | ----------------------------- | ----------- | ------------------------------------------------ |
+| `variant` | `"default" \| "outline"`      | `"default"` | Controls the styling of all child toggles        |
+| `size`    | `"default" \| "sm" \| "lg"`   | `"default"` | Controls the size of all child toggles           |
+
+### Toggle
+
+Individual toggle button within the group. Styled wrapper for `ToggleGroup.Item` from Base UI. Inherits variant and size from parent ToggleGroup context.
+
 ## Examples
 
 ### Small Toggles

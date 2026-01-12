@@ -47,6 +47,18 @@ import { Label } from "@/components/ui/label"
 <Label htmlFor="email">Email</Label>
 ```
 
+## API Reference
+
+This is a custom component using Base UI's `useRender` hook, not a direct Base UI wrapper.
+
+### Label
+
+A label component that can be rendered as different elements.
+
+| Prop     | Type                   | Default | Description                                      |
+| -------- | ---------------------- | ------- | ------------------------------------------------ |
+| `render` | `React.ReactElement`   | -       | Render as a different element                    |
+
 ## Examples
 
 For accessible labelling and validation, prefer using the `FieldLabel` component. See some [related examples](/ui/docs/components/field).

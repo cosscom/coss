@@ -152,6 +152,52 @@ anchoredToastManager.add({
 })
 ```
 
+## API Reference
+
+### ToastProvider
+
+Provider component for stacked toasts. Wraps `Toast.Provider` from Base UI.
+
+| Prop       | Type                                                                                     | Default        | Description                                      |
+| ---------- | ---------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
+| `position` | `"top-left" \| "top-center" \| "top-right" \| "bottom-left" \| "bottom-center" \| "bottom-right"` | `"bottom-right"` | Position of the toast viewport                   |
+
+### AnchoredToastProvider
+
+Provider component for toasts anchored to specific elements. Use with `anchoredToastManager`.
+
+### toastManager
+
+Manager object for creating stacked toasts. Use `toastManager.add()` to show a toast.
+
+### anchoredToastManager
+
+Manager object for creating anchored toasts. Use `anchoredToastManager.add()` with `positionerProps.anchor` to show a toast anchored to an element.
+
+### ToastViewport
+
+Viewport container for toasts. Styled wrapper for `Toast.Viewport` from Base UI.
+
+### Toast
+
+Individual toast container. Styled wrapper for `Toast.Root` from Base UI.
+
+### ToastTitle
+
+Title text for the toast. Styled wrapper for `Toast.Title` from Base UI.
+
+### ToastDescription
+
+Description text for the toast. Styled wrapper for `Toast.Description` from Base UI.
+
+### ToastAction
+
+Action button for the toast. Styled wrapper for `Toast.Action` from Base UI.
+
+### ToastClose
+
+Close button for the toast. Styled wrapper for `Toast.Close` from Base UI.
+
 ## Examples
 
 ### With Status

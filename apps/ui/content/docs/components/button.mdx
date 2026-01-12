@@ -83,6 +83,20 @@ export function LinkAsButton() {
 }
 ```
 
+## API Reference
+
+This is a custom component using Base UI's `useRender` hook, not a direct Base UI wrapper.
+
+### Button
+
+A button component with variant and size options.
+
+| Prop      | Type                                                                                          | Default     | Description                                      |
+| --------- | --------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------ |
+| `variant` | `"default" \| "destructive" \| "destructive-outline" \| "ghost" \| "link" \| "outline" \| "secondary"` | `"default"` | Controls the button styling                      |
+| `size`    | `"default" \| "icon" \| "icon-lg" \| "icon-sm" \| "icon-xl" \| "icon-xs" \| "lg" \| "sm" \| "xl" \| "xs"` | `"default"` | Controls the button size                         |
+| `render`  | `React.ReactElement`                                                                          | -           | Render as a different element (e.g., Link)       |
+
 ## Examples
 
 ### Default

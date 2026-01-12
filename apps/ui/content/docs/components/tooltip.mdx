@@ -67,6 +67,38 @@ import {
 </Tooltip>
 ```
 
+## API Reference
+
+### Tooltip
+
+Root component. Alias for `Tooltip.Root` from Base UI.
+
+### TooltipTrigger
+
+Trigger element that shows the tooltip on hover/focus. Alias for `Tooltip.Trigger` from Base UI.
+
+### TooltipPopup
+
+Popup container that displays the tooltip content. Also exported as `TooltipContent`.
+
+| Prop         | Type                                     | Default    | Description                                      |
+| ------------ | ---------------------------------------- | ---------- | ------------------------------------------------ |
+| `side`       | `"top" \| "bottom" \| "left" \| "right"` | `"top"`    | Side of the trigger to position the tooltip      |
+| `align`      | `"start" \| "center" \| "end"`           | `"center"` | Alignment relative to the trigger                |
+| `sideOffset` | `number`                                 | `4`        | Distance from the trigger in pixels              |
+
+### TooltipArrow
+
+Arrow pointing to the trigger. Styled wrapper for `Tooltip.Arrow` from Base UI.
+
+### TooltipProvider
+
+Provider for grouping tooltips. Alias for `Tooltip.Provider` from Base UI.
+
+### TooltipCreateHandle
+
+Creates a handle for detached tooltip triggers. Returns a handle object to attach to multiple triggers for animated transitions.
+
 ## Examples
 
 ### Grouped Tooltips
