@@ -55,11 +55,13 @@ import {
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
-// Get personal event types from mock data (matching Cal.com structure)
 const eventTypes = getPersonalEventTypes();
-
-// Default profile for URL construction
-const defaultProfile = mockEventTypeGroups[0].profile;
+const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
+  eventTypesLockedByOrg: false,
+  image: null,
+  name: "User",
+  slug: "user",
+};
 
 export function EventTypes() {
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(

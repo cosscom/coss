@@ -155,37 +155,45 @@ export interface EventTypeGroup {
 // =============================================================================
 
 /**
- * Mock users for event types
+ * Mock users for event types - defined as named constants for type safety
  */
+const userPasquale: EventTypeUser = {
+  avatarUrl: null,
+  id: 1,
+  name: "Pasquale Vitiello",
+  timeZone: "Europe/Rome",
+  username: "pasquale",
+};
+
+const userAlex: EventTypeUser = {
+  avatarUrl: null,
+  id: 2,
+  name: "Alex Chen",
+  timeZone: "America/Los_Angeles",
+  username: "alex",
+};
+
+const userSarah: EventTypeUser = {
+  avatarUrl: null,
+  id: 3,
+  name: "Sarah Johnson",
+  timeZone: "America/New_York",
+  username: "sarah",
+};
+
+const userMike: EventTypeUser = {
+  avatarUrl: null,
+  id: 4,
+  name: "Mike Wilson",
+  timeZone: "Europe/London",
+  username: "mike",
+};
+
 const mockUsers: EventTypeUser[] = [
-  {
-    avatarUrl: null,
-    id: 1,
-    name: "Pasquale Vitiello",
-    timeZone: "Europe/Rome",
-    username: "pasquale",
-  },
-  {
-    avatarUrl: null,
-    id: 2,
-    name: "Alex Chen",
-    timeZone: "America/Los_Angeles",
-    username: "alex",
-  },
-  {
-    avatarUrl: null,
-    id: 3,
-    name: "Sarah Johnson",
-    timeZone: "America/New_York",
-    username: "sarah",
-  },
-  {
-    avatarUrl: null,
-    id: 4,
-    name: "Mike Wilson",
-    timeZone: "Europe/London",
-    username: "mike",
-  },
+  userPasquale,
+  userAlex,
+  userSarah,
+  userMike,
 ];
 
 /**
@@ -245,7 +253,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "15 Min Meeting",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 5,
@@ -290,7 +298,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "30 Min Meeting",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 15,
@@ -337,7 +345,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "60 Min Consultation",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 0,
@@ -387,7 +395,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "Secret Meeting",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 10,
@@ -440,7 +448,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "Paid Consultation",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 0,
@@ -486,7 +494,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "Weekly Sync",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 15,
@@ -531,7 +539,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "Webinar",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
   {
     afterEventBuffer: 0,
@@ -573,7 +581,7 @@ export const mockEventTypes: EventType[] = [
     timeZone: null,
     title: "Instant Meeting",
     userId: 1,
-    users: [mockUsers[0]],
+    users: [userPasquale],
   },
 
   // Team event types
@@ -593,7 +601,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: true,
         priority: null,
-        user: mockUsers[0],
+        user: userPasquale,
         userId: 1,
         weight: null,
         weightAdjustment: null,
@@ -601,7 +609,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: true,
         priority: null,
-        user: mockUsers[1],
+        user: userAlex,
         userId: 2,
         weight: null,
         weightAdjustment: null,
@@ -609,7 +617,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: true,
         priority: null,
-        user: mockUsers[2],
+        user: userSarah,
         userId: 3,
         weight: null,
         weightAdjustment: null,
@@ -667,7 +675,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: false,
         priority: 1,
-        user: mockUsers[1],
+        user: userAlex,
         userId: 2,
         weight: 100,
         weightAdjustment: 0,
@@ -675,7 +683,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: false,
         priority: 2,
-        user: mockUsers[2],
+        user: userSarah,
         userId: 3,
         weight: 100,
         weightAdjustment: 0,
@@ -683,7 +691,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: false,
         priority: 3,
-        user: mockUsers[3],
+        user: userMike,
         userId: 4,
         weight: 50,
         weightAdjustment: 0,
@@ -737,7 +745,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: true,
         priority: null,
-        user: mockUsers[0],
+        user: userPasquale,
         userId: 1,
         weight: null,
         weightAdjustment: null,
@@ -745,7 +753,7 @@ export const mockEventTypes: EventType[] = [
       {
         isFixed: true,
         priority: null,
-        user: mockUsers[1],
+        user: userAlex,
         userId: 2,
         weight: null,
         weightAdjustment: null,
@@ -792,19 +800,19 @@ export const mockEventTypes: EventType[] = [
         hidden: false,
         id: 201,
         slug: "one-on-one",
-        users: [mockUsers[1]],
+        users: [userAlex],
       },
       {
         hidden: false,
         id: 202,
         slug: "one-on-one",
-        users: [mockUsers[2]],
+        users: [userSarah],
       },
       {
         hidden: true,
         id: 203,
         slug: "one-on-one",
-        users: [mockUsers[3]],
+        users: [userMike],
       },
     ],
     currency: "usd",
