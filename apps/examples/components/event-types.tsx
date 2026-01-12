@@ -39,19 +39,19 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import { AddEventTypeDialog } from "@/components/add-event-type-dialog";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app-header";
 import {
   type EventType,
   formatDuration,
   getPersonalEventTypes,
   mockEventTypeGroups,
 } from "@/lib/mock-event-types-data";
-import { AddEventTypeDialog } from "./add-event-type-dialog";
-import {
-  AppHeader,
-  AppHeaderActions,
-  AppHeaderContent,
-  AppHeaderDescription,
-} from "./app-header";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
@@ -105,7 +105,7 @@ export function EventTypes() {
         </AppHeaderContent>
         <AppHeaderActions>
           <AddEventTypeDialog className="max-md:hidden">
-            <PlusIcon className="-ms-1 opacity-72" />
+            <PlusIcon className="-ms-1" />
             New
           </AddEventTypeDialog>
         </AppHeaderActions>
