@@ -49,13 +49,13 @@ import {
 import {
   type EventType,
   formatDuration,
-  getPersonalEventTypes,
   mockEventTypeGroups,
+  mockEventTypes,
 } from "@/lib/mock-event-types-data";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
-const eventTypes = getPersonalEventTypes();
+const eventTypes = mockEventTypes;
 const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
   eventTypesLockedByOrg: false,
   image: null,
