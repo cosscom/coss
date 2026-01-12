@@ -3,6 +3,7 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
+import { Group, GroupSeparator } from "@coss/ui/components/group";
 
 import {
   InputGroup,
@@ -302,7 +303,7 @@ export function EventTypes() {
                         </Tooltip>
 
                         {/* Action buttons */}
-                        <div className="flex items-center">
+                        <Group>
                           <TooltipTrigger
                             handle={tooltipHandle}
                             payload={() => "Preview"}
@@ -310,13 +311,13 @@ export function EventTypes() {
                               <Button
                                 aria-label="Preview"
                                 size="icon"
-                                variant="ghost"
+                                variant="outline"
                               >
                                 <EyeIcon />
                               </Button>
                             }
                           />
-
+                          <GroupSeparator />
                           <TooltipTrigger
                             handle={tooltipHandle}
                             payload={() => "Copy link"}
@@ -324,14 +325,14 @@ export function EventTypes() {
                               <Button
                                 aria-label="Copy link"
                                 size="icon"
-                                variant="ghost"
+                                variant="outline"
                               >
                                 <Link2Icon />
                                 <span className="sr-only">Copy link</span>
                               </Button>
                             }
                           />
-
+                          <GroupSeparator />
                           <Menu>
                             <MenuTrigger
                               render={
@@ -342,7 +343,7 @@ export function EventTypes() {
                                     <Button
                                       aria-label="More options"
                                       size="icon"
-                                      variant="ghost"
+                                      variant="outline"
                                     >
                                       <EllipsisIcon />
                                     </Button>
@@ -358,7 +359,7 @@ export function EventTypes() {
                               <MenuItem variant="destructive">Delete</MenuItem>
                             </MenuPopup>
                           </Menu>
-                        </div>
+                        </Group>
                       </div>
 
                       {/* Mobile Trigger */}
