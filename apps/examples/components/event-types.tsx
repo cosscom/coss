@@ -28,6 +28,8 @@ import {
 } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
+  ArmchairIcon,
+  ClipboardCheckIcon,
   ClockIcon,
   DollarSignIcon,
   EllipsisIcon,
@@ -36,6 +38,7 @@ import {
   PlusIcon,
   RepeatIcon,
   SearchIcon,
+  ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
@@ -95,6 +98,39 @@ export function EventTypes() {
     return eventType.price > 0;
   };
 
+  // Helper to check if event type requires confirmation
+  const requiresConfirmation = (eventType: EventType) => {
+    return eventType.requiresConfirmation;
+  };
+
+  // Helper to check if event type has seats
+  const hasSeats = (eventType: EventType) => {
+    return (
+      eventType.seatsPerTimeSlot !== null && eventType.seatsPerTimeSlot > 0
+    );
+  };
+
+  // Helper to get scheduling type label
+  const getSchedulingTypeLabel = (eventType: EventType) => {
+    if (!eventType.schedulingType) return null;
+    switch (eventType.schedulingType) {
+      case "ROUND_ROBIN":
+        return "Round Robin";
+      case "COLLECTIVE":
+        return "Collective";
+      case "MANAGED":
+        return "Managed";
+      default:
+        return null;
+    }
+  };
+
+  // Helper to get event type color
+  const getEventTypeColor = (eventType: EventType) => {
+    if (!eventType.eventTypeColor) return null;
+    return eventType.eventTypeColor.lightEventTypeColor;
+  };
+
   return (
     <TooltipProvider>
       <AppHeader>
@@ -134,12 +170,23 @@ export function EventTypes() {
             return (
               <Fragment key={eventType.id}>
                 <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                  {/* Event type color indicator */}
+                  {getEventTypeColor(eventType) && (
+                    <div
+                      className="absolute top-0 left-0 h-full w-1 rounded-l-[calc(var(--radius-xl)-1px)]"
+                      style={{
+                        backgroundColor:
+                          getEventTypeColor(eventType) ?? undefined,
+                      }}
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Info */}
                     <div
                       className={cn(
-                        "flex min-w-0 flex-1 flex-col gap-0.5 transition-opacity",
+                        "flex min-w-0 flex-1 flex-col gap-1 transition-opacity",
                         isHidden && "opacity-64",
+                        getEventTypeColor(eventType) && "ml-2",
                       )}
                     >
                       <h2 className="truncate font-medium text-sm">
@@ -150,6 +197,12 @@ export function EventTypes() {
                           {eventType.title}
                         </a>
                       </h2>
+                      {/* Description */}
+                      {eventType.safeDescription && (
+                        <p className="line-clamp-2 text-muted-foreground text-xs">
+                          {eventType.safeDescription}
+                        </p>
+                      )}
                       <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                         <p className="truncate text-muted-foreground text-xs">
                           {eventPath}
@@ -165,6 +218,21 @@ export function EventTypes() {
                           <ClockIcon className="opacity-72" />
                           {formatDuration(eventType.length)}
                         </Badge>
+                        {/* Scheduling type badge (Round Robin / Collective) */}
+                        {getSchedulingTypeLabel(eventType) && (
+                          <Badge
+                            className="pointer-events-none"
+                            size="sm"
+                            variant="outline"
+                          >
+                            {eventType.schedulingType === "ROUND_ROBIN" ? (
+                              <ShuffleIcon className="opacity-72" />
+                            ) : (
+                              <UsersIcon className="opacity-72" />
+                            )}
+                            {getSchedulingTypeLabel(eventType)}
+                          </Badge>
+                        )}
                         {isRecurring(eventType) && (
                           <Badge
                             className="pointer-events-none"
@@ -185,14 +253,24 @@ export function EventTypes() {
                             {(eventType.price / 100).toFixed(0)}
                           </Badge>
                         )}
-                        {isTeamEvent(eventType) && (
+                        {requiresConfirmation(eventType) && (
                           <Badge
                             className="pointer-events-none"
                             size="sm"
                             variant="outline"
                           >
-                            <UsersIcon className="opacity-72" />
-                            Team
+                            <ClipboardCheckIcon className="opacity-72" />
+                            Requires confirmation
+                          </Badge>
+                        )}
+                        {hasSeats(eventType) && (
+                          <Badge
+                            className="pointer-events-none"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <ArmchairIcon className="opacity-72" />
+                            {eventType.seatsPerTimeSlot} seats
                           </Badge>
                         )}
                       </div>
