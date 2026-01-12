@@ -377,8 +377,8 @@ export const mockEventTypes: EventType[] = [
     description: "A standard 30 minute meeting for detailed discussions.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#818CF8",
-      lightEventTypeColor: "#4F46E5",
+      darkEventTypeColor: "#0ea5e9",
+      lightEventTypeColor: "#0ea5e9",
     },
     hashedLink: [],
     hidden: false,
@@ -424,8 +424,8 @@ export const mockEventTypes: EventType[] = [
       "An in-depth consultation session for complex topics requiring detailed discussion and planning.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#34D399",
-      lightEventTypeColor: "#059669",
+      darkEventTypeColor: "#8b5cf6",
+      lightEventTypeColor: "#8b5cf6",
     },
     hashedLink: [],
     hidden: false,
@@ -522,8 +522,8 @@ export const mockEventTypes: EventType[] = [
     description: "Premium consultation with payment required.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#F87171",
-      lightEventTypeColor: "#DC2626",
+      darkEventTypeColor: "#f59e0b",
+      lightEventTypeColor: "#f59e0b",
     },
     hashedLink: [],
     hidden: false,
@@ -623,8 +623,8 @@ export const mockEventTypes: EventType[] = [
     description: "Group webinar session with multiple attendees.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#A78BFA",
-      lightEventTypeColor: "#7C3AED",
+      darkEventTypeColor: "#0ea5e9",
+      lightEventTypeColor: "#0ea5e9",
     },
     hashedLink: [],
     hidden: false,
@@ -786,8 +786,8 @@ export const mockEventTypes: EventType[] = [
     description: "Connect with our sales team.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#22D3EE",
-      lightEventTypeColor: "#0891B2",
+      darkEventTypeColor: "#f59e0b",
+      lightEventTypeColor: "#f59e0b",
     },
     hashedLink: [],
     hidden: false,
@@ -856,10 +856,7 @@ export const mockEventTypes: EventType[] = [
     currency: "usd",
     description: "Technical interview with our engineering team.",
     durationLimits: null,
-    eventTypeColor: {
-      darkEventTypeColor: "#FB923C",
-      lightEventTypeColor: "#EA580C",
-    },
+    eventTypeColor: null,
     hashedLink: [],
     hidden: false,
     hosts: [

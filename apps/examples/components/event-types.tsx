@@ -19,6 +19,7 @@ import {
   MenuTrigger,
 } from "@coss/ui/components/menu";
 import { Separator } from "@coss/ui/components/separator";
+import { Switch } from "@coss/ui/components/switch";
 import {
   Tooltip,
   TooltipCreateHandle,
@@ -26,14 +27,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
-import { cn } from "@coss/ui/lib/utils";
 import {
   ArmchairIcon,
+  BanknoteIcon,
   ClipboardCheckIcon,
   ClockIcon,
-  DollarSignIcon,
   EllipsisIcon,
   EyeIcon,
+  EyeOffIcon,
   Link2Icon,
   PlusIcon,
   RepeatIcon,
@@ -84,7 +85,7 @@ export function EventTypes() {
   };
 
   // Helper to check if event type is a team event
-  const isTeamEvent = (eventType: EventType) => {
+  const _isTeamEvent = (eventType: EventType) => {
     return eventType.teamId !== null;
   };
 
@@ -132,7 +133,7 @@ export function EventTypes() {
   };
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delay={0}>
       <AppHeader>
         <AppHeaderContent title="Event Types">
           <AppHeaderDescription>
@@ -170,59 +171,65 @@ export function EventTypes() {
             return (
               <Fragment key={eventType.id}>
                 <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
-                  {/* Event type color indicator */}
-                  {getEventTypeColor(eventType) && (
-                    <div
-                      className="absolute top-0 left-0 h-full w-1 rounded-l-[calc(var(--radius-xl)-1px)]"
-                      style={{
-                        backgroundColor:
-                          getEventTypeColor(eventType) ?? undefined,
-                      }}
-                    />
-                  )}
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Info */}
-                    <div
-                      className={cn(
-                        "flex min-w-0 flex-1 flex-col gap-1 transition-opacity",
-                        isHidden && "opacity-64",
-                        getEventTypeColor(eventType) && "ml-2",
-                      )}
-                    >
-                      <h2 className="truncate font-medium text-sm">
-                        <a
-                          className="before:absolute before:inset-0"
-                          href={eventPath}
-                        >
-                          {eventType.title}
-                        </a>
-                      </h2>
-                      {/* Description */}
-                      {eventType.safeDescription && (
-                        <p className="line-clamp-2 text-muted-foreground text-xs">
-                          {eventType.safeDescription}
-                        </p>
-                      )}
+                    <div className="flex min-w-0 flex-1 flex-col gap-3">
+                      {/* Title and Description wrapper */}
+                      <div className="flex flex-col gap-1">
+                        {/* Title with URL inline */}
+                        <div className="flex items-center gap-2">
+                          {getEventTypeColor(eventType) && (
+                            <div
+                              className="size-2.5 rounded-[3px] bg-current"
+                              style={{
+                                color:
+                                  getEventTypeColor(eventType) ?? undefined,
+                              }}
+                            />
+                          )}
+                          <h2 className="truncate font-medium text-sm">
+                            <a
+                              className="before:absolute before:inset-0"
+                              href={eventPath}
+                            >
+                              {eventType.title}
+                            </a>
+                          </h2>
+                          <span className="text-muted-foreground text-xs">
+                            {eventPath}
+                          </span>
+                        </div>
+                        {/* Description */}
+                        {eventType.safeDescription && (
+                          <p className="line-clamp-2 text-muted-foreground text-sm">
+                            {eventType.safeDescription}
+                          </p>
+                        )}
+                      </div>
+                      {/* Badges: Hidden first if hidden, then Duration, then all others */}
                       <div className="flex flex-wrap items-center gap-2 overflow-hidden">
-                        <p className="truncate text-muted-foreground text-xs">
-                          {eventPath}
-                        </p>
-                        <span className="text-muted-foreground/32 text-xs">
-                          •
-                        </span>
+                        {/* 1st: Hidden badge if hidden */}
+                        {isHidden && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="warning"
+                          >
+                            <EyeOffIcon className="opacity-72" />
+                            Hidden
+                          </Badge>
+                        )}
+                        {/* Duration */}
                         <Badge
                           className="pointer-events-none tabular-nums"
-                          size="sm"
                           variant="outline"
                         >
                           <ClockIcon className="opacity-72" />
                           {formatDuration(eventType.length)}
                         </Badge>
-                        {/* Scheduling type badge (Round Robin / Collective) */}
+                        {/* All other badges */}
                         {getSchedulingTypeLabel(eventType) && (
                           <Badge
                             className="pointer-events-none"
-                            size="sm"
                             variant="outline"
                           >
                             {eventType.schedulingType === "ROUND_ROBIN" ? (
@@ -236,7 +243,6 @@ export function EventTypes() {
                         {isRecurring(eventType) && (
                           <Badge
                             className="pointer-events-none"
-                            size="sm"
                             variant="outline"
                           >
                             <RepeatIcon className="opacity-72" />
@@ -245,18 +251,16 @@ export function EventTypes() {
                         )}
                         {isPaid(eventType) && (
                           <Badge
-                            className="pointer-events-none"
-                            size="sm"
+                            className="pointer-events-none tabular-nums"
                             variant="outline"
                           >
-                            <DollarSignIcon className="opacity-72" />$
+                            <BanknoteIcon className="opacity-72" />$
                             {(eventType.price / 100).toFixed(0)}
                           </Badge>
                         )}
                         {requiresConfirmation(eventType) && (
                           <Badge
                             className="pointer-events-none"
-                            size="sm"
                             variant="outline"
                           >
                             <ClipboardCheckIcon className="opacity-72" />
@@ -266,7 +270,6 @@ export function EventTypes() {
                         {hasSeats(eventType) && (
                           <Badge
                             className="pointer-events-none"
-                            size="sm"
                             variant="outline"
                           >
                             <ArmchairIcon className="opacity-72" />
@@ -278,81 +281,84 @@ export function EventTypes() {
 
                     {/* Right: Actions */}
                     <div className="relative flex items-center gap-3">
-                      {isHidden ? (
-                        <Badge size="sm" variant="warning">
-                          Hidden
-                        </Badge>
-                      ) : null}
-
-                      {/* Primary actions */}
-                      <div className="flex items-center max-md:hidden">
-                        <TooltipTrigger
-                          handle={tooltipHandle}
-                          payload={() => "Preview"}
-                          render={
-                            <Button
-                              aria-label="Preview"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <EyeIcon />
-                            </Button>
-                          }
-                        />
-
-                        <TooltipTrigger
-                          handle={tooltipHandle}
-                          payload={() => "Copy link"}
-                          render={
-                            <Button
-                              aria-label="Copy link"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <Link2Icon />
-                              <span className="sr-only">Copy link</span>
-                            </Button>
-                          }
-                        />
-
-                        <Menu>
-                          <MenuTrigger
+                      {/* Desktop actions */}
+                      <div className="flex items-center gap-4 max-md:hidden">
+                        {/* Visibility switch */}
+                        <Tooltip>
+                          <TooltipTrigger
                             render={
-                              <TooltipTrigger
-                                handle={tooltipHandle}
-                                payload={() => "More options"}
-                                render={
-                                  <Button
-                                    aria-label="More options"
-                                    size="icon"
-                                    variant="ghost"
-                                  >
-                                    <EllipsisIcon />
-                                  </Button>
+                              <Switch
+                                checked={!isHidden}
+                                className="[--thumb-size:--spacing(4.5)] sm:[--thumb-size:--spacing(3.5)]"
+                                onCheckedChange={(checked) =>
+                                  handleHiddenToggle(eventType.id, !checked)
                                 }
                               />
                             }
                           />
-                          <MenuPopup align="end">
-                            <MenuItem>Edit</MenuItem>
-                            <MenuItem>Duplicate</MenuItem>
-                            <MenuItem>Embed</MenuItem>
-                            <MenuSeparator />
-                            <MenuGroup>
-                              <MenuCheckboxItem
-                                checked={!isHidden}
-                                onCheckedChange={(checked) => {
-                                  handleHiddenToggle(eventType.id, !checked);
-                                }}
-                                variant="switch"
+                          <TooltipPopup sideOffset={11}>
+                            {isHidden ? "Show on profile" : "Hide from profile"}
+                          </TooltipPopup>
+                        </Tooltip>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center">
+                          <TooltipTrigger
+                            handle={tooltipHandle}
+                            payload={() => "Preview"}
+                            render={
+                              <Button
+                                aria-label="Preview"
+                                size="icon"
+                                variant="ghost"
                               >
-                                Show on profile
-                              </MenuCheckboxItem>
-                            </MenuGroup>
-                            <MenuSeparator />
-                            <MenuItem variant="destructive">Delete</MenuItem>
-                          </MenuPopup>
-                        </Menu>
+                                <EyeIcon />
+                              </Button>
+                            }
+                          />
+
+                          <TooltipTrigger
+                            handle={tooltipHandle}
+                            payload={() => "Copy link"}
+                            render={
+                              <Button
+                                aria-label="Copy link"
+                                size="icon"
+                                variant="ghost"
+                              >
+                                <Link2Icon />
+                                <span className="sr-only">Copy link</span>
+                              </Button>
+                            }
+                          />
+
+                          <Menu>
+                            <MenuTrigger
+                              render={
+                                <TooltipTrigger
+                                  handle={tooltipHandle}
+                                  payload={() => "More options"}
+                                  render={
+                                    <Button
+                                      aria-label="More options"
+                                      size="icon"
+                                      variant="ghost"
+                                    >
+                                      <EllipsisIcon />
+                                    </Button>
+                                  }
+                                />
+                              }
+                            />
+                            <MenuPopup align="end">
+                              <MenuItem>Edit</MenuItem>
+                              <MenuItem>Duplicate</MenuItem>
+                              <MenuItem>Embed</MenuItem>
+                              <MenuSeparator />
+                              <MenuItem variant="destructive">Delete</MenuItem>
+                            </MenuPopup>
+                          </Menu>
+                        </div>
                       </div>
 
                       {/* Mobile Trigger */}
