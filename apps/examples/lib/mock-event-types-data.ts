@@ -70,7 +70,26 @@ export interface RecurringEvent {
 }
 
 /**
+ * AI Phone Call configuration
+ */
+export interface AIPhoneCallConfig {
+  enabled: boolean;
+  templateType: string;
+  generalPrompt: string | null;
+  beginMessage: string | null;
+}
+
+/**
+ * Instant meeting schedule
+ */
+export interface InstantMeetingSchedule {
+  id: number;
+  name: string;
+}
+
+/**
  * Main EventType interface matching Cal.com's structure
+ * Based on packages/lib/server/eventTypeSelect.ts
  */
 export interface EventType {
   id: number;
@@ -102,7 +121,7 @@ export interface EventType {
   // Computed/derived (added by mapEventType)
   safeDescription: string | null;
 
-  // Additional fields from eventTypeSelect
+  // Core fields from eventTypeSelect
   requiresConfirmation: boolean;
   metadata: Record<string, unknown> | null;
   profileId: number | null;
@@ -125,6 +144,49 @@ export interface EventType {
   bookingFields: unknown[] | null;
   bookingLimits: Record<string, number> | null;
   durationLimits: Record<string, number> | null;
+
+  // Additional fields from eventTypeSelect (for complete UI coverage)
+  interfaceLanguage: string | null;
+  canSendCalVideoTranscriptionEmails: boolean;
+  requiresConfirmationForFreeEmail: boolean;
+  requiresConfirmationWillBlockSlot: boolean;
+  autoTranslateDescriptionEnabled: boolean;
+  eventName: string | null;
+  lockTimeZoneToggleOnBookingPage: boolean;
+  lockedTimeZone: string | null;
+  requiresBookerEmailVerification: boolean;
+  disableGuests: boolean;
+  disableCancelling: boolean;
+  disableRescheduling: boolean;
+  minimumRescheduleNotice: number;
+  allowReschedulingCancelledBookings: boolean;
+  hideCalendarNotes: boolean;
+  onlyShowFirstAvailableSlot: boolean;
+  allowReschedulingPastBookings: boolean;
+  hideOrganizerEmail: boolean;
+  showOptimizedSlots: boolean;
+  seatsShowAttendees: boolean;
+  seatsShowAvailabilityCount: boolean;
+  scheduleId: number | null;
+  instantMeetingScheduleId: number | null;
+  successRedirectUrl: string | null;
+  instantMeetingExpiryTimeOffsetInSeconds: number | null;
+  instantMeetingParameters: Record<string, unknown> | null;
+  aiPhoneCallConfig: AIPhoneCallConfig | null;
+  assignAllTeamMembers: boolean;
+  isRRWeightsEnabled: boolean;
+  rescheduleWithSameRoundRobinHost: boolean;
+  useEventTypeDestinationCalendarEmail: boolean;
+  secondaryEmailId: number | null;
+  hideCalendarEventDetails: boolean;
+  rrSegmentQueryValue: Record<string, unknown> | null;
+  assignRRMembersUsingSegment: boolean;
+  maxLeadThreshold: number | null;
+  useEventLevelSelectedCalendars: boolean;
+  customReplyToEmail: string | null;
+  restrictionScheduleId: number | null;
+  useBookerTimezone: boolean;
+  instantMeetingSchedule: InstantMeetingSchedule | null;
 }
 
 /**
@@ -197,6 +259,54 @@ const _mockUsers: EventTypeUser[] = [
 ];
 
 /**
+ * Default values for the additional eventTypeSelect fields
+ * These are the typical defaults from Cal.com
+ */
+const defaultEventTypeFields = {
+  aiPhoneCallConfig: null,
+  allowReschedulingCancelledBookings: false,
+  allowReschedulingPastBookings: false,
+  assignAllTeamMembers: false,
+  assignRRMembersUsingSegment: false,
+  autoTranslateDescriptionEnabled: false,
+  canSendCalVideoTranscriptionEmails: false,
+  customReplyToEmail: null,
+  disableCancelling: false,
+  disableGuests: false,
+  disableRescheduling: false,
+  eventName: null,
+  hideCalendarEventDetails: false,
+  hideCalendarNotes: false,
+  hideOrganizerEmail: false,
+  instantMeetingExpiryTimeOffsetInSeconds: null,
+  instantMeetingParameters: null,
+  instantMeetingSchedule: null,
+  instantMeetingScheduleId: null,
+  interfaceLanguage: null,
+  isRRWeightsEnabled: false,
+  lockedTimeZone: null,
+  lockTimeZoneToggleOnBookingPage: false,
+  maxLeadThreshold: null,
+  minimumRescheduleNotice: 0,
+  onlyShowFirstAvailableSlot: false,
+  requiresBookerEmailVerification: false,
+  requiresConfirmationForFreeEmail: false,
+  requiresConfirmationWillBlockSlot: false,
+  rescheduleWithSameRoundRobinHost: false,
+  restrictionScheduleId: null,
+  rrSegmentQueryValue: null,
+  scheduleId: null,
+  seatsShowAttendees: false,
+  seatsShowAvailabilityCount: false,
+  secondaryEmailId: null,
+  showOptimizedSlots: false,
+  successRedirectUrl: null,
+  useBookerTimezone: false,
+  useEventLevelSelectedCalendars: false,
+  useEventTypeDestinationCalendarEmail: false,
+} as const;
+
+/**
  * Mock event types matching Cal.com's data structure
  * Includes various scenarios for UI stress testing:
  * - Different durations (15, 30, 45, 60 min)
@@ -214,6 +324,7 @@ const _mockUsers: EventTypeUser[] = [
 export const mockEventTypes: EventType[] = [
   // Personal event types
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 0,
     beforeEventBuffer: 0,
     bookingFields: null,
@@ -256,6 +367,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 5,
     beforeEventBuffer: 5,
     bookingFields: null,
@@ -301,6 +413,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 15,
     beforeEventBuffer: 15,
     bookingFields: null,
@@ -348,6 +461,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 0,
     beforeEventBuffer: 0,
     bookingFields: null,
@@ -398,6 +512,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 10,
     beforeEventBuffer: 10,
     bookingFields: null,
@@ -451,6 +566,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 0,
     beforeEventBuffer: 0,
     bookingFields: null,
@@ -497,6 +613,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 15,
     beforeEventBuffer: 30,
     bookingFields: null,
@@ -542,6 +659,7 @@ export const mockEventTypes: EventType[] = [
     users: [userPasquale],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 0,
     beforeEventBuffer: 0,
     bookingFields: null,
@@ -586,6 +704,7 @@ export const mockEventTypes: EventType[] = [
 
   // Team event types
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 0,
     beforeEventBuffer: 0,
     bookingFields: null,
@@ -657,6 +776,7 @@ export const mockEventTypes: EventType[] = [
     users: [],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 5,
     beforeEventBuffer: 5,
     bookingFields: null,
@@ -727,6 +847,7 @@ export const mockEventTypes: EventType[] = [
     users: [],
   },
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 15,
     beforeEventBuffer: 15,
     bookingFields: null,
@@ -791,6 +912,7 @@ export const mockEventTypes: EventType[] = [
 
   // Managed event type with children
   {
+    ...defaultEventTypeFields,
     afterEventBuffer: 5,
     beforeEventBuffer: 5,
     bookingFields: null,
