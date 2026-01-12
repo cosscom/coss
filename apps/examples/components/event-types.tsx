@@ -29,11 +29,14 @@ import {
 import { cn } from "@coss/ui/lib/utils";
 import {
   ClockIcon,
+  DollarSignIcon,
   EllipsisIcon,
   EyeIcon,
   Link2Icon,
   PlusIcon,
+  RepeatIcon,
   SearchIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
@@ -43,46 +46,20 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "./app-header";
+import {
+  type EventType,
+  formatDuration,
+  getPersonalEventTypes,
+  mockEventTypeGroups,
+} from "./event-types-mock-data";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
-const eventTypes = [
-  {
-    duration: "15m",
-    hidden: false,
-    id: 1,
-    path: "/pasquale/15min",
-    title: "15 Min Meeting",
-  },
-  {
-    duration: "30m",
-    hidden: false,
-    id: 2,
-    path: "/pasquale/30min",
-    title: "30 Min Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 3,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: false,
-    id: 9,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-  {
-    duration: "15m",
-    hidden: true,
-    id: 10,
-    path: "/pasquale/secret",
-    title: "Secret Meeting",
-  },
-];
+// Get personal event types from mock data (matching Cal.com structure)
+const eventTypes = getPersonalEventTypes();
+
+// Default profile for URL construction
+const defaultProfile = mockEventTypeGroups[0].profile;
 
 export function EventTypes() {
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
@@ -94,6 +71,26 @@ export function EventTypes() {
       ...prev,
       [id]: checked,
     }));
+  };
+
+  // Helper to build event type path from Cal.com-compatible data
+  const getEventTypePath = (eventType: EventType) => {
+    return `/${defaultProfile.slug}/${eventType.slug}`;
+  };
+
+  // Helper to check if event type is a team event
+  const isTeamEvent = (eventType: EventType) => {
+    return eventType.teamId !== null;
+  };
+
+  // Helper to check if event type is recurring
+  const isRecurring = (eventType: EventType) => {
+    return eventType.recurringEvent !== null;
+  };
+
+  // Helper to check if event type is paid
+  const isPaid = (eventType: EventType) => {
+    return eventType.price > 0;
   };
 
   return (
@@ -131,6 +128,7 @@ export function EventTypes() {
           {eventTypes.map((eventType, index) => {
             const isHidden = hiddenStates[eventType.id];
             const isLast = index === eventTypes.length - 1;
+            const eventPath = getEventTypePath(eventType);
             return (
               <Fragment key={eventType.id}>
                 <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
@@ -145,14 +143,14 @@ export function EventTypes() {
                       <h2 className="truncate font-medium text-sm">
                         <a
                           className="before:absolute before:inset-0"
-                          href={eventType.path}
+                          href={eventPath}
                         >
                           {eventType.title}
                         </a>
                       </h2>
-                      <div className="flex items-center gap-2 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                         <p className="truncate text-muted-foreground text-xs">
-                          {eventType.path}
+                          {eventPath}
                         </p>
                         <span className="text-muted-foreground/32 text-xs">
                           •
@@ -163,8 +161,38 @@ export function EventTypes() {
                           variant="outline"
                         >
                           <ClockIcon className="opacity-72" />
-                          {eventType.duration}
+                          {formatDuration(eventType.length)}
                         </Badge>
+                        {isRecurring(eventType) && (
+                          <Badge
+                            className="pointer-events-none"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <RepeatIcon className="opacity-72" />
+                            Recurring
+                          </Badge>
+                        )}
+                        {isPaid(eventType) && (
+                          <Badge
+                            className="pointer-events-none"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <DollarSignIcon className="opacity-72" />$
+                            {(eventType.price / 100).toFixed(0)}
+                          </Badge>
+                        )}
+                        {isTeamEvent(eventType) && (
+                          <Badge
+                            className="pointer-events-none"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <UsersIcon className="opacity-72" />
+                            Team
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
