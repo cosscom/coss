@@ -39,6 +39,12 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import {
+  type EventType,
+  formatDuration,
+  getPersonalEventTypes,
+  mockEventTypeGroups,
+} from "@/lib/mock-event-types-data";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
 import {
   AppHeader,
@@ -46,12 +52,6 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "./app-header";
-import {
-  type EventType,
-  formatDuration,
-  getPersonalEventTypes,
-  mockEventTypeGroups,
-} from "./event-types-mock-data";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 

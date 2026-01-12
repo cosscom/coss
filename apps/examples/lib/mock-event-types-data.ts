@@ -189,7 +189,7 @@ const userMike: EventTypeUser = {
   username: "mike",
 };
 
-const mockUsers: EventTypeUser[] = [
+const _mockUsers: EventTypeUser[] = [
   userPasquale,
   userAlex,
   userSarah,
