@@ -96,7 +96,7 @@ export function EventTypes() {
   };
 
   return (
-    <TooltipProvider delay={150} timeout={0}>
+    <TooltipProvider>
       <AppHeader>
         <AppHeaderContent title="Event Types">
           <AppHeaderDescription>
