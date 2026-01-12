@@ -159,6 +159,14 @@ Individual menu item. Also exported as `DropdownMenuItem`.
 | `inset`   | `boolean`                     | -           | Adds left padding to align with items that have icons |
 | `variant` | `"default" \| "destructive"`  | `"default"` | Controls the item styling                        |
 
+**Using `inset`:** When mixing items with and without icons, use `inset` on icon-less items to maintain alignment:
+
+```tsx
+<MenuItem><PencilIcon /> Edit</MenuItem>
+<MenuItem><TrashIcon /> Delete</MenuItem>
+<MenuItem inset>Profile</MenuItem>  {/* Aligns with icon items above */}
+```
+
 ### MenuCheckboxItem
 
 Checkbox menu item. Also exported as `DropdownMenuCheckboxItem`.
