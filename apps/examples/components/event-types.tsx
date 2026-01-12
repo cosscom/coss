@@ -289,7 +289,6 @@ export function EventTypes() {
                             render={
                               <Switch
                                 checked={!isHidden}
-                                className="[--thumb-size:--spacing(4.5)] sm:[--thumb-size:--spacing(3.5)]"
                                 onCheckedChange={(checked) =>
                                   handleHiddenToggle(eventType.id, !checked)
                                 }
