@@ -6747,6 +6747,30 @@
     },
     {
       "categories": [
+        "toggle",
+        "tooltip",
+        "toast"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Bookmark toggle with tooltip and success toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toggle-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toggle-8",
+      "registryDependencies": [
+        "@coss/toggle",
+        "@coss/tooltip",
+        "@coss/toast"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "toolbar"
       ],
       "dependencies": [

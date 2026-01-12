@@ -3249,6 +3249,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("toggle", "tooltip", "toast"),
+    dependencies: ["lucide-react"],
+    description: "Bookmark toggle with tooltip and success toast",
+    files: [{ path: "particles/p-toggle-8.tsx", type: "registry:block" }],
+    name: "p-toggle-8",
+    registryDependencies: ["@coss/toggle", "@coss/tooltip", "@coss/toast"],
+    type: "registry:block",
+  },
+  {
     categories: categories("toolbar"),
     dependencies: ["lucide-react"],
     description: "Toolbar with toggles, buttons, and select",
