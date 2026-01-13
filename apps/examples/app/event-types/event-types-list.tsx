@@ -2,11 +2,6 @@
 
 import { Badge } from "@coss/ui/components/badge";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@coss/ui/components/input-group";
 import { Separator } from "@coss/ui/components/separator";
 import {
   Tooltip,
@@ -20,19 +15,11 @@ import {
   ClipboardCheckIcon,
   ClockIcon,
   EyeOffIcon,
-  PlusIcon,
   RepeatIcon,
-  SearchIcon,
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
-import {
-  AppHeader,
-  AppHeaderActions,
-  AppHeaderContent,
-  AppHeaderDescription,
-} from "@/components/app-header";
 import {
   ListItem,
   ListItemBadges,
@@ -47,7 +34,6 @@ import {
   mockEventTypeGroups,
   mockEventTypes,
 } from "@/lib/mock-event-types-data";
-import { AddEventTypeDialog } from "./add-event-type-dialog";
 import { EventTypeActions } from "./event-type-actions";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
@@ -60,7 +46,7 @@ const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
   slug: "user",
 };
 
-export function EventTypes() {
+export function EventTypesList() {
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
   );
@@ -115,30 +101,6 @@ export function EventTypes() {
 
   return (
     <TooltipProvider delay={0}>
-      <AppHeader>
-        <AppHeaderContent title="Event Types">
-          <AppHeaderDescription>
-            Create events to share for people to book on your calendar.
-          </AppHeaderDescription>
-        </AppHeaderContent>
-        <AppHeaderActions className="max-md:hidden">
-          <InputGroup>
-            <InputGroupInput
-              aria-label="Search"
-              placeholder="Search…"
-              type="search"
-            />
-            <InputGroupAddon>
-              <SearchIcon />
-            </InputGroupAddon>
-          </InputGroup>
-          <AddEventTypeDialog>
-            <PlusIcon className="-ms-1" />
-            New
-          </AddEventTypeDialog>
-        </AppHeaderActions>
-      </AppHeader>
-
       <Frame className="-m-1">
         <FramePanel className="p-0">
           {eventTypes.map((eventType, index) => {
