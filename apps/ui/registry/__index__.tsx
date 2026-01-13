@@ -2218,7 +2218,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button"],
+    categories: ["button","group"],
     meta: undefined,
   },
   "p-button-28": {
@@ -2401,24 +2401,6 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
-  "p-button-38": {
-    name: "p-button-38",
-    description: "Social login buttons (Google, X, GitHub)",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
-    files: [{
-      path: "registry/default/particles/p-button-38.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-button-38.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-button-39": {
     name: "p-button-39",
     description: "Hamburger menu button with animated icon",
@@ -2436,6 +2418,24 @@ export const Index: Record<string, any> = {
     }),
     categories: ["button"],
     meta: undefined,
+  },
+  "p-button-38": {
+    name: "p-button-38",
+    description: "Social login buttons (Google, X, GitHub)",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-38.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-38.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-card-1": {
     name: "p-card-1",

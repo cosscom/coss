@@ -2201,7 +2201,8 @@
     },
     {
       "categories": [
-        "button"
+        "button",
+        "group"
       ],
       "dependencies": [
         "lucide-react"
@@ -2415,6 +2416,23 @@
       "categories": [
         "button"
       ],
+      "description": "Hamburger menu button with animated icon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-39.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-39",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
       "dependencies": [
         "@remixicon/react"
       ],
@@ -2429,23 +2447,6 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-button-38",
-      "registryDependencies": [
-        "@coss/button"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button"
-      ],
-      "description": "Hamburger menu button with animated icon",
-      "files": [
-        {
-          "path": "registry/default/particles/p-button-39.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-button-39",
       "registryDependencies": [
         "@coss/button"
       ],
