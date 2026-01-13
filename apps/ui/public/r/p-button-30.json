@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-button-30",
+  "type": "registry:block",
+  "description": "Button with animated arrow on hover",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/button"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-button-30.tsx",
+      "content": "import { ArrowRightIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button className=\"group\">\n      Get Started\n      <ArrowRightIcon\n        aria-hidden=\"true\"\n        className=\"transition-transform group-hover:translate-x-0.5\"\n      />\n    </Button>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "button"
+  ]
+}

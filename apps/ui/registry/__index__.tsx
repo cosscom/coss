@@ -2221,6 +2221,96 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "p-button-28": {
+    name: "p-button-28",
+    description: "Button with avatar",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-28.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-28.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","avatar"],
+    meta: undefined,
+  },
+  "p-button-29": {
+    name: "p-button-29",
+    description: "Pill-shaped button with rounded-full styling",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-29.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-29.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button"],
+    meta: undefined,
+  },
+  "p-button-30": {
+    name: "p-button-30",
+    description: "Button with animated arrow on hover",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-30.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-30.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button"],
+    meta: undefined,
+  },
+  "p-button-31": {
+    name: "p-button-31",
+    description: "Button with keyboard shortcut indicator",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/kbd"],
+    files: [{
+      path: "registry/default/particles/p-button-31.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-31.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","kbd"],
+    meta: undefined,
+  },
+  "p-button-32": {
+    name: "p-button-32",
+    description: "Button with notification badge",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-32.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-32.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","badge"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "Card with header, content, and footer",
