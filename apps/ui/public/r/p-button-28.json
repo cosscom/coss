@@ -2,18 +2,20 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-28",
   "type": "registry:block",
-  "description": "Button with profile image and username",
+  "description": "Button with avatar",
   "registryDependencies": [
+    "@coss/avatar",
     "@coss/button"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-button-28.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button className=\"gap-0 rounded-full py-0 ps-0\">\n      <div className=\"me-0.5 flex aspect-square h-full p-1.5\">\n        <img\n          alt=\"Profile image\"\n          aria-hidden=\"true\"\n          className=\"h-auto w-full rounded-full\"\n          height={24}\n          src=\"https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80\"\n          width={24}\n        />\n      </div>\n      @georgelucas\n    </Button>\n  );\n}\n",
+      "content": "import {\n  Avatar,\n  AvatarFallback,\n  AvatarImage,\n} from \"@/registry/default/ui/avatar\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button className=\"rounded-full ps-1\">\n      <Avatar className=\"size-6\">\n        <AvatarImage\n          alt=\"Luke Tracy\"\n          src=\"https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=128&h=128&dpr=2&q=80\"\n        />\n        <AvatarFallback>LT</AvatarFallback>\n      </Avatar>\n      @georgelucas\n    </Button>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
   "categories": [
-    "button"
+    "button",
+    "avatar"
   ]
 }
