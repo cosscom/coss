@@ -155,7 +155,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             <item.icon className="size-4" />
             <span>{item.title}</span>
           </span>
-          <ChevronRightIcon className="in-data-open:rotate-90 opacity-72 transition-transform" />
+          <ChevronRightIcon className="in-data-open:rotate-90 transition-transform" />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">

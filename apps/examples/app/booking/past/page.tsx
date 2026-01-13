@@ -33,6 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { cn } from "@coss/ui/lib/utils";
 import {
   BanknoteIcon,
   CalendarClockIcon,
@@ -131,7 +132,10 @@ export default function Page() {
                         {/* Title and Description wrapper */}
                         <div className="flex flex-col gap-1">
                           <h2
-                            className={`font-medium text-sm ${isCancelled ? "line-through" : ""}`}
+                            className={cn(
+                              "font-medium text-sm",
+                              isCancelled && "line-through",
+                            )}
                             data-slot="list-item-title"
                           >
                             <Link
@@ -152,9 +156,9 @@ export default function Page() {
                           {isCancelled && (
                             <Badge
                               className="pointer-events-none"
-                              variant="warning"
+                              variant="error"
                             >
-                              <CircleXIcon className="opacity-72" />
+                              <CircleXIcon />
                               Cancelled
                             </Badge>
                           )}
@@ -163,7 +167,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="warning"
                             >
-                              <CircleDashedIcon className="opacity-72" />
+                              <CircleDashedIcon />
                               Unconfirmed
                             </Badge>
                           )}
@@ -172,7 +176,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="warning"
                             >
-                              <RefreshCcwIcon className="opacity-72" />
+                              <RefreshCcwIcon />
                               Rescheduled
                             </Badge>
                           )}
@@ -189,7 +193,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="outline"
                             >
-                              <UsersIcon className="opacity-72" />
+                              <UsersIcon />
                               {teamName}
                             </Badge>
                           )}
@@ -198,7 +202,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="outline"
                             >
-                              <BanknoteIcon className="opacity-72" />
+                              <BanknoteIcon />
                               Paid
                             </Badge>
                           )}
@@ -207,7 +211,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="outline"
                             >
-                              <RepeatIcon className="opacity-72" />
+                              <RepeatIcon />
                               Recurring
                             </Badge>
                           )}
@@ -216,8 +220,8 @@ export default function Page() {
                         {/* Mobile: Date/Time */}
                         <div className="flex flex-col items-start gap-2 md:hidden">
                           <div className="flex flex-col gap-1">
-                            <p className="font-medium text-xs">{dateStr}</p>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="font-medium text-sm">{dateStr}</p>
+                            <p className="text-muted-foreground text-sm">
                               {timeStr}
                             </p>
                           </div>

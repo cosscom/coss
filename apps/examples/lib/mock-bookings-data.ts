@@ -900,7 +900,7 @@ export const mockPastBookings: Booking[] = [
       },
     ],
     recurringEventId: "recurring-stress-test",
-    rescheduled: true,
+    rescheduled: false,
     startTime: new Date("2025-09-10T15:00:00"),
     status: "PENDING",
     title: "Enterprise Onboarding: Stress Test with Multiple Badges",
