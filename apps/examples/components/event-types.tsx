@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
@@ -167,7 +168,7 @@ export function EventTypes() {
             const eventPath = getEventTypePath(eventType);
             return (
               <Fragment key={eventType.id}>
-                <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
                   {getEventTypeColor(eventType) && (
                     <div
                       className="absolute inset-y-0 start-0 w-0.5 bg-current"
@@ -183,13 +184,13 @@ export function EventTypes() {
                       <div className="flex flex-col gap-1">
                         {/* Title with URL inline */}
                         <div className="flex items-center gap-2">
-                          <h2 className="truncate font-medium text-sm">
-                            <a
+                          <h2 className="truncate font-medium text-sm" data-slot="list-item-title">
+                            <Link
                               className="before:absolute before:inset-0"
                               href={eventPath}
                             >
                               {eventType.title}
-                            </a>
+                            </Link>
                           </h2>
                           <span className="text-muted-foreground text-xs">
                             {eventPath}

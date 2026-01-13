@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
@@ -113,7 +114,7 @@ export default function Page() {
 
             return (
               <Fragment key={booking.id}>
-                <div className="relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                <div className="relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
                   {eventTypeColor && (
                     <div
                       className="absolute inset-y-0 start-0 w-0.5 bg-current"
@@ -122,19 +123,6 @@ export default function Page() {
                   )}
                   <div className="flex flex-1 items-center justify-between gap-4 p-5">
                     <div className="flex min-w-0 flex-1 gap-4">
-                      {/* Date/Time Column */}
-                      <div className="flex w-32 shrink-0 flex-col items-start gap-1 max-md:hidden">
-                        <p className="font-medium text-sm">{dateStr}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {timeStr}
-                        </p>
-                        {locationLabel && (
-                          <a className="mt-1 inline-flex items-center gap-1 text-xs hover:underline">
-                            <VideoIcon className="size-3" />
-                            {locationLabel}
-                          </a>
-                        )}
-                      </div>
 
                       {/* Content Column */}
                       <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -142,13 +130,13 @@ export default function Page() {
                         <div className="flex flex-col gap-1">
                           {/* Title with status badges inline */}
                           <div className="flex flex-wrap items-center gap-2">
-                            <h2 className="font-medium text-sm">
-                              <a
+                            <h2 className="font-medium text-sm" data-slot="list-item-title">
+                              <Link
                                 className="before:absolute before:inset-0"
                                 href="#"
                               >
                                 {booking.title}
-                              </a>
+                              </Link>
                             </h2>
                             {isCancelled && (
                               <Badge
@@ -248,22 +236,40 @@ export default function Page() {
                         </div>
 
                         {/* Mobile: Date/Time */}
-                        <div className="mt-2 flex flex-col gap-0.5 md:hidden">
-                          <p className="font-medium text-xs">{dateStr}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {timeStr}
-                          </p>
+                        <div className="flex flex-col items-start gap-2 md:hidden">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-medium text-xs">{dateStr}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {timeStr}
+                            </p>
+                          </div>
                           {locationLabel && (
-                            <a
-                              className="mt-1 inline-flex items-center gap-1 text-xs hover:underline"
-                              href="#"
-                            >
+                            <Button variant="outline" size="xs" className="pointer-events-auto" render={<Link href="#join" />}>
                               <VideoIcon className="size-3" />
-                              {locationLabel}
-                            </a>
+                              {locationLabel}                              
+                            </Button>
                           )}
                         </div>
                       </div>
+
+                      {/* Date/Time Column */}
+                      <div className="w-36 shrink-0 max-md:hidden pointer-events-none -order-1">
+                        <div className="flex flex-col items-start gap-2">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-medium text-sm">{dateStr}</p>
+                            <p className="text-muted-foreground text-sm">
+                              {timeStr}
+                            </p>
+                          </div>
+                          {locationLabel && ( 
+                            <Button variant="outline" size="xs" className="pointer-events-auto" render={<Link href="#join" />}>
+                              <VideoIcon className="size-3" />
+                              {locationLabel}                              
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
                     </div>
 
                     {/* Actions Menu */}
