@@ -36,7 +36,6 @@ import {
 import {
   CalendarClockIcon,
   CalendarIcon,
-  DollarSignIcon,
   EllipsisIcon,
   EyeOffIcon,
   FilterIcon,
@@ -45,9 +44,7 @@ import {
   MapPinIcon,
   PlayCircleIcon,
   RepeatIcon,
-  ShuffleIcon,
   UserPlusIcon,
-  UsersIcon,
   VideoIcon,
   XIcon,
 } from "lucide-react";
@@ -109,8 +106,9 @@ export default function Page() {
             const isRecurring = booking.recurringEventId !== null;
             const isCancelled = booking.status === "CANCELLED";
             const isPending = booking.status === "PENDING";
-            const hasNoShow = booking.attendees.some((a) => a.noShow === true);
-            const isRecorded = booking.isRecorded;
+            const isRejected = booking.status === "REJECTED";
+            const isRescheduled = booking.rescheduled;
+            const teamName = booking.eventType?.team?.name;
 
             return (
               <Fragment key={booking.id}>
@@ -127,94 +125,63 @@ export default function Page() {
                       <div className="flex min-w-0 flex-1 flex-col gap-3">
                         {/* Title and Description wrapper */}
                         <div className="flex flex-col gap-1">
-                          {/* Title with status badges inline */}
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h2
-                              className="font-medium text-sm"
-                              data-slot="list-item-title"
+                          <h2
+                            className={`font-medium text-sm ${isCancelled ? "line-through" : ""}`}
+                            data-slot="list-item-title"
+                          >
+                            <Link
+                              className="before:absolute before:inset-0"
+                              href="#"
                             >
-                              <Link
-                                className="before:absolute before:inset-0"
-                                href="#"
-                              >
-                                {booking.title}
-                              </Link>
-                            </h2>
-                            {isCancelled && (
-                              <Badge
-                                className="pointer-events-none"
-                                variant="destructive"
-                              >
-                                Cancelled
-                              </Badge>
-                            )}
-                            {isPending && (
-                              <Badge
-                                className="pointer-events-none"
-                                variant="warning"
-                              >
-                                Pending
-                              </Badge>
-                            )}
-                            {booking.rescheduled && (
-                              <Badge
-                                className="pointer-events-none"
-                                variant="warning"
-                              >
-                                Rescheduled
-                              </Badge>
-                            )}
-                            {hasNoShow && (
-                              <Badge
-                                className="pointer-events-none"
-                                variant="destructive"
-                              >
-                                No-show
-                              </Badge>
-                            )}
-                            {isRecorded && (
-                              <Badge
-                                className="pointer-events-none"
-                                variant="secondary"
-                              >
-                                <PlayCircleIcon className="opacity-72" />
-                                Recorded
-                              </Badge>
-                            )}
-                          </div>
+                              {booking.title}
+                            </Link>
+                          </h2>
                           {/* Participants (description) */}
                           <p className="text-muted-foreground text-sm">
                             {participants}
                           </p>
                         </div>
 
-                        {/* Badges row - under description */}
+                        {/* Badges row - under description (matching Cal.com) */}
                         <div className="flex flex-wrap items-center gap-2 overflow-hidden">
-                          {isTeamEvent && schedulingType === "ROUND_ROBIN" && (
+                          {isPending && (
                             <Badge
                               className="pointer-events-none"
-                              variant="outline"
+                              variant="warning"
                             >
-                              <ShuffleIcon className="opacity-72" />
-                              Round Robin
+                              Unconfirmed
                             </Badge>
                           )}
-                          {isTeamEvent && schedulingType === "COLLECTIVE" && (
+                          {isRescheduled && (
                             <Badge
                               className="pointer-events-none"
-                              variant="outline"
+                              variant="warning"
                             >
-                              <UsersIcon className="opacity-72" />
-                              Collective
+                              Rescheduled
                             </Badge>
                           )}
-                          {isTeamEvent && !schedulingType && (
+                          {isRejected && !isRescheduled && (
                             <Badge
                               className="pointer-events-none"
-                              variant="outline"
+                              variant="secondary"
                             >
-                              <UsersIcon className="opacity-72" />
-                              Team
+                              Rejected
+                            </Badge>
+                          )}
+                          {teamName && (
+                            <Badge
+                              className="pointer-events-none"
+                              variant="secondary"
+                            >
+                              {teamName}
+                            </Badge>
+                          )}
+                          {isPaid && (
+                            <Badge
+                              className="pointer-events-none"
+                              variant="success"
+                            >
+                              Paid
                             </Badge>
                           )}
                           {isRecurring && (
@@ -224,15 +191,6 @@ export default function Page() {
                             >
                               <RepeatIcon className="opacity-72" />
                               Recurring
-                            </Badge>
-                          )}
-                          {isPaid && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="outline"
-                            >
-                              <DollarSignIcon className="opacity-72" />
-                              Paid
                             </Badge>
                           )}
                         </div>
