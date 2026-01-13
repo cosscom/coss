@@ -29,15 +29,15 @@ export default function Particle() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          className="-translate-y-[7px] origin-center in-[[aria-expanded=true]]:translate-x-0 in-[[aria-expanded=true]]:translate-y-0 in-[[aria-expanded=true]]:rotate-[315deg] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)]"
+          className="-translate-y-[7px] origin-center in-[[data-slot=button][aria-expanded=true]]:translate-x-0 in-[[data-slot=button][aria-expanded=true]]:translate-y-0 in-[[data-slot=button][aria-expanded=true]]:rotate-315 transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)]"
           d="M4 12L20 12"
         />
         <path
-          className="origin-center in-[[aria-expanded=true]]:rotate-45 transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)]"
+          className="origin-center in-[[data-slot=button][aria-expanded=true]]:rotate-45 transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.8)]"
           d="M4 12H20"
         />
         <path
-          className="origin-center in-[[aria-expanded=true]]:translate-y-0 translate-y-[7px] in-[[aria-expanded=true]]:rotate-[135deg] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)]"
+          className="origin-center in-[[data-slot=button][aria-expanded=true]]:translate-y-0 translate-y-[7px] in-[[data-slot=button][aria-expanded=true]]:rotate-135 transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)]"
           d="M4 12H20"
         />
       </svg>
