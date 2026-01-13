@@ -102,7 +102,7 @@ export function EventTypeActions({
         <MenuTrigger
           className="md:hidden"
           render={
-            <Button aria-label="More options" size="icon" variant="ghost">
+            <Button aria-label="More options" size="icon" variant="outline">
               <EllipsisIcon />
             </Button>
           }

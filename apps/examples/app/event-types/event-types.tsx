@@ -157,7 +157,7 @@ export function EventTypes() {
                         <ListItemTitle className="truncate" href={eventPath}>
                           {eventType.title}
                         </ListItemTitle>
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-muted-foreground text-xs max-sm:hidden">
                           {eventPath}
                         </span>
                       </div>
