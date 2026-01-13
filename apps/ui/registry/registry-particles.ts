@@ -837,6 +837,10 @@ export const particles: ParticleItem[] = [
     dependencies: ["@remixicon/react"],
     description: "Social login buttons (Google, X, GitHub)",
     files: [{ path: "particles/p-button-38.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
     name: "p-button-38",
     registryDependencies: ["@coss/button"],
     type: "registry:block",
