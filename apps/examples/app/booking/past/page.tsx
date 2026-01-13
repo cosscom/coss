@@ -27,7 +27,12 @@ import {
   SelectValue,
 } from "@coss/ui/components/select";
 import { Separator } from "@coss/ui/components/separator";
-import { TooltipProvider } from "@coss/ui/components/tooltip";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
 import {
   CalendarClockIcon,
   CalendarIcon,
@@ -111,13 +116,11 @@ export default function Page() {
                 <div className="relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
                   {eventTypeColor && (
                     <div
-                      className="w-1 shrink-0 rounded-l-[calc(var(--radius-xl)-1px)]"
-                      style={{ backgroundColor: eventTypeColor }}
+                      className="absolute inset-y-0 start-0 w-0.5 bg-current"
+                      style={{ color: eventTypeColor }}
                     />
                   )}
-                  <div
-                    className={`flex flex-1 items-center justify-between gap-4 p-5 ${eventTypeColor ? "ml-0" : ""}`}
-                  >
+                  <div className="flex flex-1 items-center justify-between gap-4 p-5">
                     <div className="flex min-w-0 flex-1 gap-4">
                       {/* Date/Time Column */}
                       <div className="flex w-32 shrink-0 flex-col items-start gap-1 max-md:hidden">
@@ -134,106 +137,111 @@ export default function Page() {
                       </div>
 
                       {/* Content Column */}
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <div className="flex flex-wrap items-start gap-2">
-                          <h2 className="font-medium text-sm">
-                            <a
-                              className="before:absolute before:inset-0"
-                              href="#"
-                            >
-                              {booking.title}
-                            </a>
-                          </h2>
-                          {isCancelled && (
-                            <div className="inline-flex h-lh items-center text-sm">
+                      <div className="flex min-w-0 flex-1 flex-col gap-3">
+                        {/* Title and Description wrapper */}
+                        <div className="flex flex-col gap-1">
+                          {/* Title with status badges inline */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h2 className="font-medium text-sm">
+                              <a
+                                className="before:absolute before:inset-0"
+                                href="#"
+                              >
+                                {booking.title}
+                              </a>
+                            </h2>
+                            {isCancelled && (
                               <Badge
                                 className="pointer-events-none"
-                                size="sm"
                                 variant="destructive"
                               >
                                 Cancelled
                               </Badge>
-                            </div>
-                          )}
-                          {isPending && (
-                            <div className="inline-flex h-lh items-center text-sm">
+                            )}
+                            {isPending && (
                               <Badge
                                 className="pointer-events-none"
-                                size="sm"
                                 variant="warning"
                               >
                                 Pending
                               </Badge>
-                            </div>
-                          )}
-                          {booking.rescheduled && (
-                            <div className="inline-flex h-lh items-center text-sm">
+                            )}
+                            {booking.rescheduled && (
                               <Badge
                                 className="pointer-events-none"
-                                size="sm"
                                 variant="warning"
                               >
                                 Rescheduled
                               </Badge>
-                            </div>
-                          )}
-                          {hasNoShow && (
-                            <div className="inline-flex h-lh items-center text-sm">
+                            )}
+                            {hasNoShow && (
                               <Badge
                                 className="pointer-events-none"
-                                size="sm"
                                 variant="destructive"
                               >
                                 No-show
                               </Badge>
-                            </div>
-                          )}
-                          {isRecorded && (
-                            <div className="inline-flex h-lh items-center text-sm">
+                            )}
+                            {isRecorded && (
                               <Badge
                                 className="pointer-events-none"
-                                size="sm"
                                 variant="secondary"
                               >
-                                <PlayCircleIcon className="size-3" />
+                                <PlayCircleIcon className="opacity-72" />
                                 Recorded
                               </Badge>
-                            </div>
-                          )}
+                            )}
+                          </div>
+                          {/* Participants (description) */}
+                          <p className="text-muted-foreground text-sm">
+                            {participants}
+                          </p>
                         </div>
-                        <p className="text-muted-foreground text-xs">
-                          {participants}
-                        </p>
 
-                        {/* Badges row */}
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {/* Badges row - under description */}
+                        <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                           {isTeamEvent && schedulingType === "ROUND_ROBIN" && (
-                            <Badge size="sm" variant="secondary">
-                              <ShuffleIcon className="size-3" />
+                            <Badge
+                              className="pointer-events-none"
+                              variant="outline"
+                            >
+                              <ShuffleIcon className="opacity-72" />
                               Round Robin
                             </Badge>
                           )}
                           {isTeamEvent && schedulingType === "COLLECTIVE" && (
-                            <Badge size="sm" variant="secondary">
-                              <UsersIcon className="size-3" />
+                            <Badge
+                              className="pointer-events-none"
+                              variant="outline"
+                            >
+                              <UsersIcon className="opacity-72" />
                               Collective
                             </Badge>
                           )}
                           {isTeamEvent && !schedulingType && (
-                            <Badge size="sm" variant="secondary">
-                              <UsersIcon className="size-3" />
+                            <Badge
+                              className="pointer-events-none"
+                              variant="outline"
+                            >
+                              <UsersIcon className="opacity-72" />
                               Team
                             </Badge>
                           )}
                           {isRecurring && (
-                            <Badge size="sm" variant="secondary">
-                              <RepeatIcon className="size-3" />
+                            <Badge
+                              className="pointer-events-none"
+                              variant="outline"
+                            >
+                              <RepeatIcon className="opacity-72" />
                               Recurring
                             </Badge>
                           )}
                           {isPaid && (
-                            <Badge size="sm" variant="secondary">
-                              <DollarSignIcon className="size-3" />
+                            <Badge
+                              className="pointer-events-none"
+                              variant="outline"
+                            >
+                              <DollarSignIcon className="opacity-72" />
                               Paid
                             </Badge>
                           )}
@@ -263,13 +271,20 @@ export default function Page() {
                       <Menu>
                         <MenuTrigger
                           render={
-                            <Button
-                              aria-label="More options"
-                              size="icon"
-                              variant="ghost"
-                            >
-                              <EllipsisIcon />
-                            </Button>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <Button
+                                    aria-label="More options"
+                                    size="icon"
+                                    variant="outline"
+                                  >
+                                    <EllipsisIcon />
+                                  </Button>
+                                }
+                              />
+                              <TooltipPopup>More options</TooltipPopup>
+                            </Tooltip>
                           }
                         />
                         <MenuPopup align="end">
