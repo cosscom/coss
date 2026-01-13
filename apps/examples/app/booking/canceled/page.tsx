@@ -27,7 +27,7 @@ export default function Page() {
         </AppHeaderContent>
       </AppHeader>
 
-      <Empty className="rounded-xl border border-dashed md:py-24">
+      <Empty className="rounded-xl border border-dashed md:py-32">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <CalendarIcon />
