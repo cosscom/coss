@@ -53,7 +53,6 @@ import {
   AppHeaderDescription,
 } from "@/components/app-header";
 import {
-  type Booking,
   formatBookingDate,
   formatBookingTime,
   getBookingParticipants,

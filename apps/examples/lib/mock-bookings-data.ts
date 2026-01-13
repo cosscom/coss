@@ -179,7 +179,7 @@ const userPasquale: BookingUser = {
   username: "pasquale",
 };
 
-const userKeith: BookingUser = {
+const _userKeith: BookingUser = {
   avatarUrl: null,
   email: "keith@cal.com",
   id: 2,
@@ -188,7 +188,7 @@ const userKeith: BookingUser = {
   username: "keith",
 };
 
-const userPeer: BookingUser = {
+const _userPeer: BookingUser = {
   avatarUrl: null,
   email: "peer@cal.com",
   id: 3,
