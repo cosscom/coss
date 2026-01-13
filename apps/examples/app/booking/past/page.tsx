@@ -126,10 +126,9 @@ export default function Page() {
                     />
                   )}
                   <div className="flex flex-1 items-center justify-between gap-4 p-5">
-                    <div className="flex min-w-0 flex-1 gap-4">
-                      {/* Content Column */}
+                    <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
+                      {/* Content */}
                       <div className="flex min-w-0 flex-1 flex-col gap-3">
-                        {/* Title and Description wrapper */}
                         <div className="flex flex-col gap-1">
                           <h2
                             className={cn(
@@ -145,13 +144,12 @@ export default function Page() {
                               {booking.title}
                             </Link>
                           </h2>
-                          {/* Participants (description) */}
                           <p className="text-muted-foreground text-sm">
                             {participants}
                           </p>
                         </div>
 
-                        {/* Badges row - under description */}
+                        {/* Badges */}
                         <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                           {isCancelled && (
                             <Badge
@@ -216,50 +214,29 @@ export default function Page() {
                             </Badge>
                           )}
                         </div>
-
-                        {/* Mobile: Date/Time */}
-                        <div className="flex flex-col items-start gap-2 md:hidden">
-                          <div className="flex flex-col gap-1">
-                            <p className="font-medium text-sm">{dateStr}</p>
-                            <p className="text-muted-foreground text-sm">
-                              {timeStr}
-                            </p>
-                          </div>
-                          {locationLabel && (
-                            <Button
-                              className="pointer-events-auto"
-                              render={<Link href="#join" />}
-                              size="xs"
-                              variant="outline"
-                            >
-                              <VideoIcon className="size-3" />
-                              {locationLabel}
-                            </Button>
-                          )}
-                        </div>
                       </div>
 
-                      {/* Date/Time Column */}
-                      <div className="-order-1 pointer-events-none w-36 shrink-0 max-md:hidden">
-                        <div className="flex flex-col items-start gap-2">
-                          <div className="flex flex-col gap-1">
-                            <p className="font-medium text-sm">{dateStr}</p>
-                            <p className="text-muted-foreground text-sm">
-                              {timeStr}
-                            </p>
-                          </div>
-                          {locationLabel && (
-                            <Button
-                              className="pointer-events-auto"
-                              render={<Link href="#join" />}
-                              size="xs"
-                              variant="outline"
-                            >
-                              <VideoIcon className="size-3" />
-                              {locationLabel}
-                            </Button>
-                          )}
+                      {/* Date/Time - appears after content on mobile, before on desktop */}
+                      <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+                        <div className="flex flex-col gap-1">
+                          <p className="font-medium text-xs md:text-sm">
+                            {dateStr}
+                          </p>
+                          <p className="text-muted-foreground text-xs md:text-sm">
+                            {timeStr}
+                          </p>
                         </div>
+                        {locationLabel && (
+                          <Button
+                            className="pointer-events-auto"
+                            render={<Link href="#join" />}
+                            size="xs"
+                            variant="outline"
+                          >
+                            <VideoIcon className="size-3" />
+                            {locationLabel}
+                          </Button>
+                        )}
                       </div>
                     </div>
 
