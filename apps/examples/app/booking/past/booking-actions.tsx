@@ -30,9 +30,9 @@ import {
 export function BookingActions() {
   return (
     <Menu>
-      <MenuTrigger
-        render={
-          <Tooltip>
+      <Tooltip>
+        <MenuTrigger
+          render={
             <TooltipTrigger
               render={
                 <Button aria-label="More options" size="icon" variant="outline">
@@ -40,10 +40,10 @@ export function BookingActions() {
                 </Button>
               }
             />
-            <TooltipPopup>More options</TooltipPopup>
-          </Tooltip>
-        }
-      />
+          }
+        />
+        <TooltipPopup>More options</TooltipPopup>
+      </Tooltip>
       <MenuPopup align="end">
         <MenuGroup>
           <MenuGroupLabel>Edit event</MenuGroupLabel>
