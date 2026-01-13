@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-32.tsx",
-      "content": "import { Badge } from \"@/registry/default/ui/badge\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"outline\">\n      Messages\n      <Badge className=\"-me-1.5\">18</Badge>\n    </Button>\n  );\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"outline\">\n      Messages\n      <Badge className=\"-me-1\" variant=\"outline\">\n        18\n      </Badge>\n    </Button>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
