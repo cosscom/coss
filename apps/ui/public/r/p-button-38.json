@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-38",
   "type": "registry:block",
-  "description": "Login with Google button",
+  "description": "Social login buttons (Google, X, GitHub)",
   "dependencies": [
     "@remixicon/react"
   ],
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-38.tsx",
-      "content": "import { RiGoogleFill } from \"@remixicon/react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"outline\">\n      <RiGoogleFill aria-hidden=\"true\" />\n      Login with Google\n    </Button>\n  );\n}\n",
+      "content": "import { RiGithubFill, RiGoogleFill, RiTwitterXFill } from \"@remixicon/react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Button variant=\"outline\">\n        <RiGoogleFill aria-hidden=\"true\" />\n        Login with Google\n      </Button>\n      <Button variant=\"outline\">\n        <RiTwitterXFill aria-hidden=\"true\" />\n        Login with X\n      </Button>\n      <Button variant=\"outline\">\n        <RiGithubFill aria-hidden=\"true\" />\n        Login with GitHub\n      </Button>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],

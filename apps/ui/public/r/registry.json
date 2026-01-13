@@ -2418,7 +2418,7 @@
       "dependencies": [
         "@remixicon/react"
       ],
-      "description": "Login with Google button",
+      "description": "Social login buttons (Google, X, GitHub)",
       "files": [
         {
           "path": "registry/default/particles/p-button-38.tsx",
@@ -2426,6 +2426,23 @@
         }
       ],
       "name": "p-button-38",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "description": "Hamburger menu button with animated icon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-39.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-39",
       "registryDependencies": [
         "@coss/button"
       ],

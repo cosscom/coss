@@ -12,7 +12,7 @@ export default function Particle() {
     <Button
       aria-expanded={open}
       aria-label={open ? "Close menu" : "Open menu"}
-      className="rounded-full"
+      className="rounded-full before:rounded-full"
       onClick={() => setOpen((prevState) => !prevState)}
       size="icon"
       variant="outline"
