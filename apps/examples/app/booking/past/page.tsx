@@ -31,6 +31,7 @@ import { TooltipProvider } from "@coss/ui/components/tooltip";
 import {
   CalendarClockIcon,
   CalendarIcon,
+  DollarSignIcon,
   EllipsisIcon,
   EyeOffIcon,
   FilterIcon,
@@ -38,7 +39,10 @@ import {
   InfoIcon,
   MapPinIcon,
   PlayCircleIcon,
+  RepeatIcon,
+  ShuffleIcon,
   UserPlusIcon,
+  UsersIcon,
   VideoIcon,
   XIcon,
 } from "lucide-react";
@@ -48,59 +52,14 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app-header";
-
-const pastBookings = [
-  {
-    date: "25 November 2025",
-    id: 1,
-    meetingLink: "Join Cal Video",
-    participants: "Keith Williams and Pasquale Vitiello",
-    rescheduled: true,
-    time: "2:40pm - 3:00pm",
-    title: "Engineering Chat between Keith Williams and Pasquale Vitiello",
-  },
-  {
-    date: "7 November 2025",
-    id: 2,
-    meetingLink: "Join Cal Video",
-    participants: "Carina, Jonathan Djalo and Pasquale Vitiello",
-    time: "11:30am - 12:00pm",
-    title: "Platform onboarding roadmap",
-  },
-  {
-    date: "6 November 2025",
-    id: 3,
-    meetingLink: "Join Cal Video",
-    participants: "Keith Williams and Pasquale Vitiello",
-    time: "3:00pm - 3:20pm",
-    title: "Engineering Chat between Keith Williams and Pasquale Vitiello",
-  },
-  {
-    date: "3 November 2025",
-    id: 4,
-    meetingLink: "Join Google Meet",
-    participants: "Susan Moeller and Pasquale Vitiello",
-    time: "3:00pm - 3:30pm",
-    title: "30 Min Meeting between Susan Moeller and Pasquale Vitiello",
-  },
-  {
-    date: "13 October 2025",
-    id: 5,
-    meetingLink: "Join Google Meet",
-    participants: "You and David Borenius",
-    rescheduled: true,
-    time: "3:30pm - 4:00pm",
-    title: "30 Min Meeting between Pasquale Vitiello and David Borenius",
-  },
-  {
-    date: "10 October 2025",
-    id: 6,
-    meetingLink: "Join Google Meet",
-    participants: "Peer Richelsen, Keith Williams and Pasquale Vitiello",
-    time: "5:00pm - 5:30pm",
-    title: "@coss/ui migration",
-  },
-];
+import {
+  type Booking,
+  formatBookingDate,
+  formatBookingTime,
+  getBookingParticipants,
+  getLocationLabel,
+  mockPastBookings,
+} from "@/lib/mock-bookings-data";
 
 export default function Page() {
   return (
@@ -128,28 +87,56 @@ export default function Page() {
       {/* Bookings List */}
       <Frame className="-m-1">
         <FramePanel className="p-0">
-          {pastBookings.map((booking, index) => {
-            const isLast = index === pastBookings.length - 1;
+          {mockPastBookings.map((booking, index) => {
+            const isLast = index === mockPastBookings.length - 1;
+            const dateStr = formatBookingDate(booking.startTime);
+            const timeStr = formatBookingTime(
+              booking.startTime,
+              booking.endTime,
+            );
+            const participants = getBookingParticipants(booking);
+            const locationLabel = getLocationLabel(booking.location);
+            const eventTypeColor =
+              booking.eventType?.eventTypeColor?.lightEventTypeColor;
+            const isTeamEvent = booking.eventType?.teamId !== null;
+            const schedulingType = booking.eventType?.schedulingType;
+            const isPaid = booking.paid;
+            const isRecurring = booking.recurringEventId !== null;
+            const isCancelled = booking.status === "CANCELLED";
+            const isPending = booking.status === "PENDING";
+            const hasNoShow = booking.attendees.some((a) => a.noShow === true);
+            const isRecorded = booking.isRecorded;
+
             return (
               <Fragment key={booking.id}>
-                <div className="relative p-5 transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
-                  <div className="flex items-center justify-between gap-4">
+                <div className="relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
+                  {eventTypeColor && (
+                    <div
+                      className="w-1 shrink-0 rounded-l-[calc(var(--radius-xl)-1px)]"
+                      style={{ backgroundColor: eventTypeColor }}
+                    />
+                  )}
+                  <div
+                    className={`flex flex-1 items-center justify-between gap-4 p-5 ${eventTypeColor ? "ml-0" : ""}`}
+                  >
                     <div className="flex min-w-0 flex-1 gap-4">
                       {/* Date/Time Column */}
                       <div className="flex w-32 shrink-0 flex-col items-start gap-1 max-md:hidden">
-                        <p className="font-medium text-sm">{booking.date}</p>
+                        <p className="font-medium text-sm">{dateStr}</p>
                         <p className="text-muted-foreground text-xs">
-                          {booking.time}
+                          {timeStr}
                         </p>
-                        <a className="mt-1 inline-flex items-center gap-1 text-xs hover:underline">
-                          <VideoIcon className="size-3" />
-                          {booking.meetingLink}
-                        </a>
+                        {locationLabel && (
+                          <a className="mt-1 inline-flex items-center gap-1 text-xs hover:underline">
+                            <VideoIcon className="size-3" />
+                            {locationLabel}
+                          </a>
+                        )}
                       </div>
 
                       {/* Content Column */}
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <div className="flex items-start gap-2">
+                        <div className="flex flex-wrap items-start gap-2">
                           <h2 className="font-medium text-sm">
                             <a
                               className="before:absolute before:inset-0"
@@ -158,6 +145,28 @@ export default function Page() {
                               {booking.title}
                             </a>
                           </h2>
+                          {isCancelled && (
+                            <div className="inline-flex h-lh items-center text-sm">
+                              <Badge
+                                className="pointer-events-none"
+                                size="sm"
+                                variant="destructive"
+                              >
+                                Cancelled
+                              </Badge>
+                            </div>
+                          )}
+                          {isPending && (
+                            <div className="inline-flex h-lh items-center text-sm">
+                              <Badge
+                                className="pointer-events-none"
+                                size="sm"
+                                variant="warning"
+                              >
+                                Pending
+                              </Badge>
+                            </div>
+                          )}
                           {booking.rescheduled && (
                             <div className="inline-flex h-lh items-center text-sm">
                               <Badge
@@ -169,24 +178,83 @@ export default function Page() {
                               </Badge>
                             </div>
                           )}
+                          {hasNoShow && (
+                            <div className="inline-flex h-lh items-center text-sm">
+                              <Badge
+                                className="pointer-events-none"
+                                size="sm"
+                                variant="destructive"
+                              >
+                                No-show
+                              </Badge>
+                            </div>
+                          )}
+                          {isRecorded && (
+                            <div className="inline-flex h-lh items-center text-sm">
+                              <Badge
+                                className="pointer-events-none"
+                                size="sm"
+                                variant="secondary"
+                              >
+                                <PlayCircleIcon className="size-3" />
+                                Recorded
+                              </Badge>
+                            </div>
+                          )}
                         </div>
                         <p className="text-muted-foreground text-xs">
-                          {booking.participants}
+                          {participants}
                         </p>
+
+                        {/* Badges row */}
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {isTeamEvent && schedulingType === "ROUND_ROBIN" && (
+                            <Badge size="sm" variant="secondary">
+                              <ShuffleIcon className="size-3" />
+                              Round Robin
+                            </Badge>
+                          )}
+                          {isTeamEvent && schedulingType === "COLLECTIVE" && (
+                            <Badge size="sm" variant="secondary">
+                              <UsersIcon className="size-3" />
+                              Collective
+                            </Badge>
+                          )}
+                          {isTeamEvent && !schedulingType && (
+                            <Badge size="sm" variant="secondary">
+                              <UsersIcon className="size-3" />
+                              Team
+                            </Badge>
+                          )}
+                          {isRecurring && (
+                            <Badge size="sm" variant="secondary">
+                              <RepeatIcon className="size-3" />
+                              Recurring
+                            </Badge>
+                          )}
+                          {isPaid && (
+                            <Badge size="sm" variant="secondary">
+                              <DollarSignIcon className="size-3" />
+                              Paid
+                            </Badge>
+                          )}
+                        </div>
 
                         {/* Mobile: Date/Time */}
                         <div className="mt-2 flex flex-col gap-0.5 md:hidden">
-                          <p className="font-medium text-xs">{booking.date}</p>
+                          <p className="font-medium text-xs">{dateStr}</p>
                           <p className="text-muted-foreground text-xs">
-                            {booking.time}
+                            {timeStr}
                           </p>
-                          <a
-                            className="mt-1 inline-flex items-center gap-1 text-xs hover:underline"
-                            href="#"
-                          >
-                            <VideoIcon className="size-3" />
-                            {booking.meetingLink}
-                          </a>
+                          {locationLabel && (
+                            <a
+                              className="mt-1 inline-flex items-center gap-1 text-xs hover:underline"
+                              href="#"
+                            >
+                              <VideoIcon className="size-3" />
+                              {locationLabel}
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
