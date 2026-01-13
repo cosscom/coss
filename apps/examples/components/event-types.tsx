@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Group, GroupSeparator } from "@coss/ui/components/group";
-
 import {
   InputGroup,
   InputGroupAddon,
@@ -44,6 +42,7 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { Fragment, useState } from "react";
 import { AddEventTypeDialog } from "@/components/add-event-type-dialog";
 import {
@@ -184,7 +183,10 @@ export function EventTypes() {
                       <div className="flex flex-col gap-1">
                         {/* Title with URL inline */}
                         <div className="flex items-center gap-2">
-                          <h2 className="truncate font-medium text-sm" data-slot="list-item-title">
+                          <h2
+                            className="truncate font-medium text-sm"
+                            data-slot="list-item-title"
+                          >
                             <Link
                               className="before:absolute before:inset-0"
                               href={eventPath}

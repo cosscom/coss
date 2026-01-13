@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
@@ -52,6 +51,7 @@ import {
   VideoIcon,
   XIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { Fragment } from "react";
 import {
   AppHeader,
@@ -123,14 +123,16 @@ export default function Page() {
                   )}
                   <div className="flex flex-1 items-center justify-between gap-4 p-5">
                     <div className="flex min-w-0 flex-1 gap-4">
-
                       {/* Content Column */}
                       <div className="flex min-w-0 flex-1 flex-col gap-3">
                         {/* Title and Description wrapper */}
                         <div className="flex flex-col gap-1">
                           {/* Title with status badges inline */}
                           <div className="flex flex-wrap items-center gap-2">
-                            <h2 className="font-medium text-sm" data-slot="list-item-title">
+                            <h2
+                              className="font-medium text-sm"
+                              data-slot="list-item-title"
+                            >
                               <Link
                                 className="before:absolute before:inset-0"
                                 href="#"
@@ -244,16 +246,21 @@ export default function Page() {
                             </p>
                           </div>
                           {locationLabel && (
-                            <Button variant="outline" size="xs" className="pointer-events-auto" render={<Link href="#join" />}>
+                            <Button
+                              className="pointer-events-auto"
+                              render={<Link href="#join" />}
+                              size="xs"
+                              variant="outline"
+                            >
                               <VideoIcon className="size-3" />
-                              {locationLabel}                              
+                              {locationLabel}
                             </Button>
                           )}
                         </div>
                       </div>
 
                       {/* Date/Time Column */}
-                      <div className="w-36 shrink-0 max-md:hidden pointer-events-none -order-1">
+                      <div className="-order-1 pointer-events-none w-36 shrink-0 max-md:hidden">
                         <div className="flex flex-col items-start gap-2">
                           <div className="flex flex-col gap-1">
                             <p className="font-medium text-sm">{dateStr}</p>
@@ -261,15 +268,19 @@ export default function Page() {
                               {timeStr}
                             </p>
                           </div>
-                          {locationLabel && ( 
-                            <Button variant="outline" size="xs" className="pointer-events-auto" render={<Link href="#join" />}>
+                          {locationLabel && (
+                            <Button
+                              className="pointer-events-auto"
+                              render={<Link href="#join" />}
+                              size="xs"
+                              variant="outline"
+                            >
                               <VideoIcon className="size-3" />
-                              {locationLabel}                              
+                              {locationLabel}
                             </Button>
                           )}
                         </div>
                       </div>
-
                     </div>
 
                     {/* Actions Menu */}
