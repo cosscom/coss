@@ -126,7 +126,7 @@ export default function Page() {
       </div>
 
       {/* Bookings List */}
-      <Frame>
+      <Frame className="-m-1">
         <FramePanel className="p-0">
           {pastBookings.map((booking, index) => {
             const isLast = index === pastBookings.length - 1;
