@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-button-33",
+  "type": "registry:block",
+  "description": "Button with dropdown indicator",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/button"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-button-33.tsx",
+      "content": "import { ChevronDownIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"outline\">\n      Options\n      <ChevronDownIcon aria-hidden=\"true\" />\n    </Button>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "button"
+  ]
+}

@@ -2319,6 +2319,80 @@
     },
     {
       "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Button with dropdown indicator",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-33.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-33",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "description": "Button with status dot",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-34.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-34",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "description": "Gradient button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-35.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-35",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Copy button with feedback",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-36.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-36",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card"
       ],
       "description": "Card with header, content, and footer",
