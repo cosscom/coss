@@ -3,10 +3,10 @@ import { Button } from "@/registry/default/ui/button";
 export default function Particle() {
   return (
     <Button variant="outline">
-      <span className="relative flex size-2">
-        <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-      </span>
+      <span
+        aria-hidden="true"
+        className="relative size-2 rounded-full bg-emerald-500 before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-emerald-400 before:opacity-75"
+      />
       Online
     </Button>
   );

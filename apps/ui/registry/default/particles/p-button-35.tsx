@@ -1,9 +1,31 @@
+"use client";
+
+import { CheckIcon, CopyIcon } from "lucide-react";
+import { useState } from "react";
+
 import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText("Text copied!");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <Button className="bg-linear-to-r from-indigo-500 to-purple-500 text-white shadow-lg hover:from-indigo-600 hover:to-purple-600">
-      Upgrade to Pro
+    <Button
+      aria-label={copied ? "Copied" : "Copy to clipboard"}
+      onClick={handleCopy}
+      size="icon"
+      variant="outline"
+    >
+      {copied ? (
+        <CheckIcon aria-hidden="true" />
+      ) : (
+        <CopyIcon aria-hidden="true" />
+      )}
     </Button>
   );
 }

@@ -2321,10 +2321,7 @@
       "categories": [
         "button"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Button with dropdown indicator",
+      "description": "Paired buttons (Cancel/Save)",
       "files": [
         {
           "path": "registry/default/particles/p-button-33.tsx",
@@ -2341,7 +2338,7 @@
       "categories": [
         "button"
       ],
-      "description": "Button with status dot",
+      "description": "Button with animated status dot",
       "files": [
         {
           "path": "registry/default/particles/p-button-34.tsx",
@@ -2358,7 +2355,10 @@
       "categories": [
         "button"
       ],
-      "description": "Gradient button",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Icon-only copy button with feedback",
       "files": [
         {
           "path": "registry/default/particles/p-button-35.tsx",
@@ -2386,6 +2386,46 @@
         }
       ],
       "name": "p-button-36",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Rotating icon button (FAB-style toggle)",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-37.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-37",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "@remixicon/react"
+      ],
+      "description": "Login with Google button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-38.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-38",
       "registryDependencies": [
         "@coss/button"
       ],

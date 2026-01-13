@@ -2,17 +2,14 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-33",
   "type": "registry:block",
-  "description": "Button with dropdown indicator",
-  "dependencies": [
-    "lucide-react"
-  ],
+  "description": "Paired buttons (Cancel/Save)",
   "registryDependencies": [
     "@coss/button"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-button-33.tsx",
-      "content": "import { ChevronDownIcon } from \"lucide-react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button variant=\"outline\">\n      Options\n      <ChevronDownIcon aria-hidden=\"true\" />\n    </Button>\n  );\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <div className=\"inline-flex items-center gap-2\">\n      <Button variant=\"ghost\">Cancel</Button>\n      <Button>Save</Button>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
