@@ -213,7 +213,7 @@ export function EventTypes() {
                             className="pointer-events-none"
                             variant="warning"
                           >
-                            <EyeOffIcon className="opacity-72" />
+                            <EyeOffIcon />
                             Hidden
                           </Badge>
                         )}
@@ -222,7 +222,7 @@ export function EventTypes() {
                           className="pointer-events-none tabular-nums"
                           variant="outline"
                         >
-                          <ClockIcon className="opacity-72" />
+                          <ClockIcon />
                           {formatDuration(eventType.length)}
                         </Badge>
                         {/* All other badges */}
@@ -232,9 +232,9 @@ export function EventTypes() {
                             variant="outline"
                           >
                             {eventType.schedulingType === "ROUND_ROBIN" ? (
-                              <ShuffleIcon className="opacity-72" />
+                              <ShuffleIcon />
                             ) : (
-                              <UsersIcon className="opacity-72" />
+                              <UsersIcon />
                             )}
                             {getSchedulingTypeLabel(eventType)}
                           </Badge>
@@ -244,7 +244,7 @@ export function EventTypes() {
                             className="pointer-events-none"
                             variant="outline"
                           >
-                            <RepeatIcon className="opacity-72" />
+                            <RepeatIcon />
                             Recurring
                           </Badge>
                         )}
@@ -253,7 +253,7 @@ export function EventTypes() {
                             className="pointer-events-none tabular-nums"
                             variant="outline"
                           >
-                            <BanknoteIcon className="opacity-72" />$
+                            <BanknoteIcon />$
                             {(eventType.price / 100).toFixed(0)}
                           </Badge>
                         )}
@@ -262,7 +262,7 @@ export function EventTypes() {
                             className="pointer-events-none"
                             variant="outline"
                           >
-                            <ClipboardCheckIcon className="opacity-72" />
+                            <ClipboardCheckIcon />
                             Requires confirmation
                           </Badge>
                         )}
@@ -271,7 +271,7 @@ export function EventTypes() {
                             className="pointer-events-none"
                             variant="outline"
                           >
-                            <ArmchairIcon className="opacity-72" />
+                            <ArmchairIcon />
                             {eventType.seatsPerTimeSlot} seats
                           </Badge>
                         )}

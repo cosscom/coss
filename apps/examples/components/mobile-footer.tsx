@@ -56,7 +56,7 @@ export function MobileFooter() {
                   key={item.title}
                   render={
                     <Link href={item.url}>
-                      <item.icon className="opacity-72" />
+                      <item.icon />
                       <span>{item.title}</span>
                       {item.title === "Workflows" && <WorkflowBadge />}
                     </Link>
@@ -71,7 +71,7 @@ export function MobileFooter() {
                   key={item.title}
                   render={
                     <Link href={item.url}>
-                      <item.icon className="opacity-72" />
+                      <item.icon />
                       <span>{item.title}</span>
                     </Link>
                   }

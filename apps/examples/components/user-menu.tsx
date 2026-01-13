@@ -65,40 +65,40 @@ export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
         <MenuGroup>
           <MenuGroupLabel>Luke Tracy</MenuGroupLabel>
           <MenuItem>
-            <UserRoundIcon className="opacity-72" />
+            <UserRoundIcon />
             My profile
           </MenuItem>
           <MenuItem>
-            <SettingsIcon className="opacity-72" />
+            <SettingsIcon />
             My settings
           </MenuItem>
           <MenuItem>
-            <MoonStarIcon className="opacity-72" />
+            <MoonStarIcon />
             Out of office
           </MenuItem>
         </MenuGroup>
         <MenuSeparator />
         <MenuGroup>
           <MenuItem>
-            <MilestoneIcon className="opacity-72" />
+            <MilestoneIcon />
             Roadmap
           </MenuItem>
           <MenuItem>
-            <MessageCircleQuestionMarkIcon className="opacity-72" />
+            <MessageCircleQuestionMarkIcon />
             Help
           </MenuItem>
           <MenuItem>
-            <MonitorDownIcon className="opacity-72" />
+            <MonitorDownIcon />
             Download desktop app
           </MenuItem>
           <MenuItem>
-            <GaugeIcon className="opacity-72" />
+            <GaugeIcon />
             Platform
           </MenuItem>
         </MenuGroup>
         <MenuSeparator />
         <MenuItem>
-          <LogOutIcon className="opacity-72" />
+          <LogOutIcon />
           Sign out
         </MenuItem>
       </MenuPopup>

@@ -189,7 +189,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="outline"
                             >
-                              <RepeatIcon className="opacity-72" />
+                              <RepeatIcon />
                               Recurring
                             </Badge>
                           )}
