@@ -174,26 +174,26 @@ const ref = useRef(null);
 ### Icon Opacity Patterns
 
 **Icons inside Buttons:**
-- Icons in buttons typically don't need explicit opacity classes - the Button component handles this
-- For decorative icons in buttons with text, use `aria-hidden="true"` without opacity
+- **Do NOT add opacity classes to icons inside buttons** - the Button component automatically handles icon opacity
+- For decorative icons in buttons with text, use `aria-hidden="true"` without any opacity class
 - For icon-only buttons, use `aria-label` on the button, `aria-hidden="true"` on the icon
 
 ```tsx
-// ✅ Icon-only button
+// ✅ Icon-only button (no opacity needed)
 <Button aria-label="Close" size="icon" variant="ghost">
   <XIcon aria-hidden="true" />
 </Button>
 
-// ✅ Button with icon and text
+// ✅ Button with icon and text (no opacity needed)
 <Button>
   <PlusIcon aria-hidden="true" />
   Add Item
 </Button>
 
-// ✅ Custom opacity for decorative icon (rare)
-<Button variant="outline">
-  <ThumbsUpIcon aria-hidden="true" className="opacity-60" />
-  Like
+// ❌ Don't add opacity to icons in buttons
+<Button>
+  <PlusIcon aria-hidden="true" className="opacity-60" />
+  Add Item
 </Button>
 ```
 
@@ -569,6 +569,60 @@ className="bg-red-500 text-white"
 ```tsx
 className="border-transparent! bg-transparent! shadow-none"
 className="h-auto!"
+```
+
+### Hover and State Styling with data-slot
+
+**Prefer `in-*` prefix with `data-slot` over the `group` class pattern:**
+
+Every component has a `data-slot` attribute. Instead of using the `group` class on a parent and `group-hover:` on children, use the `in-*` prefix with `data-slot` selectors:
+
+```tsx
+// ❌ Avoid using group class
+<Button className="group">
+  Get Started
+  <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5" />
+</Button>
+
+// ✅ Use in-* prefix with data-slot
+<Button>
+  Get Started
+  <ArrowRightIcon
+    aria-hidden="true"
+    className="in-[[data-slot=button]:hover]:translate-x-0.5 transition-transform"
+  />
+</Button>
+```
+
+**Common patterns:**
+- `in-[[data-slot=button]:hover]:` - Style when parent button is hovered
+- `in-[[data-slot=card]:hover]:` - Style when parent card is hovered
+- `in-data-[slot=input-group]:` - Style when inside an input group
+
+### Negative Margins
+
+**Avoid negative margins when possible, but use them sparingly when needed for visual balance:**
+
+- Negative margins are sometimes necessary to make elements look visually balanced inside buttons
+- Use conservative values (e.g., `-me-1` rather than `-me-1.5`)
+- The appropriate value depends on the button size - find the right balance without exaggerating
+- Apply negative margins to wrapper elements (like `KbdGroup`) rather than individual items
+
+```tsx
+// ✅ Negative margin on wrapper for visual balance
+<Button variant="outline">
+  Print
+  <KbdGroup className="-me-1">
+    <Kbd>⌘</Kbd>
+    <Kbd>P</Kbd>
+  </KbdGroup>
+</Button>
+
+// ✅ Negative margin on badge for alignment
+<Button variant="outline">
+  Messages
+  <Badge className="-me-1" variant="outline">18</Badge>
+</Button>
 ```
 
 ---
@@ -1087,6 +1141,52 @@ When asked to create an equivalent of an origin component:
 <Button>
   <PlusIcon aria-hidden="true" />
   Add Item
+</Button>
+```
+
+### Button with Keyboard Shortcut (Kbd)
+
+**Each key needs its own `Kbd` component. Use `KbdGroup` when there are multiple keys:**
+
+```tsx
+// ✅ Multiple keys with KbdGroup
+<Button variant="outline">
+  <PrinterIcon aria-hidden="true" />
+  Print
+  <KbdGroup className="-me-1">
+    <Kbd>⌘</Kbd>
+    <Kbd>P</Kbd>
+  </KbdGroup>
+</Button>
+
+// ✅ Single key
+<Button variant="outline">
+  Save
+  <Kbd className="-me-1">⌘S</Kbd>
+</Button>
+
+// ❌ Don't put multiple keys in one Kbd
+<Button variant="outline">
+  Print
+  <Kbd className="-me-1">⌘P</Kbd>
+</Button>
+```
+
+### Button with Badge
+
+**Match the badge variant with the button variant when appropriate:**
+
+```tsx
+// ✅ Outline badge in outline button
+<Button variant="outline">
+  Messages
+  <Badge className="-me-1" variant="outline">18</Badge>
+</Button>
+
+// ✅ Default badge in default button
+<Button>
+  Notifications
+  <Badge className="-me-1">5</Badge>
 </Button>
 ```
 
