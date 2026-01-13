@@ -34,8 +34,11 @@ import {
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
 import {
+  BanknoteIcon,
   CalendarClockIcon,
   CalendarIcon,
+  CircleDashedIcon,
+  CircleXIcon,
   EllipsisIcon,
   EyeOffIcon,
   FilterIcon,
@@ -43,8 +46,10 @@ import {
   InfoIcon,
   MapPinIcon,
   PlayCircleIcon,
+  RefreshCcwIcon,
   RepeatIcon,
   UserPlusIcon,
+  UsersIcon,
   VideoIcon,
   XIcon,
 } from "lucide-react";
@@ -142,13 +147,23 @@ export default function Page() {
                           </p>
                         </div>
 
-                        {/* Badges row - under description (matching Cal.com) */}
+                        {/* Badges row - under description */}
                         <div className="flex flex-wrap items-center gap-2 overflow-hidden">
+                          {isCancelled && (
+                            <Badge
+                              className="pointer-events-none"
+                              variant="warning"
+                            >
+                              <CircleXIcon className="opacity-72" />
+                              Cancelled
+                            </Badge>
+                          )}
                           {isPending && (
                             <Badge
                               className="pointer-events-none"
                               variant="warning"
                             >
+                              <CircleDashedIcon className="opacity-72" />
                               Unconfirmed
                             </Badge>
                           )}
@@ -157,6 +172,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="warning"
                             >
+                              <RefreshCcwIcon className="opacity-72" />
                               Rescheduled
                             </Badge>
                           )}
@@ -171,16 +187,18 @@ export default function Page() {
                           {teamName && (
                             <Badge
                               className="pointer-events-none"
-                              variant="secondary"
+                              variant="outline"
                             >
+                              <UsersIcon className="opacity-72" />
                               {teamName}
                             </Badge>
                           )}
                           {isPaid && (
                             <Badge
                               className="pointer-events-none"
-                              variant="success"
+                              variant="outline"
                             >
+                              <BanknoteIcon className="opacity-72" />
                               Paid
                             </Badge>
                           )}
@@ -189,7 +207,7 @@ export default function Page() {
                               className="pointer-events-none"
                               variant="outline"
                             >
-                              <RepeatIcon />
+                              <RepeatIcon className="opacity-72" />
                               Recurring
                             </Badge>
                           )}
