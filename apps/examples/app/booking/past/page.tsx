@@ -1,17 +1,6 @@
-"use client";
-
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
-import {
-  Menu,
-  MenuGroup,
-  MenuGroupLabel,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger,
-} from "@coss/ui/components/menu";
 import {
   Pagination,
   PaginationContent,
@@ -27,32 +16,18 @@ import {
   SelectValue,
 } from "@coss/ui/components/select";
 import { Separator } from "@coss/ui/components/separator";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
+import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
   BanknoteIcon,
-  CalendarClockIcon,
   CalendarIcon,
   CircleDashedIcon,
   CircleXIcon,
-  EllipsisIcon,
-  EyeOffIcon,
   FilterIcon,
-  FlagIcon,
-  InfoIcon,
-  MapPinIcon,
-  PlayCircleIcon,
   RefreshCcwIcon,
   RepeatIcon,
-  UserPlusIcon,
   UsersIcon,
   VideoIcon,
-  XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -61,6 +36,16 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app-header";
+import { BookingActions } from "@/components/booking-actions";
+import {
+  ListItem,
+  ListItemActions,
+  ListItemBadges,
+  ListItemContent,
+  ListItemDescription,
+  ListItemHeader,
+  ListItemTitle,
+} from "@/components/list-item";
 import {
   formatBookingDate,
   formatBookingTime,
@@ -80,7 +65,6 @@ export default function Page() {
         </AppHeaderContent>
       </AppHeader>
 
-      {/* Filters */}
       <div className="mb-4 flex gap-2">
         <Button variant="outline">
           <FilterIcon />
@@ -92,7 +76,6 @@ export default function Page() {
         </Button>
       </div>
 
-      {/* Bookings List */}
       <Frame className="-m-1">
         <FramePanel className="p-0">
           {mockPastBookings.map((booking, index) => {
@@ -106,8 +89,6 @@ export default function Page() {
             const locationLabel = getLocationLabel(booking.location);
             const eventTypeColor =
               booking.eventType?.eventTypeColor?.lightEventTypeColor;
-            const _isTeamEvent = booking.eventType?.teamId !== null;
-            const _schedulingType = booking.eventType?.schedulingType;
             const isPaid = booking.paid;
             const isRecurring = booking.recurringEventId !== null;
             const isCancelled = booking.status === "CANCELLED";
@@ -118,214 +99,122 @@ export default function Page() {
 
             return (
               <Fragment key={booking.id}>
-                <div className="relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]">
-                  {eventTypeColor && (
-                    <div
-                      className="absolute inset-y-0 start-0 w-0.5 bg-current"
-                      style={{ color: eventTypeColor }}
-                    />
-                  )}
-                  <div className="flex flex-1 items-center justify-between gap-4 p-5">
-                    <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
-                      {/* Content */}
-                      <div className="flex min-w-0 flex-1 flex-col gap-3">
-                        <div className="flex flex-col gap-1">
-                          <h2
-                            className={cn(
-                              "font-medium text-sm",
-                              isCancelled && "line-through",
-                            )}
-                            data-slot="list-item-title"
+                <ListItem labelColor={eventTypeColor}>
+                  <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
+                    <ListItemContent>
+                      <ListItemHeader>
+                        <ListItemTitle
+                          className={cn(isCancelled && "line-through")}
+                          href="#"
+                        >
+                          {booking.title}
+                        </ListItemTitle>
+                        <ListItemDescription>
+                          {participants}
+                        </ListItemDescription>
+                      </ListItemHeader>
+
+                      <ListItemBadges>
+                        {isCancelled && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="error"
                           >
-                            <Link
-                              className="before:absolute before:inset-0"
-                              href="#"
-                            >
-                              {booking.title}
-                            </Link>
-                          </h2>
-                          <p className="text-muted-foreground text-sm">
-                            {participants}
-                          </p>
-                        </div>
-
-                        {/* Badges */}
-                        <div className="flex flex-wrap items-center gap-2 overflow-hidden">
-                          {isCancelled && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="error"
-                            >
-                              <CircleXIcon />
-                              Cancelled
-                            </Badge>
-                          )}
-                          {isPending && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="warning"
-                            >
-                              <CircleDashedIcon />
-                              Unconfirmed
-                            </Badge>
-                          )}
-                          {isRescheduled && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="warning"
-                            >
-                              <RefreshCcwIcon />
-                              Rescheduled
-                            </Badge>
-                          )}
-                          {isRejected && !isRescheduled && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="secondary"
-                            >
-                              Rejected
-                            </Badge>
-                          )}
-                          {teamName && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="outline"
-                            >
-                              <UsersIcon />
-                              {teamName}
-                            </Badge>
-                          )}
-                          {isPaid && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="outline"
-                            >
-                              <BanknoteIcon />
-                              Paid
-                            </Badge>
-                          )}
-                          {isRecurring && (
-                            <Badge
-                              className="pointer-events-none"
-                              variant="outline"
-                            >
-                              <RepeatIcon />
-                              Recurring
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Date/Time - appears after content on mobile, before on desktop */}
-                      <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
-                        <div className="flex flex-col gap-1">
-                          <p className="font-medium text-xs md:text-sm">
-                            {dateStr}
-                          </p>
-                          <p className="text-muted-foreground text-xs md:text-sm">
-                            {timeStr}
-                          </p>
-                        </div>
-                        {locationLabel && (
-                          <Button
-                            className="pointer-events-auto"
-                            render={<Link href="#join" />}
-                            size="xs"
+                            <CircleXIcon />
+                            Cancelled
+                          </Badge>
+                        )}
+                        {isPending && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="warning"
+                          >
+                            <CircleDashedIcon />
+                            Unconfirmed
+                          </Badge>
+                        )}
+                        {isRescheduled && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="warning"
+                          >
+                            <RefreshCcwIcon />
+                            Rescheduled
+                          </Badge>
+                        )}
+                        {isRejected && !isRescheduled && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="secondary"
+                          >
+                            Rejected
+                          </Badge>
+                        )}
+                        {teamName && (
+                          <Badge
+                            className="pointer-events-none"
                             variant="outline"
                           >
-                            <VideoIcon className="size-3" />
-                            {locationLabel}
-                          </Button>
+                            <UsersIcon />
+                            {teamName}
+                          </Badge>
                         )}
-                      </div>
-                    </div>
+                        {isPaid && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="outline"
+                          >
+                            <BanknoteIcon />
+                            Paid
+                          </Badge>
+                        )}
+                        {isRecurring && (
+                          <Badge
+                            className="pointer-events-none"
+                            variant="outline"
+                          >
+                            <RepeatIcon />
+                            Recurring
+                          </Badge>
+                        )}
+                      </ListItemBadges>
+                    </ListItemContent>
 
-                    {/* Actions Menu */}
-                    <div className="relative flex items-center">
-                      <Menu>
-                        <MenuTrigger
-                          render={
-                            <Tooltip>
-                              <TooltipTrigger
-                                render={
-                                  <Button
-                                    aria-label="More options"
-                                    size="icon"
-                                    variant="outline"
-                                  >
-                                    <EllipsisIcon />
-                                  </Button>
-                                }
-                              />
-                              <TooltipPopup>More options</TooltipPopup>
-                            </Tooltip>
-                          }
-                        />
-                        <MenuPopup align="end">
-                          <MenuGroup>
-                            <MenuGroupLabel>Edit event</MenuGroupLabel>
-                            <MenuItem>
-                              <CalendarClockIcon />
-                              Reschedule booking
-                            </MenuItem>
-                            <MenuItem disabled>
-                              <CalendarClockIcon />
-                              Request reschedule
-                            </MenuItem>
-                            <MenuItem>
-                              <MapPinIcon />
-                              Edit location
-                            </MenuItem>
-                            <MenuItem>
-                              <UserPlusIcon />
-                              Add guests
-                            </MenuItem>
-                          </MenuGroup>
-                          <MenuSeparator />
-                          <MenuGroup>
-                            <MenuGroupLabel>After event</MenuGroupLabel>
-                            <MenuItem disabled>
-                              <PlayCircleIcon />
-                              View recordings
-                            </MenuItem>
-                            <MenuItem>
-                              <InfoIcon />
-                              View Session Details
-                            </MenuItem>
-                            <MenuItem>
-                              <EyeOffIcon />
-                              Mark as no-show
-                            </MenuItem>
-                          </MenuGroup>
-                          <MenuSeparator />
-                          <MenuGroup>
-                            <MenuItem variant="destructive">
-                              <FlagIcon />
-                              Report booking
-                            </MenuItem>
-                          </MenuGroup>
-                          <MenuSeparator />
-                          <MenuGroup>
-                            <MenuItem disabled variant="destructive">
-                              <XIcon />
-                              Cancel event
-                            </MenuItem>
-                          </MenuGroup>
-                        </MenuPopup>
-                      </Menu>
+                    <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium text-xs md:text-sm">
+                          {dateStr}
+                        </p>
+                        <p className="text-muted-foreground text-xs md:text-sm">
+                          {timeStr}
+                        </p>
+                      </div>
+                      {locationLabel && (
+                        <Button
+                          className="pointer-events-auto"
+                          render={<Link href="#join" />}
+                          size="xs"
+                          variant="outline"
+                        >
+                          <VideoIcon className="size-3" />
+                          {locationLabel}
+                        </Button>
+                      )}
                     </div>
                   </div>
-                </div>
+
+                  <ListItemActions>
+                    <BookingActions />
+                  </ListItemActions>
+                </ListItem>
                 {!isLast && <Separator />}
               </Fragment>
             );
           })}
         </FramePanel>
 
-        {/* Pagination Footer */}
         <FrameFooter>
           <div className="flex items-center justify-between gap-4">
-            {/* Rows per page */}
             <div className="flex items-center gap-2">
               <Select value={10}>
                 <SelectTrigger
@@ -344,7 +233,6 @@ export default function Page() {
               <p className="text-muted-foreground text-sm">rows per page</p>
             </div>
 
-            {/* Page info and navigation */}
             <div className="flex items-center gap-4">
               <p className="whitespace-nowrap text-muted-foreground text-sm">
                 1-10 of 16
