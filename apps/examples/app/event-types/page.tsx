@@ -1,4 +1,4 @@
-import { EventTypes } from "@/components/event-types";
+import { EventTypes } from "./event-types";
 
 export default function Page() {
   return <EventTypes />;

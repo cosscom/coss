@@ -27,14 +27,12 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useState } from "react";
-import { AddEventTypeDialog } from "@/components/add-event-type-dialog";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app-header";
-import { EventTypeActions } from "@/components/event-type-actions";
 import {
   ListItem,
   ListItemBadges,
@@ -49,6 +47,8 @@ import {
   mockEventTypeGroups,
   mockEventTypes,
 } from "@/lib/mock-event-types-data";
+import { AddEventTypeDialog } from "./add-event-type-dialog";
+import { EventTypeActions } from "./event-type-actions";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
@@ -149,7 +149,6 @@ export function EventTypes() {
             return (
               <Fragment key={eventType.id}>
                 <ListItem
-                  className="p-5"
                   labelColor={getEventTypeColor(eventType) ?? undefined}
                 >
                   <ListItemContent>

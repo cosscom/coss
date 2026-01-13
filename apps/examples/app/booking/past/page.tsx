@@ -38,7 +38,6 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app-header";
-import { BookingActions } from "@/components/booking-actions";
 import {
   ListItem,
   ListItemActions,
@@ -55,6 +54,7 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
+import { BookingActions } from "./booking-actions";
 
 export default function Page() {
   return (
@@ -184,10 +184,8 @@ export default function Page() {
 
                     <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
                       <div className="flex flex-col gap-1">
-                        <p className="font-medium text-xs md:text-sm">
-                          {dateStr}
-                        </p>
-                        <p className="text-muted-foreground text-xs md:text-sm">
+                        <p className="text-sm">{dateStr}</p>
+                        <p className="text-muted-foreground text-sm">
                           {timeStr}
                         </p>
                       </div>
@@ -198,7 +196,7 @@ export default function Page() {
                           size="xs"
                           variant="outline"
                         >
-                          <VideoIcon className="size-3" />
+                          <VideoIcon />
                           {locationLabel}
                         </Button>
                       )}
