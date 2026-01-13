@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
