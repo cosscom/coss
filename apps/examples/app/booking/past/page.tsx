@@ -32,7 +32,7 @@ import {
   VideoIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import {
   AppHeader,
   AppHeaderContent,
@@ -57,6 +57,18 @@ import {
 import { BookingActions } from "./booking-actions";
 
 export default function Page() {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalCount = mockPastBookings.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = pageIndex * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalCount);
+  const paginatedBookings = mockPastBookings.slice(startIndex, endIndex);
+
+  const hasPreviousPage = pageIndex > 0;
+  const hasNextPage = pageIndex < totalPages - 1;
+
   return (
     <TooltipProvider delay={150} timeout={0}>
       <AppHeader>
@@ -80,8 +92,8 @@ export default function Page() {
 
       <Frame className="-m-1">
         <FramePanel className="p-0">
-          {mockPastBookings.map((booking, index) => {
-            const isLast = index === mockPastBookings.length - 1;
+          {paginatedBookings.map((booking, index) => {
+            const isLast = index === paginatedBookings.length - 1;
             const dateStr = formatBookingDate(booking.startTime);
             const timeStr = formatBookingTime(
               booking.startTime,
@@ -216,7 +228,15 @@ export default function Page() {
         <FrameFooter>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Select value={10}>
+              <Select
+                onValueChange={(value) => {
+                  if (value !== null) {
+                    setPageSize(value);
+                    setPageIndex(0);
+                  }
+                }}
+                value={pageSize}
+              >
                 <SelectTrigger
                   aria-label="Rows per page"
                   className="w-fit min-w-none"
@@ -235,18 +255,32 @@ export default function Page() {
 
             <div className="flex items-center gap-4">
               <p className="whitespace-nowrap text-muted-foreground text-sm">
-                1-10 of 16
+                {startIndex + 1}-{endIndex} of {totalCount}
               </p>
               <Pagination>
                 <PaginationContent className="gap-2">
                   <PaginationItem>
                     <PaginationPrevious
-                      render={<Button disabled size="sm" variant="outline" />}
+                      render={
+                        <Button
+                          disabled={!hasPreviousPage}
+                          onClick={() => setPageIndex(pageIndex - 1)}
+                          size="sm"
+                          variant="outline"
+                        />
+                      }
                     />
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationNext
-                      render={<Button size="sm" variant="outline" />}
+                      render={
+                        <Button
+                          disabled={!hasNextPage}
+                          onClick={() => setPageIndex(pageIndex + 1)}
+                          size="sm"
+                          variant="outline"
+                        />
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
