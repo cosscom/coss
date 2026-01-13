@@ -113,7 +113,7 @@ interface ListItemActionsProps {
 
 export function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
-    <div className={cn("relative flex items-center", className)}>
+    <div className={cn("relative z-10 flex items-center", className)}>
       {children}
     </div>
   );
