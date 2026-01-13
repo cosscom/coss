@@ -316,20 +316,6 @@ const ref = useRef(null);
   <CheckIcon aria-hidden="true" />
   Verified
 </Badge>
-
-// ✅ Input group with decorative icon
-<InputGroup>
-  <InputGroupInput aria-label="Search" placeholder="Search" type="search" />
-  <InputGroupAddon>
-    <SearchIcon aria-hidden="true" />
-  </InputGroupAddon>
-</InputGroup>
-
-// ✅ Menu item with decorative icon
-<MenuItem>
-  <EditIcon aria-hidden="true" />
-  Edit
-</MenuItem>
 ```
 
 **Do NOT use `aria-hidden` when:**
@@ -880,8 +866,8 @@ export default function Particle() {
   return <Button>Click</Button>;
 }
 
-// ✅ Use React.useId() for form associations
-const id = React.useId();
+// ✅ Use useId() for form associations
+const id = useId();
 
 // ✅ Use descriptive variable names
 const [isLoading, setIsLoading] = useState(false);
@@ -947,7 +933,7 @@ grep "p-button" apps/ui/registry/registry-particles.ts
 
 - ✅ Always provide `aria-label` for icon-only interactive elements
 - ✅ Use `aria-hidden="true"` for decorative icons
-- ✅ Pair labels with inputs using `React.useId()`
+- ✅ Pair labels with inputs using `useId()`
 - ✅ Use Field components for proper form structure
 
 ### Performance
@@ -1195,7 +1181,7 @@ const items = [
 **Issue: Accessibility warnings**
 - Add `aria-label` for icon-only interactive elements
 - Add `aria-hidden="true"` for decorative icons
-- Use `React.useId()` for label-input pairs
+- Use `useId()` for label-input pairs
 
 **Issue: Registry build fails**
 - Check category names match `registry-categories.ts` exactly
