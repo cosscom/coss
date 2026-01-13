@@ -523,11 +523,11 @@ export default function Particle() {
 ```tsx
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { Button } from "@/registry/default/ui/button";
 
 export default function Particle() {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   
   const handleClick = async () => {
     setLoading(true);
@@ -544,7 +544,7 @@ export default function Particle() {
 ```
 
 **Prefer:**
-- `React.useState` over importing `useState` from "react"
+- Named imports from "react" (e.g., `import { useState } from "react"`)
 - Descriptive state variable names
 - Clear handler function names
 
