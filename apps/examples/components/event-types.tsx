@@ -141,29 +141,25 @@ export function EventTypes() {
             Create events to share for people to book on your calendar.
           </AppHeaderDescription>
         </AppHeaderContent>
-        <AppHeaderActions>
-          <AddEventTypeDialog className="max-md:hidden">
+        <AppHeaderActions className="max-md:hidden">
+          <InputGroup>
+            <InputGroupInput
+              aria-label="Search"
+              placeholder="Search…"
+              type="search"
+            />
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+          </InputGroup>
+          <AddEventTypeDialog>
             <PlusIcon className="-ms-1" />
             New
           </AddEventTypeDialog>
         </AppHeaderActions>
       </AppHeader>
 
-      {/* Search */}
-      <div>
-        <InputGroup className="md:max-w-64">
-          <InputGroupInput
-            aria-label="Search"
-            placeholder="Search…"
-            type="search"
-          />
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-
-      <Frame className="mt-4">
+      <Frame className="-m-1">
         <FramePanel className="p-0">
           {eventTypes.map((eventType, index) => {
             const isHidden = hiddenStates[eventType.id];
