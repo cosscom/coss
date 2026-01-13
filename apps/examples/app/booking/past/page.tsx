@@ -100,8 +100,8 @@ export default function Page() {
             const locationLabel = getLocationLabel(booking.location);
             const eventTypeColor =
               booking.eventType?.eventTypeColor?.lightEventTypeColor;
-            const isTeamEvent = booking.eventType?.teamId !== null;
-            const schedulingType = booking.eventType?.schedulingType;
+            const _isTeamEvent = booking.eventType?.teamId !== null;
+            const _schedulingType = booking.eventType?.schedulingType;
             const isPaid = booking.paid;
             const isRecurring = booking.recurringEventId !== null;
             const isCancelled = booking.status === "CANCELLED";
