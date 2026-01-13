@@ -18,7 +18,7 @@ export default function Particle() {
       />
       <InputGroupAddon align="inline-end">
         <Button aria-label="Subscribe" disabled size="icon-xs" variant="ghost">
-          <ArrowRightIcon />
+          <ArrowRightIcon aria-hidden="true" />
         </Button>
       </InputGroupAddon>
     </InputGroup>

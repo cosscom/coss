@@ -32,22 +32,22 @@ export default function Particle() {
         <MenuGroup>
           <MenuGroupLabel>Playback</MenuGroupLabel>
           <MenuItem>
-            <PlayIcon />
+            <PlayIcon aria-hidden="true" />
             Play
             <MenuShortcut>⌘P</MenuShortcut>
           </MenuItem>
           <MenuItem disabled>
-            <PauseIcon />
+            <PauseIcon aria-hidden="true" />
             Pause
             <MenuShortcut>⇧⌘P</MenuShortcut>
           </MenuItem>
           <MenuItem>
-            <SkipBackIcon />
+            <SkipBackIcon aria-hidden="true" />
             Previous
             <MenuShortcut>⌘[</MenuShortcut>
           </MenuItem>
           <MenuItem>
-            <SkipForwardIcon />
+            <SkipForwardIcon aria-hidden="true" />
             Next
             <MenuShortcut>⌘]</MenuShortcut>
           </MenuItem>
@@ -92,7 +92,7 @@ export default function Particle() {
         </MenuSub>
         <MenuSeparator />
         <MenuItem variant="destructive">
-          <TrashIcon />
+          <TrashIcon aria-hidden="true" />
           Delete
           <MenuShortcut>⌘⌫</MenuShortcut>
         </MenuItem>

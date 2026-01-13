@@ -11,7 +11,7 @@ export default function Particle() {
     <InputGroup>
       <InputGroupInput aria-label="Search" placeholder="Search" type="search" />
       <InputGroupAddon>
-        <SearchIcon />
+        <SearchIcon aria-hidden="true" />
       </InputGroupAddon>
     </InputGroup>
   );

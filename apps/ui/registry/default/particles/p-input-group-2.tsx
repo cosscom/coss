@@ -11,7 +11,7 @@ export default function Particle() {
     <InputGroup>
       <InputGroupInput aria-label="Email" placeholder="Email" type="email" />
       <InputGroupAddon align="inline-end">
-        <MailIcon />
+        <MailIcon aria-hidden="true" />
       </InputGroupAddon>
     </InputGroup>
   );

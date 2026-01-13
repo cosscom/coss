@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownIcon, ArrowUpIcon, CornerDownLeftIcon } from "lucide-react";
-import * as React from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Button } from "@/registry/default/ui/button";
 import {
   Command,
@@ -55,13 +55,13 @@ export const groupedItems: Group[] = [
 ];
 
 export default function Particle() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   function handleItemClick(_item: Item) {
     setOpen(false);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -89,7 +89,7 @@ export default function Particle() {
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandList>
               {(group: Group, _index: number) => (
-                <React.Fragment key={group.value}>
+                <Fragment key={group.value}>
                   <CommandGroup items={group.items}>
                     <CommandGroupLabel>{group.value}</CommandGroupLabel>
                     <CommandCollection>
@@ -108,7 +108,7 @@ export default function Particle() {
                     </CommandCollection>
                   </CommandGroup>
                   <CommandSeparator />
-                </React.Fragment>
+                </Fragment>
               )}
             </CommandList>
           </CommandPanel>

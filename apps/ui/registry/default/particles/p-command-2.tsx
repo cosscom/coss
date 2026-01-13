@@ -9,7 +9,14 @@ import {
   SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAutocompleteFilter } from "@/registry/default/ui/autocomplete";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -158,38 +165,38 @@ function markdownToSafeHTML(markdown: string): string {
 }
 
 export default function PCommand2() {
-  const [open, setOpen] = React.useState(false);
-  const [aiState, setAIState] = React.useState<AIState>(initialAIState);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const aiInputRef = React.useRef<HTMLInputElement>(null);
-  const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const abortControllerRef = React.useRef<AbortController | null>(null);
-  const commandResetKeyRef = React.useRef(0);
+  const [open, setOpen] = useState(false);
+  const [aiState, setAIState] = useState<AIState>(initialAIState);
+  const [searchQuery, setSearchQuery] = useState("");
+  const aiInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const commandResetKeyRef = useRef(0);
 
   // Cleanup on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
     };
   }, []);
 
-  const resetAIState = React.useCallback(() => {
+  const resetAIState = useCallback(() => {
     abortControllerRef.current?.abort();
     setAIState(initialAIState);
   }, []);
 
-  const handleItemClick = React.useCallback(() => {
+  const handleItemClick = useCallback(() => {
     setOpen(false);
   }, []);
 
-  const handleBackToSearch = React.useCallback(() => {
+  const handleBackToSearch = useCallback(() => {
     resetAIState();
     setSearchQuery("");
     commandResetKeyRef.current += 1;
     searchInputRef.current?.focus();
   }, [resetAIState]);
 
-  const handleGenerateAI = React.useCallback(
+  const handleGenerateAI = useCallback(
     async (queryOverride?: string) => {
       const query = queryOverride || aiState.query;
       if (!query.trim()) return;
@@ -242,7 +249,7 @@ export default function PCommand2() {
     [aiState.query],
   );
 
-  const handleAskAI = React.useCallback(() => {
+  const handleAskAI = useCallback(() => {
     const currentQuery = searchQuery;
     setSearchQuery("");
 
@@ -257,7 +264,7 @@ export default function PCommand2() {
 
   const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
-  const filterItem = React.useCallback(
+  const filterItem = useCallback(
     (itemValue: unknown, query: string): boolean => {
       if (typeof itemValue !== "object" || itemValue === null) {
         return false;
@@ -282,7 +289,7 @@ export default function PCommand2() {
     [contains],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open || !aiState.mode) return;
 
     const handleEscape = (e: KeyboardEvent) => {
@@ -297,13 +304,13 @@ export default function PCommand2() {
     return () => document.removeEventListener("keydown", handleEscape, true);
   }, [open, aiState.mode, handleBackToSearch]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (aiState.mode && !aiState.isGenerating) {
       aiInputRef.current?.focus();
     }
   }, [aiState.mode, aiState.isGenerating]);
 
-  const hasResults = React.useMemo(
+  const hasResults = useMemo(
     () =>
       !searchQuery.trim() ||
       commandGroups.some((group) =>
@@ -312,7 +319,7 @@ export default function PCommand2() {
     [searchQuery, filterItem],
   );
 
-  const handleOpenChange = React.useCallback(
+  const handleOpenChange = useCallback(
     (newOpen: boolean) => {
       setOpen(newOpen);
       if (!newOpen) {
@@ -389,7 +396,7 @@ export default function PCommand2() {
                 </CommandEmpty>
                 <CommandList>
                   {(group: Group) => (
-                    <React.Fragment key={group.value}>
+                    <Fragment key={group.value}>
                       <CommandGroup items={group.items}>
                         <CommandGroupLabel>{group.value}</CommandGroupLabel>
                         <CommandCollection>
@@ -410,7 +417,7 @@ export default function PCommand2() {
                         </CommandCollection>
                       </CommandGroup>
                       <CommandSeparator />
-                    </React.Fragment>
+                    </Fragment>
                   )}
                 </CommandList>
               </CommandPanel>

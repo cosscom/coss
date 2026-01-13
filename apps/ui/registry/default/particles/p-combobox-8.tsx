@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { Fragment } from "react";
 
 import {
   Combobox,
@@ -93,7 +93,7 @@ export default function Particle() {
         <ComboboxEmpty>No tags found.</ComboboxEmpty>
         <ComboboxList>
           {(group: TagGroup) => (
-            <React.Fragment key={group.value}>
+            <Fragment key={group.value}>
               <ComboboxGroup items={group.items}>
                 <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
                 <ComboboxCollection>
@@ -105,7 +105,7 @@ export default function Particle() {
                 </ComboboxCollection>
               </ComboboxGroup>
               {group.value !== "Team" && <ComboboxSeparator />}
-            </React.Fragment>
+            </Fragment>
           )}
         </ComboboxList>
       </ComboboxPopup>

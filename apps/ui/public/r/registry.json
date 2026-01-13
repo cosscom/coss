@@ -2201,6 +2201,27 @@
     },
     {
       "categories": [
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Button group with QR code icon and sign in",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-27.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-27",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card"
       ],
       "description": "Card with header, content, and footer",
@@ -6721,6 +6742,30 @@
       "name": "p-toggle-7",
       "registryDependencies": [
         "@coss/toggle"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toggle",
+        "tooltip",
+        "toast"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Bookmark toggle with tooltip and success toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toggle-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toggle-8",
+      "registryDependencies": [
+        "@coss/toggle",
+        "@coss/tooltip",
+        "@coss/toast"
       ],
       "type": "registry:block"
     },

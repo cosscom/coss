@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 import {
   Autocomplete,
@@ -28,8 +29,8 @@ const items = [
 ];
 
 export default function Particle() {
-  const [loading, setLoading] = React.useState(false);
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const selectedItem = formData.get("item");

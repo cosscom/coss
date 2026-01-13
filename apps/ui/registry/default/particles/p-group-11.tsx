@@ -15,7 +15,7 @@ export default function Particle() {
   return (
     <Group aria-label="Repository actions">
       <Button variant="outline">
-        <GitForkIcon />
+        <GitForkIcon aria-hidden="true" />
         Fork
         <Badge variant="secondary">48</Badge>
       </Button>
@@ -26,7 +26,7 @@ export default function Particle() {
             <Button aria-label="Send options" size="icon" variant="outline" />
           }
         >
-          <ChevronDownIcon />
+          <ChevronDownIcon aria-hidden="true" />
         </PopoverTrigger>
         <PopoverPopup align="end" className="w-64">
           <PopoverTitle className="text-base">Existing forks</PopoverTitle>

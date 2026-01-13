@@ -731,6 +731,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button"),
+    dependencies: ["lucide-react"],
+    description: "Button group with QR code icon and sign in",
+    files: [{ path: "particles/p-button-27.tsx", type: "registry:block" }],
+    name: "p-button-27",
+    registryDependencies: ["@coss/button", "@coss/group"],
+    type: "registry:block",
+  },
+  {
     categories: categories("card"),
     description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],
@@ -3237,6 +3246,15 @@ export const particles: ParticleItem[] = [
     files: [{ path: "particles/p-toggle-7.tsx", type: "registry:block" }],
     name: "p-toggle-7",
     registryDependencies: ["@coss/toggle"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toggle", "tooltip", "toast"),
+    dependencies: ["lucide-react"],
+    description: "Bookmark toggle with tooltip and success toast",
+    files: [{ path: "particles/p-toggle-8.tsx", type: "registry:block" }],
+    name: "p-toggle-8",
+    registryDependencies: ["@coss/toggle", "@coss/tooltip", "@coss/toast"],
     type: "registry:block",
   },
   {

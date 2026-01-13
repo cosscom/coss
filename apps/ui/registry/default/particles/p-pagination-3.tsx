@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -31,7 +31,7 @@ export default function Particle({
   totalResults,
   resultsPerPage = 10,
 }: PaginationProps) {
-  const [currentPage, setCurrentPage] = React.useState(initialPage);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const resultRanges = Array.from({ length: totalPages }, (_, i) => {
     const start = i * resultsPerPage + 1;
     const end = Math.min((i + 1) * resultsPerPage, totalResults);

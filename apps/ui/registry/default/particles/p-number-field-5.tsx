@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useId } from "react";
 
 import { Label } from "@/registry/default/ui/label";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/registry/default/ui/number-field";
 
 export default function Particle() {
-  const id = React.useId();
+  const id = useId();
   return (
     <div className="flex flex-col items-start gap-2">
       <Label htmlFor={id}>Quantity</Label>

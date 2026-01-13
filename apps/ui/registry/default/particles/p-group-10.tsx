@@ -29,11 +29,11 @@ export default function Particle() {
       </Group>
       <Group aria-label="Navigation">
         <Button aria-label="Previous" size="icon" variant="outline">
-          <ArrowLeftIcon />
+          <ArrowLeftIcon aria-hidden="true" />
         </Button>
         <GroupSeparator />
         <Button aria-label="Next" size="icon" variant="outline">
-          <ArrowRightIcon />
+          <ArrowRightIcon aria-hidden="true" />
         </Button>
       </Group>
     </Group>

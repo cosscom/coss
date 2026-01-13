@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { Checkbox } from "@/registry/default/ui/checkbox";
@@ -21,8 +22,8 @@ import {
 } from "@/registry/default/ui/select";
 
 export default function Particle() {
-  const [loading, setLoading] = React.useState(false);
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     setLoading(true);

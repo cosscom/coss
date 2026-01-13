@@ -2203,6 +2203,24 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "p-button-27": {
+    name: "p-button-27",
+    description: "Button group with QR code icon and sign in",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/group"],
+    files: [{
+      path: "registry/default/particles/p-button-27.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-27.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "Card with header, content, and footer",
@@ -6107,6 +6125,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["toggle"],
+    meta: undefined,
+  },
+  "p-toggle-8": {
+    name: "p-toggle-8",
+    description: "Bookmark toggle with tooltip and success toast",
+    type: "registry:block",
+    registryDependencies: ["@coss/toggle","@coss/tooltip","@coss/toast"],
+    files: [{
+      path: "registry/default/particles/p-toggle-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toggle-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toggle","tooltip","toast"],
     meta: undefined,
   },
   "p-toolbar-1": {

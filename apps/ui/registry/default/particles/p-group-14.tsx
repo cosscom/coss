@@ -68,7 +68,7 @@ export default function Particle() {
       </Group>
       <Group aria-label="Submit">
         <Button aria-label="Send" size="icon" variant="outline">
-          <ArrowRightIcon />
+          <ArrowRightIcon aria-hidden="true" />
         </Button>
       </Group>
     </Group>

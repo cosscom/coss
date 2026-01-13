@@ -1,6 +1,7 @@
 "use client";
 
-import * as React from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -12,12 +13,10 @@ import { Form } from "@/registry/default/ui/form";
 import { Slider, SliderValue } from "@/registry/default/ui/slider";
 
 export default function Particle() {
-  const [loading, setLoading] = React.useState<boolean>(false);
-  const [value, setValue] = React.useState<number | readonly number[]>([
-    25, 75,
-  ]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [value, setValue] = useState<number | readonly number[]>([25, 75]);
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     setLoading(true);

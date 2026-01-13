@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useMemo, useState } from "react";
 
 import {
   Autocomplete,
@@ -44,10 +44,10 @@ const manyTags: SimpleTag[] = [
 ];
 
 export default function Particle() {
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = useState("");
   const { contains } = useAutocompleteFilter({ sensitivity: "base" });
 
-  const totalMatches = React.useMemo(() => {
+  const totalMatches = useMemo(() => {
     const trimmed = value.trim();
     if (!trimmed) return manyTags.length;
     return manyTags.filter((t) => contains(t.value, trimmed)).length;

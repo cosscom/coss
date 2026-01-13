@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckIcon, CopyIcon } from "lucide-react";
-import * as React from "react";
+import { useRef } from "react";
 
 import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard";
 import { Button } from "@/registry/default/ui/button";
@@ -13,7 +13,7 @@ import {
 } from "@/registry/default/ui/tooltip";
 
 export default function Particle() {
-  const copyButtonRef = React.useRef<HTMLButtonElement>(null);
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
   const toastTimeout = 2000;
 
   const { copyToClipboard, isCopied } = useCopyToClipboard({
