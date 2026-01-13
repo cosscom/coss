@@ -80,6 +80,49 @@ const items = [
   </Select>
 ```
 
+## API Reference
+
+### Select
+
+Root component. Alias for `Select.Root` from Base UI.
+
+### SelectTrigger
+
+Trigger button that opens the select dropdown. Styled wrapper for `Select.Trigger` from Base UI.
+
+| Prop   | Type                        | Default     | Description                                      |
+| ------ | --------------------------- | ----------- | ------------------------------------------------ |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` | Controls the size of the trigger                 |
+
+### SelectValue
+
+Displays the selected value. Styled wrapper for `Select.Value` from Base UI.
+
+### SelectPopup
+
+Popup container for select options. Also exported as `SelectContent`.
+
+| Prop                   | Type      | Default | Description                                      |
+| ---------------------- | --------- | ------- | ------------------------------------------------ |
+| `alignItemWithTrigger` | `boolean` | `true`  | Aligns the selected item with the trigger        |
+| `sideOffset`           | `number`  | `4`     | Distance from the trigger in pixels              |
+
+### SelectItem
+
+Individual select option. Styled wrapper for `Select.Item` from Base UI with built-in indicator.
+
+### SelectGroup
+
+Groups related select items. Alias for `Select.Group` from Base UI.
+
+### SelectGroupLabel
+
+Label for a select group. Styled wrapper for `Select.GroupLabel` from Base UI.
+
+### SelectSeparator
+
+Visual separator between items. Styled wrapper for `Select.Separator` from Base UI.
+
 ## Examples
 
 For accessible labelling and validation, prefer using the `Field` component to wrap selects. See the related example: [Select field](/ui/docs/components/field#select-field).

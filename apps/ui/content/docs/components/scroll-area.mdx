@@ -67,6 +67,33 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 </ScrollArea>
 ```
 
+## API Reference
+
+### ScrollArea
+
+Root component. Styled wrapper for `ScrollArea.Root` from Base UI with custom scrollbar styling.
+
+| Prop             | Type      | Default | Description                                      |
+| ---------------- | --------- | ------- | ------------------------------------------------ |
+| `scrollFade`     | `boolean` | `false` | Masks viewport edges so content fades in/out as you scroll |
+| `scrollbarGutter`| `boolean` | `false` | Reserves space for the scrollbar to prevent layout shifts |
+
+### ScrollAreaViewport
+
+Scrollable viewport container. Styled wrapper for `ScrollArea.Viewport` from Base UI.
+
+### ScrollAreaScrollbar
+
+Scrollbar track. Styled wrapper for `ScrollArea.Scrollbar` from Base UI.
+
+### ScrollAreaThumb
+
+Scrollbar thumb. Styled wrapper for `ScrollArea.Thumb` from Base UI.
+
+### ScrollAreaCorner
+
+Corner element when both scrollbars are visible. Alias for `ScrollArea.Corner` from Base UI.
+
 ## Examples
 
 ### Scroll Fade
