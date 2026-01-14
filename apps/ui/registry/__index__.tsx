@@ -3409,24 +3409,6 @@ export const Index: Record<string, any> = {
     categories: ["button","checkbox","field","form","label","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-field-19": {
-    name: "p-field-19",
-    description: "Field with error state",
-    type: "registry:block",
-    registryDependencies: ["@coss/field","@coss/input"],
-    files: [{
-      path: "registry/default/particles/p-field-19.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-field-19.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["field","input","label"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-fieldset-1": {
     name: "p-fieldset-1",
     description: "Fieldset with multiple fields",

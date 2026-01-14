@@ -3651,29 +3651,6 @@
     },
     {
       "categories": [
-        "field",
-        "input",
-        "label"
-      ],
-      "description": "Field with error state",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-19.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-19",
-      "registryDependencies": [
-        "@coss/field",
-        "@coss/input"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "fieldset"
       ],
       "description": "Fieldset with multiple fields",

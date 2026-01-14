@@ -1530,18 +1530,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "input", "label"),
-    description: "Field with error state",
-    files: [{ path: "particles/p-field-19.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-19",
-    registryDependencies: ["@coss/field", "@coss/input"],
-    type: "registry:block",
-  },
-  {
     categories: categories("fieldset"),
     description: "Fieldset with multiple fields",
     files: [{ path: "particles/p-fieldset-1.tsx", type: "registry:block" }],
