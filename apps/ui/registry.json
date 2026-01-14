@@ -1368,7 +1368,6 @@
     {
       "categories": [
         "autocomplete",
-        "form",
         "input"
       ],
       "description": "Autocomplete form",
@@ -4137,8 +4136,7 @@
     {
       "categories": [
         "group",
-        "input",
-        "label"
+        "input"
       ],
       "description": "Group with input and currency text",
       "files": [

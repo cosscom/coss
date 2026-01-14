@@ -330,7 +330,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("autocomplete", "form", "input"),
+    categories: categories("autocomplete", "input"),
     description: "Autocomplete form",
     files: [
       { path: "particles/p-autocomplete-14.tsx", type: "registry:block" },
@@ -1784,7 +1784,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "input", "label"),
+    categories: categories("group", "input"),
     description: "Group with input and currency text",
     files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
     name: "p-group-17",
