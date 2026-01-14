@@ -4637,7 +4637,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-24",
     description: "Input group with character counter",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/label"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-24.tsx",
       type: "registry:block",
@@ -4648,12 +4648,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","label"],
+    categories: ["input","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-25": {
     name: "p-input-group-25",
-    description: "Field with input and characters remaining counter",
+    description: "Input with characters remaining counter",
     type: "registry:block",
     registryDependencies: ["@coss/field","@coss/input"],
     files: [{

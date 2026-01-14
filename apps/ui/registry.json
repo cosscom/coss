@@ -5156,8 +5156,7 @@
     {
       "categories": [
         "input",
-        "input group",
-        "label"
+        "input group"
       ],
       "description": "Input group with character counter",
       "files": [
@@ -5171,8 +5170,7 @@
       },
       "name": "p-input-group-24",
       "registryDependencies": [
-        "@coss/input-group",
-        "@coss/label"
+        "@coss/input-group"
       ],
       "type": "registry:block"
     },
@@ -5181,7 +5179,7 @@
         "field",
         "input"
       ],
-      "description": "Field with input and characters remaining counter",
+      "description": "Input with characters remaining counter",
       "files": [
         {
           "path": "registry/default/particles/p-input-group-25.tsx",
