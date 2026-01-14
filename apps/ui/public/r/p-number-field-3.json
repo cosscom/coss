@@ -17,6 +17,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "number field"
+    "number field",
+    "input"
   ]
 }

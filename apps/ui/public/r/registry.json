@@ -5469,7 +5469,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Basic number field",
       "files": [
@@ -5489,7 +5490,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Small number field",
       "files": [
@@ -5509,7 +5511,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Large number field",
       "files": [
@@ -5529,7 +5532,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Disabled number field",
       "files": [
@@ -5549,7 +5553,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Number field with label",
       "files": [
@@ -5570,7 +5575,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Number field with scrub",
       "files": [
@@ -5590,7 +5596,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Number field with range",
       "files": [
@@ -5610,7 +5617,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Number field with formatted value",
       "files": [
@@ -5630,7 +5638,8 @@
     },
     {
       "categories": [
-        "number field"
+        "number field",
+        "input"
       ],
       "description": "Number field with step",
       "files": [
@@ -5651,6 +5660,7 @@
     {
       "categories": [
         "number field",
+        "input",
         "form",
         "field",
         "zod"
