@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-14.tsx",
-      "content": "import { useId } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <div className=\"inline-flex w-full items-center justify-between gap-2\">\n        <Label className=\"leading-6\" htmlFor={id}>\n          Email\n        </Label>\n        <span className=\"text-muted-foreground text-sm\">Optional</span>\n      </div>\n      <Input id={id} placeholder=\"Email\" type=\"email\" />\n    </div>\n  );\n}\n",
+      "content": "import { useId } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <div className=\"inline-flex w-full items-center justify-between gap-2\">\n        <Label htmlFor={id}>Email</Label>\n        <Label className=\"font-normal text-muted-foreground\" render={<span />}>\n          Optional\n        </Label>\n      </div>\n      <Input id={id} placeholder=\"Email\" type=\"email\" />\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
