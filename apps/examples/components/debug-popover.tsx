@@ -16,31 +16,28 @@ export function DebugPopover() {
   const { isLoadingOverride, setIsLoadingOverride } = useDebug();
 
   return (
-    <div className="fixed right-4 bottom-4 z-50">
-      <Popover>
-        <PopoverTrigger
-          render={
-            <Button size="icon" variant="outline">
-              <BugIcon className="size-4" />
-            </Button>
-          }
-        />
-        <PopoverPopup align="end" className="w-64" side="top">
-          <div className="flex flex-col gap-4">
-            <PopoverTitle>Debug Controls</PopoverTitle>
-            <div className="flex items-center justify-between gap-4">
-              <Label htmlFor="loading-switch">Force loading state</Label>
-              <Switch
-                checked={isLoadingOverride === true}
-                id="loading-switch"
-                onCheckedChange={(checked) =>
-                  setIsLoadingOverride(checked ? true : null)
-                }
-              />
-            </div>
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button size="icon" variant="ghost" className="fixed right-3 bottom-3 z-50">
+            <BugIcon className="size-4" />
+          </Button>
+        }
+      />
+      <PopoverPopup align="end" className="w-64" side="top">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="loading-switch">Force loading state</Label>
+            <Switch
+              checked={isLoadingOverride === true}
+              id="loading-switch"
+              onCheckedChange={(checked) =>
+                setIsLoadingOverride(checked ? true : null)
+              }
+            />
           </div>
-        </PopoverPopup>
-      </Popover>
-    </div>
+        </div>
+      </PopoverPopup>
+    </Popover>
   );
 }

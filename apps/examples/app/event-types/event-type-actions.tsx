@@ -11,6 +11,7 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import { Switch } from "@coss/ui/components/switch";
 import {
   Tooltip,
@@ -40,7 +41,7 @@ export function EventTypeActions({
   tooltipHandle,
 }: EventTypeActionsProps) {
   return (
-    <div className="relative flex items-center gap-3">
+    <>
       <div className="flex items-center gap-4 max-md:hidden">
         <Tooltip>
           <TooltipTrigger
@@ -166,6 +167,15 @@ export function EventTypeActions({
           </MenuItem>
         </MenuPopup>
       </Menu>
+    </>
+  );
+}
+
+export function EventTypeActionsSkeleton() {
+  return (
+    <div className="flex items-center gap-4">
+      <Skeleton className="h-4.5 w-7.5 rounded-full" />
+      <Skeleton className="h-8 w-24.5 rounded-lg" />
     </div>
   );
 }

@@ -36,7 +36,10 @@ import {
   mockEventTypeGroups,
   mockEventTypes,
 } from "@/lib/mock-event-types-data";
-import { EventTypeActions } from "./event-type-actions";
+import {
+  EventTypeActions,
+  EventTypeActionsSkeleton,
+} from "./event-type-actions";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 
@@ -54,21 +57,18 @@ function EventTypeSkeletonItem() {
       <ListItemContent>
         <ListItemHeader>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-4 w-32 max-sm:hidden" />
+            <Skeleton className="h-5 w-full max-w-48" />
+            <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
-          <Skeleton className="h-4 w-72" />
+          <Skeleton className="h-4 my-0.5 w-full max-w-72" />
         </ListItemHeader>
         <ListItemBadges>
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="h-6 w-24 rounded-full" />
-          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-4.5 w-14" />
+          <Skeleton className="h-4.5 w-14" />
+          <Skeleton className="h-4.5 w-14" />
         </ListItemBadges>
       </ListItemContent>
-      <div className="flex items-center gap-2">
-        <Skeleton className="size-9 rounded-lg" />
-        <Skeleton className="size-9 rounded-lg" />
-      </div>
+      <EventTypeActionsSkeleton />
     </ListItem>
   );
 }
@@ -157,7 +157,7 @@ export function EventTypesList() {
           <EventTypeSkeletonItem />
         </FramePanel>
         <FrameFooter>
-          <Skeleton className="mx-auto h-4 w-24" />
+          <Skeleton className="mx-auto h-5 w-32" />
         </FrameFooter>
       </Frame>
     );
