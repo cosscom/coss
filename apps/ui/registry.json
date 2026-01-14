@@ -4178,7 +4178,8 @@
     {
       "categories": [
         "group",
-        "input"
+        "input",
+        "label"
       ],
       "description": "Group with input and currency text",
       "files": [
@@ -4190,7 +4191,8 @@
       "name": "p-group-17",
       "registryDependencies": [
         "@coss/group",
-        "@coss/input"
+        "@coss/input",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
@@ -5199,10 +5201,10 @@
     },
     {
       "categories": [
-        "input",
-        "label"
+        "field",
+        "input"
       ],
-      "description": "Input with characters remaining counter",
+      "description": "Field with input and characters remaining counter",
       "files": [
         {
           "path": "registry/default/particles/p-input-group-25.tsx",
@@ -5214,8 +5216,8 @@
       },
       "name": "p-input-group-25",
       "registryDependencies": [
-        "@coss/input",
-        "@coss/label"
+        "@coss/field",
+        "@coss/input"
       ],
       "type": "registry:block"
     },

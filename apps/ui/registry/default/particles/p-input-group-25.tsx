@@ -1,34 +1,32 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@/registry/default/ui/field";
 import { Input } from "@/registry/default/ui/input";
-import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
-  const id = useId();
   const maxLength = 14;
   const [value, setValue] = useState("");
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>Code</Label>
+    <Field>
+      <FieldLabel>Code</FieldLabel>
       <Input
-        id={id}
         maxLength={maxLength}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Enter code"
         type="text"
         value={value}
       />
-      <p
-        aria-live="polite"
-        className="text-muted-foreground text-xs"
-        role="status"
-      >
+      <FieldDescription>
         <span className="tabular-nums">{maxLength - value.length}</span>{" "}
         characters left
-      </p>
-    </div>
+      </FieldDescription>
+    </Field>
   );
 }

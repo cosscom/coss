@@ -2,15 +2,15 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-25",
   "type": "registry:block",
-  "description": "Input with characters remaining counter",
+  "description": "Field with input and characters remaining counter",
   "registryDependencies": [
-    "@coss/input",
-    "@coss/label"
+    "@coss/field",
+    "@coss/input"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-input-group-25.tsx",
-      "content": "\"use client\";\n\nimport { useId, useState } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  const maxLength = 14;\n  const [value, setValue] = useState(\"\");\n\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Label htmlFor={id}>Code</Label>\n      <Input\n        id={id}\n        maxLength={maxLength}\n        onChange={(e) => setValue(e.target.value)}\n        placeholder=\"Enter code\"\n        type=\"text\"\n        value={value}\n      />\n      <p\n        aria-live=\"polite\"\n        className=\"text-muted-foreground text-xs\"\n        role=\"status\"\n      >\n        <span className=\"tabular-nums\">{maxLength - value.length}</span>{\" \"}\n        characters left\n      </p>\n    </div>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport {\n  Field,\n  FieldDescription,\n  FieldLabel,\n} from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  const maxLength = 14;\n  const [value, setValue] = useState(\"\");\n\n  return (\n    <Field>\n      <FieldLabel>Code</FieldLabel>\n      <Input\n        maxLength={maxLength}\n        onChange={(e) => setValue(e.target.value)}\n        placeholder=\"Enter code\"\n        type=\"text\"\n        value={value}\n      />\n      <FieldDescription>\n        <span className=\"tabular-nums\">{maxLength - value.length}</span>{\" \"}\n        characters left\n      </FieldDescription>\n    </Field>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
@@ -18,7 +18,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "input",
-    "label"
+    "field",
+    "input"
   ]
 }

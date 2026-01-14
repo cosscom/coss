@@ -1804,11 +1804,11 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "input"),
+    categories: categories("group", "input", "label"),
     description: "Group with input and currency text",
     files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
     name: "p-group-17",
-    registryDependencies: ["@coss/group", "@coss/input"],
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
     type: "registry:block",
   },
   {
@@ -2383,15 +2383,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("input", "label"),
-    description: "Input with characters remaining counter",
+    categories: categories("field", "input"),
+    description: "Field with input and characters remaining counter",
     files: [{ path: "particles/p-input-group-25.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-group-25",
-    registryDependencies: ["@coss/input", "@coss/label"],
+    registryDependencies: ["@coss/field", "@coss/input"],
     type: "registry:block",
   },
   {

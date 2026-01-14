@@ -3863,7 +3863,7 @@ export const Index: Record<string, any> = {
     name: "p-group-17",
     description: "Group with input and currency text",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input"],
+    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
     files: [{
       path: "registry/default/particles/p-group-17.tsx",
       type: "registry:block",
@@ -3874,7 +3874,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group","input"],
+    categories: ["group","input","label"],
     meta: undefined,
   },
   "p-group-18": {
@@ -4671,9 +4671,9 @@ export const Index: Record<string, any> = {
   },
   "p-input-group-25": {
     name: "p-input-group-25",
-    description: "Input with characters remaining counter",
+    description: "Field with input and characters remaining counter",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/label"],
+    registryDependencies: ["@coss/field","@coss/input"],
     files: [{
       path: "registry/default/particles/p-input-group-25.tsx",
       type: "registry:block",
@@ -4684,7 +4684,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","label"],
+    categories: ["field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-26": {
