@@ -5,13 +5,10 @@ export default function Particle() {
   return (
     <Field>
       <FieldLabel>Email</FieldLabel>
-      <Input
-        aria-invalid="true"
-        defaultValue="invalid@email"
-        placeholder="Email"
-        type="email"
-      />
-      <FieldError match={true}>Please enter a valid email address.</FieldError>
+      <Input defaultValue="invalid-email" placeholder="Email" type="email" />
+      <FieldError match="typeMismatch">
+        Please enter a valid email address.
+      </FieldError>
     </Field>
   );
 }
