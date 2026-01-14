@@ -75,8 +75,10 @@ export function BookingsList() {
             );
             const participants = getBookingParticipants(booking);
             const locationLabel = getLocationLabel(booking.location);
-            const eventTypeColor =
+            const eventTypeColorLight =
               booking.eventType?.eventTypeColor?.lightEventTypeColor;
+            const eventTypeColorDark =
+              booking.eventType?.eventTypeColor?.darkEventTypeColor;
             const isPaid = booking.paid;
             const isRecurring = booking.recurringEventId !== null;
             const isCancelled = booking.status === "CANCELLED";
@@ -87,7 +89,10 @@ export function BookingsList() {
 
             return (
               <Fragment key={booking.id}>
-                <ListItem labelColor={eventTypeColor}>
+                <ListItem
+                  labelColorDark={eventTypeColorDark ?? undefined}
+                  labelColorLight={eventTypeColorLight ?? undefined}
+                >
                   <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
                     <ListItemContent>
                       <ListItemHeader>

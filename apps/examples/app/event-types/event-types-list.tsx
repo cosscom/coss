@@ -94,9 +94,12 @@ export function EventTypesList() {
     }
   };
 
-  const getEventTypeColor = (eventType: EventType) => {
+  const getEventTypeColors = (eventType: EventType) => {
     if (!eventType.eventTypeColor) return null;
-    return eventType.eventTypeColor.lightEventTypeColor;
+    return {
+      dark: eventType.eventTypeColor.darkEventTypeColor,
+      light: eventType.eventTypeColor.lightEventTypeColor,
+    };
   };
 
   return (
@@ -111,7 +114,12 @@ export function EventTypesList() {
             return (
               <Fragment key={eventType.id}>
                 <ListItem
-                  labelColor={getEventTypeColor(eventType) ?? undefined}
+                  labelColorDark={
+                    getEventTypeColors(eventType)?.dark ?? undefined
+                  }
+                  labelColorLight={
+                    getEventTypeColors(eventType)?.light ?? undefined
+                  }
                 >
                   <ListItemContent>
                     <ListItemHeader>

@@ -366,8 +366,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#8b5cf6",
-        lightEventTypeColor: "#8b5cf6",
+        darkEventTypeColor: "#ef5d9a",
+        lightEventTypeColor: "#ef5d9a",
       },
       id: 11,
       slug: "platform-meeting",
@@ -579,8 +579,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#f59e0b",
-        lightEventTypeColor: "#f59e0b",
+        darkEventTypeColor: "#fa9c67",
+        lightEventTypeColor: "#fa9c67",
       },
       id: 5,
       length: 45,
@@ -712,8 +712,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#10b981",
-        lightEventTypeColor: "#10b981",
+        darkEventTypeColor: "#3dcb9b",
+        lightEventTypeColor: "#3dcb9b",
       },
       hosts: [
         {
@@ -774,10 +774,7 @@ export const mockPastBookings: Booking[] = [
     endTime: new Date("2025-09-25T19:00:00"),
     eventType: {
       ...defaultEventType,
-      eventTypeColor: {
-        darkEventTypeColor: "#0ea5e9",
-        lightEventTypeColor: "#0ea5e9",
-      },
+      eventTypeColor: null,
       id: 7,
       length: 60,
       seatsPerTimeSlot: 50,
@@ -865,8 +862,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#10b981",
-        lightEventTypeColor: "#10b981",
+        darkEventTypeColor: "#3dcb9b",
+        lightEventTypeColor: "#3dcb9b",
       },
       id: 20,
       length: 60,
@@ -980,10 +977,7 @@ export const mockUpcomingBookings: Booking[] = [
     endTime: new Date("2026-01-20T11:00:00"),
     eventType: {
       ...defaultEventType,
-      eventTypeColor: {
-        darkEventTypeColor: "#ef4444",
-        lightEventTypeColor: "#ef4444",
-      },
+      eventTypeColor: null,
       id: 102,
       length: 60,
       schedulingType: "COLLECTIVE",

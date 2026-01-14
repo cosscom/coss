@@ -377,8 +377,8 @@ export const mockEventTypes: EventType[] = [
     description: "A standard 30 minute meeting for detailed discussions.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#0ea5e9",
-      lightEventTypeColor: "#0ea5e9",
+      darkEventTypeColor: "#fa9c67",
+      lightEventTypeColor: "#fa9c67",
     },
     hashedLink: [],
     hidden: false,
@@ -423,10 +423,7 @@ export const mockEventTypes: EventType[] = [
     description:
       "An in-depth consultation session for complex topics requiring detailed discussion and planning.",
     durationLimits: null,
-    eventTypeColor: {
-      darkEventTypeColor: "#8b5cf6",
-      lightEventTypeColor: "#8b5cf6",
-    },
+    eventTypeColor: null,
     hashedLink: [],
     hidden: false,
     hosts: [],
@@ -522,8 +519,8 @@ export const mockEventTypes: EventType[] = [
     description: "Premium consultation with payment required.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#f59e0b",
-      lightEventTypeColor: "#f59e0b",
+      darkEventTypeColor: "#3dcb9b",
+      lightEventTypeColor: "#3dcb9b",
     },
     hashedLink: [],
     hidden: false,
@@ -622,10 +619,7 @@ export const mockEventTypes: EventType[] = [
     currency: "usd",
     description: "Group webinar session with multiple attendees.",
     durationLimits: null,
-    eventTypeColor: {
-      darkEventTypeColor: "#0ea5e9",
-      lightEventTypeColor: "#0ea5e9",
-    },
+    eventTypeColor: null,
     hashedLink: [],
     hidden: false,
     hosts: [],
@@ -786,8 +780,8 @@ export const mockEventTypes: EventType[] = [
     description: "Connect with our sales team.",
     durationLimits: null,
     eventTypeColor: {
-      darkEventTypeColor: "#f59e0b",
-      lightEventTypeColor: "#f59e0b",
+      darkEventTypeColor: "#fa9c67",
+      lightEventTypeColor: "#fa9c67",
     },
     hashedLink: [],
     hidden: false,

@@ -3,24 +3,36 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
 interface ListItemProps {
-  labelColor?: string;
+  labelColorLight?: string;
+  labelColorDark?: string;
   children: ReactNode;
   className?: string;
 }
 
-export function ListItem({ labelColor, children, className }: ListItemProps) {
+export function ListItem({
+  labelColorLight,
+  labelColorDark,
+  children,
+  className,
+}: ListItemProps) {
+  const hasLabelColor = labelColorLight || labelColorDark;
+  const style = hasLabelColor
+    ? ({
+        "--event-label-dark": labelColorDark || "transparent",
+        "--event-label-light": labelColorLight || "transparent",
+      } as React.CSSProperties)
+    : undefined;
+
   return (
     <div
       className={cn(
         "relative flex overflow-hidden transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         className,
       )}
+      style={style}
     >
-      {labelColor && (
-        <div
-          className="absolute inset-y-0 start-0 w-0.5 bg-current"
-          style={{ color: labelColor }}
-        />
+      {hasLabelColor && (
+        <div className="absolute inset-y-0 start-0 w-0.5 bg-(--event-label-light) dark:bg-(--event-label-dark)" />
       )}
       <div className="flex flex-1 items-center justify-between gap-4 p-5">
         {children}
