@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/registry/default/ui/field";
+import { Field, FieldDescription } from "@/registry/default/ui/field";
 import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
@@ -15,8 +11,8 @@ export default function Particle() {
 
   return (
     <Field>
-      <FieldLabel>Code</FieldLabel>
       <Input
+        aria-label="Code"
         maxLength={maxLength}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Enter code"

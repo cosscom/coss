@@ -4,13 +4,12 @@
   "type": "registry:block",
   "description": "Input group with character counter",
   "registryDependencies": [
-    "@coss/input-group",
-    "@coss/label"
+    "@coss/input-group"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-input-group-24.tsx",
-      "content": "\"use client\";\n\nimport { useId, useState } from \"react\";\n\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  const maxLength = 14;\n  const [value, setValue] = useState(\"\");\n\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Label htmlFor={id}>Username</Label>\n      <InputGroup>\n        <InputGroupInput\n          id={id}\n          maxLength={maxLength}\n          onChange={(e) => setValue(e.target.value)}\n          placeholder=\"Enter username\"\n          type=\"text\"\n          value={value}\n        />\n        <InputGroupAddon align=\"inline-end\">\n          <InputGroupText\n            aria-live=\"polite\"\n            className=\"text-xs tabular-nums\"\n            role=\"status\"\n          >\n            {value.length}/{maxLength}\n          </InputGroupText>\n        </InputGroupAddon>\n      </InputGroup>\n    </div>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupInput,\n  InputGroupText,\n} from \"@/registry/default/ui/input-group\";\n\nexport default function Particle() {\n  const maxLength = 14;\n  const [value, setValue] = useState(\"\");\n\n  return (\n    <InputGroup>\n      <InputGroupInput\n        aria-label=\"Username\"\n        maxLength={maxLength}\n        onChange={(e) => setValue(e.target.value)}\n        placeholder=\"Enter username\"\n        type=\"text\"\n        value={value}\n      />\n      <InputGroupAddon align=\"inline-end\">\n        <InputGroupText\n          aria-live=\"polite\"\n          className=\"text-xs tabular-nums\"\n          role=\"status\"\n        >\n          {value.length}/{maxLength}\n        </InputGroupText>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
@@ -19,7 +18,6 @@
   },
   "categories": [
     "input",
-    "input group",
-    "label"
+    "input group"
   ]
 }

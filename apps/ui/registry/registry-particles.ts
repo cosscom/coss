@@ -2359,7 +2359,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("input", "input group", "label"),
+    categories: categories("input", "input group"),
     description: "Input group with character counter",
     files: [{ path: "particles/p-input-group-24.tsx", type: "registry:block" }],
     meta: {
@@ -2367,12 +2367,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-group-24",
-    registryDependencies: ["@coss/input-group", "@coss/label"],
+    registryDependencies: ["@coss/input-group"],
     type: "registry:block",
   },
   {
     categories: categories("field", "input"),
-    description: "Field with input and characters remaining counter",
+    description: "Input with characters remaining counter",
     files: [{ path: "particles/p-input-group-25.tsx", type: "registry:block" }],
     meta: {
       className:
