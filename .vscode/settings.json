@@ -1,4 +1,8 @@
 {
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
   "eslint.workingDirectories": [
     {
       "mode": "auto"
