@@ -1,9 +1,5 @@
 @import "@coss/ui/globals.css";
 
-html {
-  scrollbar-gutter: stable;
-}
-
 :root {
   --sidebar-foreground: color-mix(
     in srgb,
