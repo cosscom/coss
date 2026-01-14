@@ -21,6 +21,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
+import { useDebug } from "@/components/debug-context";
 import {
   ListItem,
   ListItemBadges,
@@ -75,6 +76,7 @@ function EventTypeSkeletonItem() {
 const ARTIFICIAL_DELAY_MS = 1500;
 
 export function EventTypesList() {
+  const { isLoadingOverride } = useDebug();
   const [isLoading, setIsLoading] = useState(true);
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
@@ -86,6 +88,8 @@ export function EventTypesList() {
     }, ARTIFICIAL_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  const showLoading = isLoadingOverride ?? isLoading;
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({
@@ -138,7 +142,7 @@ export function EventTypesList() {
     };
   };
 
-  if (isLoading) {
+  if (showLoading) {
     return (
       <Frame className="-m-1">
         <FramePanel className="p-0">
