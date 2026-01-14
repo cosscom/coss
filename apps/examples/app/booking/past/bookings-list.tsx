@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@coss/ui/components/select";
 import { Separator } from "@coss/ui/components/separator";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
@@ -30,7 +31,8 @@ import {
   VideoIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { useDebug } from "@/components/debug-context";
 import {
   ListItem,
   ListItemActions,
@@ -47,11 +49,55 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
-import { BookingActions } from "./booking-actions";
+import { BookingActions, BookingActionsSkeleton } from "./booking-actions";
+
+function BookingSkeletonItem() {
+  return (
+    <ListItem>
+      <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
+        <ListItemContent>
+          <ListItemHeader>
+            <Skeleton className="h-5 w-full max-w-48" />
+            <Skeleton className="my-0.5 h-4 w-full max-w-32" />
+          </ListItemHeader>
+          <ListItemBadges>
+            <Skeleton className="h-4.5 w-14" />
+            <Skeleton className="h-4.5 w-14" />
+          </ListItemBadges>
+        </ListItemContent>
+
+        <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+          <div className="flex flex-col gap-1">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-28" />
+          </div>
+          <Skeleton className="h-7 w-20 rounded-lg" />
+        </div>
+      </div>
+
+      <ListItemActions>
+        <BookingActionsSkeleton />
+      </ListItemActions>
+    </ListItem>
+  );
+}
+
+const ARTIFICIAL_DELAY_MS = 1500;
 
 export function BookingsList() {
+  const { isLoadingOverride } = useDebug();
+  const [isLoading, setIsLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, ARTIFICIAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showLoading = isLoadingOverride ?? isLoading;
 
   const totalCount = mockPastBookings.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -61,6 +107,27 @@ export function BookingsList() {
 
   const hasPreviousPage = pageIndex > 0;
   const hasNextPage = pageIndex < totalPages - 1;
+
+  if (showLoading) {
+    return (
+      <Frame className="-m-1">
+        <FramePanel className="p-0">
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+        </FramePanel>
+        <FrameFooter>
+          <Skeleton className="mx-auto h-5 w-32" />
+        </FrameFooter>
+      </Frame>
+    );
+  }
 
   return (
     <TooltipProvider delay={150} timeout={0}>

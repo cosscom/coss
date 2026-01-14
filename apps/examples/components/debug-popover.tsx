@@ -5,7 +5,6 @@ import { Label } from "@coss/ui/components/label";
 import {
   Popover,
   PopoverPopup,
-  PopoverTitle,
   PopoverTrigger,
 } from "@coss/ui/components/popover";
 import { Switch } from "@coss/ui/components/switch";
@@ -19,7 +18,11 @@ export function DebugPopover() {
     <Popover>
       <PopoverTrigger
         render={
-          <Button size="icon" variant="ghost" className="fixed right-3 bottom-3 z-50">
+          <Button
+            className="fixed right-3 bottom-3 z-50"
+            size="icon"
+            variant="ghost"
+          >
             <BugIcon className="size-4" />
           </Button>
         }

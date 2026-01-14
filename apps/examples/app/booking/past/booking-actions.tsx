@@ -10,6 +10,7 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   Tooltip,
   TooltipPopup,
@@ -97,4 +98,8 @@ export function BookingActions() {
       </MenuPopup>
     </Menu>
   );
+}
+
+export function BookingActionsSkeleton() {
+  return <Skeleton className="size-9 rounded-lg" />;
 }

@@ -60,7 +60,7 @@ function EventTypeSkeletonItem() {
             <Skeleton className="h-5 w-full max-w-48" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
-          <Skeleton className="h-4 my-0.5 w-full max-w-72" />
+          <Skeleton className="my-0.5 h-4 w-full max-w-72" />
         </ListItemHeader>
         <ListItemBadges>
           <Skeleton className="h-4.5 w-14" />
