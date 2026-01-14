@@ -2454,24 +2454,6 @@
     },
     {
       "categories": [
-        "button",
-        "disabled"
-      ],
-      "description": "Read-only disabled button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-button-40.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-button-40",
-      "registryDependencies": [
-        "@coss/button"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "card"
       ],
       "description": "Card with header, content, and footer",
@@ -4611,6 +4593,27 @@
       "registryDependencies": [
         "@coss/input-group",
         "@coss/spinner"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input"
+      ],
+      "description": "Read-only input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-input-17",
+      "registryDependencies": [
+        "@coss/input",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
