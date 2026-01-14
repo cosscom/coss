@@ -1141,258 +1141,6 @@ export const Index: Record<string, any> = {
     categories: ["alert dialog","dialog"],
     meta: undefined,
   },
-  "p-autocomplete-1": {
-    name: "p-autocomplete-1",
-    description: "Basic autocomplete",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-1.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-1.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-2": {
-    name: "p-autocomplete-2",
-    description: "Disabled autocomplete",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-2.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-2.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input","disabled"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-3": {
-    name: "p-autocomplete-3",
-    description: "Small autocomplete",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-3.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-3.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-4": {
-    name: "p-autocomplete-4",
-    description: "Large autocomplete",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-4.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-4.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-5": {
-    name: "p-autocomplete-5",
-    description: "Autocomplete with label",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete","@coss/label"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-5.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-5.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-6": {
-    name: "p-autocomplete-6",
-    description: "Autocomplete autofilling the input with the highlighted item",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-6.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-6.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-7": {
-    name: "p-autocomplete-7",
-    description: "Autocomplete auto highlighting the first option",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-7.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-7.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-8": {
-    name: "p-autocomplete-8",
-    description: "Autocomplete with clear button",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-8.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-8.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-9": {
-    name: "p-autocomplete-9",
-    description: "Autocomplete with trigger and clear buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-9.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-9.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-10": {
-    name: "p-autocomplete-10",
-    description: "Autocomplete with grouped items",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-10.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-10.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-11": {
-    name: "p-autocomplete-11",
-    description: "Autocomplete with limited number of results",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-11.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-11.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-12": {
-    name: "p-autocomplete-12",
-    description: "Autocomplete with async items loading",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete","@coss/spinner"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-12.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-12.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","input","async"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-13": {
-    name: "p-autocomplete-13",
-    description: "Autocomplete form",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/field","@coss/form"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-13.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-13.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","form","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-autocomplete-14": {
-    name: "p-autocomplete-14",
-    description: "Autocomplete form",
-    type: "registry:block",
-    registryDependencies: ["@coss/autocomplete"],
-    files: [{
-      path: "registry/default/particles/p-autocomplete-14.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-autocomplete-14.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["autocomplete","form","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-avatar-1": {
     name: "p-avatar-1",
     description: "Avatar with image and fallback",
@@ -2670,258 +2418,6 @@ export const Index: Record<string, any> = {
     }),
     categories: ["collapsible"],
     meta: undefined,
-  },
-  "p-combobox-1": {
-    name: "p-combobox-1",
-    description: "Basic combobox",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-1.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-1.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-2": {
-    name: "p-combobox-2",
-    description: "Disabled combobox",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-2.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-2.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input","disabled"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-3": {
-    name: "p-combobox-3",
-    description: "Small combobox",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-3.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-3.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-4": {
-    name: "p-combobox-4",
-    description: "Large combobox",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-4.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-4.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-5": {
-    name: "p-combobox-5",
-    description: "Combobox with label",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox","@coss/label"],
-    files: [{
-      path: "registry/default/particles/p-combobox-5.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-5.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-6": {
-    name: "p-combobox-6",
-    description: "Combobox auto highlighting the first option",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-6.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-6.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-7": {
-    name: "p-combobox-7",
-    description: "Combobox with clear button",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-7.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-7.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-8": {
-    name: "p-combobox-8",
-    description: "Combobox with grouped items",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-8.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-8.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-9": {
-    name: "p-combobox-9",
-    description: "Combobox with multiple selection",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-9.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-9.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-10": {
-    name: "p-combobox-10",
-    description: "Combobox with input inside popup",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-10.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-10.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-11": {
-    name: "p-combobox-11",
-    description: "Combobox form",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
-    files: [{
-      path: "registry/default/particles/p-combobox-11.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-11.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","form","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-12": {
-    name: "p-combobox-12",
-    description: "Combobox multiple form",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
-    files: [{
-      path: "registry/default/particles/p-combobox-12.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-12.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","form","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-13": {
-    name: "p-combobox-13",
-    description: "Combobox with start addon",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-13.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-13.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-combobox-14": {
-    name: "p-combobox-14",
-    description: "Combobox multiple with start addon",
-    type: "registry:block",
-    registryDependencies: ["@coss/combobox"],
-    files: [{
-      path: "registry/default/particles/p-combobox-14.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-combobox-14.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["combobox","input"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-command-1": {
     name: "p-command-1",
@@ -4637,7 +4133,7 @@ export const Index: Record<string, any> = {
     name: "p-input-group-24",
     description: "Input group with character counter",
     type: "registry:block",
-    registryDependencies: ["@coss/input-group","@coss/label"],
+    registryDependencies: ["@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-input-group-24.tsx",
       type: "registry:block",
@@ -4648,12 +4144,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input","input group","label"],
+    categories: ["input","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-25": {
     name: "p-input-group-25",
-    description: "Field with input and characters remaining counter",
+    description: "Input with characters remaining counter",
     type: "registry:block",
     registryDependencies: ["@coss/field","@coss/input"],
     files: [{
@@ -4685,6 +4181,510 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["button","input","input group","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-1": {
+    name: "p-autocomplete-1",
+    description: "Basic autocomplete",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-2": {
+    name: "p-autocomplete-2",
+    description: "Disabled autocomplete",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input","disabled"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-3": {
+    name: "p-autocomplete-3",
+    description: "Small autocomplete",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-4": {
+    name: "p-autocomplete-4",
+    description: "Large autocomplete",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-5": {
+    name: "p-autocomplete-5",
+    description: "Autocomplete with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-6": {
+    name: "p-autocomplete-6",
+    description: "Autocomplete autofilling the input with the highlighted item",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-7": {
+    name: "p-autocomplete-7",
+    description: "Autocomplete auto highlighting the first option",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-8": {
+    name: "p-autocomplete-8",
+    description: "Autocomplete with clear button",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-9": {
+    name: "p-autocomplete-9",
+    description: "Autocomplete with trigger and clear buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-10": {
+    name: "p-autocomplete-10",
+    description: "Autocomplete with grouped items",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-11": {
+    name: "p-autocomplete-11",
+    description: "Autocomplete with limited number of results",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-12": {
+    name: "p-autocomplete-12",
+    description: "Autocomplete with async items loading",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input","async"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-13": {
+    name: "p-autocomplete-13",
+    description: "Autocomplete form",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/field","@coss/form"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","form","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-autocomplete-14": {
+    name: "p-autocomplete-14",
+    description: "Autocomplete form",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","form","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-1": {
+    name: "p-combobox-1",
+    description: "Basic combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-2": {
+    name: "p-combobox-2",
+    description: "Disabled combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input","disabled"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-3": {
+    name: "p-combobox-3",
+    description: "Small combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-4": {
+    name: "p-combobox-4",
+    description: "Large combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-5": {
+    name: "p-combobox-5",
+    description: "Combobox with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-combobox-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-6": {
+    name: "p-combobox-6",
+    description: "Combobox auto highlighting the first option",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-7": {
+    name: "p-combobox-7",
+    description: "Combobox with clear button",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-8": {
+    name: "p-combobox-8",
+    description: "Combobox with grouped items",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-9": {
+    name: "p-combobox-9",
+    description: "Combobox with multiple selection",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-10": {
+    name: "p-combobox-10",
+    description: "Combobox with input inside popup",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-11": {
+    name: "p-combobox-11",
+    description: "Combobox form",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
+    files: [{
+      path: "registry/default/particles/p-combobox-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","form","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-12": {
+    name: "p-combobox-12",
+    description: "Combobox multiple form",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/combobox","@coss/field","@coss/form"],
+    files: [{
+      path: "registry/default/particles/p-combobox-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","form","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-13": {
+    name: "p-combobox-13",
+    description: "Combobox with start addon",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-14": {
+    name: "p-combobox-14",
+    description: "Combobox multiple with start addon",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-meter-1": {
