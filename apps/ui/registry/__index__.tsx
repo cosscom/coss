@@ -3933,9 +3933,9 @@ export const Index: Record<string, any> = {
   },
   "p-group-22": {
     name: "p-group-22",
-    description: "Group with two inputs for range",
+    description: "Group with two number inputs for range",
     type: "registry:block",
-    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
+    registryDependencies: ["@coss/group","@coss/label","@coss/number-field"],
     files: [{
       path: "registry/default/particles/p-group-22.tsx",
       type: "registry:block",
@@ -3946,7 +3946,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group","input","label"],
+    categories: ["group","label","number field"],
     meta: undefined,
   },
   "p-input-1": {

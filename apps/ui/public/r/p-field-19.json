@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-field-19.tsx",
-      "content": "import { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Field>\n      <FieldLabel>Email</FieldLabel>\n      <Input defaultValue=\"invalid-email\" placeholder=\"Email\" type=\"email\" />\n      <FieldError match=\"typeMismatch\">\n        Please enter a valid email address.\n      </FieldError>\n    </Field>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useRef, useState } from \"react\";\n\nimport { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  const [isInvalid, setIsInvalid] = useState(true);\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  return (\n    <Field invalid={isInvalid} validationMode=\"onChange\">\n      <FieldLabel>Email</FieldLabel>\n      <Input\n        defaultValue=\"invalid-email\"\n        onChange={() => {\n          if (inputRef.current) {\n            setIsInvalid(!inputRef.current.validity.valid);\n          }\n        }}\n        placeholder=\"Email\"\n        ref={inputRef}\n        type=\"email\"\n      />\n      <FieldError match=\"typeMismatch\">\n        Please enter a valid email address.\n      </FieldError>\n    </Field>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
