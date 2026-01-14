@@ -17,7 +17,16 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
-import { EllipsisIcon, EyeIcon, Link2Icon } from "lucide-react";
+import {
+  CodeIcon,
+  CopyIcon,
+  EllipsisIcon,
+  EyeIcon,
+  Link2Icon,
+  PencilIcon,
+  Share2Icon,
+  TrashIcon,
+} from "lucide-react";
 
 interface EventTypeActionsProps {
   isHidden: boolean;
@@ -88,11 +97,23 @@ export function EventTypeActions({
               }
             />
             <MenuPopup align="end">
-              <MenuItem>Edit</MenuItem>
-              <MenuItem>Duplicate</MenuItem>
-              <MenuItem>Embed</MenuItem>
+              <MenuItem>
+                <PencilIcon />
+                Edit
+              </MenuItem>
+              <MenuItem>
+                <CopyIcon />
+                Duplicate
+              </MenuItem>
+              <MenuItem>
+                <CodeIcon />
+                Embed
+              </MenuItem>
               <MenuSeparator />
-              <MenuItem variant="destructive">Delete</MenuItem>
+              <MenuItem variant="destructive">
+                <TrashIcon />
+                Delete
+              </MenuItem>
             </MenuPopup>
           </Menu>
         </Group>
@@ -108,11 +129,26 @@ export function EventTypeActions({
           }
         />
         <MenuPopup align="end">
-          <MenuItem>Preview</MenuItem>
-          <MenuItem>Copy link to event</MenuItem>
-          <MenuItem>Share</MenuItem>
-          <MenuItem>Edit</MenuItem>
-          <MenuItem>Duplicate</MenuItem>
+          <MenuItem>
+            <EyeIcon />
+            Preview
+          </MenuItem>
+          <MenuItem>
+            <Link2Icon />
+            Copy link to event
+          </MenuItem>
+          <MenuItem>
+            <Share2Icon />
+            Share
+          </MenuItem>
+          <MenuItem>
+            <PencilIcon />
+            Edit
+          </MenuItem>
+          <MenuItem>
+            <CopyIcon />
+            Duplicate
+          </MenuItem>
           <MenuSeparator />
           <MenuGroup>
             <MenuCheckboxItem
@@ -124,7 +160,10 @@ export function EventTypeActions({
             </MenuCheckboxItem>
           </MenuGroup>
           <MenuSeparator />
-          <MenuItem variant="destructive">Delete</MenuItem>
+          <MenuItem variant="destructive">
+            <TrashIcon />
+            Delete
+          </MenuItem>
         </MenuPopup>
       </Menu>
     </div>
