@@ -4262,10 +4262,10 @@
     {
       "categories": [
         "group",
-        "input",
-        "label"
+        "label",
+        "number field"
       ],
-      "description": "Group with two inputs for range",
+      "description": "Group with two number inputs for range",
       "files": [
         {
           "path": "registry/default/particles/p-group-22.tsx",
@@ -4275,8 +4275,8 @@
       "name": "p-group-22",
       "registryDependencies": [
         "@coss/group",
-        "@coss/input",
-        "@coss/label"
+        "@coss/label",
+        "@coss/number-field"
       ],
       "type": "registry:block"
     },

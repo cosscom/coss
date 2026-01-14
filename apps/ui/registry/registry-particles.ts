@@ -1836,11 +1836,11 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "input", "label"),
-    description: "Group with two inputs for range",
+    categories: categories("group", "label", "number field"),
+    description: "Group with two number inputs for range",
     files: [{ path: "particles/p-group-22.tsx", type: "registry:block" }],
     name: "p-group-22",
-    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
+    registryDependencies: ["@coss/group", "@coss/label", "@coss/number-field"],
     type: "registry:block",
   },
   {
