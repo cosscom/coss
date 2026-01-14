@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-field-19.tsx",
-      "content": "import { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Field>\n      <FieldLabel>Email</FieldLabel>\n      <Input\n        aria-invalid=\"true\"\n        defaultValue=\"invalid@email\"\n        placeholder=\"Email\"\n        type=\"email\"\n      />\n      <FieldError forceShow>Please enter a valid email address.</FieldError>\n    </Field>\n  );\n}\n",
+      "content": "import { Field, FieldError, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Field>\n      <FieldLabel>Email</FieldLabel>\n      <Input\n        aria-invalid=\"true\"\n        defaultValue=\"invalid@email\"\n        placeholder=\"Email\"\n        type=\"email\"\n      />\n      <FieldError match>Please enter a valid email address.</FieldError>\n    </Field>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
