@@ -3,6 +3,7 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Separator } from "@coss/ui/components/separator";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   Tooltip,
   TooltipCreateHandle,
@@ -19,7 +20,7 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   ListItem,
   ListItemBadges,
@@ -46,10 +47,45 @@ const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
   slug: "user",
 };
 
+function EventTypeSkeletonItem() {
+  return (
+    <ListItem>
+      <ListItemContent>
+        <ListItemHeader>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-32 max-sm:hidden" />
+          </div>
+          <Skeleton className="h-4 w-72" />
+        </ListItemHeader>
+        <ListItemBadges>
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </ListItemBadges>
+      </ListItemContent>
+      <div className="flex items-center gap-2">
+        <Skeleton className="size-9 rounded-lg" />
+        <Skeleton className="size-9 rounded-lg" />
+      </div>
+    </ListItem>
+  );
+}
+
+const ARTIFICIAL_DELAY_MS = 1500;
+
 export function EventTypesList() {
+  const [isLoading, setIsLoading] = useState(true);
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, ARTIFICIAL_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({
@@ -101,6 +137,27 @@ export function EventTypesList() {
       light: eventType.eventTypeColor.lightEventTypeColor,
     };
   };
+
+  if (isLoading) {
+    return (
+      <Frame className="-m-1">
+        <FramePanel className="p-0">
+          <EventTypeSkeletonItem />
+          <Separator />
+          <EventTypeSkeletonItem />
+          <Separator />
+          <EventTypeSkeletonItem />
+          <Separator />
+          <EventTypeSkeletonItem />
+          <Separator />
+          <EventTypeSkeletonItem />
+        </FramePanel>
+        <FrameFooter>
+          <Skeleton className="mx-auto h-4 w-24" />
+        </FrameFooter>
+      </Frame>
+    );
+  }
 
   return (
     <TooltipProvider delay={0}>
