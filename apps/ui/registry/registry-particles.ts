@@ -1900,83 +1900,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "field", "input", "input group"),
-    description: "Input group with field",
-    files: [{ path: "particles/p-field-6.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-6",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/input-group"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("autocomplete", "field", "input", "label"),
-    description: "Field with autocomplete",
-    files: [{ path: "particles/p-field-7.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-7",
-    registryDependencies: ["@coss/autocomplete", "@coss/field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("combobox", "field", "input", "label"),
-    description: "Field with combobox",
-    files: [{ path: "particles/p-field-8.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-8",
-    registryDependencies: ["@coss/combobox", "@coss/field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("combobox", "field", "input", "label"),
-    description: "Field with multiple selection combobox",
-    files: [{ path: "particles/p-field-9.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-9",
-    registryDependencies: ["@coss/combobox", "@coss/field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("field", "input", "label", "number field"),
-    description: "Field with number field",
-    files: [{ path: "particles/p-field-17.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-17",
-    registryDependencies: ["@coss/field", "@coss/number-field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("button", "field", "form", "input"),
-    description: "Input in a form",
-    files: [{ path: "particles/p-form-1.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-form-1",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/field",
-      "@coss/form",
-      "@coss/input",
-    ],
-    type: "registry:block",
-  },
-  {
     categories: categories("group", "input"),
     description: "Group with input",
     files: [{ path: "particles/p-group-2.tsx", type: "registry:block" }],
@@ -2393,6 +2316,83 @@ export const particles: ParticleItem[] = [
     },
     name: "p-combobox-14",
     registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "field", "input", "input group"),
+    description: "Input group with field",
+    files: [{ path: "particles/p-field-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-6",
+    registryDependencies: ["@coss/button", "@coss/field", "@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("autocomplete", "field", "input", "label"),
+    description: "Field with autocomplete",
+    files: [{ path: "particles/p-field-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-7",
+    registryDependencies: ["@coss/autocomplete", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "field", "input", "label"),
+    description: "Field with combobox",
+    files: [{ path: "particles/p-field-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-8",
+    registryDependencies: ["@coss/combobox", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "field", "input", "label"),
+    description: "Field with multiple selection combobox",
+    files: [{ path: "particles/p-field-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-9",
+    registryDependencies: ["@coss/combobox", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("field", "input", "label", "number field"),
+    description: "Field with number field",
+    files: [{ path: "particles/p-field-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-17",
+    registryDependencies: ["@coss/field", "@coss/number-field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "field", "form", "input"),
+    description: "Input in a form",
+    files: [{ path: "particles/p-form-1.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-form-1",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
     type: "registry:block",
   },
   {
