@@ -19,6 +19,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@coss/ui/components/command";
+import { EmptyMedia } from "@coss/ui/components/empty";
 import { Input } from "@coss/ui/components/input";
 import { Kbd, KbdGroup } from "@coss/ui/components/kbd";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
@@ -30,6 +31,7 @@ import {
   ArrowUpIcon,
   CircleQuestionMarkIcon,
   CornerDownLeftIcon,
+  SearchIcon,
   SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -502,7 +504,10 @@ export function AppCommand() {
             <CommandPanel>
               <CommandEmpty className="not-empty:py-12">
                 {searchQuery.trim() && (
-                  <div className="wrap-break-word flex flex-col flex-wrap gap-2">
+                  <div className="wrap-break-word flex flex-col flex-wrap items-center gap-2">
+                    <EmptyMedia variant="icon">
+                      <SearchIcon />
+                    </EmptyMedia>
                     <p>No results found.</p>
                     <p>
                       Press <Kbd>Enter</Kbd> to ask AI about:
