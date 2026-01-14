@@ -1086,6 +1086,309 @@
     },
     {
       "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Basic autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-1",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input",
+        "disabled"
+      ],
+      "description": "Disabled autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-2",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Small autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-3",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Large autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-4",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete with label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-5",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete autofilling the input with the highlighted item",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-6",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete auto highlighting the first option",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-7",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete with clear button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-8",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete with trigger and clear buttons",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-9",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete with grouped items",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-10",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Autocomplete with limited number of results",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-11",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "input",
+        "async"
+      ],
+      "description": "Autocomplete with async items loading",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-12",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/spinner"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "form",
+        "input"
+      ],
+      "description": "Autocomplete form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-13",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/button",
+        "@coss/field",
+        "@coss/form"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "form",
+        "input"
+      ],
+      "description": "Autocomplete form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-14",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "avatar"
       ],
       "description": "Avatar with image and fallback",
@@ -2413,6 +2716,320 @@
     },
     {
       "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Basic combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-1",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input",
+        "disabled"
+      ],
+      "description": "Disabled combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-2",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Small combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-3",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Large combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-4",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Combobox with label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-5",
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Combobox auto highlighting the first option",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-6",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Combobox with clear button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-7",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Combobox with grouped items",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-8",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Combobox with multiple selection",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-9",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox with input inside popup",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-10",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "form",
+        "input"
+      ],
+      "description": "Combobox form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-11",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/combobox",
+        "@coss/field",
+        "@coss/form"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "form",
+        "input"
+      ],
+      "description": "Combobox multiple form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-12",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/combobox",
+        "@coss/field",
+        "@coss/form"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox with start addon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-13",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox multiple with start addon",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-14",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "command",
         "dialog"
       ],
@@ -2719,6 +3336,103 @@
     },
     {
       "categories": [
+        "button",
+        "field",
+        "input",
+        "input group"
+      ],
+      "description": "Input group with field",
+      "files": [
+        {
+          "path": "registry/default/particles/p-field-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-field-6",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/field",
+        "@coss/input-group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "autocomplete",
+        "field",
+        "input",
+        "label"
+      ],
+      "description": "Field with autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-field-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-field-7",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "field",
+        "input",
+        "label"
+      ],
+      "description": "Field with combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-field-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-field-8",
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "field",
+        "input",
+        "label"
+      ],
+      "description": "Field with multiple selection combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-field-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-field-9",
+      "registryDependencies": [
+        "@coss/combobox",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "field",
         "label",
         "textarea"
@@ -2883,6 +3597,30 @@
     },
     {
       "categories": [
+        "field",
+        "input",
+        "label",
+        "number field"
+      ],
+      "description": "Field with number field",
+      "files": [
+        {
+          "path": "registry/default/particles/p-field-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-field-17",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/number-field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "button",
         "checkbox",
         "field",
@@ -2929,6 +3667,32 @@
       "registryDependencies": [
         "@coss/field",
         "@coss/fieldset",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "field",
+        "form",
+        "input"
+      ],
+      "description": "Input in a form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-form-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-form-1",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/field",
+        "@coss/form",
         "@coss/input"
       ],
       "type": "registry:block"
@@ -3084,6 +3848,28 @@
         "@coss/button",
         "@coss/group",
         "@coss/menu"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "group",
+        "input"
+      ],
+      "description": "Group with input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-2",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group",
+        "@coss/input",
+        "@coss/tooltip",
+        "@coss/use-copy-to-clipboard"
       ],
       "type": "registry:block"
     },
@@ -3339,6 +4125,114 @@
         "@coss/group",
         "@coss/input",
         "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "group",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Group with add button and input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-16",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "group",
+        "input",
+        "label"
+      ],
+      "description": "Group with input and currency text",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-17",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "group",
+        "input",
+        "select"
+      ],
+      "description": "Group with select and input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-18.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-18",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input",
+        "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "group",
+        "input",
+        "select"
+      ],
+      "description": "Group with input and select",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-19",
+      "registryDependencies": [
+        "@coss/group",
+        "@coss/input",
+        "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "group",
+        "input"
+      ],
+      "description": "Group with input and text button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-20.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-20",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group",
+        "@coss/input"
       ],
       "type": "registry:block"
     },
@@ -4262,7 +5156,8 @@
     {
       "categories": [
         "input",
-        "input group"
+        "input group",
+        "label"
       ],
       "description": "Input group with character counter",
       "files": [
@@ -4276,7 +5171,8 @@
       },
       "name": "p-input-group-24",
       "registryDependencies": [
-        "@coss/input-group"
+        "@coss/input-group",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
@@ -4285,7 +5181,7 @@
         "field",
         "input"
       ],
-      "description": "Input with characters remaining counter",
+      "description": "Field with input and characters remaining counter",
       "files": [
         {
           "path": "registry/default/particles/p-input-group-25.tsx",
@@ -4327,900 +5223,6 @@
         "@coss/button",
         "@coss/input-group",
         "@coss/label"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "group",
-        "input"
-      ],
-      "description": "Group with input",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-2.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-2",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/group",
-        "@coss/input",
-        "@coss/tooltip",
-        "@coss/use-copy-to-clipboard"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button",
-        "group",
-        "input"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Group with add button and input",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-16.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-16",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/group",
-        "@coss/input"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "group",
-        "input",
-        "label"
-      ],
-      "description": "Group with input and currency text",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-17.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-17",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/input",
-        "@coss/label"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "group",
-        "input",
-        "select"
-      ],
-      "description": "Group with select and input",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-18.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-18",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/input",
-        "@coss/select"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "group",
-        "input",
-        "select"
-      ],
-      "description": "Group with input and select",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-19.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-19",
-      "registryDependencies": [
-        "@coss/group",
-        "@coss/input",
-        "@coss/select"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button",
-        "group",
-        "input"
-      ],
-      "description": "Group with input and text button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-20.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-20",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/group",
-        "@coss/input"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Basic autocomplete",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-1.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-1",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input",
-        "disabled"
-      ],
-      "description": "Disabled autocomplete",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-2.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-2",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Small autocomplete",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-3.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-3",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Large autocomplete",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-4.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-4",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete with label",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-5.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-5",
-      "registryDependencies": [
-        "@coss/autocomplete",
-        "@coss/label"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete autofilling the input with the highlighted item",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-6.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-6",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete auto highlighting the first option",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-7.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-7",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete with clear button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-8.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-8",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete with trigger and clear buttons",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-9.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-9",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete with grouped items",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-10.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-10",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input"
-      ],
-      "description": "Autocomplete with limited number of results",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-11.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-11",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "input",
-        "async"
-      ],
-      "description": "Autocomplete with async items loading",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-12.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-12",
-      "registryDependencies": [
-        "@coss/autocomplete",
-        "@coss/spinner"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "form",
-        "input"
-      ],
-      "description": "Autocomplete form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-13.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-13",
-      "registryDependencies": [
-        "@coss/autocomplete",
-        "@coss/button",
-        "@coss/field",
-        "@coss/form"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "form",
-        "input"
-      ],
-      "description": "Autocomplete form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-autocomplete-14.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-autocomplete-14",
-      "registryDependencies": [
-        "@coss/autocomplete"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Basic combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-1.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-1",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input",
-        "disabled"
-      ],
-      "description": "Disabled combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-2.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-2",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Small combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-3.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-3",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Large combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-4.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-4",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Combobox with label",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-5.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-5",
-      "registryDependencies": [
-        "@coss/combobox",
-        "@coss/label"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Combobox auto highlighting the first option",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-6.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-6",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Combobox with clear button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-7.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-7",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Combobox with grouped items",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-8.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-8",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "description": "Combobox with multiple selection",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-9.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-9",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Combobox with input inside popup",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-10.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-10",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "form",
-        "input"
-      ],
-      "description": "Combobox form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-11.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-11",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/combobox",
-        "@coss/field",
-        "@coss/form"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "form",
-        "input"
-      ],
-      "description": "Combobox multiple form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-12.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-12",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/combobox",
-        "@coss/field",
-        "@coss/form"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Combobox with start addon",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-13.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-13",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "input"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Combobox multiple with start addon",
-      "files": [
-        {
-          "path": "registry/default/particles/p-combobox-14.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-combobox-14",
-      "registryDependencies": [
-        "@coss/combobox"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button",
-        "field",
-        "input",
-        "input group"
-      ],
-      "description": "Input group with field",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-6.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-6",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/field",
-        "@coss/input-group"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "autocomplete",
-        "field",
-        "input",
-        "label"
-      ],
-      "description": "Field with autocomplete",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-7.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-7",
-      "registryDependencies": [
-        "@coss/autocomplete",
-        "@coss/field"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "field",
-        "input",
-        "label"
-      ],
-      "description": "Field with combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-8.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-8",
-      "registryDependencies": [
-        "@coss/combobox",
-        "@coss/field"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "combobox",
-        "field",
-        "input",
-        "label"
-      ],
-      "description": "Field with multiple selection combobox",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-9.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-9",
-      "registryDependencies": [
-        "@coss/combobox",
-        "@coss/field"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "field",
-        "input",
-        "label",
-        "number field"
-      ],
-      "description": "Field with number field",
-      "files": [
-        {
-          "path": "registry/default/particles/p-field-17.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-field-17",
-      "registryDependencies": [
-        "@coss/field",
-        "@coss/number-field"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button",
-        "field",
-        "form",
-        "input"
-      ],
-      "description": "Input in a form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-form-1.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-form-1",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/field",
-        "@coss/form",
-        "@coss/input"
       ],
       "type": "registry:block"
     },
