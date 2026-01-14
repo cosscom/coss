@@ -7,11 +7,9 @@ import { Input } from "@/registry/default/ui/input";
 export default function Particle() {
   return (
     <Group aria-label="Add item">
-      <div>
-        <Button aria-label="Add" size="icon" variant="outline">
-          <PlusIcon aria-hidden="true" />
-        </Button>
-      </div>
+      <Button aria-label="Add" size="icon" variant="outline">
+        <PlusIcon aria-hidden="true" />
+      </Button>
       <GroupSeparator />
       <Input aria-label="Item name" placeholder="Enter item name" type="text" />
     </Group>
