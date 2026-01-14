@@ -2437,24 +2437,6 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-button-40": {
-    name: "p-button-40",
-    description: "Read-only disabled button",
-    type: "registry:block",
-    registryDependencies: ["@coss/button"],
-    files: [{
-      path: "registry/default/particles/p-button-40.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-button-40.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","disabled"],
-    meta: undefined,
-  },
   "p-card-1": {
     name: "p-card-1",
     description: "Card with header, content, and footer",
@@ -4217,6 +4199,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","spinner","loading"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-17": {
+    name: "p-input-17",
+    description: "Read-only input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-1": {

@@ -846,14 +846,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "disabled"),
-    description: "Read-only disabled button",
-    files: [{ path: "particles/p-button-40.tsx", type: "registry:block" }],
-    name: "p-button-40",
-    registryDependencies: ["@coss/button"],
-    type: "registry:block",
-  },
-  {
     categories: categories("card"),
     description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],
@@ -2033,6 +2025,18 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-16",
     registryDependencies: ["@coss/input-group", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input"),
+    description: "Read-only input",
+    files: [{ path: "particles/p-input-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-17",
+    registryDependencies: ["@coss/input", "@coss/label"],
     type: "registry:block",
   },
   {
