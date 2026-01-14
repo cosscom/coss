@@ -101,5 +101,5 @@ export function BookingActions() {
 }
 
 export function BookingActionsSkeleton() {
-  return <Skeleton className="size-9 rounded-lg" />;
+  return <Skeleton className="size-8 rounded-lg" />;
 }

@@ -12,7 +12,12 @@ import { BugIcon } from "lucide-react";
 import { useDebug } from "./debug-context";
 
 export function DebugPopover() {
-  const { isLoadingOverride, setIsLoadingOverride } = useDebug();
+  const {
+    enableArtificialDelay,
+    isLoadingOverride,
+    setEnableArtificialDelay,
+    setIsLoadingOverride,
+  } = useDebug();
 
   return (
     <Popover>
@@ -29,6 +34,14 @@ export function DebugPopover() {
       />
       <PopoverPopup align="end" className="w-64" side="top">
         <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="delay-switch">Enable artificial delay</Label>
+            <Switch
+              checked={enableArtificialDelay}
+              id="delay-switch"
+              onCheckedChange={setEnableArtificialDelay}
+            />
+          </div>
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="loading-switch">Force loading state</Label>
             <Switch

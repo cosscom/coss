@@ -60,10 +60,9 @@ function EventTypeSkeletonItem() {
             <Skeleton className="h-5 w-full max-w-48" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
-          <Skeleton className="my-0.5 h-4 w-full max-w-72" />
+          <Skeleton className="my-0.5 h-4 w-full max-w-82" />
         </ListItemHeader>
         <ListItemBadges>
-          <Skeleton className="h-4.5 w-14" />
           <Skeleton className="h-4.5 w-14" />
           <Skeleton className="h-4.5 w-14" />
         </ListItemBadges>
@@ -73,21 +72,25 @@ function EventTypeSkeletonItem() {
   );
 }
 
-const ARTIFICIAL_DELAY_MS = 1500;
+const ARTIFICIAL_DELAY_MS = 800;
 
 export function EventTypesList() {
-  const { isLoadingOverride } = useDebug();
-  const [isLoading, setIsLoading] = useState(true);
+  const { enableArtificialDelay, isLoadingOverride } = useDebug();
+  const [isLoading, setIsLoading] = useState(enableArtificialDelay);
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
   );
 
   useEffect(() => {
+    if (!enableArtificialDelay) {
+      setIsLoading(false);
+      return;
+    }
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, ARTIFICIAL_DELAY_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [enableArtificialDelay]);
 
   const showLoading = isLoadingOverride ?? isLoading;
 

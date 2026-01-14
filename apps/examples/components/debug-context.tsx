@@ -3,7 +3,9 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
 
 interface DebugContextValue {
+  enableArtificialDelay: boolean;
   isLoadingOverride: boolean | null;
+  setEnableArtificialDelay: (value: boolean) => void;
   setIsLoadingOverride: (value: boolean | null) => void;
 }
 
@@ -13,9 +15,17 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   const [isLoadingOverride, setIsLoadingOverride] = useState<boolean | null>(
     null,
   );
+  const [enableArtificialDelay, setEnableArtificialDelay] = useState(false);
 
   return (
-    <DebugContext.Provider value={{ isLoadingOverride, setIsLoadingOverride }}>
+    <DebugContext.Provider
+      value={{
+        enableArtificialDelay,
+        isLoadingOverride,
+        setEnableArtificialDelay,
+        setIsLoadingOverride,
+      }}
+    >
       {children}
     </DebugContext.Provider>
   );
