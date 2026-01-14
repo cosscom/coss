@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@coss/ui/components/button";
 import { Label } from "@coss/ui/components/label";
 import {
   Popover,
@@ -8,7 +7,6 @@ import {
   PopoverTrigger,
 } from "@coss/ui/components/popover";
 import { Switch } from "@coss/ui/components/switch";
-import { BugIcon } from "lucide-react";
 import { useDebug } from "./debug-context";
 
 export function DebugPopover() {
@@ -21,18 +19,10 @@ export function DebugPopover() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className="fixed right-3 bottom-3 z-50"
-            size="icon"
-            variant="ghost"
-          >
-            <BugIcon className="size-4" />
-          </Button>
-        }
-      />
-      <PopoverPopup align="end" className="w-64" side="top">
+      <PopoverTrigger className="cursor-pointer text-[0.625rem] text-sidebar-foreground/50 hover:text-sidebar-foreground/70">
+        Debug
+      </PopoverTrigger>
+      <PopoverPopup align="center" className="w-64" side="top">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="delay-switch">Enable artificial delay</Label>

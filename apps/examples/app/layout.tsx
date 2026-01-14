@@ -7,7 +7,6 @@ import type { Metadata } from "next";
 import { AppCommand } from "@/components/app-command";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DebugProvider } from "@/components/debug-context";
-import { DebugPopover } from "@/components/debug-popover";
 import { MobileFooter } from "@/components/mobile-footer";
 import { MobileHeader } from "@/components/mobile-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -38,7 +37,6 @@ export default function RootLayout({
                 <SidebarInset className="max-md:pt-14">{children}</SidebarInset>
                 <MobileFooter />
               </SidebarProvider>
-              <DebugPopover />
             </DebugProvider>
           </ToastProvider>
         </ThemeProvider>
