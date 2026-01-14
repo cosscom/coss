@@ -57,14 +57,14 @@ function EventTypeSkeletonItem() {
       <ListItemContent>
         <ListItemHeader>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-5 w-full max-w-48" />
+            <Skeleton className="h-6 w-full max-w-48 sm:h-5" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
           <Skeleton className="my-0.5 h-4 w-full max-w-82" />
         </ListItemHeader>
         <ListItemBadges>
-          <Skeleton className="h-4.5 w-14" />
-          <Skeleton className="h-4.5 w-14" />
+          <Skeleton className="h-5.5 w-14 sm:h-4.5" />
+          <Skeleton className="h-5.5 w-14 sm:h-4.5" />
         </ListItemBadges>
       </ListItemContent>
       <EventTypeActionsSkeleton />

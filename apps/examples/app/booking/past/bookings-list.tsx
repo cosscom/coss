@@ -83,7 +83,19 @@ export function BookingsList() {
           <BookingSkeletonItem />
         </FramePanel>
         <FrameFooter>
-          <Skeleton className="mx-auto h-5 w-32" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-12 rounded-lg" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-12" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-7 w-18 rounded-lg" />
+                <Skeleton className="h-7 w-18 rounded-lg" />
+              </div>
+            </div>
+          </div>
         </FrameFooter>
       </Frame>
     );
@@ -259,7 +271,7 @@ export function BookingsList() {
               <p className="text-muted-foreground text-sm">rows per page</p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <p className="whitespace-nowrap text-muted-foreground text-sm">
                 {startIndex + 1}-{endIndex} of {totalCount}
               </p>

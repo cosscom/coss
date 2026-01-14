@@ -174,8 +174,8 @@ export function EventTypeActions({
 export function EventTypeActionsSkeleton() {
   return (
     <div className="flex items-center gap-4">
-      <Skeleton className="h-4.5 w-7.5 rounded-full" />
-      <Skeleton className="h-8 w-24.5 rounded-lg" />
+      <Skeleton className="h-4.5 w-7.5 rounded-full max-md:hidden" />
+      <Skeleton className="size-9 rounded-lg sm:h-8 sm:w-24.5" />
     </div>
   );
 }

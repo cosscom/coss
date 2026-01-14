@@ -14,12 +14,12 @@ export function BookingSkeletonItem() {
       <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
         <ListItemContent>
           <ListItemHeader>
-            <Skeleton className="h-5 w-full max-w-82" />
+            <Skeleton className="h-6 w-full max-w-82 sm:h-5" />
             <Skeleton className="my-0.5 h-4 w-full max-w-82" />
           </ListItemHeader>
           <ListItemBadges>
-            <Skeleton className="h-4.5 w-14" />
-            <Skeleton className="h-4.5 w-14" />
+            <Skeleton className="h-5.5 w-14 sm:h-4.5" />
+            <Skeleton className="h-5.5 w-14 sm:h-4.5" />
           </ListItemBadges>
         </ListItemContent>
 
@@ -28,7 +28,7 @@ export function BookingSkeletonItem() {
             <Skeleton className="h-5 w-full max-w-28" />
             <Skeleton className="my-0.5 h-4 w-full max-w-28" />
           </div>
-          <Skeleton className="h-6 w-28 rounded-lg" />
+          <Skeleton className="h-7 w-28 rounded-lg sm:h-6" />
         </div>
       </div>
 
