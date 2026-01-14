@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-17.tsx",
-      "content": "import { useId } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Label htmlFor={id}>Read-only input</Label>\n      <Input\n        className=\"read-only:bg-muted\"\n        defaultValue=\"This is a read-only input\"\n        id={id}\n        readOnly\n        type=\"text\"\n      />\n    </div>\n  );\n}\n",
+      "content": "import { useId } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <Input\n      className=\"read-only:bg-muted\"\n      defaultValue=\"This is a read-only input\"\n      id={id}\n      readOnly\n      type=\"text\"\n    />\n  );\n}\n",
       "type": "registry:block"
     }
   ],
