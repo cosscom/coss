@@ -985,54 +985,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "field", "input", "input group"),
-    description: "Input group with field",
-    files: [{ path: "particles/p-field-6.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-6",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/input-group"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("autocomplete", "field", "input", "label"),
-    description: "Field with autocomplete",
-    files: [{ path: "particles/p-field-7.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-7",
-    registryDependencies: ["@coss/autocomplete", "@coss/field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("combobox", "field", "input", "label"),
-    description: "Field with combobox",
-    files: [{ path: "particles/p-field-8.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-8",
-    registryDependencies: ["@coss/combobox", "@coss/field"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("combobox", "field", "input", "label"),
-    description: "Field with multiple selection combobox",
-    files: [{ path: "particles/p-field-9.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-9",
-    registryDependencies: ["@coss/combobox", "@coss/field"],
-    type: "registry:block",
-  },
-  {
     categories: categories("field", "label", "textarea"),
     description: "Field with textarea",
     files: [{ path: "particles/p-field-10.tsx", type: "registry:block" }],
@@ -1128,18 +1080,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "input", "label", "number field"),
-    description: "Field with number field",
-    files: [{ path: "particles/p-field-17.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-field-17",
-    registryDependencies: ["@coss/field", "@coss/number-field"],
-    type: "registry:block",
-  },
-  {
     categories: categories(
       "button",
       "checkbox",
@@ -1175,23 +1115,6 @@ export const particles: ParticleItem[] = [
     },
     name: "p-fieldset-1",
     registryDependencies: ["@coss/field", "@coss/fieldset", "@coss/input"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("button", "field", "form", "input"),
-    description: "Input in a form",
-    files: [{ path: "particles/p-form-1.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-form-1",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/field",
-      "@coss/form",
-      "@coss/input",
-    ],
     type: "registry:block",
   },
   {
@@ -1278,20 +1201,6 @@ export const particles: ParticleItem[] = [
     files: [{ path: "particles/p-group-1.tsx", type: "registry:block" }],
     name: "p-group-1",
     registryDependencies: ["@coss/button", "@coss/group", "@coss/menu"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("group", "input"),
-    description: "Group with input",
-    files: [{ path: "particles/p-group-2.tsx", type: "registry:block" }],
-    name: "p-group-2",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/group",
-      "@coss/input",
-      "@coss/tooltip",
-      "@coss/use-copy-to-clipboard",
-    ],
     type: "registry:block",
   },
   {
@@ -1416,47 +1325,6 @@ export const particles: ParticleItem[] = [
       "@coss/input",
       "@coss/select",
     ],
-    type: "registry:block",
-  },
-  {
-    categories: categories("button", "group", "input"),
-    dependencies: ["lucide-react"],
-    description: "Group with add button and input",
-    files: [{ path: "particles/p-group-16.tsx", type: "registry:block" }],
-    name: "p-group-16",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("group", "input", "label"),
-    description: "Group with input and currency text",
-    files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
-    name: "p-group-17",
-    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("group", "input", "select"),
-    description: "Group with select and input",
-    files: [{ path: "particles/p-group-18.tsx", type: "registry:block" }],
-    name: "p-group-18",
-    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("group", "input", "select"),
-    description: "Group with input and select",
-    files: [{ path: "particles/p-group-19.tsx", type: "registry:block" }],
-    name: "p-group-19",
-    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("button", "group", "input"),
-    description: "Group with input and text button",
-    files: [{ path: "particles/p-group-20.tsx", type: "registry:block" }],
-    name: "p-group-20",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
   {
@@ -2029,6 +1897,138 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-group-26",
     registryDependencies: ["@coss/button", "@coss/input-group", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "field", "input", "input group"),
+    description: "Input group with field",
+    files: [{ path: "particles/p-field-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-6",
+    registryDependencies: ["@coss/button", "@coss/field", "@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("autocomplete", "field", "input", "label"),
+    description: "Field with autocomplete",
+    files: [{ path: "particles/p-field-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-7",
+    registryDependencies: ["@coss/autocomplete", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "field", "input", "label"),
+    description: "Field with combobox",
+    files: [{ path: "particles/p-field-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-8",
+    registryDependencies: ["@coss/combobox", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "field", "input", "label"),
+    description: "Field with multiple selection combobox",
+    files: [{ path: "particles/p-field-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-9",
+    registryDependencies: ["@coss/combobox", "@coss/field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("field", "input", "label", "number field"),
+    description: "Field with number field",
+    files: [{ path: "particles/p-field-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-17",
+    registryDependencies: ["@coss/field", "@coss/number-field"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "field", "form", "input"),
+    description: "Input in a form",
+    files: [{ path: "particles/p-form-1.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-form-1",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input"),
+    description: "Group with input",
+    files: [{ path: "particles/p-group-2.tsx", type: "registry:block" }],
+    name: "p-group-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/input",
+      "@coss/tooltip",
+      "@coss/use-copy-to-clipboard",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "group", "input"),
+    dependencies: ["lucide-react"],
+    description: "Group with add button and input",
+    files: [{ path: "particles/p-group-16.tsx", type: "registry:block" }],
+    name: "p-group-16",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "label"),
+    description: "Group with input and currency text",
+    files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
+    name: "p-group-17",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with select and input",
+    files: [{ path: "particles/p-group-18.tsx", type: "registry:block" }],
+    name: "p-group-18",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with input and select",
+    files: [{ path: "particles/p-group-19.tsx", type: "registry:block" }],
+    name: "p-group-19",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "group", "input"),
+    description: "Group with input and text button",
+    files: [{ path: "particles/p-group-20.tsx", type: "registry:block" }],
+    name: "p-group-20",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
   {
