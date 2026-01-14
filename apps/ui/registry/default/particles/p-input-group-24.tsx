@@ -12,7 +12,7 @@ import { Label } from "@/registry/default/ui/label";
 
 export default function Particle() {
   const id = useId();
-  const maxLength = 50;
+  const maxLength = 14;
   const [value, setValue] = useState("");
 
   return (

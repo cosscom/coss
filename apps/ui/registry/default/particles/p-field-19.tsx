@@ -11,7 +11,7 @@ export default function Particle() {
         placeholder="Email"
         type="email"
       />
-      <FieldError match>Please enter a valid email address.</FieldError>
+      <FieldError match={true}>Please enter a valid email address.</FieldError>
     </Field>
   );
 }

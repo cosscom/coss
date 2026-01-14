@@ -1795,18 +1795,12 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "group", "input", "tooltip"),
+    categories: categories("button", "group", "input"),
     dependencies: ["lucide-react"],
-    description: "Group with copy button and input",
+    description: "Group with add button and input",
     files: [{ path: "particles/p-group-16.tsx", type: "registry:block" }],
     name: "p-group-16",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/group",
-      "@coss/input",
-      "@coss/tooltip",
-      "@coss/use-copy-to-clipboard",
-    ],
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
   {
@@ -1838,14 +1832,6 @@ export const particles: ParticleItem[] = [
     description: "Group with input and text button",
     files: [{ path: "particles/p-group-20.tsx", type: "registry:block" }],
     name: "p-group-20",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("button", "group", "input"),
-    description: "Group with separate input and button",
-    files: [{ path: "particles/p-group-21.tsx", type: "registry:block" }],
-    name: "p-group-21",
     registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
@@ -1930,15 +1916,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "input"),
-    description: "Input with button",
+    categories: categories("button", "group", "input"),
+    description: "Input with button using Group",
     files: [{ path: "particles/p-input-7.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-7",
-    registryDependencies: ["@coss/button", "@coss/input"],
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
   {
@@ -2047,6 +2033,18 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-15",
     registryDependencies: ["@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "input group", "spinner", "loading"),
+    description: "Input group with end loading spinner",
+    files: [{ path: "particles/p-input-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-16",
+    registryDependencies: ["@coss/input-group", "@coss/spinner"],
     type: "registry:block",
   },
   {

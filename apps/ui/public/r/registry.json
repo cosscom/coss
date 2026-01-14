@@ -4155,13 +4155,12 @@
       "categories": [
         "button",
         "group",
-        "input",
-        "tooltip"
+        "input"
       ],
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Group with copy button and input",
+      "description": "Group with add button and input",
       "files": [
         {
           "path": "registry/default/particles/p-group-16.tsx",
@@ -4172,9 +4171,7 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/group",
-        "@coss/input",
-        "@coss/tooltip",
-        "@coss/use-copy-to-clipboard"
+        "@coss/input"
       ],
       "type": "registry:block"
     },
@@ -4253,27 +4250,6 @@
         }
       ],
       "name": "p-group-20",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/group",
-        "@coss/input"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "button",
-        "group",
-        "input"
-      ],
-      "description": "Group with separate input and button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-group-21.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-group-21",
       "registryDependencies": [
         "@coss/button",
         "@coss/group",
@@ -4427,9 +4403,10 @@
     {
       "categories": [
         "button",
+        "group",
         "input"
       ],
-      "description": "Input with button",
+      "description": "Input with button using Group",
       "files": [
         {
           "path": "registry/default/particles/p-input-7.tsx",
@@ -4442,6 +4419,7 @@
       "name": "p-input-7",
       "registryDependencies": [
         "@coss/button",
+        "@coss/group",
         "@coss/input"
       ],
       "type": "registry:block"
@@ -4630,6 +4608,30 @@
       "name": "p-input-15",
       "registryDependencies": [
         "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input",
+        "input group",
+        "spinner",
+        "loading"
+      ],
+      "description": "Input group with end loading spinner",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-input-16",
+      "registryDependencies": [
+        "@coss/input-group",
+        "@coss/spinner"
       ],
       "type": "registry:block"
     },

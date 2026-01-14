@@ -7,7 +7,7 @@ export default function Particle() {
   const id = useId();
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="inline-flex w-full items-center justify-between gap-2">
         <Label className="leading-6" htmlFor={id}>
           Email
         </Label>

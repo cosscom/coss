@@ -3843,9 +3843,9 @@ export const Index: Record<string, any> = {
   },
   "p-group-16": {
     name: "p-group-16",
-    description: "Group with copy button and input",
+    description: "Group with add button and input",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/group","@coss/input","@coss/tooltip","@coss/use-copy-to-clipboard"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/input"],
     files: [{
       path: "registry/default/particles/p-group-16.tsx",
       type: "registry:block",
@@ -3856,7 +3856,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","group","input","tooltip"],
+    categories: ["button","group","input"],
     meta: undefined,
   },
   "p-group-17": {
@@ -3925,24 +3925,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-group-20.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","group","input"],
-    meta: undefined,
-  },
-  "p-group-21": {
-    name: "p-group-21",
-    description: "Group with separate input and button",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/group","@coss/input"],
-    files: [{
-      path: "registry/default/particles/p-group-21.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-group-21.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -4077,9 +4059,9 @@ export const Index: Record<string, any> = {
   },
   "p-input-7": {
     name: "p-input-7",
-    description: "Input with button",
+    description: "Input with button using Group",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/input"],
     files: [{
       path: "registry/default/particles/p-input-7.tsx",
       type: "registry:block",
@@ -4090,7 +4072,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","input"],
+    categories: ["button","group","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-8": {
@@ -4235,6 +4217,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-16": {
+    name: "p-input-16",
+    description: "Input group with end loading spinner",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-group","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-input-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group","spinner","loading"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-1": {

@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-15.tsx",
-      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Input\n      aria-label=\"Email\"\n      className=\"border-transparent bg-muted shadow-none\"\n      placeholder=\"Email\"\n      type=\"email\"\n    />\n  );\n}\n",
+      "content": "import { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Input\n      aria-label=\"Email\"\n      className=\"border-transparent bg-muted shadow-none before:hidden\"\n      placeholder=\"Email\"\n      type=\"email\"\n    />\n  );\n}\n",
       "type": "registry:block"
     }
   ],

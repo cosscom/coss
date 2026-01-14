@@ -20,7 +20,7 @@ export default function Particle() {
       <Input aria-label="Domain name" placeholder="example" type="text" />
       <GroupSeparator />
       <Select defaultValue="com" items={domains}>
-        <SelectTrigger className="w-fit">
+        <SelectTrigger className="w-fit min-w-none">
           <SelectValue />
         </SelectTrigger>
         <SelectPopup>
