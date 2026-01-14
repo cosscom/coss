@@ -2437,6 +2437,24 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-button-40": {
+    name: "p-button-40",
+    description: "Read-only disabled button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-40.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-40.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","disabled"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "Card with header, content, and footer",
@@ -3391,6 +3409,24 @@ export const Index: Record<string, any> = {
     categories: ["button","checkbox","field","form","label","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-field-19": {
+    name: "p-field-19",
+    description: "Field with error state",
+    type: "registry:block",
+    registryDependencies: ["@coss/field","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-field-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-field-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["field","input","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-fieldset-1": {
     name: "p-fieldset-1",
     description: "Fieldset with multiple fields",
@@ -3805,6 +3841,132 @@ export const Index: Record<string, any> = {
     categories: ["group","search"],
     meta: undefined,
   },
+  "p-group-16": {
+    name: "p-group-16",
+    description: "Group with copy button and input",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/group","@coss/input","@coss/tooltip","@coss/use-copy-to-clipboard"],
+    files: [{
+      path: "registry/default/particles/p-group-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","group","input","tooltip"],
+    meta: undefined,
+  },
+  "p-group-17": {
+    name: "p-group-17",
+    description: "Group with input and currency text",
+    type: "registry:block",
+    registryDependencies: ["@coss/group","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-group-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group","input"],
+    meta: undefined,
+  },
+  "p-group-18": {
+    name: "p-group-18",
+    description: "Group with select and input",
+    type: "registry:block",
+    registryDependencies: ["@coss/group","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-group-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group","input","select"],
+    meta: undefined,
+  },
+  "p-group-19": {
+    name: "p-group-19",
+    description: "Group with input and select",
+    type: "registry:block",
+    registryDependencies: ["@coss/group","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-group-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group","input","select"],
+    meta: undefined,
+  },
+  "p-group-20": {
+    name: "p-group-20",
+    description: "Group with input and text button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/group","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-group-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","group","input"],
+    meta: undefined,
+  },
+  "p-group-21": {
+    name: "p-group-21",
+    description: "Group with separate input and button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/group","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-group-21.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-21.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","group","input"],
+    meta: undefined,
+  },
+  "p-group-22": {
+    name: "p-group-22",
+    description: "Group with two inputs for range",
+    type: "registry:block",
+    registryDependencies: ["@coss/group","@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-group-22.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["group","input","label"],
+    meta: undefined,
+  },
   "p-input-1": {
     name: "p-input-1",
     description: "Basic input",
@@ -4019,6 +4181,60 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["input","input group","spinner","loading"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-13": {
+    name: "p-input-13",
+    description: "Input with label and required indicator",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-14": {
+    name: "p-input-14",
+    description: "Input with optional label",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-15": {
+    name: "p-input-15",
+    description: "Input with custom border and background",
+    type: "registry:block",
+    registryDependencies: ["@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-input-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-1": {
@@ -4362,6 +4578,132 @@ export const Index: Record<string, any> = {
     }),
     categories: ["button","input group","textarea","toggle"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
+  "p-input-group-20": {
+    name: "p-input-group-20",
+    description: "Input group with search icon",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-group"],
+    files: [{
+      path: "registry/default/particles/p-input-group-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group","search"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-21": {
+    name: "p-input-group-21",
+    description: "Input group with start tooltip",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-input-group-21.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-21.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input","input group","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-22": {
+    name: "p-input-group-22",
+    description: "Input group with clear button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group"],
+    files: [{
+      path: "registry/default/particles/p-input-group-22.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input","input group"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-23": {
+    name: "p-input-group-23",
+    description: "Search input group with loader and voice button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-input-group-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input","input group","search","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-24": {
+    name: "p-input-group-24",
+    description: "Input group with character counter",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-group","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-group-24.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-24.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","input group","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-25": {
+    name: "p-input-group-25",
+    description: "Input with characters remaining counter",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-group-25.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-25.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-group-26": {
+    name: "p-input-group-26",
+    description: "Password input with strength indicator",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-group-26.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-26.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input","input group","label"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-meter-1": {
     name: "p-meter-1",

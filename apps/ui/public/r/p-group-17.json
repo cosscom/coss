@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-group-17",
+  "type": "registry:block",
+  "description": "Group with input and currency text",
+  "registryDependencies": [
+    "@coss/group",
+    "@coss/input"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-group-17.tsx",
+      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Price input\">\n      <Input\n        aria-label=\"Enter the amount\"\n        className=\"text-right\"\n        defaultValue=\"100\"\n        type=\"text\"\n      />\n      <GroupSeparator />\n      <GroupText>USD</GroupText>\n    </Group>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "group",
+    "input"
+  ]
+}

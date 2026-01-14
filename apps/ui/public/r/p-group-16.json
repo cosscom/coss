@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-group-16",
+  "type": "registry:block",
+  "description": "Group with copy button and input",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/group",
+    "@coss/input",
+    "@coss/tooltip",
+    "@coss/use-copy-to-clipboard"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-group-16.tsx",
+      "content": "\"use client\";\n\nimport { CheckIcon, CopyIcon } from \"lucide-react\";\nimport { useRef } from \"react\";\n\nimport { useCopyToClipboard } from \"@/registry/default/hooks/use-copy-to-clipboard\";\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\";\n\nexport default function Particle() {\n  const { copyToClipboard, isCopied } = useCopyToClipboard();\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  return (\n    <Group aria-label=\"Promo code input\">\n      <Tooltip>\n        <TooltipTrigger\n          render={\n            <Button\n              aria-label=\"Copy\"\n              onClick={() => {\n                if (inputRef.current) {\n                  copyToClipboard(inputRef.current.value);\n                }\n              }}\n              size=\"icon\"\n              variant=\"outline\"\n            />\n          }\n        >\n          {isCopied ? <CheckIcon /> : <CopyIcon />}\n        </TooltipTrigger>\n        <TooltipPopup>Copy to clipboard</TooltipPopup>\n      </Tooltip>\n      <GroupSeparator />\n      <Input\n        aria-label=\"Promo code\"\n        defaultValue=\"SAVE20\"\n        ref={inputRef}\n        type=\"text\"\n      />\n    </Group>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "button",
+    "group",
+    "input",
+    "tooltip"
+  ]
+}

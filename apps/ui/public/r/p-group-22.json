@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-group-22",
+  "type": "registry:block",
+  "description": "Group with two inputs for range",
+  "registryDependencies": [
+    "@coss/group",
+    "@coss/input",
+    "@coss/label"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-group-22.tsx",
+      "content": "import { Group, GroupSeparator } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Label>Range</Label>\n      <Group aria-label=\"Range input\">\n        <Input\n          aria-label=\"Min value\"\n          className=\"[-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none\"\n          placeholder=\"From\"\n          type=\"number\"\n        />\n        <GroupSeparator />\n        <Input\n          aria-label=\"Max value\"\n          className=\"[-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none\"\n          placeholder=\"To\"\n          type=\"number\"\n        />\n      </Group>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "group",
+    "input",
+    "label"
+  ]
+}

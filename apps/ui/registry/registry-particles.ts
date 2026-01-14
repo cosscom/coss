@@ -846,6 +846,14 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button", "disabled"),
+    description: "Read-only disabled button",
+    files: [{ path: "particles/p-button-40.tsx", type: "registry:block" }],
+    name: "p-button-40",
+    registryDependencies: ["@coss/button"],
+    type: "registry:block",
+  },
+  {
     categories: categories("card"),
     description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],
@@ -1522,6 +1530,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("field", "input", "label"),
+    description: "Field with error state",
+    files: [{ path: "particles/p-field-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-field-19",
+    registryDependencies: ["@coss/field", "@coss/input"],
+    type: "registry:block",
+  },
+  {
     categories: categories("fieldset"),
     description: "Fieldset with multiple fields",
     files: [{ path: "particles/p-fieldset-1.tsx", type: "registry:block" }],
@@ -1775,6 +1795,69 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button", "group", "input", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Group with copy button and input",
+    files: [{ path: "particles/p-group-16.tsx", type: "registry:block" }],
+    name: "p-group-16",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/input",
+      "@coss/tooltip",
+      "@coss/use-copy-to-clipboard",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input"),
+    description: "Group with input and currency text",
+    files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
+    name: "p-group-17",
+    registryDependencies: ["@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with select and input",
+    files: [{ path: "particles/p-group-18.tsx", type: "registry:block" }],
+    name: "p-group-18",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with input and select",
+    files: [{ path: "particles/p-group-19.tsx", type: "registry:block" }],
+    name: "p-group-19",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "group", "input"),
+    description: "Group with input and text button",
+    files: [{ path: "particles/p-group-20.tsx", type: "registry:block" }],
+    name: "p-group-20",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "group", "input"),
+    description: "Group with separate input and button",
+    files: [{ path: "particles/p-group-21.tsx", type: "registry:block" }],
+    name: "p-group-21",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "label"),
+    description: "Group with two inputs for range",
+    files: [{ path: "particles/p-group-22.tsx", type: "registry:block" }],
+    name: "p-group-22",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
     categories: categories("input"),
     description: "Basic input",
     files: [{ path: "particles/p-input-1.tsx", type: "registry:block" }],
@@ -1928,6 +2011,42 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-12",
     registryDependencies: ["@coss/input-group", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "label"),
+    description: "Input with label and required indicator",
+    files: [{ path: "particles/p-input-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-13",
+    registryDependencies: ["@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "label"),
+    description: "Input with optional label",
+    files: [{ path: "particles/p-input-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-14",
+    registryDependencies: ["@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input"),
+    description: "Input with custom border and background",
+    files: [{ path: "particles/p-input-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-15",
+    registryDependencies: ["@coss/input"],
     type: "registry:block",
   },
   {
@@ -2185,6 +2304,109 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-group-19",
     registryDependencies: ["@coss/button", "@coss/input-group", "@coss/toggle"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "input group", "search"),
+    dependencies: ["lucide-react"],
+    description: "Input group with search icon",
+    files: [{ path: "particles/p-input-group-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-20",
+    registryDependencies: ["@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Input group with start tooltip",
+    files: [{ path: "particles/p-input-group-21.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-21",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group"),
+    dependencies: ["lucide-react"],
+    description: "Input group with clear button",
+    files: [{ path: "particles/p-input-group-22.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-22",
+    registryDependencies: ["@coss/button", "@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "button",
+      "input",
+      "input group",
+      "search",
+      "tooltip",
+    ),
+    dependencies: ["lucide-react"],
+    description: "Search input group with loader and voice button",
+    files: [{ path: "particles/p-input-group-23.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-23",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "input group", "label"),
+    description: "Input group with character counter",
+    files: [{ path: "particles/p-input-group-24.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-24",
+    registryDependencies: ["@coss/input-group", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "label"),
+    description: "Input with characters remaining counter",
+    files: [{ path: "particles/p-input-group-25.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-25",
+    registryDependencies: ["@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group", "label"),
+    dependencies: ["lucide-react"],
+    description: "Password input with strength indicator",
+    files: [{ path: "particles/p-input-group-26.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-26",
+    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/label"],
     type: "registry:block",
   },
   {
