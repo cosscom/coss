@@ -15,7 +15,6 @@ import {
   AutocompleteList,
   AutocompleteSeparator,
 } from "@coss/ui/components/autocomplete";
-import { EmptyMedia } from "@coss/ui/components/empty";
 
 const CommandDialog = CommandDialogPrimitive.Root;
 
@@ -141,24 +140,14 @@ function CommandList({
 
 function CommandEmpty({
   className,
-  children,
-  icon,
   ...props
-}: React.ComponentProps<typeof AutocompleteEmpty> & {
-  icon?: React.ReactNode;
-}) {
+}: React.ComponentProps<typeof AutocompleteEmpty>) {
   return (
     <AutocompleteEmpty
-      className={cn(
-        "flex flex-col items-center justify-center not-empty:py-6",
-        className,
-      )}
+      className={cn("not-empty:py-6", className)}
       data-slot="command-empty"
       {...props}
-    >
-      {icon && <EmptyMedia variant="icon">{icon}</EmptyMedia>}
-      {children}
-    </AutocompleteEmpty>
+    />
   );
 }
 

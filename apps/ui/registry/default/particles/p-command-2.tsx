@@ -6,6 +6,7 @@ import {
   ArrowUpIcon,
   CircleQuestionMarkIcon,
   CornerDownLeftIcon,
+  SearchIcon,
   SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,6 +37,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/registry/default/ui/command";
+import { EmptyMedia } from "@/registry/default/ui/empty";
 import { Input } from "@/registry/default/ui/input";
 import { Kbd, KbdGroup } from "@/registry/default/ui/kbd";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
@@ -382,7 +384,10 @@ export default function PCommand2() {
               <CommandPanel>
                 <CommandEmpty className="not-empty:py-12">
                   {searchQuery.trim() && (
-                    <div className="wrap-break-word flex flex-col flex-wrap gap-2">
+                    <div className="wrap-break-word flex flex-col flex-wrap items-center gap-2">
+                      <EmptyMedia variant="icon">
+                        <SearchIcon />
+                      </EmptyMedia>
                       <p>No results found.</p>
                       <p>
                         Press <Kbd>Enter</Kbd> to ask AI about:
