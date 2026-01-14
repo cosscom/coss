@@ -14,9 +14,6 @@ type Particle = {
   meta?: { className?: string; colSpan?: number };
 };
 
-// Categories that should not affect sorting when searching for other tags
-const EXCLUDED_PRIMARY_CATEGORIES = ["field", "fieldset"];
-
 function calculateRelevanceWeight(
   particle: Particle,
   searchTerms: RegistryCategory[],
@@ -36,12 +33,7 @@ function calculateRelevanceWeight(
     }
 
     const categories = particle.categories ?? [];
-    const primaryCategory = categories[0];
-    // Skip primary category bonus for field/fieldset to avoid visual separation
-    if (
-      primaryCategory === term &&
-      !EXCLUDED_PRIMARY_CATEGORIES.includes(primaryCategory)
-    ) {
+    if (categories[0] === term) {
       weight += 10;
     }
   }
