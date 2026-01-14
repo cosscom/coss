@@ -2,13 +2,12 @@
  * Registry Categories Type Definition
  *
  * This file defines all valid categories that can be used in registry items.
- * Categories are divided into:
- * - Component categories: Main UI components (e.g., "input", "button")
- * - Tag categories: Additional tags/features (e.g., "loading", "disabled")
+ * All categories are treated equally - no distinction between component and tag categories.
  */
 
-// Main component categories (UI primitives)
-export const componentCategories = [
+// All registry categories in display order
+export const registryCategories = [
+  // UI components
   "accordion",
   "alert",
   "alert dialog",
@@ -58,10 +57,7 @@ export const componentCategories = [
   "toggle group",
   "toolbar",
   "tooltip",
-] as const;
-
-// Tag categories (features, states, modifiers)
-export const tagCategories = [
+  // Features and states
   "async",
   "copy",
   "disabled",
@@ -85,37 +81,11 @@ export const tagCategories = [
   "zod",
 ] as const;
 
-// Combined categories array in custom order (components first, then tags)
-export const registryCategories = [
-  ...componentCategories,
-  ...tagCategories,
-] as const;
-
-export type ComponentCategory = (typeof componentCategories)[number];
-export type TagCategory = (typeof tagCategories)[number];
 export type RegistryCategory = (typeof registryCategories)[number];
-
-// Helper function to check if a category is a component category
-export function isComponentCategory(
-  category: string,
-): category is ComponentCategory {
-  return componentCategories.includes(category as ComponentCategory);
-}
-
-// Helper function to check if a category is a tag category
-export function isTagCategory(category: string): category is TagCategory {
-  return tagCategories.includes(category as TagCategory);
-}
-
-// Custom order for display (components first, then tags)
-export const categoryDisplayOrder: RegistryCategory[] = [
-  ...componentCategories,
-  ...tagCategories,
-];
 
 // Helper function to get category sort order
 export function getCategorySortOrder(category: string): number {
-  const index = categoryDisplayOrder.indexOf(category as RegistryCategory);
+  const index = registryCategories.indexOf(category as RegistryCategory);
   return index === -1 ? Number.POSITIVE_INFINITY : index;
 }
 

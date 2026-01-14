@@ -4,10 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
 
 import { Index } from "@/registry/__index__";
-import {
-  getCategorySortOrder,
-  isComponentCategory,
-} from "@/registry/registry-categories";
+import { getCategorySortOrder } from "@/registry/registry-categories";
 
 import SearchField from "./search-field";
 
@@ -20,7 +17,6 @@ const uniqueCategories = Array.from(
 ).sort((a, b) => getCategorySortOrder(a) - getCategorySortOrder(b));
 
 const searchItems = uniqueCategories.map((category) => ({
-  isComponent: isComponentCategory(category),
   label: category
     .split(" ")
     .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -38,16 +34,11 @@ export default function SearchContainer() {
     const tags = searchParams?.get("tags")?.split(",").filter(Boolean) || [];
     return tags
       .map((tag) => searchItems.find((item) => item.value === tag))
-      .filter(
-        (
-          item,
-        ): item is { label: string; value: string; isComponent: boolean } =>
-          !!item,
-      );
+      .filter((item): item is { label: string; value: string } => !!item);
   }, [searchParams]);
 
   const updateSelectedItems = useCallback(
-    (items: { label: string; value: string; isComponent?: boolean }[]) => {
+    (items: { label: string; value: string }[]) => {
       startTransition(() => {
         const tags =
           items.length > 0 ? items.map((item) => item.value).join(",") : "";

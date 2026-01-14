@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Atom01Icon,
-  LabelIcon,
-  Search01Icon,
-} from "@hugeicons/core-free-icons";
+import { LabelIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -25,17 +21,12 @@ import {
   ComboboxSeparator,
   ComboboxValue,
 } from "@/registry/default/ui/combobox";
-import {
-  getCategorySortOrder,
-  isComponentCategory,
-} from "@/registry/registry-categories";
+import { getCategorySortOrder } from "@/registry/registry-categories";
 
 interface SearchFieldProps {
-  selectedItems: { label: string; value: string; isComponent?: boolean }[];
-  onItemsChange: (
-    items: { label: string; value: string; isComponent?: boolean }[],
-  ) => void;
-  items: { label: string; value: string; isComponent?: boolean }[];
+  selectedItems: { label: string; value: string }[];
+  onItemsChange: (items: { label: string; value: string }[]) => void;
+  items: { label: string; value: string }[];
 }
 
 interface RegistryItem {
@@ -136,9 +127,7 @@ export default function SearchField({
     return groups;
   }, [selectedItems, items]);
 
-  const handleValueChange = (
-    newItems: { label: string; value: string; isComponent?: boolean }[],
-  ) => {
+  const handleValueChange = (newItems: { label: string; value: string }[]) => {
     onItemsChange(newItems);
     setOpen(false);
   };
@@ -166,34 +155,20 @@ export default function SearchField({
           }
         >
           <ComboboxValue>
-            {(
-              value: { value: string; label: string; isComponent?: boolean }[],
-            ) => (
+            {(value: { value: string; label: string }[]) => (
               <>
-                {value?.map((item) => {
-                  const isComponent =
-                    item.isComponent ?? isComponentCategory(item.value);
-                  return (
-                    <ComboboxChip aria-label={item.label} key={item.value}>
-                      <div className="flex items-center gap-1.5">
-                        {isComponent ? (
-                          <HugeiconsIcon
-                            className="opacity-80"
-                            icon={Atom01Icon}
-                            strokeWidth={2}
-                          />
-                        ) : (
-                          <HugeiconsIcon
-                            className="opacity-80"
-                            icon={LabelIcon}
-                            strokeWidth={2}
-                          />
-                        )}
-                        <span>{item.label}</span>
-                      </div>
-                    </ComboboxChip>
-                  );
-                })}
+                {value?.map((item) => (
+                  <ComboboxChip aria-label={item.label} key={item.value}>
+                    <div className="flex items-center gap-1.5">
+                      <HugeiconsIcon
+                        className="opacity-80"
+                        icon={LabelIcon}
+                        strokeWidth={2}
+                      />
+                      <span>{item.label}</span>
+                    </div>
+                  </ComboboxChip>
+                ))}
                 <ComboboxInput
                   aria-label="Search components"
                   autoFocus
@@ -218,35 +193,22 @@ export default function SearchField({
                       : "No matches"}
                   </ComboboxGroupLabel>
                   <ComboboxCollection>
-                    {(item: (typeof group.items)[number]) => {
-                      const isComponent =
-                        item.isComponent ?? isComponentCategory(item.value);
-
-                      return (
-                        <ComboboxItem
-                          disabled={group.type === "disabled"}
-                          key={item.value}
-                          value={item}
-                        >
-                          <div className="flex items-center gap-2">
-                            {isComponent ? (
-                              <HugeiconsIcon
-                                className="opacity-80"
-                                icon={Atom01Icon}
-                                strokeWidth={2}
-                              />
-                            ) : (
-                              <HugeiconsIcon
-                                className="opacity-80"
-                                icon={LabelIcon}
-                                strokeWidth={2}
-                              />
-                            )}
-                            <span>{item.label}</span>
-                          </div>
-                        </ComboboxItem>
-                      );
-                    }}
+                    {(item: (typeof group.items)[number]) => (
+                      <ComboboxItem
+                        disabled={group.type === "disabled"}
+                        key={item.value}
+                        value={item}
+                      >
+                        <div className="flex items-center gap-2">
+                          <HugeiconsIcon
+                            className="opacity-80"
+                            icon={LabelIcon}
+                            strokeWidth={2}
+                          />
+                          <span>{item.label}</span>
+                        </div>
+                      </ComboboxItem>
+                    )}
                   </ComboboxCollection>
                 </ComboboxGroup>
               </React.Fragment>

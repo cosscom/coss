@@ -24,6 +24,7 @@
   },
   "categories": [
     "number field",
+    "input",
     "form",
     "field",
     "zod"

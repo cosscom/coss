@@ -7,6 +7,40 @@ import type { RegistryCategory } from "@/registry/registry-categories";
 import { ParticleCard } from "./particle-card";
 import { ParticleCardContainer } from "./particle-card-container";
 
+type Particle = {
+  name: string;
+  categories?: RegistryCategory[];
+  registryDependencies?: string[];
+  meta?: { className?: string; colSpan?: number };
+};
+
+function calculateRelevanceWeight(
+  particle: Particle,
+  searchTerms: RegistryCategory[],
+): number {
+  let weight = 0;
+
+  for (const term of searchTerms) {
+    const normalizedTerm = term.replace(/\s+/g, "-");
+
+    if (particle.name.startsWith(`p-${normalizedTerm}-`)) {
+      weight += 30;
+    }
+
+    const deps = particle.registryDependencies ?? [];
+    if (deps.some((dep) => dep === `@coss/${normalizedTerm}`)) {
+      weight += 20;
+    }
+
+    const categories = particle.categories ?? [];
+    if (categories[0] === term) {
+      weight += 10;
+    }
+  }
+
+  return weight;
+}
+
 function ParticleCardSkeleton({ className }: { className?: string }) {
   return (
     <ParticleCardContainer
@@ -33,11 +67,7 @@ function ParticleCardSkeleton({ className }: { className?: string }) {
 const getParticles = cache(() => {
   return Object.values(Index).filter(
     (item) => item.type === "registry:block",
-  ) as Array<{
-    name: string;
-    categories?: RegistryCategory[];
-    meta?: { className?: string; colSpan?: number };
-  }>;
+  ) as Particle[];
 });
 
 export async function ParticlesDisplay({
@@ -47,10 +77,16 @@ export async function ParticlesDisplay({
 }) {
   const particles = getParticles();
 
-  const filteredParticles = particles.filter((particle) => {
-    const categories = particle.categories ?? [];
-    return selectedCategories.every((value) => categories.includes(value));
-  });
+  const filteredParticles = particles
+    .filter((particle) => {
+      const categories = particle.categories ?? [];
+      return selectedCategories.every((value) => categories.includes(value));
+    })
+    .sort((a, b) => {
+      const weightA = calculateRelevanceWeight(a, selectedCategories);
+      const weightB = calculateRelevanceWeight(b, selectedCategories);
+      return weightB - weightA;
+    });
 
   if (filteredParticles.length === 0) {
     return (

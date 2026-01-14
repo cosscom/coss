@@ -330,7 +330,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("autocomplete", "form", "input"),
+    categories: categories("autocomplete", "input"),
     description: "Autocomplete form",
     files: [
       { path: "particles/p-autocomplete-14.tsx", type: "registry:block" },
@@ -1775,6 +1775,55 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button", "group", "input"),
+    dependencies: ["lucide-react"],
+    description: "Group with add button and input",
+    files: [{ path: "particles/p-group-16.tsx", type: "registry:block" }],
+    name: "p-group-16",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input"),
+    description: "Group with input and currency text",
+    files: [{ path: "particles/p-group-17.tsx", type: "registry:block" }],
+    name: "p-group-17",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with select and input",
+    files: [{ path: "particles/p-group-18.tsx", type: "registry:block" }],
+    name: "p-group-18",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "input", "select"),
+    description: "Group with input and select",
+    files: [{ path: "particles/p-group-19.tsx", type: "registry:block" }],
+    name: "p-group-19",
+    registryDependencies: ["@coss/group", "@coss/input", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "group", "input"),
+    description: "Group with input and text button",
+    files: [{ path: "particles/p-group-20.tsx", type: "registry:block" }],
+    name: "p-group-20",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("group", "label", "number field"),
+    description: "Group with two number inputs for range",
+    files: [{ path: "particles/p-group-22.tsx", type: "registry:block" }],
+    name: "p-group-22",
+    registryDependencies: ["@coss/group", "@coss/label", "@coss/number-field"],
+    type: "registry:block",
+  },
+  {
     categories: categories("input"),
     description: "Basic input",
     files: [{ path: "particles/p-input-1.tsx", type: "registry:block" }],
@@ -1847,15 +1896,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "input"),
-    description: "Input with button",
+    categories: categories("button", "group", "input"),
+    description: "Input with button using Group",
     files: [{ path: "particles/p-input-7.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-7",
-    registryDependencies: ["@coss/button", "@coss/input"],
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/input"],
     type: "registry:block",
   },
   {
@@ -1928,6 +1977,66 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-12",
     registryDependencies: ["@coss/input-group", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "label"),
+    description: "Input with label and required indicator",
+    files: [{ path: "particles/p-input-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-13",
+    registryDependencies: ["@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "label"),
+    description: "Input with optional label",
+    files: [{ path: "particles/p-input-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-14",
+    registryDependencies: ["@coss/input", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input"),
+    description: "Input with custom border and background",
+    files: [{ path: "particles/p-input-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-15",
+    registryDependencies: ["@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "input group", "spinner", "loading"),
+    description: "Input group with end loading spinner",
+    files: [{ path: "particles/p-input-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-16",
+    registryDependencies: ["@coss/input-group", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input"),
+    description: "Read-only input",
+    files: [{ path: "particles/p-input-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-17",
+    registryDependencies: ["@coss/input", "@coss/label"],
     type: "registry:block",
   },
   {
@@ -2188,6 +2297,109 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("input", "input group", "search"),
+    dependencies: ["lucide-react"],
+    description: "Input group with search icon",
+    files: [{ path: "particles/p-input-group-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-20",
+    registryDependencies: ["@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Input group with start tooltip",
+    files: [{ path: "particles/p-input-group-21.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-21",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group"),
+    dependencies: ["lucide-react"],
+    description: "Input group with clear button",
+    files: [{ path: "particles/p-input-group-22.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-22",
+    registryDependencies: ["@coss/button", "@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "button",
+      "input",
+      "input group",
+      "search",
+      "tooltip",
+    ),
+    dependencies: ["lucide-react"],
+    description: "Search input group with loader and voice button",
+    files: [{ path: "particles/p-input-group-23.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-23",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("input", "input group"),
+    description: "Input group with character counter",
+    files: [{ path: "particles/p-input-group-24.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-24",
+    registryDependencies: ["@coss/input-group"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("field", "input"),
+    description: "Input with characters remaining counter",
+    files: [{ path: "particles/p-input-group-25.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-25",
+    registryDependencies: ["@coss/field", "@coss/input"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input", "input group", "label"),
+    dependencies: ["lucide-react"],
+    description: "Password input with strength indicator",
+    files: [{ path: "particles/p-input-group-26.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-group-26",
+    registryDependencies: ["@coss/button", "@coss/input-group", "@coss/label"],
+    type: "registry:block",
+  },
+  {
     categories: categories("meter"),
     description: "Basic meter",
     files: [{ path: "particles/p-meter-1.tsx", type: "registry:block" }],
@@ -2308,7 +2520,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Basic number field",
     files: [{ path: "particles/p-number-field-1.tsx", type: "registry:block" }],
     meta: {
@@ -2320,7 +2532,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Small number field",
     files: [{ path: "particles/p-number-field-2.tsx", type: "registry:block" }],
     meta: {
@@ -2332,7 +2544,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Large number field",
     files: [{ path: "particles/p-number-field-3.tsx", type: "registry:block" }],
     meta: {
@@ -2344,7 +2556,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Disabled number field",
     files: [{ path: "particles/p-number-field-4.tsx", type: "registry:block" }],
     meta: {
@@ -2356,7 +2568,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with label",
     files: [{ path: "particles/p-number-field-5.tsx", type: "registry:block" }],
     meta: {
@@ -2368,7 +2580,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with scrub",
     files: [{ path: "particles/p-number-field-6.tsx", type: "registry:block" }],
     meta: {
@@ -2380,7 +2592,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with range",
     files: [{ path: "particles/p-number-field-7.tsx", type: "registry:block" }],
     meta: {
@@ -2392,7 +2604,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with formatted value",
     files: [{ path: "particles/p-number-field-8.tsx", type: "registry:block" }],
     meta: {
@@ -2404,7 +2616,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with step",
     files: [{ path: "particles/p-number-field-9.tsx", type: "registry:block" }],
     meta: {
@@ -2416,7 +2628,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field", "form", "field", "zod"),
+    categories: categories("number field", "input", "form", "field", "zod"),
     dependencies: ["zod"],
     description: "Number field in form",
     files: [
