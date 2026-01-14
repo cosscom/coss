@@ -2516,7 +2516,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Basic number field",
     files: [{ path: "particles/p-number-field-1.tsx", type: "registry:block" }],
     meta: {
@@ -2528,7 +2528,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Small number field",
     files: [{ path: "particles/p-number-field-2.tsx", type: "registry:block" }],
     meta: {
@@ -2540,7 +2540,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Large number field",
     files: [{ path: "particles/p-number-field-3.tsx", type: "registry:block" }],
     meta: {
@@ -2552,7 +2552,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Disabled number field",
     files: [{ path: "particles/p-number-field-4.tsx", type: "registry:block" }],
     meta: {
@@ -2564,7 +2564,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with label",
     files: [{ path: "particles/p-number-field-5.tsx", type: "registry:block" }],
     meta: {
@@ -2576,7 +2576,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with scrub",
     files: [{ path: "particles/p-number-field-6.tsx", type: "registry:block" }],
     meta: {
@@ -2588,7 +2588,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with range",
     files: [{ path: "particles/p-number-field-7.tsx", type: "registry:block" }],
     meta: {
@@ -2600,7 +2600,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with formatted value",
     files: [{ path: "particles/p-number-field-8.tsx", type: "registry:block" }],
     meta: {
@@ -2612,7 +2612,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field"),
+    categories: categories("number field", "input"),
     description: "Number field with step",
     files: [{ path: "particles/p-number-field-9.tsx", type: "registry:block" }],
     meta: {
@@ -2624,7 +2624,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("number field", "form", "field", "zod"),
+    categories: categories("number field", "input", "form", "field", "zod"),
     dependencies: ["zod"],
     description: "Number field in form",
     files: [
