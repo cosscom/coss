@@ -31,8 +31,7 @@ import {
   VideoIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { Fragment, useEffect, useState } from "react";
-import { useDebug } from "@/components/debug-context";
+import { Fragment, useState } from "react";
 import {
   ListItem,
   ListItemActions,
@@ -42,6 +41,7 @@ import {
   ListItemHeader,
   ListItemTitle,
 } from "@/components/list-item";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import {
   formatBookingDate,
   formatBookingTime,
@@ -55,23 +55,9 @@ import { BookingActions } from "./booking-actions";
 const ARTIFICIAL_DELAY_MS = 800;
 
 export function BookingsList() {
-  const { enableArtificialDelay, isLoadingOverride } = useDebug();
-  const [isLoading, setIsLoading] = useState(enableArtificialDelay);
+  const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-
-  useEffect(() => {
-    if (!enableArtificialDelay) {
-      setIsLoading(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, ARTIFICIAL_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [enableArtificialDelay]);
-
-  const showLoading = isLoadingOverride ?? isLoading;
 
   const totalCount = mockPastBookings.length;
   const totalPages = Math.ceil(totalCount / pageSize);

@@ -20,8 +20,7 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
-import { useDebug } from "@/components/debug-context";
+import { Fragment, useState } from "react";
 import {
   ListItem,
   ListItemBadges,
@@ -30,6 +29,7 @@ import {
   ListItemHeader,
   ListItemTitle,
 } from "@/components/list-item";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import {
   type EventType,
   formatDuration,
@@ -75,24 +75,10 @@ function EventTypeSkeletonItem() {
 const ARTIFICIAL_DELAY_MS = 800;
 
 export function EventTypesList() {
-  const { enableArtificialDelay, isLoadingOverride } = useDebug();
-  const [isLoading, setIsLoading] = useState(enableArtificialDelay);
+  const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(eventTypes.map((et) => [et.id, et.hidden])),
   );
-
-  useEffect(() => {
-    if (!enableArtificialDelay) {
-      setIsLoading(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, ARTIFICIAL_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [enableArtificialDelay]);
-
-  const showLoading = isLoadingOverride ?? isLoading;
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({

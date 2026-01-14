@@ -12,33 +12,18 @@ import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app-header";
-import { useDebug } from "@/components/debug-context";
+import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingSkeletonItem } from "../booking-skeleton";
 
 const ARTIFICIAL_DELAY_MS = 300;
 
 export default function Page() {
-  const { enableArtificialDelay, isLoadingOverride } = useDebug();
-  const [isLoading, setIsLoading] = useState(enableArtificialDelay);
-
-  useEffect(() => {
-    if (!enableArtificialDelay) {
-      setIsLoading(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, ARTIFICIAL_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [enableArtificialDelay]);
-
-  const showLoading = isLoadingOverride ?? isLoading;
+  const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
 
   if (showLoading) {
     return (
