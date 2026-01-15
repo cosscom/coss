@@ -14,7 +14,10 @@ export default function Particle() {
         />
         <AvatarFallback className="rounded-lg">LT</AvatarFallback>
       </Avatar>
-      <span className="-end-0.5 -top-0.5 absolute size-2.5 rounded-full border-2 border-background bg-emerald-500" />
+      <span
+        aria-hidden="true"
+        className="-end-0.5 -top-0.5 absolute size-2 rounded-full bg-emerald-500 outline-2 outline-background"
+      />
     </div>
   );
 }

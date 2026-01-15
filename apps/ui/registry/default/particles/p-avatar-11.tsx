@@ -1,3 +1,4 @@
+import { Badge } from "@coss/ui/components/badge";
 import {
   Avatar,
   AvatarFallback,
@@ -14,9 +15,12 @@ export default function Particle() {
         />
         <AvatarFallback className="rounded-lg">LT</AvatarFallback>
       </Avatar>
-      <span className="-end-1.5 -top-1.5 absolute flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary font-medium text-[10px] text-primary-foreground">
+      <Badge
+        className="-end-1.5 -top-1.5 absolute rounded-full outline-2 outline-background outline-solid"
+        size="sm"
+      >
         6
-      </span>
+      </Badge>
     </div>
   );
 }
