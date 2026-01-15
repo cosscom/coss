@@ -7128,10 +7128,9 @@
     {
       "categories": [
         "button",
-        "input group",
         "textarea"
       ],
-      "description": "Textarea with right button",
+      "description": "Textarea with button aligned right",
       "files": [
         {
           "path": "registry/default/particles/p-textarea-14.tsx",
@@ -7144,17 +7143,16 @@
       "name": "p-textarea-14",
       "registryDependencies": [
         "@coss/button",
-        "@coss/input-group"
+        "@coss/textarea"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
         "button",
-        "input group",
         "textarea"
       ],
-      "description": "Textarea with left button",
+      "description": "Textarea with button aligned left",
       "files": [
         {
           "path": "registry/default/particles/p-textarea-15.tsx",
@@ -7167,7 +7165,7 @@
       "name": "p-textarea-15",
       "registryDependencies": [
         "@coss/button",
-        "@coss/input-group"
+        "@coss/textarea"
       ],
       "type": "registry:block"
     },

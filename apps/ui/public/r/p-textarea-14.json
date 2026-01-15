@@ -2,15 +2,15 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-14",
   "type": "registry:block",
-  "description": "Textarea with right button",
+  "description": "Textarea with button aligned right",
   "registryDependencies": [
     "@coss/button",
-    "@coss/input-group"
+    "@coss/textarea"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-textarea-14.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  InputGroup,\n  InputGroupAddon,\n  InputGroupTextarea,\n} from \"@/registry/default/ui/input-group\";\n\nexport default function Particle() {\n  return (\n    <InputGroup>\n      <InputGroupTextarea placeholder=\"Type your message here\" />\n      <InputGroupAddon align=\"block-end\">\n        <Button>Send</Button>\n      </InputGroupAddon>\n    </InputGroup>\n  );\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-4\">\n      <Textarea placeholder=\"Type your message here\" />\n      <Button className=\"self-end\">Send</Button>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
@@ -19,7 +19,6 @@
   },
   "categories": [
     "button",
-    "input group",
     "textarea"
   ]
 }

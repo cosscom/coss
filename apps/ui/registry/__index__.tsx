@@ -6363,9 +6363,9 @@ export const Index: Record<string, any> = {
   },
   "p-textarea-14": {
     name: "p-textarea-14",
-    description: "Textarea with right button",
+    description: "Textarea with button aligned right",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group"],
+    registryDependencies: ["@coss/button","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-textarea-14.tsx",
       type: "registry:block",
@@ -6376,14 +6376,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","input group","textarea"],
+    categories: ["button","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-textarea-15": {
     name: "p-textarea-15",
-    description: "Textarea with left button",
+    description: "Textarea with button aligned left",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group"],
+    registryDependencies: ["@coss/button","@coss/textarea"],
     files: [{
       path: "registry/default/particles/p-textarea-15.tsx",
       type: "registry:block",
@@ -6394,7 +6394,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","input group","textarea"],
+    categories: ["button","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-toast-1": {
