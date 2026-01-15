@@ -2,6 +2,7 @@ import { cn } from "@coss/ui/lib/utils";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { Button } from "@coss/ui/components/button";
 
 interface ListItemProps {
   labelColorLight?: string;
@@ -27,15 +28,16 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "group/list-item relative flex overflow-hidden transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         className,
       )}
+      data-slot="list-item"
       style={style}
     >
       {hasLabelColor && (
         <div className="absolute inset-y-0 start-0 w-0.5 bg-(--event-label-light) dark:bg-(--event-label-dark)" />
       )}
-      <div className="flex flex-1 items-center justify-between gap-4 p-5">
+      <div className="flex flex-1 items-center justify-between gap-4 py-4 px-6">
         {children}
       </div>
     </div>
@@ -48,19 +50,21 @@ interface ListItemDragHandleProps {
 
 export function ListItemDragHandle({ className }: ListItemDragHandleProps) {
   return (
-    <button
+    <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute inset-y-0 start-0 flex w-6 cursor-grab items-center justify-center opacity-0 transition-opacity active:cursor-grabbing group-hover/list-item:opacity-100",
+        "absolute after:absolute after:-inset-2 z-1 top-1/2 -translate-y-1/2 start-0 -ms-3 cursor-grab active:cursor-grabbing in-[[data-slot=list-item]:has([data-slot=list-item-title]:hover)]:opacity-100 hover:opacity-100 focus:opacity-100 opacity-0 bg-popover! transition-[opacity,box-shadow] hover:border-ring/80",
         className,
       )}
-      type="button"
+      data-slot="list-item-drag-handle"
+      size="icon-xs"
+      variant="outline"
     >
       <GripVerticalIcon
+        className="not-in-[[data-slot=list-item-drag-handle]:hover]:opacity-48"
         aria-hidden="true"
-        className="size-4 text-muted-foreground"
       />
-    </button>
+    </Button>
   );
 }
 
@@ -119,7 +123,7 @@ export function ListItemDescription({
   className,
 }: ListItemDescriptionProps) {
   return (
-    <p className={cn("text-muted-foreground text-sm", className)}>{children}</p>
+    <p className={cn("text-muted-foreground text-sm", className)} data-slot="list-item-description">{children}</p>
   );
 }
 
@@ -132,9 +136,10 @@ export function ListItemBadges({ children, className }: ListItemBadgesProps) {
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 overflow-hidden",
+        "flex flex-wrap items-center gap-2",
         className,
       )}
+      data-slot="list-item-badges"
     >
       {children}
     </div>
@@ -148,7 +153,7 @@ interface ListItemActionsProps {
 
 export function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
-    <div className={cn("relative flex items-center", className)}>
+    <div className={cn("relative flex items-center", className)} data-slot="list-item-actions">
       {children}
     </div>
   );
