@@ -15,7 +15,6 @@ interface ListItemProps {
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
-  sortableOverPosition?: "first" | "last" | null;
 }
 
 export function ListItem({
@@ -27,7 +26,6 @@ export function ListItem({
   sortableStyle,
   sortableDragging,
   sortableDraggingAny,
-  sortableOverPosition,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
   const isSortable = sortableRef !== undefined;
@@ -58,7 +56,6 @@ export function ListItem({
         className,
       )}
       data-dragging={dataDragging}
-      data-over-position={sortableOverPosition ?? undefined}
       data-slot="list-item"
       ref={sortableRef}
       style={style}
