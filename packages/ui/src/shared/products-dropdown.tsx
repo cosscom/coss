@@ -54,7 +54,7 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
     <Menu>
       <MenuTrigger render={<Button variant="ghost" />}>
         Products
-        <ChevronDown className="opacity-72" />
+        <ChevronDown />
       </MenuTrigger>
       <MenuPopup align="center" sideOffset={4}>
         {items.map((item) => {

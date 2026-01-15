@@ -1,6 +1,7 @@
 "use client";
 
 import type * as React from "react";
+import { DebugPopover } from "@/components/debug-popover";
 import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
 import { NavMain } from "@/components/nav-main";
@@ -34,7 +35,8 @@ export function AppSidebar({
         <NavMain items={navMainItems} />
         <NavSecondary className="mt-auto" items={navFooterItems} />
         <div className="px-3 pb-4 text-[0.625rem] text-sidebar-foreground/50 max-lg:hidden">
-          © 2025 Cal.com, Inc. v.5.9.6-h-2701b4d
+          © 2025 Cal.com, Inc. v.5.9.6-h-2701b4d{" - "}
+          <DebugPopover />
         </div>
       </SidebarContent>
     </Sidebar>
