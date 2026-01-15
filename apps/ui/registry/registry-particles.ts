@@ -3453,27 +3453,27 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "input group", "textarea"),
-    description: "Textarea with right button",
+    categories: categories("button", "textarea"),
+    description: "Textarea with button aligned right",
     files: [{ path: "particles/p-textarea-14.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-textarea-14",
-    registryDependencies: ["@coss/button", "@coss/input-group"],
+    registryDependencies: ["@coss/button", "@coss/textarea"],
     type: "registry:block",
   },
   {
-    categories: categories("button", "input group", "textarea"),
-    description: "Textarea with left button",
+    categories: categories("button", "textarea"),
+    description: "Textarea with button aligned left",
     files: [{ path: "particles/p-textarea-15.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-textarea-15",
-    registryDependencies: ["@coss/button", "@coss/input-group"],
+    registryDependencies: ["@coss/button", "@coss/textarea"],
     type: "registry:block",
   },
   {

@@ -1,17 +1,11 @@
 import { Button } from "@/registry/default/ui/button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupTextarea,
-} from "@/registry/default/ui/input-group";
+import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function Particle() {
   return (
-    <InputGroup>
-      <InputGroupTextarea placeholder="Type your message here" />
-      <InputGroupAddon align="block-end">
-        <Button>Send</Button>
-      </InputGroupAddon>
-    </InputGroup>
+    <div className="flex flex-col gap-4">
+      <Textarea placeholder="Type your message here" />
+      <Button className="self-end">Send</Button>
+    </div>
   );
 }
