@@ -36,20 +36,18 @@ export default function Particle() {
         align="block-start"
         className="justify-between rounded-t-lg border-b bg-muted/72 p-2!"
       >
-        <div onMouseDown={(e) => e.stopPropagation()}>
-          <Select defaultValue="javascript" items={languages}>
-            <SelectTrigger className="w-fit" size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPopup>
-              {languages.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectPopup>
-          </Select>
-        </div>
+        <Select defaultValue="javascript" items={languages}>
+          <SelectTrigger className="w-fit" size="sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup>
+            {languages.map(({ label, value }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
         <Tooltip>
           <TooltipTrigger
             render={
