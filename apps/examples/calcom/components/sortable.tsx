@@ -5,7 +5,6 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  type DragOverEvent,
   KeyboardSensor,
   PointerSensor,
   type UniqueIdentifier,
@@ -33,14 +32,14 @@ import {
   useState,
 } from "react";
 
-type OverPosition = "first" | "last" | null;
+type ItemPosition = "first" | "middle" | "last" | null;
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
-  overPosition: OverPosition;
+  itemIds: UniqueIdentifier[];
 }>({
   isDraggingAny: false,
-  overPosition: null,
+  itemIds: [],
 });
 
 export interface SortableItemRenderProps {
@@ -48,7 +47,7 @@ export interface SortableItemRenderProps {
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
   isDraggingAny: boolean;
-  overPosition: OverPosition;
+  position: ItemPosition;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -59,7 +58,7 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny, overPosition } = useContext(SortableStateContext);
+  const { isDraggingAny, itemIds } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -68,12 +67,20 @@ export function SortableItem({ id, children }: SortableItemProps) {
     "--translate-y": `${transform?.y ?? 0}px`,
   } as CSSProperties;
 
+  const getPosition = (): ItemPosition => {
+    if (!isDraggingAny) return null;
+    const index = itemIds.indexOf(id);
+    if (index === 0) return "first";
+    if (index === itemIds.length - 1) return "last";
+    return "middle";
+  };
+
   return children({
     attributes,
     isDragging,
     isDraggingAny,
     listeners,
-    overPosition: isDragging ? overPosition : null,
+    position: getPosition(),
     setNodeRef,
     style,
   });
@@ -92,7 +99,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
-  const [overPosition, setOverPosition] = useState<OverPosition>(null);
+  const itemIds = items.map((item) => item.id);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -104,26 +111,8 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     setIsDraggingAny(true);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
-    if (!over) {
-      setOverPosition(null);
-      return;
-    }
-    const firstId = items[0]?.id;
-    const lastId = items[items.length - 1]?.id;
-    if (over.id === firstId) {
-      setOverPosition("first");
-    } else if (over.id === lastId) {
-      setOverPosition("last");
-    } else {
-      setOverPosition(null);
-    }
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
-    setOverPosition(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -134,13 +123,12 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   };
 
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny, overPosition }}>
+    <SortableStateContext.Provider value={{ isDraggingAny, itemIds }}>
       <DndContext
         collisionDetection={closestCenter}
         id={id}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
         onDragStart={handleDragStart}
         sensors={sensors}
       >
