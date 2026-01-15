@@ -3477,6 +3477,98 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Comment box with emoji and mention buttons",
+    files: [{ path: "particles/p-textarea-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-textarea-16",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "button",
+      "input group",
+      "select",
+      "textarea",
+      "tooltip",
+    ),
+    dependencies: ["lucide-react"],
+    description: "Code snippet input with language selector",
+    files: [{ path: "particles/p-textarea-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-textarea-17",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/select",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Email composer with attachment and send buttons",
+    files: [{ path: "particles/p-textarea-18.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-textarea-18",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Chat input with voice and send buttons",
+    files: [{ path: "particles/p-textarea-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-textarea-19",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Social post input with tags and AI assist",
+    files: [{ path: "particles/p-textarea-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-textarea-20",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("toast"),
     description: "Basic toast",
     files: [{ path: "particles/p-toast-1.tsx", type: "registry:block" }],
