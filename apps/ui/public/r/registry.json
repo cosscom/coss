@@ -1473,6 +1473,162 @@
     },
     {
       "categories": [
+        "avatar"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Avatar with user icon fallback",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-6",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Avatar with emerald status dot",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-7",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Avatar with muted status dot",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-8",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Rounded avatar with top-right emerald status",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-9",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Avatar with notification badge",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-10",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Rounded avatar with notification badge",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-11",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Avatar with verified badge",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-12",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Small overlapping avatar group",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-13",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "avatar"
+      ],
+      "description": "Large overlapping avatar group",
+      "files": [
+        {
+          "path": "registry/default/particles/p-avatar-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-avatar-14",
+      "registryDependencies": [
+        "@coss/avatar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "badge"
       ],
       "description": "Basic badge",
