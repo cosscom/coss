@@ -6,7 +6,6 @@ import {
   DndContext,
   type DragEndEvent,
   type DragOverEvent,
-  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   type UniqueIdentifier,
@@ -34,18 +33,14 @@ import {
   useState,
 } from "react";
 
-type ItemPosition = "first" | "middle" | "last" | null;
+type OverPosition = "first" | "last" | null;
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
-  itemIds: UniqueIdentifier[];
-  activeId: UniqueIdentifier | null;
-  overId: UniqueIdentifier | null;
+  overPosition: OverPosition;
 }>({
-  activeId: null,
   isDraggingAny: false,
-  itemIds: [],
-  overId: null,
+  overPosition: null,
 });
 
 export interface SortableItemRenderProps {
@@ -53,7 +48,7 @@ export interface SortableItemRenderProps {
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
   isDraggingAny: boolean;
-  position: ItemPosition;
+  overPosition: OverPosition;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -64,8 +59,7 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny, itemIds, activeId, overId } =
-    useContext(SortableStateContext);
+  const { isDraggingAny, overPosition } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -74,30 +68,12 @@ export function SortableItem({ id, children }: SortableItemProps) {
     "--translate-y": `${transform?.y ?? 0}px`,
   } as CSSProperties;
 
-  const getPosition = (): ItemPosition => {
-    if (!isDraggingAny) return null;
-
-    let projectedIds = itemIds;
-    if (activeId && overId && activeId !== overId) {
-      const oldIndex = itemIds.indexOf(activeId);
-      const newIndex = itemIds.indexOf(overId);
-      if (oldIndex !== -1 && newIndex !== -1) {
-        projectedIds = arrayMove([...itemIds], oldIndex, newIndex);
-      }
-    }
-
-    const index = projectedIds.indexOf(id);
-    if (index === 0) return "first";
-    if (index === projectedIds.length - 1) return "last";
-    return "middle";
-  };
-
   return children({
     attributes,
     isDragging,
     isDraggingAny,
     listeners,
-    position: getPosition(),
+    overPosition: isDragging ? overPosition : null,
     setNodeRef,
     style,
   });
@@ -116,9 +92,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
-  const itemIds = items.map((item) => item.id);
+  const [overPosition, setOverPosition] = useState<OverPosition>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -126,19 +100,30 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = () => {
     setIsDraggingAny(true);
-    setActiveId(event.active.id);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    setOverId(event.over?.id ?? null);
+    const { over } = event;
+    if (!over) {
+      setOverPosition(null);
+      return;
+    }
+    const firstId = items[0]?.id;
+    const lastId = items[items.length - 1]?.id;
+    if (over.id === firstId) {
+      setOverPosition("first");
+    } else if (over.id === lastId) {
+      setOverPosition("last");
+    } else {
+      setOverPosition(null);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
-    setActiveId(null);
-    setOverId(null);
+    setOverPosition(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -149,9 +134,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   };
 
   return (
-    <SortableStateContext.Provider
-      value={{ activeId, isDraggingAny, itemIds, overId }}
-    >
+    <SortableStateContext.Provider value={{ isDraggingAny, overPosition }}>
       <DndContext
         collisionDetection={closestCenter}
         id={id}
