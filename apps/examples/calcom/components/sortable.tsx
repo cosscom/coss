@@ -25,6 +25,7 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useId,
   useState,
 } from "react";
 
@@ -77,6 +78,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   onReorder,
   children,
 }: SortableListProps<T>) {
+  const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -104,6 +106,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     <SortableStateContext.Provider value={{ isDraggingAny }}>
       <DndContext
         collisionDetection={closestCenter}
+        id={id}
         modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
