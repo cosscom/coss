@@ -21,6 +21,14 @@ import {
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
 
+const languages = [
+  { label: "JavaScript", value: "javascript" },
+  { label: "TypeScript", value: "typescript" },
+  { label: "Python", value: "python" },
+  { label: "Go", value: "go" },
+  { label: "Rust", value: "rust" },
+];
+
 export default function Particle() {
   return (
     <InputGroup>
@@ -28,16 +36,16 @@ export default function Particle() {
         align="block-start"
         className="justify-between rounded-t-lg border-b bg-muted/72 p-2!"
       >
-        <Select defaultValue="javascript">
-          <SelectTrigger>
+        <Select defaultValue="javascript" items={languages}>
+          <SelectTrigger className="w-fit" size="sm">
             <SelectValue />
           </SelectTrigger>
           <SelectPopup>
-            <SelectItem value="javascript">JavaScript</SelectItem>
-            <SelectItem value="typescript">TypeScript</SelectItem>
-            <SelectItem value="python">Python</SelectItem>
-            <SelectItem value="go">Go</SelectItem>
-            <SelectItem value="rust">Rust</SelectItem>
+            {languages.map(({ label, value }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
           </SelectPopup>
         </Select>
         <Tooltip>
@@ -52,7 +60,7 @@ export default function Particle() {
         </Tooltip>
       </InputGroupAddon>
       <InputGroupTextarea
-        className="font-mono text-sm"
+        className="font-mono"
         placeholder="Paste your code here…"
         rows={6}
       />
