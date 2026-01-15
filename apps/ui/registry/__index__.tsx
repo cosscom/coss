@@ -1611,7 +1611,7 @@ export const Index: Record<string, any> = {
   },
   "p-avatar-13": {
     name: "p-avatar-13",
-    description: "Overlapping avatar group with different sizes",
+    description: "Small overlapping avatar group",
     type: "registry:block",
     registryDependencies: ["@coss/avatar"],
     files: [{
@@ -1621,6 +1621,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-avatar-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["avatar"],
+    meta: undefined,
+  },
+  "p-avatar-14": {
+    name: "p-avatar-14",
+    description: "Large overlapping avatar group",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar"],
+    files: [{
+      path: "registry/default/particles/p-avatar-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-avatar-14.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
