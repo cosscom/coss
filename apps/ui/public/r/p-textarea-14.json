@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-textarea-14.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-4\">\n      <Textarea placeholder=\"Type your message here\" />\n      <Button className=\"self-end\">Send</Button>\n    </div>\n  );\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Textarea placeholder=\"Type your message here\" />\n      <Button className=\"self-end\">Send</Button>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
