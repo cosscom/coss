@@ -1,4 +1,5 @@
 import { cn } from "@coss/ui/lib/utils";
+import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -26,7 +27,7 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "relative flex overflow-hidden transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "group/list-item relative flex overflow-hidden transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         className,
       )}
       style={style}
@@ -38,6 +39,28 @@ export function ListItem({
         {children}
       </div>
     </div>
+  );
+}
+
+interface ListItemDragHandleProps {
+  className?: string;
+}
+
+export function ListItemDragHandle({ className }: ListItemDragHandleProps) {
+  return (
+    <button
+      aria-label="Drag to reorder"
+      className={cn(
+        "absolute inset-y-0 start-0 flex w-6 cursor-grab items-center justify-center opacity-0 transition-opacity active:cursor-grabbing group-hover/list-item:opacity-100",
+        className,
+      )}
+      type="button"
+    >
+      <GripVerticalIcon
+        aria-hidden="true"
+        className="size-4 text-muted-foreground"
+      />
+    </button>
   );
 }
 

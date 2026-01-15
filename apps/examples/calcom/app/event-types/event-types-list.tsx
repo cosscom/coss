@@ -26,6 +26,7 @@ import {
   ListItemBadges,
   ListItemContent,
   ListItemDescription,
+  ListItemDragHandle,
   ListItemHeader,
   ListItemTitle,
 } from "@/components/list-item";
@@ -171,6 +172,7 @@ export function EventTypesList() {
                     getEventTypeColors(eventType)?.light ?? undefined
                   }
                 >
+                  <ListItemDragHandle />
                   <ListItemContent>
                     <ListItemHeader>
                       <div className="flex items-center gap-2">
