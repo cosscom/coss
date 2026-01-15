@@ -157,6 +157,7 @@ export function BookingsList() {
                       >
                         <ListItemDragHandle
                           attributes={sortableProps.attributes}
+                          listeners={sortableProps.listeners}
                         />
                         <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
                           <ListItemContent>

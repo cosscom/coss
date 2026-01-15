@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
@@ -20,10 +21,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
+  listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
 }
 
@@ -51,8 +53,8 @@ export function SortableItem({ id, children }: SortableItemProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners}>
-      {children({ attributes, isDragging })}
+    <div ref={setNodeRef} style={style}>
+      {children({ attributes, isDragging, listeners })}
     </div>
   );
 }
@@ -68,12 +70,14 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   onReorder,
   children,
 }: SortableListProps<T>) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
+    useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -88,6 +92,10 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       onReorder(arrayMove(items, oldIndex, newIndex));
     }
   };
+
+  if (!mounted) {
+    return <>{children}</>;
+  }
 
   return (
     <DndContext

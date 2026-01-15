@@ -1,6 +1,7 @@
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
 import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
@@ -48,11 +49,13 @@ export function ListItem({
 interface ListItemDragHandleProps {
   className?: string;
   attributes?: DraggableAttributes;
+  listeners?: SyntheticListenerMap;
 }
 
 export function ListItemDragHandle({
   className,
   attributes,
+  listeners,
 }: ListItemDragHandleProps) {
   return (
     <Button
@@ -64,6 +67,7 @@ export function ListItemDragHandle({
       data-slot="list-item-drag-handle"
       size="icon-xs"
       variant="outline"
+      {...listeners}
       {...attributes}
     >
       <GripVerticalIcon
