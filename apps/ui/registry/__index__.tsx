@@ -4687,6 +4687,60 @@ export const Index: Record<string, any> = {
     categories: ["button","input","input group","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-input-group-27": {
+    name: "p-input-group-27",
+    description: "Code snippet input with language selector",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/select","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-input-group-27.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-27.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","select","textarea","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
+  "p-input-group-28": {
+    name: "p-input-group-28",
+    description: "Message composer with attachment buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-input-group-28.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-28.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","textarea","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
+  "p-input-group-29": {
+    name: "p-input-group-29",
+    description: "Chat input with voice and send buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-input-group-29.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-group-29.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","textarea","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
   "p-meter-1": {
     name: "p-meter-1",
     description: "Basic meter",
@@ -6396,96 +6450,6 @@ export const Index: Record<string, any> = {
     }),
     categories: ["button","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
-  "p-textarea-16": {
-    name: "p-textarea-16",
-    description: "Comment box with emoji and mention buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-textarea-16.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-textarea-16.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","input group","textarea","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
-  },
-  "p-textarea-17": {
-    name: "p-textarea-17",
-    description: "Code snippet input with language selector",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/select","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-textarea-17.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-textarea-17.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","input group","select","textarea","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
-  },
-  "p-textarea-18": {
-    name: "p-textarea-18",
-    description: "Email composer with attachment and send buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-textarea-18.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-textarea-18.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","input group","textarea","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
-  },
-  "p-textarea-19": {
-    name: "p-textarea-19",
-    description: "Chat input with voice and send buttons",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-textarea-19.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-textarea-19.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","input group","textarea","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
-  },
-  "p-textarea-20": {
-    name: "p-textarea-20",
-    description: "Social post input with tags and AI assist",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input-group","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-textarea-20.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-textarea-20.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["button","input group","textarea","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
   },
   "p-toast-1": {
     name: "p-toast-1",
