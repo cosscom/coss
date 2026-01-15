@@ -5,6 +5,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   type UniqueIdentifier,
@@ -76,15 +78,18 @@ interface SortableListProps<T extends { id: UniqueIdentifier }> {
   items: T[];
   onReorder: (items: T[]) => void;
   children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
+  renderOverlay,
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -92,12 +97,14 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
-  const handleDragStart = () => {
+  const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
+    setActiveId(event.active.id);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
+    setActiveId(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -106,6 +113,10 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       onReorder(arrayMove(items, oldIndex, newIndex));
     }
   };
+
+  const activeItem = activeId
+    ? items.find((item) => item.id === activeId)
+    : null;
 
   return (
     <SortableStateContext.Provider value={{ isDraggingAny }}>
@@ -123,6 +134,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         >
           {children}
         </SortableContext>
+        <DragOverlay>
+          {activeItem && renderOverlay ? renderOverlay(activeItem) : null}
+        </DragOverlay>
       </DndContext>
     </SortableStateContext.Provider>
   );
