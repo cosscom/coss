@@ -11,23 +11,6 @@ import {
   TooltipProvider,
 } from "@coss/ui/components/tooltip";
 import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   ArmchairIcon,
   BanknoteIcon,
   ClipboardCheckIcon,
@@ -47,6 +30,11 @@ import {
   ListItemHeader,
   ListItemTitle,
 } from "@/components/list-item";
+import {
+  SortableItem,
+  type SortableItemRenderProps,
+  SortableList,
+} from "@/components/sortable";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import {
   type EventType,
@@ -91,58 +79,63 @@ function EventTypeSkeletonItem() {
 
 const ARTIFICIAL_DELAY_MS = 800;
 
-interface SortableEventTypeItemProps {
+interface EventTypeItemContentProps {
   eventType: EventType;
   isLast: boolean;
   isHidden: boolean;
   eventPath: string;
   onHiddenChange: (hidden: boolean) => void;
-  getSchedulingTypeLabel: (eventType: EventType) => string | null;
-  getEventTypeColors: (
-    eventType: EventType,
-  ) => { dark: string; light: string } | null;
-  isRecurring: (eventType: EventType) => boolean;
-  isPaid: (eventType: EventType) => boolean;
-  requiresConfirmation: (eventType: EventType) => boolean;
-  hasSeats: (eventType: EventType) => boolean;
+  sortableProps?: SortableItemRenderProps;
 }
 
-function SortableEventTypeItem({
+function EventTypeItemContent({
   eventType,
   isLast,
   isHidden,
   eventPath,
   onHiddenChange,
-  getSchedulingTypeLabel,
-  getEventTypeColors,
-  isRecurring,
-  isPaid,
-  requiresConfirmation,
-  hasSeats,
-}: SortableEventTypeItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: eventType.id });
-
-  const style = {
-    opacity: isDragging ? 0.5 : 1,
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 1 : 0,
+  sortableProps,
+}: EventTypeItemContentProps) {
+  const getSchedulingTypeLabel = (et: EventType) => {
+    if (!et.schedulingType) return null;
+    switch (et.schedulingType) {
+      case "ROUND_ROBIN":
+        return "Round Robin";
+      case "COLLECTIVE":
+        return "Collective";
+      case "MANAGED":
+        return "Managed";
+      default:
+        return null;
+    }
   };
 
+  const getEventTypeColors = (et: EventType) => {
+    if (!et.eventTypeColor) return null;
+    return {
+      dark: et.eventTypeColor.darkEventTypeColor,
+      light: et.eventTypeColor.lightEventTypeColor,
+    };
+  };
+
+  const isRecurring = (et: EventType) => et.recurringEvent !== null;
+  const isPaid = (et: EventType) => et.price > 0;
+  const requiresConfirmation = (et: EventType) => et.requiresConfirmation;
+  const hasSeats = (et: EventType) =>
+    et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
+
   return (
-    <div ref={setNodeRef} style={style}>
+    <>
       <ListItem
         labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
         labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       >
-        <ListItemDragHandle attributes={attributes} listeners={listeners} />
+        {sortableProps && (
+          <ListItemDragHandle
+            attributes={sortableProps.attributes}
+            listeners={sortableProps.listeners}
+          />
+        )}
         <ListItemContent>
           <ListItemHeader>
             <div className="flex items-center gap-2">
@@ -220,7 +213,7 @@ function SortableEventTypeItem({
         />
       </ListItem>
       {!isLast && <Separator />}
-    </div>
+    </>
   );
 }
 
@@ -231,25 +224,6 @@ export function EventTypesList() {
     Object.fromEntries(mockEventTypes.map((et) => [et.id, et.hidden])),
   );
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      setEventTypes((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
-
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({
       ...prev,
@@ -259,46 +233,6 @@ export function EventTypesList() {
 
   const getEventTypePath = (eventType: EventType) => {
     return `/${defaultProfile.slug}/${eventType.slug}`;
-  };
-
-  const isRecurring = (eventType: EventType) => {
-    return eventType.recurringEvent !== null;
-  };
-
-  const isPaid = (eventType: EventType) => {
-    return eventType.price > 0;
-  };
-
-  const requiresConfirmation = (eventType: EventType) => {
-    return eventType.requiresConfirmation;
-  };
-
-  const hasSeats = (eventType: EventType) => {
-    return (
-      eventType.seatsPerTimeSlot !== null && eventType.seatsPerTimeSlot > 0
-    );
-  };
-
-  const getSchedulingTypeLabel = (eventType: EventType) => {
-    if (!eventType.schedulingType) return null;
-    switch (eventType.schedulingType) {
-      case "ROUND_ROBIN":
-        return "Round Robin";
-      case "COLLECTIVE":
-        return "Collective";
-      case "MANAGED":
-        return "Managed";
-      default:
-        return null;
-    }
-  };
-
-  const getEventTypeColors = (eventType: EventType) => {
-    if (!eventType.eventTypeColor) return null;
-    return {
-      dark: eventType.eventTypeColor.darkEventTypeColor,
-      light: eventType.eventTypeColor.lightEventTypeColor,
-    };
   };
 
   if (showLoading) {
@@ -324,42 +258,31 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        sensors={sensors}
-      >
+      <SortableList items={eventTypes} onReorder={setEventTypes}>
         <Frame className="-m-1">
           <FramePanel className="p-0">
-            <SortableContext
-              items={eventTypes.map((et) => et.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {eventTypes.map((eventType, index) => {
-                const isHidden = hiddenStates[eventType.id];
-                const isLast = index === eventTypes.length - 1;
-                const eventPath = getEventTypePath(eventType);
+            {eventTypes.map((eventType, index) => {
+              const isHidden = hiddenStates[eventType.id];
+              const isLast = index === eventTypes.length - 1;
+              const eventPath = getEventTypePath(eventType);
 
-                return (
-                  <SortableEventTypeItem
-                    eventPath={eventPath}
-                    eventType={eventType}
-                    getEventTypeColors={getEventTypeColors}
-                    getSchedulingTypeLabel={getSchedulingTypeLabel}
-                    hasSeats={hasSeats}
-                    isHidden={isHidden ?? false}
-                    isLast={isLast}
-                    isPaid={isPaid}
-                    isRecurring={isRecurring}
-                    key={eventType.id}
-                    onHiddenChange={(hidden) =>
-                      handleHiddenToggle(eventType.id, hidden)
-                    }
-                    requiresConfirmation={requiresConfirmation}
-                  />
-                );
-              })}
-            </SortableContext>
+              return (
+                <SortableItem id={eventType.id} key={eventType.id}>
+                  {(sortableProps) => (
+                    <EventTypeItemContent
+                      eventPath={eventPath}
+                      eventType={eventType}
+                      isHidden={isHidden ?? false}
+                      isLast={isLast}
+                      onHiddenChange={(hidden) =>
+                        handleHiddenToggle(eventType.id, hidden)
+                      }
+                      sortableProps={sortableProps}
+                    />
+                  )}
+                </SortableItem>
+              );
+            })}
           </FramePanel>
           <FrameFooter>
             <div className="text-center text-muted-foreground/72 text-sm">
@@ -367,7 +290,7 @@ export function EventTypesList() {
             </div>
           </FrameFooter>
         </Frame>
-      </DndContext>
+      </SortableList>
 
       <Tooltip handle={tooltipHandle}>
         {({ payload: Payload }) => (
