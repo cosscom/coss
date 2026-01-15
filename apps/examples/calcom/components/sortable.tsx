@@ -5,6 +5,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   type UniqueIdentifier,
@@ -37,9 +39,13 @@ type ItemPosition = "first" | "middle" | "last" | null;
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
   itemIds: UniqueIdentifier[];
+  activeId: UniqueIdentifier | null;
+  overId: UniqueIdentifier | null;
 }>({
+  activeId: null,
   isDraggingAny: false,
   itemIds: [],
+  overId: null,
 });
 
 export interface SortableItemRenderProps {
@@ -58,7 +64,8 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny, itemIds } = useContext(SortableStateContext);
+  const { isDraggingAny, itemIds, activeId, overId } =
+    useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -69,9 +76,19 @@ export function SortableItem({ id, children }: SortableItemProps) {
 
   const getPosition = (): ItemPosition => {
     if (!isDraggingAny) return null;
-    const index = itemIds.indexOf(id);
+
+    let projectedIds = itemIds;
+    if (activeId && overId && activeId !== overId) {
+      const oldIndex = itemIds.indexOf(activeId);
+      const newIndex = itemIds.indexOf(overId);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        projectedIds = arrayMove([...itemIds], oldIndex, newIndex);
+      }
+    }
+
+    const index = projectedIds.indexOf(id);
     if (index === 0) return "first";
-    if (index === itemIds.length - 1) return "last";
+    if (index === projectedIds.length - 1) return "last";
     return "middle";
   };
 
@@ -99,6 +116,8 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const itemIds = items.map((item) => item.id);
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -107,12 +126,19 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
-  const handleDragStart = () => {
+  const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
+    setActiveId(event.active.id);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverId(event.over?.id ?? null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
+    setActiveId(null);
+    setOverId(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -123,12 +149,15 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   };
 
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny, itemIds }}>
+    <SortableStateContext.Provider
+      value={{ activeId, isDraggingAny, itemIds, overId }}
+    >
       <DndContext
         collisionDetection={closestCenter}
         id={id}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
         onDragStart={handleDragStart}
         sensors={sensors}
       >
