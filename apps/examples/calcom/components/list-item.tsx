@@ -1,8 +1,9 @@
+import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { Button } from "@coss/ui/components/button";
 
 interface ListItemProps {
   labelColorLight?: string;
@@ -37,7 +38,7 @@ export function ListItem({
       {hasLabelColor && (
         <div className="absolute inset-y-0 start-0 w-0.5 bg-(--event-label-light) dark:bg-(--event-label-dark)" />
       )}
-      <div className="flex flex-1 items-center justify-between gap-4 py-4 px-6">
+      <div className="flex flex-1 items-center justify-between gap-4 px-6 py-4">
         {children}
       </div>
     </div>
@@ -46,23 +47,31 @@ export function ListItem({
 
 interface ListItemDragHandleProps {
   className?: string;
+  listeners?: SyntheticListenerMap;
+  attributes?: Record<string, unknown>;
 }
 
-export function ListItemDragHandle({ className }: ListItemDragHandleProps) {
+export function ListItemDragHandle({
+  className,
+  listeners,
+  attributes,
+}: ListItemDragHandleProps) {
   return (
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute after:absolute after:-inset-2 z-1 top-1/2 -translate-y-1/2 start-0 -ms-3 cursor-grab active:cursor-grabbing in-[[data-slot=list-item]:has([data-slot=list-item-title]:hover)]:opacity-100 hover:opacity-100 focus:opacity-100 opacity-0 bg-popover! transition-[opacity,box-shadow] hover:border-ring/80",
+        "after:-inset-2 -translate-y-1/2 -ms-3 absolute start-0 top-1/2 z-1 cursor-grab bg-popover! in-[[data-slot=list-item]:has([data-slot=list-item-title]:hover)]:opacity-100 opacity-0 transition-[opacity,box-shadow] after:absolute hover:border-ring/80 hover:opacity-100 focus:opacity-100 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"
       size="icon-xs"
       variant="outline"
+      {...listeners}
+      {...attributes}
     >
       <GripVerticalIcon
-        className="not-in-[[data-slot=list-item-drag-handle]:hover]:opacity-48"
         aria-hidden="true"
+        className="not-in-[[data-slot=list-item-drag-handle]:hover]:opacity-48"
       />
     </Button>
   );
@@ -123,7 +132,12 @@ export function ListItemDescription({
   className,
 }: ListItemDescriptionProps) {
   return (
-    <p className={cn("text-muted-foreground text-sm", className)} data-slot="list-item-description">{children}</p>
+    <p
+      className={cn("text-muted-foreground text-sm", className)}
+      data-slot="list-item-description"
+    >
+      {children}
+    </p>
   );
 }
 
@@ -135,10 +149,7 @@ interface ListItemBadgesProps {
 export function ListItemBadges({ children, className }: ListItemBadgesProps) {
   return (
     <div
-      className={cn(
-        "flex flex-wrap items-center gap-2",
-        className,
-      )}
+      className={cn("flex flex-wrap items-center gap-2", className)}
       data-slot="list-item-badges"
     >
       {children}
@@ -153,7 +164,10 @@ interface ListItemActionsProps {
 
 export function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
-    <div className={cn("relative flex items-center", className)} data-slot="list-item-actions">
+    <div
+      className={cn("relative flex items-center", className)}
+      data-slot="list-item-actions"
+    >
       {children}
     </div>
   );
