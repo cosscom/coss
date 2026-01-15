@@ -20,12 +20,23 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import type { CSSProperties, ReactNode } from "react";
+import {
+  type CSSProperties,
+  createContext,
+  type ReactNode,
+  useContext,
+  useState,
+} from "react";
+
+const SortableStateContext = createContext<{ isDraggingAny: boolean }>({
+  isDraggingAny: false,
+});
 
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
+  isDraggingAny: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -36,6 +47,7 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
+  const { isDraggingAny } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -44,7 +56,14 @@ export function SortableItem({ id, children }: SortableItemProps) {
     "--translate-y": `${transform?.y ?? 0}px`,
   } as CSSProperties;
 
-  return children({ attributes, isDragging, listeners, setNodeRef, style });
+  return children({
+    attributes,
+    isDragging,
+    isDraggingAny,
+    listeners,
+    setNodeRef,
+    style,
+  });
 }
 
 interface SortableListProps<T extends { id: UniqueIdentifier }> {
@@ -58,6 +77,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   onReorder,
   children,
 }: SortableListProps<T>) {
+  const [isDraggingAny, setIsDraggingAny] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -65,7 +85,12 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
+  const handleDragStart = () => {
+    setIsDraggingAny(true);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setIsDraggingAny(false);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -76,19 +101,22 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   };
 
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      modifiers={[restrictToVerticalAxis]}
-      onDragEnd={handleDragEnd}
-      sensors={sensors}
-    >
-      <SortableContext
-        items={items.map((item) => item.id)}
-        strategy={verticalListSortingStrategy}
+    <SortableStateContext.Provider value={{ isDraggingAny }}>
+      <DndContext
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        sensors={sensors}
       >
-        {children}
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={items.map((item) => item.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {children}
+        </SortableContext>
+      </DndContext>
+    </SortableStateContext.Provider>
   );
 }
 

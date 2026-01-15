@@ -155,6 +155,7 @@ export function BookingsList() {
                         labelColorDark={eventTypeColorDark ?? undefined}
                         labelColorLight={eventTypeColorLight ?? undefined}
                         sortableDragging={sortableProps.isDragging}
+                        sortableDraggingAny={sortableProps.isDraggingAny}
                         sortableRef={sortableProps.setNodeRef}
                         sortableStyle={sortableProps.style}
                       >
