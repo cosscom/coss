@@ -1,6 +1,6 @@
 "use client";
 
-import { MicIcon, SendIcon } from "lucide-react";
+import { ArrowRightIcon, MicIcon } from "lucide-react";
 
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -48,7 +48,7 @@ export default function Particle() {
               />
             }
           >
-            <SendIcon />
+            <ArrowRightIcon />
           </TooltipTrigger>
           <TooltipPopup>Send</TooltipPopup>
         </Tooltip>

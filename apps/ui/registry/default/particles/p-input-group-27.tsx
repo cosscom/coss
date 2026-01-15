@@ -29,7 +29,7 @@ export default function Particle() {
         className="justify-between rounded-t-lg border-b bg-muted/72 p-2!"
       >
         <Select defaultValue="javascript">
-          <SelectTrigger className="h-8 w-auto gap-1 border-0 bg-transparent px-2 shadow-none">
+          <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectPopup>
