@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-avatar-11",
+  "type": "registry:block",
+  "description": "Rounded avatar with notification badge",
+  "registryDependencies": [
+    "@coss/avatar"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-avatar-11.tsx",
+      "content": "import {\n  Avatar,\n  AvatarFallback,\n  AvatarImage,\n} from \"@/registry/default/ui/avatar\";\n\nexport default function Particle() {\n  return (\n    <div className=\"relative\">\n      <Avatar className=\"rounded-lg\">\n        <AvatarImage\n          alt=\"User\"\n          src=\"https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80\"\n        />\n        <AvatarFallback className=\"rounded-lg\">LT</AvatarFallback>\n      </Avatar>\n      <span className=\"-end-1.5 -top-1.5 absolute flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary font-medium text-[10px] text-primary-foreground\">\n        6\n      </span>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "avatar"
+  ]
+}
