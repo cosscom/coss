@@ -1,0 +1,22 @@
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/registry/default/ui/avatar";
+
+export default function Particle() {
+  return (
+    <div className="relative">
+      <Avatar>
+        <AvatarImage
+          alt="User"
+          src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80"
+        />
+        <AvatarFallback>LT</AvatarFallback>
+      </Avatar>
+      <span className="-end-1 -top-1 absolute flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary font-medium text-[10px] text-primary-foreground">
+        6
+      </span>
+    </div>
+  );
+}
