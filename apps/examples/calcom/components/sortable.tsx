@@ -5,6 +5,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   type UniqueIdentifier,
@@ -12,7 +14,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -71,15 +72,18 @@ interface SortableListProps<T extends { id: UniqueIdentifier }> {
   items: T[];
   onReorder: (items: T[]) => void;
   children: ReactNode;
+  renderOverlay?: (activeId: UniqueIdentifier) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
+  renderOverlay,
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -87,12 +91,14 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
-  const handleDragStart = () => {
+  const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
+    setActiveId(event.active.id);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
+    setActiveId(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -107,7 +113,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       <DndContext
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
         sensors={sensors}
@@ -118,6 +123,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         >
           {children}
         </SortableContext>
+        <DragOverlay>
+          {activeId && renderOverlay ? renderOverlay(activeId) : null}
+        </DragOverlay>
       </DndContext>
     </SortableStateContext.Provider>
   );
