@@ -21,7 +21,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
@@ -46,7 +46,6 @@ export function SortableItem({ id, children }: SortableItemProps) {
 
   const style = {
     opacity: isDragging ? 0.5 : 1,
-    position: "relative" as const,
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 1 : 0,
@@ -70,12 +69,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   onReorder,
   children,
 }: SortableListProps<T>) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -92,10 +85,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       onReorder(arrayMove(items, oldIndex, newIndex));
     }
   };
-
-  if (!mounted) {
-    return <>{children}</>;
-  }
 
   return (
     <DndContext

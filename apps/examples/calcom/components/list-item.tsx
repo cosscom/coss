@@ -48,14 +48,14 @@ export function ListItem({
 
 interface ListItemDragHandleProps {
   className?: string;
-  attributes?: DraggableAttributes;
   listeners?: SyntheticListenerMap;
+  attributes?: DraggableAttributes;
 }
 
 export function ListItemDragHandle({
   className,
-  attributes,
   listeners,
+  attributes,
 }: ListItemDragHandleProps) {
   return (
     <Button
