@@ -52,7 +52,7 @@ export function ListItem({
       className={cn(
         "relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         isSortable &&
-          "z-[var(--index)] translate-y-[var(--translate-y)] data-[dragging=true]:opacity-50",
+          "z-(--index) translate-y-(--translate-y) before:absolute before:inset-0 before:rounded-[inherit] data-[dragging=false]:opacity-64 data-[dragging=false]:transition-transform data-[dragging=true]:before:bg-popover data-[dragging=true]:before:shadow-[inset_0_1px_0_var(--color-input),inset_0_-1px_0_var(--color-input)]",
         className,
       )}
       data-dragging={dataDragging}
@@ -121,7 +121,11 @@ interface ListItemHeaderProps {
 }
 
 export function ListItemHeader({ children, className }: ListItemHeaderProps) {
-  return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
+  return (
+    <div className={cn("relative flex flex-col gap-1", className)}>
+      {children}
+    </div>
+  );
 }
 
 interface ListItemTitleProps
