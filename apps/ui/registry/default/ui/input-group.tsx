@@ -54,7 +54,9 @@ function InputGroupAddon({
       data-slot="input-group-addon"
       onMouseDown={(e) => {
         const target = e.target as HTMLElement;
-        const isInteractive = target.closest("button, a");
+        const isInteractive = target.closest(
+          "button, a, input, select, textarea, [role='button'], [role='combobox'], [role='listbox'], [data-slot='select-trigger']",
+        );
         if (isInteractive) return;
         e.preventDefault();
         const parent = e.currentTarget.parentElement;

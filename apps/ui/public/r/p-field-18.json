@@ -26,6 +26,7 @@
     "checkbox",
     "field",
     "form",
+    "input",
     "label",
     "select"
   ]

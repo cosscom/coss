@@ -1281,7 +1281,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "label"),
+    categories: categories("field", "input", "label"),
     description: "Field with description",
     files: [{ path: "particles/p-field-1.tsx", type: "registry:block" }],
     meta: {
@@ -1293,7 +1293,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "label"),
+    categories: categories("field", "input", "label"),
     description: "Field with required indicator",
     files: [{ path: "particles/p-field-2.tsx", type: "registry:block" }],
     meta: {
@@ -1305,7 +1305,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "label", "disabled"),
+    categories: categories("disabled", "field", "input", "label"),
     description: "Field in disabled state",
     files: [{ path: "particles/p-field-3.tsx", type: "registry:block" }],
     meta: {
@@ -1317,7 +1317,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field", "label", "error"),
+    categories: categories("error", "field", "input", "label"),
     description: "Field showing validation error",
     files: [{ path: "particles/p-field-4.tsx", type: "registry:block" }],
     meta: {
@@ -1329,7 +1329,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("field"),
+    categories: categories("field", "input"),
     description: "Show field validity state",
     files: [{ path: "particles/p-field-5.tsx", type: "registry:block" }],
     meta: {
@@ -1501,6 +1501,7 @@ export const particles: ParticleItem[] = [
       "checkbox",
       "field",
       "form",
+      "input",
       "label",
       "select",
     ),
@@ -1522,7 +1523,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("fieldset"),
+    categories: categories("fieldset", "input"),
     description: "Fieldset with multiple fields",
     files: [{ path: "particles/p-fieldset-1.tsx", type: "registry:block" }],
     meta: {
@@ -2377,12 +2378,12 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("field", "input"),
     description: "Input with characters remaining counter",
-    files: [{ path: "particles/p-input-group-25.tsx", type: "registry:block" }],
+    files: [{ path: "particles/p-input-18.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
-    name: "p-input-group-25",
+    name: "p-input-18",
     registryDependencies: ["@coss/field", "@coss/input"],
     type: "registry:block",
   },
@@ -2397,6 +2398,64 @@ export const particles: ParticleItem[] = [
     },
     name: "p-input-group-26",
     registryDependencies: ["@coss/button", "@coss/input-group", "@coss/label"],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "button",
+      "input group",
+      "select",
+      "textarea",
+      "tooltip",
+    ),
+    dependencies: ["lucide-react"],
+    description: "Code snippet input with language selector",
+    files: [{ path: "particles/p-input-group-27.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-input-group-27",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/select",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Message composer with attachment buttons",
+    files: [{ path: "particles/p-input-group-28.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-input-group-28",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "input group", "textarea", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Chat input with voice and send buttons",
+    files: [{ path: "particles/p-input-group-29.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-input-group-29",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/input-group",
+      "@coss/tooltip",
+    ],
     type: "registry:block",
   },
   {
@@ -3365,6 +3424,114 @@ export const particles: ParticleItem[] = [
       "@coss/form",
       "@coss/textarea",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("label", "textarea"),
+    description: "Textarea with label and required indicator",
+    files: [{ path: "particles/p-textarea-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-7",
+    registryDependencies: ["@coss/label", "@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("label", "textarea"),
+    description: "Textarea with optional label",
+    files: [{ path: "particles/p-textarea-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-8",
+    registryDependencies: ["@coss/label", "@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("textarea"),
+    description: "Textarea with custom border and background",
+    files: [{ path: "particles/p-textarea-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-9",
+    registryDependencies: ["@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("textarea"),
+    description: "Read-only textarea",
+    files: [{ path: "particles/p-textarea-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-10",
+    registryDependencies: ["@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("field", "textarea"),
+    description: "Textarea with characters remaining counter",
+    files: [{ path: "particles/p-textarea-11.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-11",
+    registryDependencies: ["@coss/field", "@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("field", "label", "textarea"),
+    description: "Textarea field with required indicator",
+    files: [{ path: "particles/p-textarea-12.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-12",
+    registryDependencies: ["@coss/field", "@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("textarea"),
+    description: "Shorter textarea with fixed height",
+    files: [{ path: "particles/p-textarea-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-13",
+    registryDependencies: ["@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "textarea"),
+    description: "Textarea with button aligned right",
+    files: [{ path: "particles/p-textarea-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-14",
+    registryDependencies: ["@coss/button", "@coss/textarea"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("button", "textarea"),
+    description: "Textarea with button aligned left",
+    files: [{ path: "particles/p-textarea-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-textarea-15",
+    registryDependencies: ["@coss/button", "@coss/textarea"],
     type: "registry:block",
   },
   {
