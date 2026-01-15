@@ -32,6 +32,11 @@ const languages = [
 export default function Particle() {
   return (
     <InputGroup>
+      <InputGroupTextarea
+        className="font-mono"
+        placeholder="Paste your code here…"
+        rows={6}
+      />
       <InputGroupAddon
         align="block-start"
         className="justify-between rounded-t-lg border-b bg-muted/72 p-2!"
@@ -59,11 +64,6 @@ export default function Particle() {
           <TooltipPopup>Copy to clipboard</TooltipPopup>
         </Tooltip>
       </InputGroupAddon>
-      <InputGroupTextarea
-        className="font-mono"
-        placeholder="Paste your code here…"
-        rows={6}
-      />
     </InputGroup>
   );
 }
