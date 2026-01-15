@@ -47,8 +47,8 @@ export function EventTypeActions({
           <TooltipTrigger
             render={
               <Switch
-                className="relative"
                 checked={!isHidden}
+                className="relative"
                 onCheckedChange={(checked) => onHiddenChange(!checked)}
               />
             }
