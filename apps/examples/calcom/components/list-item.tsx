@@ -52,9 +52,9 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "relative flex transition-colors first:not-data-[dragging=true]:rounded-t-[calc(var(--radius-xl)-1px)] last:not-data-[dragging=true]:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         isSortable &&
-          "z-(--index) translate-y-(--translate-y) before:absolute before:inset-0 before:rounded-[inherit] data-[dragging=false]:opacity-64 data-[dragging=false]:transition-transform data-[dragging=true]:before:bg-popover data-[dragging=true]:before:shadow-[inset_0_1px_0_var(--color-input),inset_0_-1px_0_var(--color-input)]",
+          "z-(--index) translate-y-(--translate-y) before:absolute before:inset-0 before:rounded-[inherit] data-[dragging=false]:opacity-64 data-[dragging=false]:transition-transform data-[over-position=first]:before:rounded-t-[calc(var(--radius-xl)-1px)] data-[over-position=last]:before:rounded-b-[calc(var(--radius-xl)-1px)] data-[dragging=true]:before:bg-popover data-[dragging=true]:before:shadow-[inset_0_1px_0_var(--color-input),inset_0_-1px_0_var(--color-input)]",
         className,
       )}
       data-dragging={dataDragging}
@@ -64,7 +64,10 @@ export function ListItem({
       style={style}
     >
       {hasLabelColor && (
-        <div className="absolute inset-y-0 start-0 w-0.5 bg-(--event-label-light) dark:bg-(--event-label-dark)" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 start-0 w-8 overflow-hidden in-[[data-slot=list-item]:not([data-dragging=true]):first-child,[data-over-position=first]]:rounded-t-[calc(var(--radius-xl)-1px)] in-[[data-slot=list-item]:last-child:not([data-dragging=true]),[data-over-position=last]]:rounded-b-[calc(var(--radius-xl)-1px)] before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-(--event-label-light) dark:before:bg-(--event-label-dark)"
+        />
       )}
       <div className="flex flex-1 items-center justify-between gap-4 px-6 py-4">
         {children}
