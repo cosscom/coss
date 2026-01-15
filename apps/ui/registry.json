@@ -3207,6 +3207,7 @@
     {
       "categories": [
         "field",
+        "input",
         "label"
       ],
       "description": "Field with description",
@@ -3229,6 +3230,7 @@
     {
       "categories": [
         "field",
+        "input",
         "label"
       ],
       "description": "Field with required indicator",
@@ -3250,9 +3252,10 @@
     },
     {
       "categories": [
+        "disabled",
         "field",
-        "label",
-        "disabled"
+        "input",
+        "label"
       ],
       "description": "Field in disabled state",
       "files": [
@@ -3273,9 +3276,10 @@
     },
     {
       "categories": [
+        "error",
         "field",
-        "label",
-        "error"
+        "input",
+        "label"
       ],
       "description": "Field showing validation error",
       "files": [
@@ -3296,7 +3300,8 @@
     },
     {
       "categories": [
-        "field"
+        "field",
+        "input"
       ],
       "description": "Show field validity state",
       "files": [
@@ -3606,6 +3611,7 @@
         "checkbox",
         "field",
         "form",
+        "input",
         "label",
         "select"
       ],
@@ -3632,7 +3638,8 @@
     },
     {
       "categories": [
-        "fieldset"
+        "fieldset",
+        "input"
       ],
       "description": "Fieldset with multiple fields",
       "files": [
@@ -5183,14 +5190,14 @@
       "description": "Input with characters remaining counter",
       "files": [
         {
-          "path": "registry/default/particles/p-input-group-25.tsx",
+          "path": "registry/default/particles/p-input-18.tsx",
           "type": "registry:block"
         }
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
-      "name": "p-input-group-25",
+      "name": "p-input-18",
       "registryDependencies": [
         "@coss/field",
         "@coss/input"
@@ -6966,6 +6973,201 @@
         "@coss/field",
         "@coss/form",
         "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "label",
+        "textarea"
+      ],
+      "description": "Textarea with label and required indicator",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-7",
+      "registryDependencies": [
+        "@coss/label",
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "label",
+        "textarea"
+      ],
+      "description": "Textarea with optional label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-8",
+      "registryDependencies": [
+        "@coss/label",
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "textarea"
+      ],
+      "description": "Textarea with custom border and background",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-9",
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "textarea"
+      ],
+      "description": "Read-only textarea",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-10",
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "field",
+        "textarea"
+      ],
+      "description": "Textarea with characters remaining counter",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-11",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "field",
+        "label",
+        "textarea"
+      ],
+      "description": "Textarea field with required indicator",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-12",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "textarea"
+      ],
+      "description": "Shorter textarea with fixed height",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-13",
+      "registryDependencies": [
+        "@coss/textarea"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "input group",
+        "textarea"
+      ],
+      "description": "Textarea with right button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-14",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "input group",
+        "textarea"
+      ],
+      "description": "Textarea with left button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-textarea-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-textarea-15",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/input-group"
       ],
       "type": "registry:block"
     },

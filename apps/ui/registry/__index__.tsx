@@ -3082,7 +3082,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label"],
+    categories: ["field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-2": {
@@ -3100,7 +3100,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label"],
+    categories: ["field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-3": {
@@ -3118,7 +3118,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label","disabled"],
+    categories: ["disabled","field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-4": {
@@ -3136,7 +3136,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field","label","error"],
+    categories: ["error","field","input","label"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-5": {
@@ -3154,7 +3154,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["field"],
+    categories: ["field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-field-6": {
@@ -3388,7 +3388,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","checkbox","field","form","label","select"],
+    categories: ["button","checkbox","field","form","input","label","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-fieldset-1": {
@@ -3406,7 +3406,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["fieldset"],
+    categories: ["fieldset","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-form-1": {
@@ -4651,18 +4651,18 @@ export const Index: Record<string, any> = {
     categories: ["input","input group"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-input-group-25": {
-    name: "p-input-group-25",
+  "p-input-18": {
+    name: "p-input-18",
     description: "Input with characters remaining counter",
     type: "registry:block",
     registryDependencies: ["@coss/field","@coss/input"],
     files: [{
-      path: "registry/default/particles/p-input-group-25.tsx",
+      path: "registry/default/particles/p-input-18.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-group-25.tsx")
+      const mod = await import("@/registry/default/particles/p-input-18.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -6233,6 +6233,168 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-7": {
+    name: "p-textarea-7",
+    description: "Textarea with label and required indicator",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["label","textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-8": {
+    name: "p-textarea-8",
+    description: "Textarea with optional label",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["label","textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-9": {
+    name: "p-textarea-9",
+    description: "Textarea with custom border and background",
+    type: "registry:block",
+    registryDependencies: ["@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-10": {
+    name: "p-textarea-10",
+    description: "Read-only textarea",
+    type: "registry:block",
+    registryDependencies: ["@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-11": {
+    name: "p-textarea-11",
+    description: "Textarea with characters remaining counter",
+    type: "registry:block",
+    registryDependencies: ["@coss/field","@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["field","textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-12": {
+    name: "p-textarea-12",
+    description: "Textarea field with required indicator",
+    type: "registry:block",
+    registryDependencies: ["@coss/field","@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["field","label","textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-13": {
+    name: "p-textarea-13",
+    description: "Shorter textarea with fixed height",
+    type: "registry:block",
+    registryDependencies: ["@coss/textarea"],
+    files: [{
+      path: "registry/default/particles/p-textarea-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-14": {
+    name: "p-textarea-14",
+    description: "Textarea with right button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group"],
+    files: [{
+      path: "registry/default/particles/p-textarea-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","textarea"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-textarea-15": {
+    name: "p-textarea-15",
+    description: "Textarea with left button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input-group"],
+    files: [{
+      path: "registry/default/particles/p-textarea-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-textarea-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","input group","textarea"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-toast-1": {

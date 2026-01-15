@@ -19,6 +19,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "fieldset"
+    "fieldset",
+    "input"
   ]
 }
