@@ -129,6 +129,8 @@ function EventTypeItemContent({
       <ListItem
         labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
         labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
+        sortableRef={sortableProps?.setNodeRef}
+        sortableStyle={sortableProps?.style}
       >
         {sortableProps && (
           <ListItemDragHandle

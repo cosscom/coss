@@ -21,12 +21,14 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
+  setNodeRef: (node: HTMLElement | null) => void;
+  style: CSSProperties;
 }
 
 interface SortableItemProps {
@@ -44,18 +46,14 @@ export function SortableItem({ id, children }: SortableItemProps) {
     isDragging,
   } = useSortable({ id });
 
-  const style = {
-    opacity: isDragging ? 0.5 : 1,
+  const style: CSSProperties = {
+    opacity: isDragging ? 0.5 : undefined,
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 1 : 0,
+    zIndex: isDragging ? 1 : undefined,
   };
 
-  return (
-    <div ref={setNodeRef} style={style}>
-      {children({ attributes, isDragging, listeners })}
-    </div>
-  );
+  return children({ attributes, isDragging, listeners, setNodeRef, style });
 }
 
 interface SortableListProps<T extends { id: UniqueIdentifier }> {

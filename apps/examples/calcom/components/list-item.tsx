@@ -4,13 +4,15 @@ import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 
 interface ListItemProps {
   labelColorLight?: string;
   labelColorDark?: string;
   children: ReactNode;
   className?: string;
+  sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
 }
 
 export function ListItem({
@@ -18,14 +20,21 @@ export function ListItem({
   labelColorDark,
   children,
   className,
+  sortableRef,
+  sortableStyle,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
-  const style = hasLabelColor
+  const labelStyle = hasLabelColor
     ? ({
         "--event-label-dark": labelColorDark || "transparent",
         "--event-label-light": labelColorLight || "transparent",
-      } as React.CSSProperties)
+      } as CSSProperties)
     : undefined;
+
+  const style =
+    labelStyle || sortableStyle
+      ? { ...labelStyle, ...sortableStyle }
+      : undefined;
 
   return (
     <div
@@ -34,6 +43,7 @@ export function ListItem({
         className,
       )}
       data-slot="list-item"
+      ref={sortableRef}
       style={style}
     >
       {hasLabelColor && (
