@@ -18,10 +18,10 @@ import {
 } from "@dnd-kit/modifiers";
 import {
   arrayMove,
+  rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
   type CSSProperties,
@@ -119,7 +119,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       >
         <SortableContext
           items={items.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
+          strategy={rectSortingStrategy}
         >
           {children}
         </SortableContext>
