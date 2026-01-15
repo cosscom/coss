@@ -131,10 +131,7 @@ function EventTypeItemContent({
         labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       >
         {sortableProps && (
-          <ListItemDragHandle
-            attributes={sortableProps.attributes}
-            listeners={sortableProps.listeners}
-          />
+          <ListItemDragHandle attributes={sortableProps.attributes} />
         )}
         <ListItemContent>
           <ListItemHeader>
