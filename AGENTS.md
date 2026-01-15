@@ -33,3 +33,27 @@ const items = [
 ```
 
 See `p-select-1` for a reference implementation.
+
+### InputGroup Components
+
+When using `InputGroupAddon`, it must always come **after** an `InputGroupInput` or `InputGroupTextarea` in the DOM order. The addon's `onMouseDown` handler uses `querySelector` to find the input/textarea element to focus, so if the addon appears before the input element, it won't be able to find it.
+
+```tsx
+// Correct order
+<InputGroup>
+  <InputGroupTextarea placeholder="Enter code..." />
+  <InputGroupAddon align="block-end">
+    <Button>Submit</Button>
+  </InputGroupAddon>
+</InputGroup>
+
+// Incorrect - addon won't find the textarea
+<InputGroup>
+  <InputGroupAddon align="block-start">
+    <Button>Submit</Button>
+  </InputGroupAddon>
+  <InputGroupTextarea placeholder="Enter code..." />
+</InputGroup>
+```
+
+Note: The `align` prop controls visual positioning (e.g., `block-start` renders at top, `block-end` at bottom), but the DOM order must still have the input/textarea first for the focus behavior to work.
