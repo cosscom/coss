@@ -6,18 +6,18 @@ import {
 
 export default function Particle() {
   return (
-    <div className="-space-x-2 flex">
-      <Avatar className="size-10 ring-2 ring-background">
+    <div className="-space-x-1.5 flex">
+      <Avatar className="size-6 ring-2 ring-background">
         <AvatarImage
           alt="U1"
-          src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=120&h=120&dpr=2&q=80"
+          src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80"
         />
         <AvatarFallback>U1</AvatarFallback>
       </Avatar>
-      <Avatar className="size-8 ring-2 ring-background">
+      <Avatar className="size-6 ring-2 ring-background">
         <AvatarImage
           alt="U2"
-          src="https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=96&h=96&dpr=2&q=80"
+          src="https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80"
         />
         <AvatarFallback>U2</AvatarFallback>
       </Avatar>

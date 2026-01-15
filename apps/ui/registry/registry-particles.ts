@@ -442,9 +442,17 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("avatar"),
-    description: "Overlapping avatar group with different sizes",
+    description: "Small overlapping avatar group",
     files: [{ path: "particles/p-avatar-13.tsx", type: "registry:block" }],
     name: "p-avatar-13",
+    registryDependencies: ["@coss/avatar"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("avatar"),
+    description: "Large overlapping avatar group",
+    files: [{ path: "particles/p-avatar-14.tsx", type: "registry:block" }],
+    name: "p-avatar-14",
     registryDependencies: ["@coss/avatar"],
     type: "registry:block",
   },
