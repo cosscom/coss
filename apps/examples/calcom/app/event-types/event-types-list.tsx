@@ -260,29 +260,9 @@ export function EventTypesList() {
     );
   }
 
-  const renderOverlay = (activeId: number | string) => {
-    const eventType = eventTypes.find((et) => et.id === activeId);
-    if (!eventType) return null;
-    const isHidden = hiddenStates[eventType.id] ?? false;
-    const eventPath = getEventTypePath(eventType);
-    return (
-      <EventTypeItemContent
-        eventPath={eventPath}
-        eventType={eventType}
-        isHidden={isHidden}
-        isLast={true}
-        onHiddenChange={() => {}}
-      />
-    );
-  };
-
   return (
     <TooltipProvider delay={0}>
-      <SortableList
-        items={eventTypes}
-        onReorder={setEventTypes}
-        renderOverlay={renderOverlay}
-      >
+      <SortableList items={eventTypes} onReorder={setEventTypes}>
         <Frame className="-m-1">
           <FramePanel className="p-0">
             {eventTypes.map((eventType, index) => {
