@@ -154,6 +154,7 @@ export function BookingsList() {
                       <ListItem
                         labelColorDark={eventTypeColorDark ?? undefined}
                         labelColorLight={eventTypeColorLight ?? undefined}
+                        sortableDragging={sortableProps.isDragging}
                         sortableRef={sortableProps.setNodeRef}
                         sortableStyle={sortableProps.style}
                       >

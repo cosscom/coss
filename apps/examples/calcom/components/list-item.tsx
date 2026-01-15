@@ -13,6 +13,7 @@ interface ListItemProps {
   className?: string;
   sortableRef?: (node: HTMLElement | null) => void;
   sortableStyle?: CSSProperties;
+  sortableDragging?: boolean;
 }
 
 export function ListItem({
@@ -22,8 +23,10 @@ export function ListItem({
   className,
   sortableRef,
   sortableStyle,
+  sortableDragging,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
+  const isSortable = sortableRef !== undefined;
   const labelStyle = hasLabelColor
     ? ({
         "--event-label-dark": labelColorDark || "transparent",
@@ -40,8 +43,11 @@ export function ListItem({
     <div
       className={cn(
         "relative flex transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        isSortable &&
+          "z-[var(--index)] translate-y-[var(--translate-y)] data-[dragging]:opacity-50",
         className,
       )}
+      data-dragging={sortableDragging || undefined}
       data-slot="list-item"
       ref={sortableRef}
       style={style}
