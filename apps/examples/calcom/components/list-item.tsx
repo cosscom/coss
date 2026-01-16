@@ -34,7 +34,7 @@ export function ListItem({
   sortableListeners,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
-  const isSortable = sortableRef !== undefined;
+  const _isSortable = sortableRef !== undefined;
   const labelStyle = hasLabelColor
     ? ({
         "--event-label-dark": labelColorDark || "transparent",
@@ -50,9 +50,7 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "not-first:-mt-px not-last:-mb-px relative flex overflow-hidden border-y bg-background transition-[background-color,border-radius] first:not-data-dragging:rounded-t-[calc(var(--radius-xl)-1px)] first:not-data-dragged:border-t-transparent last:not-data-dragging:rounded-b-[calc(var(--radius-xl)-1px)] last:not-data-dragged:border-b-transparent has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] data-[position=first]:not-data-dragged:border-t-transparent data-[position=last]:not-data-dragged:border-b-transparent dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
-        isSortable &&
-          "translate-y-(--translate-y) data-dragging:pointer-events-none data-dragged:z-1 data-dragged:rounded-[calc(var(--radius-xl)-1px)] data-[position=first]:rounded-t-[calc(var(--radius-xl)-1px)] data-[position=last]:rounded-b-[calc(var(--radius-xl)-1px)] data-dragged:bg-popover data-dragged:bg-clip-padding data-dragged:shadow-lg/5 data-dragging:not-data-dragged:transition-[translate,border-radius]",
+        "not-first:-mt-px not-last:-mb-px relative flex translate-y-(--translate-y) overflow-hidden border-y bg-background transition-[background-color,border-radius] first:not-data-dragging:rounded-t-[calc(var(--radius-xl)-1px)] first:not-data-dragged:border-t-transparent last:not-data-dragging:rounded-b-[calc(var(--radius-xl)-1px)] last:not-data-dragged:border-b-transparent has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] data-dragging:pointer-events-none data-dragged:z-1 data-dragged:rounded-[calc(var(--radius-xl)-1px)] data-[position=first]:rounded-t-[calc(var(--radius-xl)-1px)] data-[position=last]:rounded-b-[calc(var(--radius-xl)-1px)] data-[position=first]:not-data-dragged:border-t-transparent data-[position=last]:not-data-dragged:border-b-transparent data-dragged:bg-popover data-dragged:bg-clip-padding data-dragged:shadow-lg/5 data-dragging:not-data-dragged:transition-[translate,border-radius] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
