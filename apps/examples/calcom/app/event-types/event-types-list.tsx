@@ -140,9 +140,7 @@ function EventTypeItemContent({
       <ListItemContent>
         <ListItemHeader>
           <div className="flex items-center gap-2">
-            <ListItemTitle className="truncate" href={eventPath}>
-              {eventType.title}
-            </ListItemTitle>
+            <ListItemTitle href={eventPath}>{eventType.title}</ListItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}
             </span>
@@ -234,7 +232,7 @@ export function EventTypesList() {
   if (showLoading) {
     return (
       <Frame className="-m-1">
-        <FramePanel className="p-0">
+        <FramePanel className="bg-transparent p-0">
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />

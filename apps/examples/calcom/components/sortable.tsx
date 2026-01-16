@@ -88,7 +88,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 4,
       },
     }),
     useSensor(KeyboardSensor, {
