@@ -3874,6 +3874,43 @@
     },
     {
       "categories": [
+        "card",
+        "form",
+        "input",
+        "select",
+        "tabs"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Stripe checkout form with multiple payment methods",
+      "files": [
+        {
+          "path": "registry/default/particles/p-form-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full"
+      },
+      "name": "p-form-3",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/button",
+        "@coss/card",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input",
+        "@coss/label",
+        "@coss/select",
+        "@coss/separator",
+        "@coss/spinner",
+        "@coss/tabs"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "frame"
       ],
       "description": "Basic frame",
