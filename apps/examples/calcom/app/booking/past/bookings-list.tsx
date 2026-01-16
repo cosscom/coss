@@ -74,7 +74,7 @@ export function BookingsList() {
   if (showLoading) {
     return (
       <Frame className="-m-1">
-        <FramePanel className="p-0">
+        <FramePanel className="bg-transparent p-0">
           <BookingSkeletonItem />
           <BookingSkeletonItem />
           <BookingSkeletonItem />
@@ -120,7 +120,7 @@ export function BookingsList() {
     <TooltipProvider delay={150} timeout={0}>
       <SortableList items={paginatedBookings} onReorder={handleReorder}>
         <Frame className="-m-1">
-          <FramePanel className="p-0">
+          <FramePanel className="bg-transparent p-0">
             {paginatedBookings.map((booking, _index) => {
               const dateStr = formatBookingDate(booking.startTime);
               const timeStr = formatBookingTime(
@@ -150,6 +150,8 @@ export function BookingsList() {
                       sortableDragging={sortableProps.isDragging}
                       sortableDraggingAny={sortableProps.isDraggingAny}
                       sortableListeners={sortableProps.listeners}
+                      sortableProjectedIndex={sortableProps.projectedIndex}
+                      sortableProjectedLength={sortableProps.projectedLength}
                       sortableRef={sortableProps.setNodeRef}
                       sortableStyle={sortableProps.style}
                     >
