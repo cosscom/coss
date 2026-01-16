@@ -1,17 +1,26 @@
 "use client";
 
 import {
+  BuildingIcon,
   CheckIcon,
-  ChevronDownIcon,
   CreditCardIcon,
   LockIcon,
+  ShieldCheckIcon,
   TagIcon,
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
+import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardPanel,
+  CardTitle,
+} from "@/registry/default/ui/card";
 import { Checkbox } from "@/registry/default/ui/checkbox";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
@@ -26,22 +35,17 @@ import { Separator } from "@/registry/default/ui/separator";
 import { Spinner } from "@/registry/default/ui/spinner";
 
 const countryOptions = [
-  { label: "United States", value: "US" },
-  { label: "Canada", value: "CA" },
-  { label: "United Kingdom", value: "GB" },
-  { label: "Germany", value: "DE" },
-  { label: "France", value: "FR" },
-  { label: "Australia", value: "AU" },
-  { label: "Japan", value: "JP" },
-  { label: "Netherlands", value: "NL" },
-  { label: "Spain", value: "ES" },
-  { label: "Italy", value: "IT" },
+  { label: "United States", value: "us" },
+  { label: "Canada", value: "ca" },
+  { label: "United Kingdom", value: "uk" },
+  { label: "Germany", value: "de" },
+  { label: "France", value: "fr" },
+  { label: "Australia", value: "au" },
 ];
 
 const orderItems = [
   {
     id: "pure-glow",
-    image: "https://placehold.co/48x48/e2e8f0/64748b?text=PG",
     name: "Pure Glow Cream",
     price: 32.0,
     quantity: 1,
@@ -64,81 +68,32 @@ function ApplePayIcon({ className }: { className?: string }) {
   );
 }
 
-function VisaIcon({ className }: { className?: string }) {
+function GooglePayIcon({ className }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
       className={className}
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <rect fill="#1434CB" height="32" rx="4" width="32" />
       <path
-        d="M13.823 21.25H11.349L12.89 10.75H15.364L13.823 21.25ZM9.456 10.75L7.099 17.955L6.82 16.555L6.82 16.556L5.989 11.573C5.989 11.573 5.889 10.75 4.848 10.75H1.042L1 10.892C1 10.892 2.162 11.138 3.524 11.938L5.67 21.25H8.254L12.138 10.75H9.456ZM28.5 21.25H30.75L28.785 10.75H26.785C25.893 10.75 25.678 11.429 25.678 11.429L21.893 21.25H24.478L24.994 19.821H28.138L28.5 21.25ZM25.714 17.821L27.071 13.964L27.821 17.821H25.714ZM22.178 13.571L22.535 11.321C22.535 11.321 21.464 10.893 20.357 10.893C19.143 10.893 16.25 11.429 16.25 14.036C16.25 16.5 19.678 16.536 19.678 17.821C19.678 19.107 16.607 18.786 15.607 17.964L15.214 20.321C15.214 20.321 16.321 20.857 18.036 20.857C19.75 20.857 22.143 19.929 22.143 17.536C22.143 15.036 18.678 14.786 18.678 13.75C18.678 12.714 21.107 12.893 22.178 13.571Z"
-        fill="white"
+        d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"
+        fill="#4285F4"
       />
     </svg>
   );
 }
 
-function MastercardIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 32 32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect fill="#000" height="32" rx="4" width="32" />
-      <circle cx="12" cy="16" fill="#EB001B" r="7" />
-      <circle cx="20" cy="16" fill="#F79E1B" r="7" />
-      <path
-        d="M16 10.5C17.38 11.64 18.25 13.38 18.25 15.31C18.25 15.54 18.23 15.77 18.2 16C18.23 16.23 18.25 16.46 18.25 16.69C18.25 18.62 17.38 20.36 16 21.5C14.62 20.36 13.75 18.62 13.75 16.69C13.75 16.46 13.77 16.23 13.8 16C13.77 15.77 13.75 15.54 13.75 15.31C13.75 13.38 14.62 11.64 16 10.5Z"
-        fill="#FF5F00"
-      />
-    </svg>
-  );
-}
-
-function AmexIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 32 32"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect fill="#006FCF" height="32" rx="4" width="32" />
-      <path
-        d="M5 16.5L6.5 12H8.5L10 16.5V12H13L14 15L15 12H18V20H15.5L14 16.5L12.5 20H10V15.5L8.5 20H6.5L5 16.5ZM19 12H27L28 13.5V14.5H25V15.5H28V16.5H25V17.5H28V18.5L27 20H19V12Z"
-        fill="white"
-      />
-    </svg>
-  );
-}
-
-function StripeLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-label="Stripe"
-      className={className}
-      fill="currentColor"
-      viewBox="0 0 60 25"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a10.3 10.3 0 0 1-4.56.95c-4.01 0-6.83-2.5-6.83-7.28 0-4.19 2.39-7.36 6.42-7.36 3.94 0 5.78 2.91 5.78 6.94v1.83zm-5.78-5.63c-1.26 0-2.06.94-2.21 2.39h4.34c-.1-1.45-.82-2.39-2.13-2.39zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.24 0 5.06-2.7 7.76-5.65 7.76zm-.95-11.58c-.84 0-1.42.26-1.96.72v5.5c.5.4 1.04.7 1.96.7 1.52 0 2.54-1.5 2.54-3.5 0-1.98-1.04-3.42-2.54-3.42zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-5.57h4.13v3.57h-4.13V0zM20.24 5.57l.1 1.4c.9-1.1 2.2-1.66 3.6-1.66v3.88c-.3-.05-.62-.1-.96-.1-1.04 0-2.1.37-2.74 1.08v9.84h-4.13V5.57h4.13zM10.7 8.75c0-.7.6-1.02 1.5-1.02 1.32 0 2.98.4 4.3 1.12V5.2a11.35 11.35 0 0 0-4.3-.8c-3.52 0-5.86 1.84-5.86 4.9 0 4.78 6.56 4.01 6.56 6.07 0 .82-.72 1.1-1.72 1.1-1.49 0-3.4-.62-4.9-1.45v3.7c1.67.78 3.35 1.12 4.9 1.12 3.6 0 6.08-1.78 6.08-4.89 0-5.15-6.56-4.24-6.56-6.2z" />
-    </svg>
-  );
-}
+type PaymentMethod = "card" | "alipay" | "bank";
 
 export default function StripeCheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<PaymentMethod>("card");
   const [billingIsSameAsShipping, setBillingIsSameAsShipping] = useState(true);
-  const [saveInfo, setSaveInfo] = useState(false);
 
   const subtotal = orderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -164,7 +119,7 @@ export default function StripeCheckoutPage() {
   const formatExpiry = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     if (v.length >= 2) {
-      return `${v.substring(0, 2)} / ${v.substring(2, 4)}`;
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
     }
     return v;
   };
@@ -177,133 +132,175 @@ export default function StripeCheckoutPage() {
     alert("Payment successful! Thank you for your purchase.");
   };
 
-  const handleApplePay = async () => {
+  const handleWalletPayment = async (wallet: string) => {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 2000));
     setLoading(false);
-    alert("Apple Pay payment successful! Thank you for your purchase.");
+    alert(`${wallet} payment successful! Thank you for your purchase.`);
   };
 
   return (
-    <main className="min-h-screen bg-[#f6f9fc] dark:bg-background">
-      <div className="mx-auto grid min-h-screen max-w-5xl lg:grid-cols-[400px_1fr]">
-        <div className="order-2 border-border/50 border-l bg-white p-8 lg:order-1 dark:bg-card">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-sm">
-              P
-            </div>
-            <div>
-              <h2 className="font-medium text-lg">Pay Powdur</h2>
-              <p className="font-semibold text-2xl">${total.toFixed(2)}</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {orderItems.map((item) => (
-              <div className="flex items-center gap-3" key={item.id}>
-                <img
-                  alt={item.name}
-                  className="size-12 rounded-md object-cover"
-                  src={item.image}
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{item.name}</p>
+    <main className="container flex flex-1 flex-col items-center justify-center py-12">
+      <div className="grid w-full max-w-5xl gap-8 lg:grid-cols-[380px_1fr]">
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle>Order Summary</CardTitle>
+            <CardDescription>Review your order details</CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <div className="flex flex-col gap-4">
+              {orderItems.map((item) => (
+                <div
+                  className="flex items-center justify-between"
+                  key={item.id}
+                >
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-muted-foreground text-sm">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+                  <p className="font-medium">${item.price.toFixed(2)}</p>
                 </div>
-                <p className="font-medium text-sm">${item.price.toFixed(2)}</p>
-              </div>
-            ))}
+              ))}
 
-            <Separator />
+              <Separator />
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TagIcon
-                    aria-hidden="true"
-                    className="size-4 text-green-600"
-                  />
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                      <TagIcon aria-hidden="true" className="size-3" />
+                      {promoCode.code}
+                    </Badge>
+                  </div>
                   <span className="font-medium text-green-600">
-                    {promoCode.code}
+                    -${discount.toFixed(2)}
                   </span>
                 </div>
-                <span className="text-green-600">-${discount.toFixed(2)}</span>
               </div>
-              <p className="text-muted-foreground text-xs">10% off</p>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax</span>
-                <span className="text-muted-foreground">
-                  Enter address to calculate
-                </span>
+
+              <Separator />
+
+              <div className="flex justify-between font-semibold text-lg">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-dashed p-3">
+                <ShieldCheckIcon
+                  aria-hidden="true"
+                  className="size-5 text-muted-foreground"
+                />
+                <div className="text-xs">
+                  <p className="font-medium">Secure Checkout</p>
+                  <p className="text-muted-foreground">
+                    256-bit SSL encryption
+                  </p>
+                </div>
               </div>
             </div>
+          </CardPanel>
+        </Card>
 
-            <Separator />
-
-            <div className="flex justify-between font-semibold">
-              <span>Total due</span>
-              <span>${total.toFixed(2)}</span>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CreditCardIcon aria-hidden="true" className="size-5" />
+              <CardTitle>Payment</CardTitle>
             </div>
-          </div>
-        </div>
-
-        <div className="order-1 p-8 lg:order-2">
-          <Form onSubmit={onSubmit}>
-            <div className="space-y-6">
-              <Button
-                className="w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                disabled={loading}
-                onClick={handleApplePay}
-                size="lg"
-                type="button"
-              >
-                <ApplePayIcon className="size-5" />
-                Pay
-              </Button>
-
-              <div className="flex items-center gap-4">
-                <Separator className="flex-1" />
-                <span className="text-muted-foreground text-xs uppercase">
-                  Or
-                </span>
-                <Separator className="flex-1" />
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="font-semibold">Shipping information</h2>
-
-                <Field name="email">
-                  <FieldLabel>Email</FieldLabel>
-                  <Input
-                    disabled={loading}
-                    placeholder="email@example.com"
-                    required
-                    type="email"
-                  />
-                </Field>
-
-                <div className="space-y-2">
-                  <Label className="font-medium text-sm">
-                    Shipping address
+            <CardDescription>Complete your purchase securely</CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <Form onSubmit={onSubmit}>
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-3">
+                  <Label className="font-semibold text-base">
+                    Express Checkout
                   </Label>
-                  <div className="overflow-hidden rounded-md border">
-                    <Input
-                      className="rounded-none border-0 border-b"
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button
+                      className="w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
                       disabled={loading}
-                      placeholder="Full name"
+                      onClick={() => handleWalletPayment("Apple Pay")}
+                      type="button"
+                    >
+                      <ApplePayIcon className="size-5" />
+                      Apple Pay
+                    </Button>
+                    <Button
+                      disabled={loading}
+                      onClick={() => handleWalletPayment("Google Pay")}
+                      type="button"
+                      variant="outline"
+                    >
+                      <GooglePayIcon className="size-5" />
+                      Google Pay
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Separator className="flex-1" />
+                  <span className="text-muted-foreground text-xs">
+                    Or pay with card
+                  </span>
+                  <Separator className="flex-1" />
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <Label className="font-semibold text-base">
+                    Contact Information
+                  </Label>
+                  <Field name="email">
+                    <FieldLabel>Email</FieldLabel>
+                    <Input
+                      disabled={loading}
+                      placeholder="john@example.com"
                       required
-                      type="text"
+                      type="email"
                     />
-                    <Select defaultValue="US" items={countryOptions}>
-                      <SelectTrigger className="rounded-none border-0 border-b">
+                    <FieldError>Please enter a valid email.</FieldError>
+                  </Field>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-4">
+                  <Label className="font-semibold text-base">
+                    Shipping Address
+                  </Label>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field name="firstName">
+                      <FieldLabel>First Name</FieldLabel>
+                      <Input
+                        disabled={loading}
+                        placeholder="John"
+                        required
+                        type="text"
+                      />
+                      <FieldError>Please enter your first name.</FieldError>
+                    </Field>
+                    <Field name="lastName">
+                      <FieldLabel>Last Name</FieldLabel>
+                      <Input
+                        disabled={loading}
+                        placeholder="Doe"
+                        required
+                        type="text"
+                      />
+                      <FieldError>Please enter your last name.</FieldError>
+                    </Field>
+                  </div>
+                  <Field name="country">
+                    <FieldLabel>Country</FieldLabel>
+                    <Select defaultValue="us" items={countryOptions}>
+                      <SelectTrigger>
                         <SelectValue />
-                        <ChevronDownIcon
-                          aria-hidden="true"
-                          className="ml-auto size-4 opacity-50"
-                        />
                       </SelectTrigger>
                       <SelectPopup>
                         {countryOptions.map(({ label, value }) => (
@@ -313,237 +310,221 @@ export default function StripeCheckoutPage() {
                         ))}
                       </SelectPopup>
                     </Select>
+                  </Field>
+                  <Field name="address">
+                    <FieldLabel>Address</FieldLabel>
                     <Input
-                      className="rounded-none border-0"
                       disabled={loading}
-                      placeholder="Address"
+                      placeholder="123 Main St"
                       required
                       type="text"
                     />
+                    <FieldError>Please enter your address.</FieldError>
+                  </Field>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Field name="city">
+                      <FieldLabel>City</FieldLabel>
+                      <Input
+                        disabled={loading}
+                        placeholder="San Francisco"
+                        required
+                        type="text"
+                      />
+                      <FieldError>Please enter your city.</FieldError>
+                    </Field>
+                    <Field name="state">
+                      <FieldLabel>State</FieldLabel>
+                      <Input
+                        disabled={loading}
+                        placeholder="CA"
+                        required
+                        type="text"
+                      />
+                      <FieldError>Please enter your state.</FieldError>
+                    </Field>
+                    <Field name="zip">
+                      <FieldLabel>ZIP Code</FieldLabel>
+                      <Input
+                        disabled={loading}
+                        placeholder="94102"
+                        required
+                        type="text"
+                      />
+                      <FieldError>Please enter your ZIP code.</FieldError>
+                    </Field>
                   </div>
-                  <button
-                    className="text-primary text-sm hover:underline"
-                    type="button"
-                  >
-                    Enter address manually
-                  </button>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <h2 className="font-semibold">Payment method</h2>
+                <Separator />
 
-                <div className="overflow-hidden rounded-md border">
-                  <button
-                    className={`flex w-full items-center gap-3 border-b p-4 text-left ${selectedPaymentMethod === "card" ? "bg-primary/5" : ""}`}
-                    onClick={() => setSelectedPaymentMethod("card")}
-                    type="button"
-                  >
-                    <div
-                      className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "card" ? "border-primary bg-primary" : "border-muted-foreground"}`}
+                <div className="flex flex-col gap-4">
+                  <Label className="font-semibold text-base">
+                    Payment Method
+                  </Label>
+
+                  <div className="flex flex-col overflow-hidden rounded-lg border">
+                    <button
+                      className={`flex items-center gap-3 border-b p-4 text-left transition-colors ${selectedPaymentMethod === "card" ? "bg-muted/50" : "hover:bg-muted/30"}`}
+                      onClick={() => setSelectedPaymentMethod("card")}
+                      type="button"
                     >
-                      {selectedPaymentMethod === "card" && (
-                        <CheckIcon
-                          aria-hidden="true"
-                          className="size-3 text-white"
-                        />
-                      )}
-                    </div>
-                    <CreditCardIcon
-                      aria-hidden="true"
-                      className="size-5 text-muted-foreground"
-                    />
-                    <span className="font-medium">Card</span>
-                  </button>
+                      <div
+                        className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "card" ? "border-primary bg-primary" : "border-muted-foreground"}`}
+                      >
+                        {selectedPaymentMethod === "card" && (
+                          <CheckIcon
+                            aria-hidden="true"
+                            className="size-3 text-primary-foreground"
+                          />
+                        )}
+                      </div>
+                      <CreditCardIcon
+                        aria-hidden="true"
+                        className="size-5 text-muted-foreground"
+                      />
+                      <span className="font-medium">Credit or Debit Card</span>
+                    </button>
 
-                  {selectedPaymentMethod === "card" && (
-                    <div className="space-y-4 p-4">
-                      <div className="space-y-2">
-                        <Label className="font-medium text-sm">
-                          Card information
-                        </Label>
-                        <div className="overflow-hidden rounded-md border">
-                          <div className="relative">
+                    {selectedPaymentMethod === "card" && (
+                      <div className="flex flex-col gap-4 border-b bg-muted/20 p-4">
+                        <Field name="cardNumber">
+                          <FieldLabel>Card Number</FieldLabel>
+                          <Input
+                            disabled={loading}
+                            maxLength={19}
+                            onChange={(e) =>
+                              setCardNumber(formatCardNumber(e.target.value))
+                            }
+                            placeholder="4242 4242 4242 4242"
+                            required
+                            type="text"
+                            value={cardNumber}
+                          />
+                          <FieldError>
+                            Please enter a valid card number.
+                          </FieldError>
+                        </Field>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field name="expiry">
+                            <FieldLabel>Expiration Date</FieldLabel>
                             <Input
-                              className="rounded-none border-0 border-b pr-24"
                               disabled={loading}
-                              maxLength={19}
-                              onChange={(e) =>
-                                setCardNumber(formatCardNumber(e.target.value))
-                              }
-                              placeholder="1234 1234 1234 1234"
-                              required
-                              type="text"
-                              value={cardNumber}
-                            />
-                            <div className="-translate-y-1/2 absolute top-1/2 right-3 flex gap-1">
-                              <VisaIcon className="size-6" />
-                              <MastercardIcon className="size-6" />
-                              <AmexIcon className="size-6" />
-                            </div>
-                          </div>
-                          <div className="flex">
-                            <Input
-                              className="flex-1 rounded-none border-0 border-r"
-                              disabled={loading}
-                              maxLength={7}
+                              maxLength={5}
                               onChange={(e) =>
                                 setExpiry(formatExpiry(e.target.value))
                               }
-                              placeholder="MM / YY"
+                              placeholder="MM/YY"
                               required
                               type="text"
                               value={expiry}
                             />
-                            <div className="relative flex-1">
-                              <Input
-                                className="rounded-none border-0 pr-10"
-                                disabled={loading}
-                                maxLength={4}
-                                onChange={(e) =>
-                                  setCvc(e.target.value.replace(/[^0-9]/g, ""))
-                                }
-                                placeholder="CVC"
-                                required
-                                type="text"
-                                value={cvc}
-                              />
-                              <LockIcon
-                                aria-hidden="true"
-                                className="-translate-y-1/2 absolute top-1/2 right-3 size-4 text-muted-foreground"
-                              />
-                            </div>
-                          </div>
+                            <FieldError>
+                              Please enter a valid expiry date.
+                            </FieldError>
+                          </Field>
+                          <Field name="cvc">
+                            <FieldLabel>CVC</FieldLabel>
+                            <Input
+                              disabled={loading}
+                              maxLength={4}
+                              onChange={(e) =>
+                                setCvc(e.target.value.replace(/[^0-9]/g, ""))
+                              }
+                              placeholder="123"
+                              required
+                              type="text"
+                              value={cvc}
+                            />
+                            <FieldError>Please enter a valid CVC.</FieldError>
+                          </Field>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={billingIsSameAsShipping}
+                            name="billingIsSameAsShipping"
+                            onCheckedChange={(checked) =>
+                              setBillingIsSameAsShipping(checked === true)
+                            }
+                          />
+                          <Label className="text-sm">
+                            Billing address same as shipping
+                          </Label>
                         </div>
                       </div>
+                    )}
 
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={billingIsSameAsShipping}
-                          name="billingIsSameAsShipping"
-                          onCheckedChange={(checked) =>
-                            setBillingIsSameAsShipping(checked === true)
-                          }
-                        />
-                        <Label className="text-sm">
-                          Billing info is same as shipping
-                        </Label>
+                    <button
+                      className={`flex items-center gap-3 border-b p-4 text-left transition-colors ${selectedPaymentMethod === "alipay" ? "bg-muted/50" : "hover:bg-muted/30"}`}
+                      onClick={() => setSelectedPaymentMethod("alipay")}
+                      type="button"
+                    >
+                      <div
+                        className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "alipay" ? "border-primary bg-primary" : "border-muted-foreground"}`}
+                      >
+                        {selectedPaymentMethod === "alipay" && (
+                          <CheckIcon
+                            aria-hidden="true"
+                            className="size-3 text-primary-foreground"
+                          />
+                        )}
                       </div>
-                    </div>
-                  )}
+                      <span className="font-medium">Alipay</span>
+                    </button>
 
-                  <button
-                    className={`flex w-full items-center gap-3 border-b p-4 text-left ${selectedPaymentMethod === "alipay" ? "bg-primary/5" : ""}`}
-                    onClick={() => setSelectedPaymentMethod("alipay")}
-                    type="button"
-                  >
-                    <div
-                      className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "alipay" ? "border-primary bg-primary" : "border-muted-foreground"}`}
+                    <button
+                      className={`flex items-center gap-3 p-4 text-left transition-colors ${selectedPaymentMethod === "bank" ? "bg-muted/50" : "hover:bg-muted/30"}`}
+                      onClick={() => setSelectedPaymentMethod("bank")}
+                      type="button"
                     >
-                      {selectedPaymentMethod === "alipay" && (
-                        <CheckIcon
-                          aria-hidden="true"
-                          className="size-3 text-white"
-                        />
-                      )}
-                    </div>
-                    <span className="font-medium">Alipay</span>
-                  </button>
+                      <div
+                        className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "bank" ? "border-primary bg-primary" : "border-muted-foreground"}`}
+                      >
+                        {selectedPaymentMethod === "bank" && (
+                          <CheckIcon
+                            aria-hidden="true"
+                            className="size-3 text-primary-foreground"
+                          />
+                        )}
+                      </div>
+                      <BuildingIcon
+                        aria-hidden="true"
+                        className="size-5 text-muted-foreground"
+                      />
+                      <span className="font-medium">Bank Transfer</span>
+                    </button>
+                  </div>
+                </div>
 
-                  <button
-                    className={`flex w-full items-center gap-3 border-b p-4 text-left ${selectedPaymentMethod === "cashapp" ? "bg-primary/5" : ""}`}
-                    onClick={() => setSelectedPaymentMethod("cashapp")}
-                    type="button"
+                <div className="flex flex-col gap-4">
+                  <Button
+                    className="w-full"
+                    disabled={loading}
+                    size="lg"
+                    type="submit"
                   >
-                    <div
-                      className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "cashapp" ? "border-primary bg-primary" : "border-muted-foreground"}`}
-                    >
-                      {selectedPaymentMethod === "cashapp" && (
-                        <CheckIcon
-                          aria-hidden="true"
-                          className="size-3 text-white"
-                        />
-                      )}
-                    </div>
-                    <span className="font-medium">Cash App Pay</span>
-                  </button>
-
-                  <button
-                    className={`flex w-full items-center gap-3 p-4 text-left ${selectedPaymentMethod === "bank" ? "bg-primary/5" : ""}`}
-                    onClick={() => setSelectedPaymentMethod("bank")}
-                    type="button"
-                  >
-                    <div
-                      className={`flex size-5 items-center justify-center rounded-full border-2 ${selectedPaymentMethod === "bank" ? "border-primary bg-primary" : "border-muted-foreground"}`}
-                    >
-                      {selectedPaymentMethod === "bank" && (
-                        <CheckIcon
-                          aria-hidden="true"
-                          className="size-3 text-white"
-                        />
-                      )}
-                    </div>
-                    <span className="font-medium">US bank account</span>
-                  </button>
+                    {loading ? (
+                      <>
+                        <Spinner aria-hidden="true" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <LockIcon aria-hidden="true" />
+                        Pay ${total.toFixed(2)}
+                      </>
+                    )}
+                  </Button>
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs">
+                    <ShieldCheckIcon aria-hidden="true" className="size-4" />
+                    <span>
+                      Secured by Stripe. Your payment info is encrypted.
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  checked={saveInfo}
-                  name="saveInfo"
-                  onCheckedChange={(checked) => setSaveInfo(checked === true)}
-                />
-                <div>
-                  <Label className="text-sm">
-                    Save my information for faster checkout
-                  </Label>
-                  <p className="text-muted-foreground text-xs">
-                    Pay securely at Powdur and everywhere{" "}
-                    <a className="text-primary hover:underline" href="#">
-                      Link
-                    </a>{" "}
-                    is accepted.
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                className="w-full"
-                disabled={loading}
-                size="lg"
-                type="submit"
-              >
-                {loading ? (
-                  <>
-                    <Spinner aria-hidden="true" />
-                    Processing...
-                  </>
-                ) : (
-                  "Pay"
-                )}
-              </Button>
-            </div>
-          </Form>
-
-          <footer className="mt-8 flex items-center justify-between text-muted-foreground text-xs">
-            <div className="flex items-center gap-1">
-              <span>Powered by</span>
-              <StripeLogo className="h-4" />
-            </div>
-            <div className="flex gap-4">
-              <button className="hover:text-foreground" type="button">
-                Legal
-              </button>
-              <button className="hover:text-foreground" type="button">
-                Returns
-              </button>
-              <button className="hover:text-foreground" type="button">
-                Contact
-              </button>
-            </div>
-          </footer>
-        </div>
+            </Form>
+          </CardPanel>
+        </Card>
       </div>
     </main>
   );
