@@ -58,7 +58,6 @@ export function SortableItem({ id, children }: SortableItemProps) {
     useSortable({ id });
 
   const style = {
-    "--index": isDragging ? 1 : 0,
     "--translate-y": `${transform?.y ?? 0}px`,
   } as CSSProperties;
 
