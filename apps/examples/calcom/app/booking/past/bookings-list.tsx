@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
@@ -77,13 +76,9 @@ export function BookingsList() {
       <Frame className="-m-1">
         <FramePanel className="p-0">
           <BookingSkeletonItem />
-          <Separator />
           <BookingSkeletonItem />
-          <Separator />
           <BookingSkeletonItem />
-          <Separator />
           <BookingSkeletonItem />
-          <Separator />
           <BookingSkeletonItem />
         </FramePanel>
         <FrameFooter>
@@ -126,8 +121,7 @@ export function BookingsList() {
       <SortableList items={paginatedBookings} onReorder={handleReorder}>
         <Frame className="-m-1">
           <FramePanel className="p-0">
-            {paginatedBookings.map((booking, index) => {
-              const isLast = index === paginatedBookings.length - 1;
+            {paginatedBookings.map((booking, _index) => {
               const dateStr = formatBookingDate(booking.startTime);
               const timeStr = formatBookingTime(
                 booking.startTime,
@@ -150,126 +144,123 @@ export function BookingsList() {
               return (
                 <SortableItem id={booking.id} key={booking.id}>
                   {(sortableProps) => (
-                    <>
-                      <ListItem
-                        labelColorDark={eventTypeColorDark ?? undefined}
-                        labelColorLight={eventTypeColorLight ?? undefined}
-                        sortableDragging={sortableProps.isDragging}
-                        sortableDraggingAny={sortableProps.isDraggingAny}
-                        sortableRef={sortableProps.setNodeRef}
-                        sortableStyle={sortableProps.style}
-                      >
-                        <ListItemDragHandle
-                          attributes={sortableProps.attributes}
-                          listeners={sortableProps.listeners}
-                        />
-                        <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
-                          <ListItemContent>
-                            <ListItemHeader>
-                              <ListItemTitle
-                                className={cn(isCancelled && "line-through")}
-                                href="#"
+                    <ListItem
+                      labelColorDark={eventTypeColorDark ?? undefined}
+                      labelColorLight={eventTypeColorLight ?? undefined}
+                      sortableDragging={sortableProps.isDragging}
+                      sortableDraggingAny={sortableProps.isDraggingAny}
+                      sortableRef={sortableProps.setNodeRef}
+                      sortableStyle={sortableProps.style}
+                    >
+                      <ListItemDragHandle
+                        attributes={sortableProps.attributes}
+                        listeners={sortableProps.listeners}
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
+                        <ListItemContent>
+                          <ListItemHeader>
+                            <ListItemTitle
+                              className={cn(isCancelled && "line-through")}
+                              href="#"
+                            >
+                              {booking.title}
+                            </ListItemTitle>
+                            <ListItemDescription>
+                              {participants}
+                            </ListItemDescription>
+                          </ListItemHeader>
+
+                          <ListItemBadges>
+                            {isCancelled && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="error"
                               >
-                                {booking.title}
-                              </ListItemTitle>
-                              <ListItemDescription>
-                                {participants}
-                              </ListItemDescription>
-                            </ListItemHeader>
-
-                            <ListItemBadges>
-                              {isCancelled && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="error"
-                                >
-                                  <CircleXIcon />
-                                  Cancelled
-                                </Badge>
-                              )}
-                              {isPending && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="warning"
-                                >
-                                  <CircleDashedIcon />
-                                  Unconfirmed
-                                </Badge>
-                              )}
-                              {isRescheduled && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="warning"
-                                >
-                                  <RefreshCcwIcon />
-                                  Rescheduled
-                                </Badge>
-                              )}
-                              {isRejected && !isRescheduled && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="secondary"
-                                >
-                                  Rejected
-                                </Badge>
-                              )}
-                              {teamName && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="outline"
-                                >
-                                  <UsersIcon />
-                                  {teamName}
-                                </Badge>
-                              )}
-                              {isPaid && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="outline"
-                                >
-                                  <BanknoteIcon />
-                                  Paid
-                                </Badge>
-                              )}
-                              {isRecurring && (
-                                <Badge
-                                  className="pointer-events-none"
-                                  variant="outline"
-                                >
-                                  <RepeatIcon />
-                                  Recurring
-                                </Badge>
-                              )}
-                            </ListItemBadges>
-                          </ListItemContent>
-
-                          <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
-                            <div className="flex flex-col gap-1">
-                              <p className="text-sm">{dateStr}</p>
-                              <p className="text-muted-foreground text-sm">
-                                {timeStr}
-                              </p>
-                            </div>
-                            {locationLabel && (
-                              <Button
-                                className="pointer-events-auto"
-                                render={<Link href="#join" />}
-                                size="xs"
+                                <CircleXIcon />
+                                Cancelled
+                              </Badge>
+                            )}
+                            {isPending && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="warning"
+                              >
+                                <CircleDashedIcon />
+                                Unconfirmed
+                              </Badge>
+                            )}
+                            {isRescheduled && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="warning"
+                              >
+                                <RefreshCcwIcon />
+                                Rescheduled
+                              </Badge>
+                            )}
+                            {isRejected && !isRescheduled && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="secondary"
+                              >
+                                Rejected
+                              </Badge>
+                            )}
+                            {teamName && (
+                              <Badge
+                                className="pointer-events-none"
                                 variant="outline"
                               >
-                                <VideoIcon />
-                                {locationLabel}
-                              </Button>
+                                <UsersIcon />
+                                {teamName}
+                              </Badge>
                             )}
-                          </div>
-                        </div>
+                            {isPaid && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="outline"
+                              >
+                                <BanknoteIcon />
+                                Paid
+                              </Badge>
+                            )}
+                            {isRecurring && (
+                              <Badge
+                                className="pointer-events-none"
+                                variant="outline"
+                              >
+                                <RepeatIcon />
+                                Recurring
+                              </Badge>
+                            )}
+                          </ListItemBadges>
+                        </ListItemContent>
 
-                        <ListItemActions>
-                          <BookingActions />
-                        </ListItemActions>
-                      </ListItem>
-                      {!isLast && <Separator />}
-                    </>
+                        <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+                          <div className="flex flex-col gap-1">
+                            <p className="text-sm">{dateStr}</p>
+                            <p className="text-muted-foreground text-sm">
+                              {timeStr}
+                            </p>
+                          </div>
+                          {locationLabel && (
+                            <Button
+                              className="pointer-events-auto"
+                              render={<Link href="#join" />}
+                              size="xs"
+                              variant="outline"
+                            >
+                              <VideoIcon />
+                              {locationLabel}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <ListItemActions>
+                        <BookingActions />
+                      </ListItemActions>
+                    </ListItem>
                   )}
                 </SortableItem>
               );

@@ -50,9 +50,9 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "relative flex transition-colors has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] data-[dragging=true]:rounded-[calc(var(--radius-xl)-1px)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "not-first:-mt-px relative flex not-first:border-t not-last:border-b bg-background transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         isSortable &&
-          "z-(--index) translate-y-(--translate-y) before:absolute before:inset-0 before:rounded-[inherit] before:transition-[border-radius] data-[dragging=false]:opacity-64 data-[dragging=true]:shadow-lg/5 data-[dragging=false]:transition-transform data-[dragging=true]:before:bg-popover data-[dragging=true]:before:shadow-[inset_0_1px_0_var(--color-input),inset_0_-1px_0_var(--color-input)] data-[dragging=true]:*:data-[slot=list-item-label-color]:rounded-[calc(var(--radius-xl)-1px)] last:*:data-[slot=list-item-label-color]:rounded-b-[calc(var(--radius-xl)-1px)] first:*:data-[slot=list-item-label-color]:rounded-t-[calc(var(--radius-xl)-1px)]",
+          "z-(--index) translate-y-(--translate-y) before:absolute before:inset-0 before:rounded-[inherit] before:transition-[border-radius] data-[dragging=true]:rounded-[calc(var(--radius-xl)-1px)] data-[dragging=true]:bg-clip-padding data-[dragging=true]:shadow-lg/5 data-[dragging=false]:transition-transform data-[dragging=true]:before:bg-popover data-[dragging=true]:*:data-[slot=list-item-label-color]:rounded-[calc(var(--radius-xl)-1px)] last:*:data-[slot=list-item-label-color]:rounded-b-[calc(var(--radius-xl)-1px)] first:*:data-[slot=list-item-label-color]:rounded-t-[calc(var(--radius-xl)-1px)]",
         className,
       )}
       data-dragging={dataDragging}

@@ -2,7 +2,6 @@
 
 import { Badge } from "@coss/ui/components/badge";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
-import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   Tooltip,
@@ -81,7 +80,6 @@ const ARTIFICIAL_DELAY_MS = 800;
 
 interface EventTypeItemContentProps {
   eventType: EventType;
-  isLast: boolean;
   isHidden: boolean;
   eventPath: string;
   onHiddenChange: (hidden: boolean) => void;
@@ -90,7 +88,6 @@ interface EventTypeItemContentProps {
 
 function EventTypeItemContent({
   eventType,
-  isLast,
   isHidden,
   eventPath,
   onHiddenChange,
@@ -125,99 +122,93 @@ function EventTypeItemContent({
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
   return (
-    <>
-      <ListItem
-        labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
-        labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
-        sortableDragging={sortableProps?.isDragging}
-        sortableDraggingAny={sortableProps?.isDraggingAny}
-        sortableRef={sortableProps?.setNodeRef}
-        sortableStyle={sortableProps?.style}
-      >
-        {sortableProps && (
-          <ListItemDragHandle
-            attributes={sortableProps.attributes}
-            listeners={sortableProps.listeners}
-          />
-        )}
-        <ListItemContent>
-          <ListItemHeader>
-            <div className="flex items-center gap-2">
-              <ListItemTitle className="truncate" href={eventPath}>
-                {eventType.title}
-              </ListItemTitle>
-              <span className="text-muted-foreground text-xs max-sm:hidden">
-                {eventPath}
-              </span>
-            </div>
-            {eventType.safeDescription && (
-              <ListItemDescription className="line-clamp-2">
-                {eventType.safeDescription}
-              </ListItemDescription>
-            )}
-          </ListItemHeader>
+    <ListItem
+      labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
+      labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
+      sortableDragging={sortableProps?.isDragging}
+      sortableDraggingAny={sortableProps?.isDraggingAny}
+      sortableRef={sortableProps?.setNodeRef}
+      sortableStyle={sortableProps?.style}
+    >
+      {sortableProps && (
+        <ListItemDragHandle
+          attributes={sortableProps.attributes}
+          listeners={sortableProps.listeners}
+        />
+      )}
+      <ListItemContent>
+        <ListItemHeader>
+          <div className="flex items-center gap-2">
+            <ListItemTitle className="truncate" href={eventPath}>
+              {eventType.title}
+            </ListItemTitle>
+            <span className="text-muted-foreground text-xs max-sm:hidden">
+              {eventPath}
+            </span>
+          </div>
+          {eventType.safeDescription && (
+            <ListItemDescription className="line-clamp-2">
+              {eventType.safeDescription}
+            </ListItemDescription>
+          )}
+        </ListItemHeader>
 
-          <ListItemBadges>
-            {isHidden && (
-              <Badge className="pointer-events-none" variant="warning">
-                <EyeOffIcon />
-                Hidden
-              </Badge>
-            )}
+        <ListItemBadges>
+          {isHidden && (
+            <Badge className="pointer-events-none" variant="warning">
+              <EyeOffIcon />
+              Hidden
+            </Badge>
+          )}
+          <Badge className="pointer-events-none tabular-nums" variant="outline">
+            <ClockIcon />
+            {formatDuration(eventType.length)}
+          </Badge>
+          {getSchedulingTypeLabel(eventType) && (
+            <Badge className="pointer-events-none" variant="outline">
+              {eventType.schedulingType === "ROUND_ROBIN" ? (
+                <ShuffleIcon />
+              ) : (
+                <UsersIcon />
+              )}
+              {getSchedulingTypeLabel(eventType)}
+            </Badge>
+          )}
+          {isRecurring(eventType) && (
+            <Badge className="pointer-events-none" variant="outline">
+              <RepeatIcon />
+              Recurring
+            </Badge>
+          )}
+          {isPaid(eventType) && (
             <Badge
               className="pointer-events-none tabular-nums"
               variant="outline"
             >
-              <ClockIcon />
-              {formatDuration(eventType.length)}
+              <BanknoteIcon />${(eventType.price / 100).toFixed(0)}
             </Badge>
-            {getSchedulingTypeLabel(eventType) && (
-              <Badge className="pointer-events-none" variant="outline">
-                {eventType.schedulingType === "ROUND_ROBIN" ? (
-                  <ShuffleIcon />
-                ) : (
-                  <UsersIcon />
-                )}
-                {getSchedulingTypeLabel(eventType)}
-              </Badge>
-            )}
-            {isRecurring(eventType) && (
-              <Badge className="pointer-events-none" variant="outline">
-                <RepeatIcon />
-                Recurring
-              </Badge>
-            )}
-            {isPaid(eventType) && (
-              <Badge
-                className="pointer-events-none tabular-nums"
-                variant="outline"
-              >
-                <BanknoteIcon />${(eventType.price / 100).toFixed(0)}
-              </Badge>
-            )}
-            {requiresConfirmation(eventType) && (
-              <Badge className="pointer-events-none" variant="outline">
-                <ClipboardCheckIcon />
-                Requires confirmation
-              </Badge>
-            )}
-            {hasSeats(eventType) && (
-              <Badge className="pointer-events-none" variant="outline">
-                <ArmchairIcon />
-                {eventType.seatsPerTimeSlot} seats
-              </Badge>
-            )}
-          </ListItemBadges>
-        </ListItemContent>
+          )}
+          {requiresConfirmation(eventType) && (
+            <Badge className="pointer-events-none" variant="outline">
+              <ClipboardCheckIcon />
+              Requires confirmation
+            </Badge>
+          )}
+          {hasSeats(eventType) && (
+            <Badge className="pointer-events-none" variant="outline">
+              <ArmchairIcon />
+              {eventType.seatsPerTimeSlot} seats
+            </Badge>
+          )}
+        </ListItemBadges>
+      </ListItemContent>
 
-        <EventTypeActions
-          isHidden={isHidden}
-          onHiddenChange={onHiddenChange}
-          tooltipHandle={tooltipHandle}
-        />
-      </ListItem>
-      {!isLast && <Separator />}
-    </>
+      <EventTypeActions
+        isHidden={isHidden}
+        onHiddenChange={onHiddenChange}
+        tooltipHandle={tooltipHandle}
+      />
+    </ListItem>
   );
 }
 
@@ -244,13 +235,9 @@ export function EventTypesList() {
       <Frame className="-m-1">
         <FramePanel className="p-0">
           <EventTypeSkeletonItem />
-          <Separator />
           <EventTypeSkeletonItem />
-          <Separator />
           <EventTypeSkeletonItem />
-          <Separator />
           <EventTypeSkeletonItem />
-          <Separator />
           <EventTypeSkeletonItem />
         </FramePanel>
         <FrameFooter>
@@ -264,10 +251,9 @@ export function EventTypesList() {
     <TooltipProvider delay={0}>
       <SortableList items={eventTypes} onReorder={setEventTypes}>
         <Frame className="-m-1">
-          <FramePanel className="p-0">
-            {eventTypes.map((eventType, index) => {
+          <FramePanel className="bg-transparent p-0">
+            {eventTypes.map((eventType, _index) => {
               const isHidden = hiddenStates[eventType.id];
-              const isLast = index === eventTypes.length - 1;
               const eventPath = getEventTypePath(eventType);
 
               return (
@@ -277,7 +263,6 @@ export function EventTypesList() {
                       eventPath={eventPath}
                       eventType={eventType}
                       isHidden={isHidden ?? false}
-                      isLast={isLast}
                       onHiddenChange={(hidden) =>
                         handleHiddenToggle(eventType.id, hidden)
                       }
