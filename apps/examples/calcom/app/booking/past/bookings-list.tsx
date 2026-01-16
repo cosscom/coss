@@ -123,30 +123,7 @@ export function BookingsList() {
 
   return (
     <TooltipProvider delay={150} timeout={0}>
-      <SortableList
-        items={paginatedBookings}
-        onReorder={handleReorder}
-        renderOverlay={(booking) => (
-          <ListItem
-            labelColorDark={
-              booking.eventType?.eventTypeColor?.darkEventTypeColor ?? undefined
-            }
-            labelColorLight={
-              booking.eventType?.eventTypeColor?.lightEventTypeColor ??
-              undefined
-            }
-          >
-            <ListItemContent>
-              <ListItemHeader>
-                <ListItemTitle href="#">{booking.title}</ListItemTitle>
-                <ListItemDescription>
-                  {getBookingParticipants(booking)}
-                </ListItemDescription>
-              </ListItemHeader>
-            </ListItemContent>
-          </ListItem>
-        )}
-      >
+      <SortableList items={paginatedBookings} onReorder={handleReorder}>
         <Frame className="-m-1">
           <FramePanel className="p-0">
             {paginatedBookings.map((booking, index) => {

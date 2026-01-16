@@ -262,19 +262,7 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList
-        items={eventTypes}
-        onReorder={setEventTypes}
-        renderOverlay={(eventType) => (
-          <EventTypeItemContent
-            eventPath={getEventTypePath(eventType)}
-            eventType={eventType}
-            isHidden={hiddenStates[eventType.id] ?? false}
-            isLast
-            onHiddenChange={() => {}}
-          />
-        )}
-      >
+      <SortableList items={eventTypes} onReorder={setEventTypes}>
         <Frame className="-m-1">
           <FramePanel className="p-0">
             {eventTypes.map((eventType, index) => {
