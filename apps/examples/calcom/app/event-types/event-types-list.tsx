@@ -131,7 +131,6 @@ function EventTypeItemContent({
         labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
         sortableDragging={sortableProps?.isDragging}
         sortableDraggingAny={sortableProps?.isDraggingAny}
-        sortableListeners={sortableProps?.listeners}
         sortableRef={sortableProps?.setNodeRef}
         sortableStyle={sortableProps?.style}
       >

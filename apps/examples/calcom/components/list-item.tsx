@@ -15,7 +15,6 @@ interface ListItemProps {
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
-  sortableListeners?: SyntheticListenerMap;
 }
 
 export function ListItem({
@@ -27,7 +26,6 @@ export function ListItem({
   sortableStyle,
   sortableDragging,
   sortableDraggingAny,
-  sortableListeners,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
   const isSortable = sortableRef !== undefined;
@@ -61,7 +59,6 @@ export function ListItem({
       data-slot="list-item"
       ref={sortableRef}
       style={style}
-      {...sortableListeners}
     >
       {hasLabelColor && (
         <div

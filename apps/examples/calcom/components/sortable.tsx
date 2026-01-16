@@ -86,11 +86,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
+    useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
