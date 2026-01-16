@@ -43,21 +43,16 @@ export function ListItem({
       ? { ...labelStyle, ...sortableStyle }
       : undefined;
 
-  const dataDragging = sortableDraggingAny
-    ? sortableDragging
-      ? "true"
-      : "false"
-    : undefined;
-
   return (
     <div
       className={cn(
         "not-first:-mt-px relative flex not-first:border-t not-last:border-b bg-background transition-colors first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         isSortable &&
-          "translate-y-(--translate-y) data-dragging:pointer-events-none data-[dragging=true]:z-1 data-[dragging=true]:rounded-[calc(var(--radius-xl)-1px)] data-[dragging=true]:bg-popover data-[dragging=true]:bg-clip-padding data-[dragging=true]:shadow-lg/5 data-[dragging=false]:transition-transform data-[dragging=true]:*:data-[slot=list-item-label-color]:rounded-[calc(var(--radius-xl)-1px)] last:*:data-[slot=list-item-label-color]:rounded-b-[calc(var(--radius-xl)-1px)] first:*:data-[slot=list-item-label-color]:rounded-t-[calc(var(--radius-xl)-1px)]",
+          "translate-y-(--translate-y) data-dragging:pointer-events-none data-dragged:z-1 data-dragged:rounded-[calc(var(--radius-xl)-1px)] data-dragged:border-y data-dragged:bg-popover data-dragged:bg-clip-padding data-dragged:shadow-lg/5 data-dragging:not-data-dragged:transition-transform data-dragged:*:data-[slot=list-item-label-color]:rounded-[calc(var(--radius-xl)-1px)] last:*:data-[slot=list-item-label-color]:rounded-b-[calc(var(--radius-xl)-1px)] first:*:data-[slot=list-item-label-color]:rounded-t-[calc(var(--radius-xl)-1px)]",
         className,
       )}
-      data-dragging={dataDragging}
+      data-dragged={sortableDragging ? "" : undefined}
+      data-dragging={sortableDraggingAny ? "" : undefined}
       data-slot="list-item"
       ref={sortableRef}
       style={style}
@@ -92,7 +87,7 @@ export function ListItemDragHandle({
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute inset-y-0 start-0 z-1 h-full! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-dragging=true]]:opacity-100 opacity-0 transition-[opacity,box-shadow] focus:opacity-100 active:cursor-grabbing",
+        "absolute inset-y-0 start-0 z-1 h-full! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-dragging]]:opacity-100 opacity-0 transition-[opacity,box-shadow] focus:opacity-100 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"
@@ -103,7 +98,7 @@ export function ListItemDragHandle({
     >
       <GripVerticalIcon
         aria-hidden="true"
-        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item][data-dragging=true]]:opacity-80 opacity-48"
+        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item][data-dragging]]:opacity-80 opacity-48"
       />
     </Button>
   );
