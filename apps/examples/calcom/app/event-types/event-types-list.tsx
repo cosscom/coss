@@ -218,37 +218,32 @@ export function EventTypesList() {
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(mockEventTypes.map((et) => [et.id, et.hidden])),
   );
-  const undoStackRef = useRef<
-    { toastId: string; previousOrder: EventType[] }[]
-  >([]);
+  const previousOrderRef = useRef<EventType[]>(eventTypes);
+  const currentToastIdRef = useRef<string | null>(null);
 
   const handleReorder = (newOrder: EventType[]) => {
-    const previousOrder = eventTypes;
+    if (currentToastIdRef.current) {
+      toastManager.close(currentToastIdRef.current);
+    }
+
+    const previousOrder = previousOrderRef.current;
+    previousOrderRef.current = newOrder;
     setEventTypes(newOrder);
 
     const toastId = toastManager.add({
       actionProps: {
         children: "Undo",
         onClick: () => {
-          const stack = undoStackRef.current;
-          const lastEntry = stack[stack.length - 1];
-          if (!lastEntry || lastEntry.toastId !== toastId) {
-            return;
-          }
-          stack.pop();
           toastManager.close(toastId);
+          currentToastIdRef.current = null;
+          previousOrderRef.current = previousOrder;
           setEventTypes(previousOrder);
-          toastManager.add({
-            title: "Order reverted",
-            type: "info",
-          });
         },
       },
-      data: { isReorderToast: true },
       title: "Event type order updated",
       type: "success",
     });
-    undoStackRef.current.push({ previousOrder, toastId });
+    currentToastIdRef.current = toastId;
   };
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {

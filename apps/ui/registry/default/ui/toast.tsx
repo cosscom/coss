@@ -52,10 +52,6 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
   const { toasts } = Toast.useToastManager();
   const isTop = position.startsWith("top");
 
-  const latestReorderToastId = toasts.findLast(
-    (t) => (t.data as { isReorderToast?: boolean })?.isReorderToast,
-  )?.id;
-
   return (
     <Toast.Portal data-slot="toast-portal">
       <Toast.Viewport
@@ -76,10 +72,6 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
           const Icon = toast.type
             ? TOAST_ICONS[toast.type as keyof typeof TOAST_ICONS]
             : null;
-          const isReorderToast = (toast.data as { isReorderToast?: boolean })
-            ?.isReorderToast;
-          const isActionDisabled =
-            isReorderToast && toast.id !== latestReorderToastId;
 
           return (
             <Toast.Root
@@ -161,7 +153,6 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
                   <Toast.Action
                     className={buttonVariants({ size: "xs" })}
                     data-slot="toast-action"
-                    disabled={isActionDisabled}
                   >
                     {toast.actionProps.children}
                   </Toast.Action>

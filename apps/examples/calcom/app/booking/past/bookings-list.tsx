@@ -62,9 +62,8 @@ export function BookingsList() {
   const [bookings, setBookings] = useState<Booking[]>(mockPastBookings);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const undoStackRef = useRef<
-    { toastId: string; previousBookings: Booking[] }[]
-  >([]);
+  const previousBookingsRef = useRef<Booking[]>(bookings);
+  const currentToastIdRef = useRef<string | null>(null);
 
   const totalCount = bookings.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -105,7 +104,11 @@ export function BookingsList() {
   }
 
   const handleReorder = (reorderedBookings: Booking[]) => {
-    const previousBookings = bookings;
+    if (currentToastIdRef.current) {
+      toastManager.close(currentToastIdRef.current);
+    }
+
+    const previousBookings = previousBookingsRef.current;
     const newBookings = [...bookings];
     const currentPageIds = paginatedBookings.map((b) => b.id);
 
@@ -119,31 +122,23 @@ export function BookingsList() {
       }
     }
 
+    previousBookingsRef.current = newBookings;
     setBookings(newBookings);
 
     const toastId = toastManager.add({
       actionProps: {
         children: "Undo",
         onClick: () => {
-          const stack = undoStackRef.current;
-          const lastEntry = stack[stack.length - 1];
-          if (!lastEntry || lastEntry.toastId !== toastId) {
-            return;
-          }
-          stack.pop();
           toastManager.close(toastId);
+          currentToastIdRef.current = null;
+          previousBookingsRef.current = previousBookings;
           setBookings(previousBookings);
-          toastManager.add({
-            title: "Order reverted",
-            type: "info",
-          });
         },
       },
-      data: { isReorderToast: true },
       title: "Booking order updated",
       type: "success",
     });
-    undoStackRef.current.push({ previousBookings, toastId });
+    currentToastIdRef.current = toastId;
   };
 
   return (
