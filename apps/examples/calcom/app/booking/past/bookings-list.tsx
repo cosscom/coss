@@ -120,7 +120,7 @@ export function BookingsList() {
     <TooltipProvider delay={150} timeout={0}>
       <SortableList items={paginatedBookings} onReorder={handleReorder}>
         <Frame className="-m-1">
-          <FramePanel className="bg-transparent p-0">
+          <FramePanel className="bg-transparent p-0 transition-all not-has-data-dragging:delay-150 duration-0 before:z-1 before:transition-all not-has-data-dragging:before:delay-150 before:duration-0 has-data-dragging:border-transparent has-data-dragging:shadow-none has-data-dragging:before:opacity-0">
             {paginatedBookings.map((booking, _index) => {
               const dateStr = formatBookingDate(booking.startTime);
               const timeStr = formatBookingTime(

@@ -49,7 +49,9 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "not-first:-mt-px not-last:-mb-px relative flex translate-y-(--translate-y) overflow-hidden border-y bg-background transition-[background-color,border-radius] first:not-data-dragging:rounded-t-[calc(var(--radius-xl)-1px)] first:not-data-dragged:border-t-transparent last:not-data-dragging:rounded-b-[calc(var(--radius-xl)-1px)] last:not-data-dragged:border-b-transparent has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] data-dragging:pointer-events-none data-dragged:z-1 data-[position=first]:rounded-t-[calc(var(--radius-xl)-1px)] data-[position=last]:rounded-b-[calc(var(--radius-xl)-1px)] data-[position=first]:not-data-dragged:border-t-transparent data-[position=last]:not-data-dragged:border-b-transparent data-dragged:bg-popover data-dragged:bg-clip-padding data-dragged:shadow-lg/5 data-dragging:not-data-dragged:transition-[translate,border-radius] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "after:-z-1 after:-inset-px after:pointer-event-none relative flex translate-y-(--translate-y) after:absolute after:rounded-[inherit] after:border after:border-border after:bg-background after:transition-[background-color,border-radius,inset,border] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "data-dragging:pointer-events-none data-dragged:z-1 data-dragging:rounded-[calc(var(--radius-xl)-1px)] data-dragging:not-data-dragged:transition-transform data-dragging:after:inset-y-0.5 data-dragging:after:border data-dragged:after:bg-clip-padding data-dragged:after:shadow-lg/5",
+        "before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[3px] not-data-dragged:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
@@ -73,11 +75,11 @@ export function ListItem({
       {hasLabelColor && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 start-0 w-0.5 bg-(--event-label-light) dark:bg-(--event-label-dark)"
+          className="in-[[data-slot=list-item]:first-child]:-mt-px in-[[data-slot=list-item]:last-child]:-mb-px pointer-events-none absolute in-data-dragging:inset-y-[3px] inset-y-0 start-0 w-8 overflow-hidden in-data-dragging:rounded-s-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:first-child]:rounded-t-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:last-child]:rounded-b-[calc(var(--radius-xl)-2px)] transition-[border-radius,inset] before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-(--event-label-light) dark:before:bg-(--event-label-dark)"
           data-slot="list-item-label-color"
         />
       )}
-      <div className="flex flex-1 items-center justify-between gap-4 px-6 py-4">
+      <div className="relative flex flex-1 items-center justify-between gap-4 px-6 py-4">
         {children}
       </div>
     </div>
@@ -110,7 +112,7 @@ export function ListItemDragHandle({
     >
       <GripVerticalIcon
         aria-hidden="true"
-        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item][data-dragged]]:opacity-80 opacity-48"
+        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item][data-dragged]]:opacity-80 opacity-40"
       />
     </Button>
   );
