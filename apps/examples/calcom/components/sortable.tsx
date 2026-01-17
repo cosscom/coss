@@ -9,7 +9,7 @@ import {
   type DragOverEvent,
   type DragStartEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   type UniqueIdentifier,
   useSensor,
@@ -92,7 +92,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 4,
       },
