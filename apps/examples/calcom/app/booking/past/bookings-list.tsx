@@ -63,6 +63,7 @@ export function BookingsList() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const previousBookingsRef = useRef<Booking[]>(bookings);
+  const currentToastIdRef = useRef<string | null>(null);
 
   const totalCount = bookings.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -103,6 +104,10 @@ export function BookingsList() {
   }
 
   const handleReorder = (reorderedBookings: Booking[]) => {
+    if (currentToastIdRef.current) {
+      toastManager.close(currentToastIdRef.current);
+    }
+
     const previousBookings = previousBookingsRef.current;
     const newBookings = [...bookings];
     const currentPageIds = paginatedBookings.map((b) => b.id);
@@ -125,13 +130,19 @@ export function BookingsList() {
         children: "Undo",
         onClick: () => {
           toastManager.close(toastId);
+          currentToastIdRef.current = null;
           previousBookingsRef.current = previousBookings;
           setBookings(previousBookings);
+          toastManager.add({
+            title: "Order reverted",
+            type: "info",
+          });
         },
       },
       title: "Booking order updated",
       type: "success",
     });
+    currentToastIdRef.current = toastId;
   };
 
   return (

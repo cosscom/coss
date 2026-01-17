@@ -219,8 +219,13 @@ export function EventTypesList() {
     Object.fromEntries(mockEventTypes.map((et) => [et.id, et.hidden])),
   );
   const previousOrderRef = useRef<EventType[]>(eventTypes);
+  const currentToastIdRef = useRef<string | null>(null);
 
   const handleReorder = (newOrder: EventType[]) => {
+    if (currentToastIdRef.current) {
+      toastManager.close(currentToastIdRef.current);
+    }
+
     const previousOrder = previousOrderRef.current;
     previousOrderRef.current = newOrder;
     setEventTypes(newOrder);
@@ -230,13 +235,19 @@ export function EventTypesList() {
         children: "Undo",
         onClick: () => {
           toastManager.close(toastId);
+          currentToastIdRef.current = null;
           previousOrderRef.current = previousOrder;
           setEventTypes(previousOrder);
+          toastManager.add({
+            title: "Order reverted",
+            type: "info",
+          });
         },
       },
       title: "Event type order updated",
       type: "success",
     });
+    currentToastIdRef.current = toastId;
   };
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
