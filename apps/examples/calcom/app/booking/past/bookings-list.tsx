@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@coss/ui/components/select";
 import { Skeleton } from "@coss/ui/components/skeleton";
+import { toastManager } from "@coss/ui/components/toast";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
@@ -30,7 +31,7 @@ import {
   VideoIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ListItem,
   ListItemActions,
@@ -61,6 +62,7 @@ export function BookingsList() {
   const [bookings, setBookings] = useState<Booking[]>(mockPastBookings);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const previousBookingsRef = useRef<Booking[]>(bookings);
 
   const totalCount = bookings.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -101,6 +103,7 @@ export function BookingsList() {
   }
 
   const handleReorder = (reorderedBookings: Booking[]) => {
+    const previousBookings = previousBookingsRef.current;
     const newBookings = [...bookings];
     const currentPageIds = paginatedBookings.map((b) => b.id);
 
@@ -113,7 +116,22 @@ export function BookingsList() {
         reorderIndex++;
       }
     }
+
+    previousBookingsRef.current = newBookings;
     setBookings(newBookings);
+
+    const toastId = toastManager.add({
+      actionProps: {
+        children: "Undo",
+        onClick: () => {
+          toastManager.close(toastId);
+          previousBookingsRef.current = previousBookings;
+          setBookings(previousBookings);
+        },
+      },
+      title: "Booking order updated",
+      type: "success",
+    });
   };
 
   return (

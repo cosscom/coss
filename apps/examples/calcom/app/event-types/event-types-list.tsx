@@ -3,6 +3,7 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
+import { toastManager } from "@coss/ui/components/toast";
 import {
   Tooltip,
   TooltipCreateHandle,
@@ -19,7 +20,7 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ListItem,
   ListItemBadges,
@@ -217,6 +218,26 @@ export function EventTypesList() {
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(mockEventTypes.map((et) => [et.id, et.hidden])),
   );
+  const previousOrderRef = useRef<EventType[]>(eventTypes);
+
+  const handleReorder = (newOrder: EventType[]) => {
+    const previousOrder = previousOrderRef.current;
+    previousOrderRef.current = newOrder;
+    setEventTypes(newOrder);
+
+    const toastId = toastManager.add({
+      actionProps: {
+        children: "Undo",
+        onClick: () => {
+          toastManager.close(toastId);
+          previousOrderRef.current = previousOrder;
+          setEventTypes(previousOrder);
+        },
+      },
+      title: "Event type order updated",
+      type: "success",
+    });
+  };
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({
@@ -248,7 +269,7 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList items={eventTypes} onReorder={setEventTypes}>
+      <SortableList items={eventTypes} onReorder={handleReorder}>
         <Frame className="-m-1">
           <FramePanel className="bg-transparent p-0 transition-all not-has-data-dragging:delay-150 duration-0 before:z-1 before:transition-all not-has-data-dragging:before:delay-150 before:duration-0 has-data-dragging:border-transparent has-data-dragging:shadow-none has-data-dragging:before:opacity-0">
             {eventTypes.map((eventType, _index) => {
