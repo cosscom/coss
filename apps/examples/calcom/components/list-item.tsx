@@ -34,7 +34,6 @@ export function ListItem({
   sortableListeners,
 }: ListItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
-  const _isSortable = sortableRef !== undefined;
   const labelStyle = hasLabelColor
     ? ({
         "--event-label-dark": labelColorDark || "transparent",
