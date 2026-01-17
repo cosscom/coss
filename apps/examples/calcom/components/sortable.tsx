@@ -32,15 +32,14 @@ import {
   type ReactNode,
   useContext,
   useId,
+  useMemo,
   useState,
 } from "react";
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
-  projectedIds: UniqueIdentifier[];
 }>({
   isDraggingAny: false,
-  projectedIds: [],
 });
 
 export interface SortableItemRenderProps {
@@ -105,10 +104,26 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const ids = items.map((item) => item.id);
   const activeIndex = activeId !== null ? ids.indexOf(activeId) : -1;
   const overIndex = overId !== null ? ids.indexOf(overId) : -1;
-  const projectedIds =
-    activeIndex >= 0 && overIndex >= 0 && activeIndex !== overIndex
-      ? arrayMove(ids, activeIndex, overIndex)
-      : ids;
+  const projectedIndex =
+    activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
+
+  const announcements = useMemo(
+    () => ({
+      onDragCancel: () =>
+        "Sorting cancelled. Item returned to original position.",
+      onDragEnd: () =>
+        projectedIndex >= 0
+          ? `Sortable item dropped at position ${projectedIndex + 1} of ${ids.length}.`
+          : "Sortable item dropped.",
+      onDragOver: () =>
+        projectedIndex >= 0
+          ? `Sortable item moved to position ${projectedIndex + 1} of ${ids.length}.`
+          : undefined,
+      onDragStart: () =>
+        `Picked up sortable item. Current position: ${activeIndex + 1} of ${ids.length}.`,
+    }),
+    [activeIndex, projectedIndex, ids.length],
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
@@ -139,8 +154,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   };
 
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny, projectedIds }}>
+    <SortableStateContext.Provider value={{ isDraggingAny }}>
       <DndContext
+        accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
         modifiers={[restrictToVerticalAxis, restrictToParentElement]}
