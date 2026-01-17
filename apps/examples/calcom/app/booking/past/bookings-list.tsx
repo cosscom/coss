@@ -150,8 +150,6 @@ export function BookingsList() {
                       sortableDragging={sortableProps.isDragging}
                       sortableDraggingAny={sortableProps.isDraggingAny}
                       sortableListeners={sortableProps.listeners}
-                      sortableProjectedIndex={sortableProps.projectedIndex}
-                      sortableProjectedLength={sortableProps.projectedLength}
                       sortableRef={sortableProps.setNodeRef}
                       sortableStyle={sortableProps.style}
                     >

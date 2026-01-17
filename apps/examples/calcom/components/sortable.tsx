@@ -48,8 +48,6 @@ export interface SortableItemRenderProps {
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
   isDraggingAny: boolean;
-  projectedIndex: number;
-  projectedLength: number;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -60,10 +58,9 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny, projectedIds } = useContext(SortableStateContext);
+  const { isDraggingAny } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
-  const projectedIndex = projectedIds.indexOf(id);
 
   const style = {
     "--translate-y": `${transform?.y ?? 0}px`,
@@ -74,8 +71,6 @@ export function SortableItem({ id, children }: SortableItemProps) {
     isDragging,
     isDraggingAny,
     listeners,
-    projectedIndex,
-    projectedLength: projectedIds.length,
     setNodeRef,
     style,
   });
