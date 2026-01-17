@@ -130,13 +130,13 @@ export function BookingsList() {
         children: "Undo",
         onClick: () => {
           toastManager.close(toastId);
-          currentToastIdRef.current = null;
           previousBookingsRef.current = previousBookings;
           setBookings(previousBookings);
-          toastManager.add({
+          const infoToastId = toastManager.add({
             title: "Order reverted",
             type: "info",
           });
+          currentToastIdRef.current = infoToastId;
         },
       },
       title: "Booking order updated",

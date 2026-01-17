@@ -235,13 +235,13 @@ export function EventTypesList() {
         children: "Undo",
         onClick: () => {
           toastManager.close(toastId);
-          currentToastIdRef.current = null;
           previousOrderRef.current = previousOrder;
           setEventTypes(previousOrder);
-          toastManager.add({
+          const infoToastId = toastManager.add({
             title: "Order reverted",
             type: "info",
           });
+          currentToastIdRef.current = infoToastId;
         },
       },
       title: "Event type order updated",
