@@ -16,4 +16,5 @@ export const fontHeading = localFont({
   display: "swap",
   src: "./CalSans-SemiBold.woff2",
   variable: "--font-heading",
+  weight: "600",
 });
