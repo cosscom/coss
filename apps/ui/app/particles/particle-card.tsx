@@ -92,7 +92,9 @@ export async function ParticleCard({
               >
                 <div className="flex flex-1 flex-col overflow-hidden p-6">
                   <div>
-                    <h2 className="mb-4 font-heading text-xl">Installation</h2>
+                    <h2 className="mb-4 font-heading font-semibold text-xl">
+                      Installation
+                    </h2>
                     <figure data-rehype-pretty-code-figure>
                       <CodeBlockCommand
                         __bun__={`bunx --bun shadcn@latest add @coss/${name}`}
@@ -104,7 +106,9 @@ export async function ParticleCard({
                   </div>
                   <div className="flex h-full flex-1 flex-col overflow-hidden">
                     <div className="flex items-center justify-between gap-2">
-                      <h2 className="mt-6 mb-4 font-heading text-xl">Code</h2>
+                      <h2 className="mt-6 mb-4 font-heading font-semibold text-xl">
+                        Code
+                      </h2>
                       <Button
                         render={
                           <a

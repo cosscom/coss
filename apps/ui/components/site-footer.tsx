@@ -4,7 +4,7 @@ export function SiteFooter() {
   return (
     <footer className="flex flex-col gap-0.5">
       <p>
-        <Link className="font-heading text-lg" href="/">
+        <Link className="font-heading font-semibold text-lg" href="/">
           coss.com <span className="text-muted-foreground/72">ui</span>
         </Link>
       </p>
