@@ -16,7 +16,7 @@ export default function Particle() {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink render={<Link href="/" />}>
-            <HomeIcon aria-hidden="true" size={16} />
+            <HomeIcon aria-hidden="true" />
             <span className="sr-only">Home</span>
           </BreadcrumbLink>
         </BreadcrumbItem>

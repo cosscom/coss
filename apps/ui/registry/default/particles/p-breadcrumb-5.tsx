@@ -19,7 +19,7 @@ export default function Particle() {
             className="inline-flex items-center gap-1.5"
             render={<Link href="/" />}
           >
-            <HomeIcon aria-hidden="true" size={16} />
+            <HomeIcon aria-hidden="true" />
             Home
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -29,7 +29,7 @@ export default function Particle() {
             className="inline-flex items-center gap-1.5"
             render={<Link href="/docs/" />}
           >
-            <ComponentIcon aria-hidden="true" size={16} />
+            <ComponentIcon aria-hidden="true" />
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>

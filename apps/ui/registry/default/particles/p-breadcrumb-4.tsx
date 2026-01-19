@@ -32,7 +32,7 @@ export default function Particle() {
                 <Button className="-m-1.5" size="icon-sm" variant="ghost" />
               }
             >
-              <FoldersIcon className="size-4" />
+              <FoldersIcon aria-hidden="true" />
               <span className="sr-only">More pages</span>
             </MenuTrigger>
             <MenuPopup align="start">

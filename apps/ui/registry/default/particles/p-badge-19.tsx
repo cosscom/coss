@@ -18,7 +18,6 @@ export default function Particle() {
       <CheckIcon
         aria-hidden="true"
         className="hidden peer-data-[state=checked]:block"
-        size={12}
       />
       <label
         className="cursor-pointer select-none after:absolute after:inset-0"

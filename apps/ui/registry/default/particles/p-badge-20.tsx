@@ -18,7 +18,7 @@ export default function Particle() {
         onClick={() => setIsActive(false)}
         type="button"
       >
-        <XIcon aria-hidden="true" size={12} />
+        <XIcon aria-hidden="true" />
       </button>
     </Badge>
   );
