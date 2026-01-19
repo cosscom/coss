@@ -28,12 +28,12 @@ export default function Particle() {
         <BreadcrumbItem>
           <Menu>
             <MenuTrigger
+              aria-label="More pages"
               render={
                 <Button className="-m-1.5" size="icon-sm" variant="ghost" />
               }
             >
               <FoldersIcon aria-hidden="true" />
-              <span className="sr-only">More pages</span>
             </MenuTrigger>
             <MenuPopup align="start">
               <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>

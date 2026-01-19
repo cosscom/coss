@@ -16,6 +16,12 @@ import {
   SelectValue,
 } from "@/registry/default/ui/select";
 
+const items = [
+  { label: "Orion", value: "orion" },
+  { label: "Sigma", value: "sigma" },
+  { label: "Dorado", value: "dorado" },
+];
+
 export default function Particle() {
   return (
     <Breadcrumb>
@@ -25,21 +31,23 @@ export default function Particle() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <Select defaultValue="1">
+          <Select defaultValue="orion" items={items}>
             <SelectTrigger
               aria-label="Select database"
               className="relative gap-2 ps-9"
               size="sm"
             >
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
-                <DatabaseIcon aria-hidden="true" />
+                <DatabaseIcon aria-hidden="true" className="size-4" />
               </div>
               <SelectValue />
             </SelectTrigger>
             <SelectPopup>
-              <SelectItem value="1">Orion</SelectItem>
-              <SelectItem value="2">Sigma</SelectItem>
-              <SelectItem value="3">Dorado</SelectItem>
+              {items.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectPopup>
           </Select>
         </BreadcrumbItem>

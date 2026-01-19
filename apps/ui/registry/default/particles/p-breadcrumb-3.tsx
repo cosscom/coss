@@ -15,9 +15,8 @@ export default function Particle() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink render={<Link href="/" />}>
-            <HomeIcon aria-hidden="true" />
-            <span className="sr-only">Home</span>
+          <BreadcrumbLink aria-label="Home" render={<Link href="/" />}>
+            <HomeIcon aria-hidden="true" className="size-4" />
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />

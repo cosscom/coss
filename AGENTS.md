@@ -4,6 +4,39 @@ Guidelines for AI agents working on this codebase.
 
 ## Component Patterns
 
+### Accessibility
+
+For consistency, always prefer `aria-label` over `sr-only` text for providing accessible names to icon-only elements:
+
+```tsx
+// Correct - use aria-label
+<BreadcrumbLink aria-label="Home" render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" className="size-4" />
+</BreadcrumbLink>
+
+// Incorrect - avoid sr-only text
+<BreadcrumbLink render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" />
+  <span className="sr-only">Home</span>
+</BreadcrumbLink>
+```
+
+### Icon Sizing
+
+Some components have built-in icon sizing via CSS selectors like `[&_svg:not([class*='size-'])]:size-4`. For components that don't have this (e.g., `BreadcrumbLink`), you must explicitly set the icon size using a `size-*` class:
+
+```tsx
+// Component with built-in icon sizing (e.g., Button) - no class needed
+<Button size="icon-sm">
+  <PlusIcon aria-hidden="true" />
+</Button>
+
+// Component without built-in icon sizing - add size class
+<BreadcrumbLink aria-label="Home" render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" className="size-4" />
+</BreadcrumbLink>
+```
+
 ### Select Components
 
 When using Select components, always follow the standard Base UI approach:
