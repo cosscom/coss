@@ -26,7 +26,7 @@ export const userSettingsItems: SettingsNavItem[] = [
   {
     avatar: {
       fallback: "LT",
-      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+      src: "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80",
     },
     children: [
       { title: "Profile", url: "/settings/my-account/profile" },
@@ -82,7 +82,7 @@ export const orgSettingsItems: SettingsNavItem[] = [
   {
     avatar: {
       fallback: "CC",
-      src: "/cal-logo.svg",
+      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
     },
     children: [
       { title: "Profile", url: "/settings/organizations/profile" },
