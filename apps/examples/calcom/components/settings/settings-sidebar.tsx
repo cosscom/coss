@@ -1,6 +1,11 @@
 "use client";
 
-import { ArrowLeftIcon } from "lucide-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@coss/ui/components/avatar";
+import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -62,8 +67,16 @@ function SettingsNavSection({
   pathname: string;
 }) {
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="mb-2">
       <div className="flex items-center gap-2 px-2 py-1.5">
+        {section.avatar && (
+          <Avatar className="size-5">
+            <AvatarImage alt={section.title} src={section.avatar.src} />
+            <AvatarFallback className="text-[10px]">
+              {section.avatar.fallback}
+            </AvatarFallback>
+          </Avatar>
+        )}
         {section.icon && (
           <section.icon className="size-4 text-sidebar-foreground/70" />
         )}
@@ -80,7 +93,12 @@ function SettingsNavSection({
                 isActive={pathname === item.url}
                 render={
                   <Link href={item.url}>
-                    <span>{item.title}</span>
+                    <span className="flex items-center gap-1">
+                      {item.title}
+                      {item.external && (
+                        <ExternalLinkIcon className="size-3 text-sidebar-foreground/50" />
+                      )}
+                    </span>
                   </Link>
                 }
               />
