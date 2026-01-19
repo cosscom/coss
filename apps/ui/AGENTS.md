@@ -171,6 +171,22 @@ const ref = useRef(null);
 - `size-4` - Default icon size (16px) - most common
 - `size-3.5` - Between small and default (14px)
 
+**Components with and without built-in icon sizing:**
+
+Some components have built-in icon sizing via CSS selectors like `[&_svg:not([class*='size-'])]:size-4`. For components that don't have this (e.g., `BreadcrumbLink`), you must explicitly set the icon size using a `size-*` class:
+
+```tsx
+// ✅ Component with built-in icon sizing (e.g., Button) - no class needed
+<Button size="icon-sm">
+  <PlusIcon aria-hidden="true" />
+</Button>
+
+// ✅ Component without built-in icon sizing - add size class
+<BreadcrumbLink aria-label="Home" render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" className="size-4" />
+</BreadcrumbLink>
+```
+
 ### Icon Opacity Patterns
 
 **Icons inside Buttons:**
@@ -222,6 +238,30 @@ const ref = useRef(null);
   </InputGroupAddon>
 </InputGroup>
 ```
+
+**InputGroupAddon DOM Order:**
+
+When using `InputGroupAddon`, it must always come **after** an `InputGroupInput` or `InputGroupTextarea` in the DOM order. The addon's `onMouseDown` handler uses `querySelector` to find the input/textarea element to focus, so if the addon appears before the input element, it won't be able to find it.
+
+```tsx
+// ✅ Correct order
+<InputGroup>
+  <InputGroupTextarea placeholder="Enter code..." />
+  <InputGroupAddon align="block-end">
+    <Button>Submit</Button>
+  </InputGroupAddon>
+</InputGroup>
+
+// ❌ Incorrect - addon won't find the textarea
+<InputGroup>
+  <InputGroupAddon align="block-start">
+    <Button>Submit</Button>
+  </InputGroupAddon>
+  <InputGroupTextarea placeholder="Enter code..." />
+</InputGroup>
+```
+
+Note: The `align` prop controls visual positioning (e.g., `block-start` renders at top, `block-end` at bottom), but the DOM order must still have the input/textarea first for the focus behavior to work.
 
 **Icons inside Alerts:**
 - Icons in alerts are semantic (they convey the alert type/severity)
@@ -286,6 +326,23 @@ const ref = useRef(null);
 **Do NOT use `aria-label` when:**
 - The element has visible text that describes its purpose
 - The element is decorative (use `aria-hidden="true"` instead)
+
+**Prefer `aria-label` over `sr-only` text:**
+
+For consistency, always prefer `aria-label` over `sr-only` text for providing accessible names to icon-only elements:
+
+```tsx
+// ✅ Correct - use aria-label
+<BreadcrumbLink aria-label="Home" render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" className="size-4" />
+</BreadcrumbLink>
+
+// ❌ Incorrect - avoid sr-only text
+<BreadcrumbLink render={<Link href="/" />}>
+  <HomeIcon aria-hidden="true" />
+  <span className="sr-only">Home</span>
+</BreadcrumbLink>
+```
 
 ### aria-hidden Usage
 
