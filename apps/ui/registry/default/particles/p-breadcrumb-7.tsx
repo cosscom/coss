@@ -34,7 +34,7 @@ export default function Particle() {
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
                 <DatabaseIcon aria-hidden="true" size={16} />
               </div>
-              <SelectValue placeholder="Select database" />
+              <SelectValue />
             </SelectTrigger>
             <SelectPopup>
               <SelectItem value="1">Orion</SelectItem>

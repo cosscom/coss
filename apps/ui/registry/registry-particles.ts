@@ -578,7 +578,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("badge", "status"),
+    categories: categories("badge"),
     description: "Status badge - Paid",
     files: [{ path: "particles/p-badge-16.tsx", type: "registry:block" }],
     name: "p-badge-16",
@@ -586,7 +586,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("badge", "status"),
+    categories: categories("badge"),
     description: "Status badge - Pending",
     files: [{ path: "particles/p-badge-17.tsx", type: "registry:block" }],
     name: "p-badge-17",
@@ -594,7 +594,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("badge", "status"),
+    categories: categories("badge"),
     description: "Status badge - Failed",
     files: [{ path: "particles/p-badge-18.tsx", type: "registry:block" }],
     name: "p-badge-18",
