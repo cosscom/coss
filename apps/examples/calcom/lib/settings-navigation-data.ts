@@ -44,10 +44,6 @@ export const userSettingsItems: SettingsNavItem[] = [
     url: "/settings/my-account",
   },
   {
-    avatar: {
-      fallback: "LT",
-      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
-    },
     children: [
       { title: "Password", url: "/settings/security/password" },
       { title: "Impersonation", url: "/settings/security/impersonation" },

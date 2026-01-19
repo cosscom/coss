@@ -64,7 +64,7 @@ function SettingsNavSection({
   pathname: string;
 }) {
   return (
-    <SidebarMenuItem className="mb-2">
+    <SidebarMenuItem>
       <div className="flex items-center gap-2 px-2 py-1.5">
         {section.avatar && (
           <Avatar className="size-5">
