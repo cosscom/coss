@@ -6705,7 +6705,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-13": {
     name: "p-tabs-13",
-    description: "Tabs with icon only and animated tooltip",
+    description: "Tabs with icon only and grouped tooltips",
     type: "registry:block",
     registryDependencies: ["@coss/tabs","@coss/tooltip"],
     files: [{

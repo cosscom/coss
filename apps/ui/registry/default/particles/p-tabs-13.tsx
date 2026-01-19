@@ -14,23 +14,26 @@ export default function Particle() {
       <Tabs className="items-center" defaultValue="tab-1">
         <TabsList>
           <Tooltip>
-            <TooltipTrigger render={<TabsTab value="tab-1" />}>
+            <TooltipTrigger
+              render={<TabsTab aria-label="Overview" value="tab-1" />}
+            >
               <HouseIcon aria-hidden="true" />
-              <span className="sr-only">Overview</span>
             </TooltipTrigger>
             <TooltipPopup>Overview</TooltipPopup>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger render={<TabsTab value="tab-2" />}>
+            <TooltipTrigger
+              render={<TabsTab aria-label="Projects" value="tab-2" />}
+            >
               <PanelsTopLeftIcon aria-hidden="true" />
-              <span className="sr-only">Projects</span>
             </TooltipTrigger>
             <TooltipPopup>Projects</TooltipPopup>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger render={<TabsTab value="tab-3" />}>
+            <TooltipTrigger
+              render={<TabsTab aria-label="Settings" value="tab-3" />}
+            >
               <SettingsIcon aria-hidden="true" />
-              <span className="sr-only">Settings</span>
             </TooltipTrigger>
             <TooltipPopup>Settings</TooltipPopup>
           </Tooltip>

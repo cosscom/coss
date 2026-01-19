@@ -7495,7 +7495,7 @@
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Tabs with icon only and animated tooltip",
+      "description": "Tabs with icon only and grouped tooltips",
       "files": [
         {
           "path": "registry/default/particles/p-tabs-13.tsx",

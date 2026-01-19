@@ -3602,7 +3602,7 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("tabs", "tooltip"),
     dependencies: ["lucide-react"],
-    description: "Tabs with icon only and animated tooltip",
+    description: "Tabs with icon only and grouped tooltips",
     files: [{ path: "particles/p-tabs-13.tsx", type: "registry:block" }],
     name: "p-tabs-13",
     registryDependencies: ["@coss/tabs", "@coss/tooltip"],
