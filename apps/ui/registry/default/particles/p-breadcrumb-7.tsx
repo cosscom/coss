@@ -31,21 +31,23 @@ export default function Particle() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <Select defaultValue="orion" items={items}>
-            <SelectTrigger
-              aria-label="Select database"
-              className="relative gap-2 ps-9"
-              size="sm"
-            >
+          <Select
+            aria-label="Select database"
+            defaultValue={items[0]}
+            itemToStringValue={(item) => item.value}
+          >
+            <SelectTrigger className="relative gap-2 ps-9" size="sm">
               <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
                 <DatabaseIcon aria-hidden="true" className="size-4" />
               </div>
-              <SelectValue />
+              <SelectValue>
+                {(item) => <span className="truncate">{item.label}</span>}
+              </SelectValue>
             </SelectTrigger>
             <SelectPopup>
-              {items.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectPopup>

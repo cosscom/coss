@@ -29,7 +29,11 @@ export default function Particle() {
           <Menu>
             <MenuTrigger
               render={
-                <Button className="-m-1.5" size="icon-sm" variant="ghost" />
+                <Button
+                  className="-m-1.5 text-muted-foreground"
+                  size="icon-sm"
+                  variant="ghost"
+                />
               }
             >
               <BreadcrumbEllipsis />
