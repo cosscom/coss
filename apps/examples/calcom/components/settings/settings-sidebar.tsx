@@ -12,6 +12,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -40,17 +41,13 @@ export function SettingsSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu className="gap-0.5">
-            {settingsNavItems.map((section) => (
-              <SettingsNavSection
-                key={section.url}
-                pathname={pathname}
-                section={section}
-              />
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        {settingsNavItems.map((section) => (
+          <SettingsNavSection
+            key={section.url}
+            pathname={pathname}
+            section={section}
+          />
+        ))}
       </SidebarContent>
     </Sidebar>
   );
@@ -64,8 +61,8 @@ function SettingsNavSection({
   pathname: string;
 }) {
   return (
-    <SidebarMenuItem className="mb-2">
-      <div className="flex items-center gap-2 px-2 py-1.5">
+    <SidebarGroup>
+      <SidebarGroupLabel>
         {section.avatar && (
           <Avatar className="size-5">
             <AvatarImage alt={section.title} src={section.avatar.src} />
@@ -74,19 +71,15 @@ function SettingsNavSection({
             </AvatarFallback>
           </Avatar>
         )}
-        {section.icon && (
-          <section.icon className="size-4 text-sidebar-foreground/70" />
-        )}
-        <span className="font-medium text-sidebar-foreground/70 text-sm max-lg:hidden">
-          {section.title}
-        </span>
-      </div>
+        {section.icon && <section.icon />}
+        <span className="max-lg:hidden">{section.title}</span>
+      </SidebarGroupLabel>
       {section.children && (
-        <SidebarMenu className="mx-0 gap-0.5 border-none px-0">
+        <SidebarMenu className="gap-0.5">
           {section.children.map((item) => (
             <SidebarMenuItem key={item.url}>
               <SidebarMenuButton
-                className="ps-8.5"
+                className="ps-7"
                 isActive={pathname === item.url}
                 render={
                   <Link href={item.url}>
@@ -103,6 +96,6 @@ function SettingsNavSection({
           ))}
         </SidebarMenu>
       )}
-    </SidebarMenuItem>
+    </SidebarGroup>
   );
 }
