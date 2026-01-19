@@ -5,11 +5,7 @@ import { fontHeading, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { AppCommand } from "@/components/app-command";
-import { AppSidebar } from "@/components/app-sidebar";
 import { DebugProvider } from "@/components/debug-context";
-import { MobileFooter } from "@/components/mobile-footer";
-import { MobileHeader } from "@/components/mobile-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
   description: "coss.com - the everything but AI company",
@@ -31,12 +27,7 @@ export default function RootLayout({
           <ToastProvider>
             <DebugProvider>
               <AppCommand />
-              <SidebarProvider>
-                <MobileHeader />
-                <AppSidebar />
-                <SidebarInset className="max-md:pt-14">{children}</SidebarInset>
-                <MobileFooter />
-              </SidebarProvider>
+              {children}
             </DebugProvider>
           </ToastProvider>
         </ThemeProvider>
