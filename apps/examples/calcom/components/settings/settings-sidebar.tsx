@@ -64,14 +64,14 @@ function SettingsNavSection({
     <SidebarGroup>
       <SidebarGroupLabel>
         {section.avatar && (
-          <Avatar className="size-5">
+          <Avatar className="size-4">
             <AvatarImage alt={section.title} src={section.avatar.src} />
             <AvatarFallback className="text-[10px]">
               {section.avatar.fallback}
             </AvatarFallback>
           </Avatar>
         )}
-        {section.icon && <section.icon />}
+        {section.icon && <section.icon className="opacity-80" />}
         <span className="max-lg:hidden">{section.title}</span>
       </SidebarGroupLabel>
       {section.children && (
@@ -79,14 +79,14 @@ function SettingsNavSection({
           {section.children.map((item) => (
             <SidebarMenuItem key={item.url}>
               <SidebarMenuButton
-                className="ps-7"
+                className="ps-8"
                 isActive={pathname === item.url}
                 render={
                   <Link href={item.url}>
                     <span className="flex items-center gap-1">
                       {item.title}
                       {item.external && (
-                        <ExternalLinkIcon className="size-3 text-sidebar-foreground/50" />
+                        <ExternalLinkIcon className="size-3 opacity-80" />
                       )}
                     </span>
                   </Link>
