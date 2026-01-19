@@ -126,10 +126,15 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         projectedIndex >= 0
           ? `Sortable item moved to position ${projectedIndex + 1} of ${ids.length}.`
           : undefined,
-      onDragStart: () =>
-        `Picked up sortable item. Current position: ${activeIndex + 1} of ${ids.length}.`,
+      onDragStart: ({ active }: DragStartEvent) => {
+        const index = ids.indexOf(active.id);
+
+        return index >= 0
+          ? `Picked up sortable item. Current position: ${index + 1} of ${ids.length}.`
+          : "Picked up sortable item.";
+      },
     }),
-    [activeIndex, projectedIndex, ids.length],
+    [projectedIndex, ids.length, ids.indexOf],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
