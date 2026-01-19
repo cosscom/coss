@@ -1879,6 +1879,132 @@ export const Index: Record<string, any> = {
     categories: ["badge"],
     meta: undefined,
   },
+  "p-badge-14": {
+    name: "p-badge-14",
+    description: "Full rounded badge (pill)",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
+  "p-badge-15": {
+    name: "p-badge-15",
+    description: "Badge with number after text",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
+  "p-badge-16": {
+    name: "p-badge-16",
+    description: "Status badge - Paid",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
+  "p-badge-17": {
+    name: "p-badge-17",
+    description: "Status badge - Pending",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
+  "p-badge-18": {
+    name: "p-badge-18",
+    description: "Status badge - Failed",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
+  "p-badge-19": {
+    name: "p-badge-19",
+    description: "Selectable badge with checkbox",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/checkbox"],
+    files: [{
+      path: "registry/default/particles/p-badge-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge","checkbox"],
+    meta: undefined,
+  },
+  "p-badge-20": {
+    name: "p-badge-20",
+    description: "Removable badge",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge"],
+    files: [{
+      path: "registry/default/particles/p-badge-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-badge-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["badge"],
+    meta: undefined,
+  },
   "p-breadcrumb-1": {
     name: "p-breadcrumb-1",
     description: "Breadcrumb with menu example",
@@ -1913,6 +2039,96 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["breadcrumb"],
+    meta: undefined,
+  },
+  "p-breadcrumb-3": {
+    name: "p-breadcrumb-3",
+    description: "Breadcrumb with home icon for home link only",
+    type: "registry:block",
+    registryDependencies: ["@coss/breadcrumb"],
+    files: [{
+      path: "registry/default/particles/p-breadcrumb-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-breadcrumb-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["breadcrumb"],
+    meta: undefined,
+  },
+  "p-breadcrumb-4": {
+    name: "p-breadcrumb-4",
+    description: "Breadcrumb with folders icon menu",
+    type: "registry:block",
+    registryDependencies: ["@coss/breadcrumb","@coss/button","@coss/menu"],
+    files: [{
+      path: "registry/default/particles/p-breadcrumb-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-breadcrumb-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["breadcrumb","menu"],
+    meta: undefined,
+  },
+  "p-breadcrumb-5": {
+    name: "p-breadcrumb-5",
+    description: "Breadcrumb with icons before text",
+    type: "registry:block",
+    registryDependencies: ["@coss/breadcrumb"],
+    files: [{
+      path: "registry/default/particles/p-breadcrumb-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-breadcrumb-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["breadcrumb"],
+    meta: undefined,
+  },
+  "p-breadcrumb-6": {
+    name: "p-breadcrumb-6",
+    description: "Breadcrumb with dot separators",
+    type: "registry:block",
+    registryDependencies: ["@coss/breadcrumb"],
+    files: [{
+      path: "registry/default/particles/p-breadcrumb-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-breadcrumb-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["breadcrumb"],
+    meta: undefined,
+  },
+  "p-breadcrumb-7": {
+    name: "p-breadcrumb-7",
+    description: "Breadcrumb with select dropdown",
+    type: "registry:block",
+    registryDependencies: ["@coss/breadcrumb","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-breadcrumb-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-breadcrumb-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["breadcrumb","select"],
     meta: undefined,
   },
   "p-button-1": {
