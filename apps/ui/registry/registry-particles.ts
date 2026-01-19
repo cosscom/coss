@@ -620,7 +620,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("breadcrumb", "menu"),
+    categories: categories("breadcrumb", "dropdown", "menu"),
     description: "Breadcrumb with menu example",
     files: [{ path: "particles/p-breadcrumb-1.tsx", type: "registry:block" }],
     name: "p-breadcrumb-1",
@@ -645,7 +645,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("breadcrumb", "menu"),
+    categories: categories("breadcrumb", "dropdown", "menu"),
     dependencies: ["lucide-react"],
     description: "Breadcrumb with folders icon menu",
     files: [{ path: "particles/p-breadcrumb-4.tsx", type: "registry:block" }],
@@ -1404,7 +1404,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("dialog", "menu"),
+    categories: categories("dialog", "dropdown", "menu"),
     description: "Dialog opened from menu",
     files: [{ path: "particles/p-dialog-2.tsx", type: "registry:block" }],
     name: "p-dialog-2",
@@ -1918,7 +1918,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "menu"),
+    categories: categories("dropdown", "group", "menu"),
     description: "Group with menu",
     files: [{ path: "particles/p-group-13.tsx", type: "registry:block" }],
     name: "p-group-13",
@@ -2443,7 +2443,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("badge", "input group", "menu"),
+    categories: categories("badge", "dropdown", "input group", "menu"),
     dependencies: ["lucide-react"],
     description: "Input group with badge and menu",
     files: [{ path: "particles/p-input-group-18.tsx", type: "registry:block" }],
@@ -2683,7 +2683,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Basic menu",
     files: [{ path: "particles/p-menu-1.tsx", type: "registry:block" }],
     name: "p-menu-1",
@@ -2691,7 +2691,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu with hover",
     files: [{ path: "particles/p-menu-2.tsx", type: "registry:block" }],
     name: "p-menu-2",
@@ -2699,7 +2699,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu with checkbox",
     files: [{ path: "particles/p-menu-3.tsx", type: "registry:block" }],
     name: "p-menu-3",
@@ -2707,7 +2707,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu", "switch"),
+    categories: categories("dropdown", "menu", "switch"),
     description: "Menu with checkbox items as switches",
     files: [{ path: "particles/p-menu-9.tsx", type: "registry:block" }],
     name: "p-menu-9",
@@ -2715,7 +2715,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu with radio group",
     files: [{ path: "particles/p-menu-4.tsx", type: "registry:block" }],
     name: "p-menu-4",
@@ -2723,7 +2723,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu with link",
     files: [{ path: "particles/p-menu-5.tsx", type: "registry:block" }],
     name: "p-menu-5",
@@ -2731,7 +2731,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu with group labels",
     files: [{ path: "particles/p-menu-6.tsx", type: "registry:block" }],
     name: "p-menu-6",
@@ -2739,7 +2739,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Nested menu",
     files: [{ path: "particles/p-menu-7.tsx", type: "registry:block" }],
     name: "p-menu-7",
@@ -2747,7 +2747,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("menu"),
+    categories: categories("dropdown", "menu"),
     description: "Menu close on click",
     files: [{ path: "particles/p-menu-8.tsx", type: "registry:block" }],
     name: "p-menu-8",

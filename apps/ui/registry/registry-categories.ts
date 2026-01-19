@@ -23,6 +23,7 @@ export const registryCategories = [
   "combobox",
   "command",
   "dialog",
+  "dropdown",
   "empty state",
   "field",
   "fieldset",

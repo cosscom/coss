@@ -24,6 +24,7 @@
   },
   "categories": [
     "badge",
+    "dropdown",
     "input group",
     "menu"
   ]

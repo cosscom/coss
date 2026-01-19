@@ -2020,7 +2020,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["breadcrumb","menu"],
+    categories: ["breadcrumb","dropdown","menu"],
     meta: undefined,
   },
   "p-breadcrumb-2": {
@@ -2074,7 +2074,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["breadcrumb","menu"],
+    categories: ["breadcrumb","dropdown","menu"],
     meta: undefined,
   },
   "p-breadcrumb-5": {
@@ -3370,7 +3370,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["dialog","menu"],
+    categories: ["dialog","dropdown","menu"],
     meta: undefined,
   },
   "p-dialog-3": {
@@ -4144,7 +4144,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["group","menu"],
+    categories: ["dropdown","group","menu"],
     meta: undefined,
   },
   "p-group-14": {
@@ -4918,7 +4918,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["badge","input group","menu"],
+    categories: ["badge","dropdown","input group","menu"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-input-group-19": {
@@ -5206,7 +5206,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-2": {
@@ -5224,7 +5224,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-3": {
@@ -5242,7 +5242,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-9": {
@@ -5260,7 +5260,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu","switch"],
+    categories: ["dropdown","menu","switch"],
     meta: undefined,
   },
   "p-menu-4": {
@@ -5278,7 +5278,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-5": {
@@ -5296,7 +5296,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-6": {
@@ -5314,7 +5314,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-7": {
@@ -5332,7 +5332,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-menu-8": {
@@ -5350,7 +5350,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["menu"],
+    categories: ["dropdown","menu"],
     meta: undefined,
   },
   "p-number-field-1": {
