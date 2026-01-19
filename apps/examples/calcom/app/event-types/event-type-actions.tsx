@@ -48,6 +48,7 @@ export function EventTypeActions({
             render={
               <Switch
                 checked={!isHidden}
+                className="relative"
                 onCheckedChange={(checked) => onHiddenChange(!checked)}
               />
             }
