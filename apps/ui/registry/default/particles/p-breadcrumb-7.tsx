@@ -33,21 +33,17 @@ export default function Particle() {
         <BreadcrumbItem>
           <Select
             aria-label="Select database"
-            defaultValue={items[0]}
-            itemToStringValue={(item) => item.value}
+            defaultValue="orion"
+            items={items}
           >
-            <SelectTrigger className="relative gap-2 ps-9" size="sm">
-              <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[select[disabled]]:opacity-50">
-                <DatabaseIcon aria-hidden="true" className="size-4" />
-              </div>
-              <SelectValue>
-                {(item) => <span className="truncate">{item.label}</span>}
-              </SelectValue>
+            <SelectTrigger size="sm">
+              <DatabaseIcon />
+              <SelectValue />
             </SelectTrigger>
             <SelectPopup>
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item}>
-                  {item.label}
+              {items.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
                 </SelectItem>
               ))}
             </SelectPopup>
