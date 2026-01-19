@@ -1930,7 +1930,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["badge","status"],
+    categories: ["badge"],
     meta: undefined,
   },
   "p-badge-17": {
@@ -1948,7 +1948,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["badge","status"],
+    categories: ["badge"],
     meta: undefined,
   },
   "p-badge-18": {
@@ -1966,7 +1966,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["badge","status"],
+    categories: ["badge"],
     meta: undefined,
   },
   "p-badge-19": {

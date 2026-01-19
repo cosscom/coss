@@ -1892,8 +1892,7 @@
     },
     {
       "categories": [
-        "badge",
-        "status"
+        "badge"
       ],
       "description": "Status badge - Paid",
       "files": [
@@ -1910,8 +1909,7 @@
     },
     {
       "categories": [
-        "badge",
-        "status"
+        "badge"
       ],
       "description": "Status badge - Pending",
       "files": [
@@ -1928,8 +1926,7 @@
     },
     {
       "categories": [
-        "badge",
-        "status"
+        "badge"
       ],
       "description": "Status badge - Failed",
       "files": [
