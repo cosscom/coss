@@ -6667,6 +6667,60 @@ export const Index: Record<string, any> = {
     categories: ["tabs","badge"],
     meta: undefined,
   },
+  "p-tabs-11": {
+    name: "p-tabs-11",
+    description: "Vertical tabs with underline and icon before name",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"},
+  },
+  "p-tabs-12": {
+    name: "p-tabs-12",
+    description: "Tabs with icon only and count badge",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs","badge"],
+    meta: undefined,
+  },
+  "p-tabs-13": {
+    name: "p-tabs-13",
+    description: "Tabs with icon only and animated tooltip",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-tabs-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs","tooltip"],
+    meta: undefined,
+  },
   "p-textarea-1": {
     name: "p-textarea-1",
     description: "Basic textarea",

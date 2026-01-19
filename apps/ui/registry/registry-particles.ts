@@ -3578,6 +3578,37 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("tabs"),
+    dependencies: ["lucide-react"],
+    description: "Vertical tabs with underline and icon before name",
+    files: [{ path: "particles/p-tabs-11.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80",
+    },
+    name: "p-tabs-11",
+    registryDependencies: ["@coss/tabs"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("tabs", "badge"),
+    dependencies: ["lucide-react"],
+    description: "Tabs with icon only and count badge",
+    files: [{ path: "particles/p-tabs-12.tsx", type: "registry:block" }],
+    name: "p-tabs-12",
+    registryDependencies: ["@coss/badge", "@coss/tabs"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("tabs", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Tabs with icon only and animated tooltip",
+    files: [{ path: "particles/p-tabs-13.tsx", type: "registry:block" }],
+    name: "p-tabs-13",
+    registryDependencies: ["@coss/tabs", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  {
     categories: categories("textarea"),
     description: "Basic textarea",
     files: [{ path: "particles/p-textarea-1.tsx", type: "registry:block" }],

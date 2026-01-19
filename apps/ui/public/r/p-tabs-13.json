@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-tabs-13",
+  "type": "registry:block",
+  "description": "Tabs with icon only and animated tooltip",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/tabs",
+    "@coss/tooltip"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-tabs-13.tsx",
+      "content": "\"use client\";\n\nimport { HouseIcon, PanelsTopLeftIcon, SettingsIcon } from \"lucide-react\";\nimport type { ComponentType } from \"react\";\n\nimport { Tabs, TabsList, TabsPanel, TabsTab } from \"@/registry/default/ui/tabs\";\nimport {\n  Tooltip,\n  TooltipCreateHandle,\n  TooltipPopup,\n  TooltipProvider,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\";\n\nconst tooltipHandle = TooltipCreateHandle<ComponentType>();\n\nconst OverviewContent = () => {\n  return <span>Overview</span>;\n};\n\nconst ProjectsContent = () => {\n  return <span>Projects</span>;\n};\n\nconst SettingsContent = () => {\n  return <span>Settings</span>;\n};\n\nexport default function Particle() {\n  return (\n    <TooltipProvider>\n      <Tabs defaultValue=\"tab-1\">\n        <TabsList>\n          <TooltipTrigger\n            handle={tooltipHandle}\n            payload={OverviewContent}\n            render={<TabsTab value=\"tab-1\" />}\n          >\n            <HouseIcon aria-hidden=\"true\" />\n            <span className=\"sr-only\">Overview</span>\n          </TooltipTrigger>\n          <TooltipTrigger\n            handle={tooltipHandle}\n            payload={ProjectsContent}\n            render={<TabsTab value=\"tab-2\" />}\n          >\n            <PanelsTopLeftIcon aria-hidden=\"true\" />\n            <span className=\"sr-only\">Projects</span>\n          </TooltipTrigger>\n          <TooltipTrigger\n            handle={tooltipHandle}\n            payload={SettingsContent}\n            render={<TabsTab value=\"tab-3\" />}\n          >\n            <SettingsIcon aria-hidden=\"true\" />\n            <span className=\"sr-only\">Settings</span>\n          </TooltipTrigger>\n        </TabsList>\n        <TabsPanel value=\"tab-1\">\n          <p className=\"p-4 text-center text-muted-foreground text-xs\">\n            Overview content\n          </p>\n        </TabsPanel>\n        <TabsPanel value=\"tab-2\">\n          <p className=\"p-4 text-center text-muted-foreground text-xs\">\n            Projects content\n          </p>\n        </TabsPanel>\n        <TabsPanel value=\"tab-3\">\n          <p className=\"p-4 text-center text-muted-foreground text-xs\">\n            Settings content\n          </p>\n        </TabsPanel>\n      </Tabs>\n\n      <Tooltip handle={tooltipHandle}>\n        {({ payload: Payload }) => (\n          <TooltipPopup>{Payload !== undefined && <Payload />}</TooltipPopup>\n        )}\n      </Tooltip>\n    </TooltipProvider>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "tabs",
+    "tooltip"
+  ]
+}

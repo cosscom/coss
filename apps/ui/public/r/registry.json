@@ -7444,6 +7444,73 @@
     },
     {
       "categories": [
+        "tabs"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Vertical tabs with underline and icon before name",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tabs-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-80"
+      },
+      "name": "p-tabs-11",
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "tabs",
+        "badge"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Tabs with icon only and count badge",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tabs-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tabs-12",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/tabs"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "tabs",
+        "tooltip"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Tabs with icon only and animated tooltip",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tabs-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tabs-13",
+      "registryDependencies": [
+        "@coss/tabs",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "textarea"
       ],
       "description": "Basic textarea",
