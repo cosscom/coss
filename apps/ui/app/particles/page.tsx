@@ -7,12 +7,14 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { isValidRegistryCategory } from "@/registry/registry-categories";
+import { particles } from "@/registry/registry-particles";
 
 import { ParticlesDisplay } from "./particles-display";
 import SearchContainer from "./search-container";
 
-const description =
-  "Particles are more than just components. They are the building blocks of your design system. Use the filters to find the perfect component for your project.";
+const particleCount = particles.length;
+
+const description = `Discover ${particleCount} ready-to-use particles, the building blocks of your design system. Filter by category to find the perfect component for your project.`;
 
 export const metadata: Metadata = {
   description,
