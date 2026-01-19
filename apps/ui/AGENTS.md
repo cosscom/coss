@@ -948,12 +948,14 @@ className="[&_svg:not([class*='size-'])]:size-4"
 ## 12. Valid Categories
 
 **Component categories:**
-accordion, alert, alert dialog, autocomplete, avatar, badge, breadcrumb, button, card, checkbox, checkbox group, collapsible, combobox, command, dialog, empty state, field, fieldset, form, frame, group, input, input group, kbd, label, menu, meter, number field, pagination, popover, preview card, progress, radio group, scroll area, select, separator, sheet, skeleton, slider, spinner, switch, table, tabs, textarea, toast, toggle, toggle group, toolbar, tooltip
+accordion, alert, alert dialog, autocomplete, avatar, badge, breadcrumb, button, card, checkbox, checkbox group, collapsible, combobox, command, dialog, dropdown, empty state, field, fieldset, form, frame, group, input, input group, kbd, label, menu, meter, number field, pagination, popover, preview card, progress, radio group, scroll area, select, separator, sheet, skeleton, slider, spinner, switch, table, tabs, textarea, toast, toggle, toggle group, toolbar, tooltip
 
 **Tag categories:**
 async, copy, disabled, error, file, filter, info, loading, multiselect, password, search, sort, success, tag, tanstack, text editor, time, upload, validation, warning, zod
 
 **Important:** All category names are typed in `registry-categories.ts`. Use the `categories()` helper function for type safety.
+
+**Menu components must include the "dropdown" category:** The "dropdown" category is an alias for "menu" since many users search for "dropdown" when looking for menu components. Every particle that uses the Menu component should include both "dropdown" and "menu" in its categories.
 
 **Adding New Categories:**
 
