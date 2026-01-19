@@ -16,9 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
@@ -31,20 +28,20 @@ export function SettingsSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <SidebarMenuButton
-          className="w-fit"
-          render={
-            <Link href="/event-types">
-              <ArrowLeftIcon className="size-4" />
-              <span className="max-lg:hidden">Back</span>
-            </Link>
-          }
-          tooltip="Back"
-        />
+        <div className="px-2">
+          <SidebarMenuButton
+            render={
+              <Link href="/event-types">
+                <ArrowLeftIcon className="size-4" />
+                <span className="max-lg:hidden">Back</span>
+              </Link>
+            }
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarMenu>
+          <SidebarMenu className="gap-0.5">
             {settingsNavItems.map((section) => (
               <SettingsNavSection
                 key={section.url}
@@ -85,11 +82,11 @@ function SettingsNavSection({
         </span>
       </div>
       {section.children && (
-        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
+        <SidebarMenu className="mx-0 gap-0.5 border-none px-0">
           {section.children.map((item) => (
-            <SidebarMenuSubItem key={item.url}>
-              <SidebarMenuSubButton
-                className="ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+            <SidebarMenuItem key={item.url}>
+              <SidebarMenuButton
+                className="ps-8.5"
                 isActive={pathname === item.url}
                 render={
                   <Link href={item.url}>
@@ -102,9 +99,9 @@ function SettingsNavSection({
                   </Link>
                 }
               />
-            </SidebarMenuSubItem>
+            </SidebarMenuItem>
           ))}
-        </SidebarMenuSub>
+        </SidebarMenu>
       )}
     </SidebarMenuItem>
   );

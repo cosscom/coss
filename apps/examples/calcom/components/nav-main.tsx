@@ -144,7 +144,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
         render={<div />}
       >
         <CollapsibleTrigger
-          className="justify-between font-medium text-sidebar-foreground"
+          className="justify-between"
           render={
             <SidebarMenuButton
               tooltip={isBetweenMdAndLg ? item.title : undefined}
@@ -187,7 +187,6 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className="font-medium text-sidebar-foreground"
         isActive={isActive}
         render={
           <Link href={item.url}>
