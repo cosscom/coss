@@ -1858,6 +1858,136 @@
     },
     {
       "categories": [
+        "badge"
+      ],
+      "description": "Full rounded badge (pill)",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-14",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge"
+      ],
+      "description": "Badge with number after text",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-15",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge",
+        "status"
+      ],
+      "description": "Status badge - Paid",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-16",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge",
+        "status"
+      ],
+      "description": "Status badge - Pending",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-17",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge",
+        "status"
+      ],
+      "description": "Status badge - Failed",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-18.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-18",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge",
+        "checkbox"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Selectable badge with checkbox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-19",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/checkbox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "badge"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Removable badge",
+      "files": [
+        {
+          "path": "registry/default/particles/p-badge-20.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-badge-20",
+      "registryDependencies": [
+        "@coss/badge"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "breadcrumb",
         "menu"
       ],
@@ -1890,6 +2020,111 @@
       "name": "p-breadcrumb-2",
       "registryDependencies": [
         "@coss/breadcrumb"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "breadcrumb"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Breadcrumb with home icon for home link only",
+      "files": [
+        {
+          "path": "registry/default/particles/p-breadcrumb-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-breadcrumb-3",
+      "registryDependencies": [
+        "@coss/breadcrumb"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "breadcrumb",
+        "menu"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Breadcrumb with folders icon menu",
+      "files": [
+        {
+          "path": "registry/default/particles/p-breadcrumb-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-breadcrumb-4",
+      "registryDependencies": [
+        "@coss/breadcrumb",
+        "@coss/button",
+        "@coss/menu"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "breadcrumb"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Breadcrumb with icons before text",
+      "files": [
+        {
+          "path": "registry/default/particles/p-breadcrumb-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-breadcrumb-5",
+      "registryDependencies": [
+        "@coss/breadcrumb"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "breadcrumb"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Breadcrumb with dot separators",
+      "files": [
+        {
+          "path": "registry/default/particles/p-breadcrumb-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-breadcrumb-6",
+      "registryDependencies": [
+        "@coss/breadcrumb"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "breadcrumb",
+        "select"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Breadcrumb with select dropdown",
+      "files": [
+        {
+          "path": "registry/default/particles/p-breadcrumb-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-breadcrumb-7",
+      "registryDependencies": [
+        "@coss/breadcrumb",
+        "@coss/select"
       ],
       "type": "registry:block"
     },
