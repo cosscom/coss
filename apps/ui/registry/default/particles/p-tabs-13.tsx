@@ -11,7 +11,7 @@ import {
 export default function Particle() {
   return (
     <TooltipProvider>
-      <Tabs defaultValue="tab-1">
+      <Tabs className="items-center" defaultValue="tab-1">
         <TabsList>
           <Tooltip>
             <TooltipTrigger render={<TabsTab value="tab-1" />}>

@@ -5,22 +5,22 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 
 export default function Particle() {
   return (
-    <Tabs defaultValue="tab-1">
+    <Tabs className="items-center" defaultValue="tab-1">
       <TabsList>
-        <TabsTab value="tab-1">
+        <TabsTab aria-label="Overview" className="size-10!" value="tab-1">
           <HouseIcon aria-hidden="true" />
-          <span className="sr-only">Overview</span>
         </TabsTab>
-        <TabsTab value="tab-2">
+        <TabsTab aria-label="Inbox" className="size-10!" value="tab-2">
           <InboxIcon aria-hidden="true" />
-          <span className="sr-only">Inbox</span>
-          <Badge className="ms-1" size="sm" variant="secondary">
+          <Badge
+            className="absolute end-0 top-0 rounded-full not-in-data-active:opacity-64"
+            size="sm"
+          >
             5
           </Badge>
         </TabsTab>
-        <TabsTab value="tab-3">
+        <TabsTab aria-label="Settings" className="size-10!" value="tab-3">
           <SettingsIcon aria-hidden="true" />
-          <span className="sr-only">Settings</span>
         </TabsTab>
       </TabsList>
       <TabsPanel value="tab-1">
