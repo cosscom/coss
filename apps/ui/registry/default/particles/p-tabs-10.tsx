@@ -7,19 +7,28 @@ export default function Particle() {
       <TabsList>
         <TabsTab value="tab-1">
           All
-          <Badge className="ms-1.5" variant="secondary">
+          <Badge
+            className="not-in-data-active:text-muted-foreground"
+            variant="outline"
+          >
             128
           </Badge>
         </TabsTab>
         <TabsTab value="tab-2">
           Pending
-          <Badge className="ms-1.5" variant="secondary">
+          <Badge
+            className="not-in-data-active:text-muted-foreground"
+            variant="outline"
+          >
             8
           </Badge>
         </TabsTab>
         <TabsTab value="tab-3">
           Completed
-          <Badge className="ms-1.5" variant="secondary">
+          <Badge
+            className="not-in-data-active:text-muted-foreground"
+            variant="outline"
+          >
             120
           </Badge>
         </TabsTab>

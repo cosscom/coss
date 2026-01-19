@@ -3,16 +3,10 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 export default function Particle() {
   return (
     <Tabs defaultValue="tab-1">
-      <TabsList className="rounded-full">
-        <TabsTab className="rounded-full" value="tab-1">
-          Tab 1
-        </TabsTab>
-        <TabsTab className="rounded-full" value="tab-2">
-          Tab 2
-        </TabsTab>
-        <TabsTab className="rounded-full" value="tab-3">
-          Tab 3
-        </TabsTab>
+      <TabsList className="[--radius:9999px]">
+        <TabsTab value="tab-1">Tab 1</TabsTab>
+        <TabsTab value="tab-2">Tab 2</TabsTab>
+        <TabsTab value="tab-3">Tab 3</TabsTab>
       </TabsList>
       <TabsPanel value="tab-1">
         <p className="p-4 text-center text-muted-foreground text-xs">

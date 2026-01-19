@@ -4,19 +4,16 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 
 export default function Particle() {
   return (
-    <Tabs defaultValue="tab-1">
+    <Tabs className="items-center" defaultValue="tab-1">
       <TabsList>
-        <TabsTab value="tab-1">
+        <TabsTab aria-label="Overview" value="tab-1">
           <HouseIcon aria-hidden="true" />
-          <span className="sr-only">Overview</span>
         </TabsTab>
-        <TabsTab value="tab-2">
+        <TabsTab aria-label="Projects" value="tab-2">
           <PanelsTopLeftIcon aria-hidden="true" />
-          <span className="sr-only">Projects</span>
         </TabsTab>
-        <TabsTab value="tab-3">
+        <TabsTab aria-label="Settings" value="tab-3">
           <SettingsIcon aria-hidden="true" />
-          <span className="sr-only">Settings</span>
         </TabsTab>
       </TabsList>
       <TabsPanel value="tab-1">

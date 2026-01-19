@@ -7,11 +7,17 @@ export default function Particle() {
     <Tabs className="items-center" defaultValue="tab-1">
       <div className="border-b">
         <TabsList variant="underline">
-          <TabsTab className="flex-col gap-1.5 px-4 py-2" value="tab-1">
+          <TabsTab
+            className="h-auto! flex-col gap-1.5 py-[calc(--spacing(2)-1px)]"
+            value="tab-1"
+          >
             <HouseIcon aria-hidden="true" className="opacity-60" size={16} />
             Overview
           </TabsTab>
-          <TabsTab className="flex-col gap-1.5 px-4 py-2" value="tab-2">
+          <TabsTab
+            className="h-auto! flex-col gap-1.5 py-[calc(--spacing(2)-1px)]"
+            value="tab-2"
+          >
             <PanelsTopLeftIcon
               aria-hidden="true"
               className="opacity-60"
@@ -19,7 +25,10 @@ export default function Particle() {
             />
             Projects
           </TabsTab>
-          <TabsTab className="flex-col gap-1.5 px-4 py-2" value="tab-3">
+          <TabsTab
+            className="h-auto! flex-col gap-1.5 py-[calc(--spacing(2.5)-1px)]"
+            value="tab-3"
+          >
             <BoxIcon aria-hidden="true" className="opacity-60" size={16} />
             Packages
           </TabsTab>
