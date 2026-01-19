@@ -32,12 +32,11 @@ export function SettingsSidebar({
       <SidebarHeader>
         <div className="px-2">
           <SidebarMenuButton
-            render={
-              <Link aria-label="Back" href="/event-types">
-                <ArrowLeftIcon className="md:-ms-0.5" />
-              </Link>
-            }
-          />
+            render={<Link aria-label="Back" href="/event-types" />}
+          >
+            <ArrowLeftIcon className="md:-ms-0.5" />
+            <span className="max-lg:hidden">Back</span>
+          </SidebarMenuButton>
         </div>
       </SidebarHeader>
       <SidebarContent>
