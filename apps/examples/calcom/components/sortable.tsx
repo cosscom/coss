@@ -134,7 +134,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
           : "Picked up sortable item.";
       },
     }),
-    [projectedIndex, ids.length, ids.indexOf],
+    [projectedIndex, ids],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
