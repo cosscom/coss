@@ -30,7 +30,11 @@ export default function Particle() {
             <MenuTrigger
               aria-label="More pages"
               render={
-                <Button className="-m-1.5" size="icon-sm" variant="ghost" />
+                <Button
+                  className="-m-1.5 text-muted-foreground"
+                  size="icon-sm"
+                  variant="ghost"
+                />
               }
             >
               <FoldersIcon aria-hidden="true" />
