@@ -1,6 +1,7 @@
 "use client";
 
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function SettingsLayout({
   children,
@@ -8,11 +9,11 @@ export default function SettingsLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen">
+    <SidebarProvider>
       <SettingsSidebar />
-      <main className="flex-1 bg-background pl-56 max-lg:pl-0">
-        <div className="mx-auto max-w-3xl px-6 py-8">{children}</div>
-      </main>
-    </div>
+      <SidebarInset>
+        <div className="mx-auto max-w-3xl">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
