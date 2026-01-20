@@ -6073,24 +6073,6 @@ export const Index: Record<string, any> = {
     categories: ["select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-select-11": {
-    name: "p-select-11",
-    description: "Select in form",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/select"],
-    files: [{
-      path: "registry/default/particles/p-select-11.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-select-11.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["select"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-select-12": {
     name: "p-select-12",
     description: "Select with disabled items",
@@ -6283,6 +6265,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-select-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-11": {
+    name: "p-select-11",
+    description: "Select in form",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-11.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

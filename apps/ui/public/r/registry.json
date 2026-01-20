@@ -6789,29 +6789,6 @@
     },
     {
       "categories": [
-        "select"
-      ],
-      "description": "Select in form",
-      "files": [
-        {
-          "path": "registry/default/particles/p-select-11.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-select-11",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/field",
-        "@coss/form",
-        "@coss/select"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "select",
         "disabled"
       ],
@@ -7029,6 +7006,29 @@
       },
       "name": "p-select-22",
       "registryDependencies": [
+        "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "select"
+      ],
+      "description": "Select in form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-select-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-select-11",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/field",
+        "@coss/form",
         "@coss/select"
       ],
       "type": "registry:block"

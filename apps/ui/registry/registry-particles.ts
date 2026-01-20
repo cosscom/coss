@@ -3206,23 +3206,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("select"),
-    description: "Select in form",
-    files: [{ path: "particles/p-select-11.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-select-11",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/field",
-      "@coss/form",
-      "@coss/select",
-    ],
-    type: "registry:block",
-  },
-  {
     categories: categories("select", "disabled"),
     description: "Select with disabled items",
     files: [{ path: "particles/p-select-12.tsx", type: "registry:block" }],
@@ -3348,6 +3331,23 @@ export const particles: ParticleItem[] = [
     },
     name: "p-select-22",
     registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select in form",
+    files: [{ path: "particles/p-select-11.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-11",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/select",
+    ],
     type: "registry:block",
   },
   {
