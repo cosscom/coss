@@ -25,12 +25,15 @@ export default function Particle() {
           parts.find((part) => part.type === "timeZoneName")?.value || "";
         const modifiedOffset = offset === "GMT" ? "GMT+0" : offset;
 
+        const offsetMatch = offset.match(/GMT([+-]?)(\d+)(?::(\d+))?/);
+        const sign = offsetMatch?.[1] === "-" ? -1 : 1;
+        const hours = Number.parseInt(offsetMatch?.[2] || "0", 10);
+        const minutes = Number.parseInt(offsetMatch?.[3] || "0", 10);
+        const totalMinutes = sign * (hours * 60 + minutes);
+
         return {
           label: `(${modifiedOffset}) ${timezone.replace(/_/g, " ")}`,
-          numericOffset: Number.parseInt(
-            offset.replace("GMT", "").replace("+", "") || "0",
-            10,
-          ),
+          numericOffset: totalMinutes,
           value: timezone,
         };
       })
