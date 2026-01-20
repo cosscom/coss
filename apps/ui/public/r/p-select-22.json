@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-select-22",
+  "type": "registry:block",
+  "description": "Pill style select with primary color",
+  "registryDependencies": [
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-select-22.tsx",
+      "content": "import {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\";\n\nconst items = [\n  { label: \"Draft\", value: \"draft\" },\n  { label: \"Published\", value: \"published\" },\n  { label: \"Scheduled\", value: \"scheduled\" },\n];\n\nexport default function Particle() {\n  return (\n    <Select aria-label=\"Select status\" defaultValue=\"draft\">\n      <SelectTrigger className=\"h-6 min-h-6 min-w-0 gap-1 rounded-full border-primary/20 bg-primary/10 px-2.5 text-primary text-xs shadow-none before:hidden sm:min-h-6 sm:text-xs\">\n        <SelectValue />\n      </SelectTrigger>\n      <SelectPopup>\n        {items.map(({ label, value }) => (\n          <SelectItem key={value} value={value}>\n            {label}\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "select"
+  ]
+}

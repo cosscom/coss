@@ -6091,6 +6091,222 @@ export const Index: Record<string, any> = {
     categories: ["select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-select-12": {
+    name: "p-select-12",
+    description: "Select with disabled items",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select","disabled"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-13": {
+    name: "p-select-13",
+    description: "Timezone select",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-14": {
+    name: "p-select-14",
+    description: "Status select with colored dot",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-15": {
+    name: "p-select-15",
+    description: "Pill select",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
+  "p-select-16": {
+    name: "p-select-16",
+    description: "Select with left text label",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-17": {
+    name: "p-select-17",
+    description: "Select with country flags",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-18": {
+    name: "p-select-18",
+    description: "Select with description in options only",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-19": {
+    name: "p-select-19",
+    description: "Select with avatars",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select","avatar"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-20": {
+    name: "p-select-20",
+    description: "Rich select with avatars and usernames",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select","avatar"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-21": {
+    name: "p-select-21",
+    description: "Auto width select",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-21.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-21.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
+  "p-select-22": {
+    name: "p-select-22",
+    description: "Pill style select with primary color",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-22.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: undefined,
+  },
+  "p-select-23": {
+    name: "p-select-23",
+    description: "Select with custom border and background",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-separator-1": {
     name: "p-separator-1",
     description: "Separator with horizontal and vertical orientations",

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-select-15",
+  "type": "registry:block",
+  "description": "Pill select",
+  "registryDependencies": [
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-select-15.tsx",
+      "content": "import {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\";\n\nconst items = [\n  { label: \"All\", value: \"all\" },\n  { label: \"Active\", value: \"active\" },\n  { label: \"Inactive\", value: \"inactive\" },\n  { label: \"Archived\", value: \"archived\" },\n];\n\nexport default function Particle() {\n  return (\n    <Select aria-label=\"Select filter\" defaultValue=\"all\">\n      <SelectTrigger\n        className=\"h-7 min-h-7 min-w-0 gap-1 rounded-full border-transparent bg-muted px-2.5 text-xs shadow-none before:hidden sm:min-h-7 sm:text-xs\"\n        size=\"sm\"\n      >\n        <SelectValue />\n      </SelectTrigger>\n      <SelectPopup>\n        {items.map(({ label, value }) => (\n          <SelectItem key={value} value={value}>\n            {label}\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "select"
+  ]
+}

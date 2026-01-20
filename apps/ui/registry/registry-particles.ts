@@ -3223,6 +3223,138 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("select", "disabled"),
+    description: "Select with disabled items",
+    files: [{ path: "particles/p-select-12.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-12",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "time"),
+    description: "Timezone select",
+    files: [{ path: "particles/p-select-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-13",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Status select with colored dot",
+    files: [{ path: "particles/p-select-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-14",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Pill select",
+    files: [{ path: "particles/p-select-15.tsx", type: "registry:block" }],
+    name: "p-select-15",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with left text label",
+    files: [{ path: "particles/p-select-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-16",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with country flags",
+    files: [{ path: "particles/p-select-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-17",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with description in options only",
+    files: [{ path: "particles/p-select-18.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-18",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "avatar"),
+    description: "Select with avatars",
+    files: [{ path: "particles/p-select-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-19",
+    registryDependencies: ["@coss/avatar", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "avatar"),
+    description: "Rich select with avatars and usernames",
+    files: [{ path: "particles/p-select-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-20",
+    registryDependencies: ["@coss/avatar", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Auto width select",
+    files: [{ path: "particles/p-select-21.tsx", type: "registry:block" }],
+    name: "p-select-21",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Pill style select with primary color",
+    files: [{ path: "particles/p-select-22.tsx", type: "registry:block" }],
+    name: "p-select-22",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with custom border and background",
+    files: [{ path: "particles/p-select-23.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-23",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
     categories: categories("separator"),
     description: "Separator with horizontal and vertical orientations",
     files: [{ path: "particles/p-separator-1.tsx", type: "registry:block" }],
