@@ -1,4 +1,4 @@
-import { ClockIcon } from "lucide-react";
+import { CableIcon } from "lucide-react";
 
 import {
   Select,
@@ -23,7 +23,7 @@ export default function Particle() {
       items={items}
     >
       <SelectTrigger>
-        <ClockIcon />
+        <CableIcon aria-hidden="true" />
         <SelectValue />
       </SelectTrigger>
       <SelectPopup alignItemWithTrigger={false}>
