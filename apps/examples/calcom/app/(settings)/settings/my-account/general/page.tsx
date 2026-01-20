@@ -39,7 +39,7 @@ export default function GeneralSettingsPage() {
               <FieldLabel>Language</FieldLabel>
               <Select defaultValue="en">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectPopup>
                   <SelectItem value="en">English</SelectItem>
@@ -56,7 +56,7 @@ export default function GeneralSettingsPage() {
               <div className="flex gap-2">
                 <Select defaultValue="europe-rome">
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select timezone" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectPopup>
                     <SelectItem value="europe-rome">Europe/Rome</SelectItem>
@@ -81,7 +81,7 @@ export default function GeneralSettingsPage() {
               <FieldLabel>Time format</FieldLabel>
               <Select defaultValue="12">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select time format" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectPopup>
                   <SelectItem value="12">12-hour</SelectItem>
@@ -98,7 +98,7 @@ export default function GeneralSettingsPage() {
               <FieldLabel>Start of week</FieldLabel>
               <Select defaultValue="sunday">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select start of week" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectPopup>
                   <SelectItem value="sunday">Sunday</SelectItem>
