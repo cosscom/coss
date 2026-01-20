@@ -46,7 +46,7 @@ export function ListItem({
   return (
     <div
       className={cn(
-        "after:-z-1 after:-inset-px not-last:after:bottom-0 relative z-0 has-[[data-slot=list-item-title]:hover]:z-1 flex translate-y-(--translate-y) after:pointer-events-none after:absolute after:rounded-[inherit] after:border after:border-border after:bg-background after:transition-[background-color,border-radius,inset,border] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
+        "after:-z-1 after:-inset-px relative z-0 flex translate-y-(--translate-y) after:pointer-events-none after:absolute not-last:after:bottom-0 after:rounded-[inherit] after:border after:border-border after:bg-background after:transition-[background-color,border-radius,inset,border] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
         isDraggable &&
           "before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] not-last:not-data-dragging:before:rounded-b-none not-data-dragged:before:opacity-0 before:shadow-[0_1px_--theme(--color-black/6%)] before:transition-[opacity,border-radius,inset] data-dragging:pointer-events-none data-dragged:z-1 data-dragging:rounded-[calc(var(--radius-xl)-1px)] data-dragging:not-data-dragged:transition-transform data-dragging:after:inset-y-0.5 data-dragging:after:border data-dragged:after:bg-clip-padding data-dragged:after:shadow-lg/5 data-dragging:before:inset-y-[3px] dark:not-first:not-data-dragging:before:rounded-none dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
         className,
@@ -62,7 +62,7 @@ export function ListItem({
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-y-0 not-last:not-in-data-dragging:bottom-px start-0 w-8 overflow-hidden before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-(--event-label-light) dark:before:bg-(--event-label-dark)",
+            "pointer-events-none absolute inset-y-0 start-0 not-last:not-in-data-dragging:bottom-px w-8 overflow-hidden before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-(--event-label-light) dark:before:bg-(--event-label-dark)",
             isDraggable &&
               "in-[[data-slot=list-item]:first-child]:-mt-px in-[[data-slot=list-item]:last-child]:-mb-px in-data-dragging:inset-y-[3px] in-data-dragging:rounded-s-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:first-child]:rounded-t-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:last-child]:rounded-b-[calc(var(--radius-xl)-2px)] transition-[border-radius,inset]",
           )}
