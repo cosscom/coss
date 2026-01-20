@@ -47,7 +47,11 @@ export default function Particle() {
   );
 
   return (
-    <Combobox defaultValue={defaultTimezone} items={formattedTimezones}>
+    <Combobox
+      autoHighlight
+      defaultValue={defaultTimezone}
+      items={formattedTimezones}
+    >
       <ComboboxTrigger
         render={
           <Button

@@ -43,7 +43,11 @@ export default function Particle() {
   );
 
   return (
-    <Combobox defaultValue={defaultTimezone} items={formattedTimezones}>
+    <Combobox
+      autoHighlight
+      defaultValue={defaultTimezone}
+      items={formattedTimezones}
+    >
       <ComboboxInput
         aria-label="Select timezone"
         placeholder="Select timezone..."
