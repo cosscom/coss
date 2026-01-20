@@ -1,5 +1,3 @@
-import { CableIcon } from "lucide-react";
-
 import {
   Select,
   SelectItem,
@@ -9,24 +7,18 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Select framework", value: null },
-  { label: "Next.js", value: "next" },
-  { label: "Vite", value: "vite" },
-  { label: "Astro", value: "astro" },
+  { label: "Active", value: "active" },
+  { label: "Inactive", value: "inactive" },
+  { label: "Archived", value: "archived" },
 ];
 
 export default function Particle() {
   return (
-    <Select
-      aria-label="Select framework with icon"
-      defaultValue="next"
-      items={items}
-    >
-      <SelectTrigger>
-        <CableIcon aria-hidden="true" />
+    <Select aria-label="Select filter" defaultValue="active" items={items}>
+      <SelectTrigger className="[--radius-lg:9999px] [--radius:9999px]">
         <SelectValue />
       </SelectTrigger>
-      <SelectPopup alignItemWithTrigger={false}>
+      <SelectPopup>
         {items.map(({ label, value }) => (
           <SelectItem key={value} value={value}>
             {label}

@@ -7,10 +7,11 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Select framework", value: null },
-  { label: "Next.js", value: "next" },
-  { label: "Vite", value: "vite" },
-  { label: "Astro", value: "astro" },
+  { disabled: false, label: "Next.js", value: "next" },
+  { disabled: false, label: "Vite", value: "vite" },
+  { disabled: true, label: "Astro (coming soon)", value: "astro" },
+  { disabled: true, label: "Remix (coming soon)", value: "remix" },
+  { disabled: false, label: "Nuxt", value: "nuxt" },
 ];
 
 export default function Particle() {
@@ -20,8 +21,8 @@ export default function Particle() {
         <SelectValue />
       </SelectTrigger>
       <SelectPopup>
-        {items.map(({ label, value }) => (
-          <SelectItem key={value} value={value}>
+        {items.map(({ disabled, label, value }) => (
+          <SelectItem disabled={disabled} key={value} value={value}>
             {label}
           </SelectItem>
         ))}
