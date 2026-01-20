@@ -24,14 +24,12 @@ export default function GeneralSettingsPage() {
   return (
     <div className="space-y-4">
       <Frame>
-        <FramePanel>
-          <FrameHeader>
-            <FrameTitle className="text-xl">General</FrameTitle>
-            <FrameDescription>
-              Manage settings for your language and timezone
-            </FrameDescription>
-          </FrameHeader>
-        </FramePanel>
+        <FrameHeader>
+          <FrameTitle className="text-xl">General</FrameTitle>
+          <FrameDescription>
+            Manage settings for your language and timezone
+          </FrameDescription>
+        </FrameHeader>
 
         <FramePanel>
           <div className="space-y-5">
@@ -108,11 +106,11 @@ export default function GeneralSettingsPage() {
               </Select>
             </Field>
           </div>
-
-          <FrameFooter className="mt-6 flex-row items-center justify-end border-t pt-4">
-            <Button>Update</Button>
-          </FrameFooter>
         </FramePanel>
+
+        <FrameFooter className="flex-row items-center justify-end">
+          <Button>Update</Button>
+        </FrameFooter>
       </Frame>
 
       <SettingsToggle
