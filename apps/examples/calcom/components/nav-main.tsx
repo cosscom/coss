@@ -162,7 +162,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             {item.items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
-                  className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+                  className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
                   isActive={pathname.startsWith(subItem.url)}
                   render={
                     <Link href={subItem.url}>

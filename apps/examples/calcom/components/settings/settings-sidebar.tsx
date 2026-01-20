@@ -14,9 +14,10 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
@@ -31,13 +32,11 @@ export function SettingsSidebar({
       <SidebarHeader>
         <div className="px-2">
           <SidebarMenuButton
-            render={
-              <Link href="/event-types">
-                <ArrowLeftIcon className="size-4" />
-                <span className="max-lg:hidden">Back</span>
-              </Link>
-            }
-          />
+            render={<Link aria-label="Back" href="/event-types" />}
+          >
+            <ArrowLeftIcon className="md:-ms-0.5" />
+            <span className="max-lg:hidden">Back</span>
+          </SidebarMenuButton>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -62,39 +61,37 @@ function SettingsNavSection({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>
+      <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
         {section.avatar && (
-          <Avatar className="size-5">
+          <Avatar className="size-4">
             <AvatarImage alt={section.title} src={section.avatar.src} />
             <AvatarFallback className="text-[10px]">
               {section.avatar.fallback}
             </AvatarFallback>
           </Avatar>
         )}
-        {section.icon && <section.icon />}
+        {section.icon && <section.icon className="opacity-80" />}
         <span className="max-lg:hidden">{section.title}</span>
       </SidebarGroupLabel>
       {section.children && (
-        <SidebarMenu className="gap-0.5">
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
           {section.children.map((item) => (
-            <SidebarMenuItem key={item.url}>
-              <SidebarMenuButton
-                className="ps-7"
+            <SidebarMenuSubItem key={item.url}>
+              <SidebarMenuSubButton
+                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
                 isActive={pathname === item.url}
-                render={
-                  <Link href={item.url}>
-                    <span className="flex items-center gap-1">
-                      {item.title}
-                      {item.external && (
-                        <ExternalLinkIcon className="size-3 text-sidebar-foreground/50" />
-                      )}
-                    </span>
-                  </Link>
-                }
-              />
-            </SidebarMenuItem>
+                render={<Link href={item.url} />}
+              >
+                <span className="flex items-center gap-1">
+                  {item.title}
+                  {item.external && (
+                    <ExternalLinkIcon className="size-3 opacity-80" />
+                  )}
+                </span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
           ))}
-        </SidebarMenu>
+        </SidebarMenuSub>
       )}
     </SidebarGroup>
   );
