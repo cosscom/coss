@@ -18,6 +18,7 @@
   },
   "categories": [
     "select",
-    "time"
+    "time",
+    "timezone"
   ]
 }

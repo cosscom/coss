@@ -1388,6 +1388,27 @@
     },
     {
       "categories": [
+        "autocomplete",
+        "input"
+      ],
+      "description": "Pill-shaped autocomplete",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-15",
+      "registryDependencies": [
+        "@coss/autocomplete"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "avatar"
       ],
       "description": "Avatar with image and fallback",
@@ -3395,6 +3416,75 @@
       },
       "name": "p-combobox-14",
       "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "description": "Pill-shaped combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-15",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input",
+        "timezone"
+      ],
+      "description": "Timezone combobox",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-16",
+      "registryDependencies": [
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input",
+        "timezone"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Timezone combobox with search input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-combobox-17",
+      "registryDependencies": [
+        "@coss/button",
         "@coss/combobox"
       ],
       "type": "registry:block"
@@ -5599,6 +5689,26 @@
     },
     {
       "categories": [
+        "input"
+      ],
+      "description": "Pill-shaped input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-input-19",
+      "registryDependencies": [
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "button",
         "input",
         "input group",
@@ -6179,6 +6289,27 @@
         "@coss/button",
         "@coss/field",
         "@coss/form",
+        "@coss/number-field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "number field",
+        "input"
+      ],
+      "description": "Pill-shaped number field",
+      "files": [
+        {
+          "path": "registry/default/particles/p-number-field-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-number-field-11",
+      "registryDependencies": [
         "@coss/number-field"
       ],
       "type": "registry:block"
@@ -6811,7 +6942,8 @@
     {
       "categories": [
         "select",
-        "time"
+        "time",
+        "timezone"
       ],
       "description": "Timezone select",
       "files": [

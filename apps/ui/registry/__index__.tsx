@@ -1393,6 +1393,24 @@ export const Index: Record<string, any> = {
     categories: ["autocomplete","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-autocomplete-15": {
+    name: "p-autocomplete-15",
+    description: "Pill-shaped autocomplete",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-avatar-1": {
     name: "p-avatar-1",
     description: "Avatar with image and fallback",
@@ -3283,6 +3301,60 @@ export const Index: Record<string, any> = {
     categories: ["combobox","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-combobox-15": {
+    name: "p-combobox-15",
+    description: "Pill-shaped combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-16": {
+    name: "p-combobox-16",
+    description: "Timezone combobox",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input","timezone"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-17": {
+    name: "p-combobox-17",
+    description: "Timezone combobox with search input",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input","timezone"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-command-1": {
     name: "p-command-1",
     description: "Command palette with dialog",
@@ -5047,6 +5119,24 @@ export const Index: Record<string, any> = {
     categories: ["field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-input-19": {
+    name: "p-input-19",
+    description: "Pill-shaped input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-input-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-input-group-26": {
     name: "p-input-group-26",
     description: "Password input with strength indicator",
@@ -5531,6 +5621,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["number field","input","form","field","zod"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-number-field-11": {
+    name: "p-number-field-11",
+    description: "Pill-shaped number field",
+    type: "registry:block",
+    registryDependencies: ["@coss/number-field"],
+    files: [{
+      path: "registry/default/particles/p-number-field-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-number-field-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["number field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-pagination-1": {
@@ -6106,7 +6214,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["select","time"],
+    categories: ["select","time","timezone"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-select-14": {

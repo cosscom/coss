@@ -344,6 +344,20 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("autocomplete", "input"),
+    description: "Pill-shaped autocomplete",
+    files: [
+      { path: "particles/p-autocomplete-15.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-autocomplete-15",
+    registryDependencies: ["@coss/autocomplete"],
+    type: "registry:block",
+  },
+  {
     categories: categories("avatar"),
     description: "Avatar with image and fallback",
     files: [{ path: "particles/p-avatar-1.tsx", type: "registry:block" }],
@@ -1346,6 +1360,43 @@ export const particles: ParticleItem[] = [
     },
     name: "p-combobox-14",
     registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input"),
+    description: "Pill-shaped combobox",
+    files: [{ path: "particles/p-combobox-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-15",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input", "timezone"),
+    description: "Timezone combobox",
+    files: [{ path: "particles/p-combobox-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-16",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input", "timezone"),
+    dependencies: ["lucide-react"],
+    description: "Timezone combobox with search input",
+    files: [{ path: "particles/p-combobox-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-17",
+    registryDependencies: ["@coss/button", "@coss/combobox"],
     type: "registry:block",
   },
   {
@@ -2564,6 +2615,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("input"),
+    description: "Pill-shaped input",
+    files: [{ path: "particles/p-input-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-19",
+    registryDependencies: ["@coss/input"],
+    type: "registry:block",
+  },
+  {
     categories: categories("button", "input", "input group", "label"),
     dependencies: ["lucide-react"],
     description: "Password input with strength indicator",
@@ -2880,6 +2943,20 @@ export const particles: ParticleItem[] = [
       "@coss/form",
       "@coss/number-field",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("number field", "input"),
+    description: "Pill-shaped number field",
+    files: [
+      { path: "particles/p-number-field-11.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-number-field-11",
+    registryDependencies: ["@coss/number-field"],
     type: "registry:block",
   },
   {
@@ -3218,7 +3295,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("select", "time"),
+    categories: categories("select", "time", "timezone"),
     description: "Timezone select",
     files: [{ path: "particles/p-select-13.tsx", type: "registry:block" }],
     meta: {
