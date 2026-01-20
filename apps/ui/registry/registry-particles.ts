@@ -3260,8 +3260,12 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("select"),
-    description: "Pill select",
+    description: "Pill-shaped select trigger",
     files: [{ path: "particles/p-select-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
     name: "p-select-15",
     registryDependencies: ["@coss/select"],
     type: "registry:block",
@@ -3336,21 +3340,13 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("select"),
-    description: "Pill style select with primary color",
-    files: [{ path: "particles/p-select-22.tsx", type: "registry:block" }],
-    name: "p-select-22",
-    registryDependencies: ["@coss/select"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("select"),
     description: "Select with custom border and background",
-    files: [{ path: "particles/p-select-23.tsx", type: "registry:block" }],
+    files: [{ path: "particles/p-select-22.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
-    name: "p-select-23",
+    name: "p-select-22",
     registryDependencies: ["@coss/select"],
     type: "registry:block",
   },

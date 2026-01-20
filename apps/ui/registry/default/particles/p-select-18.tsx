@@ -34,7 +34,7 @@ export default function Particle() {
           {(item) => <span className="truncate">{item.label}</span>}
         </SelectValue>
       </SelectTrigger>
-      <SelectPopup>
+      <SelectPopup alignItemWithTrigger={false}>
         {items.map((item) => (
           <SelectItem key={item.value} value={item}>
             <span className="flex flex-col">

@@ -15,7 +15,7 @@ const items = [
 
 export default function Particle() {
   return (
-    <Select defaultValue="next" items={items}>
+    <Select aria-label="Select framework" defaultValue="next" items={items}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>

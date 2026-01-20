@@ -7,15 +7,15 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Draft", value: "draft" },
-  { label: "Published", value: "published" },
-  { label: "Scheduled", value: "scheduled" },
+  { label: "Next.js", value: "next" },
+  { label: "Vite", value: "vite" },
+  { label: "Astro", value: "astro" },
 ];
 
 export default function Particle() {
   return (
-    <Select aria-label="Select status" defaultValue="draft">
-      <SelectTrigger className="h-6 min-h-6 min-w-0 gap-1 rounded-full border-primary/20 bg-primary/10 px-2.5 text-primary text-xs shadow-none before:hidden sm:min-h-6 sm:text-xs">
+    <Select aria-label="Select framework" defaultValue="next" items={items}>
+      <SelectTrigger className="border-transparent bg-muted shadow-none before:hidden">
         <SelectValue />
       </SelectTrigger>
       <SelectPopup>

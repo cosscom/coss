@@ -32,7 +32,7 @@ export default function Particle() {
           )}
         </SelectValue>
       </SelectTrigger>
-      <SelectPopup>
+      <SelectPopup alignItemWithTrigger={false}>
         {items.map((item) => (
           <SelectItem key={item.value} value={item}>
             {item.label}

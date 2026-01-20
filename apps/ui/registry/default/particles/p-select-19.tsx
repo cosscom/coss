@@ -17,19 +17,22 @@ import {
 
 const users = [
   {
-    avatar: "/avatars/01.png",
+    avatar:
+      "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80",
     initials: "JH",
     label: "Jenny Hamilton",
     value: "jenny",
   },
   {
-    avatar: "/avatars/02.png",
+    avatar:
+      "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80",
     initials: "PS",
     label: "Paul Smith",
     value: "paul",
   },
   {
-    avatar: "/avatars/03.png",
+    avatar:
+      "https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80",
     initials: "LW",
     label: "Luna Wyen",
     value: "luna",
