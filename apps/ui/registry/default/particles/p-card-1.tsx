@@ -1,3 +1,4 @@
+import { CircleAlertIcon } from "lucide-react";
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
@@ -32,36 +33,38 @@ export default function Particle() {
         <CardTitle>Create project</CardTitle>
         <CardDescription>Deploy your new project in one-click.</CardDescription>
       </CardHeader>
-      <Form>
-        <CardPanel>
-          <div className="flex flex-col gap-4">
-            <Field>
-              <FieldLabel>Name</FieldLabel>
-              <Input placeholder="Name of your project" type="text" />
-            </Field>
-            <Field>
-              <FieldLabel>Framework</FieldLabel>
-              <Select defaultValue="next" items={frameworkOptions}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectPopup>
-                  {frameworkOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectPopup>
-              </Select>
-            </Field>
-          </div>
-        </CardPanel>
-        <CardFooter>
+      <CardPanel>
+        <Form>
+          <Field>
+            <FieldLabel>Name</FieldLabel>
+            <Input placeholder="Name of your project" type="text" />
+          </Field>
+          <Field>
+            <FieldLabel>Framework</FieldLabel>
+            <Select defaultValue="next" items={frameworkOptions}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectPopup>
+                {frameworkOptions.map(({ label, value }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectPopup>
+            </Select>
+          </Field>
           <Button className="w-full" type="submit">
             Deploy
           </Button>
-        </CardFooter>
-      </Form>
+        </Form>
+      </CardPanel>
+      <CardFooter>
+        <div className="flex gap-1 text-muted-foreground text-xs">
+          <CircleAlertIcon className="size-3 h-lh shrink-0" />
+          <p>This will take a few seconds to complete.</p>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

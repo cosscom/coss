@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { source } from "@/lib/source";
 import { mdxComponents } from "@/mdx-components";
 import { Button } from "@/registry/default/ui/button";
+import { Card, CardFrame, CardPanel } from "@/registry/default/ui/card";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export const revalidate = false;
@@ -58,54 +59,56 @@ export default async function Page(props: {
   return (
     <div className="flex items-stretch xl:w-full" data-slot="docs">
       <div className="relative flex w-full min-w-0 flex-1 flex-col before:pointer-events-none before:absolute before:inset-px before:rounded-[calc(var(--radius-2xl)-1px)] before:bg-background lg:mt-8 lg:mr-4 lg:mb-8">
-        <div className="after:-inset-[5px] after:-z-1 relative flex min-w-0 flex-1 flex-col bg-muted/72 not-dark:bg-clip-padding shadow-sm/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:shadow-[0_1px_--theme(--color-black/6%)] after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-2xl)+4px)] after:border after:border-border/64 lg:rounded-2xl lg:border dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
-          <div className="-m-px relative flex min-w-0 flex-1 flex-col border bg-background bg-clip-padding px-4 py-6 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] max-lg:before:hidden sm:px-6 lg:rounded-t-2xl lg:rounded-b-xl lg:p-8 dark:before:shadow-[0_-1px_--theme(--color-white/8%)] lg:[clip-path:inset(1px_1px_-1rem_1px_round_var(--radius-2xl)_var(--radius-2xl)_0_0)]">
-            <div className="mx-auto w-full max-w-3xl">
-              <div className="flex min-w-0 flex-col gap-8">
-                <div className="flex flex-col gap-2">
+        <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64 max-lg:border-none">
+          <Card className="bg-background max-lg:rounded-none! max-lg:[clip-path:none]!">
+            <CardPanel className="px-4 py-6 sm:px-6 lg:p-8">
+              <div className="mx-auto w-full max-w-3xl">
+                <div className="flex min-w-0 flex-col gap-8">
                   <div className="flex flex-col gap-2">
-                    <h1 className="scroll-m-20 font-heading font-semibold text-3xl xl:text-4xl">
-                      {doc.title}
-                    </h1>
-                    {doc.description && (
-                      <p className="text-muted-foreground sm:text-lg">
-                        {doc.description}
-                      </p>
-                    )}
+                    <div className="flex flex-col gap-2">
+                      <h1 className="scroll-m-20 font-heading font-semibold text-3xl xl:text-4xl">
+                        {doc.title}
+                      </h1>
+                      {doc.description && (
+                        <p className="text-muted-foreground sm:text-lg">
+                          {doc.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2 pt-4">
+                      {links?.doc && (
+                        <Button
+                          render={
+                            <Link
+                              href={links.doc}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              <HugeiconsIcon
+                                icon={LinkSquare02Icon}
+                                strokeWidth={2.5}
+                              />
+                              API Reference
+                            </Link>
+                          }
+                          size="xs"
+                          variant="outline"
+                        />
+                      )}
+                      <DocsCopyPage page={rawContent} />
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2 pt-4">
-                    {links?.doc && (
-                      <Button
-                        render={
-                          <Link
-                            href={links.doc}
-                            rel="noreferrer"
-                            target="_blank"
-                          >
-                            <HugeiconsIcon
-                              icon={LinkSquare02Icon}
-                              strokeWidth={2.5}
-                            />
-                            API Reference
-                          </Link>
-                        }
-                        size="xs"
-                        variant="outline"
-                      />
-                    )}
-                    <DocsCopyPage page={rawContent} />
+                  <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
+                    <MDX components={mdxComponents} />
                   </div>
-                </div>
-                <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
-                  <MDX components={mdxComponents} />
                 </div>
               </div>
-            </div>
-          </div>
+            </CardPanel>
+          </Card>
           <div className="px-4 py-6 lg:rounded-b-2xl lg:px-8">
             <SiteFooter />
           </div>
-        </div>
+        </CardFrame>
       </div>
       <div className="sticky top-(--header-height) z-30 ms-auto hidden h-[calc(100svh-var(--header-height))] w-72 flex-col overflow-hidden overscroll-none xl:flex">
         <ScrollArea

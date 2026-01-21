@@ -76,6 +76,7 @@ export const registryCategories = [
   "tanstack",
   "text editor",
   "time",
+  "timezone",
   "upload",
   "validation",
   "warning",

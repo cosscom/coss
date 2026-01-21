@@ -344,6 +344,20 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("autocomplete", "input"),
+    description: "Pill-shaped autocomplete",
+    files: [
+      { path: "particles/p-autocomplete-15.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-autocomplete-15",
+    registryDependencies: ["@coss/autocomplete"],
+    type: "registry:block",
+  },
+  {
     categories: categories("avatar"),
     description: "Avatar with image and fallback",
     files: [{ path: "particles/p-avatar-1.tsx", type: "registry:block" }],
@@ -421,7 +435,7 @@ export const particles: ParticleItem[] = [
     description: "Avatar with notification badge",
     files: [{ path: "particles/p-avatar-10.tsx", type: "registry:block" }],
     name: "p-avatar-10",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar", "@coss/badge"],
     type: "registry:block",
   },
   {
@@ -429,7 +443,7 @@ export const particles: ParticleItem[] = [
     description: "Rounded avatar with notification badge",
     files: [{ path: "particles/p-avatar-11.tsx", type: "registry:block" }],
     name: "p-avatar-11",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar", "@coss/badge"],
     type: "registry:block",
   },
   {
@@ -1022,8 +1036,9 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("card"),
-    description: "Card with header, content, and footer",
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "A basic card with header and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -1035,6 +1050,184 @@ export const particles: ParticleItem[] = [
       "@coss/card",
       "@coss/field",
       "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    description: "Authentication card with actions",
+    files: [{ path: "particles/p-card-2.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Authentication card with separators",
+    files: [{ path: "particles/p-card-3.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-3",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with footer",
+    files: [{ path: "particles/p-card-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-4",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    description: "Framed card with header",
+    files: [{ path: "particles/p-card-5.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-5",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with header and footer",
+    files: [{ path: "particles/p-card-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-6",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with no rounded bottom",
+    files: [{ path: "particles/p-card-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-7",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    description: "Card within a frame and footer",
+    files: [{ path: "particles/p-card-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-8",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    dependencies: ["lucide-react"],
+    description: "Card within a frame and footer",
+    files: [{ path: "particles/p-card-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-9",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    dependencies: ["lucide-react"],
+    description: "Card within a frame with header and footer",
+    files: [{ path: "particles/p-card-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-10",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
       "@coss/input",
       "@coss/select",
     ],
@@ -1349,6 +1542,43 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("combobox", "input"),
+    description: "Pill-shaped combobox",
+    files: [{ path: "particles/p-combobox-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-15",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input", "timezone"),
+    description: "Timezone combobox",
+    files: [{ path: "particles/p-combobox-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-16",
+    registryDependencies: ["@coss/combobox"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "input", "timezone"),
+    dependencies: ["lucide-react"],
+    description: "Timezone combobox with search input",
+    files: [{ path: "particles/p-combobox-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-17",
+    registryDependencies: ["@coss/button", "@coss/combobox"],
+    type: "registry:block",
+  },
+  {
     categories: categories("command", "dialog"),
     dependencies: ["lucide-react"],
     description: "Command palette with dialog",
@@ -1367,6 +1597,7 @@ export const particles: ParticleItem[] = [
       "@coss/autocomplete",
       "@coss/button",
       "@coss/command",
+      "@coss/empty",
       "@coss/input",
       "@coss/kbd",
       "@coss/scroll-area",
@@ -2213,7 +2444,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-17",
-    registryDependencies: ["@coss/input", "@coss/label"],
+    registryDependencies: ["@coss/input"],
     type: "registry:block",
   },
   {
@@ -2564,6 +2795,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("input"),
+    description: "Pill-shaped input",
+    files: [{ path: "particles/p-input-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-input-19",
+    registryDependencies: ["@coss/input"],
+    type: "registry:block",
+  },
+  {
     categories: categories("button", "input", "input group", "label"),
     dependencies: ["lucide-react"],
     description: "Password input with strength indicator",
@@ -2880,6 +3123,20 @@ export const particles: ParticleItem[] = [
       "@coss/form",
       "@coss/number-field",
     ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("number field", "input"),
+    description: "Pill-shaped number field",
+    files: [
+      { path: "particles/p-number-field-11.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-number-field-11",
+    registryDependencies: ["@coss/number-field"],
     type: "registry:block",
   },
   {
@@ -3202,6 +3459,134 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-select-10",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "disabled"),
+    description: "Select with disabled items",
+    files: [{ path: "particles/p-select-12.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-12",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "time", "timezone"),
+    description: "Timezone select",
+    files: [{ path: "particles/p-select-13.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-13",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Status select with colored dot",
+    files: [{ path: "particles/p-select-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-14",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Pill-shaped select trigger",
+    files: [{ path: "particles/p-select-15.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-15",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with left text label",
+    files: [{ path: "particles/p-select-16.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-16",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with country flags",
+    files: [{ path: "particles/p-select-17.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-17",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with description in options only",
+    files: [{ path: "particles/p-select-18.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-18",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "avatar"),
+    description: "Select with avatars",
+    files: [{ path: "particles/p-select-19.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-19",
+    registryDependencies: ["@coss/avatar", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select", "avatar"),
+    description: "Rich select with avatars and usernames",
+    files: [{ path: "particles/p-select-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-20",
+    registryDependencies: ["@coss/avatar", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Auto width select",
+    files: [{ path: "particles/p-select-21.tsx", type: "registry:block" }],
+    name: "p-select-21",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Select with custom border and background",
+    files: [{ path: "particles/p-select-22.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-22",
     registryDependencies: ["@coss/select"],
     type: "registry:block",
   },
