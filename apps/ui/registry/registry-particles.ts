@@ -1055,6 +1055,177 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-3.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-3",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-4",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-7",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-2.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-5.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-5",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-6",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-8",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-9",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-10",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("checkbox"),
     description: "Basic checkbox",
     files: [{ path: "particles/p-checkbox-1.tsx", type: "registry:block" }],

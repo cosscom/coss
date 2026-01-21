@@ -2851,6 +2851,168 @@ export const Index: Record<string, any> = {
     categories: ["card"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
+  "p-card-3": {
+    name: "p-card-3",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-4": {
+    name: "p-card-4",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-7": {
+    name: "p-card-7",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-2": {
+    name: "p-card-2",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-5": {
+    name: "p-card-5",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-6": {
+    name: "p-card-6",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-8": {
+    name: "p-card-8",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-9": {
+    name: "p-card-9",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-10": {
+    name: "p-card-10",
+    description: "Card with header, content, and footer",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-card-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
   "p-checkbox-1": {
     name: "p-checkbox-1",
     description: "Basic checkbox",

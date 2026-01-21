@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-card-3",
+  "type": "registry:block",
+  "description": "Card with header, content, and footer",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/card",
+    "@coss/field",
+    "@coss/form",
+    "@coss/input",
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-card-3.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Card,\n  CardAction,\n  CardHeader,\n  CardPanel,\n  CardTitle,\n} from \"@/registry/default/ui/card\";\nimport { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Form } from \"@/registry/default/ui/form\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Card className=\"w-full max-w-xs\">\n      <CardHeader>\n        <CardTitle>Login to your account</CardTitle>\n        <CardAction>\n          <a\n            className=\"font-medium text-sm leading-4.5 hover:underline\"\n            href=\"#\"\n          >\n            Sign up\n          </a>\n        </CardAction>\n      </CardHeader>\n      <CardPanel>\n        <Form>\n          <Field>\n            <FieldLabel>Email</FieldLabel>\n            <Input placeholder=\"Enter your email\" type=\"email\" />\n          </Field>\n          <Field>\n            <FieldLabel>Password</FieldLabel>\n            <Input placeholder=\"Enter your password\" type=\"password\" />\n          </Field>\n          <Button className=\"w-full\" type=\"submit\">\n            Login\n          </Button>\n        </Form>\n      </CardPanel>\n    </Card>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
+  },
+  "categories": [
+    "card"
+  ]
+}
