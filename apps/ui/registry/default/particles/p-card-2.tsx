@@ -1,72 +1,45 @@
+import Link from "next/link";
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
-  CardFooter,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
+  CardAction,
+  CardHeader,
   CardPanel,
+  CardTitle,
 } from "@/registry/default/ui/card";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";
 import { Input } from "@/registry/default/ui/input";
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from "@/registry/default/ui/select";
-
-const frameworkOptions = [
-  { label: "Next.js", value: "next" },
-  { label: "Vite", value: "vite" },
-  { label: "Remix", value: "remix" },
-  { label: "Astro", value: "astro" },
-];
 
 export default function Particle() {
   return (
-    <CardFrame className="w-full max-w-xs">
-      <CardFrameHeader>
-        <CardFrameTitle>Create project</CardFrameTitle>
-        <CardFrameDescription>
-          Deploy your new project in one-click.
-        </CardFrameDescription>
-      </CardFrameHeader>
-      <Card>
-        <Form className="contents">
-          <CardPanel>
-            <div className="flex flex-col gap-4">
-              <Field>
-                <FieldLabel>Name</FieldLabel>
-                <Input placeholder="Name of your project" type="text" />
-              </Field>
-              <Field>
-                <FieldLabel>Framework</FieldLabel>
-                <Select defaultValue="next" items={frameworkOptions}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopup>
-                    {frameworkOptions.map(({ label, value }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectPopup>
-                </Select>
-              </Field>
-            </div>
-          </CardPanel>
-          <CardFooter>
-            <Button className="w-full" type="submit">
-              Deploy
-            </Button>
-          </CardFooter>
+    <Card className="w-full max-w-xs">
+      <CardHeader>
+        <CardTitle>Login to your account</CardTitle>
+        <CardAction>
+          <Link
+            className="text-muted-foreground text-sm leading-4.5 hover:underline"
+            href="#"
+          >
+            Sign up
+          </Link>
+        </CardAction>
+      </CardHeader>
+      <CardPanel>
+        <Form>
+          <Field>
+            <FieldLabel>Email</FieldLabel>
+            <Input placeholder="Enter your email" type="email" />
+          </Field>
+          <Field>
+            <FieldLabel>Password</FieldLabel>
+            <Input placeholder="Enter your password" type="password" />
+          </Field>
+          <Button className="w-full" type="submit">
+            Login
+          </Button>
         </Form>
-      </Card>
-    </CardFrame>
+      </CardPanel>
+    </Card>
   );
 }

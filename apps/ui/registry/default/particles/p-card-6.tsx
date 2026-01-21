@@ -36,7 +36,7 @@ export default function Particle() {
           Deploy your new project in one-click.
         </CardFrameDescription>
       </CardFrameHeader>
-      <Card className="rounded-b-none!">
+      <Card>
         <CardPanel>
           <Form>
             <Field>

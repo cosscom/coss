@@ -1057,6 +1057,25 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("card"),
     description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-2.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-3.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -1095,44 +1114,6 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("card"),
     description: "Card with header, content, and footer",
-    files: [{ path: "particles/p-card-7.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
-    },
-    name: "p-card-7",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/card",
-      "@coss/field",
-      "@coss/form",
-      "@coss/input",
-      "@coss/select",
-    ],
-    type: "registry:block",
-  },
-  {
-    categories: categories("card"),
-    description: "Card with header, content, and footer",
-    files: [{ path: "particles/p-card-2.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
-    },
-    name: "p-card-2",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/card",
-      "@coss/field",
-      "@coss/form",
-      "@coss/input",
-      "@coss/select",
-    ],
-    type: "registry:block",
-  },
-  {
-    categories: categories("card"),
-    description: "Card with header, content, and footer",
     files: [{ path: "particles/p-card-5.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -1158,6 +1139,25 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
     },
     name: "p-card-6",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card"),
+    description: "Card with header, content, and footer",
+    files: [{ path: "particles/p-card-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-7",
     registryDependencies: [
       "@coss/button",
       "@coss/card",

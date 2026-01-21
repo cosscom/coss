@@ -2,12 +2,12 @@ import { CircleAlertIcon } from "lucide-react";
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
-  CardDescription,
   CardFrame,
+  CardFrameDescription,
   CardFrameFooter,
-  CardHeader,
+  CardFrameHeader,
+  CardFrameTitle,
   CardPanel,
-  CardTitle,
 } from "@/registry/default/ui/card";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";
@@ -30,13 +30,13 @@ const frameworkOptions = [
 export default function Particle() {
   return (
     <CardFrame className="w-full max-w-xs">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create project</CardTitle>
-          <CardDescription>
-            Deploy your new project in one-click.
-          </CardDescription>
-        </CardHeader>
+      <CardFrameHeader>
+        <CardFrameTitle>Create project</CardFrameTitle>
+        <CardFrameDescription>
+          Deploy your new project in one-click.
+        </CardFrameDescription>
+      </CardFrameHeader>
+      <Card className="rounded-b-none!">
         <CardPanel>
           <Form>
             <Field>

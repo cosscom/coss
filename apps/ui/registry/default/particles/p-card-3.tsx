@@ -1,7 +1,9 @@
+import { ShieldAlertIcon } from "lucide-react";
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
-  CardAction,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardPanel,
   CardTitle,
@@ -13,16 +15,9 @@ import { Input } from "@/registry/default/ui/input";
 export default function Particle() {
   return (
     <Card className="w-full max-w-xs">
-      <CardHeader>
+      <CardHeader className="border-b">
         <CardTitle>Login to your account</CardTitle>
-        <CardAction>
-          <a
-            className="font-medium text-sm leading-4.5 hover:underline"
-            href="#"
-          >
-            Sign up
-          </a>
-        </CardAction>
+        <CardDescription>Enter email and password to login</CardDescription>
       </CardHeader>
       <CardPanel>
         <Form>
@@ -39,6 +34,12 @@ export default function Particle() {
           </Button>
         </Form>
       </CardPanel>
+      <CardFooter className="border-t">
+        <div className="flex gap-1 text-muted-foreground text-xs">
+          <ShieldAlertIcon className="size-3 h-lh shrink-0" />
+          <p>The information you enter is encrypted and stored securely.</p>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
