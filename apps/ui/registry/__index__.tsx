@@ -1577,7 +1577,7 @@ export const Index: Record<string, any> = {
     name: "p-avatar-10",
     description: "Avatar with notification badge",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar","@coss/badge"],
     files: [{
       path: "registry/default/particles/p-avatar-10.tsx",
       type: "registry:block",
@@ -1595,7 +1595,7 @@ export const Index: Record<string, any> = {
     name: "p-avatar-11",
     description: "Rounded avatar with notification badge",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar","@coss/badge"],
     files: [{
       path: "registry/default/particles/p-avatar-11.tsx",
       type: "registry:block",
@@ -2835,7 +2835,7 @@ export const Index: Record<string, any> = {
   },
   "p-card-1": {
     name: "p-card-1",
-    description: "Card with header, content, and footer",
+    description: "A basic card with header and footer",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
@@ -2848,14 +2848,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-2": {
     name: "p-card-2",
-    description: "Card with header, content, and footer",
+    description: "Authentication card with actions",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-card-2.tsx",
       type: "registry:block",
@@ -2866,14 +2866,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-3": {
     name: "p-card-3",
-    description: "Card with header, content, and footer",
+    description: "Authentication card with separators",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input"],
     files: [{
       path: "registry/default/particles/p-card-3.tsx",
       type: "registry:block",
@@ -2884,12 +2884,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-4": {
     name: "p-card-4",
-    description: "Card with header, content, and footer",
+    description: "Framed card with footer",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
@@ -2902,12 +2902,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-5": {
     name: "p-card-5",
-    description: "Card with header, content, and footer",
+    description: "Framed card with header",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
@@ -2920,12 +2920,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-6": {
     name: "p-card-6",
-    description: "Card with header, content, and footer",
+    description: "Framed card with header and footer",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
@@ -2938,12 +2938,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-7": {
     name: "p-card-7",
-    description: "Card with header, content, and footer",
+    description: "Framed card with no rounded bottom",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
     files: [{
@@ -2956,14 +2956,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-8": {
     name: "p-card-8",
-    description: "Card with header, content, and footer",
+    description: "Card within a frame and footer",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/frame","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-card-8.tsx",
       type: "registry:block",
@@ -2974,14 +2974,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-9": {
     name: "p-card-9",
-    description: "Card with header, content, and footer",
+    description: "Card within a frame and footer",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/frame","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-card-9.tsx",
       type: "registry:block",
@@ -2992,14 +2992,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-card-10": {
     name: "p-card-10",
-    description: "Card with header, content, and footer",
+    description: "Card within a frame with header and footer",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/frame","@coss/input","@coss/select"],
     files: [{
       path: "registry/default/particles/p-card-10.tsx",
       type: "registry:block",
@@ -3010,7 +3010,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card"],
+    categories: ["card","form","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-checkbox-1": {
@@ -3539,7 +3539,7 @@ export const Index: Record<string, any> = {
     name: "p-command-2",
     description: "Command palette with AI assistant",
     type: "registry:block",
-    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/command","@coss/input","@coss/kbd","@coss/scroll-area","@coss/skeleton","@coss/spinner"],
+    registryDependencies: ["@coss/autocomplete","@coss/button","@coss/command","@coss/empty","@coss/input","@coss/kbd","@coss/scroll-area","@coss/skeleton","@coss/spinner"],
     files: [{
       path: "registry/default/particles/p-command-2.tsx",
       type: "registry:block",
@@ -4817,7 +4817,7 @@ export const Index: Record<string, any> = {
     name: "p-input-17",
     description: "Read-only input",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/label"],
+    registryDependencies: ["@coss/input"],
     files: [{
       path: "registry/default/particles/p-input-17.tsx",
       type: "registry:block",

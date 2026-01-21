@@ -4,8 +4,7 @@
   "type": "registry:block",
   "description": "Read-only input",
   "registryDependencies": [
-    "@coss/input",
-    "@coss/label"
+    "@coss/input"
   ],
   "files": [
     {

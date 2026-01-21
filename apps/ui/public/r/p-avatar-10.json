@@ -4,7 +4,8 @@
   "type": "registry:block",
   "description": "Avatar with notification badge",
   "registryDependencies": [
-    "@coss/avatar"
+    "@coss/avatar",
+    "@coss/badge"
   ],
   "files": [
     {

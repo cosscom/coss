@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-card-5",
   "type": "registry:block",
-  "description": "Card with header, content, and footer",
+  "description": "Framed card with header",
   "registryDependencies": [
     "@coss/button",
     "@coss/card",
@@ -22,6 +22,7 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"
   },
   "categories": [
-    "card"
+    "card",
+    "form"
   ]
 }

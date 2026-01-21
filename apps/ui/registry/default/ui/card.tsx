@@ -68,7 +68,7 @@ function CardFrameTitle({
   ...props
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
-    className: cn("font-medium text-sm", className),
+    className: cn("font-semibold text-sm", className),
     "data-slot": "card-frame-title",
   };
 

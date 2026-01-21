@@ -10,6 +10,7 @@
     "@coss/autocomplete",
     "@coss/button",
     "@coss/command",
+    "@coss/empty",
     "@coss/input",
     "@coss/kbd",
     "@coss/scroll-area",
