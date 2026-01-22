@@ -3757,7 +3757,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-7",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3769,19 +3769,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-8",
-    registryDependencies: ["@coss/label", "@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider"),
-    description: "Slider with output",
-    files: [{ path: "particles/p-slider-9.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-slider-9",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3793,7 +3781,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-10",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3861,7 +3849,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-15",
-    registryDependencies: ["@coss/input", "@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/input", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3897,7 +3885,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-18",
-    registryDependencies: ["@coss/input", "@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/input", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3930,7 +3918,7 @@ export const particles: ParticleItem[] = [
     description: "Vertical slider with input",
     files: [{ path: "particles/p-slider-21.tsx", type: "registry:block" }],
     name: "p-slider-21",
-    registryDependencies: ["@coss/input", "@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/input", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3968,12 +3956,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-24",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/input",
-      "@coss/label",
-      "@coss/slider",
-    ],
+    registryDependencies: ["@coss/button", "@coss/input", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3981,7 +3964,7 @@ export const particles: ParticleItem[] = [
     description: "Equalizer with vertical sliders",
     files: [{ path: "particles/p-slider-25.tsx", type: "registry:block" }],
     name: "p-slider-25",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {

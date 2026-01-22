@@ -5,7 +5,6 @@ import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 
 import { Input } from "@/registry/default/ui/input";
-import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 
 const minValue = 0;
@@ -60,33 +59,30 @@ export default function Particle() {
   );
 
   return (
-    <div className="space-y-4">
-      <Label>Vertical slider with input</Label>
-      <div className="flex h-40 flex-col items-center justify-center gap-4">
-        <Slider
-          aria-label="Slider with input"
-          className="data-[orientation=vertical]:min-h-0"
-          max={maxValue}
-          min={minValue}
-          onValueChange={handleSliderChange}
-          orientation="vertical"
-          value={sliderValue}
-        />
-        <Input
-          aria-label="Enter value"
-          className="h-8 w-12 px-2 py-1"
-          inputMode="decimal"
-          onBlur={() => validateAndUpdateValue(inputValue)}
-          onChange={handleInputChange}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              validateAndUpdateValue(inputValue);
-            }
-          }}
-          type="text"
-          value={inputValue}
-        />
-      </div>
+    <div className="flex h-40 flex-col items-center justify-center gap-4">
+      <Slider
+        aria-label="Slider with input"
+        className="data-[orientation=vertical]:min-h-0"
+        max={maxValue}
+        min={minValue}
+        onValueChange={handleSliderChange}
+        orientation="vertical"
+        value={sliderValue}
+      />
+      <Input
+        aria-label="Enter value"
+        className="h-8 w-12 px-2 py-1"
+        inputMode="decimal"
+        onBlur={() => validateAndUpdateValue(inputValue)}
+        onChange={handleInputChange}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            validateAndUpdateValue(inputValue);
+          }
+        }}
+        type="text"
+        value={inputValue}
+      />
     </div>
   );
 }

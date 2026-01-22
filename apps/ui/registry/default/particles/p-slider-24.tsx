@@ -2,11 +2,10 @@
 
 import type { ChangeEvent } from "react";
 
-import { useCallback, useId, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { Input } from "@/registry/default/ui/input";
-import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 
 const items = [
@@ -150,7 +149,6 @@ const itemCounts = Array(tickCount)
 const maxCount = Math.max(...itemCounts);
 
 export default function Particle() {
-  const id = useId();
   const initialValue = [200, 780];
 
   const [sliderValue, setSliderValue] = useState<number | readonly number[]>(
@@ -243,7 +241,6 @@ export default function Particle() {
 
   return (
     <div className="space-y-4">
-      <Label>Price slider</Label>
       <div>
         <div aria-hidden="true" className="flex h-12 w-full items-end px-3">
           {itemCounts.map((count, i) => (
@@ -271,51 +268,43 @@ export default function Particle() {
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-min`}>Min price</Label>
-          <div className="relative">
-            <Input
-              aria-label="Enter minimum price"
-              className="peer w-full ps-6"
-              id={`${id}-min`}
-              inputMode="decimal"
-              onBlur={() => validateAndUpdateValue(inputValues[0] ?? "0", 0)}
-              onChange={(e) => handleInputChange(e, 0)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  validateAndUpdateValue(inputValues[0] ?? "0", 0);
-                }
-              }}
-              type="text"
-              value={inputValues[0] ?? "0"}
-            />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
-              $
-            </span>
-          </div>
+        <div className="relative">
+          <Input
+            aria-label="Enter minimum price"
+            className="peer w-full ps-6"
+            inputMode="decimal"
+            onBlur={() => validateAndUpdateValue(inputValues[0] ?? "0", 0)}
+            onChange={(e) => handleInputChange(e, 0)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                validateAndUpdateValue(inputValues[0] ?? "0", 0);
+              }
+            }}
+            type="text"
+            value={inputValues[0] ?? "0"}
+          />
+          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
+            $
+          </span>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-max`}>Max price</Label>
-          <div className="relative">
-            <Input
-              aria-label="Enter maximum price"
-              className="peer w-full ps-6"
-              id={`${id}-max`}
-              inputMode="decimal"
-              onBlur={() => validateAndUpdateValue(inputValues[1] ?? "0", 1)}
-              onChange={(e) => handleInputChange(e, 1)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  validateAndUpdateValue(inputValues[1] ?? "0", 1);
-                }
-              }}
-              type="text"
-              value={inputValues[1] ?? "0"}
-            />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
-              $
-            </span>
-          </div>
+        <div className="relative">
+          <Input
+            aria-label="Enter maximum price"
+            className="peer w-full ps-6"
+            inputMode="decimal"
+            onBlur={() => validateAndUpdateValue(inputValues[1] ?? "0", 1)}
+            onChange={(e) => handleInputChange(e, 1)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                validateAndUpdateValue(inputValues[1] ?? "0", 1);
+              }
+            }}
+            type="text"
+            value={inputValues[1] ?? "0"}
+          />
+          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
+            $
+          </span>
         </div>
       </div>
 

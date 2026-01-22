@@ -5,7 +5,6 @@ import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 
 import { Input } from "@/registry/default/ui/input";
-import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 
 const minValue = 0;
@@ -60,32 +59,29 @@ export default function Particle() {
   );
 
   return (
-    <div className="space-y-3">
-      <Label>Slider with input</Label>
-      <div className="flex items-center gap-4">
-        <Slider
-          aria-label="Slider with input"
-          className="grow"
-          max={maxValue}
-          min={minValue}
-          onValueChange={handleSliderChange}
-          value={sliderValue}
-        />
-        <Input
-          aria-label="Enter value"
-          className="h-8 w-12 px-2 py-1"
-          inputMode="decimal"
-          onBlur={() => validateAndUpdateValue(inputValue)}
-          onChange={handleInputChange}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              validateAndUpdateValue(inputValue);
-            }
-          }}
-          type="text"
-          value={inputValue}
-        />
-      </div>
+    <div className="flex items-center gap-4">
+      <Slider
+        aria-label="Slider with input"
+        className="grow"
+        max={maxValue}
+        min={minValue}
+        onValueChange={handleSliderChange}
+        value={sliderValue}
+      />
+      <Input
+        aria-label="Enter value"
+        className="h-8 w-12 px-2 py-1"
+        inputMode="decimal"
+        onBlur={() => validateAndUpdateValue(inputValue)}
+        onChange={handleInputChange}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            validateAndUpdateValue(inputValue);
+          }
+        }}
+        type="text"
+        value={inputValue}
+      />
     </div>
   );
 }

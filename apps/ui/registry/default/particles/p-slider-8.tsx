@@ -1,5 +1,4 @@
 import { cn } from "@/registry/default/lib/utils";
-import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 
 const max = 12;
@@ -8,32 +7,29 @@ const ticks = [...Array(max + 1)].map((_, i) => i);
 
 export default function Particle() {
   return (
-    <div className="space-y-4">
-      <Label>Slider with ticks</Label>
-      <div>
-        <Slider aria-label="Slider with ticks" defaultValue={5} max={max} />
-        <span
-          aria-hidden="true"
-          className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
-        >
-          {ticks.map((_, i) => (
+    <div>
+      <Slider aria-label="Slider with ticks" defaultValue={5} max={max} />
+      <span
+        aria-hidden="true"
+        className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
+      >
+        {ticks.map((_, i) => (
+          <span
+            className="flex w-0 flex-col items-center justify-center gap-2"
+            key={String(i)}
+          >
             <span
-              className="flex w-0 flex-col items-center justify-center gap-2"
-              key={String(i)}
-            >
-              <span
-                className={cn(
-                  "h-1 w-px bg-muted-foreground/70",
-                  i % skipInterval !== 0 && "h-0.5",
-                )}
-              />
-              <span className={cn(i % skipInterval !== 0 && "opacity-0")}>
-                {i}
-              </span>
+              className={cn(
+                "h-1 w-px bg-muted-foreground/70",
+                i % skipInterval !== 0 && "h-0.5",
+              )}
+            />
+            <span className={cn(i % skipInterval !== 0 && "opacity-0")}>
+              {i}
             </span>
-          ))}
-        </span>
-      </div>
+          </span>
+        ))}
+      </span>
     </div>
   );
 }

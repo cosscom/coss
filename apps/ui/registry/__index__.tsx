@@ -6779,7 +6779,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-7",
     description: "Slider with reference labels",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-7.tsx",
       type: "registry:block",
@@ -6797,7 +6797,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-8",
     description: "Slider with ticks",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-8.tsx",
       type: "registry:block",
@@ -6811,29 +6811,11 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-slider-9": {
-    name: "p-slider-9",
-    description: "Slider with output",
-    type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
-    files: [{
-      path: "registry/default/particles/p-slider-9.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-slider-9.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["slider"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-slider-10": {
     name: "p-slider-10",
     description: "Slider with labels above",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-10.tsx",
       type: "registry:block",
@@ -6923,7 +6905,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-15",
     description: "Slider with input",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/input","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-15.tsx",
       type: "registry:block",
@@ -6977,7 +6959,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-18",
     description: "Dual range slider with inputs",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/input","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-18.tsx",
       type: "registry:block",
@@ -7031,7 +7013,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-21",
     description: "Vertical slider with input",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/input","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-21.tsx",
       type: "registry:block",
@@ -7085,7 +7067,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-24",
     description: "Price slider with histogram",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-24.tsx",
       type: "registry:block",
@@ -7103,7 +7085,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-25",
     description: "Equalizer with vertical sliders",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-25.tsx",
       type: "registry:block",
