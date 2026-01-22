@@ -4,6 +4,7 @@ import { RotateCcwIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
+import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Label } from "@/registry/default/ui/label";
 import {
   NumberField,
@@ -25,11 +26,9 @@ export default function Particle() {
   };
 
   return (
-    <div className="space-y-4">
-      <legend className="font-medium text-foreground text-sm">
-        Object position
-      </legend>
-      <div className="space-y-2">
+    <Fieldset className="flex max-w-none flex-col gap-4">
+      <FieldsetLegend>Object position</FieldsetLegend>
+      <div className="flex flex-col gap-2">
         {(["x", "y", "z"] as const).map((axis) => (
           <div className="flex items-center gap-2" key={axis}>
             <Label className="w-3 text-muted-foreground text-xs">
@@ -68,6 +67,6 @@ export default function Particle() {
         <RotateCcwIcon aria-hidden="true" className="-ms-1 opacity-60" />
         Reset
       </Button>
-    </div>
+    </Fieldset>
   );
 }

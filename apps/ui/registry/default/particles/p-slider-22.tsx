@@ -186,7 +186,7 @@ export default function Particle() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div>
         <div aria-hidden="true" className="flex h-12 w-full items-end px-3">
           {itemCounts.map((count, i) => (

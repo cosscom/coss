@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Label } from "@/registry/default/ui/label";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider } from "@/registry/default/ui/slider";
 
 const labels = ["Awful", "Poor", "Okay", "Good", "Amazing"];
@@ -13,22 +13,25 @@ export default function Particle() {
   const currentValue = Array.isArray(value) ? value[0] : value;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <Label className="leading-6">Rate your experience</Label>
-        <span className="font-medium text-sm">{labels[currentValue - 1]}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">😡</span>
-        <Slider
-          aria-label="Rate your experience"
-          max={5}
-          min={1}
-          onValueChange={setValue}
-          value={value}
-        />
-        <span className="text-2xl">😍</span>
-      </div>
-    </div>
+    <Field className="*:grid *:grid-cols-[auto_1fr_auto] *:items-center *:gap-x-2">
+      <Slider
+        aria-label="Rate your experience"
+        max={5}
+        min={1}
+        onValueChange={setValue}
+        value={value}
+      >
+        <div className="col-span-3 mb-2 flex items-center justify-between gap-1">
+          <FieldLabel>Rate your experience</FieldLabel>
+          <span className="text-sm">{labels[currentValue - 1]}</span>
+        </div>
+        <span aria-hidden="true" className="text-2xl">
+          😡
+        </span>
+        <span aria-hidden="true" className="order-1 text-2xl">
+          😍
+        </span>
+      </Slider>
+    </Field>
   );
 }
