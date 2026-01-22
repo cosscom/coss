@@ -40,29 +40,26 @@ export default function Particle() {
   const currentSliderValue = extractValue(sliderValue);
   const showReset = currentSliderValue !== defaultValue;
 
-  const validateAndUpdateValue = useCallback(
-    (rawValue: string) => {
-      if (rawValue === "" || rawValue === "-") {
-        setInputValue("0");
-        setSliderValue(0);
-        return;
-      }
+  const validateAndUpdateValue = useCallback((rawValue: string) => {
+    if (rawValue === "" || rawValue === "-") {
+      setInputValue("0");
+      setSliderValue(0);
+      return;
+    }
 
-      const numValue = Number.parseFloat(rawValue);
+    const numValue = Number.parseFloat(rawValue);
 
-      if (Number.isNaN(numValue)) {
-        // Use ref to avoid stale closure
-        const currentValue = extractValue(sliderValueRef.current);
-        setInputValue(currentValue.toString());
-        return;
-      }
+    if (Number.isNaN(numValue)) {
+      // Use ref to avoid stale closure
+      const currentValue = extractValue(sliderValueRef.current);
+      setInputValue(currentValue.toString());
+      return;
+    }
 
-      const clampedValue = Math.min(maxValue, Math.max(minValue, numValue));
-      setSliderValue(clampedValue);
-      setInputValue(clampedValue.toString());
-    },
-    [maxValue, minValue],
-  );
+    const clampedValue = Math.min(maxValue, Math.max(minValue, numValue));
+    setSliderValue(clampedValue);
+    setInputValue(clampedValue.toString());
+  }, []);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

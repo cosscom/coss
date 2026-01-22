@@ -70,7 +70,7 @@ export default function Particle() {
       newInputValues[index] = clampedValue.toString();
       setInputValues(newInputValues);
     },
-    [maxValue, minValue],
+    [],
   );
 
   const handleInputChange = useCallback(
