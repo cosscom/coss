@@ -3846,15 +3846,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("slider", "button"),
-    description: "Price range slider with button",
+    categories: categories("slider"),
+    description: "Price range slider",
     files: [{ path: "particles/p-slider-15.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-15",
-    registryDependencies: ["@coss/button", "@coss/slider"],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
