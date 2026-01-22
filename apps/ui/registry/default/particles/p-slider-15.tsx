@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider } from "@/registry/default/ui/slider";
 
@@ -18,7 +17,7 @@ export default function Particle() {
       : `$${price.toLocaleString()}`;
 
   return (
-    <Field className="space-y-3" name="price-range">
+    <Field name="price-range">
       <FieldLabel className="tabular-nums">
         From {formatPrice(values[0] ?? min)} to {formatPrice(values[1] ?? max)}
       </FieldLabel>
@@ -31,7 +30,6 @@ export default function Particle() {
           onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
           value={values}
         />
-        <Button variant="outline">Go</Button>
       </div>
     </Field>
   );

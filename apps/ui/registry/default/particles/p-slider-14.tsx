@@ -15,7 +15,7 @@ export default function Particle() {
   const [value, setValue] = useState(100);
 
   return (
-    <Field className="space-y-3" name="credits">
+    <Field name="credits">
       <FieldLabel className="tabular-nums">{value} credits/mo</FieldLabel>
       <div className="flex items-center gap-2">
         <Button
