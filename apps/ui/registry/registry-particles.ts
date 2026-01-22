@@ -3968,6 +3968,30 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("slider"),
+    description: "Dual thumb slider with collision behavior none",
+    files: [{ path: "particles/p-slider-26.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-slider-26",
+    registryDependencies: ["@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider"),
+    description: "Dual thumb slider with collision behavior swap",
+    files: [{ path: "particles/p-slider-27.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-slider-27",
+    registryDependencies: ["@coss/slider"],
+    type: "registry:block",
+  },
+  {
     categories: categories("spinner"),
     description: "Basic spinner",
     files: [{ path: "particles/p-spinner-1.tsx", type: "registry:block" }],

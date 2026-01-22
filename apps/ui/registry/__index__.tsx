@@ -7099,6 +7099,42 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: undefined,
   },
+  "p-slider-26": {
+    name: "p-slider-26",
+    description: "Dual thumb slider with collision behavior none",
+    type: "registry:block",
+    registryDependencies: ["@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-26.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-26.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-27": {
+    name: "p-slider-27",
+    description: "Dual thumb slider with collision behavior swap",
+    type: "registry:block",
+    registryDependencies: ["@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-27.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-27.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-spinner-1": {
     name: "p-spinner-1",
     description: "Basic spinner",
