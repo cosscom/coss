@@ -6829,24 +6829,6 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-slider-11": {
-    name: "p-slider-11",
-    description: "Slider with tooltip",
-    type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-slider-11.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-slider-11.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["slider","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-slider-12": {
     name: "p-slider-12",
     description: "Slider with icons",
@@ -6883,29 +6865,11 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-slider-14": {
-    name: "p-slider-14",
-    description: "Slider with input and reset button",
-    type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-slider-14.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-slider-14.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["slider","input","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-slider-15": {
     name: "p-slider-15",
     description: "Slider with input",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/slider"],
+    registryDependencies: ["@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-15.tsx",
       type: "registry:block",
@@ -6916,7 +6880,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","input"],
+    categories: ["slider","number field"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-slider-16": {
@@ -6937,29 +6901,11 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-slider-17": {
-    name: "p-slider-17",
-    description: "Rating slider with tooltip and emoji",
-    type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider","@coss/tooltip"],
-    files: [{
-      path: "registry/default/particles/p-slider-17.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-slider-17.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["slider","tooltip"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
-  },
   "p-slider-18": {
     name: "p-slider-18",
     description: "Dual range slider with inputs",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/slider"],
+    registryDependencies: ["@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-18.tsx",
       type: "registry:block",
@@ -6970,7 +6916,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","input"],
+    categories: ["slider","number field"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-slider-19": {
@@ -7013,7 +6959,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-21",
     description: "Vertical slider with input",
     type: "registry:block",
-    registryDependencies: ["@coss/input","@coss/slider"],
+    registryDependencies: ["@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-21.tsx",
       type: "registry:block",
@@ -7024,7 +6970,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","input"],
+    categories: ["slider","number field"],
     meta: undefined,
   },
   "p-slider-22": {
@@ -7049,7 +6995,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-23",
     description: "Object position sliders with reset",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/button","@coss/label","@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-23.tsx",
       type: "registry:block",
@@ -7060,14 +7006,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","input","button"],
+    categories: ["slider","number field","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-slider-24": {
     name: "p-slider-24",
     description: "Price slider with histogram",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/input","@coss/slider"],
+    registryDependencies: ["@coss/button","@coss/input-group","@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-24.tsx",
       type: "registry:block",
@@ -7078,7 +7024,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","input","button","filter"],
+    categories: ["slider","number field","input group","button","filter"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-slider-25": {

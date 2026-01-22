@@ -4,18 +4,18 @@
   "type": "registry:block",
   "description": "Vertical slider with input",
   "registryDependencies": [
-    "@coss/input",
+    "@coss/number-field",
     "@coss/slider"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-slider-21.tsx",
-      "content": "\"use client\";\n\nimport type { ChangeEvent } from \"react\";\n\nimport { useCallback, useRef, useState } from \"react\";\n\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst minValue = 0;\nconst maxValue = 100;\nconst initialValue = 25;\n\nfunction extractValue(value: number | readonly number[]): number {\n  if (Array.isArray(value)) {\n    return (value[0] ?? 0) as number;\n  }\n  return value as number;\n}\n\nexport default function Particle() {\n  const [sliderValue, setSliderValue] = useState<number | readonly number[]>(\n    initialValue,\n  );\n  const [inputValue, setInputValue] = useState(initialValue.toString());\n  const sliderValueRef = useRef(sliderValue);\n\n  sliderValueRef.current = sliderValue;\n\n  const validateAndUpdateValue = useCallback((rawValue: string) => {\n    if (rawValue === \"\" || rawValue === \"-\") {\n      setInputValue(\"0\");\n      setSliderValue(0);\n      return;\n    }\n\n    const numValue = Number.parseFloat(rawValue);\n\n    if (Number.isNaN(numValue)) {\n      const currentValue = extractValue(sliderValueRef.current);\n      setInputValue(currentValue.toString());\n      return;\n    }\n\n    const clampedValue = Math.min(maxValue, Math.max(minValue, numValue));\n    setSliderValue(clampedValue);\n    setInputValue(clampedValue.toString());\n  }, []);\n\n  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {\n    const newValue = e.target.value;\n    if (newValue === \"\" || /^-?\\d*\\.?\\d*$/.test(newValue)) {\n      setInputValue(newValue);\n    }\n  }, []);\n\n  const handleSliderChange = useCallback(\n    (newValue: number | readonly number[]) => {\n      setSliderValue(newValue);\n      const val = extractValue(newValue);\n      setInputValue(val.toString());\n    },\n    [],\n  );\n\n  return (\n    <div className=\"flex h-40 flex-col items-center justify-center gap-4\">\n      <Slider\n        aria-label=\"Slider with input\"\n        className=\"data-[orientation=vertical]:min-h-0\"\n        max={maxValue}\n        min={minValue}\n        onValueChange={handleSliderChange}\n        orientation=\"vertical\"\n        value={sliderValue}\n      />\n      <Input\n        aria-label=\"Enter slider value\"\n        className=\"h-8 w-12 px-2 py-1\"\n        inputMode=\"decimal\"\n        onBlur={() => validateAndUpdateValue(inputValue)}\n        onChange={handleInputChange}\n        onKeyDown={(e) => {\n          if (e.key === \"Enter\") {\n            validateAndUpdateValue(inputValue);\n          }\n        }}\n        type=\"text\"\n        value={inputValue}\n      />\n    </div>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport {\n  NumberField,\n  NumberFieldGroup,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst min = 0;\nconst max = 100;\n\nexport default function Particle() {\n  const [value, setValue] = useState(25);\n\n  return (\n    <div className=\"flex flex-col items-center justify-center gap-4\">\n      <Slider\n        aria-label=\"Vertical slider with input\"\n        max={max}\n        min={min}\n        onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}\n        orientation=\"vertical\"\n        value={value}\n      />\n      <NumberField\n        aria-label=\"Enter slider value\"\n        className=\"w-16\"\n        max={max}\n        min={min}\n        onValueChange={(v) => setValue(v ?? min)}\n        render={<NumberFieldGroup />}\n        size=\"sm\"\n        value={value}\n      >\n        <NumberFieldInput />\n      </NumberField>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
   "categories": [
     "slider",
-    "input"
+    "number field"
   ]
 }

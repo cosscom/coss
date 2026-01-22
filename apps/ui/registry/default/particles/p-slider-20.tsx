@@ -3,41 +3,36 @@
 import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Label } from "@/registry/default/ui/label";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider } from "@/registry/default/ui/slider";
 
-const minPrice = 5;
-const maxPrice = 1240;
+const min = 5;
+const max = 1240;
 
 export default function Particle() {
-  const [value, setValue] = useState<number | readonly number[]>([
-    minPrice,
-    maxPrice,
-  ]);
+  const [values, setValues] = useState([min, max]);
 
-  const values = Array.isArray(value) ? value : [value];
-
-  const formatPrice = (price: number) => {
-    return price === maxPrice
+  const formatPrice = (price: number) =>
+    price === max
       ? `$${price.toLocaleString()}+`
       : `$${price.toLocaleString()}`;
-  };
 
   return (
-    <div className="space-y-3">
-      <Label className="tabular-nums">
-        From {formatPrice(values[0])} to {formatPrice(values[1])}
-      </Label>
+    <Field className="space-y-3" name="price-range">
+      <FieldLabel className="tabular-nums">
+        From {formatPrice(values[0] ?? min)} to {formatPrice(values[1] ?? max)}
+      </FieldLabel>
       <div className="flex items-center gap-4">
         <Slider
           aria-label="Price range slider"
-          max={maxPrice}
-          min={minPrice}
-          onValueChange={setValue}
-          value={value}
+          className="flex-1"
+          max={max}
+          min={min}
+          onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
+          value={values}
         />
         <Button variant="outline">Go</Button>
       </div>
-    </div>
+    </Field>
   );
 }

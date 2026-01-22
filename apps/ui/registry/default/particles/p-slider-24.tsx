@@ -1,11 +1,17 @@
 "use client";
 
-import type { ChangeEvent } from "react";
-
-import { useCallback, useRef, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Input } from "@/registry/default/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/registry/default/ui/input-group";
+import {
+  NumberField,
+  NumberFieldInput,
+} from "@/registry/default/ui/number-field";
 import { Slider } from "@/registry/default/ui/slider";
 
 const items = [
@@ -132,140 +138,50 @@ const items = [
 ];
 
 const tickCount = 40;
-const minValue = Math.min(...items.map((item) => item.price));
-const maxValue = Math.max(...items.map((item) => item.price));
-const priceStep = (maxValue - minValue) / tickCount;
+const min = Math.min(...items.map((item) => item.price));
+const max = Math.max(...items.map((item) => item.price));
+const priceStep = (max - min) / tickCount;
 
-const itemCounts = Array(tickCount)
-  .fill(0)
-  .map((_, tick) => {
-    const rangeMin = minValue + tick * priceStep;
-    const rangeMax = minValue + (tick + 1) * priceStep;
-    return items.filter(
-      (item) => item.price >= rangeMin && item.price < rangeMax,
-    ).length;
-  });
+const itemCounts = Array.from({ length: tickCount }, (_, tick) => {
+  const rangeMin = min + tick * priceStep;
+  const rangeMax = min + (tick + 1) * priceStep;
+  return items.filter((item) => item.price >= rangeMin && item.price < rangeMax)
+    .length;
+});
 
 const maxCount = Math.max(...itemCounts);
 
-function extractValues(value: number | readonly number[]): number[] {
-  if (Array.isArray(value)) {
-    return [...value];
-  }
-  return [value as number];
-}
-
-function getSliderValue(
-  values: number[],
-  index: number,
-  fallback: number,
-): number {
-  return values[index] ?? fallback;
-}
-
 export default function Particle() {
-  const initialValue = [200, 780];
+  const [values, setValues] = useState([200, 780]);
 
-  const [sliderValue, setSliderValue] = useState<number | readonly number[]>(
-    initialValue,
-  );
-  const [inputValues, setInputValues] = useState(
-    initialValue.map((v) => v.toString()),
-  );
-  const sliderValueRef = useRef<number | readonly number[]>(sliderValue);
-  const inputValuesRef = useRef<string[]>(inputValues);
-
-  sliderValueRef.current = sliderValue;
-  inputValuesRef.current = inputValues;
-
-  const sliderValues = extractValues(sliderValue);
-
-  const validateAndUpdateValue = useCallback(
-    (rawValue: string, index: number) => {
-      const currentSliderValues = extractValues(sliderValueRef.current);
-
-      if (rawValue === "" || rawValue === "-") {
-        const newInputValues = [...inputValuesRef.current];
-        newInputValues[index] = "0";
-        setInputValues(newInputValues);
-
-        const newSliderValues = [...currentSliderValues];
-        newSliderValues[index] = 0;
-        setSliderValue(newSliderValues);
-        return;
+  const updateValue = (index: number, newValue: number | null) => {
+    const v = newValue ?? min;
+    setValues((prev) => {
+      const next = [...prev];
+      if (index === 0) {
+        // Min value: clamp to not exceed max value
+        next[0] = Math.min(v, prev[1] ?? max);
+      } else {
+        // Max value: clamp to not go below min value
+        next[1] = Math.max(v, prev[0] ?? min);
       }
-
-      const numValue = Number.parseFloat(rawValue);
-
-      if (Number.isNaN(numValue)) {
-        const newInputValues = [...inputValuesRef.current];
-        newInputValues[index] = currentSliderValues[index]?.toString() ?? "0";
-        setInputValues(newInputValues);
-        return;
-      }
-
-      let clampedValue = Math.min(maxValue, Math.max(minValue, numValue));
-
-      if (currentSliderValues.length > 1) {
-        if (index === 0) {
-          clampedValue = Math.min(
-            clampedValue,
-            getSliderValue(currentSliderValues, 1, maxValue),
-          );
-        } else {
-          clampedValue = Math.max(
-            clampedValue,
-            getSliderValue(currentSliderValues, 0, minValue),
-          );
-        }
-      }
-
-      const newSliderValues = [...currentSliderValues];
-      newSliderValues[index] = clampedValue;
-      setSliderValue(newSliderValues);
-
-      const newInputValues = [...inputValuesRef.current];
-      newInputValues[index] = clampedValue.toString();
-      setInputValues(newInputValues);
-    },
-    [],
-  );
-
-  const handleInputChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>, index: number) => {
-      const newValue = e.target.value;
-      if (newValue === "" || /^-?\d*\.?\d*$/.test(newValue)) {
-        const newInputValues = [...inputValuesRef.current];
-        newInputValues[index] = newValue;
-        setInputValues(newInputValues);
-      }
-    },
-    [],
-  );
-
-  const handleSliderChange = useCallback(
-    (newValue: number | readonly number[]) => {
-      setSliderValue(newValue);
-      const values = extractValues(newValue);
-      setInputValues(values.map((v) => v.toString()));
-    },
-    [],
-  );
-
-  const countItemsInRange = (min: number, max: number) => {
-    return items.filter((item) => item.price >= min && item.price <= max)
-      .length;
+      return next;
+    });
   };
 
+  const countItemsInRange = () =>
+    items.filter(
+      (item) =>
+        item.price >= (values[0] ?? min) && item.price <= (values[1] ?? max),
+    ).length;
+
   const isBarInSelectedRange = (index: number) => {
-    const rangeMin = minValue + index * priceStep;
-    const rangeMax = minValue + (index + 1) * priceStep;
-    const minVal = getSliderValue(sliderValues, 0, minValue);
-    const maxVal = getSliderValue(sliderValues, 1, maxValue);
+    const rangeMin = min + index * priceStep;
+    const rangeMax = min + (index + 1) * priceStep;
     return (
-      countItemsInRange(minVal, maxVal) > 0 &&
-      rangeMin <= maxVal &&
-      rangeMax >= minVal
+      countItemsInRange() > 0 &&
+      rangeMin <= (values[1] ?? max) &&
+      rangeMax >= (values[0] ?? min)
     );
   };
 
@@ -277,12 +193,10 @@ export default function Particle() {
             <div
               className="flex flex-1 justify-center"
               key={String(i)}
-              style={{
-                height: `${(count / maxCount) * 100}%`,
-              }}
+              style={{ height: `${(count / maxCount) * 100}%` }}
             >
               <span
-                className="size-full bg-primary/20 data-[selected=true]:bg-primary/50"
+                className="mx-px size-full bg-primary/20 data-[selected=true]:bg-primary/50"
                 data-selected={isBarInSelectedRange(i)}
               />
             </div>
@@ -290,61 +204,46 @@ export default function Particle() {
         </div>
         <Slider
           aria-label="Price range"
-          max={maxValue}
-          min={minValue}
-          onValueChange={handleSliderChange}
-          value={sliderValue}
+          max={max}
+          min={min}
+          onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
+          value={values}
         />
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <div className="relative">
-          <Input
-            aria-label="Enter minimum price"
-            className="peer w-full ps-6"
-            inputMode="decimal"
-            onBlur={() => validateAndUpdateValue(inputValues[0] ?? "0", 0)}
-            onChange={(e) => handleInputChange(e, 0)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                validateAndUpdateValue(inputValues[0] ?? "0", 0);
-              }
-            }}
-            type="text"
-            value={inputValues[0] ?? "0"}
-          />
-          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
-            $
-          </span>
-        </div>
-        <div className="relative">
-          <Input
-            aria-label="Enter maximum price"
-            className="peer w-full ps-6"
-            inputMode="decimal"
-            onBlur={() => validateAndUpdateValue(inputValues[1] ?? "0", 1)}
-            onChange={(e) => handleInputChange(e, 1)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                validateAndUpdateValue(inputValues[1] ?? "0", 1);
-              }
-            }}
-            type="text"
-            value={inputValues[1] ?? "0"}
-          />
-          <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
-            $
-          </span>
-        </div>
+        <InputGroup>
+          <NumberField
+            aria-label="Minimum price"
+            max={values[1]}
+            min={min}
+            onValueChange={(v) => updateValue(0, v)}
+            value={values[0]}
+          >
+            <NumberFieldInput className="text-left" />
+          </NumberField>
+          <InputGroupAddon>
+            <InputGroupText>$</InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
+        <InputGroup>
+          <NumberField
+            aria-label="Maximum price"
+            max={max}
+            min={values[0]}
+            onValueChange={(v) => updateValue(1, v)}
+            value={values[1]}
+          >
+            <NumberFieldInput className="text-left" />
+          </NumberField>
+          <InputGroupAddon>
+            <InputGroupText>$</InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
       </div>
 
       <Button className="w-full" variant="outline">
-        Show{" "}
-        {countItemsInRange(
-          getSliderValue(sliderValues, 0, minValue),
-          getSliderValue(sliderValues, 1, maxValue),
-        )}{" "}
-        items
+        Show {countItemsInRange()} items
       </Button>
     </div>
   );

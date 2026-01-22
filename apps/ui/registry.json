@@ -7730,29 +7730,6 @@
     },
     {
       "categories": [
-        "slider",
-        "tooltip"
-      ],
-      "description": "Slider with tooltip",
-      "files": [
-        {
-          "path": "registry/default/particles/p-slider-11.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-slider-11",
-      "registryDependencies": [
-        "@coss/label",
-        "@coss/slider",
-        "@coss/tooltip"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "slider"
       ],
       "dependencies": [
@@ -7798,36 +7775,7 @@
     {
       "categories": [
         "slider",
-        "input",
-        "tooltip"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
-      "description": "Slider with input and reset button",
-      "files": [
-        {
-          "path": "registry/default/particles/p-slider-14.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-slider-14",
-      "registryDependencies": [
-        "@coss/button",
-        "@coss/input",
-        "@coss/label",
-        "@coss/slider",
-        "@coss/tooltip"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "slider",
-        "input"
+        "number field"
       ],
       "description": "Slider with input",
       "files": [
@@ -7841,7 +7789,7 @@
       },
       "name": "p-slider-15",
       "registryDependencies": [
-        "@coss/input",
+        "@coss/number-field",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -7870,30 +7818,7 @@
     {
       "categories": [
         "slider",
-        "tooltip"
-      ],
-      "description": "Rating slider with tooltip and emoji",
-      "files": [
-        {
-          "path": "registry/default/particles/p-slider-17.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-      },
-      "name": "p-slider-17",
-      "registryDependencies": [
-        "@coss/label",
-        "@coss/slider",
-        "@coss/tooltip"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "slider",
-        "input"
+        "number field"
       ],
       "description": "Dual range slider with inputs",
       "files": [
@@ -7907,7 +7832,7 @@
       },
       "name": "p-slider-18",
       "registryDependencies": [
-        "@coss/input",
+        "@coss/number-field",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -7964,7 +7889,7 @@
     {
       "categories": [
         "slider",
-        "input"
+        "number field"
       ],
       "description": "Vertical slider with input",
       "files": [
@@ -7975,7 +7900,7 @@
       ],
       "name": "p-slider-21",
       "registryDependencies": [
-        "@coss/input",
+        "@coss/number-field",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -8000,7 +7925,7 @@
     {
       "categories": [
         "slider",
-        "input",
+        "number field",
         "button"
       ],
       "dependencies": [
@@ -8019,8 +7944,8 @@
       "name": "p-slider-23",
       "registryDependencies": [
         "@coss/button",
-        "@coss/input",
         "@coss/label",
+        "@coss/number-field",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -8028,7 +7953,8 @@
     {
       "categories": [
         "slider",
-        "input",
+        "number field",
+        "input group",
         "button",
         "filter"
       ],
@@ -8045,7 +7971,8 @@
       "name": "p-slider-24",
       "registryDependencies": [
         "@coss/button",
-        "@coss/input",
+        "@coss/input-group",
+        "@coss/number-field",
         "@coss/slider"
       ],
       "type": "registry:block"
