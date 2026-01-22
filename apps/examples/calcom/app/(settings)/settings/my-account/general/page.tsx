@@ -1,8 +1,16 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
+import {
+  Card,
+  CardFrame,
+  CardFrameDescription,
+  CardFrameFooter,
+  CardFrameHeader,
+  CardFrameTitle,
+  CardPanel,
+} from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
-import { Card, CardFrame, CardFrameHeader, CardPanel, CardFrameTitle, CardFrameDescription, CardFrameFooter } from "@coss/ui/components/card";
 import {
   Select,
   SelectItem,
@@ -58,7 +66,9 @@ export default function GeneralSettingsPage() {
                       <SelectItem value="america-los-angeles">
                         America/Los_Angeles
                       </SelectItem>
-                      <SelectItem value="europe-london">Europe/London</SelectItem>
+                      <SelectItem value="europe-london">
+                        Europe/London
+                      </SelectItem>
                       <SelectItem value="asia-tokyo">Asia/Tokyo</SelectItem>
                     </SelectPopup>
                   </Select>
@@ -82,7 +92,8 @@ export default function GeneralSettingsPage() {
                 </Select>
                 <FieldDescription>
                   This is an internal setting and will not affect how times are
-                  displayed on public booking pages for you or anyone booking you.
+                  displayed on public booking pages for you or anyone booking
+                  you.
                 </FieldDescription>
               </Field>
 
@@ -147,7 +158,7 @@ function SettingsToggle({
     <Card>
       <CardPanel>
         <div className="flex items-center justify-between gap-4">
-          <CardFrameHeader className="p-0! gap-0">
+          <CardFrameHeader className="gap-0 p-0!">
             <CardFrameTitle>{title}</CardFrameTitle>
             <CardFrameDescription>{description}</CardFrameDescription>
           </CardFrameHeader>
