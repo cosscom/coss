@@ -15,25 +15,23 @@ import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
 
 interface SettingsSheetProps {
-  children?: React.ReactNode;
+  children?: React.ReactElement;
 }
 
 export function SettingsSheet({ children }: SettingsSheetProps) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
 
+  const defaultTrigger = (
+    <SidebarMenuButton tooltip="Menu">
+      <MenuIcon />
+      <span className="max-lg:hidden">Menu</span>
+    </SidebarMenuButton>
+  );
+
   return (
     <Sheet onOpenChange={setOpen} open={open}>
-      <SheetTrigger
-        render={
-          children ?? (
-            <SidebarMenuButton tooltip="Menu">
-              <MenuIcon />
-              <span className="max-lg:hidden">Menu</span>
-            </SidebarMenuButton>
-          )
-        }
-      />
+      <SheetTrigger render={children ?? defaultTrigger} />
       <SheetPopup showCloseButton={false} side="left">
         <div className="flex flex-col gap-6 overflow-auto p-6 pt-8">
           {settingsNavItems.map((section) => (
