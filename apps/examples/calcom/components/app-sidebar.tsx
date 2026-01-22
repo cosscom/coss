@@ -23,7 +23,7 @@ export function AppSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex flex-col items-center justify-between gap-0.5 px-2 lg:flex-row">
+        <div className="flex flex-col items-center justify-between gap-0.5 px-1 lg:flex-row">
           <SidebarMenuButton
             className="w-fit justify-center md:max-lg:p-0"
             render={(props) => <Logo {...props} />}

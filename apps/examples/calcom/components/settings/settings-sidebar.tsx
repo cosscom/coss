@@ -43,7 +43,7 @@ export function SettingsSidebar({
             render={<Link aria-label="Back" href="/event-types" />}
             tooltip="Back"
           >
-            <ArrowLeftIcon className="md:-ms-0.5" />
+            <ArrowLeftIcon className="lg:-ms-0.5" />
             <span className="max-lg:hidden">Back</span>
           </SidebarMenuButton>
         </div>
