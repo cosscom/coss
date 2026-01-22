@@ -4,11 +4,6 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";
 import { Slider, SliderValue } from "@/registry/default/ui/slider";
 
@@ -28,15 +23,28 @@ export default function Particle() {
 
   return (
     <Form onSubmit={onSubmit}>
-      <Field className="items-stretch gap-3" name="volume">
-        <Slider disabled={loading} onValueChange={setValue} value={value}>
+      <div className="flex flex-col items-start gap-3">
+        <Slider
+          aria-labelledby="volume-label"
+          disabled={loading}
+          name="volume"
+          onValueChange={setValue}
+          value={value}
+        >
           <div className="mb-2 flex items-center justify-between gap-1">
-            <FieldLabel>Volume</FieldLabel>
+            <span
+              className="font-medium text-base/4.5 text-foreground sm:text-sm/4"
+              id="volume-label"
+            >
+              Volume
+            </span>
             <SliderValue />
           </div>
         </Slider>
-        <FieldDescription>Choose a value between 0 and 100</FieldDescription>
-      </Field>
+        <p className="text-muted-foreground text-xs">
+          Choose a value between 0 and 100
+        </p>
+      </div>
       <Button disabled={loading} type="submit">
         Submit
       </Button>

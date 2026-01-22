@@ -15,31 +15,19 @@ const max = 50;
 export default function Particle() {
   const [values, setValues] = useState([0, 20]);
 
-  // Clamp values to ensure they're always within the valid range
-  const clampedValues = [
-    Math.max(min, Math.min(values[0] ?? min, max)),
-    Math.max(min, Math.min(values[1] ?? max, max)),
-  ];
-
   const updateValue = (index: number, newValue: number | null) => {
     const v = newValue ?? min;
     setValues((prev) => {
       const next = [...prev];
       if (index === 0) {
-        // Min value: clamp between slider min and the minimum of (other thumb's value, max)
-        next[0] = Math.max(min, Math.min(v, Math.min(prev[1] ?? max, max)));
+        // Min value: clamp to not exceed max value
+        next[0] = Math.min(v, prev[1] ?? max);
       } else {
-        // Max value: clamp between the maximum of (other thumb's value, min) and slider max
-        next[1] = Math.min(max, Math.max(v, Math.max(prev[0] ?? min, min)));
+        // Max value: clamp to not go below min value
+        next[1] = Math.max(v, prev[0] ?? min);
       }
       return next;
     });
-  };
-
-  const handleSliderChange = (v: number | readonly number[]) => {
-    const arr = Array.isArray(v) ? [...v] : [v];
-    // Clamp all values to ensure they're within the valid range
-    setValues(arr.map((val) => Math.max(min, Math.min(val, max))));
   };
 
   return (
@@ -47,12 +35,12 @@ export default function Particle() {
       <NumberField
         aria-label="Minimum value"
         className="w-10"
-        max={clampedValues[1]}
+        max={values[1]}
         min={min}
         onValueChange={(v) => updateValue(0, v)}
         render={<NumberFieldGroup />}
         size="sm"
-        value={clampedValues[0]}
+        value={values[0]}
       >
         <NumberFieldInput />
       </NumberField>
@@ -61,18 +49,18 @@ export default function Particle() {
         className="flex-1 *:min-w-0!"
         max={max}
         min={min}
-        onValueChange={handleSliderChange}
-        value={clampedValues}
+        onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
+        value={values}
       />
       <NumberField
         aria-label="Maximum value"
         className="w-10"
         max={max}
-        min={clampedValues[0]}
+        min={values[0]}
         onValueChange={(v) => updateValue(1, v)}
         render={<NumberFieldGroup />}
         size="sm"
-        value={clampedValues[1]}
+        value={values[1]}
       >
         <NumberFieldInput />
       </NumberField>

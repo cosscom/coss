@@ -3854,7 +3854,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-15",
-    registryDependencies: ["@coss/button", "@coss/field", "@coss/slider"],
+    registryDependencies: ["@coss/button", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3951,12 +3951,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-23",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/field",
-      "@coss/form",
-      "@coss/slider",
-    ],
+    registryDependencies: ["@coss/button", "@coss/form", "@coss/slider"],
     type: "registry:block",
   },
   {
