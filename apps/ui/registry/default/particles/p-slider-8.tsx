@@ -8,10 +8,11 @@ const ticks = [...Array(max + 1)].map((_, i) => i);
 export default function Particle() {
   return (
     <div>
-      <Slider aria-label="Slider with ticks" defaultValue={5} max={max} />
-      <span
-        aria-hidden="true"
+      <Slider aria-label="Value selector" defaultValue={5} max={max} />
+      <div
+        aria-label="Value scale from 0 to 12"
         className="mt-3 flex w-full items-center justify-between gap-1 px-2.5 font-medium text-muted-foreground text-xs"
+        role="group"
       >
         {ticks.map((_, i) => (
           <span
@@ -29,7 +30,7 @@ export default function Particle() {
             </span>
           </span>
         ))}
-      </span>
+      </div>
     </div>
   );
 }
