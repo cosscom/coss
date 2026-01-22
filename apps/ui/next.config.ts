@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         permanent: false,
         source: "/",
       },
+      {
+        destination: "/docs/radix-migration",
+        permanent: true,
+        source: "/docs/radix-shadcn-migration",
+      },
     ];
   },
   async rewrites() {

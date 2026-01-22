@@ -1,19 +1,22 @@
 ---
-title: Radix / shadcn Migration
-description: A comprehensive guide for migrating from Radix UI and shadcn/ui to coss ui components.
+title: Migrating from Radix
+slug: radix-migration
+description: A comprehensive guide for migrating from Radix-based libraries to coss ui components.
 ---
 
-This guide is designed for developers who already have applications built with **shadcn/ui** or **Radix UI** and want to adopt **coss ui** components. **coss ui is fundamentally built with Base UI from the ground up—it is not an adaptation from Radix UI.** Recognizing that many teams are migrating from Radix-based libraries, this page consolidates all migration instructions for a smooth transition.
+This guide is for developers who already have applications built on Radix-based libraries — frameworks that wrap Radix primitives — and **want to adopt coss ui**.
+
+**coss ui** is built on top of **[Base UI](https://base-ui.com/)**, using a custom abstraction that stays intentionally close to its mental model. The component API exposed by coss ui is intentionally similar to shadcn/ui, which is why this guide also highlights the main differences between shadcn/ui and coss ui.
 
 ## Overview
 
-coss ui components are built on **Base UI**, not Radix. This means the architecture and API patterns are different by design. However, we've worked to make the migration path as clear as possible by:
+**coss ui** uses **Base UI** internally, not Radix. This means the architecture and API patterns are different by design. However, we've worked to make the migration path as clear as possible by:
 
 - Providing detailed component-by-component migration guides below
 - Maintaining similar component names and structures where it makes sense
 - Offering clear prop mappings and code examples
 
-**Tip:** This migration guide is structured to be LLM-friendly. You can provide this page to AI coding assistants (like Claude, ChatGPT, etc.) to help automate the conversion of your Radix/shadcn components to coss ui.
+**Tip:** This migration guide is structured to be LLM-friendly. You can provide this page to AI coding assistants (like Claude, ChatGPT, etc.) to help automate the conversion of your Radix components to coss ui.
 
 ## General Migration Patterns
 
@@ -22,7 +25,7 @@ coss ui components are built on **Base UI**, not Radix. This means the architect
 The most common change across all components is replacing Radix UI's `asChild` prop with Base UI's `render` prop:
 
 <span data-lib="radix-ui">
-```tsx title="Radix / shadcn"
+```tsx title="Radix"
 // [!code word:asChild]
 <DropdownMenuTrigger asChild>
   <Button>Edit profile</Button>
