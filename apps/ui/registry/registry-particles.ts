@@ -435,7 +435,7 @@ export const particles: ParticleItem[] = [
     description: "Avatar with notification badge",
     files: [{ path: "particles/p-avatar-10.tsx", type: "registry:block" }],
     name: "p-avatar-10",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar", "@coss/badge"],
     type: "registry:block",
   },
   {
@@ -443,7 +443,7 @@ export const particles: ParticleItem[] = [
     description: "Rounded avatar with notification badge",
     files: [{ path: "particles/p-avatar-11.tsx", type: "registry:block" }],
     name: "p-avatar-11",
-    registryDependencies: ["@coss/avatar"],
+    registryDependencies: ["@coss/avatar", "@coss/badge"],
     type: "registry:block",
   },
   {
@@ -1036,8 +1036,9 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("card"),
-    description: "Card with header, content, and footer",
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "A basic card with header and footer",
     files: [{ path: "particles/p-card-1.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -1049,6 +1050,184 @@ export const particles: ParticleItem[] = [
       "@coss/card",
       "@coss/field",
       "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    description: "Authentication card with actions",
+    files: [{ path: "particles/p-card-2.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Authentication card with separators",
+    files: [{ path: "particles/p-card-3.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-3",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with footer",
+    files: [{ path: "particles/p-card-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-4",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    description: "Framed card with header",
+    files: [{ path: "particles/p-card-5.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-5",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with header and footer",
+    files: [{ path: "particles/p-card-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-6",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form"),
+    dependencies: ["lucide-react"],
+    description: "Framed card with no rounded bottom",
+    files: [{ path: "particles/p-card-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-7",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    description: "Card within a frame and footer",
+    files: [{ path: "particles/p-card-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-8",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    dependencies: ["lucide-react"],
+    description: "Card within a frame and footer",
+    files: [{ path: "particles/p-card-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-9",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
+      "@coss/input",
+      "@coss/select",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "form", "frame"),
+    dependencies: ["lucide-react"],
+    description: "Card within a frame with header and footer",
+    files: [{ path: "particles/p-card-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-10",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/frame",
       "@coss/input",
       "@coss/select",
     ],
@@ -1418,6 +1597,7 @@ export const particles: ParticleItem[] = [
       "@coss/autocomplete",
       "@coss/button",
       "@coss/command",
+      "@coss/empty",
       "@coss/input",
       "@coss/kbd",
       "@coss/scroll-area",
@@ -2264,7 +2444,7 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-input-17",
-    registryDependencies: ["@coss/input", "@coss/label"],
+    registryDependencies: ["@coss/input"],
     type: "registry:block",
   },
   {
