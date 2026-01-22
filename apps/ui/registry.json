@@ -7844,10 +7844,9 @@
     },
     {
       "categories": [
-        "slider",
-        "button"
+        "slider"
       ],
-      "description": "Price range slider with button",
+      "description": "Price range slider",
       "files": [
         {
           "path": "registry/default/particles/p-slider-15.tsx",
@@ -7859,8 +7858,7 @@
       },
       "name": "p-slider-15",
       "registryDependencies": [
-        "@coss/button",
-        "@coss/field",
+        "@coss/fieldset",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -7881,7 +7879,7 @@
       },
       "name": "p-slider-16",
       "registryDependencies": [
-        "@coss/label",
+        "@coss/field",
         "@coss/slider"
       ],
       "type": "registry:block"
@@ -7978,6 +7976,7 @@
       "name": "p-slider-21",
       "registryDependencies": [
         "@coss/button",
+        "@coss/fieldset",
         "@coss/label",
         "@coss/number-field",
         "@coss/slider"
@@ -8030,6 +8029,7 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/field",
+        "@coss/fieldset",
         "@coss/form",
         "@coss/slider"
       ],

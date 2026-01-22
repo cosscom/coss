@@ -6921,9 +6921,9 @@ export const Index: Record<string, any> = {
   },
   "p-slider-15": {
     name: "p-slider-15",
-    description: "Price range slider with button",
+    description: "Price range slider",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/field","@coss/slider"],
+    registryDependencies: ["@coss/fieldset","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-15.tsx",
       type: "registry:block",
@@ -6934,14 +6934,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["slider","button"],
+    categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-slider-16": {
     name: "p-slider-16",
     description: "Emoji rating slider",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/slider"],
+    registryDependencies: ["@coss/field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-16.tsx",
       type: "registry:block",
@@ -7031,7 +7031,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-21",
     description: "Object position sliders with reset",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/label","@coss/number-field","@coss/slider"],
+    registryDependencies: ["@coss/button","@coss/fieldset","@coss/label","@coss/number-field","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-21.tsx",
       type: "registry:block",
@@ -7067,7 +7067,7 @@ export const Index: Record<string, any> = {
     name: "p-slider-23",
     description: "Slider in form",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/field","@coss/form","@coss/slider"],
+    registryDependencies: ["@coss/button","@coss/field","@coss/fieldset","@coss/form","@coss/slider"],
     files: [{
       path: "registry/default/particles/p-slider-23.tsx",
       type: "registry:block",
