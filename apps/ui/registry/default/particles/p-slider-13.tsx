@@ -20,11 +20,11 @@ export default function Particle() {
     setValues((prev) => {
       const next = [...prev];
       if (index === 0) {
-        // Min value: clamp to not exceed max value
-        next[0] = Math.min(v, prev[1] ?? max);
+        // Min value: clamp between slider min and the other thumb's value
+        next[0] = Math.max(min, Math.min(v, prev[1] ?? max));
       } else {
-        // Max value: clamp to not go below min value
-        next[1] = Math.max(v, prev[0] ?? min);
+        // Max value: clamp between the other thumb's value and slider max
+        next[1] = Math.min(max, Math.max(v, prev[0] ?? min));
       }
       return next;
     });
