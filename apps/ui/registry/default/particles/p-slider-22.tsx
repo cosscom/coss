@@ -204,6 +204,7 @@ export default function Particle() {
         </div>
         <Slider
           aria-label="Price range"
+          className="*:min-w-0!"
           max={max}
           min={min}
           onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
