@@ -5,9 +5,10 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
-import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
+import { ArrowLeftIcon, ExternalLinkIcon, MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SettingsSheet } from "@/components/settings/settings-sheet";
 import {
   Sidebar,
   SidebarContent,
@@ -30,16 +31,24 @@ export function SettingsSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="px-2">
+        <div className="flex flex-col gap-1 px-2">
+          <div className="hidden md:max-lg:block">
+            <SettingsSheet>
+              <SidebarMenuButton tooltip="Menu">
+                <MenuIcon />
+              </SidebarMenuButton>
+            </SettingsSheet>
+          </div>
           <SidebarMenuButton
             render={<Link aria-label="Back" href="/event-types" />}
+            tooltip="Back"
           >
             <ArrowLeftIcon className="md:-ms-0.5" />
             <span className="max-lg:hidden">Back</span>
           </SidebarMenuButton>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="hidden lg:block">
         {settingsNavItems.map((section) => (
           <SettingsNavSection
             key={section.url}
