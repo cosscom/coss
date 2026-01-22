@@ -6757,6 +6757,366 @@ export const Index: Record<string, any> = {
     categories: ["slider"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-slider-6": {
+    name: "p-slider-6",
+    description: "Disabled slider",
+    type: "registry:block",
+    registryDependencies: ["@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","disabled"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-7": {
+    name: "p-slider-7",
+    description: "Slider with reference labels",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-8": {
+    name: "p-slider-8",
+    description: "Slider with ticks",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-9": {
+    name: "p-slider-9",
+    description: "Slider with output",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-10": {
+    name: "p-slider-10",
+    description: "Slider with labels above",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-11": {
+    name: "p-slider-11",
+    description: "Slider with tooltip",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-slider-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-12": {
+    name: "p-slider-12",
+    description: "Slider with icons",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-13": {
+    name: "p-slider-13",
+    description: "Slider with 3 thumbs",
+    type: "registry:block",
+    registryDependencies: ["@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-14": {
+    name: "p-slider-14",
+    description: "Slider with input and reset button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-slider-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-15": {
+    name: "p-slider-15",
+    description: "Slider with input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-16": {
+    name: "p-slider-16",
+    description: "Emoji rating slider",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-17": {
+    name: "p-slider-17",
+    description: "Rating slider with tooltip and emoji",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-slider-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-18": {
+    name: "p-slider-18",
+    description: "Dual range slider with inputs",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-19": {
+    name: "p-slider-19",
+    description: "Slider with increment and decrement buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","button"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-20": {
+    name: "p-slider-20",
+    description: "Price range slider with button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","button"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-21": {
+    name: "p-slider-21",
+    description: "Vertical slider with input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-21.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-21.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input"],
+    meta: undefined,
+  },
+  "p-slider-22": {
+    name: "p-slider-22",
+    description: "Vertical range slider",
+    type: "registry:block",
+    registryDependencies: ["@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-22.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: undefined,
+  },
+  "p-slider-23": {
+    name: "p-slider-23",
+    description: "Object position sliders with reset",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input","button"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-24": {
+    name: "p-slider-24",
+    description: "Price slider with histogram",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/input","@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-24.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-24.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider","input","button","filter"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-slider-25": {
+    name: "p-slider-25",
+    description: "Equalizer with vertical sliders",
+    type: "registry:block",
+    registryDependencies: ["@coss/label","@coss/slider"],
+    files: [{
+      path: "registry/default/particles/p-slider-25.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-slider-25.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["slider"],
+    meta: undefined,
+  },
   "p-spinner-1": {
     name: "p-spinner-1",
     description: "Basic spinner",

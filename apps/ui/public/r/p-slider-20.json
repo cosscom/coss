@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-slider-20",
+  "type": "registry:block",
+  "description": "Price range slider with button",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/label",
+    "@coss/slider"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-slider-20.tsx",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Label } from \"@/registry/default/ui/label\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst minPrice = 5;\nconst maxPrice = 1240;\n\nexport default function Particle() {\n  const [value, setValue] = useState<number | readonly number[]>([\n    minPrice,\n    maxPrice,\n  ]);\n\n  const values = Array.isArray(value) ? value : [value];\n\n  const formatPrice = (price: number) => {\n    return price === maxPrice\n      ? `$${price.toLocaleString()}+`\n      : `$${price.toLocaleString()}`;\n  };\n\n  return (\n    <div className=\"space-y-3\">\n      <Label className=\"tabular-nums\">\n        From {formatPrice(values[0])} to {formatPrice(values[1])}\n      </Label>\n      <div className=\"flex items-center gap-4\">\n        <Slider\n          aria-label=\"Price range slider\"\n          max={maxPrice}\n          min={minPrice}\n          onValueChange={setValue}\n          value={value}\n        />\n        <Button variant=\"outline\">Go</Button>\n      </div>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "categories": [
+    "slider",
+    "button"
+  ]
+}

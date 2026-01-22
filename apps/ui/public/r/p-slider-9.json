@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-slider-9",
+  "type": "registry:block",
+  "description": "Slider with output",
+  "registryDependencies": [
+    "@coss/label",
+    "@coss/slider"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-slider-9.tsx",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Label } from \"@/registry/default/ui/label\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nexport default function Particle() {\n  const [value, setValue] = useState<number | readonly number[]>(25);\n\n  return (\n    <div className=\"space-y-4\">\n      <div className=\"flex items-center justify-between gap-2\">\n        <Label className=\"leading-6\">Slider with output</Label>\n        <output className=\"font-medium text-sm tabular-nums\">\n          {Array.isArray(value) ? value[0] : value}\n        </output>\n      </div>\n      <Slider\n        aria-label=\"Slider with output\"\n        onValueChange={setValue}\n        value={value}\n      />\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "categories": [
+    "slider"
+  ]
+}

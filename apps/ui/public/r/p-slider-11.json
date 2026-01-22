@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-slider-11",
+  "type": "registry:block",
+  "description": "Slider with tooltip",
+  "registryDependencies": [
+    "@coss/label",
+    "@coss/slider",
+    "@coss/tooltip"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-slider-11.tsx",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Label } from \"@/registry/default/ui/label\";\nimport { Slider } from \"@/registry/default/ui/slider\";\nimport {\n  Tooltip,\n  TooltipPopup,\n  TooltipProvider,\n  TooltipTrigger,\n} from \"@/registry/default/ui/tooltip\";\n\nexport default function Particle() {\n  const [value, setValue] = useState<number | readonly number[]>(50);\n\n  return (\n    <div className=\"space-y-4\">\n      <Label>Slider with tooltip</Label>\n      <TooltipProvider>\n        <Tooltip open>\n          <TooltipTrigger\n            className=\"w-full\"\n            render={\n              <Slider\n                aria-label=\"Slider with tooltip\"\n                onValueChange={setValue}\n                value={value}\n              />\n            }\n          />\n          <TooltipPopup side=\"top\" sideOffset={8}>\n            {Array.isArray(value) ? value[0] : value}\n          </TooltipPopup>\n        </Tooltip>\n      </TooltipProvider>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "categories": [
+    "slider",
+    "tooltip"
+  ]
+}
