@@ -2,20 +2,17 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-23",
   "type": "registry:block",
-  "description": "Object position sliders with reset",
-  "dependencies": [
-    "lucide-react"
-  ],
+  "description": "Slider in form",
   "registryDependencies": [
     "@coss/button",
-    "@coss/label",
-    "@coss/number-field",
+    "@coss/field",
+    "@coss/form",
     "@coss/slider"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-slider-23.tsx",
-      "content": "\"use client\";\n\nimport { RotateCcwIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Label } from \"@/registry/default/ui/label\";\nimport {\n  NumberField,\n  NumberFieldGroup,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst min = -10;\nconst max = 10;\nconst defaultValues = { x: 0, y: 0, z: 0 };\nconst initialValues = { x: -2, y: 4, z: 2 };\n\nexport default function Particle() {\n  const [values, setValues] = useState(initialValues);\n\n  const updateValue = (axis: keyof typeof values, v: number | null) => {\n    setValues((prev) => ({ ...prev, [axis]: v ?? 0 }));\n  };\n\n  return (\n    <div className=\"space-y-4\">\n      <legend className=\"font-medium text-foreground text-sm\">\n        Object position\n      </legend>\n      <div className=\"space-y-2\">\n        {([\"x\", \"y\", \"z\"] as const).map((axis) => (\n          <div className=\"flex items-center gap-2\" key={axis}>\n            <Label className=\"w-3 text-muted-foreground text-xs\">\n              {axis.toUpperCase()}\n            </Label>\n            <Slider\n              aria-label={`${axis.toUpperCase()} position`}\n              className=\"flex-1\"\n              max={max}\n              min={min}\n              onValueChange={(v) =>\n                updateValue(axis, Array.isArray(v) ? v[0] : v)\n              }\n              value={values[axis]}\n            />\n            <NumberField\n              aria-label={`Enter ${axis.toUpperCase()} value`}\n              className=\"w-16\"\n              max={max}\n              min={min}\n              onValueChange={(v) => updateValue(axis, v)}\n              render={<NumberFieldGroup />}\n              size=\"sm\"\n              value={values[axis]}\n            >\n              <NumberFieldInput />\n            </NumberField>\n          </div>\n        ))}\n      </div>\n      <Button\n        className=\"w-full\"\n        onClick={() => setValues(defaultValues)}\n        variant=\"outline\"\n      >\n        <RotateCcwIcon aria-hidden=\"true\" className=\"-ms-1 opacity-60\" />\n        Reset\n      </Button>\n    </div>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport type { FormEvent } from \"react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  Field,\n  FieldDescription,\n  FieldLabel,\n} from \"@/registry/default/ui/field\";\nimport { Form } from \"@/registry/default/ui/form\";\nimport { Slider, SliderValue } from \"@/registry/default/ui/slider\";\n\nexport default function Particle() {\n  const [loading, setLoading] = useState<boolean>(false);\n  const [value, setValue] = useState<number | readonly number[]>([25, 75]);\n\n  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {\n    e.preventDefault();\n    const formData = new FormData(e.currentTarget);\n    setLoading(true);\n    await new Promise((r) => setTimeout(r, 800));\n    setLoading(false);\n    const volumes = formData.getAll(\"volume\");\n    alert(`Volume: ${volumes.join(\", \")}`);\n  };\n\n  return (\n    <Form onSubmit={onSubmit}>\n      <Field className=\"items-stretch gap-3\" name=\"volume\">\n        <Slider disabled={loading} onValueChange={setValue} value={value}>\n          <div className=\"mb-2 flex items-center justify-between gap-1\">\n            <FieldLabel>Volume</FieldLabel>\n            <SliderValue />\n          </div>\n        </Slider>\n        <FieldDescription>Choose a value between 0 and 100</FieldDescription>\n      </Field>\n      <Button disabled={loading} type=\"submit\">\n        Submit\n      </Button>\n    </Form>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
@@ -24,7 +21,6 @@
   },
   "categories": [
     "slider",
-    "number field",
-    "button"
+    "form"
   ]
 }

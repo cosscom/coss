@@ -3696,12 +3696,12 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-2",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/field", "@coss/slider"],
     type: "registry:block",
   },
   {
-    categories: categories("slider"),
-    description: "Range slider",
+    categories: categories("slider", "disabled"),
+    description: "Disabled slider",
     files: [{ path: "particles/p-slider-3.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -3713,32 +3713,31 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("slider"),
-    description: "Vertical slider",
+    description: "Slider with reference labels",
     files: [{ path: "particles/p-slider-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
     name: "p-slider-4",
     registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
     categories: categories("slider"),
-    description: "Slider in form",
+    description: "Slider with ticks",
     files: [{ path: "particles/p-slider-5.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-5",
-    registryDependencies: [
-      "@coss/button",
-      "@coss/field",
-      "@coss/form",
-      "@coss/slider",
-    ],
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
-    categories: categories("slider", "disabled"),
-    description: "Disabled slider",
+    categories: categories("slider"),
+    description: "Slider with labels above",
     files: [{ path: "particles/p-slider-6.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -3750,7 +3749,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("slider"),
-    description: "Slider with reference labels",
+    description: "Range slider",
     files: [{ path: "particles/p-slider-7.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -3762,7 +3761,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("slider"),
-    description: "Slider with ticks",
+    description: "Slider with 3 thumbs",
     files: [{ path: "particles/p-slider-8.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -3774,7 +3773,19 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("slider"),
-    description: "Slider with labels above",
+    description: "Range slider with collision behavior none",
+    files: [{ path: "particles/p-slider-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-slider-9",
+    registryDependencies: ["@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider"),
+    description: "Range slider with collision behavior swap",
     files: [{ path: "particles/p-slider-10.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -3788,37 +3799,62 @@ export const particles: ParticleItem[] = [
     categories: categories("slider"),
     dependencies: ["lucide-react"],
     description: "Slider with icons",
+    files: [{ path: "particles/p-slider-11.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-slider-11",
+    registryDependencies: ["@coss/field", "@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider", "number field"),
+    description: "Slider with input",
     files: [{ path: "particles/p-slider-12.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-12",
-    registryDependencies: ["@coss/label", "@coss/slider"],
+    registryDependencies: ["@coss/number-field", "@coss/slider"],
     type: "registry:block",
   },
   {
-    categories: categories("slider"),
-    description: "Slider with 3 thumbs",
+    categories: categories("slider", "number field"),
+    description: "Range slider with inputs",
     files: [{ path: "particles/p-slider-13.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-13",
-    registryDependencies: ["@coss/slider"],
+    registryDependencies: ["@coss/number-field", "@coss/slider"],
     type: "registry:block",
   },
   {
-    categories: categories("slider", "number field"),
-    description: "Slider with input",
+    categories: categories("slider", "button"),
+    dependencies: ["lucide-react"],
+    description: "Slider with increment and decrement buttons",
+    files: [{ path: "particles/p-slider-14.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-slider-14",
+    registryDependencies: ["@coss/button", "@coss/field", "@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider", "button"),
+    description: "Price range slider with button",
     files: [{ path: "particles/p-slider-15.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-slider-15",
-    registryDependencies: ["@coss/number-field", "@coss/slider"],
+    registryDependencies: ["@coss/button", "@coss/field", "@coss/slider"],
     type: "registry:block",
   },
   {
@@ -3834,55 +3870,34 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("slider", "number field"),
-    description: "Dual range slider with inputs",
-    files: [{ path: "particles/p-slider-18.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-slider-18",
-    registryDependencies: ["@coss/number-field", "@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider", "button"),
-    dependencies: ["lucide-react"],
-    description: "Slider with increment and decrement buttons",
-    files: [{ path: "particles/p-slider-19.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-slider-19",
-    registryDependencies: ["@coss/button", "@coss/label", "@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider", "button"),
-    description: "Price range slider with button",
-    files: [{ path: "particles/p-slider-20.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-slider-20",
-    registryDependencies: ["@coss/button", "@coss/label", "@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider", "number field"),
-    description: "Vertical slider with input",
-    files: [{ path: "particles/p-slider-21.tsx", type: "registry:block" }],
-    name: "p-slider-21",
-    registryDependencies: ["@coss/number-field", "@coss/slider"],
+    categories: categories("slider"),
+    description: "Vertical slider",
+    files: [{ path: "particles/p-slider-17.tsx", type: "registry:block" }],
+    name: "p-slider-17",
+    registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
   {
     categories: categories("slider"),
     description: "Vertical range slider",
-    files: [{ path: "particles/p-slider-22.tsx", type: "registry:block" }],
-    name: "p-slider-22",
+    files: [{ path: "particles/p-slider-18.tsx", type: "registry:block" }],
+    name: "p-slider-18",
+    registryDependencies: ["@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider", "number field"),
+    description: "Vertical slider with input",
+    files: [{ path: "particles/p-slider-19.tsx", type: "registry:block" }],
+    name: "p-slider-19",
+    registryDependencies: ["@coss/number-field", "@coss/slider"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("slider"),
+    description: "Equalizer with vertical sliders",
+    files: [{ path: "particles/p-slider-20.tsx", type: "registry:block" }],
+    name: "p-slider-20",
     registryDependencies: ["@coss/slider"],
     type: "registry:block",
   },
@@ -3890,12 +3905,12 @@ export const particles: ParticleItem[] = [
     categories: categories("slider", "number field", "button"),
     dependencies: ["lucide-react"],
     description: "Object position sliders with reset",
-    files: [{ path: "particles/p-slider-23.tsx", type: "registry:block" }],
+    files: [{ path: "particles/p-slider-21.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
-    name: "p-slider-23",
+    name: "p-slider-21",
     registryDependencies: [
       "@coss/button",
       "@coss/label",
@@ -3913,12 +3928,12 @@ export const particles: ParticleItem[] = [
       "filter",
     ),
     description: "Price slider with histogram",
-    files: [{ path: "particles/p-slider-24.tsx", type: "registry:block" }],
+    files: [{ path: "particles/p-slider-22.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
-    name: "p-slider-24",
+    name: "p-slider-22",
     registryDependencies: [
       "@coss/button",
       "@coss/input-group",
@@ -3928,35 +3943,20 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("slider"),
-    description: "Equalizer with vertical sliders",
-    files: [{ path: "particles/p-slider-25.tsx", type: "registry:block" }],
-    name: "p-slider-25",
-    registryDependencies: ["@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider"),
-    description: "Dual thumb slider with collision behavior none",
-    files: [{ path: "particles/p-slider-26.tsx", type: "registry:block" }],
+    categories: categories("slider", "form"),
+    description: "Slider in form",
+    files: [{ path: "particles/p-slider-23.tsx", type: "registry:block" }],
     meta: {
       className:
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
-    name: "p-slider-26",
-    registryDependencies: ["@coss/slider"],
-    type: "registry:block",
-  },
-  {
-    categories: categories("slider"),
-    description: "Dual thumb slider with collision behavior swap",
-    files: [{ path: "particles/p-slider-27.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
-    name: "p-slider-27",
-    registryDependencies: ["@coss/slider"],
+    name: "p-slider-23",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/field",
+      "@coss/form",
+      "@coss/slider",
+    ],
     type: "registry:block",
   },
   {

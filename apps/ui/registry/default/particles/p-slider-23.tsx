@@ -1,73 +1,45 @@
 "use client";
 
-import { RotateCcwIcon } from "lucide-react";
+import type { FormEvent } from "react";
 import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
-import { Label } from "@/registry/default/ui/label";
 import {
-  NumberField,
-  NumberFieldGroup,
-  NumberFieldInput,
-} from "@/registry/default/ui/number-field";
-import { Slider } from "@/registry/default/ui/slider";
-
-const min = -10;
-const max = 10;
-const defaultValues = { x: 0, y: 0, z: 0 };
-const initialValues = { x: -2, y: 4, z: 2 };
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@/registry/default/ui/field";
+import { Form } from "@/registry/default/ui/form";
+import { Slider, SliderValue } from "@/registry/default/ui/slider";
 
 export default function Particle() {
-  const [values, setValues] = useState(initialValues);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [value, setValue] = useState<number | readonly number[]>([25, 75]);
 
-  const updateValue = (axis: keyof typeof values, v: number | null) => {
-    setValues((prev) => ({ ...prev, [axis]: v ?? 0 }));
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    const volumes = formData.getAll("volume");
+    alert(`Volume: ${volumes.join(", ")}`);
   };
 
   return (
-    <div className="space-y-4">
-      <legend className="font-medium text-foreground text-sm">
-        Object position
-      </legend>
-      <div className="space-y-2">
-        {(["x", "y", "z"] as const).map((axis) => (
-          <div className="flex items-center gap-2" key={axis}>
-            <Label className="w-3 text-muted-foreground text-xs">
-              {axis.toUpperCase()}
-            </Label>
-            <Slider
-              aria-label={`${axis.toUpperCase()} position`}
-              className="flex-1"
-              max={max}
-              min={min}
-              onValueChange={(v) =>
-                updateValue(axis, Array.isArray(v) ? v[0] : v)
-              }
-              value={values[axis]}
-            />
-            <NumberField
-              aria-label={`Enter ${axis.toUpperCase()} value`}
-              className="w-16"
-              max={max}
-              min={min}
-              onValueChange={(v) => updateValue(axis, v)}
-              render={<NumberFieldGroup />}
-              size="sm"
-              value={values[axis]}
-            >
-              <NumberFieldInput />
-            </NumberField>
+    <Form onSubmit={onSubmit}>
+      <Field className="items-stretch gap-3" name="volume">
+        <Slider disabled={loading} onValueChange={setValue} value={value}>
+          <div className="mb-2 flex items-center justify-between gap-1">
+            <FieldLabel>Volume</FieldLabel>
+            <SliderValue />
           </div>
-        ))}
-      </div>
-      <Button
-        className="w-full"
-        onClick={() => setValues(defaultValues)}
-        variant="outline"
-      >
-        <RotateCcwIcon aria-hidden="true" className="-ms-1 opacity-60" />
-        Reset
+        </Slider>
+        <FieldDescription>Choose a value between 0 and 100</FieldDescription>
+      </Field>
+      <Button disabled={loading} type="submit">
+        Submit
       </Button>
-    </div>
+    </Form>
   );
 }

@@ -2,41 +2,37 @@
 
 import { useState } from "react";
 
-import {
-  NumberField,
-  NumberFieldGroup,
-  NumberFieldInput,
-} from "@/registry/default/ui/number-field";
+import { Button } from "@/registry/default/ui/button";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider } from "@/registry/default/ui/slider";
 
-const min = 0;
-const max = 150;
+const min = 5;
+const max = 1240;
 
 export default function Particle() {
-  const [value, setValue] = useState(25);
+  const [values, setValues] = useState([min, max]);
+
+  const formatPrice = (price: number) =>
+    price === max
+      ? `$${price.toLocaleString()}+`
+      : `$${price.toLocaleString()}`;
 
   return (
-    <div className="flex items-center gap-4">
-      <Slider
-        aria-label="Slider with input"
-        className="flex-1"
-        max={max}
-        min={min}
-        onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
-        value={value}
-      />
-      <NumberField
-        aria-label="Enter slider value"
-        className="w-12"
-        max={max}
-        min={min}
-        onValueChange={(v) => setValue(v ?? min)}
-        render={<NumberFieldGroup />}
-        size="sm"
-        value={value}
-      >
-        <NumberFieldInput />
-      </NumberField>
-    </div>
+    <Field className="space-y-3" name="price-range">
+      <FieldLabel className="tabular-nums">
+        From {formatPrice(values[0] ?? min)} to {formatPrice(values[1] ?? max)}
+      </FieldLabel>
+      <div className="flex items-center gap-4">
+        <Slider
+          aria-label="Price range slider"
+          className="flex-1"
+          max={max}
+          min={min}
+          onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
+          value={values}
+        />
+        <Button variant="outline">Go</Button>
+      </div>
+    </Field>
   );
 }

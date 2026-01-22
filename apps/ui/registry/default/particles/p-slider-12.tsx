@@ -1,30 +1,42 @@
 "use client";
 
-import { Volume2Icon, VolumeXIcon } from "lucide-react";
 import { useState } from "react";
 
-import { Field, FieldLabel } from "@/registry/default/ui/field";
-import { Slider, SliderValue } from "@/registry/default/ui/slider";
+import {
+  NumberField,
+  NumberFieldGroup,
+  NumberFieldInput,
+} from "@/registry/default/ui/number-field";
+import { Slider } from "@/registry/default/ui/slider";
+
+const min = 0;
+const max = 150;
 
 export default function Particle() {
-  const [value, setValue] = useState<number | readonly number[]>(25);
+  const [value, setValue] = useState(25);
 
   return (
-    <Field className="*:grid *:grid-cols-[auto_1fr_auto] *:items-center *:gap-x-2">
-      <Slider aria-label="Volume slider" onValueChange={setValue} value={value}>
-        <div className="col-span-3 mb-2 flex items-center justify-between gap-1">
-          <FieldLabel>Volume</FieldLabel>
-          <SliderValue />
-        </div>
-        <VolumeXIcon
-          aria-hidden="true"
-          className="size-4 shrink-0 opacity-80"
-        />
-        <Volume2Icon
-          aria-hidden="true"
-          className="order-1 size-4 shrink-0 opacity-80"
-        />
-      </Slider>
-    </Field>
+    <div className="flex items-center gap-4">
+      <Slider
+        aria-label="Slider with input"
+        className="flex-1"
+        max={max}
+        min={min}
+        onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
+        value={value}
+      />
+      <NumberField
+        aria-label="Enter slider value"
+        className="w-12"
+        max={max}
+        min={min}
+        onValueChange={(v) => setValue(v ?? min)}
+        render={<NumberFieldGroup />}
+        size="sm"
+        value={value}
+      >
+        <NumberFieldInput />
+      </NumberField>
+    </div>
   );
 }

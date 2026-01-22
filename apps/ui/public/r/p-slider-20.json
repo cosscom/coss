@@ -2,24 +2,18 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-20",
   "type": "registry:block",
-  "description": "Price range slider with button",
+  "description": "Equalizer with vertical sliders",
   "registryDependencies": [
-    "@coss/button",
-    "@coss/label",
     "@coss/slider"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-slider-20.tsx",
-      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst min = 5;\nconst max = 1240;\n\nexport default function Particle() {\n  const [values, setValues] = useState([min, max]);\n\n  const formatPrice = (price: number) =>\n    price === max\n      ? `$${price.toLocaleString()}+`\n      : `$${price.toLocaleString()}`;\n\n  return (\n    <Field className=\"space-y-3\" name=\"price-range\">\n      <FieldLabel className=\"tabular-nums\">\n        From {formatPrice(values[0] ?? min)} to {formatPrice(values[1] ?? max)}\n      </FieldLabel>\n      <div className=\"flex items-center gap-4\">\n        <Slider\n          aria-label=\"Price range slider\"\n          className=\"flex-1\"\n          max={max}\n          min={min}\n          onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}\n          value={values}\n        />\n        <Button variant=\"outline\">Go</Button>\n      </div>\n    </Field>\n  );\n}\n",
+      "content": "import { Slider } from \"@/registry/default/ui/slider\";\n\nconst bands = [\n  { label: \"60 Hz\", value: 2 },\n  { label: \"250 Hz\", value: 1 },\n  { label: \"1k\", value: -1 },\n  { label: \"4k\", value: -3 },\n  { label: \"16k\", value: 2 },\n];\n\nexport default function Particle() {\n  return (\n    <div className=\"flex h-48 justify-center gap-8\">\n      {bands.map((band) => (\n        <Slider\n          aria-label={band.label}\n          defaultValue={band.value}\n          key={band.label}\n          max={5}\n          min={-5}\n          orientation=\"vertical\"\n        />\n      ))}\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
-  "meta": {
-    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-  },
   "categories": [
-    "slider",
-    "button"
+    "slider"
   ]
 }

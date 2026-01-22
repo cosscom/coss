@@ -2,27 +2,20 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-19",
   "type": "registry:block",
-  "description": "Slider with increment and decrement buttons",
-  "dependencies": [
-    "lucide-react"
-  ],
+  "description": "Vertical slider with input",
   "registryDependencies": [
-    "@coss/button",
-    "@coss/label",
+    "@coss/number-field",
     "@coss/slider"
   ],
   "files": [
     {
       "path": "registry/default/particles/p-slider-19.tsx",
-      "content": "\"use client\";\n\nimport { MinusIcon, PlusIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst min = 0;\nconst max = 200;\nconst step = 5;\n\nexport default function Particle() {\n  const [value, setValue] = useState(100);\n\n  return (\n    <Field className=\"space-y-3\" name=\"credits\">\n      <FieldLabel className=\"tabular-nums\">{value} credits/mo</FieldLabel>\n      <div className=\"flex items-center gap-2\">\n        <Button\n          aria-label=\"Decrease value\"\n          disabled={value === min}\n          onClick={() => setValue(Math.max(min, value - step))}\n          size=\"icon\"\n          variant=\"outline\"\n        >\n          <MinusIcon aria-hidden=\"true\" />\n        </Button>\n        <Slider\n          aria-label=\"Credits slider\"\n          className=\"flex-1\"\n          max={max}\n          min={min}\n          onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}\n          step={step}\n          value={value}\n        />\n        <Button\n          aria-label=\"Increase value\"\n          disabled={value === max}\n          onClick={() => setValue(Math.min(max, value + step))}\n          size=\"icon\"\n          variant=\"outline\"\n        >\n          <PlusIcon aria-hidden=\"true\" />\n        </Button>\n      </div>\n    </Field>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport {\n  NumberField,\n  NumberFieldGroup,\n  NumberFieldInput,\n} from \"@/registry/default/ui/number-field\";\nimport { Slider } from \"@/registry/default/ui/slider\";\n\nconst min = 0;\nconst max = 100;\n\nexport default function Particle() {\n  const [value, setValue] = useState(25);\n\n  return (\n    <div className=\"flex flex-col items-center justify-center gap-4\">\n      <Slider\n        aria-label=\"Vertical slider with input\"\n        max={max}\n        min={min}\n        onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}\n        orientation=\"vertical\"\n        value={value}\n      />\n      <NumberField\n        aria-label=\"Enter slider value\"\n        className=\"w-16\"\n        max={max}\n        min={min}\n        onValueChange={(v) => setValue(v ?? min)}\n        render={<NumberFieldGroup />}\n        size=\"sm\"\n        value={value}\n      >\n        <NumberFieldInput />\n      </NumberField>\n    </div>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
-  "meta": {
-    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-  },
   "categories": [
     "slider",
-    "button"
+    "number field"
   ]
 }

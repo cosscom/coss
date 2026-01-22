@@ -4,7 +4,7 @@
   "type": "registry:block",
   "description": "Slider with label and value",
   "registryDependencies": [
-    "@coss/label",
+    "@coss/field",
     "@coss/slider"
   ],
   "files": [

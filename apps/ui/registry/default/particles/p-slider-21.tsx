@@ -1,7 +1,10 @@
 "use client";
 
+import { RotateCcwIcon } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/registry/default/ui/button";
+import { Label } from "@/registry/default/ui/label";
 import {
   NumberField,
   NumberFieldGroup,
@@ -9,34 +12,62 @@ import {
 } from "@/registry/default/ui/number-field";
 import { Slider } from "@/registry/default/ui/slider";
 
-const min = 0;
-const max = 100;
+const min = -10;
+const max = 10;
+const defaultValues = { x: 0, y: 0, z: 0 };
+const initialValues = { x: -2, y: 4, z: 2 };
 
 export default function Particle() {
-  const [value, setValue] = useState(25);
+  const [values, setValues] = useState(initialValues);
+
+  const updateValue = (axis: keyof typeof values, v: number | null) => {
+    setValues((prev) => ({ ...prev, [axis]: v ?? 0 }));
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <Slider
-        aria-label="Vertical slider with input"
-        max={max}
-        min={min}
-        onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
-        orientation="vertical"
-        value={value}
-      />
-      <NumberField
-        aria-label="Enter slider value"
-        className="w-16"
-        max={max}
-        min={min}
-        onValueChange={(v) => setValue(v ?? min)}
-        render={<NumberFieldGroup />}
-        size="sm"
-        value={value}
+    <div className="space-y-4">
+      <legend className="font-medium text-foreground text-sm">
+        Object position
+      </legend>
+      <div className="space-y-2">
+        {(["x", "y", "z"] as const).map((axis) => (
+          <div className="flex items-center gap-2" key={axis}>
+            <Label className="w-3 text-muted-foreground text-xs">
+              {axis.toUpperCase()}
+            </Label>
+            <Slider
+              aria-label={`${axis.toUpperCase()} position`}
+              className="flex-1"
+              max={max}
+              min={min}
+              onValueChange={(v) =>
+                updateValue(axis, Array.isArray(v) ? v[0] : v)
+              }
+              value={values[axis]}
+            />
+            <NumberField
+              aria-label={`Enter ${axis.toUpperCase()} value`}
+              className="w-16"
+              max={max}
+              min={min}
+              onValueChange={(v) => updateValue(axis, v)}
+              render={<NumberFieldGroup />}
+              size="sm"
+              value={values[axis]}
+            >
+              <NumberFieldInput />
+            </NumberField>
+          </div>
+        ))}
+      </div>
+      <Button
+        className="w-full"
+        onClick={() => setValues(defaultValues)}
+        variant="outline"
       >
-        <NumberFieldInput />
-      </NumberField>
+        <RotateCcwIcon aria-hidden="true" className="-ms-1 opacity-60" />
+        Reset
+      </Button>
     </div>
   );
 }
