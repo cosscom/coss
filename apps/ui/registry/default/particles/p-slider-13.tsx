@@ -15,6 +15,12 @@ const max = 50;
 export default function Particle() {
   const [values, setValues] = useState([0, 20]);
 
+  // Clamp values to ensure they're always within the valid range
+  const clampedValues = [
+    Math.max(min, Math.min(values[0] ?? min, max)),
+    Math.max(min, Math.min(values[1] ?? max, max)),
+  ];
+
   const updateValue = (index: number, newValue: number | null) => {
     const v = newValue ?? min;
     setValues((prev) => {
@@ -35,12 +41,12 @@ export default function Particle() {
       <NumberField
         aria-label="Minimum value"
         className="w-10"
-        max={values[1]}
+        max={clampedValues[1]}
         min={min}
         onValueChange={(v) => updateValue(0, v)}
         render={<NumberFieldGroup />}
         size="sm"
-        value={values[0]}
+        value={clampedValues[0]}
       >
         <NumberFieldInput />
       </NumberField>
@@ -50,17 +56,17 @@ export default function Particle() {
         max={max}
         min={min}
         onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
-        value={values}
+        value={clampedValues}
       />
       <NumberField
         aria-label="Maximum value"
         className="w-10"
         max={max}
-        min={values[0]}
+        min={clampedValues[0]}
         onValueChange={(v) => updateValue(1, v)}
         render={<NumberFieldGroup />}
         size="sm"
-        value={values[1]}
+        value={clampedValues[1]}
       >
         <NumberFieldInput />
       </NumberField>

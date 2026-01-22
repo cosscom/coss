@@ -154,6 +154,12 @@ const maxCount = Math.max(...itemCounts);
 export default function Particle() {
   const [values, setValues] = useState([200, 780]);
 
+  // Clamp values to ensure they're always within the valid range
+  const clampedValues = [
+    Math.max(min, Math.min(values[0] ?? min, max)),
+    Math.max(min, Math.min(values[1] ?? max, max)),
+  ];
+
   const updateValue = (index: number, newValue: number | null) => {
     const v = newValue ?? min;
     setValues((prev) => {
@@ -172,7 +178,8 @@ export default function Particle() {
   const countItemsInRange = () =>
     items.filter(
       (item) =>
-        item.price >= (values[0] ?? min) && item.price <= (values[1] ?? max),
+        item.price >= (clampedValues[0] ?? min) &&
+        item.price <= (clampedValues[1] ?? max),
     ).length;
 
   const isBarInSelectedRange = (index: number) => {
@@ -180,8 +187,8 @@ export default function Particle() {
     const rangeMax = min + (index + 1) * priceStep;
     return (
       countItemsInRange() > 0 &&
-      rangeMin <= (values[1] ?? max) &&
-      rangeMax >= (values[0] ?? min)
+      rangeMin <= (clampedValues[1] ?? max) &&
+      rangeMax >= (clampedValues[0] ?? min)
     );
   };
 
@@ -208,7 +215,7 @@ export default function Particle() {
           max={max}
           min={min}
           onValueChange={(v) => setValues(Array.isArray(v) ? [...v] : [v])}
-          value={values}
+          value={clampedValues}
         />
       </div>
 
@@ -216,10 +223,10 @@ export default function Particle() {
         <InputGroup>
           <NumberField
             aria-label="Minimum price"
-            max={values[1]}
+            max={clampedValues[1]}
             min={min}
             onValueChange={(v) => updateValue(0, v)}
-            value={values[0]}
+            value={clampedValues[0]}
           >
             <NumberFieldInput className="text-left" />
           </NumberField>
@@ -231,9 +238,9 @@ export default function Particle() {
           <NumberField
             aria-label="Maximum price"
             max={max}
-            min={values[0]}
+            min={clampedValues[0]}
             onValueChange={(v) => updateValue(1, v)}
-            value={values[1]}
+            value={clampedValues[1]}
           >
             <NumberFieldInput className="text-left" />
           </NumberField>
