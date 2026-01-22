@@ -2,7 +2,7 @@
 
 import type { ChangeEvent } from "react";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Input } from "@/registry/default/ui/input";
 import { Slider } from "@/registry/default/ui/slider";
@@ -11,11 +11,21 @@ const minValue = 0;
 const maxValue = 100;
 const initialValue = 25;
 
+function extractValue(value: number | readonly number[]): number {
+  if (Array.isArray(value)) {
+    return (value[0] ?? 0) as number;
+  }
+  return value as number;
+}
+
 export default function Particle() {
   const [sliderValue, setSliderValue] = useState<number | readonly number[]>(
     initialValue,
   );
   const [inputValue, setInputValue] = useState(initialValue.toString());
+  const sliderValueRef = useRef(sliderValue);
+
+  sliderValueRef.current = sliderValue;
 
   const validateAndUpdateValue = useCallback(
     (rawValue: string) => {
@@ -28,9 +38,7 @@ export default function Particle() {
       const numValue = Number.parseFloat(rawValue);
 
       if (Number.isNaN(numValue)) {
-        const currentValue = Array.isArray(sliderValue)
-          ? sliderValue[0]
-          : sliderValue;
+        const currentValue = extractValue(sliderValueRef.current);
         setInputValue(currentValue.toString());
         return;
       }
@@ -39,7 +47,7 @@ export default function Particle() {
       setSliderValue(clampedValue);
       setInputValue(clampedValue.toString());
     },
-    [sliderValue],
+    [maxValue, minValue],
   );
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +60,7 @@ export default function Particle() {
   const handleSliderChange = useCallback(
     (newValue: number | readonly number[]) => {
       setSliderValue(newValue);
-      const val = Array.isArray(newValue) ? newValue[0] : newValue;
+      const val = extractValue(newValue);
       setInputValue(val.toString());
     },
     [],
@@ -70,7 +78,7 @@ export default function Particle() {
         value={sliderValue}
       />
       <Input
-        aria-label="Enter value"
+        aria-label="Enter slider value"
         className="h-8 w-12 px-2 py-1"
         inputMode="decimal"
         onBlur={() => validateAndUpdateValue(inputValue)}

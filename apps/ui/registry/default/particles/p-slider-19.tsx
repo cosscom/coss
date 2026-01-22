@@ -11,10 +11,17 @@ const minValue = 0;
 const maxValue = 200;
 const steps = 5;
 
+function extractValue(value: number | readonly number[]): number {
+  if (Array.isArray(value)) {
+    return (value[0] ?? 0) as number;
+  }
+  return value as number;
+}
+
 export default function Particle() {
   const [value, setValue] = useState<number | readonly number[]>(100);
 
-  const currentValue = Array.isArray(value) ? value[0] : value;
+  const currentValue = extractValue(value);
 
   const decreaseValue = () =>
     setValue(Math.max(minValue, currentValue - steps));

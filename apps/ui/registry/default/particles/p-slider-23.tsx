@@ -9,6 +9,13 @@ import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 
+function extractValue(value: number | readonly number[]): number {
+  if (Array.isArray(value)) {
+    return (value[0] ?? 0) as number;
+  }
+  return value as number;
+}
+
 function useSliderWithInput({
   minValue,
   maxValue,
@@ -24,6 +31,9 @@ function useSliderWithInput({
     initialValue,
   );
   const [inputValue, setInputValue] = useState(initialValue.toString());
+  const sliderValueRef = useRef(sliderValue);
+
+  sliderValueRef.current = sliderValue;
 
   const validateAndUpdateValue = useCallback(
     (rawValue: string) => {
@@ -36,9 +46,7 @@ function useSliderWithInput({
       const numValue = Number.parseFloat(rawValue);
 
       if (Number.isNaN(numValue)) {
-        const currentValue = Array.isArray(sliderValue)
-          ? sliderValue[0]
-          : sliderValue;
+        const currentValue = extractValue(sliderValueRef.current);
         setInputValue(currentValue.toString());
         return;
       }
@@ -47,7 +55,7 @@ function useSliderWithInput({
       setSliderValue(clampedValue);
       setInputValue(clampedValue.toString());
     },
-    [sliderValue, minValue, maxValue],
+    [maxValue, minValue],
   );
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +68,7 @@ function useSliderWithInput({
   const handleSliderChange = useCallback(
     (newValue: number | readonly number[]) => {
       setSliderValue(newValue);
-      const val = Array.isArray(newValue) ? newValue[0] : newValue;
+      const val = extractValue(newValue);
       setInputValue(val.toString());
     },
     [],
@@ -121,7 +129,7 @@ function SliderWithInput({
         value={sliderValue}
       />
       <Input
-        aria-label="Enter value"
+        aria-label="Enter slider value"
         className="h-8 w-12 px-2 py-1"
         inputMode="decimal"
         onBlur={() => validateAndUpdateValue(inputValue)}

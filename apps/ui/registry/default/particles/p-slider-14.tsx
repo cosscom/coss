@@ -2,7 +2,7 @@
 
 import { RotateCcwIcon } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
@@ -21,15 +21,24 @@ const maxValue = 2;
 const initialValue = 1.25;
 const defaultValue = 1;
 
+function extractValue(value: number | readonly number[]): number {
+  if (Array.isArray(value)) {
+    return (value[0] ?? 0) as number;
+  }
+  return value as number;
+}
+
 export default function Particle() {
   const [sliderValue, setSliderValue] = useState<number | readonly number[]>(
     initialValue,
   );
   const [inputValue, setInputValue] = useState(initialValue.toString());
+  const sliderValueRef = useRef(sliderValue);
 
-  const showReset =
-    (Array.isArray(sliderValue) ? sliderValue[0] : sliderValue) !==
-    defaultValue;
+  sliderValueRef.current = sliderValue;
+
+  const currentSliderValue = extractValue(sliderValue);
+  const showReset = currentSliderValue !== defaultValue;
 
   const validateAndUpdateValue = useCallback(
     (rawValue: string) => {
@@ -42,9 +51,8 @@ export default function Particle() {
       const numValue = Number.parseFloat(rawValue);
 
       if (Number.isNaN(numValue)) {
-        const currentValue = Array.isArray(sliderValue)
-          ? sliderValue[0]
-          : sliderValue;
+        // Use ref to avoid stale closure
+        const currentValue = extractValue(sliderValueRef.current);
         setInputValue(currentValue.toString());
         return;
       }
@@ -53,7 +61,7 @@ export default function Particle() {
       setSliderValue(clampedValue);
       setInputValue(clampedValue.toString());
     },
-    [sliderValue],
+    [maxValue, minValue],
   );
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +74,7 @@ export default function Particle() {
   const handleSliderChange = useCallback(
     (newValue: number | readonly number[]) => {
       setSliderValue(newValue);
-      const val = Array.isArray(newValue) ? newValue[0] : newValue;
+      const val = extractValue(newValue);
       setInputValue(val.toString());
     },
     [],
@@ -106,7 +114,7 @@ export default function Particle() {
             </Tooltip>
           </TooltipProvider>
           <Input
-            aria-label="Enter value"
+            aria-label="Enter temperature value"
             className="h-7 w-12 px-2 py-0"
             inputMode="decimal"
             onBlur={() => validateAndUpdateValue(inputValue)}

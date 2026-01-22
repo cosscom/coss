@@ -2,7 +2,7 @@
 
 import type { ChangeEvent } from "react";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
 import { Input } from "@/registry/default/ui/input";
@@ -148,6 +148,21 @@ const itemCounts = Array(tickCount)
 
 const maxCount = Math.max(...itemCounts);
 
+function extractValues(value: number | readonly number[]): number[] {
+  if (Array.isArray(value)) {
+    return [...value];
+  }
+  return [value as number];
+}
+
+function getSliderValue(
+  values: number[],
+  index: number,
+  fallback: number,
+): number {
+  return values[index] ?? fallback;
+}
+
 export default function Particle() {
   const initialValue = [200, 780];
 
@@ -157,17 +172,24 @@ export default function Particle() {
   const [inputValues, setInputValues] = useState(
     initialValue.map((v) => v.toString()),
   );
+  const sliderValueRef = useRef<number | readonly number[]>(sliderValue);
+  const inputValuesRef = useRef<string[]>(inputValues);
 
-  const sliderValues = Array.isArray(sliderValue) ? sliderValue : [sliderValue];
+  sliderValueRef.current = sliderValue;
+  inputValuesRef.current = inputValues;
+
+  const sliderValues = extractValues(sliderValue);
 
   const validateAndUpdateValue = useCallback(
     (rawValue: string, index: number) => {
+      const currentSliderValues = extractValues(sliderValueRef.current);
+
       if (rawValue === "" || rawValue === "-") {
-        const newInputValues = [...inputValues];
+        const newInputValues = [...inputValuesRef.current];
         newInputValues[index] = "0";
         setInputValues(newInputValues);
 
-        const newSliderValues = [...sliderValues];
+        const newSliderValues = [...currentSliderValues];
         newSliderValues[index] = 0;
         setSliderValue(newSliderValues);
         return;
@@ -176,49 +198,55 @@ export default function Particle() {
       const numValue = Number.parseFloat(rawValue);
 
       if (Number.isNaN(numValue)) {
-        const newInputValues = [...inputValues];
-        newInputValues[index] = sliderValues[index]?.toString() ?? "0";
+        const newInputValues = [...inputValuesRef.current];
+        newInputValues[index] = currentSliderValues[index]?.toString() ?? "0";
         setInputValues(newInputValues);
         return;
       }
 
       let clampedValue = Math.min(maxValue, Math.max(minValue, numValue));
 
-      if (sliderValues.length > 1) {
+      if (currentSliderValues.length > 1) {
         if (index === 0) {
-          clampedValue = Math.min(clampedValue, sliderValues[1]);
+          clampedValue = Math.min(
+            clampedValue,
+            getSliderValue(currentSliderValues, 1, maxValue),
+          );
         } else {
-          clampedValue = Math.max(clampedValue, sliderValues[0]);
+          clampedValue = Math.max(
+            clampedValue,
+            getSliderValue(currentSliderValues, 0, minValue),
+          );
         }
       }
 
-      const newSliderValues = [...sliderValues];
+      const newSliderValues = [...currentSliderValues];
       newSliderValues[index] = clampedValue;
       setSliderValue(newSliderValues);
 
-      const newInputValues = [...inputValues];
+      const newInputValues = [...inputValuesRef.current];
       newInputValues[index] = clampedValue.toString();
       setInputValues(newInputValues);
     },
-    [sliderValues, inputValues],
+    [maxValue, minValue],
   );
 
   const handleInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>, index: number) => {
       const newValue = e.target.value;
       if (newValue === "" || /^-?\d*\.?\d*$/.test(newValue)) {
-        const newInputValues = [...inputValues];
+        const newInputValues = [...inputValuesRef.current];
         newInputValues[index] = newValue;
         setInputValues(newInputValues);
       }
     },
-    [inputValues],
+    [],
   );
 
   const handleSliderChange = useCallback(
     (newValue: number | readonly number[]) => {
       setSliderValue(newValue);
-      const values = Array.isArray(newValue) ? newValue : [newValue];
+      const values = extractValues(newValue);
       setInputValues(values.map((v) => v.toString()));
     },
     [],
@@ -232,10 +260,12 @@ export default function Particle() {
   const isBarInSelectedRange = (index: number) => {
     const rangeMin = minValue + index * priceStep;
     const rangeMax = minValue + (index + 1) * priceStep;
+    const minVal = getSliderValue(sliderValues, 0, minValue);
+    const maxVal = getSliderValue(sliderValues, 1, maxValue);
     return (
-      countItemsInRange(sliderValues[0], sliderValues[1]) > 0 &&
-      rangeMin <= sliderValues[1] &&
-      rangeMax >= sliderValues[0]
+      countItemsInRange(minVal, maxVal) > 0 &&
+      rangeMin <= maxVal &&
+      rangeMax >= minVal
     );
   };
 
@@ -309,7 +339,12 @@ export default function Particle() {
       </div>
 
       <Button className="w-full" variant="outline">
-        Show {countItemsInRange(sliderValues[0], sliderValues[1])} items
+        Show{" "}
+        {countItemsInRange(
+          getSliderValue(sliderValues, 0, minValue),
+          getSliderValue(sliderValues, 1, maxValue),
+        )}{" "}
+        items
       </Button>
     </div>
   );
