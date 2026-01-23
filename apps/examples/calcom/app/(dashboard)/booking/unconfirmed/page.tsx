@@ -16,7 +16,7 @@ import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
-} from "@/components/app-header";
+} from "@/components/app/app-header";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingSkeletonItem } from "../booking-skeleton";
 

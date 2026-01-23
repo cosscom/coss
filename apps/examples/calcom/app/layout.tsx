@@ -4,7 +4,7 @@ import { ToastProvider } from "@coss/ui/components/toast";
 import { fontHeading, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-import { AppCommand } from "@/components/app-command";
+import { AppCommand } from "@/components/app/app-command";
 import { DebugProvider } from "@/components/debug-context";
 
 export const metadata: Metadata = {

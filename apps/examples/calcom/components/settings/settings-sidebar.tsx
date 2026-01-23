@@ -32,9 +32,6 @@ export function SettingsSidebar({
     <Sidebar {...props}>
       <SidebarHeader>
         <div className="flex flex-col gap-1 px-2">
-          <div className="hidden md:max-lg:block">
-            <SettingsSheet />
-          </div>
           <SidebarMenuButton
             render={<Link aria-label="Back" href="/event-types" />}
             tooltip="Back"
@@ -42,6 +39,9 @@ export function SettingsSidebar({
             <ArrowLeftIcon className="lg:-ms-0.5" />
             <span className="max-lg:sr-only">Back</span>
           </SidebarMenuButton>
+          <div className="hidden md:max-lg:block">
+            <SettingsSheet />
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent className="hidden lg:block">

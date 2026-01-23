@@ -1,8 +1,8 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { MobileFooter } from "@/components/mobile-footer";
-import { MobileHeader } from "@/components/mobile-header";
+import { AppMobileFooter } from "@/components/app/app-mobile-footer";
+import { AppMobileHeader } from "@/components/app/app-mobile-header";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function DashboardLayout({
@@ -12,10 +12,10 @@ export default function DashboardLayout({
 }>) {
   return (
     <SidebarProvider>
-      <MobileHeader />
+      <AppMobileHeader />
       <AppSidebar />
       <SidebarInset className="max-md:pt-14">{children}</SidebarInset>
-      <MobileFooter />
+      <AppMobileFooter />
     </SidebarProvider>
   );
 }

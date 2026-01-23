@@ -19,7 +19,7 @@ import { navFooterItems, navMainItems } from "@/lib/navigation-data";
 const primaryNavItems = navMainItems.slice(0, 3);
 const remainingMainItems = navMainItems.slice(3);
 
-export function MobileFooter() {
+export function AppMobileFooter() {
   const isHidden = useScrollHide();
 
   return (
@@ -52,30 +52,20 @@ export function MobileFooter() {
           <MenuPopup side="top" sideOffset={8}>
             <MenuGroup>
               {remainingMainItems.map((item) => (
-                <MenuItem
-                  key={item.title}
-                  render={
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                      {item.title === "Workflows" && <WorkflowBadge />}
-                    </Link>
-                  }
-                />
+                <MenuItem key={item.title} render={<Link href={item.url} />}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                  {item.title === "Workflows" && <WorkflowBadge />}
+                </MenuItem>
               ))}
             </MenuGroup>
             <MenuSeparator />
             <MenuGroup>
               {navFooterItems.map((item) => (
-                <MenuItem
-                  key={item.title}
-                  render={
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  }
-                />
+                <MenuItem key={item.title} render={<Link href={item.url} />}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </MenuItem>
               ))}
             </MenuGroup>
           </MenuPopup>

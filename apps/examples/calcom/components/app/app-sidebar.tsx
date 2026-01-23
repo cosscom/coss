@@ -1,11 +1,11 @@
 "use client";
 
 import type * as React from "react";
+import { NavMain } from "@/components/app/nav-main";
+import { NavSecondary } from "@/components/app/nav-secondary";
 import { DebugPopover } from "@/components/debug-popover";
 import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import {
   Sidebar,
   SidebarContent,
