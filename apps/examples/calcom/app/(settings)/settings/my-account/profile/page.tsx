@@ -22,6 +22,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
+  InputGroupTextarea,
 } from "@coss/ui/components/input-group";
 import { Label } from "@coss/ui/components/label";
 import {
@@ -30,8 +31,62 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { Textarea } from "@coss/ui/components/textarea";
-import { EllipsisIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { Toggle } from "@coss/ui/components/toggle";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
+import {
+  BoldIcon,
+  CheckIcon,
+  CopyIcon,
+  EllipsisIcon,
+  ItalicIcon,
+  LinkIcon,
+  PlusIcon,
+} from "lucide-react";
+
+function EmailInput({
+  email,
+  isPrimary,
+  isVerified,
+}: {
+  email: string;
+  isPrimary?: boolean;
+  isVerified?: boolean;
+}) {
+  return (
+    <InputGroup>
+      <InputGroupInput defaultValue={email} type="email" />
+      <InputGroupAddon align="inline-end">
+        {isPrimary && <Badge variant="info">Primary</Badge>}
+        {!isVerified && <Badge variant="warning">Unverified</Badge>}
+        <Menu>
+          <MenuTrigger
+            render={
+              <Button
+                aria-label="Email options"
+                size="icon-xs"
+                variant="ghost"
+              />
+            }
+          >
+            <EllipsisIcon />
+          </MenuTrigger>
+          <MenuPopup align="end" alignOffset={-4} sideOffset={8}>
+            <MenuItem disabled={isPrimary}>Make primary</MenuItem>
+            <MenuItem disabled={isVerified}>Resend verification</MenuItem>
+            <MenuItem disabled={isPrimary} variant="destructive">
+              Remove email
+            </MenuItem>
+          </MenuPopup>
+        </Menu>
+      </InputGroupAddon>
+    </InputGroup>
+  );
+}
 
 interface EmailItem {
   email: string;
@@ -45,6 +100,8 @@ const emails: EmailItem[] = [
 ];
 
 export default function ProfileSettingsPage() {
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
+
   return (
     <div className="space-y-4">
       <CardFrame>
@@ -81,11 +138,37 @@ export default function ProfileSettingsPage() {
 
               <div className="flex flex-col items-start gap-2">
                 <Label>Username</Label>
-                <InputGroup>
+                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
                   <InputGroupAddon>
                     <InputGroupText>i.cal.com/</InputGroupText>
                   </InputGroupAddon>
-                  <InputGroupInput defaultValue="pasquale" />
+                  <InputGroupInput
+                    aria-label="Set your URL"
+                    className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+                    defaultValue="pasquale"
+                    disabled
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            aria-label="Copy URL"
+                            onClick={() =>
+                              copyToClipboard("https://i.cal.com/pasquale")
+                            }
+                            size="icon-xs"
+                            variant="ghost"
+                          />
+                        }
+                      >
+                        {isCopied ? <CheckIcon /> : <CopyIcon />}
+                      </TooltipTrigger>
+                      <TooltipPopup>
+                        <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+                      </TooltipPopup>
+                    </Tooltip>
+                  </InputGroupAddon>
                 </InputGroup>
                 <p className="text-muted-foreground text-xs">
                   Tip: You can add a &apos;+&apos; between usernames (e.g.
@@ -100,17 +183,15 @@ export default function ProfileSettingsPage() {
 
               <div className="flex flex-col items-start gap-2">
                 <Label>Email</Label>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {emails.map((item) => (
-                      <EmailCard
-                        email={item.email}
-                        isPrimary={item.isPrimary}
-                        isVerified={item.isVerified}
-                        key={item.email}
-                      />
-                    ))}
-                  </div>
+                <div className="w-full space-y-2">
+                  {emails.map((item) => (
+                    <EmailInput
+                      email={item.email}
+                      isPrimary={item.isPrimary}
+                      isVerified={item.isVerified}
+                      key={item.email}
+                    />
+                  ))}
                   <Button size="sm" variant="outline">
                     <PlusIcon />
                     Add email
@@ -120,7 +201,23 @@ export default function ProfileSettingsPage() {
 
               <div className="flex flex-col items-start gap-2">
                 <Label>About</Label>
-                <Textarea className="min-h-32" />
+                <InputGroup>
+                  <InputGroupTextarea placeholder="Tell us about yourself…" />
+                  <InputGroupAddon
+                    align="block-start"
+                    className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
+                  >
+                    <Toggle aria-label="Toggle bold" size="sm">
+                      <BoldIcon aria-hidden="true" />
+                    </Toggle>
+                    <Toggle aria-label="Toggle italic" size="sm">
+                      <ItalicIcon aria-hidden="true" />
+                    </Toggle>
+                    <Button aria-label="Link" size="icon-sm" variant="ghost">
+                      <LinkIcon aria-hidden="true" />
+                    </Button>
+                  </InputGroupAddon>
+                </InputGroup>
               </div>
             </div>
           </CardPanel>
@@ -131,62 +228,18 @@ export default function ProfileSettingsPage() {
         </CardFrameFooter>
       </CardFrame>
 
-      <CardFrame>
+      <CardFrame className="flex-row items-center justify-between">
         <CardFrameHeader>
-          <CardFrameTitle className="text-destructive">
-            Danger zone
-          </CardFrameTitle>
+          <CardFrameTitle>Danger zone</CardFrameTitle>
           <CardFrameDescription>
             Be careful. Account deletion cannot be undone.
           </CardFrameDescription>
         </CardFrameHeader>
 
         <CardFrameFooter className="flex justify-end">
-          <Button variant="outline">
-            <Trash2Icon />
-            Delete account
-          </Button>
+          <Button variant="destructive-outline">Delete account</Button>
         </CardFrameFooter>
       </CardFrame>
-    </div>
-  );
-}
-
-function EmailCard({
-  email,
-  isPrimary,
-  isVerified,
-}: {
-  email: string;
-  isPrimary?: boolean;
-  isVerified?: boolean;
-}) {
-  return (
-    <div className="flex flex-1 items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-      <span className="flex-1 truncate text-sm">{email}</span>
-      {isPrimary && <Badge variant="success">Primary</Badge>}
-      {!isVerified && <Badge variant="warning">Unverified</Badge>}
-      <Menu>
-        <MenuTrigger
-          render={
-            <Button
-              aria-label="Email options"
-              className="size-7"
-              size="sm"
-              variant="ghost"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" />
-        </MenuTrigger>
-        <MenuPopup>
-          {!isPrimary && <MenuItem>Make primary</MenuItem>}
-          {!isVerified && <MenuItem>Resend verification</MenuItem>}
-          {!isPrimary && (
-            <MenuItem variant="destructive">Remove email</MenuItem>
-          )}
-        </MenuPopup>
-      </Menu>
     </div>
   );
 }
