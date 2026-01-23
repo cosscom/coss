@@ -274,7 +274,7 @@ function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button cursor-pointer flex w-full items-center gap-2 overflow-hidden rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate md:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-5 [&>svg]:shrink-0 font-medium text-sidebar-foreground",
+      "peer/menu-button relative cursor-pointer flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate md:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-5 [&>svg]:shrink-0 font-medium text-sidebar-foreground after:absolute after:top-full after:h-1 after:w-full",
       className,
     ),
     "data-active": isActive,
@@ -299,7 +299,6 @@ function SidebarMenuButton({
 
   return (
     <TooltipTrigger
-      className="after:absolute after:top-full after:h-0.5 after:w-full"
       handle={sidebarTooltipHandle}
       payload={TooltipContent}
       render={buttonElement as React.ReactElement<Record<string, unknown>>}
@@ -412,7 +411,7 @@ function SidebarMenuSubButton({
 }) {
   const defaultProps = {
     className: cn(
-      "-translate-x-px flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-lg px-2 text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "-translate-x-px flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
       "md:max-lg:hidden",
       className,

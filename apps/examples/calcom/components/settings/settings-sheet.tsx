@@ -23,7 +23,7 @@ export function SettingsSheet() {
       <SidebarMenuButton render={<SheetTrigger />} tooltip="Menu">
         <MenuIcon />
       </SidebarMenuButton>
-      <SheetPopup showCloseButton={false} side="left">
+      <SheetPopup className="max-w-sm" showCloseButton={false} side="left">
         <div className="flex flex-col gap-6 overflow-auto p-6 pt-8">
           {settingsNavItems.map((section) => (
             <SettingsSheetSection
