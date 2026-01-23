@@ -4473,6 +4473,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("toast"),
+    dependencies: ["lucide-react"],
+    description: "Promise toast with cancel action",
+    files: [{ path: "particles/p-toast-9.tsx", type: "registry:block" }],
+    name: "p-toast-9",
+    registryDependencies: ["@coss/button", "@coss/spinner", "@coss/toast"],
+    type: "registry:block",
+  },
+  {
     categories: categories("toggle", "toggle group"),
     description: "Basic toggle group",
     files: [{ path: "particles/p-toggle-group-1.tsx", type: "registry:block" }],

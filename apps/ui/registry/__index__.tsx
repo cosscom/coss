@@ -7927,6 +7927,24 @@ export const Index: Record<string, any> = {
     categories: ["toast"],
     meta: undefined,
   },
+  "p-toast-9": {
+    name: "p-toast-9",
+    description: "Promise toast with cancel action",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/spinner","@coss/toast"],
+    files: [{
+      path: "registry/default/particles/p-toast-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toast"],
+    meta: undefined,
+  },
   "p-toggle-group-1": {
     name: "p-toggle-group-1",
     description: "Basic toggle group",
