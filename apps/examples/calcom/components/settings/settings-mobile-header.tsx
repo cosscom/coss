@@ -17,11 +17,7 @@ export function SettingsMobileHeader() {
         isHidden ? "-translate-y-full" : "translate-y-0",
       )}
     >
-      <SettingsSheet>
-        <Button aria-label="Menu" size="icon" variant="ghost">
-          <MenuIcon className="size-5" />
-        </Button>
-      </SettingsSheet>
+      <SettingsSheet />
       <Button
         aria-label="Back"
         render={<Link href="/event-types" />}
