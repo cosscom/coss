@@ -13,7 +13,6 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,7 +25,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  sidebarTooltipHandle,
   useSidebarMenuOpen,
 } from "@/components/ui/sidebar";
 import { WorkflowBadge } from "@/components/workflows-badge";
@@ -65,8 +63,6 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
     };
   }, []);
 
-  const TooltipContent = () => item.title;
-
   /* Collapsible version for expanded sidebar */
   const pathname = usePathname();
   const isActive = useMemo(
@@ -101,23 +97,14 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
         }}
       >
         <div className="hidden md:max-lg:block">
-          <TooltipTrigger
-            className="after:absolute after:top-full after:h-0.5 after:w-full"
-            handle={sidebarTooltipHandle}
-            payload={TooltipContent}
-            render={
-              <MenuTrigger
-                render={
-                  <SidebarMenuButton
-                    aria-label={item.title}
-                    isActive={isActive || item.isActive}
-                  />
-                }
-              />
-            }
+          <SidebarMenuButton
+            aria-label={item.title}
+            isActive={isActive || item.isActive}
+            render={<MenuTrigger />}
+            tooltip={isBetweenMdAndLg ? item.title : undefined}
           >
             <item.icon />
-          </TooltipTrigger>
+          </SidebarMenuButton>
         </div>
         <MenuPopup align="start" alignOffset={0} side="right">
           <MenuGroup>
@@ -139,7 +126,6 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
         className="md:max-lg:hidden"
         onOpenChange={setIsExpanded}
         open={isExpanded}
-        render={<div />}
       >
         <CollapsibleTrigger
           className="justify-between"
