@@ -16,7 +16,6 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import {
   InputGroup,
@@ -24,6 +23,7 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@coss/ui/components/input-group";
+import { Label } from "@coss/ui/components/label";
 import {
   Menu,
   MenuItem,
@@ -67,7 +67,7 @@ export default function ProfileSettingsPage() {
                   <AvatarFallback className="text-xl">PV</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-1">
-                  <FieldLabel className="text-sm">Profile picture</FieldLabel>
+                  <Label className="text-sm">Profile picture</Label>
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline">
                       Upload avatar
@@ -79,27 +79,27 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
 
-              <Field>
-                <FieldLabel>Username</FieldLabel>
+              <div className="flex flex-col items-start gap-2">
+                <Label>Username</Label>
                 <InputGroup>
                   <InputGroupAddon>
                     <InputGroupText>i.cal.com/</InputGroupText>
                   </InputGroupAddon>
                   <InputGroupInput defaultValue="pasquale" />
                 </InputGroup>
-                <FieldDescription>
+                <p className="text-muted-foreground text-xs">
                   Tip: You can add a &apos;+&apos; between usernames (e.g.
                   cal.com/anna+brian) to meet with multiple people
-                </FieldDescription>
-              </Field>
+                </p>
+              </div>
 
-              <Field>
-                <FieldLabel>Full name</FieldLabel>
+              <div className="flex flex-col items-start gap-2">
+                <Label>Full name</Label>
                 <Input defaultValue="Pasquale Vitiello" />
-              </Field>
+              </div>
 
-              <Field>
-                <FieldLabel>Email</FieldLabel>
+              <div className="flex flex-col items-start gap-2">
+                <Label>Email</Label>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
                     {emails.map((item) => (
@@ -116,12 +116,12 @@ export default function ProfileSettingsPage() {
                     Add email
                   </Button>
                 </div>
-              </Field>
+              </div>
 
-              <Field>
-                <FieldLabel>About</FieldLabel>
+              <div className="flex flex-col items-start gap-2">
+                <Label>About</Label>
                 <Textarea className="min-h-32" />
-              </Field>
+              </div>
             </div>
           </CardPanel>
         </Card>
