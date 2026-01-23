@@ -102,7 +102,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
       >
         <div className="hidden md:max-lg:block">
           <TooltipTrigger
-            className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
+            className="after:absolute after:top-full after:h-0.5 after:w-full"
             handle={sidebarTooltipHandle}
             payload={TooltipContent}
             render={
@@ -155,7 +155,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             <item.icon className="size-4" />
             <span>{item.title}</span>
           </span>
-          <ChevronRightIcon className="in-data-open:rotate-90 transition-transform" />
+          <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
