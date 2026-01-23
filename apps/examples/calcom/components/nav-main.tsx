@@ -111,13 +111,13 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
                   <SidebarMenuButton
                     aria-label={item.title}
                     isActive={isActive || item.isActive}
-                  >
-                    <item.icon />
-                  </SidebarMenuButton>
+                  />
                 }
               />
             }
-          />
+          >
+            <item.icon />
+          </TooltipTrigger>
         </div>
         <MenuPopup align="start" alignOffset={0} side="right">
           <MenuGroup>
@@ -125,12 +125,10 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             {item.items.map((subItem) => (
               <MenuItem
                 key={subItem.title}
-                render={
-                  <Link href={subItem.url}>
-                    <span>{subItem.title}</span>
-                  </Link>
-                }
-              />
+                render={<Link href={subItem.url} />}
+              >
+                <span>{subItem.title}</span>
+              </MenuItem>
             ))}
           </MenuGroup>
         </MenuPopup>
@@ -164,12 +162,10 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
                 <SidebarMenuSubButton
                   className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
                   isActive={pathname.startsWith(subItem.url)}
-                  render={
-                    <Link href={subItem.url}>
-                      <span>{subItem.title}</span>
-                    </Link>
-                  }
-                />
+                  render={<Link href={subItem.url} />}
+                >
+                  <span>{subItem.title}</span>
+                </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
@@ -188,15 +184,13 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={isActive}
-        render={
-          <Link href={item.url}>
-            <item.icon />
-            <span className="max-lg:hidden">{item.title}</span>
-            {item.title === "Workflows" && <WorkflowBadge />}
-          </Link>
-        }
+        render={<Link href={item.url} />}
         tooltip={isBetweenMdAndLg ? item.title : undefined}
-      />
+      >
+        <item.icon />
+        <span className="max-lg:hidden">{item.title}</span>
+        {item.title === "Workflows" && <WorkflowBadge />}
+      </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }
