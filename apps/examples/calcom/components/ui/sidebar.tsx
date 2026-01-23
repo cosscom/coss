@@ -60,11 +60,7 @@ function SidebarProvider({
           {children}
           <Tooltip handle={sidebarTooltipHandle}>
             {({ payload: Payload }) => (
-              <TooltipPopup
-                align="center"
-                className={openMenuCount > 0 ? "hidden" : undefined}
-                side="right"
-              >
+              <TooltipPopup align="center" side="right">
                 {Payload !== undefined && <Payload />}
               </TooltipPopup>
             )}

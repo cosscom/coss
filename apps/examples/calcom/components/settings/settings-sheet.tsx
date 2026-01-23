@@ -6,7 +6,6 @@ import {
   AvatarImage,
 } from "@coss/ui/components/avatar";
 import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/components/sheet";
-import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
