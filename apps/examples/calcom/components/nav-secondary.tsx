@@ -1,8 +1,8 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import type * as React from "react";
-
 import {
   SidebarGroup,
   SidebarMenu,
@@ -29,16 +29,12 @@ export function NavSecondary({
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              render={
-                <a href={item.url}>
-                  <item.icon />
-                  <span className="md:max-lg:hidden lg:inline">
-                    {item.title}
-                  </span>
-                </a>
-              }
+              render={<Link href={item.url} />}
               tooltip={isBetweenMdAndLg ? item.title : undefined}
-            />
+            >
+              <item.icon />
+              <span className="md:max-lg:hidden lg:inline">{item.title}</span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
