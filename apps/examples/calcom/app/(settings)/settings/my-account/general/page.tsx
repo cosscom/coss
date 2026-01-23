@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { Switch } from "@coss/ui/components/switch";
 import { CalendarIcon } from "lucide-react";
+import { SettingsToggle } from "@/components/settings/settings-toggle";
 
 export default function GeneralSettingsPage() {
   return (
@@ -142,29 +142,5 @@ export default function GeneralSettingsPage() {
         title="Prevent impersonation on bookings"
       />
     </div>
-  );
-}
-
-function SettingsToggle({
-  title,
-  description,
-  defaultChecked = false,
-}: {
-  title: string;
-  description: string;
-  defaultChecked?: boolean;
-}) {
-  return (
-    <Card>
-      <CardPanel>
-        <div className="flex items-center justify-between gap-4">
-          <CardFrameHeader className="gap-0 p-0!">
-            <CardFrameTitle>{title}</CardFrameTitle>
-            <CardFrameDescription>{description}</CardFrameDescription>
-          </CardFrameHeader>
-          <Switch defaultChecked={defaultChecked} />
-        </div>
-      </CardPanel>
-    </Card>
   );
 }
