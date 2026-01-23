@@ -11,10 +11,7 @@ import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import {
-  SidebarMenuButton,
-  sidebarTooltipHandle,
-} from "@/components/ui/sidebar";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
 
@@ -24,19 +21,9 @@ export function SettingsSheet() {
 
   return (
     <Sheet onOpenChange={setOpen} open={open}>
-      <TooltipTrigger
-        handle={sidebarTooltipHandle}
-        payload={() => "Menu"}
-        render={
-          <SheetTrigger
-            render={
-              <SidebarMenuButton>
-                <MenuIcon />
-              </SidebarMenuButton>
-            }
-          />
-        }
-      />
+      <SidebarMenuButton render={<SheetTrigger />} tooltip="Menu">
+        <MenuIcon />
+      </SidebarMenuButton>
       <SheetPopup showCloseButton={false} side="left">
         <div className="flex flex-col gap-6 overflow-auto p-6 pt-8">
           {settingsNavItems.map((section) => (
