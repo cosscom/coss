@@ -20,7 +20,7 @@ export default function Particle() {
       <SheetTrigger render={<Button variant="outline" />}>
         Open Sheet
       </SheetTrigger>
-      <SheetPopup inset>
+      <SheetPopup variant="inset">
         <Form className="h-full gap-0">
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
