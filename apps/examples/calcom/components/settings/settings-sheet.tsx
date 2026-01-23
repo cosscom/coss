@@ -6,32 +6,37 @@ import {
   AvatarImage,
 } from "@coss/ui/components/avatar";
 import { Sheet, SheetPopup, SheetTrigger } from "@coss/ui/components/sheet";
+import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+import {
+  SidebarMenuButton,
+  sidebarTooltipHandle,
+} from "@/components/ui/sidebar";
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
 
-interface SettingsSheetProps {
-  children?: React.ReactElement;
-}
-
-export function SettingsSheet({ children }: SettingsSheetProps) {
+export function SettingsSheet() {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
 
-  const defaultTrigger = (
-    <SidebarMenuButton tooltip="Menu">
-      <MenuIcon />
-      <span className="max-lg:hidden">Menu</span>
-    </SidebarMenuButton>
-  );
-
   return (
     <Sheet onOpenChange={setOpen} open={open}>
-      <SheetTrigger render={children ?? defaultTrigger} />
+      <TooltipTrigger
+        handle={sidebarTooltipHandle}
+        payload={() => "Menu"}
+        render={
+          <SheetTrigger
+            render={
+              <SidebarMenuButton>
+                <MenuIcon />
+              </SidebarMenuButton>
+            }
+          />
+        }
+      />
       <SheetPopup showCloseButton={false} side="left">
         <div className="flex flex-col gap-6 overflow-auto p-6 pt-8">
           {settingsNavItems.map((section) => (
@@ -79,7 +84,7 @@ function SettingsSheetSection({
               data-active={pathname === item.url}
               href={item.url}
               key={item.url}
-              onClick={onNavigate}
+              onNavigate={onNavigate}
             >
               {item.title}
               {item.external && (

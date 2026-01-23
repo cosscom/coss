@@ -5,7 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
-import { ArrowLeftIcon, ExternalLinkIcon, MenuIcon } from "lucide-react";
+import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsSheet } from "@/components/settings/settings-sheet";
@@ -33,11 +33,7 @@ export function SettingsSidebar({
       <SidebarHeader>
         <div className="flex flex-col gap-1 px-2">
           <div className="hidden md:max-lg:block">
-            <SettingsSheet>
-              <SidebarMenuButton tooltip="Menu">
-                <MenuIcon />
-              </SidebarMenuButton>
-            </SettingsSheet>
+            <SettingsSheet />
           </div>
           <SidebarMenuButton
             render={<Link aria-label="Back" href="/event-types" />}
