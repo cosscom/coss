@@ -40,7 +40,7 @@ export function SettingsSidebar({
             tooltip="Back"
           >
             <ArrowLeftIcon className="lg:-ms-0.5" />
-            <span className="max-lg:hidden">Back</span>
+            <span className="max-lg:sr-only">Back</span>
           </SidebarMenuButton>
         </div>
       </SidebarHeader>
@@ -76,7 +76,7 @@ function SettingsNavSection({
           </Avatar>
         )}
         {section.icon && <section.icon className="opacity-80" />}
-        <span className="max-lg:hidden">{section.title}</span>
+        <span className="max-lg:sr-only">{section.title}</span>
       </SidebarGroupLabel>
       {section.children && (
         <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">

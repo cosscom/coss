@@ -188,7 +188,7 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
         tooltip={isBetweenMdAndLg ? item.title : undefined}
       >
         <item.icon />
-        <span className="max-lg:hidden">{item.title}</span>
+        <span className="max-lg:sr-only">{item.title}</span>
         {item.title === "Workflows" && <WorkflowBadge />}
       </SidebarMenuButton>
     </SidebarMenuItem>

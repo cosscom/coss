@@ -33,7 +33,7 @@ export function NavSecondary({
               tooltip={isBetweenMdAndLg ? item.title : undefined}
             >
               <item.icon />
-              <span className="md:max-lg:hidden lg:inline">{item.title}</span>
+              <span className="md:max-lg:sr-only lg:inline">{item.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}

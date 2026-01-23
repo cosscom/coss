@@ -20,7 +20,7 @@ export function HeaderActions() {
         render={
           <SidebarMenuButton
             aria-label="Search"
-            className="shrink-0 justify-center p-0 text-sidebar-foreground/80 md:max-lg:order-1 lg:size-8"
+            className="shrink-0 justify-center p-0 md:max-lg:order-1 lg:size-8"
           />
         }
       >
