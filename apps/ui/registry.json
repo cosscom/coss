@@ -8994,7 +8994,8 @@
     },
     {
       "categories": [
-        "toast"
+        "toast",
+        "button"
       ],
       "dependencies": [
         "lucide-react"

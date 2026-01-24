@@ -7942,7 +7942,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["toast"],
+    categories: ["toast","button"],
     meta: undefined,
   },
   "p-toggle-group-1": {
