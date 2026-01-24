@@ -2815,6 +2815,24 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "p-button-40": {
+    name: "p-button-40",
+    description: "Download button with progress and cancel action",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-button-40.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-40.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","group","tooltip"],
+    meta: undefined,
+  },
   "p-button-38": {
     name: "p-button-38",
     description: "Social login buttons (Google, X, GitHub)",

@@ -1023,6 +1023,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button", "group", "tooltip"),
+    dependencies: ["lucide-react"],
+    description: "Download button with progress and cancel action",
+    files: [{ path: "particles/p-button-40.tsx", type: "registry:block" }],
+    name: "p-button-40",
+    registryDependencies: ["@coss/button", "@coss/group", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  {
     categories: categories("button"),
     dependencies: ["@remixicon/react"],
     description: "Social login buttons (Google, X, GitHub)",

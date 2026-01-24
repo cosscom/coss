@@ -2843,6 +2843,30 @@
     },
     {
       "categories": [
+        "button",
+        "group",
+        "tooltip"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Download button with progress and cancel action",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-40.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-40",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "button"
       ],
       "dependencies": [
