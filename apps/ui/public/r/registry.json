@@ -2845,7 +2845,8 @@
       "categories": [
         "button",
         "group",
-        "tooltip"
+        "tooltip",
+        "toast"
       ],
       "dependencies": [
         "lucide-react"
@@ -2861,6 +2862,8 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/group",
+        "@coss/spinner",
+        "@coss/toast",
         "@coss/tooltip"
       ],
       "type": "registry:block"
@@ -9034,7 +9037,6 @@
       "name": "p-toast-9",
       "registryDependencies": [
         "@coss/button",
-        "@coss/spinner",
         "@coss/toast"
       ],
       "type": "registry:block"

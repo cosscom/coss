@@ -1023,12 +1023,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button", "group", "tooltip"),
+    categories: categories("button", "group", "tooltip", "toast"),
     dependencies: ["lucide-react"],
     description: "Download button with progress and cancel action",
     files: [{ path: "particles/p-button-40.tsx", type: "registry:block" }],
     name: "p-button-40",
-    registryDependencies: ["@coss/button", "@coss/group", "@coss/tooltip"],
+    registryDependencies: [
+      "@coss/button",
+      "@coss/group",
+      "@coss/spinner",
+      "@coss/toast",
+      "@coss/tooltip",
+    ],
     type: "registry:block",
   },
   {
@@ -4487,7 +4493,7 @@ export const particles: ParticleItem[] = [
     description: "Promise toast with cancel action",
     files: [{ path: "particles/p-toast-9.tsx", type: "registry:block" }],
     name: "p-toast-9",
-    registryDependencies: ["@coss/button", "@coss/spinner", "@coss/toast"],
+    registryDependencies: ["@coss/button", "@coss/toast"],
     type: "registry:block",
   },
   {

@@ -8,7 +8,6 @@
   ],
   "registryDependencies": [
     "@coss/button",
-    "@coss/spinner",
     "@coss/toast"
   ],
   "files": [

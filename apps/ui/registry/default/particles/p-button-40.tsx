@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group";
 import { Spinner } from "@/registry/default/ui/spinner";
+import { toastManager } from "@/registry/default/ui/toast";
 import {
   Tooltip,
   TooltipPopup,
@@ -17,6 +18,7 @@ export default function Particle() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const infoToastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isDownloading) return;
@@ -37,6 +39,12 @@ export default function Particle() {
     setProgress(0);
     abortControllerRef.current = new AbortController();
 
+    infoToastIdRef.current = toastManager.add({
+      description: "Your download will begin once ready.",
+      title: "Generating report…",
+      type: "info",
+    });
+
     try {
       await new Promise<string>((resolve, reject) => {
         const shouldSucceed = Math.random() > 0.2;
@@ -54,14 +62,32 @@ export default function Particle() {
         });
       });
     } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        // Cancelled - just reset state
+      // Close info toast before showing error
+      if (infoToastIdRef.current) {
+        toastManager.close(infoToastIdRef.current);
+        infoToastIdRef.current = null;
       }
-      // Handle other errors if needed
+
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // Cancelled
+        toastManager.add({
+          description: "Report generation was cancelled.",
+          title: "Cancelled",
+          type: "error",
+        });
+      } else {
+        // Other errors
+        toastManager.add({
+          description: "Please try again later.",
+          title: "Failed to generate report",
+          type: "error",
+        });
+      }
     } finally {
       setIsDownloading(false);
       setProgress(0);
       abortControllerRef.current = null;
+      infoToastIdRef.current = null;
     }
   }
 
@@ -73,29 +99,22 @@ export default function Particle() {
     <TooltipProvider delay={0}>
       {isDownloading ? (
         <Group>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <GroupText
-                  aria-live="polite"
-                  className="cursor-default gap-2"
-                  role="status"
-                />
-              }
+          <GroupText
+            aria-live="polite"
+            className="cursor-default gap-2"
+            role="status"
+          >
+            <Spinner />
+            <span
+              aria-hidden="true"
+              className="font-medium text-foreground tabular-nums"
             >
-              <Spinner />
-              <span
-                aria-hidden="true"
-                className="font-medium text-foreground tabular-nums"
-              >
-                {progress.toString().padStart(2, "\u2007")}%
-              </span>
-              <span className="sr-only">
-                Generating report, {progress}% complete
-              </span>
-            </TooltipTrigger>
-            <TooltipPopup>Generating report…</TooltipPopup>
-          </Tooltip>
+              {progress.toString().padStart(2, "\u2007")}%
+            </span>
+            <span className="sr-only">
+              Generating report, {progress}% complete
+            </span>
+          </GroupText>
           <GroupSeparator />
           <Tooltip>
             <TooltipTrigger

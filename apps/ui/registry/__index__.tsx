@@ -2819,7 +2819,7 @@ export const Index: Record<string, any> = {
     name: "p-button-40",
     description: "Download button with progress and cancel action",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/group","@coss/tooltip"],
+    registryDependencies: ["@coss/button","@coss/group","@coss/spinner","@coss/toast","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-button-40.tsx",
       type: "registry:block",
@@ -2830,7 +2830,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["button","group","tooltip"],
+    categories: ["button","group","tooltip","toast"],
     meta: undefined,
   },
   "p-button-38": {
@@ -7949,7 +7949,7 @@ export const Index: Record<string, any> = {
     name: "p-toast-9",
     description: "Promise toast with cancel action",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/spinner","@coss/toast"],
+    registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
       path: "registry/default/particles/p-toast-9.tsx",
       type: "registry:block",
