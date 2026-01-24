@@ -4473,7 +4473,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("toast"),
+    categories: categories("toast", "button"),
     dependencies: ["lucide-react"],
     description: "Promise toast with cancel action",
     files: [{ path: "particles/p-toast-9.tsx", type: "registry:block" }],
