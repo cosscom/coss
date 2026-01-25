@@ -113,7 +113,7 @@ function SidebarInset({
   return (
     <main
       className={cn(
-        "relative flex w-full min-w-0 flex-1 flex-col border-sidebar-border bg-background not-dark:bg-clip-padding shadow-black/5 shadow-lg before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] md:my-2 md:me-2 md:rounded-2xl md:border dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        "relative flex w-full min-w-0 flex-1 flex-col border-sidebar-border bg-background not-dark:bg-clip-padding shadow-lg/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] md:my-2 md:me-2 md:rounded-2xl md:border dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
         className,
       )}
       data-slot="sidebar-inset"
