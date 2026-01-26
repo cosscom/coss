@@ -5,7 +5,7 @@ import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { ItemLabel } from "./item-label";
 
 export { ItemLabel };
@@ -17,6 +17,7 @@ interface ResourceItemProps {
   className?: string;
   isOverlay?: boolean;
   sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
   sortableListeners?: SyntheticListenerMap;
@@ -29,6 +30,7 @@ export function ResourceItem({
   className,
   isOverlay,
   sortableRef,
+  sortableStyle,
   sortableDragging,
   sortableDraggingAny,
   sortableListeners,
@@ -38,7 +40,7 @@ export function ResourceItem({
   return (
     <Card
       className={cn(
-        "transition-[background-color,opacity] has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "translate-y-(--translate-y) transition-[background-color,opacity] has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         isDraggable && "data-dragged:opacity-50",
         className,
       )}
@@ -47,6 +49,7 @@ export function ResourceItem({
       data-overlay={isOverlay ? "" : undefined}
       data-slot="resource-item"
       ref={sortableRef}
+      style={sortableStyle}
       {...sortableListeners}
     >
       <CardPanel className="flex items-center justify-between gap-4 px-6 py-4">

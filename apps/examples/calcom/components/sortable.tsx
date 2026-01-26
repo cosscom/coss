@@ -29,6 +29,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
+  type CSSProperties,
   createContext,
   type ReactNode,
   useContext,
@@ -51,6 +52,7 @@ export interface SortableItemRenderProps {
   isDragging: boolean;
   isDraggingAny: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
+  style: CSSProperties;
 }
 
 interface SortableItemProps {
@@ -60,7 +62,12 @@ interface SortableItemProps {
 
 export function SortableItem({ id, children }: SortableItemProps) {
   const { isDraggingAny } = useContext(SortableStateContext);
-  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({ id });
+
+  const style = {
+    "--translate-y": `${transform?.y ?? 0}px`,
+  } as CSSProperties;
 
   return children({
     attributes,
@@ -68,6 +75,7 @@ export function SortableItem({ id, children }: SortableItemProps) {
     isDraggingAny,
     listeners,
     setNodeRef,
+    style,
   });
 }
 

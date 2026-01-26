@@ -132,6 +132,7 @@ function EventTypeItemContent({
       sortableDraggingAny={sortableProps?.isDraggingAny}
       sortableListeners={isOverlay ? undefined : sortableProps?.listeners}
       sortableRef={isOverlay ? undefined : sortableProps?.setNodeRef}
+      sortableStyle={sortableProps?.style}
     >
       {sortableProps && !isOverlay && (
         <ResourceItemDragHandle
