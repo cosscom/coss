@@ -30,7 +30,6 @@ import {
   type ReactNode,
   useContext,
   useId,
-  useMemo,
   useState,
 } from "react";
 
@@ -112,7 +111,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const ids = items.map((item) => item.id);
   const activeIndex = activeId !== null ? ids.indexOf(activeId) : -1;
   const overIndex = overId !== null ? ids.indexOf(overId) : -1;
-  const projectedIndex =
+  const _projectedIndex =
     activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
 
   const handleDragStart = (event: DragStartEvent) => {
