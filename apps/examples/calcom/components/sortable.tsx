@@ -193,6 +193,13 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
             sideEffects({ active, dragOverlay }) {
               active.node.setAttribute("data-drag-ended", "");
               dragOverlay.node.setAttribute("data-drag-ended", "");
+
+              // Remove data-dragging from overlay item when drop animation starts
+              const overlayItem = dragOverlay.node.querySelector(
+                "[data-slot=resource-item]",
+              );
+              overlayItem?.removeAttribute("data-dragging");
+
               return () => {
                 requestAnimationFrame(() =>
                   requestAnimationFrame(() => {
