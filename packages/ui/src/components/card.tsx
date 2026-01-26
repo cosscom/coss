@@ -139,7 +139,7 @@ function CardTitle({
   ...props
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
-    className: cn("font-semibold text-xl leading-none", className),
+    className: cn("font-semibold text-lg leading-none", className),
     "data-slot": "card-title",
   };
 

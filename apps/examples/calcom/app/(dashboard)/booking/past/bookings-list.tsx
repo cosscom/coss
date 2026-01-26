@@ -111,7 +111,7 @@ export function BookingsList() {
           <CardFrameTitle>Past Bookings</CardFrameTitle>
         </CardFrameHeader>
         <Card>
-          <CardPanel className="bg-transparent p-0">
+          <CardPanel className="p-0">
             {paginatedBookings.map((booking, _index) => {
               const dateStr = formatBookingDate(booking.startTime);
               const timeStr = formatBookingTime(

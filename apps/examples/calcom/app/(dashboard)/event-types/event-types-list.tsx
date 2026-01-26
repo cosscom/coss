@@ -22,14 +22,14 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import {
-  SingleItem,
-  SingleItemBadges,
-  SingleItemContent,
-  SingleItemDescription,
-  SingleItemDragHandle,
-  SingleItemHeader,
-  SingleItemTitle,
-} from "@/components/single-item";
+  ResourceItem,
+  ResourceItemBadges,
+  ResourceItemContent,
+  ResourceItemDescription,
+  ResourceItemDragHandle,
+  ResourceItemHeader,
+  ResourceItemTitle,
+} from "@/components/resource-item";
 import {
   SortableItem,
   type SortableItemRenderProps,
@@ -58,22 +58,22 @@ const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
 
 function EventTypeSkeletonItem() {
   return (
-    <SingleItem>
-      <SingleItemContent>
-        <SingleItemHeader>
+    <ResourceItem>
+      <ResourceItemContent>
+        <ResourceItemHeader>
           <div className="flex items-center gap-2">
             <Skeleton className="h-6 w-full max-w-48 sm:h-5" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
           <Skeleton className="my-0.5 h-4 w-full max-w-82" />
-        </SingleItemHeader>
-        <SingleItemBadges>
+        </ResourceItemHeader>
+        <ResourceItemBadges>
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
-        </SingleItemBadges>
-      </SingleItemContent>
+        </ResourceItemBadges>
+      </ResourceItemContent>
       <EventTypeActionsSkeleton />
-    </SingleItem>
+    </ResourceItem>
   );
 }
 
@@ -123,7 +123,7 @@ function EventTypeItemContent({
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
   return (
-    <SingleItem
+    <ResourceItem
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       sortableDragging={sortableProps?.isDragging}
@@ -133,29 +133,29 @@ function EventTypeItemContent({
       sortableStyle={sortableProps?.style}
     >
       {sortableProps && (
-        <SingleItemDragHandle
+        <ResourceItemDragHandle
           attributes={sortableProps.attributes}
           listeners={sortableProps.listeners}
         />
       )}
-      <SingleItemContent>
-        <SingleItemHeader>
+      <ResourceItemContent>
+        <ResourceItemHeader>
           <div className="flex items-center gap-2">
-            <SingleItemTitle href={eventPath}>
+            <ResourceItemTitle href={eventPath}>
               {eventType.title}
-            </SingleItemTitle>
+            </ResourceItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}
             </span>
           </div>
           {eventType.safeDescription && (
-            <SingleItemDescription className="line-clamp-2">
+            <ResourceItemDescription className="line-clamp-2">
               {eventType.safeDescription}
-            </SingleItemDescription>
+            </ResourceItemDescription>
           )}
-        </SingleItemHeader>
+        </ResourceItemHeader>
 
-        <SingleItemBadges>
+        <ResourceItemBadges>
           {isHidden && (
             <Badge className="pointer-events-none" variant="warning">
               <EyeOffIcon />
@@ -202,15 +202,15 @@ function EventTypeItemContent({
               {eventType.seatsPerTimeSlot} seats
             </Badge>
           )}
-        </SingleItemBadges>
-      </SingleItemContent>
+        </ResourceItemBadges>
+      </ResourceItemContent>
 
       <EventTypeActions
         isHidden={isHidden}
         onHiddenChange={onHiddenChange}
         tooltipHandle={tooltipHandle}
       />
-    </SingleItem>
+    </ResourceItem>
   );
 }
 

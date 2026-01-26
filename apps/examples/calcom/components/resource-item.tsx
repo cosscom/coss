@@ -7,7 +7,7 @@ import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 
-interface SingleItemProps {
+interface ResourceItemProps {
   labelColorLight?: string;
   labelColorDark?: string;
   children: ReactNode;
@@ -19,7 +19,7 @@ interface SingleItemProps {
   sortableListeners?: SyntheticListenerMap;
 }
 
-export function SingleItem({
+export function ResourceItem({
   labelColorLight,
   labelColorDark,
   children,
@@ -29,13 +29,13 @@ export function SingleItem({
   sortableDragging,
   sortableDraggingAny,
   sortableListeners,
-}: SingleItemProps) {
+}: ResourceItemProps) {
   const hasLabelColor = labelColorLight || labelColorDark;
   const isDraggable = Boolean(sortableListeners || sortableRef);
   const labelStyle = hasLabelColor
     ? ({
-        "--event-label-dark": labelColorDark || "transparent",
-        "--event-label-light": labelColorLight || "transparent",
+        "--resource-label-dark": labelColorDark || "transparent",
+        "--resource-label-light": labelColorLight || "transparent",
       } as CSSProperties)
     : undefined;
 
@@ -47,14 +47,14 @@ export function SingleItem({
   return (
     <Card
       className={cn(
-        "translate-y-(--translate-y) transition-[background-color] has-[[data-slot=single-item-title]:hover]:z-1 has-[[data-slot=single-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=single-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "translate-y-(--translate-y) transition-[background-color] has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         isDraggable &&
           "data-dragging:pointer-events-none data-dragged:z-1 data-dragged:shadow-lg/5 data-dragging:not-data-dragged:transition-transform",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
       data-dragging={sortableDraggingAny ? "" : undefined}
-      data-slot="single-item"
+      data-slot="resource-item"
       ref={sortableRef}
       style={style}
       {...sortableListeners}
@@ -64,9 +64,9 @@ export function SingleItem({
           <div
             aria-hidden="true"
             className={cn(
-              "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=single-item]:hover,[data-slot=single-item][data-dragged]]:top-11 w-[3px] rounded-full bg-(--event-label-light) transition-[top] dark:before:bg-(--event-label-dark)",
+              "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:top-11 w-[3px] rounded-full bg-(--resource-label-light) transition-[top] dark:before:bg-(--resource-label-dark)",
             )}
-            data-slot="single-item-label-color"
+            data-slot="resource-item-label-color"
           />
         )}
         {children}
@@ -75,25 +75,25 @@ export function SingleItem({
   );
 }
 
-interface SingleItemDragHandleProps {
+interface ResourceItemDragHandleProps {
   className?: string;
   listeners?: SyntheticListenerMap;
   attributes?: DraggableAttributes;
 }
 
-export function SingleItemDragHandle({
+export function ResourceItemDragHandle({
   className,
   listeners,
   attributes,
-}: SingleItemDragHandleProps) {
+}: ResourceItemDragHandleProps) {
   return (
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=single-item]:hover,[data-slot=single-item][data-dragged]]:opacity-100 opacity-0 focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:opacity-100 opacity-0 focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
-      data-slot="single-item-drag-handle"
+      data-slot="resource-item-drag-handle"
       size="icon-xs"
       variant="ghost"
       {...listeners}
@@ -101,21 +101,21 @@ export function SingleItemDragHandle({
     >
       <GripVerticalIcon
         aria-hidden="true"
-        className="in-[[data-slot=single-item-drag-handle]:hover,[data-slot=single-item-drag-handle]:focus-visible]:opacity-80 in-[[data-slot=single-item][data-dragged]]:opacity-100 opacity-40 transition-opacity"
+        className="in-[[data-slot=resource-item-drag-handle]:hover,[data-slot=resource-item-drag-handle]:focus-visible]:opacity-80 in-[[data-slot=resource-item][data-dragged]]:opacity-100 opacity-40 transition-opacity"
       />
     </Button>
   );
 }
 
-interface SingleItemContentProps {
+interface ResourceItemContentProps {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemContent({
+export function ResourceItemContent({
   children,
   className,
-}: SingleItemContentProps) {
+}: ResourceItemContentProps) {
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col gap-3", className)}>
       {children}
@@ -123,33 +123,33 @@ export function SingleItemContent({
   );
 }
 
-interface SingleItemHeaderProps {
+interface ResourceItemHeaderProps {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemHeader({
+export function ResourceItemHeader({
   children,
   className,
-}: SingleItemHeaderProps) {
+}: ResourceItemHeaderProps) {
   return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
 }
 
-interface SingleItemTitleProps
+interface ResourceItemTitleProps
   extends Omit<ComponentProps<typeof Link>, "className"> {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemTitle({
+export function ResourceItemTitle({
   children,
   className,
   ...linkProps
-}: SingleItemTitleProps) {
+}: ResourceItemTitleProps) {
   return (
     <h2
       className={cn("font-semibold sm:text-sm", className)}
-      data-slot="single-item-title"
+      data-slot="resource-item-title"
     >
       <Link className="before:absolute before:inset-0" {...linkProps}>
         {children}
@@ -158,57 +158,57 @@ export function SingleItemTitle({
   );
 }
 
-interface SingleItemDescriptionProps {
+interface ResourceItemDescriptionProps {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemDescription({
+export function ResourceItemDescription({
   children,
   className,
-}: SingleItemDescriptionProps) {
+}: ResourceItemDescriptionProps) {
   return (
     <p
       className={cn("text-muted-foreground text-sm", className)}
-      data-slot="single-item-description"
+      data-slot="resource-item-description"
     >
       {children}
     </p>
   );
 }
 
-interface SingleItemBadgesProps {
+interface ResourceItemBadgesProps {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemBadges({
+export function ResourceItemBadges({
   children,
   className,
-}: SingleItemBadgesProps) {
+}: ResourceItemBadgesProps) {
   return (
     <div
       className={cn("flex flex-wrap items-center gap-2", className)}
-      data-slot="single-item-badges"
+      data-slot="resource-item-badges"
     >
       {children}
     </div>
   );
 }
 
-interface SingleItemActionsProps {
+interface ResourceItemActionsProps {
   children: ReactNode;
   className?: string;
 }
 
-export function SingleItemActions({
+export function ResourceItemActions({
   children,
   className,
-}: SingleItemActionsProps) {
+}: ResourceItemActionsProps) {
   return (
     <div
       className={cn("relative flex items-center", className)}
-      data-slot="single-item-actions"
+      data-slot="resource-item-actions"
     >
       {children}
     </div>
