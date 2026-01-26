@@ -36,14 +36,14 @@ export function BookingActions() {
           render={
             <TooltipTrigger
               render={
-                <Button aria-label="More options" size="icon" variant="outline">
+                <Button aria-label="Pptions" size="icon" variant="outline">
                   <EllipsisIcon />
                 </Button>
               }
             />
           }
         />
-        <TooltipPopup>More options</TooltipPopup>
+        <TooltipPopup>Options</TooltipPopup>
       </Tooltip>
       <MenuPopup align="end">
         <MenuGroup>
