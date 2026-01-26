@@ -1,4 +1,10 @@
-import { Card, CardPanel } from "@coss/ui/components/card";
+import {
+  Card,
+  CardFrame,
+  CardFrameHeader,
+  CardPanel,
+} from "@coss/ui/components/card";
+import { FrameFooter } from "@coss/ui/components/frame";
 import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
@@ -43,7 +49,10 @@ export function BookingSkeletonItem() {
 
 export function BookingsListSkeleton() {
   return (
-    <>
+    <CardFrame>
+      <CardFrameHeader>
+        <Skeleton className="h-6 w-40" />
+      </CardFrameHeader>
       <Card>
         <CardPanel className="p-0">
           <BookingSkeletonItem />
@@ -57,16 +66,19 @@ export function BookingsListSkeleton() {
           <BookingSkeletonItem />
         </CardPanel>
       </Card>
-      <div className="mt-6 text-center text-muted-foreground/72 text-sm">
+      <FrameFooter>
         <Skeleton className="mx-auto h-5 w-32" />
-      </div>
-    </>
+      </FrameFooter>
+    </CardFrame>
   );
 }
 
 export function BookingsListSkeletonWithPagination() {
   return (
-    <>
+    <CardFrame>
+      <CardFrameHeader>
+        <Skeleton className="h-6 w-40" />
+      </CardFrameHeader>
       <Card>
         <CardPanel className="p-0">
           <BookingSkeletonItem />
@@ -80,19 +92,21 @@ export function BookingsListSkeletonWithPagination() {
           <BookingSkeletonItem />
         </CardPanel>
       </Card>
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-7 w-12 rounded-lg" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-12" />
+      <FrameFooter>
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-18 rounded-lg" />
-            <Skeleton className="h-7 w-18 rounded-lg" />
+            <Skeleton className="h-7 w-12 rounded-lg" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-12" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-18 rounded-lg" />
+              <Skeleton className="h-7 w-18 rounded-lg" />
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      </FrameFooter>
+    </CardFrame>
   );
 }
