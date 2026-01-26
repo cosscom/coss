@@ -3,7 +3,6 @@
 import { Badge } from "@coss/ui/components/badge";
 import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
-import { toastManager } from "@coss/ui/components/toast";
 import {
   Tooltip,
   TooltipCreateHandle,
@@ -20,21 +19,16 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   ListItem,
   ListItemBadges,
   ListItemContent,
   ListItemDescription,
-  ListItemDragHandle,
   ListItemHeader,
+  ListItemLabel,
   ListItemTitle,
 } from "@/components/list-item";
-import {
-  SortableItem,
-  type SortableItemRenderProps,
-  SortableList,
-} from "@/components/sortable";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import {
   type EventType,
@@ -84,7 +78,6 @@ interface EventTypeItemContentProps {
   isHidden: boolean;
   eventPath: string;
   onHiddenChange: (hidden: boolean) => void;
-  sortableProps?: SortableItemRenderProps;
 }
 
 function EventTypeItemContent({
@@ -92,7 +85,6 @@ function EventTypeItemContent({
   isHidden,
   eventPath,
   onHiddenChange,
-  sortableProps,
 }: EventTypeItemContentProps) {
   const getSchedulingTypeLabel = (et: EventType) => {
     if (!et.schedulingType) return null;
@@ -122,22 +114,14 @@ function EventTypeItemContent({
   const hasSeats = (et: EventType) =>
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
+  const eventTypeColors = getEventTypeColors(eventType);
+
   return (
-    <ListItem
-      labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
-      labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
-      sortableDragging={sortableProps?.isDragging}
-      sortableDraggingAny={sortableProps?.isDraggingAny}
-      sortableListeners={sortableProps?.listeners}
-      sortableRef={sortableProps?.setNodeRef}
-      sortableStyle={sortableProps?.style}
-    >
-      {sortableProps && (
-        <ListItemDragHandle
-          attributes={sortableProps.attributes}
-          listeners={sortableProps.listeners}
-        />
-      )}
+    <ListItem>
+      <ListItemLabel
+        colorDark={eventTypeColors?.dark}
+        colorLight={eventTypeColors?.light}
+      />
       <ListItemContent>
         <ListItemHeader>
           <div className="flex items-center gap-2">
@@ -214,37 +198,9 @@ function EventTypeItemContent({
 
 export function EventTypesList() {
   const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
-  const [eventTypes, setEventTypes] = useState<EventType[]>(mockEventTypes);
   const [hiddenStates, setHiddenStates] = useState<Record<number, boolean>>(
     Object.fromEntries(mockEventTypes.map((et) => [et.id, et.hidden])),
   );
-  const previousOrderRef = useRef<EventType[]>(eventTypes);
-  const currentToastIdRef = useRef<string | null>(null);
-
-  const handleReorder = (newOrder: EventType[]) => {
-    if (currentToastIdRef.current) {
-      toastManager.close(currentToastIdRef.current);
-    }
-
-    const previousOrder = previousOrderRef.current;
-    previousOrderRef.current = newOrder;
-    setEventTypes(newOrder);
-
-    const toastId = toastManager.add({
-      actionProps: {
-        children: "Undo",
-        onClick: () => {
-          toastManager.close(toastId);
-          currentToastIdRef.current = null;
-          previousOrderRef.current = previousOrder;
-          setEventTypes(previousOrder);
-        },
-      },
-      title: "Event type order updated",
-      type: "success",
-    });
-    currentToastIdRef.current = toastId;
-  };
 
   const handleHiddenToggle = (id: number, hidden: boolean) => {
     setHiddenStates((prev) => ({
@@ -276,37 +232,31 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList items={eventTypes} onReorder={handleReorder}>
-        <Frame className="-m-1">
-          <FramePanel className="bg-transparent p-0 transition-all not-has-data-dragging:delay-150 duration-0 before:z-1 before:transition-all not-has-data-dragging:before:delay-150 before:duration-0 has-data-dragging:border-transparent has-data-dragging:shadow-none has-data-dragging:before:opacity-0">
-            {eventTypes.map((eventType, _index) => {
-              const isHidden = hiddenStates[eventType.id];
-              const eventPath = getEventTypePath(eventType);
+      <Frame className="-m-1">
+        <FramePanel className="bg-transparent p-0">
+          {mockEventTypes.map((eventType) => {
+            const isHidden = hiddenStates[eventType.id];
+            const eventPath = getEventTypePath(eventType);
 
-              return (
-                <SortableItem id={eventType.id} key={eventType.id}>
-                  {(sortableProps) => (
-                    <EventTypeItemContent
-                      eventPath={eventPath}
-                      eventType={eventType}
-                      isHidden={isHidden ?? false}
-                      onHiddenChange={(hidden) =>
-                        handleHiddenToggle(eventType.id, hidden)
-                      }
-                      sortableProps={sortableProps}
-                    />
-                  )}
-                </SortableItem>
-              );
-            })}
-          </FramePanel>
-          <FrameFooter>
-            <div className="text-center text-muted-foreground/72 text-sm">
-              No more results
-            </div>
-          </FrameFooter>
-        </Frame>
-      </SortableList>
+            return (
+              <EventTypeItemContent
+                eventPath={eventPath}
+                eventType={eventType}
+                isHidden={isHidden ?? false}
+                key={eventType.id}
+                onHiddenChange={(hidden) =>
+                  handleHiddenToggle(eventType.id, hidden)
+                }
+              />
+            );
+          })}
+        </FramePanel>
+        <FrameFooter>
+          <div className="text-center text-muted-foreground/72 text-sm">
+            No more results
+          </div>
+        </FrameFooter>
+      </Frame>
 
       <Tooltip handle={tooltipHandle}>
         {({ payload: Payload }) => (
