@@ -38,7 +38,7 @@ export function ResourceItem({
   return (
     <Card
       className={cn(
-        "translate-y-(--translate-y) not-data-drag-ended:transition-[background-color,box-shadow] transition-shadow has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-dragged:border-dashed data-dragged:bg-transparent data-overlay:bg-card/64 data-drag-ended:opacity-0 data-dragged:shadow-none data-overlay:in-data-drag-ended:shadow-none data-overlay:shadow-xl data-overlay:backdrop-blur-md data-dragging:transition-[background-color,opacity,translate,box-shadow] data-dragged:before:hidden data-dragged:*:opacity-64 dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "translate-y-(--translate-y) transition-[background-color,box-shadow] has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-dragged:border-dashed data-dragged:bg-transparent data-drag-ended:opacity-0 data-dragged:shadow-none data-overlay:in-data-drag-ended:shadow-none data-overlay:shadow-xl data-dragging:transition-[background-color,opacity,translate,box-shadow] data-dragged:before:hidden data-dragged:*:opacity-64 dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
