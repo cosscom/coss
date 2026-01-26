@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
-import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import { toastManager } from "@coss/ui/components/toast";
 import {
@@ -258,18 +257,18 @@ export function EventTypesList() {
 
   if (showLoading) {
     return (
-      <Frame className="-m-1">
-        <FramePanel className="bg-transparent p-0">
+      <>
+        <div className="flex flex-col gap-2">
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
-        </FramePanel>
-        <FrameFooter>
+        </div>
+        <div className="mt-6 text-center text-muted-foreground/72 text-sm">
           <Skeleton className="mx-auto h-5 w-32" />
-        </FrameFooter>
-      </Frame>
+        </div>
+      </>
     );
   }
 
