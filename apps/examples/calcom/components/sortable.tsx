@@ -191,16 +191,15 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
             duration: 150,
             easing: "cubic-bezier(0.4, 0, 0.2, 1)",
             sideEffects({ active, dragOverlay }) {
-              active.node.setAttribute("data-drop-animation", "");
-              dragOverlay.node.setAttribute("data-drop-animation", "");
-
-              const origTransition = active.node.style.transition;
-              active.node.style.transition = "none";
-
+              active.node.setAttribute("data-drag-ended", "");
+              dragOverlay.node.setAttribute("data-drag-ended", "");
               return () => {
-                active.node.removeAttribute("data-drop-animation");
-                dragOverlay.node.removeAttribute("data-drop-animation");
-                active.node.style.transition = origTransition;
+                requestAnimationFrame(() =>
+                  requestAnimationFrame(() => {
+                    active.node.removeAttribute("data-drag-ended");
+                    dragOverlay.node.removeAttribute("data-drag-ended");
+                  }),
+                );
               };
             },
           }}

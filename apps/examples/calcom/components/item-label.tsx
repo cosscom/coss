@@ -24,7 +24,7 @@ export function ItemLabel({
     <div
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay]]:top-11 w-[3px] rounded-full bg-(--label-color-light) transition-[top] dark:bg-(--label-color-dark)",
+        "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay]]:top-11 w-[3px] rounded-full bg-(--label-color-light) not-in-data-drag-ended:transition-[top] dark:bg-(--label-color-dark)",
         className,
       )}
       data-slot="item-label-color"
