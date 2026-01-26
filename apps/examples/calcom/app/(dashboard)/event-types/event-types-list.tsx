@@ -125,6 +125,7 @@ function EventTypeItemContent({
 
   return (
     <ResourceItem
+      isOverlay={isOverlay}
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       sortableDragging={sortableProps?.isDragging}

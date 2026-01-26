@@ -15,6 +15,7 @@ interface ResourceItemProps {
   labelColorDark?: string;
   children: ReactNode;
   className?: string;
+  isOverlay?: boolean;
   sortableRef?: (node: HTMLElement | null) => void;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
@@ -26,6 +27,7 @@ export function ResourceItem({
   labelColorDark,
   children,
   className,
+  isOverlay,
   sortableRef,
   sortableDragging,
   sortableDraggingAny,
@@ -42,6 +44,7 @@ export function ResourceItem({
       )}
       data-dragged={sortableDragging ? "" : undefined}
       data-dragging={sortableDraggingAny ? "" : undefined}
+      data-overlay={isOverlay ? "" : undefined}
       data-slot="resource-item"
       ref={sortableRef}
       {...sortableListeners}
