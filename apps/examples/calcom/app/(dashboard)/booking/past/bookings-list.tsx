@@ -45,6 +45,7 @@ import {
   ListItemContent,
   ListItemDescription,
   ListItemHeader,
+  ListItemLabel,
   ListItemTitle,
 } from "@/components/list-item";
 import { useLoadingState } from "@/hooks/use-loading-state";
@@ -133,11 +134,11 @@ export function BookingsList() {
               const teamName = booking.eventType?.team?.name;
 
               return (
-                <ListItem
-                  key={booking.id}
-                  labelColorDark={eventTypeColorDark ?? undefined}
-                  labelColorLight={eventTypeColorLight ?? undefined}
-                >
+                <ListItem key={booking.id}>
+                  <ListItemLabel
+                    colorDark={eventTypeColorDark ?? undefined}
+                    colorLight={eventTypeColorLight ?? undefined}
+                  />
                   <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
                     <ListItemContent>
                       <ListItemHeader>
