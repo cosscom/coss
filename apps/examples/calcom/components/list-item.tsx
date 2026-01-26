@@ -33,8 +33,8 @@ export function ListItem({
   const isDraggable = Boolean(sortableListeners || sortableRef);
   const labelStyle = hasLabelColor
     ? ({
-        "--event-label-dark": labelColorDark || "transparent",
-        "--event-label-light": labelColorLight || "transparent",
+        "--label-dark": labelColorDark || "transparent",
+        "--label-light": labelColorLight || "transparent",
       } as CSSProperties)
     : undefined;
 
@@ -62,7 +62,7 @@ export function ListItem({
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-y-4.5 start-2.5 w-[3px] rounded-full bg-(--event-label-light) dark:before:bg-(--event-label-dark)",
+            "pointer-events-none absolute inset-y-4.5 start-2.5 w-[3px] rounded-full bg-(--label-light) dark:before:bg-(--label-dark)",
             isDraggable &&
               "in-[[data-slot=list-item]:hover,[data-slot=list-item][data-dragged]]:top-11 transition-[top]",
           )}

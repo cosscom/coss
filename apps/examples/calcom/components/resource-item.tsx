@@ -34,8 +34,8 @@ export function ResourceItem({
   const isDraggable = Boolean(sortableListeners || sortableRef);
   const labelStyle = hasLabelColor
     ? ({
-        "--resource-label-dark": labelColorDark || "transparent",
-        "--resource-label-light": labelColorLight || "transparent",
+        "--label-dark": labelColorDark || "transparent",
+        "--label-light": labelColorLight || "transparent",
       } as CSSProperties)
     : undefined;
 
@@ -64,7 +64,7 @@ export function ResourceItem({
           <div
             aria-hidden="true"
             className={cn(
-              "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:top-11 w-[3px] rounded-full bg-(--resource-label-light) transition-[top] dark:before:bg-(--resource-label-dark)",
+              "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:top-11 w-[3px] rounded-full bg-(--label-light) transition-[top] dark:before:bg-(--label-dark)",
             )}
             data-slot="resource-item-label-color"
           />
