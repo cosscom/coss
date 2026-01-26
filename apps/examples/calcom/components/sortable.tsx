@@ -19,7 +19,6 @@ import {
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import {
   restrictToParentElement,
-  restrictToVerticalAxis,
 } from "@dnd-kit/modifiers";
 import {
   arrayMove,
@@ -179,7 +178,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+        modifiers={[restrictToParentElement]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
