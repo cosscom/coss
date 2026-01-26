@@ -5,7 +5,6 @@ import {
   CardPanel,
 } from "@coss/ui/components/card";
 import { FrameFooter } from "@coss/ui/components/frame";
-import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   ListItem,
@@ -51,7 +50,7 @@ export function BookingsListSkeleton() {
   return (
     <CardFrame>
       <CardFrameHeader>
-        <Skeleton className="h-6 sm:h-5 w-40" />
+        <Skeleton className="h-6 w-40 sm:h-5" />
       </CardFrameHeader>
       <Card>
         <CardPanel className="p-0">
@@ -73,7 +72,7 @@ export function BookingsListSkeletonWithPagination() {
   return (
     <CardFrame>
       <CardFrameHeader>
-        <Skeleton className="h-6 sm:h-5 w-40" />
+        <Skeleton className="h-6 w-40 sm:h-5" />
       </CardFrameHeader>
       <Card>
         <CardPanel className="p-0">
