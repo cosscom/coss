@@ -1,38 +1,8 @@
 import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
-interface ListItemLabelProps {
-  colorLight?: string;
-  colorDark?: string;
-  className?: string;
-}
-
-export function ListItemLabel({
-  colorLight,
-  colorDark,
-  className,
-}: ListItemLabelProps) {
-  const hasColor = colorLight || colorDark;
-  if (!hasColor) return null;
-
-  const style = {
-    "--label-color-dark": colorDark || "transparent",
-    "--label-color-light": colorLight || "transparent",
-  } as CSSProperties;
-
-  return (
-    <div
-      aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-y-4.5 start-2.5 w-[3px] rounded-full bg-(--label-color-light) dark:bg-(--label-color-dark)",
-        className,
-      )}
-      data-slot="list-item-label"
-      style={style}
-    />
-  );
-}
+export { ItemLabel } from "./item-label";
 
 interface ListItemProps {
   children: ReactNode;
@@ -43,7 +13,7 @@ export function ListItem({ children, className }: ListItemProps) {
   return (
     <div
       className={cn(
-        "relative flex items-center justify-between gap-4 not-last:border-border not-last:border-b px-6 py-4",
+        "relative flex items-center justify-between gap-4 not-last:border-b px-6 py-4",
         className,
       )}
       data-slot="list-item"

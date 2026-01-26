@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { ItemLabel } from "@/components/item-label";
 import {
   ListItem,
   ListItemActions,
@@ -45,7 +46,6 @@ import {
   ListItemContent,
   ListItemDescription,
   ListItemHeader,
-  ListItemLabel,
   ListItemTitle,
 } from "@/components/list-item";
 import { useLoadingState } from "@/hooks/use-loading-state";
@@ -135,7 +135,7 @@ export function BookingsList() {
 
               return (
                 <ListItem key={booking.id}>
-                  <ListItemLabel
+                  <ItemLabel
                     colorDark={eventTypeColorDark ?? undefined}
                     colorLight={eventTypeColorLight ?? undefined}
                   />

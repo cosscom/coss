@@ -6,6 +6,9 @@ import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import { ItemLabel } from "./item-label";
+
+export { ItemLabel };
 
 interface ResourceItemProps {
   labelColorLight?: string;
@@ -30,19 +33,7 @@ export function ResourceItem({
   sortableDraggingAny,
   sortableListeners,
 }: ResourceItemProps) {
-  const hasLabelColor = labelColorLight || labelColorDark;
   const isDraggable = Boolean(sortableListeners || sortableRef);
-  const labelStyle = hasLabelColor
-    ? ({
-        "--label-dark": labelColorDark || "transparent",
-        "--label-light": labelColorLight || "transparent",
-      } as CSSProperties)
-    : undefined;
-
-  const style =
-    labelStyle || sortableStyle
-      ? { ...labelStyle, ...sortableStyle }
-      : undefined;
 
   return (
     <Card
@@ -56,19 +47,11 @@ export function ResourceItem({
       data-dragging={sortableDraggingAny ? "" : undefined}
       data-slot="resource-item"
       ref={sortableRef}
-      style={style}
+      style={sortableStyle}
       {...sortableListeners}
     >
       <CardPanel className="flex items-center justify-between gap-4 px-6 py-4">
-        {hasLabelColor && (
-          <div
-            aria-hidden="true"
-            className={cn(
-              "pointer-events-none absolute inset-y-4.5 start-2.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:top-11 w-[3px] rounded-full bg-(--label-light) transition-[top] dark:before:bg-(--label-dark)",
-            )}
-            data-slot="resource-item-label-color"
-          />
-        )}
+        <ItemLabel colorDark={labelColorDark} colorLight={labelColorLight} />
         {children}
       </CardPanel>
     </Card>
