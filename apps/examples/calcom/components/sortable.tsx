@@ -17,7 +17,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { restrictToParentElement } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -176,7 +175,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToParentElement]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
