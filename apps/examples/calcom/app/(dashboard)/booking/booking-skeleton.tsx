@@ -67,32 +67,6 @@ export function BookingsListSkeleton() {
         </CardPanel>
       </Card>
       <FrameFooter>
-        <Skeleton className="mx-auto h-5 w-32" />
-      </FrameFooter>
-    </CardFrame>
-  );
-}
-
-export function BookingsListSkeletonWithPagination() {
-  return (
-    <CardFrame>
-      <CardFrameHeader>
-        <Skeleton className="h-6 w-40" />
-      </CardFrameHeader>
-      <Card>
-        <CardPanel className="p-0">
-          <BookingSkeletonItem />
-          <Separator />
-          <BookingSkeletonItem />
-          <Separator />
-          <BookingSkeletonItem />
-          <Separator />
-          <BookingSkeletonItem />
-          <Separator />
-          <BookingSkeletonItem />
-        </CardPanel>
-      </Card>
-      <FrameFooter>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Skeleton className="h-7 w-12 rounded-lg" />

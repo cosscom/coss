@@ -55,7 +55,7 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
-import { BookingsListSkeletonWithPagination } from "../booking-skeleton";
+import { BookingsListSkeleton } from "../booking-skeleton";
 import { BookingActions } from "./booking-actions";
 
 const ARTIFICIAL_DELAY_MS = 800;
@@ -76,7 +76,7 @@ export function BookingsList() {
   const hasNextPage = pageIndex < totalPages - 1;
 
   if (showLoading) {
-    return <BookingsListSkeletonWithPagination />;
+    return <BookingsListSkeleton />;
   }
 
   return (
