@@ -93,7 +93,8 @@ function EventTypeItemContent({
   eventPath,
   onHiddenChange,
   sortableProps,
-}: EventTypeItemContentProps) {
+  isOverlay = false,
+}: EventTypeItemContentProps & { isOverlay?: boolean }) {
   const getSchedulingTypeLabel = (et: EventType) => {
     if (!et.schedulingType) return null;
     switch (et.schedulingType) {
@@ -128,11 +129,10 @@ function EventTypeItemContent({
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       sortableDragging={sortableProps?.isDragging}
       sortableDraggingAny={sortableProps?.isDraggingAny}
-      sortableListeners={sortableProps?.listeners}
-      sortableRef={sortableProps?.setNodeRef}
-      sortableStyle={sortableProps?.style}
+      sortableListeners={isOverlay ? undefined : sortableProps?.listeners}
+      sortableRef={isOverlay ? undefined : sortableProps?.setNodeRef}
     >
-      {sortableProps && (
+      {sortableProps && !isOverlay && (
         <ResourceItemDragHandle
           attributes={sortableProps.attributes}
           listeners={sortableProps.listeners}
@@ -278,7 +278,19 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList items={eventTypes} onReorder={handleReorder}>
+      <SortableList
+        items={eventTypes}
+        onReorder={handleReorder}
+        renderOverlay={(eventType) => (
+          <EventTypeItemContent
+            eventPath={getEventTypePath(eventType)}
+            eventType={eventType}
+            isHidden={hiddenStates[eventType.id] ?? false}
+            isOverlay
+            onHiddenChange={() => {}}
+          />
+        )}
+      >
         <div className="flex flex-col gap-2">
           {eventTypes.map((eventType, _index) => {
             const isHidden = hiddenStates[eventType.id];

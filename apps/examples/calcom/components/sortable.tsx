@@ -7,6 +7,7 @@ import {
   type DragCancelEvent,
   type DragEndEvent,
   type DragOverEvent,
+  DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
   MouseSensor,
@@ -28,7 +29,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
-  type CSSProperties,
   createContext,
   type ReactNode,
   useContext,
@@ -39,7 +39,9 @@ import {
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
+  activeId: UniqueIdentifier | null;
 }>({
+  activeId: null,
   isDraggingAny: false,
 });
 
@@ -49,7 +51,6 @@ export interface SortableItemRenderProps {
   isDragging: boolean;
   isDraggingAny: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
-  style: CSSProperties;
 }
 
 interface SortableItemProps {
@@ -59,12 +60,7 @@ interface SortableItemProps {
 
 export function SortableItem({ id, children }: SortableItemProps) {
   const { isDraggingAny } = useContext(SortableStateContext);
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useSortable({ id });
-
-  const style = {
-    "--translate-y": `${transform?.y ?? 0}px`,
-  } as CSSProperties;
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id });
 
   return children({
     attributes,
@@ -72,7 +68,6 @@ export function SortableItem({ id, children }: SortableItemProps) {
     isDraggingAny,
     listeners,
     setNodeRef,
-    style,
   });
 }
 
@@ -80,12 +75,14 @@ interface SortableListProps<T extends { id: UniqueIdentifier }> {
   items: T[];
   onReorder: (items: T[]) => void;
   children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
+  renderOverlay,
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -165,8 +162,11 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     setOverId(null);
   };
 
+  const activeItem =
+    activeId !== null ? items.find((item) => item.id === activeId) : null;
+
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny }}>
+    <SortableStateContext.Provider value={{ activeId, isDraggingAny }}>
       <DndContext
         accessibility={{ announcements }}
         collisionDetection={closestCenter}
@@ -181,6 +181,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           {children}
         </SortableContext>
+        <DragOverlay>
+          {activeItem && renderOverlay ? renderOverlay(activeItem) : null}
+        </DragOverlay>
       </DndContext>
     </SortableStateContext.Provider>
   );
