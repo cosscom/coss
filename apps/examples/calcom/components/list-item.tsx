@@ -2,7 +2,7 @@ import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
-export { ItemLabel } from "./item-label";
+export { ItemLabel } from "@/components/item-label";
 
 interface ListItemProps {
   children: ReactNode;
