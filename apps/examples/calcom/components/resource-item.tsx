@@ -42,7 +42,7 @@ export function ResourceItem({
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
-      data-dragging={sortableDraggingAny ? "" : undefined}
+      data-dragging={sortableDraggingAny || isOverlay ? "" : undefined}
       data-overlay={isOverlay ? "" : undefined}
       data-slot="resource-item"
       ref={sortableRef}
