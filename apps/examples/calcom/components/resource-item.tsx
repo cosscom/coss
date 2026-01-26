@@ -38,7 +38,7 @@ export function ResourceItem({
   return (
     <Card
       className={cn(
-        "translate-y-(--translate-y) transition-[background-color,box-shadow] has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-overlay:shadow-lg/5 data-dragged:opacity-50 data-dragged:shadow-none data-dragging:transition-[background-color,opacity,translate,box-shadow] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "translate-y-(--translate-y) transition-[background-color,box-shadow] has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-dragged:opacity-50 data-dragged:shadow-none data-overlay:shadow-lg/5 data-dragging:transition-[background-color,opacity,translate,box-shadow] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
