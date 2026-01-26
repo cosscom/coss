@@ -7,9 +7,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@coss/ui/components/empty";
-import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
-import { Separator } from "@coss/ui/components/separator";
-import { Skeleton } from "@coss/ui/components/skeleton";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { CalendarIcon } from "lucide-react";
 import {
@@ -18,7 +15,7 @@ import {
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { useLoadingState } from "@/hooks/use-loading-state";
-import { BookingSkeletonItem } from "../booking-skeleton";
+import { BookingsListSkeleton } from "../booking-skeleton";
 
 const ARTIFICIAL_DELAY_MS = 400;
 
@@ -36,22 +33,7 @@ export default function Page() {
           </AppHeaderContent>
         </AppHeader>
 
-        <Frame className="-m-1">
-          <FramePanel className="p-0">
-            <BookingSkeletonItem />
-            <Separator />
-            <BookingSkeletonItem />
-            <Separator />
-            <BookingSkeletonItem />
-            <Separator />
-            <BookingSkeletonItem />
-            <Separator />
-            <BookingSkeletonItem />
-          </FramePanel>
-          <FrameFooter>
-            <Skeleton className="mx-auto h-5 w-32" />
-          </FrameFooter>
-        </Frame>
+        <BookingsListSkeleton />
       </>
     );
   }

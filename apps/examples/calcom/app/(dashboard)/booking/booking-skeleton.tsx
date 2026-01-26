@@ -1,3 +1,5 @@
+import { Card, CardPanel } from "@coss/ui/components/card";
+import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   ListItem,
@@ -36,5 +38,61 @@ export function BookingSkeletonItem() {
         <BookingActionsSkeleton />
       </ListItemActions>
     </ListItem>
+  );
+}
+
+export function BookingsListSkeleton() {
+  return (
+    <>
+      <Card>
+        <CardPanel className="p-0">
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+        </CardPanel>
+      </Card>
+      <div className="mt-6 text-center text-muted-foreground/72 text-sm">
+        <Skeleton className="mx-auto h-5 w-32" />
+      </div>
+    </>
+  );
+}
+
+export function BookingsListSkeletonWithPagination() {
+  return (
+    <>
+      <Card>
+        <CardPanel className="p-0">
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+          <Separator />
+          <BookingSkeletonItem />
+        </CardPanel>
+      </Card>
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-7 w-12 rounded-lg" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-12" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-18 rounded-lg" />
+            <Skeleton className="h-7 w-18 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

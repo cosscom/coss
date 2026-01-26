@@ -9,7 +9,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
+import { FrameFooter } from "@coss/ui/components/frame";
 import {
   Pagination,
   PaginationContent,
@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { Skeleton } from "@coss/ui/components/skeleton";
 import { TooltipProvider } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
@@ -56,7 +55,7 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
-import { BookingSkeletonItem } from "../booking-skeleton";
+import { BookingsListSkeletonWithPagination } from "../booking-skeleton";
 import { BookingActions } from "./booking-actions";
 
 const ARTIFICIAL_DELAY_MS = 800;
@@ -77,32 +76,7 @@ export function BookingsList() {
   const hasNextPage = pageIndex < totalPages - 1;
 
   if (showLoading) {
-    return (
-      <Frame className="-m-1">
-        <FramePanel className="bg-transparent p-0">
-          <BookingSkeletonItem />
-          <BookingSkeletonItem />
-          <BookingSkeletonItem />
-          <BookingSkeletonItem />
-          <BookingSkeletonItem />
-        </FramePanel>
-        <FrameFooter>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-7 w-12 rounded-lg" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-12" />
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-7 w-18 rounded-lg" />
-                <Skeleton className="h-7 w-18 rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </FrameFooter>
-      </Frame>
-    );
+    return <BookingsListSkeletonWithPagination />;
   }
 
   return (
