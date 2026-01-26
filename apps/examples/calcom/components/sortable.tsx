@@ -115,29 +115,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const projectedIndex =
     activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
 
-  const announcements = useMemo(
-    () => ({
-      onDragCancel: () =>
-        "Sorting cancelled. Item returned to original position.",
-      onDragEnd: () =>
-        projectedIndex >= 0
-          ? `Sortable item dropped at position ${projectedIndex + 1} of ${ids.length}.`
-          : "Sortable item dropped.",
-      onDragOver: () =>
-        projectedIndex >= 0
-          ? `Sortable item moved to position ${projectedIndex + 1} of ${ids.length}.`
-          : undefined,
-      onDragStart: ({ active }: DragStartEvent) => {
-        const index = ids.indexOf(active.id);
-
-        return index >= 0
-          ? `Picked up sortable item. Current position: ${index + 1} of ${ids.length}.`
-          : "Picked up sortable item.";
-      },
-    }),
-    [projectedIndex, ids],
-  );
-
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
     setActiveId(event.active.id);
@@ -172,7 +149,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   return (
     <SortableStateContext.Provider value={{ activeId, isDraggingAny }}>
       <DndContext
-        accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
         onDragCancel={handleDragCancel}
