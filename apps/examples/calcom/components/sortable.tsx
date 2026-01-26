@@ -189,7 +189,12 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           {children}
         </SortableContext>
-        <DragOverlay>
+        <DragOverlay
+          dropAnimation={{
+            duration: 150,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
           {activeItem && renderOverlay ? renderOverlay(activeItem) : null}
         </DragOverlay>
       </DndContext>

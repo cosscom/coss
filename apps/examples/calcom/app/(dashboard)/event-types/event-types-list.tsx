@@ -134,12 +134,7 @@ function EventTypeItemContent({
       sortableRef={isOverlay ? undefined : sortableProps?.setNodeRef}
       sortableStyle={sortableProps?.style}
     >
-      {sortableProps && !isOverlay && (
-        <ResourceItemDragHandle
-          attributes={sortableProps.attributes}
-          listeners={sortableProps.listeners}
-        />
-      )}
+      <ResourceItemDragHandle />
       <ResourceItemContent>
         <ResourceItemHeader>
           <div className="flex items-center gap-2">

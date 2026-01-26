@@ -35,13 +35,10 @@ export function ResourceItem({
   sortableDraggingAny,
   sortableListeners,
 }: ResourceItemProps) {
-  const isDraggable = Boolean(sortableListeners || sortableRef);
-
   return (
     <Card
       className={cn(
-        "translate-y-(--translate-y) transition-[background-color,opacity] has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
-        isDraggable && "data-dragged:opacity-50",
+        "translate-y-(--translate-y) transition-[background-color] has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-dragged:opacity-50 data-dragging:transition-[background-color,opacity,translate] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
@@ -75,7 +72,7 @@ export function ResourceItemDragHandle({
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-dragged]]:opacity-100 opacity-0 focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay]]:opacity-100 opacity-0 focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="resource-item-drag-handle"
@@ -86,7 +83,7 @@ export function ResourceItemDragHandle({
     >
       <GripVerticalIcon
         aria-hidden="true"
-        className="in-[[data-slot=resource-item-drag-handle]:hover,[data-slot=resource-item-drag-handle]:focus-visible]:opacity-80 in-[[data-slot=resource-item][data-dragged]]:opacity-100 opacity-40 transition-opacity"
+        className="in-[[data-slot=resource-item-drag-handle]:hover,[data-slot=resource-item-drag-handle]:focus-visible]:opacity-80 in-[[data-slot=resource-item][data-dragged]]:opacity-100 opacity-40"
       />
     </Button>
   );
