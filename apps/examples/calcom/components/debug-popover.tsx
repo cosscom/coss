@@ -7,6 +7,7 @@ import {
   PopoverTrigger,
 } from "@coss/ui/components/popover";
 import { Switch } from "@coss/ui/components/switch";
+import { useTheme } from "next-themes";
 import { useDebug } from "./debug-context";
 
 export function DebugPopover() {
@@ -16,6 +17,7 @@ export function DebugPopover() {
     setEnableArtificialDelay,
     setIsLoadingOverride,
   } = useDebug();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <Popover>
@@ -39,6 +41,16 @@ export function DebugPopover() {
               id="loading-switch"
               onCheckedChange={(checked) =>
                 setIsLoadingOverride(checked ? true : null)
+              }
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="dark-mode-switch">Dark mode</Label>
+            <Switch
+              checked={resolvedTheme === "dark"}
+              id="dark-mode-switch"
+              onCheckedChange={(checked) =>
+                setTheme(checked ? "dark" : "light")
               }
             />
           </div>
