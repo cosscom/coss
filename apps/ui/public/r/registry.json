@@ -2843,6 +2843,33 @@
     },
     {
       "categories": [
+        "button",
+        "group",
+        "tooltip",
+        "toast"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Download button with progress and cancel action",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-40.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-40",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/group",
+        "@coss/spinner",
+        "@coss/toast",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "button"
       ],
       "dependencies": [
@@ -8988,6 +9015,28 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/spinner",
+        "@coss/toast"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toast",
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Promise toast with cancel action",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-9",
+      "registryDependencies": [
+        "@coss/button",
         "@coss/toast"
       ],
       "type": "registry:block"
