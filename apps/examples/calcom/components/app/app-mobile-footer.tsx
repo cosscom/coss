@@ -19,7 +19,7 @@ import { navFooterItems, navMainItems } from "@/lib/navigation-data";
 const primaryNavItems = navMainItems.slice(0, 3);
 const remainingMainItems = navMainItems.slice(3);
 
-export function MobileFooter() {
+export function AppMobileFooter() {
   const isHidden = useScrollHide();
 
   return (
@@ -31,7 +31,7 @@ export function MobileFooter() {
           : "translate-y-0 before:opacity-100",
       )}
     >
-      <div className="relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
+      <div className="relative flex w-fit items-center justify-around gap-1 rounded-full border bg-popover p-1 shadow-black/5 shadow-lg backdrop-blur-sm before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
         {primaryNavItems.map((item) => (
           <Link
             aria-current={item.isActive ? "page" : undefined}
@@ -52,30 +52,20 @@ export function MobileFooter() {
           <MenuPopup side="top" sideOffset={8}>
             <MenuGroup>
               {remainingMainItems.map((item) => (
-                <MenuItem
-                  key={item.title}
-                  render={
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                      {item.title === "Workflows" && <WorkflowBadge />}
-                    </Link>
-                  }
-                />
+                <MenuItem key={item.title} render={<Link href={item.url} />}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                  {item.title === "Workflows" && <WorkflowBadge />}
+                </MenuItem>
               ))}
             </MenuGroup>
             <MenuSeparator />
             <MenuGroup>
               {navFooterItems.map((item) => (
-                <MenuItem
-                  key={item.title}
-                  render={
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  }
-                />
+                <MenuItem key={item.title} render={<Link href={item.url} />}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </MenuItem>
               ))}
             </MenuGroup>
           </MenuPopup>

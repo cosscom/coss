@@ -8,7 +8,7 @@ import {
 import { CommandDialogTrigger } from "@coss/ui/components/command";
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
-import { commandHandle } from "@/components/app-command";
+import { commandHandle } from "@/components/app/app-command";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/user-menu";
 
@@ -20,7 +20,7 @@ export function HeaderActions() {
         render={
           <SidebarMenuButton
             aria-label="Search"
-            className="shrink-0 justify-center p-0 text-sidebar-foreground/80 md:max-lg:order-1 lg:size-8"
+            className="shrink-0 justify-center p-0 md:max-lg:order-1 lg:size-8"
           />
         }
       >

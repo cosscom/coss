@@ -13,7 +13,6 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { TooltipTrigger } from "@coss/ui/components/tooltip";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,7 +25,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  sidebarTooltipHandle,
   useSidebarMenuOpen,
 } from "@/components/ui/sidebar";
 import { WorkflowBadge } from "@/components/workflows-badge";
@@ -65,8 +63,6 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
     };
   }, []);
 
-  const TooltipContent = () => item.title;
-
   /* Collapsible version for expanded sidebar */
   const pathname = usePathname();
   const isActive = useMemo(
@@ -101,23 +97,14 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
         }}
       >
         <div className="hidden md:max-lg:block">
-          <TooltipTrigger
-            className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
-            handle={sidebarTooltipHandle}
-            payload={TooltipContent}
-            render={
-              <MenuTrigger
-                render={
-                  <SidebarMenuButton
-                    aria-label={item.title}
-                    isActive={isActive || item.isActive}
-                  >
-                    <item.icon />
-                  </SidebarMenuButton>
-                }
-              />
-            }
-          />
+          <SidebarMenuButton
+            aria-label={item.title}
+            isActive={isActive || item.isActive}
+            render={<MenuTrigger />}
+            tooltip={isBetweenMdAndLg ? item.title : undefined}
+          >
+            <item.icon />
+          </SidebarMenuButton>
         </div>
         <MenuPopup align="start" alignOffset={0} side="right">
           <MenuGroup>
@@ -125,12 +112,10 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             {item.items.map((subItem) => (
               <MenuItem
                 key={subItem.title}
-                render={
-                  <Link href={subItem.url}>
-                    <span>{subItem.title}</span>
-                  </Link>
-                }
-              />
+                render={<Link href={subItem.url} />}
+              >
+                <span>{subItem.title}</span>
+              </MenuItem>
             ))}
           </MenuGroup>
         </MenuPopup>
@@ -141,10 +126,9 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
         className="md:max-lg:hidden"
         onOpenChange={setIsExpanded}
         open={isExpanded}
-        render={<div />}
       >
         <CollapsibleTrigger
-          className="justify-between font-medium text-sidebar-foreground"
+          className="justify-between"
           render={
             <SidebarMenuButton
               tooltip={isBetweenMdAndLg ? item.title : undefined}
@@ -155,21 +139,19 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
             <item.icon className="size-4" />
             <span>{item.title}</span>
           </span>
-          <ChevronRightIcon className="in-data-open:rotate-90 transition-transform" />
+          <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
             {item.items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
-                  className="from-secondary to-secondary/64 ps-8.5 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+                  className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
                   isActive={pathname.startsWith(subItem.url)}
-                  render={
-                    <Link href={subItem.url}>
-                      <span>{subItem.title}</span>
-                    </Link>
-                  }
-                />
+                  render={<Link href={subItem.url} />}
+                >
+                  <span>{subItem.title}</span>
+                </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
@@ -187,17 +169,14 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className="font-medium text-sidebar-foreground"
         isActive={isActive}
-        render={
-          <Link href={item.url}>
-            <item.icon />
-            <span className="max-lg:hidden">{item.title}</span>
-            {item.title === "Workflows" && <WorkflowBadge />}
-          </Link>
-        }
+        render={<Link href={item.url} />}
         tooltip={isBetweenMdAndLg ? item.title : undefined}
-      />
+      >
+        <item.icon />
+        <span className="max-lg:sr-only">{item.title}</span>
+        {item.title === "Workflows" && <WorkflowBadge />}
+      </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }

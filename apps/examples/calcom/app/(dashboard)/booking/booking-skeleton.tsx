@@ -1,3 +1,10 @@
+import {
+  Card,
+  CardFrame,
+  CardFrameHeader,
+  CardPanel,
+} from "@coss/ui/components/card";
+import { FrameFooter } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
   ListItem,
@@ -36,5 +43,39 @@ export function BookingSkeletonItem() {
         <BookingActionsSkeleton />
       </ListItemActions>
     </ListItem>
+  );
+}
+
+export function BookingsListSkeleton() {
+  return (
+    <CardFrame>
+      <CardFrameHeader>
+        <Skeleton className="h-6 w-40 sm:h-5" />
+      </CardFrameHeader>
+      <Card>
+        <CardPanel className="p-0">
+          <BookingSkeletonItem />
+          <BookingSkeletonItem />
+          <BookingSkeletonItem />
+          <BookingSkeletonItem />
+          <BookingSkeletonItem />
+        </CardPanel>
+      </Card>
+      <FrameFooter>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-12 rounded-lg" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-12" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-18 rounded-lg" />
+              <Skeleton className="h-7 w-18 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </FrameFooter>
+    </CardFrame>
   );
 }

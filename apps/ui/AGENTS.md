@@ -619,6 +619,18 @@ className="text-gray-500"
 className="bg-red-500 text-white"
 ```
 
+### Border Color
+
+**Never use `border-border` class - it's already set in globals.css by default:**
+
+```tsx
+// ❌ Bad - redundant class
+className="border-b border-border"
+
+// ✅ Good - border-border is the default
+className="border-b"
+```
+
 ### Important Overrides
 
 **Use `!` suffix for important overrides when needed:**

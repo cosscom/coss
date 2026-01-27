@@ -24,6 +24,7 @@ import {
   SettingsIcon,
   UserRoundIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
@@ -68,7 +69,7 @@ export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
             <UserRoundIcon />
             My profile
           </MenuItem>
-          <MenuItem>
+          <MenuItem render={<Link href="/settings/my-account/general" />}>
             <SettingsIcon />
             My settings
           </MenuItem>

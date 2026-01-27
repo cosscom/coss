@@ -7,6 +7,7 @@ import {
   type DragCancelEvent,
   type DragEndEvent,
   type DragOverEvent,
+  DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
   MouseSensor,
@@ -16,10 +17,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import {
-  restrictToParentElement,
-  restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -33,13 +30,14 @@ import {
   type ReactNode,
   useContext,
   useId,
-  useMemo,
   useState,
 } from "react";
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
+  activeId: UniqueIdentifier | null;
 }>({
+  activeId: null,
   isDraggingAny: false,
 });
 
@@ -80,12 +78,14 @@ interface SortableListProps<T extends { id: UniqueIdentifier }> {
   items: T[];
   onReorder: (items: T[]) => void;
   children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
+  renderOverlay,
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -111,31 +111,8 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const ids = items.map((item) => item.id);
   const activeIndex = activeId !== null ? ids.indexOf(activeId) : -1;
   const overIndex = overId !== null ? ids.indexOf(overId) : -1;
-  const projectedIndex =
+  const _projectedIndex =
     activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
-
-  const announcements = useMemo(
-    () => ({
-      onDragCancel: () =>
-        "Sorting cancelled. Item returned to original position.",
-      onDragEnd: () =>
-        projectedIndex >= 0
-          ? `Sortable item dropped at position ${projectedIndex + 1} of ${ids.length}.`
-          : "Sortable item dropped.",
-      onDragOver: () =>
-        projectedIndex >= 0
-          ? `Sortable item moved to position ${projectedIndex + 1} of ${ids.length}.`
-          : undefined,
-      onDragStart: ({ active }: DragStartEvent) => {
-        const index = ids.indexOf(active.id);
-
-        return index >= 0
-          ? `Picked up sortable item. Current position: ${index + 1} of ${ids.length}.`
-          : "Picked up sortable item.";
-      },
-    }),
-    [projectedIndex, ids],
-  );
 
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
@@ -165,13 +142,14 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     setOverId(null);
   };
 
+  const activeItem =
+    activeId !== null ? items.find((item) => item.id === activeId) : null;
+
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny }}>
+    <SortableStateContext.Provider value={{ activeId, isDraggingAny }}>
       <DndContext
-        accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
@@ -181,6 +159,26 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           {children}
         </SortableContext>
+        <DragOverlay
+          dropAnimation={{
+            duration: 150,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+            sideEffects({ active, dragOverlay }) {
+              active.node.setAttribute("data-drag-ended", "");
+              dragOverlay.node.setAttribute("data-drag-ended", "");
+              return () => {
+                requestAnimationFrame(() =>
+                  requestAnimationFrame(() => {
+                    active.node.removeAttribute("data-drag-ended");
+                    dragOverlay.node.removeAttribute("data-drag-ended");
+                  }),
+                );
+              };
+            },
+          }}
+        >
+          {activeItem && renderOverlay ? renderOverlay(activeItem) : null}
+        </DragOverlay>
       </DndContext>
     </SortableStateContext.Provider>
   );

@@ -9,7 +9,7 @@ import {
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
-} from "@/components/app-header";
+} from "@/components/app/app-header";
 import { AddEventTypeDialog } from "./add-event-type-dialog";
 import { EventTypesList } from "./event-types-list";
 

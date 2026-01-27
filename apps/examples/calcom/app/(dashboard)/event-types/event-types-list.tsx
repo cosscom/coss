@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
-import { Frame, FrameFooter, FramePanel } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import { toastManager } from "@coss/ui/components/toast";
 import {
@@ -22,14 +21,14 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import {
-  ListItem,
-  ListItemBadges,
-  ListItemContent,
-  ListItemDescription,
-  ListItemDragHandle,
-  ListItemHeader,
-  ListItemTitle,
-} from "@/components/list-item";
+  ResourceItem,
+  ResourceItemBadges,
+  ResourceItemContent,
+  ResourceItemDescription,
+  ResourceItemDragHandle,
+  ResourceItemHeader,
+  ResourceItemTitle,
+} from "@/components/resource-item";
 import {
   SortableItem,
   type SortableItemRenderProps,
@@ -58,22 +57,22 @@ const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
 
 function EventTypeSkeletonItem() {
   return (
-    <ListItem>
-      <ListItemContent>
-        <ListItemHeader>
+    <ResourceItem>
+      <ResourceItemContent>
+        <ResourceItemHeader>
           <div className="flex items-center gap-2">
             <Skeleton className="h-6 w-full max-w-48 sm:h-5" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
           <Skeleton className="my-0.5 h-4 w-full max-w-82" />
-        </ListItemHeader>
-        <ListItemBadges>
+        </ResourceItemHeader>
+        <ResourceItemBadges>
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
-        </ListItemBadges>
-      </ListItemContent>
+        </ResourceItemBadges>
+      </ResourceItemContent>
       <EventTypeActionsSkeleton />
-    </ListItem>
+    </ResourceItem>
   );
 }
 
@@ -93,7 +92,8 @@ function EventTypeItemContent({
   eventPath,
   onHiddenChange,
   sortableProps,
-}: EventTypeItemContentProps) {
+  isOverlay = false,
+}: EventTypeItemContentProps & { isOverlay?: boolean }) {
   const getSchedulingTypeLabel = (et: EventType) => {
     if (!et.schedulingType) return null;
     switch (et.schedulingType) {
@@ -123,37 +123,35 @@ function EventTypeItemContent({
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
   return (
-    <ListItem
+    <ResourceItem
+      isOverlay={isOverlay}
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
       sortableDragging={sortableProps?.isDragging}
       sortableDraggingAny={sortableProps?.isDraggingAny}
-      sortableListeners={sortableProps?.listeners}
-      sortableRef={sortableProps?.setNodeRef}
+      sortableListeners={isOverlay ? undefined : sortableProps?.listeners}
+      sortableRef={isOverlay ? undefined : sortableProps?.setNodeRef}
       sortableStyle={sortableProps?.style}
     >
-      {sortableProps && (
-        <ListItemDragHandle
-          attributes={sortableProps.attributes}
-          listeners={sortableProps.listeners}
-        />
-      )}
-      <ListItemContent>
-        <ListItemHeader>
+      <ResourceItemDragHandle />
+      <ResourceItemContent>
+        <ResourceItemHeader>
           <div className="flex items-center gap-2">
-            <ListItemTitle href={eventPath}>{eventType.title}</ListItemTitle>
+            <ResourceItemTitle href={eventPath}>
+              {eventType.title}
+            </ResourceItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}
             </span>
           </div>
           {eventType.safeDescription && (
-            <ListItemDescription className="line-clamp-2">
+            <ResourceItemDescription className="line-clamp-2">
               {eventType.safeDescription}
-            </ListItemDescription>
+            </ResourceItemDescription>
           )}
-        </ListItemHeader>
+        </ResourceItemHeader>
 
-        <ListItemBadges>
+        <ResourceItemBadges>
           {isHidden && (
             <Badge className="pointer-events-none" variant="warning">
               <EyeOffIcon />
@@ -200,15 +198,15 @@ function EventTypeItemContent({
               {eventType.seatsPerTimeSlot} seats
             </Badge>
           )}
-        </ListItemBadges>
-      </ListItemContent>
+        </ResourceItemBadges>
+      </ResourceItemContent>
 
       <EventTypeActions
         isHidden={isHidden}
         onHiddenChange={onHiddenChange}
         tooltipHandle={tooltipHandle}
       />
-    </ListItem>
+    </ResourceItem>
   );
 }
 
@@ -259,54 +257,63 @@ export function EventTypesList() {
 
   if (showLoading) {
     return (
-      <Frame className="-m-1">
-        <FramePanel className="bg-transparent p-0">
+      <>
+        <div className="flex flex-col gap-2">
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
           <EventTypeSkeletonItem />
-        </FramePanel>
-        <FrameFooter>
+        </div>
+        <div className="mt-6 text-center text-muted-foreground/72 text-sm">
           <Skeleton className="mx-auto h-5 w-32" />
-        </FrameFooter>
-      </Frame>
+        </div>
+      </>
     );
   }
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList items={eventTypes} onReorder={handleReorder}>
-        <Frame className="-m-1">
-          <FramePanel className="bg-transparent p-0 transition-all not-has-data-dragging:delay-150 duration-0 before:z-1 before:transition-all not-has-data-dragging:before:delay-150 before:duration-0 has-data-dragging:border-transparent has-data-dragging:shadow-none has-data-dragging:before:opacity-0">
-            {eventTypes.map((eventType, _index) => {
-              const isHidden = hiddenStates[eventType.id];
-              const eventPath = getEventTypePath(eventType);
+      <SortableList
+        items={eventTypes}
+        onReorder={handleReorder}
+        renderOverlay={(eventType) => (
+          <EventTypeItemContent
+            eventPath={getEventTypePath(eventType)}
+            eventType={eventType}
+            isHidden={hiddenStates[eventType.id] ?? false}
+            isOverlay
+            onHiddenChange={() => {}}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-2">
+          {eventTypes.map((eventType, _index) => {
+            const isHidden = hiddenStates[eventType.id];
+            const eventPath = getEventTypePath(eventType);
 
-              return (
-                <SortableItem id={eventType.id} key={eventType.id}>
-                  {(sortableProps) => (
-                    <EventTypeItemContent
-                      eventPath={eventPath}
-                      eventType={eventType}
-                      isHidden={isHidden ?? false}
-                      onHiddenChange={(hidden) =>
-                        handleHiddenToggle(eventType.id, hidden)
-                      }
-                      sortableProps={sortableProps}
-                    />
-                  )}
-                </SortableItem>
-              );
-            })}
-          </FramePanel>
-          <FrameFooter>
-            <div className="text-center text-muted-foreground/72 text-sm">
-              No more results
-            </div>
-          </FrameFooter>
-        </Frame>
+            return (
+              <SortableItem id={eventType.id} key={eventType.id}>
+                {(sortableProps) => (
+                  <EventTypeItemContent
+                    eventPath={eventPath}
+                    eventType={eventType}
+                    isHidden={isHidden ?? false}
+                    onHiddenChange={(hidden) =>
+                      handleHiddenToggle(eventType.id, hidden)
+                    }
+                    sortableProps={sortableProps}
+                  />
+                )}
+              </SortableItem>
+            );
+          })}
+        </div>
       </SortableList>
+
+      <div className="mt-6 text-center text-muted-foreground/72 text-sm">
+        No more results
+      </div>
 
       <Tooltip handle={tooltipHandle}>
         {({ payload: Payload }) => (

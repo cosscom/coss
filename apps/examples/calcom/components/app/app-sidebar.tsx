@@ -1,11 +1,11 @@
 "use client";
 
 import type * as React from "react";
+import { NavMain } from "@/components/app/nav-main";
+import { NavSecondary } from "@/components/app/nav-secondary";
 import { DebugPopover } from "@/components/debug-popover";
 import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +23,7 @@ export function AppSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex flex-col items-center justify-between gap-0.5 px-2 lg:flex-row">
+        <div className="flex flex-col items-center justify-between gap-0.5 px-1 lg:flex-row">
           <SidebarMenuButton
             className="w-fit justify-center md:max-lg:p-0"
             render={(props) => <Logo {...props} />}

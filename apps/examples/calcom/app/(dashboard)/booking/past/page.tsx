@@ -4,7 +4,7 @@ import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
-} from "@/components/app-header";
+} from "@/components/app/app-header";
 import { BookingsList } from "./bookings-list";
 
 export default function Page() {

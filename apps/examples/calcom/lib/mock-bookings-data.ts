@@ -366,8 +366,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#ef5d9a",
-        lightEventTypeColor: "#ef5d9a",
+        darkEventTypeColor: "#f53468",
+        lightEventTypeColor: "#f53468",
       },
       id: 11,
       slug: "platform-meeting",
@@ -579,8 +579,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#fa9c67",
-        lightEventTypeColor: "#fa9c67",
+        darkEventTypeColor: "#fd6d06",
+        lightEventTypeColor: "#fd6d06",
       },
       id: 5,
       length: 45,
@@ -712,8 +712,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#3dcb9b",
-        lightEventTypeColor: "#3dcb9b",
+        darkEventTypeColor: "#0dbf82",
+        lightEventTypeColor: "#0dbf82",
       },
       hosts: [
         {
@@ -862,8 +862,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#3dcb9b",
-        lightEventTypeColor: "#3dcb9b",
+        darkEventTypeColor: "#0dbf82",
+        lightEventTypeColor: "#0dbf82",
       },
       id: 20,
       length: 60,

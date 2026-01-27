@@ -40,7 +40,7 @@ export function ComponentPreviewTabs({
         </div>
       </Tabs>
       <div
-        className="relative rounded-xl border data-[tab=code]:bg-code"
+        className="relative rounded-xl border not-dark:bg-card"
         data-tab={tab}
       >
         <div
@@ -57,7 +57,7 @@ export function ComponentPreviewTabs({
           </div>
         </div>
         <div
-          className="**:[figure]:!m-0 absolute inset-0 hidden overflow-hidden data-[active=true]:block **:[pre]:h-[450px]"
+          className="absolute inset-0 hidden overflow-hidden data-[active=true]:block **:[figure]:m-0! **:[pre]:h-[450px]"
           data-active={tab === "code"}
           data-slot="code"
         >

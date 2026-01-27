@@ -25,8 +25,8 @@ export function ParticleCardContainer({
         className,
       )}
     >
-      <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
-        <Card className="min-h-50 flex-1 flex-col flex-wrap overflow-x-auto bg-background">
+      <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64 dark:bg-background">
+        <Card className="min-h-50 flex-1 flex-col flex-wrap overflow-x-auto dark:bg-background">
           <CardPanel className="flex flex-1 items-center justify-center lg:px-8 lg:py-12">
             {children}
           </CardPanel>
