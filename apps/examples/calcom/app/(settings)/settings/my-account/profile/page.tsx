@@ -16,6 +16,8 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
+import { Fieldset, FieldsetLegend } from "@coss/ui/components/fieldset";
 import { Input } from "@coss/ui/components/input";
 import {
   InputGroup,
@@ -58,33 +60,35 @@ function EmailInput({
   isVerified?: boolean;
 }) {
   return (
-    <InputGroup>
-      <InputGroupInput defaultValue={email} type="email" />
-      <InputGroupAddon align="inline-end">
-        {isPrimary && <Badge variant="info">Primary</Badge>}
-        {!isVerified && <Badge variant="warning">Unverified</Badge>}
-        <Menu>
-          <MenuTrigger
-            render={
-              <Button
-                aria-label="Email options"
-                size="icon-xs"
-                variant="ghost"
-              />
-            }
-          >
-            <EllipsisIcon />
-          </MenuTrigger>
-          <MenuPopup align="end" alignOffset={-4} sideOffset={8}>
-            <MenuItem disabled={isPrimary}>Make primary</MenuItem>
-            <MenuItem disabled={isVerified}>Resend verification</MenuItem>
-            <MenuItem disabled={isPrimary} variant="destructive">
-              Remove email
-            </MenuItem>
-          </MenuPopup>
-        </Menu>
-      </InputGroupAddon>
-    </InputGroup>
+    <Field className="contents">
+      <InputGroup>
+        <InputGroupInput defaultValue={email} type="email" />
+        <InputGroupAddon align="inline-end">
+          {isPrimary && <Badge variant="info">Primary</Badge>}
+          {!isVerified && <Badge variant="warning">Unverified</Badge>}
+          <Menu>
+            <MenuTrigger
+              render={
+                <Button
+                  aria-label="Email options"
+                  size="icon-xs"
+                  variant="ghost"
+                />
+              }
+            >
+              <EllipsisIcon />
+            </MenuTrigger>
+            <MenuPopup align="end" alignOffset={-4} sideOffset={8}>
+              <MenuItem disabled={isPrimary}>Make primary</MenuItem>
+              <MenuItem disabled={isVerified}>Resend verification</MenuItem>
+              <MenuItem disabled={isPrimary} variant="destructive">
+                Remove email
+              </MenuItem>
+            </MenuPopup>
+          </Menu>
+        </InputGroupAddon>
+      </InputGroup>
+    </Field>
   );
 }
 
@@ -103,7 +107,7 @@ export default function ProfileSettingsPage() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Profile</CardFrameTitle>
@@ -114,8 +118,8 @@ export default function ProfileSettingsPage() {
 
         <Card className="rounded-b-none!">
           <CardPanel>
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="flex items-center gap-4 max-md:col-span-2">
                 <Avatar className="size-16">
                   <AvatarImage
                     alt="Profile picture"
@@ -136,71 +140,77 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-start gap-2">
-                <Label>Username</Label>
-                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-                  <InputGroupAddon>
-                    <InputGroupText>i.cal.com/</InputGroupText>
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    aria-label="Set your URL"
-                    className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
-                    defaultValue="pasquale"
-                    disabled
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <Button
-                            aria-label="Copy URL"
-                            onClick={() =>
-                              copyToClipboard("https://i.cal.com/pasquale")
-                            }
-                            size="icon-xs"
-                            variant="ghost"
-                          />
-                        }
-                      >
-                        {isCopied ? <CheckIcon /> : <CopyIcon />}
-                      </TooltipTrigger>
-                      <TooltipPopup>
-                        <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
-                      </TooltipPopup>
-                    </Tooltip>
-                  </InputGroupAddon>
-                </InputGroup>
-                <p className="text-muted-foreground text-xs">
-                  Tip: You can add a &apos;+&apos; between usernames (e.g.
-                  cal.com/anna+brian) to meet with multiple people
-                </p>
-              </div>
-
-              <div className="flex flex-col items-start gap-2">
-                <Label>Full name</Label>
-                <Input defaultValue="Pasquale Vitiello" />
-              </div>
-
-              <div className="flex flex-col items-start gap-2">
-                <Label>Email</Label>
-                <div className="w-full space-y-2">
-                  {emails.map((item) => (
-                    <EmailInput
-                      email={item.email}
-                      isPrimary={item.isPrimary}
-                      isVerified={item.isVerified}
-                      key={item.email}
+              <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel>Username</FieldLabel>
+                  <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+                    <InputGroupAddon>
+                      <InputGroupText>i.cal.com/</InputGroupText>
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      aria-label="Set your URL"
+                      className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+                      defaultValue="pasquale"
+                      disabled
                     />
-                  ))}
-                  <Button size="sm" variant="outline">
-                    <PlusIcon />
-                    Add email
-                  </Button>
-                </div>
+                    <InputGroupAddon align="inline-end">
+                      <Tooltip>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              aria-label="Copy URL"
+                              onClick={() =>
+                                copyToClipboard("https://i.cal.com/pasquale")
+                              }
+                              size="icon-xs"
+                              variant="ghost"
+                            />
+                          }
+                        >
+                          {isCopied ? <CheckIcon /> : <CopyIcon />}
+                        </TooltipTrigger>
+                        <TooltipPopup>
+                          <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+                        </TooltipPopup>
+                      </Tooltip>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  <FieldDescription>
+                    Tip: You can add a &apos;+&apos; between usernames (e.g.
+                    cal.com/anna+brian) to meet with multiple people
+                  </FieldDescription>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Full name</FieldLabel>
+                  <Input defaultValue="Pasquale Vitiello" />
+                </Field>
               </div>
 
-              <div className="flex flex-col items-start gap-2">
-                <Label>About</Label>
+              <div className="col-span-2">
+                <Fieldset className="max-w-none gap-2">
+                  <Label render={<FieldsetLegend />}>Email</Label>
+                  <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 md:gap-4">
+                    {emails.map((item) => (
+                      <EmailInput
+                        email={item.email}
+                        isPrimary={item.isPrimary}
+                        isVerified={item.isVerified}
+                        key={item.email}
+                      />
+                    ))}
+                  </div>
+                  <div>
+                    <Button size="sm" variant="outline">
+                      <PlusIcon />
+                      Add email
+                    </Button>
+                  </div>
+                </Fieldset>
+              </div>
+
+              <Field className="col-span-2">
+                <FieldLabel>About</FieldLabel>
                 <InputGroup>
                   <InputGroupTextarea placeholder="Tell us about yourself…" />
                   <InputGroupAddon
@@ -218,7 +228,7 @@ export default function ProfileSettingsPage() {
                     </Button>
                   </InputGroupAddon>
                 </InputGroup>
-              </div>
+              </Field>
             </div>
           </CardPanel>
         </Card>

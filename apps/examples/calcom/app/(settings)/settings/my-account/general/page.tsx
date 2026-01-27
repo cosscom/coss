@@ -10,7 +10,19 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import {
+  Combobox,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxPopup,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@coss/ui/components/combobox";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
+import { Fieldset, FieldsetLegend } from "@coss/ui/components/fieldset";
+import { Label } from "@coss/ui/components/label";
 import {
   Select,
   SelectItem,
@@ -18,10 +30,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { useMemo } from "react";
 import { SettingsToggle } from "@/components/settings/settings-toggle";
 
 export default function GeneralSettingsPage() {
+  const languageItems = [
+    { label: "English", value: "en" },
+    { label: "Spanish", value: "es" },
+    { label: "French", value: "fr" },
+    { label: "German", value: "de" },
+    { label: "Italian", value: "it" },
+  ];
+
+  const timezones = Intl.supportedValuesOf("timeZone");
+
+  const formattedTimezones = useMemo(() => {
+    return timezones
+      .map((timezone) => {
+        const formatter = new Intl.DateTimeFormat("en", {
+          timeZone: timezone,
+          timeZoneName: "shortOffset",
+        });
+        const parts = formatter.formatToParts(new Date());
+        const offset =
+          parts.find((part) => part.type === "timeZoneName")?.value || "";
+        const modifiedOffset = offset === "GMT" ? "GMT+0" : offset;
+
+        const offsetMatch = offset.match(/GMT([+-]?)(\d+)(?::(\d+))?/);
+        const sign = offsetMatch?.[1] === "-" ? -1 : 1;
+        const hours = Number.parseInt(offsetMatch?.[2] || "0", 10);
+        const minutes = Number.parseInt(offsetMatch?.[3] || "0", 10);
+        const totalMinutes = sign * (hours * 60 + minutes);
+
+        return {
+          label: `(${modifiedOffset}) ${timezone.replace(/_/g, " ")}`,
+          numericOffset: totalMinutes,
+          value: timezone,
+        };
+      })
+      .sort((a, b) => a.numericOffset - b.numericOffset);
+  }, [timezones]);
+
+  const defaultTimezone =
+    formattedTimezones.find((tz) => tz.value === "Europe/Rome") ??
+    formattedTimezones[0];
+
+  const timeFormatItems = [
+    { label: "12-hour", value: "12" },
+    { label: "24-hour", value: "24" },
+  ];
+
+  const startOfWeekItems = [
+    { label: "Sunday", value: "sunday" },
+    { label: "Monday", value: "monday" },
+    { label: "Tuesday", value: "tuesday" },
+    { label: "Wednesday", value: "wednesday" },
+    { label: "Thursday", value: "thursday" },
+    { label: "Friday", value: "friday" },
+    { label: "Saturday", value: "saturday" },
+  ];
+
   return (
     <div className="space-y-4">
       <CardFrame>
@@ -34,82 +103,123 @@ export default function GeneralSettingsPage() {
 
         <Card className="rounded-b-none!">
           <CardPanel>
-            <div className="space-y-5">
-              <Field>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Field className="max-md:col-span-2">
                 <FieldLabel>Language</FieldLabel>
-                <Select defaultValue="en">
+                <Select
+                  aria-label="Language"
+                  defaultValue="en"
+                  items={languageItems}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectPopup>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="it">Italian</SelectItem>
+                    {languageItems.map(({ label, value }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectPopup>
                 </Select>
               </Field>
 
-              <Field>
-                <FieldLabel>Timezone</FieldLabel>
-                <div className="flex gap-2">
-                  <Select defaultValue="europe-rome">
-                    <SelectTrigger className="flex-1">
+              <div className="col-span-2">
+                <Fieldset className="max-w-none gap-2">
+                  <Label render={<FieldsetLegend />}>Timezone</Label>
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <Field className="contents">
+                      <Combobox
+                        autoHighlight
+                        defaultValue={defaultTimezone}
+                        items={formattedTimezones}
+                      >
+                        <ComboboxTrigger
+                          className="flex-1"
+                          render={
+                            <Button
+                              className="w-full justify-between font-normal"
+                              variant="outline"
+                            />
+                          }
+                        >
+                          <ComboboxValue />
+                          <ChevronsUpDownIcon className="-me-1!" />
+                        </ComboboxTrigger>
+                        <ComboboxPopup aria-label="Select timezone">
+                          <div className="border-b p-2">
+                            <ComboboxInput
+                              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                              placeholder="e.g. Europe/Rome"
+                              showTrigger={false}
+                              startAddon={<SearchIcon />}
+                            />
+                          </div>
+                          <ComboboxEmpty>No timezones found.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(item) => (
+                              <ComboboxItem key={item.value} value={item}>
+                                {item.label}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxPopup>
+                      </Combobox>
+                    </Field>
+                    <Button variant="outline">
+                      <CalendarIcon />
+                      <span>Schedule timezone change</span>
+                    </Button>
+                  </div>
+                </Fieldset>
+              </div>
+
+              <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel>Time format</FieldLabel>
+                  <Select
+                    aria-label="Time format"
+                    defaultValue="12"
+                    items={timeFormatItems}
+                  >
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectPopup>
-                      <SelectItem value="europe-rome">Europe/Rome</SelectItem>
-                      <SelectItem value="america-new-york">
-                        America/New_York
-                      </SelectItem>
-                      <SelectItem value="america-los-angeles">
-                        America/Los_Angeles
-                      </SelectItem>
-                      <SelectItem value="europe-london">
-                        Europe/London
-                      </SelectItem>
-                      <SelectItem value="asia-tokyo">Asia/Tokyo</SelectItem>
+                      {timeFormatItems.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectPopup>
                   </Select>
-                  <Button variant="outline">
-                    <CalendarIcon />
-                    <span>Schedule timezone change</span>
-                  </Button>
-                </div>
-              </Field>
+                  <FieldDescription>
+                    This is an internal setting and will not affect how times
+                    are displayed on public booking pages for you or anyone
+                    booking you.
+                  </FieldDescription>
+                </Field>
 
-              <Field>
-                <FieldLabel>Time format</FieldLabel>
-                <Select defaultValue="12">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopup>
-                    <SelectItem value="12">12-hour</SelectItem>
-                    <SelectItem value="24">24-hour</SelectItem>
-                  </SelectPopup>
-                </Select>
-                <FieldDescription>
-                  This is an internal setting and will not affect how times are
-                  displayed on public booking pages for you or anyone booking
-                  you.
-                </FieldDescription>
-              </Field>
-
-              <Field>
-                <FieldLabel>Start of week</FieldLabel>
-                <Select defaultValue="sunday">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopup>
-                    <SelectItem value="sunday">Sunday</SelectItem>
-                    <SelectItem value="monday">Monday</SelectItem>
-                    <SelectItem value="saturday">Saturday</SelectItem>
-                  </SelectPopup>
-                </Select>
-              </Field>
+                <Field>
+                  <FieldLabel>Start of week</FieldLabel>
+                  <Select
+                    aria-label="Start of week"
+                    defaultValue="sunday"
+                    items={startOfWeekItems}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectPopup>
+                      {startOfWeekItems.map(({ label, value }) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectPopup>
+                  </Select>
+                </Field>
+              </div>
             </div>
           </CardPanel>
         </Card>
