@@ -8,7 +8,7 @@ import {
 } from "@coss/ui/components/popover";
 import { Switch } from "@coss/ui/components/switch";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebug } from "./debug-context";
 
 export function DebugPopover() {
@@ -19,11 +19,19 @@ export function DebugPopover() {
     setIsLoadingOverride,
   } = useDebug();
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setIsDark(resolvedTheme === "dark");
+  }, [resolvedTheme]);
+
+  const handleDarkModeToggle = useCallback(
+    (checked: boolean) => {
+      setIsDark(checked);
+      setTheme(checked ? "dark" : "light");
+    },
+    [setTheme],
+  );
 
   return (
     <Popover>
@@ -53,11 +61,9 @@ export function DebugPopover() {
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="dark-mode-switch">Dark mode</Label>
             <Switch
-              checked={mounted && resolvedTheme === "dark"}
+              checked={isDark}
               id="dark-mode-switch"
-              onCheckedChange={(checked) =>
-                setTheme(checked ? "dark" : "light")
-              }
+              onCheckedChange={handleDarkModeToggle}
             />
           </div>
         </div>
