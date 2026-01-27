@@ -5,11 +5,11 @@ import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
+  CardFrameFooter,
   CardFrameHeader,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { FrameFooter } from "@coss/ui/components/frame";
 import {
   Pagination,
   PaginationContent,
@@ -223,7 +223,7 @@ export function BookingsList() {
           </CardPanel>
         </Card>
 
-        <FrameFooter>
+        <CardFrameFooter>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Select
@@ -285,7 +285,7 @@ export function BookingsList() {
               </Pagination>
             </div>
           </div>
-        </FrameFooter>
+        </CardFrameFooter>
       </CardFrame>
     </TooltipProvider>
   );
