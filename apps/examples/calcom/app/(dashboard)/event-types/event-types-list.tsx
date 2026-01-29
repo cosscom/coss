@@ -288,7 +288,7 @@ export function EventTypesList() {
           />
         )}
       >
-        <Card className="has-[[data-dragged],[data-drag-ended]]:border-transparent has-[[data-dragged],[data-drag-ended]]:bg-transparent has-[[data-dragged],[data-drag-ended]]:shadow-none has-[[data-dragged],[data-drag-ended]]:before:hidden has-[[data-dragged],[data-drag-ended]]:**:data-[slot=resource-item]:border-transparent has-[[data-dragged],[data-drag-ended]]:**:data-[slot=resource-item]:after:visible">
+        <Card className="has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=resource-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=resource-item]:after:visible">
           <CardPanel className="p-0">
             {eventTypes.map((eventType, _index) => {
               const isHidden = hiddenStates[eventType.id];

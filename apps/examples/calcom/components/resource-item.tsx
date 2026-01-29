@@ -37,12 +37,12 @@ export function ResourceItem({
   return (
     <div
       className={cn(
-        "after:-inset-px relative translate-y-(--translate-y) starting:rounded-2xl not-last:border-b bg-clip-padding not-data-dragging:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute starting:after:inset-y-1 after:rounded-[inherit] after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:data-drag-ended:hidden data-overlay:pointer-events-none data-dragging:not-data-dragged:z-1 data-dragging:rounded-2xl data-dragging:transition-[translate] data-dragging:after:visible data-overlay:after:visible data-dragging:after:inset-y-1 data-overlay:after:inset-y-1 data-dragging:after:rounded-2xl data-overlay:after:rounded-2xl data-dragged:after:border-dashed data-dragged:after:bg-transparent not-dark:data-overlay:after:bg-clip-padding data-overlay:after:shadow-lg data-dragged:*:opacity-0 dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "after:-inset-px relative translate-y-(--translate-y) starting:rounded-2xl not-last:border-b bg-clip-padding not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute starting:after:inset-y-1 after:rounded-[inherit] after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-transparent not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
         className,
       )}
-      data-dragged={sortableDragging ? "" : undefined}
-      data-dragging={sortableDraggingAny ? "" : undefined}
-      data-overlay={isOverlay ? "" : undefined}
+      data-drag-ghost={sortableDragging ? "" : undefined}
+      data-drag-on={sortableDraggingAny ? "" : undefined}
+      data-drag-overlay={isOverlay ? "" : undefined}
       data-slot="resource-item"
       ref={sortableRef}
       style={sortableStyle}
@@ -71,7 +71,7 @@ export function ResourceItemDragHandle({
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay],[data-drag-ended]]:opacity-100 opacity-0 not-in-data-drag-ended:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="resource-item-drag-handle"
