@@ -14,6 +14,7 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
+import { BookingsNav } from "@/components/app/bookings-nav";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingsListSkeleton } from "../booking-skeleton";
 
@@ -26,13 +27,14 @@ export default function Page() {
     return (
       <>
         <AppHeader>
-          <AppHeaderContent title="Unconfirmed Bookings">
+          <AppHeaderContent title="Bookings">
             <AppHeaderDescription>
-              View bookings that are awaiting confirmation.
+              See upcoming and past events booked through your event type links.
             </AppHeaderDescription>
           </AppHeaderContent>
         </AppHeader>
 
+        <BookingsNav />
         <BookingsListSkeleton />
       </>
     );
@@ -41,13 +43,14 @@ export default function Page() {
   return (
     <TooltipProvider delay={150} timeout={0}>
       <AppHeader>
-        <AppHeaderContent title="Unconfirmed Bookings">
+        <AppHeaderContent title="Bookings">
           <AppHeaderDescription>
-            View bookings that are awaiting confirmation.
+            See upcoming and past events booked through your event type links.
           </AppHeaderDescription>
         </AppHeaderContent>
       </AppHeader>
 
+      <BookingsNav />
       <Empty className="rounded-xl border border-dashed md:py-32">
         <EmptyHeader>
           <EmptyMedia variant="icon">

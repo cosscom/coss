@@ -41,30 +41,8 @@ export const navMainItems: NavItem[] = [
   },
   {
     icon: CalendarIcon,
-    items: [
-      {
-        title: "Upcoming",
-        url: "/booking/upcoming",
-      },
-      {
-        title: "Unconfirmed",
-        url: "/booking/unconfirmed",
-      },
-      {
-        title: "Recurring",
-        url: "/booking/recurring",
-      },
-      {
-        title: "Past",
-        url: "/booking/past",
-      },
-      {
-        title: "Canceled",
-        url: "/booking/canceled",
-      },
-    ],
     title: "Bookings",
-    url: "/booking",
+    url: "/booking/upcoming",
   },
   {
     icon: ClockFadingIcon,
