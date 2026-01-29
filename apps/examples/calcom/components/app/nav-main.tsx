@@ -35,6 +35,7 @@ type BaseNavItem = {
   url: string;
   icon: LucideIcon;
   isActive?: boolean;
+  matchPath?: string;
 };
 
 type NavSubItem = {
@@ -164,7 +165,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
 function NavItemSimple({ item }: { item: NavItemLeaf }) {
   const isBetweenMdAndLg = useIsBetweenMdAndLg();
   const pathname = usePathname();
-  const isActive = pathname.startsWith(item.url);
+  const isActive = pathname.startsWith(item.matchPath ?? item.url);
 
   return (
     <SidebarMenuItem>

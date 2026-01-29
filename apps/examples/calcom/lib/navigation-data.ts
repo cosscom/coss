@@ -21,6 +21,7 @@ export interface NavItem {
   icon: LucideIcon;
   isActive?: boolean;
   badge?: string;
+  matchPath?: string;
   items?: {
     title: string;
     url: string;
@@ -41,6 +42,7 @@ export const navMainItems: NavItem[] = [
   },
   {
     icon: CalendarIcon,
+    matchPath: "/booking",
     title: "Bookings",
     url: "/booking/upcoming",
   },
