@@ -185,6 +185,7 @@ function ListItemTitle({
     <h2
       className={cn("font-semibold sm:text-sm", className)}
       data-slot="list-item-title"
+      style={{ fontSynthesis: "none" }}
     >
       <Link className="before:absolute before:inset-0" {...linkProps}>
         {children}
