@@ -1,3 +1,7 @@
+"use client";
+
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
 import type { DraggableAttributes } from "@dnd-kit/core";
@@ -7,7 +11,23 @@ import Link from "next/link";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { ItemLabel } from "./item-label";
 
-export { ItemLabel };
+interface SortableListProps extends useRender.ComponentProps<"div"> {}
+
+function SortableList({ className, render, ...props }: SortableListProps) {
+  const defaultProps = {
+    className: cn(
+      "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible",
+      className,
+    ),
+    "data-slot": "list",
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render,
+  });
+}
 
 interface ListItemProps {
   children: ReactNode;
@@ -23,7 +43,7 @@ interface ListItemProps {
   sortableListeners?: SyntheticListenerMap;
 }
 
-export function ListItem({
+function ListItem({
   children,
   className,
   sortable = false,
@@ -88,7 +108,7 @@ interface SortableListItemProps {
   sortableListeners?: SyntheticListenerMap;
 }
 
-export function SortableListItem({
+function SortableListItem({
   children,
   className,
   labelColorLight,
@@ -124,7 +144,7 @@ interface ListItemDragHandleProps {
   attributes?: DraggableAttributes;
 }
 
-export function ListItemDragHandle({
+function ListItemDragHandle({
   className,
   listeners,
   attributes,
@@ -155,7 +175,7 @@ interface ListItemContentProps {
   className?: string;
 }
 
-export function ListItemContent({ children, className }: ListItemContentProps) {
+function ListItemContent({ children, className }: ListItemContentProps) {
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col gap-3", className)}>
       {children}
@@ -168,7 +188,7 @@ interface ListItemHeaderProps {
   className?: string;
 }
 
-export function ListItemHeader({ children, className }: ListItemHeaderProps) {
+function ListItemHeader({ children, className }: ListItemHeaderProps) {
   return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
 }
 
@@ -178,7 +198,7 @@ interface ListItemTitleProps
   className?: string;
 }
 
-export function ListItemTitle({
+function ListItemTitle({
   children,
   className,
   ...linkProps
@@ -200,7 +220,7 @@ interface ListItemDescriptionProps {
   className?: string;
 }
 
-export function ListItemDescription({
+function ListItemDescription({
   children,
   className,
 }: ListItemDescriptionProps) {
@@ -219,7 +239,7 @@ interface ListItemBadgesProps {
   className?: string;
 }
 
-export function ListItemBadges({ children, className }: ListItemBadgesProps) {
+function ListItemBadges({ children, className }: ListItemBadgesProps) {
   return (
     <div
       className={cn("flex flex-wrap items-center gap-2", className)}
@@ -235,7 +255,7 @@ interface ListItemActionsProps {
   className?: string;
 }
 
-export function ListItemActions({ children, className }: ListItemActionsProps) {
+function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
     <div
       className={cn("relative flex items-center", className)}
@@ -245,3 +265,17 @@ export function ListItemActions({ children, className }: ListItemActionsProps) {
     </div>
   );
 }
+
+export {
+  ItemLabel,
+  ListItem,
+  ListItemActions,
+  ListItemBadges,
+  ListItemContent,
+  ListItemDescription,
+  ListItemDragHandle,
+  ListItemHeader,
+  ListItemTitle,
+  SortableList,
+  SortableListItem,
+};

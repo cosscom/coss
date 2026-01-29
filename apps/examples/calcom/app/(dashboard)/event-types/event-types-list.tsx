@@ -29,12 +29,13 @@ import {
   ListItemDragHandle,
   ListItemHeader,
   ListItemTitle,
+  SortableList,
   SortableListItem,
-} from "@/components/list-item";
+} from "@/components/list";
 import {
   SortableItem,
   type SortableItemRenderProps,
-  SortableList,
+  SortableList as SortableListContext,
 } from "@/components/sortable";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import {
@@ -274,7 +275,7 @@ export function EventTypesList() {
 
   return (
     <TooltipProvider delay={0}>
-      <SortableList
+      <SortableListContext
         items={eventTypes}
         onReorder={handleReorder}
         renderOverlay={(eventType) => (
@@ -287,7 +288,7 @@ export function EventTypesList() {
           />
         )}
       >
-        <Card className="has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible">
+        <SortableList render={<Card />}>
           <CardPanel className="p-0">
             {eventTypes.map((eventType, _index) => {
               const isHidden = hiddenStates[eventType.id];
@@ -310,8 +311,8 @@ export function EventTypesList() {
               );
             })}
           </CardPanel>
-        </Card>
-      </SortableList>
+        </SortableList>
+      </SortableListContext>
 
       <div className="mt-6 text-center text-muted-foreground/72 text-sm">
         No more results
