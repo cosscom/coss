@@ -10,6 +10,7 @@ export const fontSans = localFont({
   display: "swap",
   src: "./CalSansUI[MODE,wght].woff2",
   variable: "--font-sans",
+  weight: "300 700",
 });
 
 export const fontHeading = localFont({
