@@ -22,14 +22,14 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import {
-  ResourceItem,
-  ResourceItemBadges,
-  ResourceItemContent,
-  ResourceItemDescription,
-  ResourceItemDragHandle,
-  ResourceItemHeader,
-  ResourceItemTitle,
-} from "@/components/resource-item";
+  ListItem,
+  ListItemBadges,
+  ListItemContent,
+  ListItemDescription,
+  ListItemDragHandle,
+  ListItemHeader,
+  ListItemTitle,
+} from "@/components/list-item";
 import {
   SortableItem,
   type SortableItemRenderProps,
@@ -58,22 +58,22 @@ const defaultProfile = mockEventTypeGroups[0]?.profile ?? {
 
 function EventTypeSkeletonItem() {
   return (
-    <ResourceItem>
-      <ResourceItemContent>
-        <ResourceItemHeader>
+    <ListItem>
+      <ListItemContent>
+        <ListItemHeader>
           <div className="flex items-center gap-2">
             <Skeleton className="h-6 w-full max-w-48 sm:h-5" />
             <Skeleton className="h-4 w-full max-w-32 max-sm:hidden" />
           </div>
           <Skeleton className="my-0.5 h-4 w-full max-w-82" />
-        </ResourceItemHeader>
-        <ResourceItemBadges>
+        </ListItemHeader>
+        <ListItemBadges>
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
           <Skeleton className="h-5.5 w-14 sm:h-4.5" />
-        </ResourceItemBadges>
-      </ResourceItemContent>
+        </ListItemBadges>
+      </ListItemContent>
       <EventTypeActionsSkeleton />
-    </ResourceItem>
+    </ListItem>
   );
 }
 
@@ -124,35 +124,34 @@ function EventTypeItemContent({
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
   return (
-    <ResourceItem
+    <ListItem
       isOverlay={isOverlay}
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
+      sortable
       sortableDragging={sortableProps?.isDragging}
       sortableDraggingAny={sortableProps?.isDraggingAny}
       sortableListeners={isOverlay ? undefined : sortableProps?.listeners}
       sortableRef={isOverlay ? undefined : sortableProps?.setNodeRef}
       sortableStyle={sortableProps?.style}
     >
-      <ResourceItemDragHandle />
-      <ResourceItemContent>
-        <ResourceItemHeader>
+      <ListItemDragHandle />
+      <ListItemContent>
+        <ListItemHeader>
           <div className="flex items-center gap-2">
-            <ResourceItemTitle href={eventPath}>
-              {eventType.title}
-            </ResourceItemTitle>
+            <ListItemTitle href={eventPath}>{eventType.title}</ListItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}
             </span>
           </div>
           {eventType.safeDescription && (
-            <ResourceItemDescription className="line-clamp-2">
+            <ListItemDescription className="line-clamp-2">
               {eventType.safeDescription}
-            </ResourceItemDescription>
+            </ListItemDescription>
           )}
-        </ResourceItemHeader>
+        </ListItemHeader>
 
-        <ResourceItemBadges>
+        <ListItemBadges>
           {isHidden && (
             <Badge className="pointer-events-none" variant="warning">
               <EyeOffIcon />
@@ -199,15 +198,15 @@ function EventTypeItemContent({
               {eventType.seatsPerTimeSlot} seats
             </Badge>
           )}
-        </ResourceItemBadges>
-      </ResourceItemContent>
+        </ListItemBadges>
+      </ListItemContent>
 
       <EventTypeActions
         isHidden={isHidden}
         onHiddenChange={onHiddenChange}
         tooltipHandle={tooltipHandle}
       />
-    </ResourceItem>
+    </ListItem>
   );
 }
 
@@ -288,7 +287,7 @@ export function EventTypesList() {
           />
         )}
       >
-        <Card className="has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden">
+        <Card className="has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible">
           <CardPanel className="p-0">
             {eventTypes.map((eventType, _index) => {
               const isHidden = hiddenStates[eventType.id];
