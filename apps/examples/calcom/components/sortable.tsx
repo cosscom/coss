@@ -6,7 +6,6 @@ import {
   DndContext,
   type DragCancelEvent,
   type DragEndEvent,
-  type DragOverEvent,
   DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
@@ -17,6 +16,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -90,7 +90,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
@@ -109,24 +108,15 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   );
 
   const ids = items.map((item) => item.id);
-  const activeIndex = activeId !== null ? ids.indexOf(activeId) : -1;
-  const overIndex = overId !== null ? ids.indexOf(overId) : -1;
-  const _projectedIndex =
-    activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
 
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
     setActiveId(event.active.id);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    setOverId(event.over?.id ?? null);
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
     setActiveId(null);
-    setOverId(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -139,7 +129,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const handleDragCancel = (_event: DragCancelEvent) => {
     setIsDraggingAny(false);
     setActiveId(null);
-    setOverId(null);
   };
 
   const activeItem =
@@ -150,9 +139,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       <DndContext
         collisionDetection={closestCenter}
         id={id}
+        modifiers={[restrictToVerticalAxis]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
         onDragStart={handleDragStart}
         sensors={sensors}
       >
