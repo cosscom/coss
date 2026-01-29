@@ -154,12 +154,6 @@ function EventTypeItemContent({
         </ListItemHeader>
 
         <ListItemBadges>
-          {isHidden && (
-            <Badge className="pointer-events-none" variant="warning">
-              <EyeOffIcon />
-              Hidden
-            </Badge>
-          )}
           <Badge className="pointer-events-none tabular-nums" variant="outline">
             <ClockIcon />
             {formatDuration(eventType.length)}
@@ -198,6 +192,12 @@ function EventTypeItemContent({
             <Badge className="pointer-events-none" variant="outline">
               <ArmchairIcon />
               {eventType.seatsPerTimeSlot} seats
+            </Badge>
+          )}
+          {isHidden && (
+            <Badge className="pointer-events-none" variant="warning">
+              <EyeOffIcon />
+              Hidden
             </Badge>
           )}
         </ListItemBadges>
