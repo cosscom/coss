@@ -29,6 +29,7 @@ import {
   ListItemDragHandle,
   ListItemHeader,
   ListItemTitle,
+  SortableListItem,
 } from "@/components/list-item";
 import {
   SortableItem,
@@ -124,11 +125,10 @@ function EventTypeItemContent({
     et.seatsPerTimeSlot !== null && et.seatsPerTimeSlot > 0;
 
   return (
-    <ListItem
+    <SortableListItem
       isOverlay={isOverlay}
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}
-      sortable
       sortableDragging={sortableProps?.isDragging}
       sortableDraggingAny={sortableProps?.isDraggingAny}
       sortableListeners={isOverlay ? undefined : sortableProps?.listeners}
@@ -206,7 +206,7 @@ function EventTypeItemContent({
         onHiddenChange={onHiddenChange}
         tooltipHandle={tooltipHandle}
       />
-    </ListItem>
+    </SortableListItem>
   );
 }
 

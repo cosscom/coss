@@ -75,6 +75,49 @@ export function ListItem({
   );
 }
 
+interface SortableListItemProps {
+  children: ReactNode;
+  className?: string;
+  labelColorLight?: string;
+  labelColorDark?: string;
+  isOverlay?: boolean;
+  sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
+  sortableDragging?: boolean;
+  sortableDraggingAny?: boolean;
+  sortableListeners?: SyntheticListenerMap;
+}
+
+export function SortableListItem({
+  children,
+  className,
+  labelColorLight,
+  labelColorDark,
+  isOverlay,
+  sortableRef,
+  sortableStyle,
+  sortableDragging,
+  sortableDraggingAny,
+  sortableListeners,
+}: SortableListItemProps) {
+  return (
+    <ListItem
+      className={className}
+      isOverlay={isOverlay}
+      labelColorDark={labelColorDark}
+      labelColorLight={labelColorLight}
+      sortable
+      sortableDragging={sortableDragging}
+      sortableDraggingAny={sortableDraggingAny}
+      sortableListeners={sortableListeners}
+      sortableRef={sortableRef}
+      sortableStyle={sortableStyle}
+    >
+      {children}
+    </ListItem>
+  );
+}
+
 interface ListItemDragHandleProps {
   className?: string;
   listeners?: SyntheticListenerMap;
