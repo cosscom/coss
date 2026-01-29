@@ -1,5 +1,4 @@
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import { cn } from "@coss/ui/lib/utils";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -36,9 +35,12 @@ export function ResourceItem({
   sortableListeners,
 }: ResourceItemProps) {
   return (
-    <Card
+    <div
       className={cn(
-        "translate-y-(--translate-y) transition-[background-color,box-shadow] has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-overlay:pointer-events-none data-dragged:border-dashed data-dragged:bg-transparent data-drag-ended:opacity-0 data-dragged:shadow-none data-overlay:in-data-drag-ended:shadow-none data-overlay:shadow-xl data-dragging:transition-[background-color,opacity,translate,box-shadow] data-dragged:before:hidden data-dragged:*:opacity-64 dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "relative translate-y-(--translate-y) not-last:border-b bg-clip-padding not-data-dragging:transition-[background-color,border-radius] first:rounded-t-2xl last:rounded-b-2xl has-[[data-slot=resource-item-title]:hover]:z-1 has-[[data-slot=resource-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] data-dragging:not-data-dragged:z-1 data-dragging:rounded-2xl data-dragging:transition-[translate] dark:has-[[data-slot=resource-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]",
+        "after:-inset-px starting:rounded-2xl after:pointer-events-none after:invisible after:absolute starting:after:inset-y-1 after:rounded-[inherit] after:border after:border-border after:bg-card data-overlay:pointer-events-none data-dragging:after:visible data-overlay:after:visible data-dragging:after:inset-y-1 data-overlay:after:inset-y-1 data-dragging:after:rounded-2xl data-overlay:after:rounded-2xl data-dragged:after:border-dashed data-dragged:after:bg-transparent not-dark:data-overlay:after:bg-clip-padding data-overlay:after:shadow-lg data-dragged:*:opacity-0",
+        "after:transition-[border-radius,inset]",
+        "data-overlay:data-drag-ended:hidden",
         className,
       )}
       data-dragged={sortableDragging ? "" : undefined}
@@ -49,11 +51,11 @@ export function ResourceItem({
       style={sortableStyle}
       {...sortableListeners}
     >
-      <CardPanel className="flex items-center justify-between gap-4 px-6 py-4">
+      <div className="relative z-1 flex items-center justify-between gap-4 px-6 py-4">
         <ItemLabel colorDark={labelColorDark} colorLight={labelColorLight} />
         {children}
-      </CardPanel>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -72,7 +74,7 @@ export function ResourceItemDragHandle({
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay],[data-dragged]]:opacity-100 opacity-0 not-in-data-drag-ended:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=resource-item]:hover,[data-slot=resource-item][data-overlay],[data-drag-ended]]:opacity-100 opacity-0 not-in-data-drag-ended:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="resource-item-drag-handle"

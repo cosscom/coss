@@ -165,12 +165,17 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
             easing: "cubic-bezier(0.4, 0, 0.2, 1)",
             sideEffects({ active, dragOverlay }) {
               active.node.setAttribute("data-drag-ended", "");
-              dragOverlay.node.setAttribute("data-drag-ended", "");
+              dragOverlay.node.firstElementChild?.setAttribute(
+                "data-drag-ended",
+                "",
+              );
               return () => {
                 requestAnimationFrame(() =>
                   requestAnimationFrame(() => {
                     active.node.removeAttribute("data-drag-ended");
-                    dragOverlay.node.removeAttribute("data-drag-ended");
+                    dragOverlay.node.firstElementChild?.removeAttribute(
+                      "data-drag-ended",
+                    );
                   }),
                 );
               };

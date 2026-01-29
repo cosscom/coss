@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
+import { Card, CardPanel } from "@coss/ui/components/card";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import { toastManager } from "@coss/ui/components/toast";
 import {
@@ -287,28 +288,30 @@ export function EventTypesList() {
           />
         )}
       >
-        <div className="flex flex-col gap-2">
-          {eventTypes.map((eventType, _index) => {
-            const isHidden = hiddenStates[eventType.id];
-            const eventPath = getEventTypePath(eventType);
+        <Card className="has-[[data-dragged],[data-drag-ended]]:border-transparent has-[[data-dragged],[data-drag-ended]]:bg-transparent has-[[data-dragged],[data-drag-ended]]:shadow-none has-[[data-dragged],[data-drag-ended]]:before:hidden has-[[data-dragged],[data-drag-ended]]:**:data-[slot=resource-item]:border-transparent has-[[data-dragged],[data-drag-ended]]:**:data-[slot=resource-item]:after:visible">
+          <CardPanel className="p-0">
+            {eventTypes.map((eventType, _index) => {
+              const isHidden = hiddenStates[eventType.id];
+              const eventPath = getEventTypePath(eventType);
 
-            return (
-              <SortableItem id={eventType.id} key={eventType.id}>
-                {(sortableProps) => (
-                  <EventTypeItemContent
-                    eventPath={eventPath}
-                    eventType={eventType}
-                    isHidden={isHidden ?? false}
-                    onHiddenChange={(hidden) =>
-                      handleHiddenToggle(eventType.id, hidden)
-                    }
-                    sortableProps={sortableProps}
-                  />
-                )}
-              </SortableItem>
-            );
-          })}
-        </div>
+              return (
+                <SortableItem id={eventType.id} key={eventType.id}>
+                  {(sortableProps) => (
+                    <EventTypeItemContent
+                      eventPath={eventPath}
+                      eventType={eventType}
+                      isHidden={isHidden ?? false}
+                      onHiddenChange={(hidden) =>
+                        handleHiddenToggle(eventType.id, hidden)
+                      }
+                      sortableProps={sortableProps}
+                    />
+                  )}
+                </SortableItem>
+              );
+            })}
+          </CardPanel>
+        </Card>
       </SortableList>
 
       <div className="mt-6 text-center text-muted-foreground/72 text-sm">
