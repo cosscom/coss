@@ -57,6 +57,7 @@ function ListItem({
       data-drag-ghost={sortable && sortableDragging ? "" : undefined}
       data-drag-on={sortable && sortableDraggingAny ? "" : undefined}
       data-drag-overlay={sortable && isOverlay ? "" : undefined}
+      data-draggable={sortable ? "" : undefined}
       data-has-dragged={sortable && hasDragged ? "" : undefined}
       data-slot="list-item"
       ref={sortable ? sortableRef : undefined}
