@@ -183,7 +183,7 @@ function ListItemTitle({
 }: ListItemTitleProps) {
   return (
     <h2
-      className={cn("font-semibold sm:text-sm [font-synthesis:none]", className)}
+      className={cn("font-semibold sm:text-sm", className)}
       data-slot="list-item-title"
     >
       <Link className="before:absolute before:inset-0" {...linkProps}>
