@@ -35,8 +35,10 @@ import {
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
   activeId: UniqueIdentifier | null;
+  hasDragged: boolean;
 }>({
   activeId: null,
+  hasDragged: false,
   isDraggingAny: false,
 });
 
@@ -45,6 +47,7 @@ export interface SortableItemRenderProps {
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
   isDraggingAny: boolean;
+  hasDragged: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -55,7 +58,7 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny } = useContext(SortableStateContext);
+  const { isDraggingAny, hasDragged } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -65,6 +68,7 @@ export function SortableItem({ id, children }: SortableItemProps) {
 
   return children({
     attributes,
+    hasDragged,
     isDragging,
     isDraggingAny,
     listeners,
@@ -89,6 +93,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [hasDragged, setHasDragged] = useState(false);
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
@@ -111,6 +116,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
     setActiveId(event.active.id);
+    if (!hasDragged) {
+      setHasDragged(true);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -134,7 +142,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     activeId !== null ? items.find((item) => item.id === activeId) : null;
 
   return (
-    <SortableStateContext.Provider value={{ activeId, isDraggingAny }}>
+    <SortableStateContext.Provider
+      value={{ activeId, hasDragged, isDraggingAny }}
+    >
       <DndContext
         collisionDetection={closestCenter}
         id={id}

@@ -127,6 +127,7 @@ function EventTypeItemContent({
 
   return (
     <SortableListItem
+      hasDragged={sortableProps?.hasDragged}
       isOverlay={isOverlay}
       labelColorDark={getEventTypeColors(eventType)?.dark ?? undefined}
       labelColorLight={getEventTypeColors(eventType)?.light ?? undefined}

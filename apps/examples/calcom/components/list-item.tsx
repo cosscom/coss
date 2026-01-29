@@ -21,6 +21,7 @@ interface ListItemProps {
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
   sortableListeners?: SyntheticListenerMap;
+  hasDragged?: boolean;
 }
 
 function ListItem({
@@ -35,6 +36,7 @@ function ListItem({
   sortableDragging,
   sortableDraggingAny,
   sortableListeners,
+  hasDragged,
 }: ListItemProps) {
   const baseClasses =
     "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]";
@@ -43,7 +45,7 @@ function ListItem({
     "transition-[background-color] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)]";
 
   const sortableClasses =
-    "after:-inset-px relative translate-y-(--translate-y) not-data-drag-on:transition-[background-color] after:pointer-events-none after:invisible after:absolute after:rounded-[inherit] after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-transparent not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0";
+    "after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 after:rounded-[inherit] after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-transparent not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0";
 
   return (
     <div
@@ -55,6 +57,7 @@ function ListItem({
       data-drag-ghost={sortable && sortableDragging ? "" : undefined}
       data-drag-on={sortable && sortableDraggingAny ? "" : undefined}
       data-drag-overlay={sortable && isOverlay ? "" : undefined}
+      data-has-dragged={sortable && hasDragged ? "" : undefined}
       data-slot="list-item"
       ref={sortable ? sortableRef : undefined}
       style={sortable ? sortableStyle : undefined}
@@ -86,6 +89,7 @@ interface SortableListItemProps {
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
   sortableListeners?: SyntheticListenerMap;
+  hasDragged?: boolean;
 }
 
 function SortableListItem({
@@ -99,10 +103,12 @@ function SortableListItem({
   sortableDragging,
   sortableDraggingAny,
   sortableListeners,
+  hasDragged,
 }: SortableListItemProps) {
   return (
     <ListItem
       className={className}
+      hasDragged={hasDragged}
       isOverlay={isOverlay}
       labelColorDark={labelColorDark}
       labelColorLight={labelColorLight}
