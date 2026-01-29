@@ -16,7 +16,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -139,7 +138,6 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
       <DndContext
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToVerticalAxis]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
