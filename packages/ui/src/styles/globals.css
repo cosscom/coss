@@ -68,11 +68,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: color-mix(
-    in srgb,
-    var(--color-neutral-50) 50%,
-    var(--color-white)
-  );
+  --background: var(--color-white);
   --foreground: var(--color-neutral-800);
   --card: var(--color-white);
   --card-foreground: var(--color-neutral-800);
