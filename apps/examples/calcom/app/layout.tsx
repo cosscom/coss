@@ -28,9 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html
+      className={`${fontSans.variable} ${fontSans1.variable} ${fontSans2.variable} ${fontSansInter.variable} ${fontHeading.variable}`}
       lang="en"
       suppressHydrationWarning
-      className={`${fontSans.variable} ${fontSans1.variable} ${fontSans2.variable} ${fontSansInter.variable} ${fontHeading.variable}`}
     >
       <body className="relative bg-sidebar font-sans text-foreground antialiased">
         <ThemeProvider>
