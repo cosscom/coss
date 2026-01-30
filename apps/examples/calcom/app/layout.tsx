@@ -1,7 +1,15 @@
 import "./globals.css";
 
 import { ToastProvider } from "@coss/ui/components/toast";
-import { fontHeading, fontSans } from "@coss/ui/fonts";
+import {
+  fontHeading,
+  fontSans,
+  fontSans1,
+  fontSans2,
+  fontSansInter,
+} from "@coss/ui/fonts";
+import { FontProvider } from "@coss/ui/shared/font-provider";
+import { FontSwitcher } from "@coss/ui/shared/font-switcher";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { AppCommand } from "@/components/app/app-command";
@@ -19,17 +27,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontHeading.variable} ${fontSans.variable} relative bg-sidebar font-sans text-foreground antialiased`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${fontSans.variable} ${fontSans1.variable} ${fontSans2.variable} ${fontSansInter.variable} ${fontHeading.variable}`}
+    >
+      <body className="relative bg-sidebar font-sans text-foreground antialiased">
         <ThemeProvider>
-          <ToastProvider>
-            <DebugProvider>
-              <AppCommand />
-              {children}
-            </DebugProvider>
-          </ToastProvider>
+          <FontProvider>
+            <FontSwitcher side="right" />
+            <ToastProvider>
+              <DebugProvider>
+                <AppCommand />
+                {children}
+              </DebugProvider>
+            </ToastProvider>
+          </FontProvider>
         </ThemeProvider>
       </body>
     </html>

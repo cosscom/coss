@@ -11,7 +11,7 @@
   --breakpoint-4xl: 2000px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-sans-active);
   --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -64,6 +64,23 @@
       background-position: -200% 0;
     }
   }
+}
+
+/* Font variant switching */
+:root {
+  --font-sans-active: var(--font-sans);
+}
+
+.font-variant-1 {
+  --font-sans-active: var(--font-sans-1);
+}
+
+.font-variant-2 {
+  --font-sans-active: var(--font-sans-2);
+}
+
+.font-variant-inter {
+  --font-sans-active: var(--font-sans-inter);
 }
 
 :root {
