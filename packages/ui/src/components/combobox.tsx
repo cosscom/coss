@@ -16,20 +16,13 @@ const ComboboxContext = React.createContext<{
   multiple: false,
 });
 
-type ComboboxRootProps<
-  ItemValue,
-  Multiple extends boolean | undefined,
-> = Parameters<typeof ComboboxPrimitive.Root<ItemValue, Multiple>>[0];
-
-function Combobox<ItemValue, Multiple extends boolean | undefined = false>(
-  props: ComboboxPrimitive.Root.Props<ItemValue, Multiple>,
-) {
+function Combobox<Value, Multiple extends boolean | undefined = false>(
+  props: ComboboxPrimitive.Root.Props<Value, Multiple>,
+): React.JSX.Element {
   const chipsRef = React.useRef<Element | null>(null);
   return (
     <ComboboxContext.Provider value={{ chipsRef, multiple: !!props.multiple }}>
-      <ComboboxPrimitive.Root
-        {...(props as ComboboxRootProps<ItemValue, Multiple>)}
-      />
+      <ComboboxPrimitive.Root {...props} />
     </ComboboxContext.Provider>
   );
 }
