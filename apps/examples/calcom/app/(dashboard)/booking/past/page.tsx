@@ -49,13 +49,12 @@ export default function Page() {
               <ComboboxValue />
               <ChevronsUpDownIcon />
             </ComboboxTrigger>
-            <ComboboxPopup aria-label="Select preset">
+            <ComboboxPopup align="end" aria-label="Select preset">
               <div className="border-b p-2">
                 <ComboboxInput
                   className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
                   placeholder="e.g. This Week"
                   showTrigger={false}
-                  startAddon={<SearchIcon />}
                 />
               </div>
               <ComboboxEmpty>No presets found.</ComboboxEmpty>

@@ -139,20 +139,28 @@ function ComboboxTrigger({
 function ComboboxPopup({
   className,
   children,
+  side = "bottom",
   sideOffset = 4,
+  alignOffset,
+  align = "start",
   ...props
 }: ComboboxPrimitive.Popup.Props & {
-  sideOffset?: number;
+  align?: ComboboxPrimitive.Positioner.Props["align"];
+  sideOffset?: ComboboxPrimitive.Positioner.Props["sideOffset"];
+  alignOffset?: ComboboxPrimitive.Positioner.Props["alignOffset"];
+  side?: ComboboxPrimitive.Positioner.Props["side"];
 }) {
   const { chipsRef } = React.useContext(ComboboxContext);
 
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
-        align="start"
+        align={align}
+        alignOffset={alignOffset}
         anchor={chipsRef}
         className="z-50 select-none"
         data-slot="combobox-positioner"
+        side={side}
         sideOffset={sideOffset}
       >
         <span

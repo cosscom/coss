@@ -55,20 +55,28 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
 function SelectPopup({
   className,
   children,
+  side = "bottom",
   sideOffset = 4,
+  align = "start",
+  alignOffset = 0,
   alignItemWithTrigger = true,
   ...props
 }: SelectPrimitive.Popup.Props & {
+  side?: SelectPrimitive.Positioner.Props["side"];
   sideOffset?: SelectPrimitive.Positioner.Props["sideOffset"];
+  align?: SelectPrimitive.Positioner.Props["align"];
+  alignOffset?: SelectPrimitive.Positioner.Props["alignOffset"];
   alignItemWithTrigger?: SelectPrimitive.Positioner.Props["alignItemWithTrigger"];
 }) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
-        align="start"
+        align={align}
         alignItemWithTrigger={alignItemWithTrigger}
+        alignOffset={alignOffset}
         className="z-50 select-none"
         data-slot="select-positioner"
+        side={side}
         sideOffset={sideOffset}
       >
         <SelectPrimitive.Popup

@@ -76,17 +76,25 @@ function AutocompleteInput({
 function AutocompletePopup({
   className,
   children,
+  side = "bottom",
   sideOffset = 4,
+  alignOffset,
+  align = "start",
   ...props
 }: AutocompletePrimitive.Popup.Props & {
-  sideOffset?: number;
+  align?: AutocompletePrimitive.Positioner.Props["align"];
+  sideOffset?: AutocompletePrimitive.Positioner.Props["sideOffset"];
+  alignOffset?: AutocompletePrimitive.Positioner.Props["alignOffset"];
+  side?: AutocompletePrimitive.Positioner.Props["side"];
 }) {
   return (
     <AutocompletePrimitive.Portal>
       <AutocompletePrimitive.Positioner
-        align="start"
+        align={align}
+        alignOffset={alignOffset}
         className="z-50 select-none"
         data-slot="autocomplete-positioner"
+        side={side}
         sideOffset={sideOffset}
       >
         <span
