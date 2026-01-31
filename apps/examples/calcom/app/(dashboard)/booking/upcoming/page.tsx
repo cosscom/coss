@@ -15,7 +15,6 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { BookingsFilters } from "@/components/app/bookings-filters";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingsListSkeleton } from "../booking-skeleton";
@@ -40,7 +39,6 @@ export default function Page() {
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-2">
-        <BookingsFilters />
         <Button variant="outline">
           <SaveIcon />
           Saved Filters
