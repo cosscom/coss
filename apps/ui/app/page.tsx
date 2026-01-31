@@ -5,6 +5,7 @@ import {
 } from "@coss/ui/shared/page-header";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getCategoryThumbnail } from "@/components/category-thumbnails";
 import { categories } from "@/config/categories";
 import {
   Card,
@@ -14,7 +15,6 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@/registry/default/ui/card";
-import { getCategoryThumbnail } from "./components/category-thumbnails";
 
 const description = "Built for developers and AI.";
 
