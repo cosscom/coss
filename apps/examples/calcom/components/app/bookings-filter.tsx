@@ -1,54 +1,83 @@
-import { cn } from "@coss/ui/lib/utils";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@coss/ui/components/avatar";
 import { Button, buttonVariants } from "@coss/ui/components/button";
 import { Group, GroupSeparator, GroupText } from "@coss/ui/components/group";
-import { ContactRoundIcon, ListFilterIcon, Link2Icon, XIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@coss/ui/components/avatar";
+import { cn } from "@coss/ui/lib/utils";
+import {
+  ContactRoundIcon,
+  Link2Icon,
+  ListFilterIcon,
+  XIcon,
+} from "lucide-react";
 
 function BookingsFilter() {
   return (
-    <div className="flex items-center justify-between gap-2 mt-6">
+    <div className="mt-6 flex items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <Group>
-          <GroupText className={cn(buttonVariants({
-            size: "sm",
-            variant: "outline",
-          }), "pointer-events-none")}>
+          <GroupText
+            className={cn(
+              buttonVariants({
+                size: "sm",
+                variant: "outline",
+              }),
+              "pointer-events-none",
+            )}
+          >
             <Link2Icon />
             Event Type
           </GroupText>
           <GroupSeparator />
-          <GroupText className={cn(buttonVariants({
-            size: "sm",
-            variant: "outline",
-          }), "pointer-events-none text-muted-foreground")}>
+          <GroupText
+            className={cn(
+              buttonVariants({
+                size: "sm",
+                variant: "outline",
+              }),
+              "pointer-events-none text-muted-foreground",
+            )}
+          >
             is
           </GroupText>
           <GroupSeparator />
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             15 Min Meeting
           </Button>
           <GroupSeparator />
-          <Button variant="outline" size="icon-sm" aria-label="Remove filter">
+          <Button aria-label="Remove filter" size="icon-sm" variant="outline">
             <XIcon />
           </Button>
         </Group>
         <Group>
-          <GroupText className={cn(buttonVariants({
-            size: "sm",
-            variant: "outline",
-          }), "pointer-events-none")}>
+          <GroupText
+            className={cn(
+              buttonVariants({
+                size: "sm",
+                variant: "outline",
+              }),
+              "pointer-events-none",
+            )}
+          >
             <ContactRoundIcon />
             Member
           </GroupText>
           <GroupSeparator />
-          <GroupText className={cn(buttonVariants({
-            size: "sm",
-            variant: "outline",
-          }), "pointer-events-none text-muted-foreground")}>
+          <GroupText
+            className={cn(
+              buttonVariants({
+                size: "sm",
+                variant: "outline",
+              }),
+              "pointer-events-none text-muted-foreground",
+            )}
+          >
             is any of
           </GroupText>
           <GroupSeparator />
-          <Button variant="outline" size="sm">
+          <Button size="sm" variant="outline">
             <div className="-space-x-1.5 flex">
               <Avatar className="size-3.5 ring ring-background">
                 <AvatarImage
@@ -75,19 +104,19 @@ function BookingsFilter() {
             3 users
           </Button>
           <GroupSeparator />
-          <Button variant="outline" size="icon-sm" aria-label="Remove filter">
+          <Button aria-label="Remove filter" size="icon-sm" variant="outline">
             <XIcon />
           </Button>
         </Group>
-        <Button variant="ghost" size="icon-sm" aria-label="Add filter">
+        <Button aria-label="Add filter" size="icon-sm" variant="ghost">
           <ListFilterIcon />
         </Button>
       </div>
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm">
+        <Button size="sm" variant="ghost">
           Clear
         </Button>
-        <Button variant="outline" size="sm">
+        <Button size="sm" variant="outline">
           Save
         </Button>
       </div>

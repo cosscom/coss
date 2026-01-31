@@ -5,10 +5,10 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
+import { BookingsFilter } from "@/components/app/bookings-filter";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsSavedFilters } from "@/components/app/bookings-saved-filters";
 import { BookingsList } from "./bookings-list";
-import { BookingsFilter } from "@/components/app/bookings-filter";
 
 export default function Page() {
   return (
