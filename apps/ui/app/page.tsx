@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCategoryThumbnail } from "@/components/category-thumbnails";
 import { categories } from "@/config/categories";
+import { Button } from "@/registry/default/ui/button";
 import {
   Card,
   CardFrame,
@@ -31,6 +32,12 @@ export default function Page() {
           A new, modern UI component library built on top of Base UI.
         </PageHeaderHeading>
         <PageHeaderDescription>{description}</PageHeaderDescription>
+        <div className="flex gap-2">
+          <Button size="lg">Get started</Button>
+          <Button size="lg" variant="outline">
+            Search 418 components
+          </Button>
+        </div>
       </PageHeader>
       <div className="relative">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

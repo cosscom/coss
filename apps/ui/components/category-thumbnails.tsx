@@ -65,14 +65,19 @@ function Button({
 function Card({
   children,
   className,
+  withGradient = true,
 }: {
   children: ReactNode;
   className?: string;
+  withGradient?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-72 flex-col rounded-2xl border bg-linear-to-b from-[color-mix(in_srgb,var(--background)_94%,var(--color-white))] to-[color-mix(in_srgb,var(--background)_99%,var(--color-black))] not-dark:bg-clip-padding text-card-foreground shadow-md/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_-1px_--theme(--color-white/6%),0_1px_--theme(--color-black/6%)] dark:to-[color-mix(in_srgb,var(--background)_95%,var(--color-white))]",
+        "relative flex w-full max-w-72 flex-col rounded-2xl border not-dark:bg-clip-padding text-card-foreground shadow-md/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_-1px_--theme(--color-white/6%),0_1px_--theme(--color-black/6%)]",
+        withGradient
+          ? "bg-linear-to-b from-[color-mix(in_srgb,var(--card)_96%,var(--color-white))] to-[color-mix(in_srgb,var(--card)_99%,var(--color-black))] dark:to-[color-mix(in_srgb,var(--card)_98%,var(--color-white))]"
+          : "bg-card/99 dark:bg-card",
         className,
       )}
     >
@@ -155,7 +160,7 @@ function FormField({
   return (
     <div className="flex flex-col gap-2">
       <Text className={labelWidth} />
-      <Card className="[--radius-2xl:10px]">
+      <Card className="[--radius-2xl:10px]" withGradient={false}>
         <CardPanel className="py-3.5" />
       </Card>
       {showError && <Text className="w-[80%]" variant="secondary" />}
@@ -247,7 +252,7 @@ export const alertDialogThumbnail = (
 // Autocomplete
 export const autocompleteThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-2">
-    <Card className="[--radius-2xl:12px]">
+    <Card className="[--radius-2xl:12px]" withGradient={false}>
       <CardPanel className="flex items-center gap-2 px-4 py-2">
         <Text className="w-[40%]" />
         <Icon icon={TextCursorIcon} />
@@ -299,7 +304,10 @@ export const breadcrumbThumbnail = (
 
 // Button
 export const buttonThumbnail = (
-  <Card className="max-w-24 border-none from-(--btn-from) to-(--btn-to)! [--radius-2xl:14px]">
+  <Card
+    className="max-w-24 border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:14px]"
+    withGradient={false}
+  >
     <CardPanel className="px-6 py-4">
       <Text className="bg-primary-foreground/40" />
     </CardPanel>
@@ -359,7 +367,7 @@ export const collapsibleThumbnail = (
 
 // Combobox
 export const comboboxThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
     <CardPanel className="flex items-center gap-2 px-3 py-[calc(--spacing(2.5)-1px)]">
       <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
         <Text className="w-6" />
@@ -439,7 +447,10 @@ export const fieldsetThumbnail = (
 export const formThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-4">
     <FormField />
-    <Card className="border-none from-(--btn-from) to-(--btn-to)! [--radius-2xl:10px]">
+    <Card
+      className="border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:10px]"
+      withGradient={false}
+    >
       <CardPanel className="py-3.5" />
     </Card>
   </div>
@@ -451,7 +462,7 @@ export const frameThumbnail = (
     <div className="flex flex-col gap-2 p-4">
       <Text className="w-[70%]" />
     </div>
-    <Card>
+    <Card className="max-w-none">
       <CardPanel className="p-5">
         <div className="flex flex-col gap-2">
           <Text className="w-[70%]" />
@@ -476,7 +487,7 @@ export const groupThumbnail = (
 
 // Input
 export const inputThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
     <CardPanel className="px-6 py-4">
       <Text className="w-[60%]" />
     </CardPanel>
@@ -485,7 +496,7 @@ export const inputThumbnail = (
 
 // Input Group
 export const inputGroupThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
     <CardPanel className="flex gap-2 p-0">
       <div className="flex flex-1 items-center gap-2 py-2.5 ps-4">
         <Icon icon={SearchIcon} />
@@ -668,7 +679,7 @@ export const scrollAreaThumbnail = (
 
 // Select
 export const selectThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
     <CardPanel className="flex gap-2 p-0">
       <div className="flex flex-1 items-center justify-between gap-2 py-2.5 ps-4 pe-2.5">
         <Text className="w-[60%]" />
@@ -705,8 +716,8 @@ export const separatorThumbnail = (
 // Sheet
 export const sheetThumbnail = (
   <div className="flex h-full flex-1 gap-2">
-    <div className="flex-1 rounded-xl border border-dashed" />
-    <Card className="h-full max-w-32 [--radius-2xl:14px]">
+    <div className="flex-1 rounded-xl border border-input border-dashed" />
+    <Card className="h-full max-w-1/3 [--radius-2xl:14px]">
       <CardPanel className="flex flex-col gap-4 p-3">
         <div className="flex flex-1 flex-col gap-2">
           <Text className="w-[60%]" variant="main" />
@@ -791,7 +802,7 @@ export const tabsThumbnail = (
 
 // Textarea
 export const textareaThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
     <CardPanel className="flex flex-col gap-2 px-6 py-4">
       <Text className="w-[60%]" />
       <Text className="opacity-0" />
@@ -802,7 +813,7 @@ export const textareaThumbnail = (
 
 // Toast
 export const toastThumbnail = (
-  <div className="relative flex-1">
+  <div className="relative flex flex-1 justify-center">
     <Card className="-top-6 absolute scale-80">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
