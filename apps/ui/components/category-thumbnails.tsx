@@ -16,7 +16,6 @@ import {
   XIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { Card as BaseCard, CardPanel } from "@/registry/default/ui/card";
 
 function Icon({
   icon: IconComponent,
@@ -57,6 +56,7 @@ function Button({
   return <div className={cn(height, "w-7 rounded-sm", bgColor, className)} />;
 }
 
+// Standalone Card component for thumbnails - independent from registry Card
 function Card({
   children,
   className,
@@ -65,9 +65,36 @@ function Card({
   className?: string;
 }) {
   return (
-    <BaseCard className={cn("w-full max-w-72 shadow-md/3", className)}>
+    <div
+      className={cn(
+        "relative flex w-full max-w-72 flex-col rounded-2xl border bg-card not-dark:bg-clip-padding text-card-foreground shadow-md/3 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        className,
+      )}
+    >
       {children}
-    </BaseCard>
+    </div>
+  );
+}
+
+// Standalone CardPanel component for thumbnails - independent from registry CardPanel
+function CardPanel({
+  children,
+  className,
+  ...props
+}: {
+  children?: ReactNode;
+  className?: string;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "flex-1 p-6 in-[[data-slot=card]:has(>[data-slot=card-header]:not(.border-b))]:pt-0 in-[[data-slot=card]:has(>[data-slot=card-footer]:not(.border-t))]:pb-0",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
   );
 }
 
