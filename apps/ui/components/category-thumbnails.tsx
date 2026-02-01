@@ -176,7 +176,7 @@ function TableRow({
       {showCheckbox && <Text className="size-2.5 rounded-xs" />}
       <Text className="flex-1" />
       {Array.from({ length: cells }).map((_, i) => (
-        <Text key={i} className="flex-1" variant="secondary" />
+        <Text className="flex-1" key={i} variant="secondary" />
       ))}
     </div>
   );
@@ -190,7 +190,6 @@ function CommandItem() {
     </div>
   );
 }
-
 
 // ============================================================================
 // Thumbnail Implementations
@@ -740,7 +739,7 @@ export const skeletonThumbnail = (
 
 // Slider
 export const sliderThumbnail = (
-  <div className="flex max-w-50 w-full items-center gap-1">
+  <div className="flex w-full max-w-50 items-center gap-1">
     <Text className="w-[35%] bg-primary" variant="secondary" />
     <div className="size-4 rounded-full bg-primary" />
     <Text className="flex-1" variant="secondary" />
