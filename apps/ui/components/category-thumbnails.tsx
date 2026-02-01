@@ -9,7 +9,6 @@ import {
   InfoIcon,
   MinusIcon,
   PlusIcon,
-  PowerIcon,
   SearchIcon,
   TextCursorIcon,
   UserRoundIcon,
@@ -267,8 +266,8 @@ export const autocompleteThumbnail = (
 // Avatar
 export const avatarThumbnail = (
   <Card className="size-12 [--radius-2xl:9999px]">
-    <CardPanel className="flex items-center justify-center p-1">
-      <div className="flex size-full items-center justify-center rounded-full border border-border/64">
+    <CardPanel className="flex items-center justify-center p-0">
+      <div className="flex size-full items-center justify-center rounded-full">
         <Icon icon={UserRoundIcon} />
       </div>
     </CardPanel>
@@ -316,8 +315,8 @@ export const cardThumbnail = (
         <Text className="w-[90%]" variant="secondary" />
       </div>
       <div className="flex flex-col gap-2">
-        <div className="h-4 rounded-sm bg-muted-foreground/20" />
-        <div className="h-4 rounded-sm bg-muted-foreground/20" />
+        <div className="h-4 rounded-sm bg-muted-foreground/8" />
+        <div className="h-4 rounded-sm bg-muted-foreground/8" />
         <Button className="w-full rounded-sm" variant="primary" />
       </div>
     </CardPanel>
@@ -399,8 +398,8 @@ export const dialogThumbnail = (
         <Text className="w-[60%]" variant="main" />
       </div>
       <div className="flex flex-col gap-2">
-        <div className="h-4 rounded-sm bg-muted-foreground/20" />
-        <div className="h-4 rounded-sm bg-muted-foreground/20" />
+        <div className="h-4 rounded-sm bg-muted-foreground/8" />
+        <div className="h-4 rounded-sm bg-muted-foreground/8" />
       </div>
       <div className="flex items-center justify-end gap-2">
         <Button variant="secondary" />
@@ -821,11 +820,18 @@ export const toastThumbnail = (
 
 // Toggle
 export const toggleThumbnail = (
-  <Card className="w-fit [--radius-2xl:14px]">
-    <CardPanel className="flex items-center gap-2 p-2.75">
-      <Icon icon={PowerIcon} />
-    </CardPanel>
-  </Card>
+  <div className="flex flex-1 flex-col items-center justify-center gap-2">
+    <Card className="max-w-12 [--radius-2xl:14px]">
+      <CardPanel className="rounded-[inherit] bg-clip-padding p-4">
+        <Text />
+      </CardPanel>
+    </Card>
+    <Card className="max-w-12 shadow-none [--radius-2xl:14px]">
+      <CardPanel className="rounded-[inherit] bg-muted-foreground/8 bg-clip-padding p-4">
+        <Text className="bg-primary" />
+      </CardPanel>
+    </Card>
+  </div>
 );
 
 // Toggle Group
