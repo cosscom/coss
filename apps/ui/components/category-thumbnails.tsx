@@ -145,7 +145,7 @@ export const inputThumbnail = (
 // Textarea thumbnail - shows multiple lines
 export const textareaThumbnail = (
   <Card className="[--radius-2xl:14px]">
-    <CardPanel className="px-6 py-4 flex flex-col gap-2">
+    <CardPanel className="flex flex-col gap-2 px-6 py-4">
       <Text className="w-[60%]" />
       <Text className="opacity-0" />
       <Text className="opacity-0" />
@@ -183,8 +183,8 @@ export const radioGroupThumbnail = (
 
 // Switch thumbnail - shows toggle switches
 export const switchThumbnail = (
-  <div className="h-7 w-12 bg-muted-foreground/20 rounded-full p-0.5">
-    <div className="size-6 bg-card rounded-full" />
+  <div className="h-7 w-12 rounded-full bg-muted-foreground/20 p-0.5">
+    <div className="size-6 rounded-full bg-card" />
   </div>
 );
 
@@ -211,15 +211,15 @@ export const sliderThumbnail = (
 
 // Tabs thumbnail - shows tab navigation
 export const tabsThumbnail = (
-  <div className="max-w-50 flex flex-col gap-4">
-    <div className="bg-muted-foreground/12 rounded-lg p-0.5 flex">
-      <div className="p-3 bg-card rounded-[calc(var(--radius-lg)-1px)]">
+  <div className="flex max-w-50 flex-col gap-4">
+    <div className="flex rounded-lg bg-muted-foreground/12 p-0.5">
+      <div className="rounded-[calc(var(--radius-lg)-1px)] bg-card p-3">
         <Text className="w-6 bg-primary" />
       </div>
-      <div className="p-3 rounded-[calc(var(--radius-lg)-1px)]">
+      <div className="rounded-[calc(var(--radius-lg)-1px)] p-3">
         <Text className="w-6" variant="secondary" />
       </div>
-      <div className="p-3 rounded-[calc(var(--radius-lg)-1px)]">
+      <div className="rounded-[calc(var(--radius-lg)-1px)] p-3">
         <Text className="w-6" variant="secondary" />
       </div>
     </div>
@@ -233,7 +233,7 @@ export const tabsThumbnail = (
 // Menu thumbnail - shows a menu dropdown
 export const menuThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col items-end gap-2">
-    <Card className="[--radius-2xl:12px] w-fit">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={EllipsisIcon} />
       </CardPanel>
@@ -241,16 +241,16 @@ export const menuThumbnail = (
     <Card className="[--radius-2xl:10px]">
       <CardPanel className="flex flex-col gap-4 p-4">
         <div className="me-6">
-          <Text variant="secondary" className="w-full" />
+          <Text className="w-full" variant="secondary" />
         </div>
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <Text variant="secondary" />
           </div>
-          <Icon icon={ChevronRightIcon} className="-m-1" />
+          <Icon className="-m-1" icon={ChevronRightIcon} />
         </div>
         <div className="me-6">
-          <Text variant="secondary" className="w-full" />
+          <Text className="w-full" variant="secondary" />
         </div>
       </CardPanel>
     </Card>
@@ -279,8 +279,8 @@ export const dialogThumbnail = (
 // Popover thumbnail - shows a popover with content
 export const popoverThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col items-center gap-2">
-    <Card className="[--radius-2xl:12px] w-fit">
-      <CardPanel className="flex items-center gap-2 py-3 px-4">
+    <Card className="w-fit [--radius-2xl:12px]">
+      <CardPanel className="flex items-center gap-2 px-4 py-3">
         <Text className="w-12" variant="main" />
       </CardPanel>
     </Card>
@@ -380,7 +380,7 @@ export const tableThumbnail = (
 // Pagination thumbnail - shows pagination controls
 export const paginationThumbnail = (
   <div className="flex flex-1 items-center gap-4">
-    <Card className="[--radius-2xl:12px] w-fit">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={ChevronLeftIcon} />
       </CardPanel>
@@ -390,7 +390,7 @@ export const paginationThumbnail = (
       <Text className="flex-1" variant="secondary" />
       <Text className="flex-1" variant="secondary" />
     </div>
-    <Card className="[--radius-2xl:12px] w-fit">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={ChevronRightIcon} />
       </CardPanel>
@@ -413,7 +413,7 @@ export const breadcrumbThumbnail = (
 
 // Progress thumbnail - shows a progress bar
 export const progressThumbnail = (
-  <div className="max-w-50 flex-1 flex flex-col gap-2">
+  <div className="flex max-w-50 flex-1 flex-col gap-2">
     <div className="h-2 w-full rounded-full bg-muted-foreground/20">
       <div className="h-2 w-[45%] rounded-s-full bg-primary" />
     </div>
@@ -422,11 +422,11 @@ export const progressThumbnail = (
 
 // Skeleton thumbnail - shows loading skeletons
 export const skeletonThumbnail = (
-  <div className="max-w-50 flex flex-1 items-center gap-3 mask-[linear-gradient(100deg,black_0%,rgba(0,0,0,0.2)_20%,rgba(0,0,0,0.2)_80%,rgba(0,0,0,0.6)_100%)]">
+  <div className="mask-[linear-gradient(100deg,black_0%,rgba(0,0,0,0.2)_20%,rgba(0,0,0,0.2)_80%,rgba(0,0,0,0.6)_100%)] flex max-w-50 flex-1 items-center gap-3">
     <div className="size-8 rounded-full bg-muted-foreground/20" />
     <div className="flex flex-1 flex-col gap-2">
-      <Text variant="secondary" className="w-full" />
-      <Text variant="secondary" className="w-full" />
+      <Text className="w-full" variant="secondary" />
+      <Text className="w-full" variant="secondary" />
     </div>
   </div>
 );
@@ -438,17 +438,17 @@ export const spinnerThumbnail = (
 
 // Toast thumbnail - shows toast notifications
 export const toastThumbnail = (
-  <div className="flex-1 relative">
-    <Card className="absolute -top-6 scale-80">
+  <div className="relative flex-1">
+    <Card className="-top-6 absolute scale-80">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
-    <Card className="absolute -top-3 scale-90">
+    <Card className="-top-3 absolute scale-90">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
     <Card>
       <CardPanel className="flex items-start gap-2 p-3">
         <Icon icon={AlertCircleIcon} />
-        <div className="flex-1 flex flex-col gap-2">
+        <div className="flex flex-1 flex-col gap-2">
           <Text className="w-[40%]" />
           <Text className="w-[70%]" variant="secondary" />
         </div>
@@ -483,16 +483,16 @@ export const commandThumbnail = (
       </div>
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center justify-between gap-2">
-          <Text variant="secondary" className="w-[65%]" />
-          <Text variant="secondary" className="w-4" />
+          <Text className="w-[65%]" variant="secondary" />
+          <Text className="w-4" variant="secondary" />
         </div>
         <div className="flex items-center justify-between gap-2">
-          <Text variant="secondary" className="w-[65%]" />
-          <Text variant="secondary" className="w-4" />
+          <Text className="w-[65%]" variant="secondary" />
+          <Text className="w-4" variant="secondary" />
         </div>
         <div className="flex items-center justify-between gap-2">
-          <Text variant="secondary" className="w-[65%]" />
-          <Text variant="secondary" className="w-4" />
+          <Text className="w-[65%]" variant="secondary" />
+          <Text className="w-4" variant="secondary" />
         </div>
       </div>
     </CardPanel>
@@ -501,9 +501,9 @@ export const commandThumbnail = (
 
 // Sheet thumbnail - shows a side sheet
 export const sheetThumbnail = (
-  <div className="flex-1 h-full flex gap-2">
-    <div className="flex-1 rounded-xl border border-dashed"></div>
-    <Card className="max-w-20 h-full [--radius-2xl:14px]">
+  <div className="flex h-full flex-1 gap-2">
+    <div className="flex-1 rounded-xl border border-dashed" />
+    <Card className="h-full max-w-20 [--radius-2xl:14px]">
       <CardPanel className="flex flex-col gap-4 p-3">
         <div className="flex flex-1 flex-col gap-2">
           <Text className="w-[60%]" variant="main" />
@@ -525,16 +525,16 @@ export const separatorThumbnail = (
       <Text variant="secondary" />
     </div>
     <div className="flex items-center gap-2 divide-x py-3">
-      <div className="px-2 py-1 flex-1 -mx-2">
+      <div className="-mx-2 flex-1 px-2 py-1">
         <Text variant="secondary" />
       </div>
-      <div className="px-2 py-1 flex-1">
+      <div className="flex-1 px-2 py-1">
         <Text variant="secondary" />
       </div>
-      <div className="px-2 py-1 flex-1 -mx-2">
+      <div className="-mx-2 flex-1 px-2 py-1">
         <Text variant="secondary" />
       </div>
-      <div className="px-2 py-1 flex-1">
+      <div className="flex-1 px-2 py-1">
         <Text variant="secondary" />
       </div>
     </div>
@@ -613,7 +613,7 @@ export const labelThumbnail = (
 
 // Meter thumbnail - shows a meter/progress
 export const meterThumbnail = (
-  <div className="max-w-50 flex-1 flex flex-col gap-2">
+  <div className="flex max-w-50 flex-1 flex-col gap-2">
     <div className="flex items-center justify-between">
       <Text className="w-[50%]" />
       <Text className="w-8" />
@@ -639,7 +639,7 @@ export const numberFieldThumbnail = (
 
 // Toggle thumbnail - shows toggle buttons
 export const toggleThumbnail = (
-  <Card className="[--radius-2xl:14px] w-fit">
+  <Card className="w-fit [--radius-2xl:14px]">
     <CardPanel className="flex items-center gap-2 p-2.75">
       <Icon icon={PowerIcon} />
     </CardPanel>
@@ -652,7 +652,7 @@ export const toggleGroupThumbnail = (
     <CardPanel className="bg-clip-padding p-4">
       <Text className="w-4" />
     </CardPanel>
-    <CardPanel className="bg-clip-padding p-4 bg-muted-foreground/8">
+    <CardPanel className="bg-muted-foreground/8 bg-clip-padding p-4">
       <Text className="w-4 bg-foreground" />
     </CardPanel>
     <CardPanel className="bg-clip-padding p-4">
@@ -663,18 +663,18 @@ export const toggleGroupThumbnail = (
 
 // Toolbar thumbnail - shows toolbar buttons
 export const toolbarThumbnail = (
-  <div className="flex items-center gap-1 p-1 border rounded-xl">
-    <Card className="[--radius-2xl:12px] w-fit">
+  <div className="flex items-center gap-1 rounded-xl border p-1">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="p-3.5">
         <Text className="w-4" />
       </CardPanel>
     </Card>
-    <Card className="[--radius-2xl:12px] w-fit">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="p-3.5">
         <Text className="w-4" />
       </CardPanel>
     </Card>
-    <Card className="[--radius-2xl:12px] w-fit">
+    <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="p-3.5">
         <Text className="w-4" />
       </CardPanel>
@@ -684,15 +684,15 @@ export const toolbarThumbnail = (
 
 // Scroll area thumbnail - shows scrollable content
 export const scrollAreaThumbnail = (
-  <Card className="[--radius-2xl:14px] max-w-36">
+  <Card className="max-w-36 [--radius-2xl:14px]">
     <CardPanel className="relative p-0">
       <div className="flex flex-col gap-2 p-3">
-        <Text variant="secondary" className="w-[80%]" />
-        <Text variant="secondary" className="w-[90%]" />
-        <Text variant="secondary" className="w-[70%]" />
-        <Text variant="secondary" className="w-[85%]" />
-        <Text variant="secondary" className="w-[90%]" />
-        <Text variant="secondary" className="w-[80%]" />
+        <Text className="w-[80%]" variant="secondary" />
+        <Text className="w-[90%]" variant="secondary" />
+        <Text className="w-[70%]" variant="secondary" />
+        <Text className="w-[85%]" variant="secondary" />
+        <Text className="w-[90%]" variant="secondary" />
+        <Text className="w-[80%]" variant="secondary" />
       </div>
       <div className="absolute top-2 right-1 h-8 w-1 rounded-full bg-muted-foreground/40" />
     </CardPanel>
@@ -757,9 +757,9 @@ export const inputGroupThumbnail = (
 // Preview card thumbnail - shows a preview card
 export const previewCardThumbnail = (
   <Card className="max-w-50">
-    <CardPanel className="p-4 flex items-center gap-3">
-      <div className="size-9 shrink-0 rounded-full bg-muted-foreground/20"></div>
-      <div className="flex-1 flex flex-col gap-2">
+    <CardPanel className="flex items-center gap-3 p-4">
+      <div className="size-9 shrink-0 rounded-full bg-muted-foreground/20" />
+      <div className="flex flex-1 flex-col gap-2">
         <Text className="w-[70%]" variant="main" />
         <Text variant="secondary" />
         <Text className="w-[90%]" variant="secondary" />
