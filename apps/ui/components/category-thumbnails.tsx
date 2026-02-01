@@ -164,20 +164,15 @@ function FormField({
   );
 }
 
-function TableRow({
-  cells = 4,
-  showCheckbox = true,
-}: {
-  cells?: number;
-  showCheckbox?: boolean;
-}) {
+function TableRow({ showCheckbox = true }: { showCheckbox?: boolean }) {
   return (
     <div className="flex items-center gap-2 p-3">
       {showCheckbox && <Text className="size-2.5 rounded-xs" />}
       <Text className="flex-1" />
-      {Array.from({ length: cells }).map((_, i) => (
-        <Text className="flex-1" key={i} variant="secondary" />
-      ))}
+      <Text className="flex-1" variant="secondary" />
+      <Text className="flex-1" variant="secondary" />
+      <Text className="flex-1" variant="secondary" />
+      <Text className="flex-1" variant="secondary" />
     </div>
   );
 }
@@ -763,9 +758,9 @@ export const tableThumbnail = (
   <Card>
     <CardPanel className="p-0">
       <div className="divide-y divide-border">
-        <TableRow cells={4} />
-        <TableRow cells={4} />
-        <TableRow cells={4} />
+        <TableRow />
+        <TableRow />
+        <TableRow />
       </div>
     </CardPanel>
   </Card>
