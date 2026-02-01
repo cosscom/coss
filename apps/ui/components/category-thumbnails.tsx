@@ -55,7 +55,9 @@ function Button({
 }) {
   const height = variant === "primary" ? "h-4" : "h-1.5";
   const bgColor =
-    variant === "primary" ? "bg-primary" : "bg-muted-foreground/20";
+    variant === "primary"
+      ? "bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+      : "bg-muted-foreground/20";
   return <div className={cn(height, "w-7 rounded-sm", bgColor, className)} />;
 }
 
@@ -70,7 +72,7 @@ function Card({
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-72 flex-col rounded-2xl border bg-card not-dark:bg-clip-padding text-card-foreground shadow-md/3 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        "relative flex w-full max-w-72 flex-col rounded-2xl border bg-linear-to-b from-[color-mix(in_srgb,var(--background)_94%,var(--color-white))] to-[color-mix(in_srgb,var(--background)_99%,var(--color-black))] not-dark:bg-clip-padding text-card-foreground shadow-md/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_-1px_--theme(--color-white/6%),0_1px_--theme(--color-black/6%)] dark:to-[color-mix(in_srgb,var(--background)_95%,var(--color-white))]",
         className,
       )}
     >
@@ -89,13 +91,7 @@ function CardPanel({
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={cn(
-        "flex-1 p-6 in-[[data-slot=card]:has(>[data-slot=card-header]:not(.border-b))]:pt-0 in-[[data-slot=card]:has(>[data-slot=card-footer]:not(.border-t))]:pb-0",
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn("flex-1 p-6", className)} {...props}>
       {children}
     </div>
   );
@@ -117,7 +113,9 @@ function CheckboxItem({
       <div
         className={cn(
           "size-4 shrink-0 rounded",
-          checked ? "bg-primary" : "bg-muted-foreground/20",
+          checked
+            ? "bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+            : "bg-muted-foreground/20",
         )}
       />
       <Text className="w-full" variant="secondary" />
@@ -137,7 +135,9 @@ function RadioItem({
       <div
         className={cn(
           "size-4 shrink-0 rounded-full",
-          checked ? "bg-primary" : "bg-muted-foreground/20",
+          checked
+            ? "bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+            : "bg-muted-foreground/20",
         )}
       />
       <Text className="w-full" variant="secondary" />
@@ -299,7 +299,7 @@ export const breadcrumbThumbnail = (
 
 // Button
 export const buttonThumbnail = (
-  <Card className="max-w-24 bg-primary [--radius-2xl:14px]">
+  <Card className="max-w-24 border-none from-(--btn-from) to-(--btn-to)! [--radius-2xl:14px]">
     <CardPanel className="px-6 py-4">
       <Text className="bg-primary-foreground/40" />
     </CardPanel>
@@ -361,11 +361,11 @@ export const collapsibleThumbnail = (
 export const comboboxThumbnail = (
   <Card className="[--radius-2xl:14px]">
     <CardPanel className="flex items-center gap-2 px-3 py-[calc(--spacing(2.5)-1px)]">
-      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/20 py-0.5 ps-2 pe-1">
+      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
         <Text className="w-6" />
         <Icon icon={XIcon} />
       </div>
-      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/20 py-0.5 ps-2 pe-1">
+      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
         <Text className="w-6" />
         <Icon icon={XIcon} />
       </div>
@@ -411,7 +411,7 @@ export const dialogThumbnail = (
 
 // Empty
 export const emptyThumbnail = (
-  <Card className="border-dashed bg-transparent shadow-none before:hidden">
+  <Card className="border-input border-dashed bg-none shadow-none before:hidden">
     <CardPanel className="flex flex-col items-center gap-2">
       <div className="size-8 rounded-full bg-muted-foreground/20" />
       <Text className="w-[60%]" />
@@ -439,7 +439,7 @@ export const fieldsetThumbnail = (
 export const formThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-4">
     <FormField />
-    <Card className="bg-primary [--radius-2xl:10px]">
+    <Card className="border-none from-(--btn-from) to-(--btn-to)! [--radius-2xl:10px]">
       <CardPanel className="py-3.5" />
     </Card>
   </div>
@@ -559,7 +559,7 @@ export const meterThumbnail = (
       <Text className="w-8" />
     </div>
     <div className="h-2 w-full rounded-full bg-muted-foreground/20">
-      <div className="h-2 w-[65%] rounded-s-full bg-primary" />
+      <div className="h-2 w-[65%] rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
     </div>
   </div>
 );
@@ -636,7 +636,7 @@ export const previewCardThumbnail = (
 export const progressThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-2">
     <div className="h-2 w-full rounded-full bg-muted-foreground/20">
-      <div className="h-2 w-[45%] rounded-s-full bg-primary" />
+      <div className="h-2 w-[45%] rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
     </div>
   </div>
 );
@@ -734,8 +734,11 @@ export const skeletonThumbnail = (
 // Slider
 export const sliderThumbnail = (
   <div className="flex w-full max-w-50 items-center gap-1">
-    <Text className="w-[35%] bg-primary" variant="secondary" />
-    <div className="size-4 rounded-full bg-primary" />
+    <Text
+      className="w-[35%] bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+      variant="secondary"
+    />
+    <div className="size-4 rounded-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
     <Text className="flex-1" variant="secondary" />
   </div>
 );
@@ -747,8 +750,8 @@ export const spinnerThumbnail = (
 
 // Switch
 export const switchThumbnail = (
-  <div className="h-7 w-12 rounded-full bg-muted-foreground/20 p-0.5">
-    <div className="size-6 rounded-full bg-card" />
+  <div className="h-6 w-10 rounded-full bg-muted-foreground/20 p-0.5">
+    <div className="size-5 rounded-full bg-linear-to-b from-card to-card/90 shadow-xs/5 dark:from-background/90 dark:to-background" />
   </div>
 );
 
@@ -769,7 +772,7 @@ export const tableThumbnail = (
 export const tabsThumbnail = (
   <div className="flex max-w-50 flex-col gap-4">
     <div className="flex rounded-lg bg-muted-foreground/12 p-0.5">
-      <div className="rounded-[calc(var(--radius-lg)-1px)] bg-card p-3">
+      <div className="rounded-[calc(var(--radius-lg)-1px)] bg-linear-to-b from-card to-card/90 p-3 shadow-xs/5 dark:from-background/90 dark:to-background">
         <Text className="w-6 bg-primary" />
       </div>
       <div className="rounded-[calc(var(--radius-lg)-1px)] p-3">
@@ -822,12 +825,12 @@ export const toastThumbnail = (
 export const toggleThumbnail = (
   <div className="flex flex-1 flex-col items-center justify-center gap-2">
     <Card className="max-w-12 [--radius-2xl:14px]">
-      <CardPanel className="rounded-[inherit] bg-clip-padding p-4">
+      <CardPanel className="rounded-[inherit] p-4">
         <Text />
       </CardPanel>
     </Card>
-    <Card className="max-w-12 shadow-none [--radius-2xl:14px]">
-      <CardPanel className="rounded-[inherit] bg-muted-foreground/8 bg-clip-padding p-4">
+    <Card className="max-w-12 shadow-none [--radius-2xl:14px] before:hidden">
+      <CardPanel className="rounded-[inherit] bg-muted-foreground/8 p-4">
         <Text className="bg-primary" />
       </CardPanel>
     </Card>
