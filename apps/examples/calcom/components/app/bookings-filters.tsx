@@ -19,8 +19,14 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
+import { Separator } from "@coss/ui/components/separator";
 import { cn } from "@coss/ui/lib/utils";
-import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import {
+  ChevronsUpDownIcon,
+  ListFilterIcon,
+  SearchIcon,
+  XIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import type { Booking } from "@/lib/mock-bookings-data";
@@ -344,8 +350,21 @@ function ActiveFilterComponent({
         open={open}
         value={selectedOptions}
       >
-        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+        <ComboboxTrigger
+          render={
+            <Button
+              className={
+                selectedOptions.length === 0 ? "justify-between" : undefined
+              }
+              size="sm"
+              variant="outline"
+            />
+          }
+        >
           {getTriggerText()}
+          {selectedOptions.length === 0 && (
+            <ChevronsUpDownIcon className="-me-1!" />
+          )}
         </ComboboxTrigger>
         <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
@@ -426,16 +445,25 @@ function BookingsFilters() {
           );
         })}
       </div>
-      {hasFilters && (
-        <div className="flex items-center gap-1">
-          <Button onClick={clearAll} size="sm" variant="ghost">
-            Clear
-          </Button>
-          <Button size="sm" variant="outline">
-            Save
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {hasFilters && (
+          <>
+            <div className="flex items-center gap-1">
+              <Button onClick={clearAll} size="sm" variant="ghost">
+                Clear
+              </Button>
+              <Button size="sm" variant="outline">
+                Save
+              </Button>
+            </div>
+            <Separator className="my-1" orientation="vertical" />
+          </>
+        )}
+        <Button size="sm" variant="outline">
+          Saved Filters
+          <ChevronsUpDownIcon />
+        </Button>
+      </div>
     </div>
   );
 }
