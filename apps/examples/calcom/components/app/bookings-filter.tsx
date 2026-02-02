@@ -28,6 +28,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
   CalendarIcon,
+  ChevronsUpDownIcon,
   ContactRoundIcon,
   HashIcon,
   Link2Icon,
@@ -37,7 +38,7 @@ import {
   UserIcon,
   XIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface FilterOption {
   id: string;
@@ -159,84 +160,139 @@ export const filterCategories: FilterCategory[] = [
 ];
 
 interface FilterMenuProps {
-  activeFilters: ActiveFilter[];
-  onFilterChange: (
-    category: FilterCategory,
-    selectedOptions: FilterOption[],
-  ) => void;
   hasFilters: boolean;
+  onCategorySelect: (category: FilterCategory) => void;
 }
 
-function FilterMenu({
-  activeFilters,
-  onFilterChange,
-  hasFilters,
-}: FilterMenuProps) {
-  const [selectedCategory, setSelectedCategory] =
-    useState<FilterCategory | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [comboboxOpen, setComboboxOpen] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const existingFilter = selectedCategory
-    ? activeFilters.find((f) => f.category.id === selectedCategory.id)
-    : null;
-  const currentSelections = existingFilter?.selectedOptions ?? [];
-
+function FilterMenu({ hasFilters, onCategorySelect }: FilterMenuProps) {
   const triggerButton = hasFilters ? (
-    <Button
-      aria-label="Add filter"
-      data-pressed={isTransitioning || undefined}
-      size="icon-sm"
-      variant="outline"
-    />
+    <Button aria-label="Add filter" size="icon-sm" variant="outline" />
   ) : (
-    <Button
-      aria-label="Add filter"
-      data-pressed={isTransitioning || undefined}
-      size="sm"
-      variant="outline"
-    >
+    <Button aria-label="Add filter" size="sm" variant="outline">
       <ListFilterIcon />
       Add filter
     </Button>
   );
 
-  if (selectedCategory) {
-    return (
-      <Combobox
-        items={selectedCategory.options}
-        multiple
-        onOpenChange={(open, event) => {
-          if (event?.reason === "item-press") {
-            event.cancel();
-            return;
-          }
-          setComboboxOpen(open);
-          if (!open) {
-            setSelectedCategory(null);
-          }
-        }}
-        onValueChange={(newValue) => {
-          onFilterChange(selectedCategory, newValue as FilterOption[]);
-        }}
-        open={comboboxOpen}
-        value={currentSelections}
+  return (
+    <Menu>
+      <MenuTrigger render={triggerButton}>
+        {hasFilters && <ListFilterIcon />}
+      </MenuTrigger>
+      <MenuPopup align="start">
+        <MenuGroup>
+          <MenuGroupLabel>Filter by</MenuGroupLabel>
+          {filterCategories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <MenuItem
+                key={category.id}
+                onClick={() => onCategorySelect(category)}
+              >
+                <Icon className="size-4" />
+                {category.label}
+              </MenuItem>
+            );
+          })}
+        </MenuGroup>
+      </MenuPopup>
+    </Menu>
+  );
+}
+
+interface PendingFilterGroupProps {
+  category: FilterCategory;
+  onConfirm: (selectedOptions: FilterOption[]) => void;
+  onCancel: () => void;
+}
+
+function PendingFilterGroup({
+  category,
+  onConfirm,
+  onCancel,
+}: PendingFilterGroupProps) {
+  const [comboboxOpen, setComboboxOpen] = useState(true);
+  const [selectedOptions, setSelectedOptions] = useState<FilterOption[]>([]);
+  const Icon = category.icon;
+
+  useEffect(() => {
+    setComboboxOpen(true);
+  }, []);
+
+  const handleOpenChange = (
+    open: boolean,
+    event?: { reason?: string; cancel: () => void },
+  ) => {
+    if (event?.reason === "item-press") {
+      event.cancel();
+      return;
+    }
+    setComboboxOpen(open);
+    if (!open) {
+      if (selectedOptions.length > 0) {
+        onConfirm(selectedOptions);
+      } else {
+        onCancel();
+      }
+    }
+  };
+
+  return (
+    <Group>
+      <GroupText
+        className={cn(
+          buttonVariants({
+            size: "sm",
+            variant: "outline",
+          }),
+          "pointer-events-none",
+        )}
       >
-        <ComboboxTrigger render={triggerButton}>
-          {hasFilters && <ListFilterIcon />}
-        </ComboboxTrigger>
-        <ComboboxPopup aria-label={`Select ${selectedCategory.label}`}>
+        <Icon />
+        {category.label}
+      </GroupText>
+      <GroupSeparator />
+      <GroupText
+        className={cn(
+          buttonVariants({
+            size: "sm",
+            variant: "outline",
+          }),
+          "pointer-events-none text-muted-foreground",
+        )}
+      >
+        is
+      </GroupText>
+      <GroupSeparator />
+      <Combobox
+        items={category.options}
+        multiple
+        onOpenChange={handleOpenChange}
+        onValueChange={(newValue) =>
+          setSelectedOptions(newValue as FilterOption[])
+        }
+        open={comboboxOpen}
+        value={selectedOptions}
+      >
+        <ComboboxTrigger
+          render={
+            <Button size="sm" variant="outline">
+              <ChevronsUpDownIcon />
+              Select...
+            </Button>
+          }
+        />
+        <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
             <ComboboxInput
               className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-              placeholder={`Search ${selectedCategory.label.toLowerCase()}...`}
+              placeholder={`Search ${category.label.toLowerCase()}...`}
               showTrigger={false}
               startAddon={<SearchIcon />}
             />
           </div>
           <ComboboxEmpty>
-            No {selectedCategory.label.toLowerCase()} found.
+            No {category.label.toLowerCase()} found.
           </ComboboxEmpty>
           <ComboboxList>
             {(option: FilterOption) => (
@@ -258,54 +314,88 @@ function FilterMenu({
           </ComboboxList>
         </ComboboxPopup>
       </Combobox>
-    );
-  }
-
-  return (
-    <Menu onOpenChange={setMenuOpen} open={menuOpen}>
-      <MenuTrigger render={triggerButton}>
-        {hasFilters && <ListFilterIcon />}
-      </MenuTrigger>
-      <MenuPopup align="start">
-        <MenuGroup>
-          <MenuGroupLabel>Filter by</MenuGroupLabel>
-          {filterCategories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <MenuItem
-                key={category.id}
-                onClick={() => {
-                  setIsTransitioning(true);
-                  setSelectedCategory(category);
-                  setMenuOpen(false);
-                  setTimeout(() => {
-                    setComboboxOpen(true);
-                    setIsTransitioning(false);
-                  }, 0);
-                }}
-              >
-                <Icon className="size-4" />
-                {category.label}
-              </MenuItem>
-            );
-          })}
-        </MenuGroup>
-      </MenuPopup>
-    </Menu>
+      <GroupSeparator />
+      <Button
+        aria-label="Remove filter"
+        onClick={onCancel}
+        size="icon-sm"
+        variant="outline"
+      >
+        <XIcon />
+      </Button>
+    </Group>
   );
 }
 
 interface FilterGroupProps {
   filter: ActiveFilter;
   onRemove: () => void;
-  onEdit: (category: FilterCategory) => void;
+  onUpdate: (selectedOptions: FilterOption[]) => void;
 }
 
-function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
+function FilterGroup({ filter, onRemove, onUpdate }: FilterGroupProps) {
   const { category, selectedOptions } = filter;
+  const [comboboxOpen, setComboboxOpen] = useState(false);
   const Icon = category.icon;
   const hasAvatars = selectedOptions.some((opt) => opt.avatar);
   const isSingleSelection = selectedOptions.length === 1;
+
+  const handleOpenChange = (
+    open: boolean,
+    event?: { reason?: string; cancel: () => void },
+  ) => {
+    if (event?.reason === "item-press") {
+      event.cancel();
+      return;
+    }
+    setComboboxOpen(open);
+  };
+
+  const renderSelectedValue = () => {
+    if (hasAvatars && selectedOptions.length > 1) {
+      return (
+        <>
+          <div className="-space-x-1.5 flex">
+            {selectedOptions.slice(0, 3).map((opt) => (
+              <Avatar className="size-3.5 ring ring-background" key={opt.id}>
+                <AvatarImage alt={opt.label} src={opt.avatar} />
+                <AvatarFallback>
+                  {opt.label
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+          {selectedOptions.length} users
+        </>
+      );
+    }
+    if (hasAvatars && isSingleSelection && selectedOptions[0]) {
+      return (
+        <>
+          <Avatar className="size-3.5">
+            <AvatarImage
+              alt={selectedOptions[0].label}
+              src={selectedOptions[0].avatar}
+            />
+            <AvatarFallback>
+              {selectedOptions[0].label
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          {selectedOptions[0].label}
+        </>
+      );
+    }
+    if (isSingleSelection && selectedOptions[0]) {
+      return selectedOptions[0].label;
+    }
+    return `${selectedOptions.length} selected`;
+  };
 
   return (
     <Group>
@@ -334,46 +424,56 @@ function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
         {isSingleSelection ? "is" : "is any of"}
       </GroupText>
       <GroupSeparator />
-      <Button onClick={() => onEdit(category)} size="sm" variant="outline">
-        {hasAvatars && selectedOptions.length > 1 ? (
-          <>
-            <div className="-space-x-1.5 flex">
-              {selectedOptions.slice(0, 3).map((opt) => (
-                <Avatar className="size-3.5 ring ring-background" key={opt.id}>
-                  <AvatarImage alt={opt.label} src={opt.avatar} />
-                  <AvatarFallback>
-                    {opt.label
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
-            {selectedOptions.length} users
-          </>
-        ) : hasAvatars && isSingleSelection && selectedOptions[0] ? (
-          <>
-            <Avatar className="size-3.5">
-              <AvatarImage
-                alt={selectedOptions[0].label}
-                src={selectedOptions[0].avatar}
-              />
-              <AvatarFallback>
-                {selectedOptions[0].label
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            {selectedOptions[0].label}
-          </>
-        ) : isSingleSelection && selectedOptions[0] ? (
-          selectedOptions[0].label
-        ) : (
-          `${selectedOptions.length} selected`
-        )}
-      </Button>
+      <Combobox
+        items={category.options}
+        multiple
+        onOpenChange={handleOpenChange}
+        onValueChange={(newValue) => {
+          const options = newValue as FilterOption[];
+          if (options.length === 0) {
+            onRemove();
+          } else {
+            onUpdate(options);
+          }
+        }}
+        open={comboboxOpen}
+        value={selectedOptions}
+      >
+        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+          {renderSelectedValue()}
+        </ComboboxTrigger>
+        <ComboboxPopup aria-label={`Edit ${category.label}`}>
+          <div className="border-b p-2">
+            <ComboboxInput
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              placeholder={`Search ${category.label.toLowerCase()}...`}
+              showTrigger={false}
+              startAddon={<SearchIcon />}
+            />
+          </div>
+          <ComboboxEmpty>
+            No {category.label.toLowerCase()} found.
+          </ComboboxEmpty>
+          <ComboboxList>
+            {(option: FilterOption) => (
+              <ComboboxItem key={option.id} value={option}>
+                {option.avatar && (
+                  <Avatar className="size-5">
+                    <AvatarImage alt={option.label} src={option.avatar} />
+                    <AvatarFallback>
+                      {option.label
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                {option.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxPopup>
+      </Combobox>
       <GroupSeparator />
       <Button
         aria-label="Remove filter"
@@ -398,35 +498,45 @@ function BookingsFilter({
   onFiltersChange,
   savedFiltersSlot,
 }: BookingsFilterProps) {
-  const [editingCategory, setEditingCategory] = useState<FilterCategory | null>(
+  const [pendingCategory, setPendingCategory] = useState<FilterCategory | null>(
     null,
   );
-  const [editComboboxOpen, setEditComboboxOpen] = useState(false);
 
-  const hasFilters = activeFilters.length > 0;
+  const hasFilters = activeFilters.length > 0 || pendingCategory !== null;
 
-  const handleFilterChange = (
-    category: FilterCategory,
-    selectedOptions: FilterOption[],
-  ) => {
-    const existingIndex = activeFilters.findIndex(
+  const handleCategorySelect = (category: FilterCategory) => {
+    const existingFilter = activeFilters.find(
       (f) => f.category.id === category.id,
     );
-
-    if (selectedOptions.length === 0) {
-      if (existingIndex >= 0) {
-        onFiltersChange(activeFilters.filter((_, i) => i !== existingIndex));
-      }
+    if (existingFilter) {
       return;
     }
+    setPendingCategory(category);
+  };
 
-    if (existingIndex >= 0) {
-      const updated = [...activeFilters];
-      updated[existingIndex] = { category, selectedOptions };
-      onFiltersChange(updated);
-    } else {
-      onFiltersChange([...activeFilters, { category, selectedOptions }]);
+  const handlePendingConfirm = (selectedOptions: FilterOption[]) => {
+    if (pendingCategory && selectedOptions.length > 0) {
+      onFiltersChange([
+        ...activeFilters,
+        { category: pendingCategory, selectedOptions },
+      ]);
     }
+    setPendingCategory(null);
+  };
+
+  const handlePendingCancel = () => {
+    setPendingCategory(null);
+  };
+
+  const handleFilterUpdate = (
+    categoryId: string,
+    selectedOptions: FilterOption[],
+  ) => {
+    onFiltersChange(
+      activeFilters.map((f) =>
+        f.category.id === categoryId ? { ...f, selectedOptions } : f,
+      ),
+    );
   };
 
   const handleRemoveFilter = (categoryId: string) => {
@@ -435,97 +545,33 @@ function BookingsFilter({
 
   const handleClearAll = () => {
     onFiltersChange([]);
+    setPendingCategory(null);
   };
-
-  const handleEditFilter = (category: FilterCategory) => {
-    setEditingCategory(category);
-    setEditComboboxOpen(true);
-  };
-
-  const editingFilter = editingCategory
-    ? activeFilters.find((f) => f.category.id === editingCategory.id)
-    : null;
 
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <FilterMenu
-          activeFilters={activeFilters}
           hasFilters={hasFilters}
-          onFilterChange={handleFilterChange}
+          onCategorySelect={handleCategorySelect}
         />
         {activeFilters.map((filter) => (
           <FilterGroup
             filter={filter}
             key={filter.category.id}
-            onEdit={handleEditFilter}
             onRemove={() => handleRemoveFilter(filter.category.id)}
+            onUpdate={(options) =>
+              handleFilterUpdate(filter.category.id, options)
+            }
           />
         ))}
-        {editingCategory && (
-          <Combobox
-            items={editingCategory.options}
-            multiple
-            onOpenChange={(open, event) => {
-              if (event?.reason === "item-press") {
-                event.cancel();
-                return;
-              }
-              setEditComboboxOpen(open);
-              if (!open) {
-                setEditingCategory(null);
-              }
-            }}
-            onValueChange={(newValue) => {
-              handleFilterChange(editingCategory, newValue as FilterOption[]);
-            }}
-            open={editComboboxOpen}
-            value={editingFilter?.selectedOptions ?? []}
-          >
-            <ComboboxTrigger
-              render={
-                <Button
-                  aria-label="Edit filter"
-                  className="hidden"
-                  size="icon-sm"
-                  variant="outline"
-                />
-              }
-            >
-              <ListFilterIcon />
-            </ComboboxTrigger>
-            <ComboboxPopup aria-label={`Edit ${editingCategory.label}`}>
-              <div className="border-b p-2">
-                <ComboboxInput
-                  className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-                  placeholder={`Search ${editingCategory.label.toLowerCase()}...`}
-                  showTrigger={false}
-                  startAddon={<SearchIcon />}
-                />
-              </div>
-              <ComboboxEmpty>
-                No {editingCategory.label.toLowerCase()} found.
-              </ComboboxEmpty>
-              <ComboboxList>
-                {(option: FilterOption) => (
-                  <ComboboxItem key={option.id} value={option}>
-                    {option.avatar && (
-                      <Avatar className="size-5">
-                        <AvatarImage alt={option.label} src={option.avatar} />
-                        <AvatarFallback>
-                          {option.label
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    {option.label}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxPopup>
-          </Combobox>
+        {pendingCategory && (
+          <PendingFilterGroup
+            category={pendingCategory}
+            key={pendingCategory.id}
+            onCancel={handlePendingCancel}
+            onConfirm={handlePendingConfirm}
+          />
         )}
       </div>
       <div className="flex items-center gap-1">
