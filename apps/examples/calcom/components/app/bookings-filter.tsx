@@ -176,6 +176,7 @@ function FilterMenu({
     useState<FilterCategory | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [comboboxOpen, setComboboxOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const existingFilter = selectedCategory
     ? activeFilters.find((f) => f.category.id === selectedCategory.id)
@@ -183,9 +184,19 @@ function FilterMenu({
   const currentSelections = existingFilter?.selectedOptions ?? [];
 
   const triggerButton = hasFilters ? (
-    <Button aria-label="Add filter" size="icon-sm" variant="outline" />
+    <Button
+      aria-label="Add filter"
+      data-pressed={isTransitioning || undefined}
+      size="icon-sm"
+      variant="outline"
+    />
   ) : (
-    <Button aria-label="Add filter" size="sm" variant="outline">
+    <Button
+      aria-label="Add filter"
+      data-pressed={isTransitioning || undefined}
+      size="sm"
+      variant="outline"
+    >
       <ListFilterIcon />
       Add filter
     </Button>
@@ -264,9 +275,13 @@ function FilterMenu({
               <MenuItem
                 key={category.id}
                 onClick={() => {
+                  setIsTransitioning(true);
                   setSelectedCategory(category);
                   setMenuOpen(false);
-                  setTimeout(() => setComboboxOpen(true), 0);
+                  setTimeout(() => {
+                    setComboboxOpen(true);
+                    setIsTransitioning(false);
+                  }, 0);
                 }}
               >
                 <Icon className="size-4" />
