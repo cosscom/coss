@@ -20,21 +20,10 @@ import {
   MenuTrigger,
 } from "@coss/ui/components/menu";
 import { cn } from "@coss/ui/lib/utils";
-import {
-  CalendarIcon,
-  ContactRoundIcon,
-  HashIcon,
-  Link2Icon,
-  ListFilterIcon,
-  MailIcon,
-  SearchIcon,
-  UserIcon,
-  XIcon,
-} from "lucide-react";
+import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
 
 export const filterCategories = [
   {
-    icon: Link2Icon,
     id: "event-type",
     label: "Event Type",
     options: [
@@ -47,7 +36,6 @@ export const filterCategories = [
     ],
   },
   {
-    icon: ContactRoundIcon,
     id: "member",
     label: "Member",
     options: [
@@ -84,7 +72,6 @@ export const filterCategories = [
     ],
   },
   {
-    icon: UserIcon,
     id: "attendees-name",
     label: "Attendees Name",
     options: [
@@ -96,7 +83,6 @@ export const filterCategories = [
     ],
   },
   {
-    icon: MailIcon,
     id: "attendee-email",
     label: "Attendee Email",
     options: [
@@ -107,7 +93,6 @@ export const filterCategories = [
     ],
   },
   {
-    icon: CalendarIcon,
     id: "date-range",
     label: "Date Range",
     options: [
@@ -121,7 +106,6 @@ export const filterCategories = [
     ],
   },
   {
-    icon: HashIcon,
     id: "booking-uid",
     label: "Booking UID",
     options: [
@@ -152,13 +136,7 @@ function FilterMenu({ hasFilters = false }: { hasFilters?: boolean }) {
         <MenuGroup>
           <MenuGroupLabel>Filter by</MenuGroupLabel>
           {filterCategories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <MenuItem key={category.id}>
-                <Icon />
-                {category.label}
-              </MenuItem>
-            );
+            return <MenuItem key={category.id}>{category.label}</MenuItem>;
           })}
         </MenuGroup>
       </MenuPopup>
