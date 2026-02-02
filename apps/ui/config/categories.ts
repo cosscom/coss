@@ -1,8 +1,10 @@
 import componentSlugs from "@/content/docs/components/meta.json";
+import { source } from "@/lib/source";
 
 export interface ComponentCategory {
   slug: string;
   name: string;
+  description?: string;
 }
 
 function slugToName(slug: string): string {
@@ -14,10 +16,14 @@ function slugToName(slug: string): string {
 
 export const categories: ComponentCategory[] = (
   componentSlugs.pages as string[]
-).map((slug) => ({
-  name: slugToName(slug),
-  slug,
-}));
+).map((slug) => {
+  const page = source.getPage(["components", slug]);
+  return {
+    description: page?.data.description,
+    name: slugToName(slug),
+    slug,
+  };
+});
 
 export function getCategory(slug: string): ComponentCategory | undefined {
   return categories.find((category) => category.slug === slug);

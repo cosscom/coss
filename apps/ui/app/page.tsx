@@ -3,6 +3,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@coss/ui/shared/page-header";
+import { SiteFooter } from "@coss/ui/shared/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCategoryThumbnail } from "@/components/category-thumbnails";
@@ -47,9 +48,10 @@ export default function Page() {
           className="before:-left-[11.5px] before:-ml-1 after:-right-[11.5px] after:-mr-1 container pointer-events-none absolute inset-0 z-50 before:absolute before:top-[-3.5px] before:z-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-3.5px] after:z-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
         />
         <div className="container w-full">
-          <div className="grid gap-8 pt-8 pb-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
             {categories.map((category) => (
               <CategoryCard
+                description={category.description}
                 key={category.slug}
                 name={category.name}
                 slug={category.slug}
@@ -59,6 +61,7 @@ export default function Page() {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }
@@ -66,15 +69,21 @@ export default function Page() {
 type CategoryCardProps = {
   slug: string;
   name: string;
+  description?: string;
   thumbnail?: React.ReactNode;
 };
 
-function CategoryCard({ slug, name, thumbnail }: CategoryCardProps) {
+function CategoryCard({
+  slug,
+  name,
+  description,
+  thumbnail,
+}: CategoryCardProps) {
   const href = `/docs/components/${slug}`;
 
   return (
     <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
-      <CardFrameHeader>
+      <CardFrameHeader className="grid grid-rows-[auto_1fr]">
         <CardFrameTitle
           className="font-heading text-base"
           render={
@@ -83,11 +92,14 @@ function CategoryCard({ slug, name, thumbnail }: CategoryCardProps) {
             </h2>
           }
         />
-        <CardFrameDescription render={<p />}>
-          A set of collapsible headings with panel content.
+        <CardFrameDescription
+          className="line-clamp-2 sm:h-[2lh]"
+          render={<p />}
+        >
+          {description || "\u00A0"}
         </CardFrameDescription>
       </CardFrameHeader>
-      <Card className="aspect-20/13 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
+      <Card className="min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
         <CardPanel className="flex flex-1 items-center justify-center px-8 [--border:--alpha(var(--color-black)/7%)] [--btn-from:--alpha(var(--color-primary)/90%)] [--btn-to:var(--color-primary)] dark:[--border:--alpha(var(--color-white)/3%)] dark:[--btn-from:var(--color-primary)] dark:[--btn-to:--alpha(var(--color-primary)/90%)]">
           {thumbnail}
         </CardPanel>
