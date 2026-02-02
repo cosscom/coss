@@ -130,7 +130,6 @@ function FilterMenu() {
         items={selectedCategory.options}
         multiple
         onOpenChange={(open, event) => {
-          // Prevent closing on item selection
           if (event?.reason === "item-press") {
             event.cancel();
             return;
@@ -153,12 +152,14 @@ function FilterMenu() {
           <div className="border-b p-2">
             <ComboboxInput
               className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-              placeholder="Filter..."
+              placeholder={`Search ${selectedCategory.label.toLowerCase()}...`}
               showTrigger={false}
               startAddon={<SearchIcon />}
             />
           </div>
-          <ComboboxEmpty>No options found.</ComboboxEmpty>
+          <ComboboxEmpty>
+            No {selectedCategory.label.toLowerCase()} found.
+          </ComboboxEmpty>
           <ComboboxList>
             {(option: FilterOption) => (
               <ComboboxItem key={option.id} value={option}>
