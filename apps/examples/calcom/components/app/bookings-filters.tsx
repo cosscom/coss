@@ -314,6 +314,14 @@ function ActiveFilterComponent({
     }
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    // Remove filter if combobox closes with no selection
+    if (!isOpen && selectedValues.length === 0) {
+      onRemove();
+    }
+  };
+
   return (
     <Group>
       <GroupText
@@ -331,7 +339,7 @@ function ActiveFilterComponent({
       <Combobox
         items={category.options}
         multiple
-        onOpenChange={setOpen}
+        onOpenChange={handleOpenChange}
         onValueChange={handleValueChange}
         open={open}
         value={selectedOptions}
