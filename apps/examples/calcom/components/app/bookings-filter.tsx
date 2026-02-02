@@ -200,7 +200,7 @@ function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
       >
         <ComboboxTrigger
           render={
-            <Button aria-label="Add filter" size="icon-sm" variant="ghost" />
+            <Button aria-label="Add filter" size="icon-sm" variant="outline" />
           }
         >
           <ListFilterIcon />
@@ -244,7 +244,7 @@ function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
     <Menu onOpenChange={setMenuOpen} open={menuOpen}>
       <MenuTrigger
         render={
-          <Button aria-label="Add filter" size="icon-sm" variant="ghost" />
+          <Button aria-label="Add filter" size="icon-sm" variant="outline" />
         }
       >
         <ListFilterIcon />
@@ -424,15 +424,7 @@ function BookingsFilter({
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        {activeFilters.map((filter) => (
-          <FilterGroup
-            filter={filter}
-            key={filter.category.id}
-            onEdit={handleEditFilter}
-            onRemove={() => handleRemoveFilter(filter.category.id)}
-          />
-        ))}
-        {editingCategory ? (
+        {editingCategory && editingFilter ? (
           <Combobox
             items={editingCategory.options}
             multiple
@@ -457,7 +449,7 @@ function BookingsFilter({
                 <Button
                   aria-label="Edit filter"
                   size="icon-sm"
-                  variant="ghost"
+                  variant="outline"
                 />
               }
             >
@@ -501,6 +493,14 @@ function BookingsFilter({
             onFilterChange={handleFilterChange}
           />
         )}
+        {activeFilters.map((filter) => (
+          <FilterGroup
+            filter={filter}
+            key={filter.category.id}
+            onEdit={handleEditFilter}
+            onRemove={() => handleRemoveFilter(filter.category.id)}
+          />
+        ))}
       </div>
       <div className="flex items-center gap-1">
         {activeFilters.length > 0 && (
