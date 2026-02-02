@@ -331,7 +331,7 @@ function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
             </div>
             {selectedOptions.length} users
           </>
-        ) : hasAvatars && isSingleSelection ? (
+        ) : hasAvatars && isSingleSelection && selectedOptions[0] ? (
           <>
             <Avatar className="size-3.5">
               <AvatarImage
@@ -347,7 +347,7 @@ function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
             </Avatar>
             {selectedOptions[0].label}
           </>
-        ) : isSingleSelection ? (
+        ) : isSingleSelection && selectedOptions[0] ? (
           selectedOptions[0].label
         ) : (
           `${selectedOptions.length} selected`
