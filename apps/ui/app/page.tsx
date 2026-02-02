@@ -17,8 +17,10 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@/registry/default/ui/card";
+import { particles } from "@/registry/registry-particles";
 
 const description = "Built for developers and AI.";
+const particleCount = particles.length;
 
 export const metadata: Metadata = {
   description,
@@ -35,9 +37,15 @@ export default function Page() {
           </PageHeaderHeading>
           <PageHeaderDescription>{description}</PageHeaderDescription>
           <div className="mt-2 flex gap-2">
-            <Button size="lg">Get started</Button>
-            <Button size="lg" variant="outline">
-              Browse 418 components
+            <Button render={<Link href="/docs" />} size="lg">
+              Get started
+            </Button>
+            <Button
+              render={<Link href="/particles" />}
+              size="lg"
+              variant="outline"
+            >
+              Browse {particleCount} particles
             </Button>
           </div>
         </PageHeader>
