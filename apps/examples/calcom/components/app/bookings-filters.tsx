@@ -21,6 +21,8 @@ import {
 } from "@coss/ui/components/menu";
 import { cn } from "@coss/ui/lib/utils";
 import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Booking } from "@/lib/mock-bookings-data";
 import {
@@ -122,29 +124,46 @@ function getUniqueBookingUids(bookings: Booking[]) {
 
 const allBookings = [...mockPastBookings, ...mockUpcomingBookings];
 
-export const filterCategories = [
+export type FilterOption = {
+  id: string;
+  label: string;
+  avatar?: string | null;
+};
+
+export type FilterCategory = {
+  id: string;
+  label: string;
+  options: FilterOption[];
+};
+
+export type ActiveFilter = {
+  f: string;
+  v?: string[];
+};
+
+export const filterCategories: FilterCategory[] = [
   {
-    id: "event-type",
+    id: "eventTypeId",
     label: "Event Type",
     options: getUniqueEventTypes(allBookings),
   },
   {
-    id: "member",
+    id: "userIds",
     label: "Member",
     options: getUniqueMembers(allBookings),
   },
   {
-    id: "attendees-name",
+    id: "attendeesName",
     label: "Attendees Name",
     options: getUniqueAttendeeNames(allBookings),
   },
   {
-    id: "attendee-email",
+    id: "attendeeEmail",
     label: "Attendee Email",
     options: getUniqueAttendeeEmails(allBookings),
   },
   {
-    id: "date-range",
+    id: "dateRange",
     label: "Date Range",
     options: [
       { id: "today", label: "Today" },
@@ -157,13 +176,108 @@ export const filterCategories = [
     ],
   },
   {
-    id: "booking-uid",
+    id: "bookingUid",
     label: "Booking UID",
     options: getUniqueBookingUids(allBookings),
   },
 ];
 
-function FilterMenu({ hasFilters = false }: { hasFilters?: boolean }) {
+function parseActiveFilters(searchParams: URLSearchParams): ActiveFilter[] {
+  const param = searchParams.get("activeFilters");
+  if (!param) return [];
+  try {
+    const parsed = JSON.parse(param);
+    if (Array.isArray(parsed)) {
+      return parsed.filter(
+        (item): item is ActiveFilter =>
+          typeof item === "object" &&
+          item !== null &&
+          typeof item.f === "string",
+      );
+    }
+  } catch {
+    return [];
+  }
+  return [];
+}
+
+function serializeActiveFilters(filters: ActiveFilter[]): string | null {
+  if (filters.length === 0) return null;
+  return JSON.stringify(filters);
+}
+
+function useActiveFilters() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const activeFilters = parseActiveFilters(searchParams);
+
+  const setActiveFilters = useCallback(
+    (filters: ActiveFilter[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const serialized = serializeActiveFilters(filters);
+      if (serialized) {
+        params.set("activeFilters", serialized);
+      } else {
+        params.delete("activeFilters");
+      }
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router, pathname],
+  );
+
+  const addFilter = useCallback(
+    (columnId: string) => {
+      if (!activeFilters.some((filter) => filter.f === columnId)) {
+        setActiveFilters([...activeFilters, { f: columnId }]);
+      }
+    },
+    [activeFilters, setActiveFilters],
+  );
+
+  const updateFilter = useCallback(
+    (columnId: string, values: string[]) => {
+      const newFilters = activeFilters.map((filter) =>
+        filter.f === columnId ? { ...filter, v: values } : filter,
+      );
+      if (!newFilters.some((filter) => filter.f === columnId)) {
+        newFilters.push({ f: columnId, v: values });
+      }
+      setActiveFilters(newFilters);
+    },
+    [activeFilters, setActiveFilters],
+  );
+
+  const removeFilter = useCallback(
+    (columnId: string) => {
+      setActiveFilters(activeFilters.filter((filter) => filter.f !== columnId));
+    },
+    [activeFilters, setActiveFilters],
+  );
+
+  const clearAll = useCallback(() => {
+    setActiveFilters([]);
+  }, [setActiveFilters]);
+
+  return {
+    activeFilters,
+    addFilter,
+    clearAll,
+    removeFilter,
+    updateFilter,
+  };
+}
+
+function FilterMenu({
+  hasFilters = false,
+  onSelectFilter,
+  activeFilterIds,
+}: {
+  hasFilters?: boolean;
+  onSelectFilter: (categoryId: string) => void;
+  activeFilterIds: string[];
+}) {
   const triggerButton = hasFilters ? (
     <Button aria-label="Add filter" size="icon-sm" variant="outline">
       <ListFilterIcon />
@@ -175,22 +289,81 @@ function FilterMenu({ hasFilters = false }: { hasFilters?: boolean }) {
     </Button>
   );
 
+  const availableCategories = filterCategories.filter(
+    (category) => !activeFilterIds.includes(category.id),
+  );
+
+  if (availableCategories.length === 0 && hasFilters) {
+    return null;
+  }
+
   return (
     <Menu>
       <MenuTrigger render={triggerButton} />
       <MenuPopup align="start">
         <MenuGroup>
           <MenuGroupLabel>Filter by</MenuGroupLabel>
-          {filterCategories.map((category) => {
-            return <MenuItem key={category.id}>{category.label}</MenuItem>;
-          })}
+          {availableCategories.map((category) => (
+            <MenuItem
+              key={category.id}
+              onClick={() => onSelectFilter(category.id)}
+            >
+              {category.label}
+            </MenuItem>
+          ))}
         </MenuGroup>
       </MenuPopup>
     </Menu>
   );
 }
 
-function ActiveFilter() {
+function ActiveFilterComponent({
+  filter,
+  category,
+  onUpdate,
+  onRemove,
+  autoOpen = false,
+}: {
+  filter: ActiveFilter;
+  category: FilterCategory;
+  onUpdate: (values: string[]) => void;
+  onRemove: () => void;
+  autoOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(autoOpen);
+  const hasAutoOpened = useRef(false);
+
+  useEffect(() => {
+    if (autoOpen && !hasAutoOpened.current) {
+      setOpen(true);
+      hasAutoOpened.current = true;
+    }
+  }, [autoOpen]);
+
+  const selectedValues = filter.v ?? [];
+  const selectedOptions = category.options.filter((opt) =>
+    selectedValues.includes(opt.id),
+  );
+
+  const getTriggerText = () => {
+    if (selectedOptions.length === 0) return "Select";
+    if (selectedOptions.length === 1)
+      return selectedOptions[0]?.label ?? "Select";
+    return `${selectedOptions.length} selected`;
+  };
+
+  const handleValueChange = (
+    newValue: FilterOption | FilterOption[] | null,
+  ) => {
+    if (Array.isArray(newValue)) {
+      onUpdate(newValue.map((v) => v.id));
+    } else if (newValue) {
+      onUpdate([newValue.id]);
+    } else {
+      onUpdate([]);
+    }
+  };
+
   return (
     <Group>
       <GroupText
@@ -202,24 +375,30 @@ function ActiveFilter() {
           "pointer-events-none",
         )}
       >
-        Label
+        {category.label}
       </GroupText>
       <GroupSeparator />
-      <Combobox multiple>
+      <Combobox
+        multiple
+        onOpenChange={setOpen}
+        onValueChange={handleValueChange}
+        open={open}
+        value={selectedOptions}
+      >
         <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-          Trigger
+          {getTriggerText()}
         </ComboboxTrigger>
-        <ComboboxPopup aria-label="Select items">
+        <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
             <ComboboxInput
               className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-              placeholder="Search items…"
+              placeholder={`Search ${category.label.toLowerCase()}…`}
               showTrigger={false}
               startAddon={<SearchIcon />}
             />
           </div>
           <ComboboxEmpty>No items found.</ComboboxEmpty>
-          <ComboboxList>
+          <ComboboxList options={category.options}>
             {(option) => (
               <ComboboxItem key={option.id} value={option}>
                 {option.label}
@@ -229,7 +408,12 @@ function ActiveFilter() {
         </ComboboxPopup>
       </Combobox>
       <GroupSeparator />
-      <Button aria-label="Remove filter" size="icon-sm" variant="outline">
+      <Button
+        aria-label="Remove filter"
+        onClick={onRemove}
+        size="icon-sm"
+        variant="outline"
+      >
         <XIcon />
       </Button>
     </Group>
@@ -237,20 +421,62 @@ function ActiveFilter() {
 }
 
 function BookingsFilters() {
+  const { activeFilters, addFilter, updateFilter, removeFilter, clearAll } =
+    useActiveFilters();
+  const [newlyAddedFilter, setNewlyAddedFilter] = useState<string | null>(null);
+
+  const handleSelectFilter = (categoryId: string) => {
+    addFilter(categoryId);
+    setNewlyAddedFilter(categoryId);
+  };
+
+  const handleUpdateFilter = (columnId: string, values: string[]) => {
+    updateFilter(columnId, values);
+  };
+
+  const handleRemoveFilter = (columnId: string) => {
+    removeFilter(columnId);
+    if (newlyAddedFilter === columnId) {
+      setNewlyAddedFilter(null);
+    }
+  };
+
+  const hasFilters = activeFilters.length > 0;
+  const activeFilterIds = activeFilters.map((f) => f.f);
+
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <FilterMenu />
-        <ActiveFilter />
+        <FilterMenu
+          activeFilterIds={activeFilterIds}
+          hasFilters={hasFilters}
+          onSelectFilter={handleSelectFilter}
+        />
+        {activeFilters.map((filter) => {
+          const category = filterCategories.find((c) => c.id === filter.f);
+          if (!category) return null;
+          return (
+            <ActiveFilterComponent
+              autoOpen={newlyAddedFilter === filter.f}
+              category={category}
+              filter={filter}
+              key={filter.f}
+              onRemove={() => handleRemoveFilter(filter.f)}
+              onUpdate={(values) => handleUpdateFilter(filter.f, values)}
+            />
+          );
+        })}
       </div>
-      <div className="flex items-center gap-1">
-        <Button size="sm" variant="ghost">
-          Clear
-        </Button>
-        <Button size="sm" variant="outline">
-          Save
-        </Button>
-      </div>
+      {hasFilters && (
+        <div className="flex items-center gap-1">
+          <Button onClick={clearAll} size="sm" variant="ghost">
+            Clear
+          </Button>
+          <Button size="sm" variant="outline">
+            Save
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
