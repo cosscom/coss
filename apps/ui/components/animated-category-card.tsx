@@ -26,12 +26,12 @@ const cardVariants = {
   },
   visible: (index: number) => ({
     opacity: 1,
-    y: 0,
     transition: {
       delay: index * 0.05,
       duration: 0.4,
       ease: [0.25, 0.46, 0.45, 0.94],
     },
+    y: 0,
   }),
 };
 
@@ -46,13 +46,13 @@ export function AnimatedCategoryCard({
 
   return (
     <motion.div
+      animate="visible"
       custom={index}
       initial="hidden"
-      animate="visible"
-      whileHover="hover"
       variants={cardVariants}
+      whileHover="hover"
     >
-      <motion.div initial="rest" animate="rest" whileHover="hover">
+      <motion.div animate="rest" initial="rest" whileHover="hover">
         <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
           <CardFrameHeader className="grid grid-rows-[auto_1fr]">
             <CardFrameTitle
