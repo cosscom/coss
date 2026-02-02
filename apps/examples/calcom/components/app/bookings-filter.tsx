@@ -38,7 +38,7 @@ import {
   UserIcon,
   XIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface FilterOption {
   id: string;
@@ -213,7 +213,7 @@ function PendingFilterGroup({
 }: PendingFilterGroupProps) {
   const [comboboxOpen, setComboboxOpen] = useState(true);
   const [selectedOptions, setSelectedOptions] = useState<FilterOption[]>([]);
-  const [isCanceling, setIsCanceling] = useState(false);
+  const isCancelingRef = useRef(false);
   const Icon = category.icon;
   const hasAvatars = selectedOptions.some((opt) => opt.avatar);
   const isSingleSelection = selectedOptions.length === 1;
@@ -231,7 +231,7 @@ function PendingFilterGroup({
       return;
     }
     setComboboxOpen(open);
-    if (!open && !isCanceling) {
+    if (!open && !isCancelingRef.current) {
       if (selectedOptions.length > 0) {
         onConfirm(selectedOptions);
       } else {
@@ -241,7 +241,7 @@ function PendingFilterGroup({
   };
 
   const handleCancel = () => {
-    setIsCanceling(true);
+    isCancelingRef.current = true;
     setComboboxOpen(false);
     onCancel();
   };
