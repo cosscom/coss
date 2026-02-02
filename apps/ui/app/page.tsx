@@ -96,7 +96,9 @@ function CategoryCard({
           className="font-heading text-base"
           render={
             <h2>
-              <Link href={href}>{name}</Link>
+              <Link className="before:absolute before:inset-0" href={href}>
+                {name}
+              </Link>
             </h2>
           }
         />
@@ -107,7 +109,7 @@ function CategoryCard({
           {description || "\u00A0"}
         </CardFrameDescription>
       </CardFrameHeader>
-      <Card className="min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
+      <Card className="pointer-events-none min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
         <CardPanel className="flex flex-1 items-center justify-center px-8 [--border:--alpha(var(--color-black)/7%)] [--btn-from:--alpha(var(--color-primary)/90%)] [--btn-to:var(--color-primary)] dark:[--border:--alpha(var(--color-white)/3%)] dark:[--btn-from:var(--color-primary)] dark:[--btn-to:--alpha(var(--color-primary)/90%)]">
           {thumbnail}
         </CardPanel>
