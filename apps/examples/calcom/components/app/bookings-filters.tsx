@@ -329,6 +329,7 @@ function ActiveFilterComponent({
       </GroupText>
       <GroupSeparator />
       <Combobox
+        items={category.options}
         multiple
         onOpenChange={setOpen}
         onValueChange={handleValueChange}
@@ -348,8 +349,8 @@ function ActiveFilterComponent({
             />
           </div>
           <ComboboxEmpty>No items found.</ComboboxEmpty>
-          <ComboboxList options={category.options}>
-            {(option) => (
+          <ComboboxList>
+            {(option: FilterOption) => (
               <ComboboxItem key={option.id} value={option}>
                 {option.label}
               </ComboboxItem>
