@@ -39,25 +39,25 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-interface FilterOption {
+export interface FilterOption {
   id: string;
   label: string;
   avatar?: string;
 }
 
-interface FilterCategory {
+export interface FilterCategory {
   id: string;
   label: string;
   icon: LucideIcon;
   options: FilterOption[];
 }
 
-interface ActiveFilter {
+export interface ActiveFilter {
   category: FilterCategory;
   selectedOptions: FilterOption[];
 }
 
-const filterCategories: FilterCategory[] = [
+export const filterCategories: FilterCategory[] = [
   {
     icon: Link2Icon,
     id: "event-type",
@@ -366,8 +366,15 @@ function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
   );
 }
 
-function BookingsFilter() {
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+interface BookingsFilterProps {
+  activeFilters: ActiveFilter[];
+  onFiltersChange: (filters: ActiveFilter[]) => void;
+}
+
+function BookingsFilter({
+  activeFilters,
+  onFiltersChange,
+}: BookingsFilterProps) {
   const [editingCategory, setEditingCategory] = useState<FilterCategory | null>(
     null,
   );
@@ -377,36 +384,32 @@ function BookingsFilter() {
     category: FilterCategory,
     selectedOptions: FilterOption[],
   ) => {
-    setActiveFilters((prev) => {
-      const existingIndex = prev.findIndex(
-        (f) => f.category.id === category.id,
-      );
+    const existingIndex = activeFilters.findIndex(
+      (f) => f.category.id === category.id,
+    );
 
-      if (selectedOptions.length === 0) {
-        if (existingIndex >= 0) {
-          return prev.filter((_, i) => i !== existingIndex);
-        }
-        return prev;
-      }
-
+    if (selectedOptions.length === 0) {
       if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = { category, selectedOptions };
-        return updated;
+        onFiltersChange(activeFilters.filter((_, i) => i !== existingIndex));
       }
+      return;
+    }
 
-      return [...prev, { category, selectedOptions }];
-    });
+    if (existingIndex >= 0) {
+      const updated = [...activeFilters];
+      updated[existingIndex] = { category, selectedOptions };
+      onFiltersChange(updated);
+    } else {
+      onFiltersChange([...activeFilters, { category, selectedOptions }]);
+    }
   };
 
   const handleRemoveFilter = (categoryId: string) => {
-    setActiveFilters((prev) =>
-      prev.filter((f) => f.category.id !== categoryId),
-    );
+    onFiltersChange(activeFilters.filter((f) => f.category.id !== categoryId));
   };
 
   const handleClearAll = () => {
-    setActiveFilters([]);
+    onFiltersChange([]);
   };
 
   const handleEditFilter = (category: FilterCategory) => {
@@ -514,3 +517,5 @@ function BookingsFilter() {
 }
 
 export { BookingsFilter };
+
+export type { BookingsFilterProps };

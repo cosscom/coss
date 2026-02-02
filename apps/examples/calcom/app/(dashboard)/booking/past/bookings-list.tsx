@@ -46,21 +46,24 @@ import {
   ListItemTitle,
 } from "@/components/list-item";
 import { useLoadingState } from "@/hooks/use-loading-state";
+import type { Booking } from "@/lib/mock-bookings-data";
 import {
   formatBookingDate,
   formatBookingTime,
   getBookingParticipants,
   getLocationLabel,
-  mockPastBookings,
 } from "@/lib/mock-bookings-data";
 import { BookingsListSkeleton } from "../booking-skeleton";
 import { BookingActions } from "./booking-actions";
 
 const ARTIFICIAL_DELAY_MS = 800;
 
-export function BookingsList() {
+interface BookingsListProps {
+  bookings: Booking[];
+}
+
+export function BookingsList({ bookings }: BookingsListProps) {
   const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
-  const bookings = mockPastBookings;
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
