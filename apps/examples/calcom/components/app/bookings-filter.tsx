@@ -25,30 +25,41 @@ import {
   MenuTrigger,
 } from "@coss/ui/components/menu";
 import { cn } from "@coss/ui/lib/utils";
+import type { LucideIcon } from "lucide-react";
 import {
+  CalendarIcon,
   ContactRoundIcon,
+  HashIcon,
   Link2Icon,
   ListFilterIcon,
+  MailIcon,
   SearchIcon,
+  UserIcon,
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
 
-// Filter category types
 interface FilterOption {
   id: string;
   label: string;
+  avatar?: string;
 }
 
 interface FilterCategory {
   id: string;
   label: string;
+  icon: LucideIcon;
   options: FilterOption[];
 }
 
-// Sample filter data
+interface ActiveFilter {
+  category: FilterCategory;
+  selectedOptions: FilterOption[];
+}
+
 const filterCategories: FilterCategory[] = [
   {
+    icon: Link2Icon,
     id: "event-type",
     label: "Event Type",
     options: [
@@ -61,17 +72,44 @@ const filterCategories: FilterCategory[] = [
     ],
   },
   {
+    icon: ContactRoundIcon,
     id: "member",
     label: "Member",
     options: [
-      { id: "john-doe", label: "John Doe" },
-      { id: "jane-smith", label: "Jane Smith" },
-      { id: "mike-johnson", label: "Mike Johnson" },
-      { id: "sarah-williams", label: "Sarah Williams" },
-      { id: "alex-brown", label: "Alex Brown" },
+      {
+        avatar:
+          "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80",
+        id: "john-doe",
+        label: "John Doe",
+      },
+      {
+        avatar:
+          "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80",
+        id: "jane-smith",
+        label: "Jane Smith",
+      },
+      {
+        avatar:
+          "https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80",
+        id: "mike-johnson",
+        label: "Mike Johnson",
+      },
+      {
+        avatar:
+          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=72&h=72&dpr=2&q=80",
+        id: "sarah-williams",
+        label: "Sarah Williams",
+      },
+      {
+        avatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&dpr=2&q=80",
+        id: "alex-brown",
+        label: "Alex Brown",
+      },
     ],
   },
   {
+    icon: UserIcon,
     id: "attendees-name",
     label: "Attendees Name",
     options: [
@@ -83,6 +121,7 @@ const filterCategories: FilterCategory[] = [
     ],
   },
   {
+    icon: MailIcon,
     id: "attendee-email",
     label: "Attendee Email",
     options: [
@@ -93,6 +132,7 @@ const filterCategories: FilterCategory[] = [
     ],
   },
   {
+    icon: CalendarIcon,
     id: "date-range",
     label: "Date Range",
     options: [
@@ -106,6 +146,7 @@ const filterCategories: FilterCategory[] = [
     ],
   },
   {
+    icon: HashIcon,
     id: "booking-uid",
     label: "Booking UID",
     options: [
@@ -117,13 +158,25 @@ const filterCategories: FilterCategory[] = [
   },
 ];
 
-function FilterMenu() {
+interface FilterMenuProps {
+  activeFilters: ActiveFilter[];
+  onFilterChange: (
+    category: FilterCategory,
+    selectedOptions: FilterOption[],
+  ) => void;
+}
+
+function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<FilterCategory | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [comboboxOpen, setComboboxOpen] = useState(false);
 
-  // If a category is selected, show the second level combobox (matching p-combobox-10.tsx exactly)
+  const existingFilter = selectedCategory
+    ? activeFilters.find((f) => f.category.id === selectedCategory.id)
+    : null;
+  const currentSelections = existingFilter?.selectedOptions ?? [];
+
   if (selectedCategory) {
     return (
       <Combobox
@@ -139,7 +192,11 @@ function FilterMenu() {
             setSelectedCategory(null);
           }
         }}
+        onValueChange={(newValue) => {
+          onFilterChange(selectedCategory, newValue as FilterOption[]);
+        }}
         open={comboboxOpen}
+        value={currentSelections}
       >
         <ComboboxTrigger
           render={
@@ -163,6 +220,17 @@ function FilterMenu() {
           <ComboboxList>
             {(option: FilterOption) => (
               <ComboboxItem key={option.id} value={option}>
+                {option.avatar && (
+                  <Avatar className="size-5">
+                    <AvatarImage alt={option.label} src={option.avatar} />
+                    <AvatarFallback>
+                      {option.label
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
                 {option.label}
               </ComboboxItem>
             )}
@@ -172,7 +240,6 @@ function FilterMenu() {
     );
   }
 
-  // First level: menu with groups (following p-menu-6.tsx pattern)
   return (
     <Menu onOpenChange={setMenuOpen} open={menuOpen}>
       <MenuTrigger
@@ -185,125 +252,259 @@ function FilterMenu() {
       <MenuPopup align="start">
         <MenuGroup>
           <MenuGroupLabel>Filter by</MenuGroupLabel>
-          {filterCategories.map((category) => (
-            <MenuItem
-              key={category.id}
-              onClick={() => {
-                setSelectedCategory(category);
-                setMenuOpen(false);
-                setTimeout(() => setComboboxOpen(true), 0);
-              }}
-            >
-              {category.label}
-            </MenuItem>
-          ))}
+          {filterCategories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <MenuItem
+                key={category.id}
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setMenuOpen(false);
+                  setTimeout(() => setComboboxOpen(true), 0);
+                }}
+              >
+                <Icon className="size-4" />
+                {category.label}
+              </MenuItem>
+            );
+          })}
         </MenuGroup>
       </MenuPopup>
     </Menu>
   );
 }
 
+interface FilterGroupProps {
+  filter: ActiveFilter;
+  onRemove: () => void;
+  onEdit: (category: FilterCategory) => void;
+}
+
+function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
+  const { category, selectedOptions } = filter;
+  const Icon = category.icon;
+  const hasAvatars = selectedOptions.some((opt) => opt.avatar);
+  const isSingleSelection = selectedOptions.length === 1;
+
+  return (
+    <Group>
+      <GroupText
+        className={cn(
+          buttonVariants({
+            size: "sm",
+            variant: "outline",
+          }),
+          "pointer-events-none",
+        )}
+      >
+        <Icon />
+        {category.label}
+      </GroupText>
+      <GroupSeparator />
+      <GroupText
+        className={cn(
+          buttonVariants({
+            size: "sm",
+            variant: "outline",
+          }),
+          "pointer-events-none text-muted-foreground",
+        )}
+      >
+        {isSingleSelection ? "is" : "is any of"}
+      </GroupText>
+      <GroupSeparator />
+      <Button onClick={() => onEdit(category)} size="sm" variant="outline">
+        {hasAvatars && selectedOptions.length > 1 ? (
+          <>
+            <div className="-space-x-1.5 flex">
+              {selectedOptions.slice(0, 3).map((opt) => (
+                <Avatar className="size-3.5 ring ring-background" key={opt.id}>
+                  <AvatarImage alt={opt.label} src={opt.avatar} />
+                  <AvatarFallback>
+                    {opt.label
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            {selectedOptions.length} users
+          </>
+        ) : hasAvatars && isSingleSelection ? (
+          <>
+            <Avatar className="size-3.5">
+              <AvatarImage
+                alt={selectedOptions[0].label}
+                src={selectedOptions[0].avatar}
+              />
+              <AvatarFallback>
+                {selectedOptions[0].label
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            {selectedOptions[0].label}
+          </>
+        ) : isSingleSelection ? (
+          selectedOptions[0].label
+        ) : (
+          `${selectedOptions.length} selected`
+        )}
+      </Button>
+      <GroupSeparator />
+      <Button
+        aria-label="Remove filter"
+        onClick={onRemove}
+        size="icon-sm"
+        variant="outline"
+      >
+        <XIcon />
+      </Button>
+    </Group>
+  );
+}
+
 function BookingsFilter() {
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+  const [editingCategory, setEditingCategory] = useState<FilterCategory | null>(
+    null,
+  );
+  const [editComboboxOpen, setEditComboboxOpen] = useState(false);
+
+  const handleFilterChange = (
+    category: FilterCategory,
+    selectedOptions: FilterOption[],
+  ) => {
+    setActiveFilters((prev) => {
+      const existingIndex = prev.findIndex(
+        (f) => f.category.id === category.id,
+      );
+
+      if (selectedOptions.length === 0) {
+        if (existingIndex >= 0) {
+          return prev.filter((_, i) => i !== existingIndex);
+        }
+        return prev;
+      }
+
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = { category, selectedOptions };
+        return updated;
+      }
+
+      return [...prev, { category, selectedOptions }];
+    });
+  };
+
+  const handleRemoveFilter = (categoryId: string) => {
+    setActiveFilters((prev) =>
+      prev.filter((f) => f.category.id !== categoryId),
+    );
+  };
+
+  const handleClearAll = () => {
+    setActiveFilters([]);
+  };
+
+  const handleEditFilter = (category: FilterCategory) => {
+    setEditingCategory(category);
+    setEditComboboxOpen(true);
+  };
+
+  const editingFilter = editingCategory
+    ? activeFilters.find((f) => f.category.id === editingCategory.id)
+    : null;
+
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
-        <Group>
-          <GroupText
-            className={cn(
-              buttonVariants({
-                size: "sm",
-                variant: "outline",
-              }),
-              "pointer-events-none",
-            )}
+      <div className="flex flex-wrap items-center gap-2">
+        {activeFilters.map((filter) => (
+          <FilterGroup
+            filter={filter}
+            key={filter.category.id}
+            onEdit={handleEditFilter}
+            onRemove={() => handleRemoveFilter(filter.category.id)}
+          />
+        ))}
+        {editingCategory ? (
+          <Combobox
+            items={editingCategory.options}
+            multiple
+            onOpenChange={(open, event) => {
+              if (event?.reason === "item-press") {
+                event.cancel();
+                return;
+              }
+              setEditComboboxOpen(open);
+              if (!open) {
+                setEditingCategory(null);
+              }
+            }}
+            onValueChange={(newValue) => {
+              handleFilterChange(editingCategory, newValue as FilterOption[]);
+            }}
+            open={editComboboxOpen}
+            value={editingFilter?.selectedOptions ?? []}
           >
-            <Link2Icon />
-            Event Type
-          </GroupText>
-          <GroupSeparator />
-          <GroupText
-            className={cn(
-              buttonVariants({
-                size: "sm",
-                variant: "outline",
-              }),
-              "pointer-events-none text-muted-foreground",
-            )}
-          >
-            is
-          </GroupText>
-          <GroupSeparator />
-          <Button size="sm" variant="outline">
-            15 Min Meeting
-          </Button>
-          <GroupSeparator />
-          <Button aria-label="Remove filter" size="icon-sm" variant="outline">
-            <XIcon />
-          </Button>
-        </Group>
-        <Group>
-          <GroupText
-            className={cn(
-              buttonVariants({
-                size: "sm",
-                variant: "outline",
-              }),
-              "pointer-events-none",
-            )}
-          >
-            <ContactRoundIcon />
-            Member
-          </GroupText>
-          <GroupSeparator />
-          <GroupText
-            className={cn(
-              buttonVariants({
-                size: "sm",
-                variant: "outline",
-              }),
-              "pointer-events-none text-muted-foreground",
-            )}
-          >
-            is any of
-          </GroupText>
-          <GroupSeparator />
-          <Button size="sm" variant="outline">
-            <div className="-space-x-1.5 flex">
-              <Avatar className="size-3.5 ring ring-background">
-                <AvatarImage
-                  alt="U1"
-                  src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80"
+            <ComboboxTrigger
+              render={
+                <Button
+                  aria-label="Edit filter"
+                  size="icon-sm"
+                  variant="ghost"
                 />
-                <AvatarFallback>U1</AvatarFallback>
-              </Avatar>
-              <Avatar className="size-3.5 ring ring-background">
-                <AvatarImage
-                  alt="U2"
-                  src="https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80"
+              }
+            >
+              <ListFilterIcon />
+            </ComboboxTrigger>
+            <ComboboxPopup aria-label={`Edit ${editingCategory.label}`}>
+              <div className="border-b p-2">
+                <ComboboxInput
+                  className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                  placeholder={`Search ${editingCategory.label.toLowerCase()}...`}
+                  showTrigger={false}
+                  startAddon={<SearchIcon />}
                 />
-                <AvatarFallback>U2</AvatarFallback>
-              </Avatar>
-              <Avatar className="size-3.5 ring ring-background">
-                <AvatarImage
-                  alt="U3"
-                  src="https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80"
-                />
-                <AvatarFallback>U3</AvatarFallback>
-              </Avatar>
-            </div>
-            3 users
-          </Button>
-          <GroupSeparator />
-          <Button aria-label="Remove filter" size="icon-sm" variant="outline">
-            <XIcon />
-          </Button>
-        </Group>
-        <FilterMenu />
+              </div>
+              <ComboboxEmpty>
+                No {editingCategory.label.toLowerCase()} found.
+              </ComboboxEmpty>
+              <ComboboxList>
+                {(option: FilterOption) => (
+                  <ComboboxItem key={option.id} value={option}>
+                    {option.avatar && (
+                      <Avatar className="size-5">
+                        <AvatarImage alt={option.label} src={option.avatar} />
+                        <AvatarFallback>
+                          {option.label
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxPopup>
+          </Combobox>
+        ) : (
+          <FilterMenu
+            activeFilters={activeFilters}
+            onFilterChange={handleFilterChange}
+          />
+        )}
       </div>
       <div className="flex items-center gap-1">
-        <Button size="sm" variant="ghost">
-          Clear
-        </Button>
+        {activeFilters.length > 0 && (
+          <Button onClick={handleClearAll} size="sm" variant="ghost">
+            Clear
+          </Button>
+        )}
         <Button size="sm" variant="outline">
           Save
         </Button>
