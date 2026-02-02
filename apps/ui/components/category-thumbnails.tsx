@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@coss/ui/lib/utils";
+import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertCircleIcon,
@@ -17,48 +20,207 @@ import {
 import type { ReactNode } from "react";
 
 // ============================================================================
+// Animation Variants
+// ============================================================================
+
+const iconVariants = {
+  rest: { scale: 1, rotate: 0 },
+  hover: {
+    scale: 1.1,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
+
+const chevronVariants = {
+  rest: { rotate: 0 },
+  hover: {
+    rotate: 180,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+};
+
+const textVariants = {
+  rest: { scaleX: 1 },
+  hover: {
+    scaleX: 1.02,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
+
+const buttonVariants = {
+  rest: { scale: 1 },
+  hover: {
+    scale: 1.05,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
+
+const cardVariants = {
+  rest: { y: 0 },
+  hover: {
+    y: -2,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
+
+const pulseVariants = {
+  rest: { opacity: 1 },
+  hover: {
+    opacity: [1, 0.7, 1],
+    transition: { duration: 0.8, repeat: Infinity, ease: "easeInOut" },
+  },
+};
+
+const slideVariants = {
+  rest: { x: 0 },
+  hover: {
+    x: 2,
+    transition: { duration: 0.2, ease: "easeOut" },
+  },
+};
+
+const toggleVariants = {
+  rest: { x: 0 },
+  hover: {
+    x: 16,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  },
+};
+
+const progressVariants = {
+  rest: { scaleX: 1 },
+  hover: {
+    scaleX: 1.15,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+};
+
+const spinnerVariants = {
+  rest: { rotate: 45 },
+  hover: {
+    rotate: 405,
+    transition: { duration: 0.8, ease: "easeInOut" },
+  },
+};
+
+// ============================================================================
 // Base Components
 // ============================================================================
 
 function Icon({
   icon: IconComponent,
   className,
+  animate = true,
 }: {
   icon: LucideIcon;
   className?: string;
+  animate?: boolean;
 }) {
+  if (!animate) {
+    return (
+      <IconComponent
+        className={cn("size-4 text-muted-foreground/88", className)}
+      />
+    );
+  }
   return (
-    <IconComponent
-      className={cn("size-4 text-muted-foreground/88", className)}
-    />
+    <motion.div variants={iconVariants} className="flex items-center justify-center">
+      <IconComponent
+        className={cn("size-4 text-muted-foreground/88", className)}
+      />
+    </motion.div>
+  );
+}
+
+function ChevronIcon({
+  direction = "down",
+  className,
+  animated = true,
+}: {
+  direction?: "down" | "up" | "left" | "right";
+  className?: string;
+  animated?: boolean;
+}) {
+  const icons = {
+    down: ChevronDownIcon,
+    up: ChevronDownIcon,
+    left: ChevronLeftIcon,
+    right: ChevronRightIcon,
+  };
+  const IconComponent = icons[direction];
+  const rotation = direction === "up" ? 180 : 0;
+
+  if (!animated) {
+    return (
+      <IconComponent
+        className={cn("size-4 text-muted-foreground/88", className)}
+        style={{ transform: `rotate(${rotation}deg)` }}
+      />
+    );
+  }
+
+  return (
+    <motion.div
+      variants={chevronVariants}
+      className="flex items-center justify-center"
+      style={{ rotate: rotation }}
+    >
+      <IconComponent
+        className={cn("size-4 text-muted-foreground/88", className)}
+      />
+    </motion.div>
   );
 }
 
 function Text({
   className,
   variant = "main",
+  animate = false,
 }: {
   className?: string;
   variant?: "main" | "secondary";
+  animate?: boolean;
 }) {
   const bgColor =
     variant === "main" ? "bg-muted-foreground/40" : "bg-muted-foreground/20";
-  return <div className={cn("h-1.5 rounded-full", bgColor, className)} />;
+
+  if (!animate) {
+    return <div className={cn("h-1.5 rounded-full", bgColor, className)} />;
+  }
+
+  return (
+    <motion.div
+      variants={textVariants}
+      className={cn("h-1.5 origin-left rounded-full", bgColor, className)}
+    />
+  );
 }
 
 function Button({
   variant = "secondary",
   className,
+  animate = true,
 }: {
   variant?: "primary" | "secondary";
   className?: string;
+  animate?: boolean;
 }) {
   const height = variant === "primary" ? "h-4" : "h-1.5";
   const bgColor =
     variant === "primary"
       ? "bg-linear-to-b from-(--btn-from) to-(--btn-to)"
       : "bg-muted-foreground/20";
-  return <div className={cn(height, "w-7 rounded-sm", bgColor, className)} />;
+
+  if (!animate) {
+    return <div className={cn(height, "w-7 rounded-sm", bgColor, className)} />;
+  }
+
+  return (
+    <motion.div
+      variants={buttonVariants}
+      className={cn(height, "w-7 rounded-sm", bgColor, className)}
+    />
+  );
 }
 
 // Standalone Card component for thumbnails - independent from registry Card
@@ -66,23 +228,29 @@ function Card({
   children,
   className,
   withGradient = true,
+  animate = false,
 }: {
   children: ReactNode;
   className?: string;
   withGradient?: boolean;
+  animate?: boolean;
 }) {
+  const cardClass = cn(
+    "relative flex w-full max-w-72 flex-col rounded-2xl border not-dark:bg-clip-padding text-card-foreground shadow-md/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_-1px_--theme(--color-white/6%),0_1px_--theme(--color-black/6%)]",
+    withGradient
+      ? "bg-linear-to-b from-[color-mix(in_srgb,var(--card)_96%,var(--color-white))] to-[color-mix(in_srgb,var(--card)_99%,var(--color-black))] dark:to-[color-mix(in_srgb,var(--card)_98%,var(--color-white))]"
+      : "bg-card/99 dark:bg-card",
+    className,
+  );
+
+  if (!animate) {
+    return <div className={cardClass}>{children}</div>;
+  }
+
   return (
-    <div
-      className={cn(
-        "relative flex w-full max-w-72 flex-col rounded-2xl border not-dark:bg-clip-padding text-card-foreground shadow-md/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_-1px_--theme(--color-white/6%),0_1px_--theme(--color-black/6%)]",
-        withGradient
-          ? "bg-linear-to-b from-[color-mix(in_srgb,var(--card)_96%,var(--color-white))] to-[color-mix(in_srgb,var(--card)_99%,var(--color-black))] dark:to-[color-mix(in_srgb,var(--card)_98%,var(--color-white))]"
-          : "bg-card/99 dark:bg-card",
-        className,
-      )}
-    >
+    <motion.div variants={cardVariants} className={cardClass}>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -115,7 +283,8 @@ function CheckboxItem({
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div
+      <motion.div
+        variants={checked ? pulseVariants : undefined}
         className={cn(
           "size-4 shrink-0 rounded",
           checked
@@ -137,7 +306,8 @@ function RadioItem({
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div
+      <motion.div
+        variants={checked ? pulseVariants : undefined}
         className={cn(
           "size-4 shrink-0 rounded-full",
           checked
@@ -158,35 +328,39 @@ function FormField({
   showError?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <Text className={labelWidth} />
-      <Card className="[--radius-2xl:10px]" withGradient={false}>
+    <motion.div variants={slideVariants} className="flex flex-col gap-2">
+      <Text className={labelWidth} animate />
+      <Card className="[--radius-2xl:10px]" withGradient={false} animate>
         <CardPanel className="py-3.5" />
       </Card>
-      {showError && <Text className="w-[80%]" variant="secondary" />}
-    </div>
+      {showError && (
+        <motion.div variants={pulseVariants}>
+          <Text className="w-[80%]" variant="secondary" />
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
 
 function TableRow({ showCheckbox = true }: { showCheckbox?: boolean }) {
   return (
-    <div className="flex items-center gap-2 p-3">
+    <motion.div variants={slideVariants} className="flex items-center gap-2 p-3">
       {showCheckbox && <Text className="size-2.5 rounded-xs" />}
       <Text className="flex-1" />
       <Text className="flex-1" variant="secondary" />
       <Text className="flex-1" variant="secondary" />
       <Text className="flex-1" variant="secondary" />
       <Text className="flex-1" variant="secondary" />
-    </div>
+    </motion.div>
   );
 }
 
 function CommandItem() {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <motion.div variants={slideVariants} className="flex items-center justify-between gap-2">
       <Text className="w-[65%]" variant="secondary" />
       <Text className="w-4" variant="secondary" />
-    </div>
+    </motion.div>
   );
 }
 
@@ -196,17 +370,17 @@ function CommandItem() {
 
 // Accordion
 export const accordionThumbnail = (
-  <Card className="max-w-50">
+  <Card className="max-w-50" animate>
     <CardPanel className="divide-y divide-border p-0">
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <Icon icon={ChevronDownIcon} />
+          <ChevronIcon direction="down" />
           <Text className="w-[60%]" />
         </div>
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <Icon className="rotate-180" icon={ChevronDownIcon} />
+          <ChevronIcon direction="up" />
           <div className="flex flex-1 flex-col gap-2">
             <Text className="w-[50%]" variant="main" />
             <Text className="w-[90%]" variant="secondary" />
@@ -215,7 +389,7 @@ export const accordionThumbnail = (
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <Icon icon={ChevronDownIcon} />
+          <ChevronIcon direction="down" />
           <Text className="w-[60%]" />
         </div>
       </div>
@@ -225,17 +399,17 @@ export const accordionThumbnail = (
 
 // Alert
 export const alertThumbnail = (
-  <Card>
+  <Card animate>
     <CardPanel className="flex items-center gap-2 p-3">
       <Icon icon={AlertCircleIcon} />
-      <Text className="w-[70%]" variant="secondary" />
+      <Text className="w-[70%]" variant="secondary" animate />
     </CardPanel>
   </Card>
 );
 
 // Alert Dialog
 export const alertDialogThumbnail = (
-  <Card className="max-w-50">
+  <Card className="max-w-50" animate>
     <CardPanel className="flex flex-col gap-5 p-4">
       <div className="flex flex-col gap-2">
         <Text className="w-[50%]" variant="main" />
@@ -254,11 +428,13 @@ export const autocompleteThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-2">
     <Card className="[--radius-2xl:12px]" withGradient={false}>
       <CardPanel className="flex items-center gap-2 px-4 py-2">
-        <Text className="w-[40%]" />
-        <Icon icon={TextCursorIcon} />
+        <Text className="w-[40%]" animate />
+        <motion.div variants={pulseVariants}>
+          <Icon icon={TextCursorIcon} animate={false} />
+        </motion.div>
       </CardPanel>
     </Card>
-    <Card className="[--radius-2xl:10px]">
+    <Card className="[--radius-2xl:10px]" animate>
       <CardPanel className="flex flex-col gap-4 p-4">
         <Text variant="secondary" />
         <Text variant="secondary" />
@@ -270,7 +446,7 @@ export const autocompleteThumbnail = (
 
 // Avatar
 export const avatarThumbnail = (
-  <Card className="size-12 [--radius-2xl:9999px]">
+  <Card className="size-12 [--radius-2xl:9999px]" animate>
     <CardPanel className="flex items-center justify-center p-0">
       <div className="flex size-full items-center justify-center rounded-full">
         <Icon icon={UserRoundIcon} />
@@ -281,17 +457,17 @@ export const avatarThumbnail = (
 
 // Badge
 export const badgeThumbnail = (
-  <Card className="max-w-24 [--radius-2xl:9999px]">
+  <Card className="max-w-24 [--radius-2xl:9999px]" animate>
     <CardPanel className="flex items-center gap-2 px-2.5 py-2">
-      <div className="size-2 rounded-full bg-muted-foreground/88" />
-      <Text className="flex-1" />
+      <motion.div variants={pulseVariants} className="size-2 rounded-full bg-muted-foreground/88" />
+      <Text className="flex-1" animate />
     </CardPanel>
   </Card>
 );
 
 // Breadcrumb
 export const breadcrumbThumbnail = (
-  <Card>
+  <Card animate>
     <CardPanel className="flex items-center gap-1 p-3">
       <Text className="flex-1" />
       <Icon icon={ChevronRightIcon} />
@@ -304,19 +480,21 @@ export const breadcrumbThumbnail = (
 
 // Button
 export const buttonThumbnail = (
-  <Card
-    className="max-w-24 border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:14px]"
-    withGradient={false}
-  >
-    <CardPanel className="px-6 py-4">
-      <Text className="bg-primary-foreground/40" />
-    </CardPanel>
-  </Card>
+  <motion.div variants={buttonVariants}>
+    <Card
+      className="max-w-24 border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:14px]"
+      withGradient={false}
+    >
+      <CardPanel className="px-6 py-4">
+        <Text className="bg-primary-foreground/40" />
+      </CardPanel>
+    </Card>
+  </motion.div>
 );
 
 // Card
 export const cardThumbnail = (
-  <Card className="max-w-36 [--radius-2xl:14px]">
+  <Card className="max-w-36 [--radius-2xl:14px]" animate>
     <CardPanel className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-2">
         <Text className="w-[60%]" variant="main" />
@@ -351,43 +529,43 @@ export const checkboxGroupThumbnail = (
 
 // Collapsible
 export const collapsibleThumbnail = (
-  <Card>
+  <Card animate>
     <CardPanel className="divide-y divide-border p-0">
       <div className="flex items-center justify-between px-4 py-3">
         <Text className="w-[60%]" />
-        <Icon icon={ChevronDownIcon} />
+        <ChevronIcon direction="down" />
       </div>
-      <div className="flex flex-col gap-2 p-4">
+      <motion.div variants={slideVariants} className="flex flex-col gap-2 p-4">
         <Text className="w-[80%]" variant="secondary" />
         <Text className="w-[70%]" variant="secondary" />
-      </div>
+      </motion.div>
     </CardPanel>
   </Card>
 );
 
 // Combobox
 export const comboboxThumbnail = (
-  <Card className="[--radius-2xl:14px]" withGradient={false}>
+  <Card className="[--radius-2xl:14px]" withGradient={false} animate>
     <CardPanel className="flex items-center gap-2 px-3 py-[calc(--spacing(2.5)-1px)]">
-      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
+      <motion.div variants={slideVariants} className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
         <Text className="w-6" />
         <Icon icon={XIcon} />
-      </div>
-      <div className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
+      </motion.div>
+      <motion.div variants={slideVariants} className="flex h-5 items-center gap-1 rounded-sm bg-muted-foreground/8 py-0.5 ps-2 pe-1">
         <Text className="w-6" />
         <Icon icon={XIcon} />
-      </div>
+      </motion.div>
     </CardPanel>
   </Card>
 );
 
 // Command
 export const commandThumbnail = (
-  <Card className="max-w-50">
+  <Card className="max-w-50" animate>
     <CardPanel className="divide-y divide-border p-0">
       <div className="flex items-center gap-2 px-4 py-3">
         <Icon icon={SearchIcon} />
-        <Text className="w-[40%]" />
+        <Text className="w-[40%]" animate />
       </div>
       <div className="flex flex-col gap-4 p-4">
         <CommandItem />
@@ -400,7 +578,7 @@ export const commandThumbnail = (
 
 // Dialog
 export const dialogThumbnail = (
-  <Card className="max-w-36 [--radius-2xl:14px]">
+  <Card className="max-w-36 [--radius-2xl:14px]" animate>
     <CardPanel className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-2">
         <Text className="w-[60%]" variant="main" />
@@ -419,9 +597,9 @@ export const dialogThumbnail = (
 
 // Empty
 export const emptyThumbnail = (
-  <Card className="border-input border-dashed bg-none shadow-none before:hidden">
+  <Card className="border-input border-dashed bg-none shadow-none before:hidden" animate>
     <CardPanel className="flex flex-col items-center gap-2">
-      <div className="size-8 rounded-full bg-muted-foreground/20" />
+      <motion.div variants={pulseVariants} className="size-8 rounded-full bg-muted-foreground/20" />
       <Text className="w-[60%]" />
       <Text className="w-[80%]" variant="secondary" />
     </CardPanel>
@@ -430,35 +608,42 @@ export const emptyThumbnail = (
 
 // Field
 export const fieldThumbnail = (
-  <div className="flex max-w-50 flex-1 flex-col gap-3">
+  <motion.div variants={cardVariants} className="flex max-w-50 flex-1 flex-col gap-3">
     <FormField showError />
-  </div>
+  </motion.div>
 );
 
 // Fieldset
 export const fieldsetThumbnail = (
-  <div className="flex max-w-50 flex-1 flex-col gap-4">
+  <motion.div variants={cardVariants} className="flex max-w-50 flex-1 flex-col gap-4">
     <FormField />
     <FormField />
-  </div>
+  </motion.div>
 );
 
 // Form
 export const formThumbnail = (
-  <div className="flex max-w-50 flex-1 flex-col gap-4">
-    <FormField />
-    <Card
-      className="border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:10px]"
-      withGradient={false}
-    >
-      <CardPanel className="py-3.5" />
-    </Card>
-  </div>
+  <motion.div variants={cardVariants} className="flex max-w-50 flex-1 flex-col gap-4">
+    <div className="flex flex-col gap-2">
+      <Text className="w-16" animate />
+      <Card className="[--radius-2xl:10px]" withGradient={false} animate>
+        <CardPanel className="py-3.5" />
+      </Card>
+    </div>
+    <motion.div variants={buttonVariants}>
+      <Card
+        className="border-none bg-linear-to-b from-(--btn-from) to-(--btn-to) [--radius-2xl:10px]"
+        withGradient={false}
+      >
+        <CardPanel className="py-3.5" />
+      </Card>
+    </motion.div>
+  </motion.div>
 );
 
 // Frame
 export const frameThumbnail = (
-  <div className="flex-1 rounded-[calc(var(--radius-2xl)+2px)] bg-muted/72 p-1">
+  <motion.div variants={cardVariants} className="flex-1 rounded-[calc(var(--radius-2xl)+2px)] bg-muted/72 p-1">
     <div className="flex flex-col gap-2 p-4">
       <Text className="w-[70%]" />
     </div>
@@ -470,12 +655,12 @@ export const frameThumbnail = (
         </div>
       </CardPanel>
     </Card>
-  </div>
+  </motion.div>
 );
 
 // Group
 export const groupThumbnail = (
-  <Card className="max-w-48 flex-row divide-x [--radius-2xl:14px]">
+  <Card className="max-w-48 flex-row divide-x [--radius-2xl:14px]" animate>
     <CardPanel className="px-6 py-4">
       <Text />
     </CardPanel>
@@ -487,20 +672,20 @@ export const groupThumbnail = (
 
 // Input
 export const inputThumbnail = (
-  <Card className="[--radius-2xl:14px]" withGradient={false}>
+  <Card className="[--radius-2xl:14px]" withGradient={false} animate>
     <CardPanel className="px-6 py-4">
-      <Text className="w-[60%]" />
+      <Text className="w-[60%]" animate />
     </CardPanel>
   </Card>
 );
 
 // Input Group
 export const inputGroupThumbnail = (
-  <Card className="[--radius-2xl:14px]" withGradient={false}>
+  <Card className="[--radius-2xl:14px]" withGradient={false} animate>
     <CardPanel className="flex gap-2 p-0">
       <div className="flex flex-1 items-center gap-2 py-2.5 ps-4">
         <Icon icon={SearchIcon} />
-        <Text className="w-[60%]" />
+        <Text className="w-[60%]" animate />
       </div>
       <div className="flex items-center py-2.5 pe-4">
         <div className="size-4 shrink-0 rounded bg-muted-foreground/20" />
@@ -512,12 +697,12 @@ export const inputGroupThumbnail = (
 // Kbd
 export const kbdThumbnail = (
   <div className="flex items-center justify-center gap-2">
-    <Card className="size-10 [--radius-2xl:10px]">
+    <Card className="size-10 [--radius-2xl:10px]" animate>
       <CardPanel className="flex items-center justify-center p-0 text-muted-foreground/88 leading-none">
         ⌘
       </CardPanel>
     </Card>
-    <Card className="size-10 [--radius-2xl:10px]">
+    <Card className="size-10 [--radius-2xl:10px]" animate>
       <CardPanel className="flex items-center justify-center p-0 text-muted-foreground/88 leading-none">
         K
       </CardPanel>
@@ -528,8 +713,8 @@ export const kbdThumbnail = (
 // Label
 export const labelThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-3">
-    <Text className="w-16 bg-primary" />
-    <Card className="[--radius-2xl:10px]">
+    <Text className="w-16 bg-primary" animate />
+    <Card className="[--radius-2xl:10px]" animate>
       <CardPanel className="py-3.5" />
     </Card>
   </div>
@@ -538,25 +723,25 @@ export const labelThumbnail = (
 // Menu
 export const menuThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col items-end gap-2">
-    <Card className="w-fit [--radius-2xl:12px]">
+    <Card className="w-fit [--radius-2xl:12px]" animate>
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={EllipsisIcon} />
       </CardPanel>
     </Card>
-    <Card className="[--radius-2xl:10px]">
+    <Card className="[--radius-2xl:10px]" animate>
       <CardPanel className="flex flex-col gap-4 p-4">
-        <div className="me-6">
+        <motion.div variants={slideVariants} className="me-6">
           <Text className="w-full" variant="secondary" />
-        </div>
-        <div className="flex items-center gap-4">
+        </motion.div>
+        <motion.div variants={slideVariants} className="flex items-center gap-4">
           <div className="flex-1">
             <Text variant="secondary" />
           </div>
-          <Icon className="-m-1" icon={ChevronRightIcon} />
-        </div>
-        <div className="me-6">
+          <Icon className="-m-1" icon={ChevronRightIcon} animate={false} />
+        </motion.div>
+        <motion.div variants={slideVariants} className="me-6">
           <Text className="w-full" variant="secondary" />
-        </div>
+        </motion.div>
       </CardPanel>
     </Card>
   </div>
@@ -570,14 +755,17 @@ export const meterThumbnail = (
       <Text className="w-8" />
     </div>
     <div className="h-2 w-full rounded-full bg-muted-foreground/20">
-      <div className="h-2 w-[65%] rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
+      <motion.div
+        variants={progressVariants}
+        className="h-2 w-[65%] origin-left rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+      />
     </div>
   </div>
 );
 
 // Number Field
 export const numberFieldThumbnail = (
-  <Card className="[--radius-2xl:14px]">
+  <Card className="[--radius-2xl:14px]" animate>
     <CardPanel className="flex items-center gap-2 px-4 py-2.5">
       <Icon className="shrink-0" icon={MinusIcon} />
       <div className="flex flex-1 justify-center">
@@ -591,7 +779,7 @@ export const numberFieldThumbnail = (
 // Pagination
 export const paginationThumbnail = (
   <div className="flex flex-1 items-center gap-4">
-    <Card className="w-fit [--radius-2xl:12px]">
+    <Card className="w-fit [--radius-2xl:12px]" animate>
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={ChevronLeftIcon} />
       </CardPanel>
@@ -601,7 +789,7 @@ export const paginationThumbnail = (
       <Text className="flex-1" variant="secondary" />
       <Text className="flex-1" variant="secondary" />
     </div>
-    <Card className="w-fit [--radius-2xl:12px]">
+    <Card className="w-fit [--radius-2xl:12px]" animate>
       <CardPanel className="flex items-center gap-2 p-2">
         <Icon icon={ChevronRightIcon} />
       </CardPanel>
@@ -612,12 +800,12 @@ export const paginationThumbnail = (
 // Popover
 export const popoverThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col items-center gap-2">
-    <Card className="w-fit [--radius-2xl:12px]">
+    <Card className="w-fit [--radius-2xl:12px]" animate>
       <CardPanel className="flex items-center gap-2 px-4 py-3">
         <Text className="w-12" variant="main" />
       </CardPanel>
     </Card>
-    <Card className="[--radius-2xl:10px]">
+    <Card className="[--radius-2xl:10px]" animate>
       <CardPanel className="flex flex-col gap-3 p-4">
         <Text className="w-[70%]" variant="main" />
         <div className="flex flex-col gap-1.5">
@@ -631,9 +819,9 @@ export const popoverThumbnail = (
 
 // Preview Card
 export const previewCardThumbnail = (
-  <Card className="max-w-50">
+  <Card className="max-w-50" animate>
     <CardPanel className="flex items-center gap-3 p-4">
-      <div className="size-9 shrink-0 rounded-full bg-muted-foreground/20" />
+      <motion.div variants={pulseVariants} className="size-9 shrink-0 rounded-full bg-muted-foreground/20" />
       <div className="flex flex-1 flex-col gap-2">
         <Text className="w-[70%]" variant="main" />
         <Text variant="secondary" />
@@ -647,7 +835,10 @@ export const previewCardThumbnail = (
 export const progressThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-2">
     <div className="h-2 w-full rounded-full bg-muted-foreground/20">
-      <div className="h-2 w-[45%] rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
+      <motion.div
+        variants={progressVariants}
+        className="h-2 w-[45%] origin-left rounded-s-full bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+      />
     </div>
   </div>
 );
@@ -662,7 +853,7 @@ export const radioGroupThumbnail = (
 
 // Scroll Area
 export const scrollAreaThumbnail = (
-  <Card className="max-w-36 [--radius-2xl:14px]">
+  <Card className="max-w-36 [--radius-2xl:14px]" animate>
     <CardPanel className="relative p-0">
       <div className="flex flex-col gap-2 p-3">
         <Text className="w-[80%]" variant="secondary" />
@@ -672,18 +863,24 @@ export const scrollAreaThumbnail = (
         <Text className="w-[90%]" variant="secondary" />
         <Text className="w-[80%]" variant="secondary" />
       </div>
-      <div className="absolute top-2 right-1 h-8 w-1 rounded-full bg-muted-foreground/40" />
+      <motion.div
+        variants={{
+          rest: { y: 0 },
+          hover: { y: 8, transition: { duration: 0.3, ease: "easeOut" } },
+        }}
+        className="absolute top-2 right-1 h-8 w-1 rounded-full bg-muted-foreground/40"
+      />
     </CardPanel>
   </Card>
 );
 
 // Select
 export const selectThumbnail = (
-  <Card className="[--radius-2xl:14px]" withGradient={false}>
+  <Card className="[--radius-2xl:14px]" withGradient={false} animate>
     <CardPanel className="flex gap-2 p-0">
       <div className="flex flex-1 items-center justify-between gap-2 py-2.5 ps-4 pe-2.5">
         <Text className="w-[60%]" />
-        <Icon icon={ChevronDownIcon} />
+        <ChevronIcon direction="down" />
       </div>
     </CardPanel>
   </Card>
@@ -691,7 +888,7 @@ export const selectThumbnail = (
 
 // Separator
 export const separatorThumbnail = (
-  <div className="max-w-50 flex-1 divide-y">
+  <motion.div variants={cardVariants} className="max-w-50 flex-1 divide-y">
     <div className="flex flex-col gap-2 py-3">
       <Text className="w-[60%]" />
       <Text variant="secondary" />
@@ -710,14 +907,14 @@ export const separatorThumbnail = (
         <Text variant="secondary" />
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
 // Sheet
 export const sheetThumbnail = (
   <div className="flex h-full flex-1 gap-2">
     <div className="flex-1 rounded-xl border border-input border-dashed" />
-    <Card className="h-full max-w-1/3 [--radius-2xl:14px]">
+    <Card className="h-full max-w-1/3 [--radius-2xl:14px]" animate>
       <CardPanel className="flex flex-col gap-4 p-3">
         <div className="flex flex-1 flex-col gap-2">
           <Text className="w-[60%]" variant="main" />
@@ -733,42 +930,57 @@ export const sheetThumbnail = (
 
 // Skeleton
 export const skeletonThumbnail = (
-  <div className="mask-[linear-gradient(100deg,black_0%,rgba(0,0,0,0.2)_20%,rgba(0,0,0,0.2)_80%,rgba(0,0,0,0.6)_100%)] flex max-w-50 flex-1 items-center gap-3">
+  <motion.div
+    variants={pulseVariants}
+    className="mask-[linear-gradient(100deg,black_0%,rgba(0,0,0,0.2)_20%,rgba(0,0,0,0.2)_80%,rgba(0,0,0,0.6)_100%)] flex max-w-50 flex-1 items-center gap-3"
+  >
     <div className="size-8 rounded-full bg-muted-foreground/20" />
     <div className="flex flex-1 flex-col gap-2">
       <Text className="w-full" variant="secondary" />
       <Text className="w-full" variant="secondary" />
     </div>
-  </div>
+  </motion.div>
 );
 
 // Slider
 export const sliderThumbnail = (
   <div className="flex w-full max-w-50 items-center gap-1">
-    <Text
-      className="w-[35%] bg-linear-to-b from-(--btn-from) to-(--btn-to)"
-      variant="secondary"
+    <motion.div
+      variants={progressVariants}
+      className="h-1.5 w-[35%] origin-left rounded-full bg-linear-to-b from-(--btn-from) to-(--btn-to)"
     />
-    <div className="size-4 rounded-full bg-linear-to-b from-(--btn-from) to-(--btn-to)" />
+    <motion.div
+      variants={{
+        rest: { x: 0, scale: 1 },
+        hover: { x: 8, scale: 1.1, transition: { duration: 0.3, ease: "easeOut" } },
+      }}
+      className="size-4 rounded-full bg-linear-to-b from-(--btn-from) to-(--btn-to)"
+    />
     <Text className="flex-1" variant="secondary" />
   </div>
 );
 
 // Spinner
 export const spinnerThumbnail = (
-  <div className="size-8 rotate-45 rounded-full border-3 border-muted-foreground/20 border-t-primary" />
+  <motion.div
+    variants={spinnerVariants}
+    className="size-8 rounded-full border-3 border-muted-foreground/20 border-t-primary"
+  />
 );
 
 // Switch
 export const switchThumbnail = (
   <div className="h-6 w-10 rounded-full bg-muted-foreground/20 p-0.5">
-    <div className="size-5 rounded-full bg-linear-to-b from-card to-card/90 shadow-xs/5 dark:from-background/90 dark:to-background" />
+    <motion.div
+      variants={toggleVariants}
+      className="size-5 rounded-full bg-linear-to-b from-card to-card/90 shadow-xs/5 dark:from-background/90 dark:to-background"
+    />
   </div>
 );
 
 // Table
 export const tableThumbnail = (
-  <Card>
+  <Card animate>
     <CardPanel className="p-0">
       <div className="divide-y divide-border">
         <TableRow />
@@ -781,11 +993,17 @@ export const tableThumbnail = (
 
 // Tabs
 export const tabsThumbnail = (
-  <div className="flex max-w-50 flex-col gap-4">
+  <motion.div variants={cardVariants} className="flex max-w-50 flex-col gap-4">
     <div className="flex rounded-lg bg-muted-foreground/12 p-0.5">
-      <div className="rounded-[calc(var(--radius-lg)-1px)] bg-linear-to-b from-card to-card/90 p-3 shadow-xs/5 dark:from-background/90 dark:to-background">
+      <motion.div
+        variants={{
+          rest: { scale: 1 },
+          hover: { scale: 1.02, transition: { duration: 0.2 } },
+        }}
+        className="rounded-[calc(var(--radius-lg)-1px)] bg-linear-to-b from-card to-card/90 p-3 shadow-xs/5 dark:from-background/90 dark:to-background"
+      >
         <Text className="w-6 bg-primary" />
-      </div>
+      </motion.div>
       <div className="rounded-[calc(var(--radius-lg)-1px)] p-3">
         <Text className="w-6" variant="secondary" />
       </div>
@@ -797,14 +1015,14 @@ export const tabsThumbnail = (
       <Text className="w-[70%]" />
       <Text variant="secondary" />
     </div>
-  </div>
+  </motion.div>
 );
 
 // Textarea
 export const textareaThumbnail = (
-  <Card className="[--radius-2xl:14px]" withGradient={false}>
+  <Card className="[--radius-2xl:14px]" withGradient={false} animate>
     <CardPanel className="flex flex-col gap-2 px-6 py-4">
-      <Text className="w-[60%]" />
+      <Text className="w-[60%]" animate />
       <Text className="opacity-0" />
       <Text className="opacity-0" />
     </CardPanel>
@@ -820,7 +1038,7 @@ export const toastThumbnail = (
     <Card className="-top-3 absolute scale-90">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
-    <Card>
+    <Card animate>
       <CardPanel className="flex items-start gap-2 p-3">
         <Icon icon={AlertCircleIcon} />
         <div className="flex flex-1 flex-col gap-2">
@@ -835,12 +1053,12 @@ export const toastThumbnail = (
 // Toggle
 export const toggleThumbnail = (
   <div className="flex flex-1 flex-col items-center justify-center gap-2">
-    <Card className="max-w-12 [--radius-2xl:14px]">
+    <Card className="max-w-12 [--radius-2xl:14px]" animate>
       <CardPanel className="rounded-[inherit] p-4">
         <Text />
       </CardPanel>
     </Card>
-    <Card className="max-w-12 shadow-none [--radius-2xl:14px] before:hidden">
+    <Card className="max-w-12 shadow-none [--radius-2xl:14px] before:hidden" animate>
       <CardPanel className="rounded-[inherit] bg-muted-foreground/8 p-4">
         <Text className="bg-primary" />
       </CardPanel>
@@ -850,13 +1068,15 @@ export const toggleThumbnail = (
 
 // Toggle Group
 export const toggleGroupThumbnail = (
-  <Card className="w-auto flex-row divide-x [--radius-2xl:14px]">
+  <Card className="w-auto flex-row divide-x [--radius-2xl:14px]" animate>
     <CardPanel className="bg-clip-padding p-4">
       <Text className="w-4" />
     </CardPanel>
-    <CardPanel className="bg-muted-foreground/8 bg-clip-padding p-4">
-      <Text className="w-4 bg-foreground" />
-    </CardPanel>
+    <motion.div variants={pulseVariants}>
+      <CardPanel className="bg-muted-foreground/8 bg-clip-padding p-4">
+        <Text className="w-4 bg-foreground" />
+      </CardPanel>
+    </motion.div>
     <CardPanel className="bg-clip-padding p-4">
       <Text className="w-4" />
     </CardPanel>
@@ -865,7 +1085,7 @@ export const toggleGroupThumbnail = (
 
 // Toolbar
 export const toolbarThumbnail = (
-  <div className="flex items-center gap-1 rounded-xl border p-1">
+  <motion.div variants={cardVariants} className="flex items-center gap-1 rounded-xl border p-1">
     <Card className="w-fit [--radius-2xl:12px]">
       <CardPanel className="p-3.5">
         <Text className="w-4" />
@@ -881,13 +1101,13 @@ export const toolbarThumbnail = (
         <Text className="w-4" />
       </CardPanel>
     </Card>
-  </div>
+  </motion.div>
 );
 
 // Tooltip
 export const tooltipThumbnail = (
   <div className="flex max-w-32 flex-1 flex-col items-center gap-2">
-    <Card className="[--radius-2xl:10px]">
+    <Card className="[--radius-2xl:10px]" animate>
       <CardPanel className="p-4">
         <Text />
       </CardPanel>

@@ -6,17 +6,9 @@ import {
 import { SiteFooter } from "@coss/ui/shared/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCategoryThumbnail } from "@/components/category-thumbnails";
+import { AnimatedCategoryCard } from "@/components/animated-category-card";
 import { categories } from "@/config/categories";
 import { Button } from "@/registry/default/ui/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@/registry/default/ui/card";
 import { particles } from "@/registry/registry-particles";
 
 const description = "Built for developers and AI.";
@@ -57,13 +49,13 @@ export default function Page() {
         />
         <div className="container w-full">
           <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
-            {categories.map((category) => (
-              <CategoryCard
+            {categories.map((category, index) => (
+              <AnimatedCategoryCard
                 description={category.description}
+                index={index}
                 key={category.slug}
                 name={category.name}
                 slug={category.slug}
-                thumbnail={getCategoryThumbnail(category.slug)}
               />
             ))}
           </div>
@@ -71,49 +63,5 @@ export default function Page() {
       </div>
       <SiteFooter />
     </>
-  );
-}
-
-type CategoryCardProps = {
-  slug: string;
-  name: string;
-  description?: string;
-  thumbnail?: React.ReactNode;
-};
-
-function CategoryCard({
-  slug,
-  name,
-  description,
-  thumbnail,
-}: CategoryCardProps) {
-  const href = `/docs/components/${slug}`;
-
-  return (
-    <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
-      <CardFrameHeader className="grid grid-rows-[auto_1fr]">
-        <CardFrameTitle
-          className="font-heading text-base"
-          render={
-            <h2>
-              <Link className="before:absolute before:inset-0" href={href}>
-                {name}
-              </Link>
-            </h2>
-          }
-        />
-        <CardFrameDescription
-          className="line-clamp-2 sm:h-[2lh]"
-          render={<p />}
-        >
-          {description || "\u00A0"}
-        </CardFrameDescription>
-      </CardFrameHeader>
-      <Card className="pointer-events-none min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
-        <CardPanel className="flex flex-1 items-center justify-center px-8 [--border:--alpha(var(--color-black)/7%)] [--btn-from:--alpha(var(--color-primary)/90%)] [--btn-to:var(--color-primary)] dark:[--border:--alpha(var(--color-white)/3%)] dark:[--btn-from:var(--color-primary)] dark:[--btn-to:--alpha(var(--color-primary)/90%)]">
-          {thumbnail}
-        </CardPanel>
-      </Card>
-    </CardFrame>
   );
 }
