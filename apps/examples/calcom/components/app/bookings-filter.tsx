@@ -213,7 +213,10 @@ function PendingFilterGroup({
 }: PendingFilterGroupProps) {
   const [comboboxOpen, setComboboxOpen] = useState(true);
   const [selectedOptions, setSelectedOptions] = useState<FilterOption[]>([]);
+  const [isCanceling, setIsCanceling] = useState(false);
   const Icon = category.icon;
+  const hasAvatars = selectedOptions.some((opt) => opt.avatar);
+  const isSingleSelection = selectedOptions.length === 1;
 
   useEffect(() => {
     setComboboxOpen(true);
@@ -228,13 +231,73 @@ function PendingFilterGroup({
       return;
     }
     setComboboxOpen(open);
-    if (!open) {
+    if (!open && !isCanceling) {
       if (selectedOptions.length > 0) {
         onConfirm(selectedOptions);
       } else {
         onCancel();
       }
     }
+  };
+
+  const handleCancel = () => {
+    setIsCanceling(true);
+    setComboboxOpen(false);
+    onCancel();
+  };
+
+  const renderSelectedValue = () => {
+    if (selectedOptions.length === 0) {
+      return (
+        <>
+          <ChevronsUpDownIcon />
+          Select...
+        </>
+      );
+    }
+    if (hasAvatars && selectedOptions.length > 1) {
+      return (
+        <>
+          <div className="-space-x-1.5 flex">
+            {selectedOptions.slice(0, 3).map((opt) => (
+              <Avatar className="size-3.5 ring ring-background" key={opt.id}>
+                <AvatarImage alt={opt.label} src={opt.avatar} />
+                <AvatarFallback>
+                  {opt.label
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+          {selectedOptions.length} users
+        </>
+      );
+    }
+    if (hasAvatars && isSingleSelection && selectedOptions[0]) {
+      return (
+        <>
+          <Avatar className="size-3.5">
+            <AvatarImage
+              alt={selectedOptions[0].label}
+              src={selectedOptions[0].avatar}
+            />
+            <AvatarFallback>
+              {selectedOptions[0].label
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          {selectedOptions[0].label}
+        </>
+      );
+    }
+    if (isSingleSelection && selectedOptions[0]) {
+      return selectedOptions[0].label;
+    }
+    return `${selectedOptions.length} selected`;
   };
 
   return (
@@ -261,7 +324,7 @@ function PendingFilterGroup({
           "pointer-events-none text-muted-foreground",
         )}
       >
-        is
+        {selectedOptions.length === 0 || isSingleSelection ? "is" : "is any of"}
       </GroupText>
       <GroupSeparator />
       <Combobox
@@ -274,14 +337,9 @@ function PendingFilterGroup({
         open={comboboxOpen}
         value={selectedOptions}
       >
-        <ComboboxTrigger
-          render={
-            <Button size="sm" variant="outline">
-              <ChevronsUpDownIcon />
-              Select...
-            </Button>
-          }
-        />
+        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+          {renderSelectedValue()}
+        </ComboboxTrigger>
         <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
             <ComboboxInput
@@ -317,7 +375,7 @@ function PendingFilterGroup({
       <GroupSeparator />
       <Button
         aria-label="Remove filter"
-        onClick={onCancel}
+        onClick={handleCancel}
         size="icon-sm"
         variant="outline"
       >
