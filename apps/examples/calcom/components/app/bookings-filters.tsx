@@ -22,75 +22,126 @@ import {
 import { cn } from "@coss/ui/lib/utils";
 import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
 
+import type { Booking } from "@/lib/mock-bookings-data";
+import {
+  mockPastBookings,
+  mockUpcomingBookings,
+} from "@/lib/mock-bookings-data";
+
+function toKebabCase(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function getUniqueEventTypes(bookings: Booking[]) {
+  const eventTypeMap = new Map<string, { id: string; label: string }>();
+  for (const booking of bookings) {
+    if (booking.eventType) {
+      const id = toKebabCase(booking.eventType.slug);
+      if (!eventTypeMap.has(id)) {
+        eventTypeMap.set(id, {
+          id,
+          label: booking.eventType.title,
+        });
+      }
+    }
+  }
+  return Array.from(eventTypeMap.values()).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
+function getUniqueMembers(bookings: Booking[]) {
+  const memberMap = new Map<
+    string,
+    { avatar: string | null; id: string; label: string }
+  >();
+  for (const booking of bookings) {
+    if (booking.user?.name) {
+      const id = toKebabCase(booking.user.name);
+      if (!memberMap.has(id)) {
+        memberMap.set(id, {
+          avatar: booking.user.avatarUrl,
+          id,
+          label: booking.user.name,
+        });
+      }
+    }
+  }
+  return Array.from(memberMap.values()).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
+function getUniqueAttendeeNames(bookings: Booking[]) {
+  const attendeeMap = new Map<string, { id: string; label: string }>();
+  for (const booking of bookings) {
+    for (const attendee of booking.attendees) {
+      const id = toKebabCase(attendee.name);
+      if (!attendeeMap.has(id)) {
+        attendeeMap.set(id, {
+          id,
+          label: attendee.name,
+        });
+      }
+    }
+  }
+  return Array.from(attendeeMap.values()).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
+function getUniqueAttendeeEmails(bookings: Booking[]) {
+  const emailMap = new Map<string, { id: string; label: string }>();
+  for (const booking of bookings) {
+    for (const attendee of booking.attendees) {
+      const id = toKebabCase(attendee.email.split("@")[0] ?? attendee.email);
+      if (!emailMap.has(attendee.email)) {
+        emailMap.set(attendee.email, {
+          id,
+          label: attendee.email,
+        });
+      }
+    }
+  }
+  return Array.from(emailMap.values()).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
+function getUniqueBookingUids(bookings: Booking[]) {
+  return bookings
+    .map((booking) => ({
+      id: toKebabCase(booking.uid),
+      label: booking.uid,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+const allBookings = [...mockPastBookings, ...mockUpcomingBookings];
+
 export const filterCategories = [
   {
     id: "event-type",
     label: "Event Type",
-    options: [
-      { id: "15-min", label: "15 Min Meeting" },
-      { id: "30-min", label: "30 Min Meeting" },
-      { id: "60-min", label: "60 Min Meeting" },
-      { id: "consultation", label: "Consultation" },
-      { id: "interview", label: "Interview" },
-      { id: "onboarding", label: "Onboarding Call" },
-    ],
+    options: getUniqueEventTypes(allBookings),
   },
   {
     id: "member",
     label: "Member",
-    options: [
-      {
-        avatar:
-          "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80",
-        id: "john-doe",
-        label: "John Doe",
-      },
-      {
-        avatar:
-          "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80",
-        id: "jane-smith",
-        label: "Jane Smith",
-      },
-      {
-        avatar:
-          "https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80",
-        id: "mike-johnson",
-        label: "Mike Johnson",
-      },
-      {
-        avatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=72&h=72&dpr=2&q=80",
-        id: "sarah-williams",
-        label: "Sarah Williams",
-      },
-      {
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=72&h=72&dpr=2&q=80",
-        id: "alex-brown",
-        label: "Alex Brown",
-      },
-    ],
+    options: getUniqueMembers(allBookings),
   },
   {
     id: "attendees-name",
     label: "Attendees Name",
-    options: [
-      { id: "alice-cooper", label: "Alice Cooper" },
-      { id: "bob-martin", label: "Bob Martin" },
-      { id: "carol-white", label: "Carol White" },
-      { id: "david-lee", label: "David Lee" },
-      { id: "emma-davis", label: "Emma Davis" },
-    ],
+    options: getUniqueAttendeeNames(allBookings),
   },
   {
     id: "attendee-email",
     label: "Attendee Email",
-    options: [
-      { id: "alice-email", label: "alice@example.com" },
-      { id: "bob-email", label: "bob@company.com" },
-      { id: "carol-email", label: "carol@business.org" },
-      { id: "david-email", label: "david@startup.io" },
-    ],
+    options: getUniqueAttendeeEmails(allBookings),
   },
   {
     id: "date-range",
@@ -108,12 +159,7 @@ export const filterCategories = [
   {
     id: "booking-uid",
     label: "Booking UID",
-    options: [
-      { id: "uid-1", label: "BK-001-2026" },
-      { id: "uid-2", label: "BK-002-2026" },
-      { id: "uid-3", label: "BK-003-2026" },
-      { id: "uid-4", label: "BK-004-2026" },
-    ],
+    options: getUniqueBookingUids(allBookings),
   },
 ];
 
