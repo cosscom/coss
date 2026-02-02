@@ -21,8 +21,7 @@ import {
 } from "@coss/ui/components/menu";
 import { cn } from "@coss/ui/lib/utils";
 import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { Booking } from "@/lib/mock-bookings-data";
 import {
@@ -182,83 +181,34 @@ export const filterCategories: FilterCategory[] = [
   },
 ];
 
-function parseActiveFilters(searchParams: URLSearchParams): ActiveFilter[] {
-  const param = searchParams.get("activeFilters");
-  if (!param) return [];
-  try {
-    const parsed = JSON.parse(param);
-    if (Array.isArray(parsed)) {
-      return parsed.filter(
-        (item): item is ActiveFilter =>
-          typeof item === "object" &&
-          item !== null &&
-          typeof item.f === "string",
-      );
-    }
-  } catch {
-    return [];
-  }
-  return [];
-}
-
-function serializeActiveFilters(filters: ActiveFilter[]): string | null {
-  if (filters.length === 0) return null;
-  return JSON.stringify(filters);
-}
-
 function useActiveFilters() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
 
-  const activeFilters = parseActiveFilters(searchParams);
+  const addFilter = (columnId: string) => {
+    if (!activeFilters.some((filter) => filter.f === columnId)) {
+      setActiveFilters([...activeFilters, { f: columnId }]);
+    }
+  };
 
-  const setActiveFilters = useCallback(
-    (filters: ActiveFilter[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      const serialized = serializeActiveFilters(filters);
-      if (serialized) {
-        params.set("activeFilters", serialized);
-      } else {
-        params.delete("activeFilters");
+  const updateFilter = (columnId: string, values: string[]) => {
+    setActiveFilters((prev) => {
+      const exists = prev.some((filter) => filter.f === columnId);
+      if (exists) {
+        return prev.map((filter) =>
+          filter.f === columnId ? { ...filter, v: values } : filter,
+        );
       }
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, router, pathname],
-  );
+      return [...prev, { f: columnId, v: values }];
+    });
+  };
 
-  const addFilter = useCallback(
-    (columnId: string) => {
-      if (!activeFilters.some((filter) => filter.f === columnId)) {
-        setActiveFilters([...activeFilters, { f: columnId }]);
-      }
-    },
-    [activeFilters, setActiveFilters],
-  );
+  const removeFilter = (columnId: string) => {
+    setActiveFilters((prev) => prev.filter((filter) => filter.f !== columnId));
+  };
 
-  const updateFilter = useCallback(
-    (columnId: string, values: string[]) => {
-      const newFilters = activeFilters.map((filter) =>
-        filter.f === columnId ? { ...filter, v: values } : filter,
-      );
-      if (!newFilters.some((filter) => filter.f === columnId)) {
-        newFilters.push({ f: columnId, v: values });
-      }
-      setActiveFilters(newFilters);
-    },
-    [activeFilters, setActiveFilters],
-  );
-
-  const removeFilter = useCallback(
-    (columnId: string) => {
-      setActiveFilters(activeFilters.filter((filter) => filter.f !== columnId));
-    },
-    [activeFilters, setActiveFilters],
-  );
-
-  const clearAll = useCallback(() => {
+  const clearAll = () => {
     setActiveFilters([]);
-  }, [setActiveFilters]);
+  };
 
   return {
     activeFilters,
