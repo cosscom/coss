@@ -36,16 +36,12 @@ export default function Page() {
         </AppHeaderContent>
       </AppHeader>
 
-      <div className="flex items-center justify-between gap-2">
-        <BookingsNav />
-        <div className="flex items-center gap-2">
-          <BookingsSavedFilters />
-        </div>
-      </div>
+      <BookingsNav />
 
       <BookingsFilter
         activeFilters={activeFilters}
         onFiltersChange={setActiveFilters}
+        savedFiltersSlot={<BookingsSavedFilters />}
       />
 
       <BookingsList bookings={filteredBookings} />

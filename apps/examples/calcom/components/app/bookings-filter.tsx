@@ -164,9 +164,14 @@ interface FilterMenuProps {
     category: FilterCategory,
     selectedOptions: FilterOption[],
   ) => void;
+  hasFilters: boolean;
 }
 
-function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
+function FilterMenu({
+  activeFilters,
+  onFilterChange,
+  hasFilters,
+}: FilterMenuProps) {
   const [selectedCategory, setSelectedCategory] =
     useState<FilterCategory | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -176,6 +181,15 @@ function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
     ? activeFilters.find((f) => f.category.id === selectedCategory.id)
     : null;
   const currentSelections = existingFilter?.selectedOptions ?? [];
+
+  const triggerButton = hasFilters ? (
+    <Button aria-label="Add filter" size="icon-sm" variant="outline" />
+  ) : (
+    <Button aria-label="Add filter" size="sm" variant="outline">
+      <ListFilterIcon />
+      Add filter
+    </Button>
+  );
 
   if (selectedCategory) {
     return (
@@ -198,12 +212,8 @@ function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
         open={comboboxOpen}
         value={currentSelections}
       >
-        <ComboboxTrigger
-          render={
-            <Button aria-label="Add filter" size="icon-sm" variant="outline" />
-          }
-        >
-          <ListFilterIcon />
+        <ComboboxTrigger render={triggerButton}>
+          {hasFilters && <ListFilterIcon />}
         </ComboboxTrigger>
         <ComboboxPopup aria-label={`Select ${selectedCategory.label}`}>
           <div className="border-b p-2">
@@ -242,12 +252,8 @@ function FilterMenu({ activeFilters, onFilterChange }: FilterMenuProps) {
 
   return (
     <Menu onOpenChange={setMenuOpen} open={menuOpen}>
-      <MenuTrigger
-        render={
-          <Button aria-label="Add filter" size="icon-sm" variant="outline" />
-        }
-      >
-        <ListFilterIcon />
+      <MenuTrigger render={triggerButton}>
+        {hasFilters && <ListFilterIcon />}
       </MenuTrigger>
       <MenuPopup align="start">
         <MenuGroup>
@@ -369,16 +375,20 @@ function FilterGroup({ filter, onRemove, onEdit }: FilterGroupProps) {
 interface BookingsFilterProps {
   activeFilters: ActiveFilter[];
   onFiltersChange: (filters: ActiveFilter[]) => void;
+  savedFiltersSlot?: React.ReactNode;
 }
 
 function BookingsFilter({
   activeFilters,
   onFiltersChange,
+  savedFiltersSlot,
 }: BookingsFilterProps) {
   const [editingCategory, setEditingCategory] = useState<FilterCategory | null>(
     null,
   );
   const [editComboboxOpen, setEditComboboxOpen] = useState(false);
+
+  const hasFilters = activeFilters.length > 0;
 
   const handleFilterChange = (
     category: FilterCategory,
@@ -424,7 +434,20 @@ function BookingsFilter({
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        {editingCategory && editingFilter ? (
+        <FilterMenu
+          activeFilters={activeFilters}
+          hasFilters={hasFilters}
+          onFilterChange={handleFilterChange}
+        />
+        {activeFilters.map((filter) => (
+          <FilterGroup
+            filter={filter}
+            key={filter.category.id}
+            onEdit={handleEditFilter}
+            onRemove={() => handleRemoveFilter(filter.category.id)}
+          />
+        ))}
+        {editingCategory && (
           <Combobox
             items={editingCategory.options}
             multiple
@@ -448,6 +471,7 @@ function BookingsFilter({
               render={
                 <Button
                   aria-label="Edit filter"
+                  className="hidden"
                   size="icon-sm"
                   variant="outline"
                 />
@@ -487,30 +511,20 @@ function BookingsFilter({
               </ComboboxList>
             </ComboboxPopup>
           </Combobox>
-        ) : (
-          <FilterMenu
-            activeFilters={activeFilters}
-            onFilterChange={handleFilterChange}
-          />
         )}
-        {activeFilters.map((filter) => (
-          <FilterGroup
-            filter={filter}
-            key={filter.category.id}
-            onEdit={handleEditFilter}
-            onRemove={() => handleRemoveFilter(filter.category.id)}
-          />
-        ))}
       </div>
       <div className="flex items-center gap-1">
-        {activeFilters.length > 0 && (
-          <Button onClick={handleClearAll} size="sm" variant="ghost">
-            Clear
-          </Button>
+        {hasFilters && (
+          <>
+            <Button onClick={handleClearAll} size="sm" variant="ghost">
+              Clear
+            </Button>
+            <Button size="sm" variant="outline">
+              Save
+            </Button>
+          </>
         )}
-        <Button size="sm" variant="outline">
-          Save
-        </Button>
+        {savedFiltersSlot}
       </div>
     </div>
   );
