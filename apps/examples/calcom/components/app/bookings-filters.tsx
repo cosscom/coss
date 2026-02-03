@@ -639,6 +639,9 @@ function SavedFiltersCombobox() {
             {(filter: SavedFilter) => (
               <ComboboxItem key={filter.id} value={filter}>
                 {filter.label}
+                {filter.id === "all-bookings" && (
+                  <Separator className="-bottom-0.5 absolute inset-x-1" />
+                )}
               </ComboboxItem>
             )}
           </ComboboxList>
