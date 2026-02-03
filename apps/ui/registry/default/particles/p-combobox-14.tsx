@@ -5,8 +5,8 @@ import {
   Combobox,
   ComboboxChip,
   ComboboxChips,
+  ComboboxChipsInput,
   ComboboxEmpty,
-  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
@@ -38,7 +38,7 @@ export default function Particle() {
                   {item.label}
                 </ComboboxChip>
               ))}
-              <ComboboxInput
+              <ComboboxChipsInput
                 aria-label="Select a item"
                 placeholder={value.length > 0 ? undefined : "Select a item..."}
               />
