@@ -21,17 +21,19 @@ export function BookingsEmpty() {
   }
 
   return (
-    <Empty className="rounded-xl border border-dashed md:py-32">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <CalendarIcon />
-        </EmptyMedia>
-        <EmptyTitle>No unconfirmed bookings</EmptyTitle>
-        <EmptyDescription>
-          You have no unconfirmed bookings found. Bookings awaiting your
-          confirmation will appear here.
-        </EmptyDescription>
-      </EmptyHeader>
-    </Empty>
+    <div className="mt-4">
+      <Empty className="rounded-xl border border-dashed md:py-32">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <CalendarIcon />
+          </EmptyMedia>
+          <EmptyTitle>No unconfirmed bookings</EmptyTitle>
+          <EmptyDescription>
+            You have no unconfirmed bookings found. Bookings awaiting your
+            confirmation will appear here.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </div>
   );
 }
