@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@coss/ui/components/avatar";
 import { Button, buttonVariants } from "@coss/ui/components/button";
 import {
   Combobox,
@@ -119,6 +124,16 @@ function getUniqueBookingUids(bookings: Booking[]) {
       label: booking.uid,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0]?.charAt(0).toUpperCase() ?? "";
+  }
+  const first = parts[0]?.charAt(0) ?? "";
+  const last = parts[parts.length - 1]?.charAt(0) ?? "";
+  return (first + last).toUpperCase();
 }
 
 const allBookings = [...mockPastBookings, ...mockUpcomingBookings];
@@ -360,7 +375,21 @@ function ActiveFilterComponent({
           <ComboboxList>
             {(option: FilterOption) => (
               <ComboboxItem key={option.id} value={option}>
-                {option.label}
+                {category.id === "userIds" ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-6">
+                      {option.avatar ? (
+                        <AvatarImage alt={option.label} src={option.avatar} />
+                      ) : null}
+                      <AvatarFallback className="text-[10px]">
+                        {getInitials(option.label)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>{option.label}</span>
+                  </div>
+                ) : (
+                  option.label
+                )}
               </ComboboxItem>
             )}
           </ComboboxList>
