@@ -636,38 +636,48 @@ function SavedFiltersCombobox() {
     );
   }
 
-  // When a filter is selected, show Group with combobox, edit menu, and X button
+  // When a filter is selected, show Group with combobox and X button, plus edit menu outside
   return (
-    <Group>
-      <Combobox
-        items={savedFilters}
-        onValueChange={setSelectedFilter}
-        value={selectedFilter}
-      >
-        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-          {selectedFilter.label}
-          <ChevronsUpDownIcon />
-        </ComboboxTrigger>
-        <ComboboxPopup align="end" aria-label="Select saved filter">
-          <div className="border-b p-2">
-            <ComboboxInput
-              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-              placeholder="Search saved filters…"
-              showTrigger={false}
-              startAddon={<SearchIcon />}
-            />
-          </div>
-          <ComboboxEmpty>No saved filters.</ComboboxEmpty>
-          <ComboboxList>
-            {(filter: SavedFilter) => (
-              <ComboboxItem key={filter.id} value={filter}>
-                {filter.label}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxPopup>
-      </Combobox>
-      <GroupSeparator />
+    <div className="flex items-center gap-2">
+      <Group>
+        <Combobox
+          items={savedFilters}
+          onValueChange={setSelectedFilter}
+          value={selectedFilter}
+        >
+          <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+            {selectedFilter.label}
+            <ChevronsUpDownIcon />
+          </ComboboxTrigger>
+          <ComboboxPopup align="end" aria-label="Select saved filter">
+            <div className="border-b p-2">
+              <ComboboxInput
+                className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                placeholder="Search saved filters…"
+                showTrigger={false}
+                startAddon={<SearchIcon />}
+              />
+            </div>
+            <ComboboxEmpty>No saved filters.</ComboboxEmpty>
+            <ComboboxList>
+              {(filter: SavedFilter) => (
+                <ComboboxItem key={filter.id} value={filter}>
+                  {filter.label}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxPopup>
+        </Combobox>
+        <GroupSeparator />
+        <Button
+          aria-label="Clear saved filter"
+          onClick={handleClearSelection}
+          size="icon-sm"
+          variant="outline"
+        >
+          <XIcon />
+        </Button>
+      </Group>
       <Menu>
         <MenuTrigger
           render={
@@ -696,16 +706,7 @@ function SavedFiltersCombobox() {
           </MenuItem>
         </MenuPopup>
       </Menu>
-      <GroupSeparator />
-      <Button
-        aria-label="Clear saved filter"
-        onClick={handleClearSelection}
-        size="icon-sm"
-        variant="outline"
-      >
-        <XIcon />
-      </Button>
-    </Group>
+    </div>
   );
 }
 
