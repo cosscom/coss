@@ -1,5 +1,3 @@
-"use client";
-
 import { CalendarIcon, LayoutListIcon } from "lucide-react";
 
 import { TabbedNav } from "@/components/app/tabbed-nav";

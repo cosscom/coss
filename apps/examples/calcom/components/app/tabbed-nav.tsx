@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";

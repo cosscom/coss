@@ -1,5 +1,4 @@
-"use client";
-
+import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { TabbedNav } from "@/components/app/tabbed-nav";
 
 const bookingTabs = [
@@ -12,12 +11,13 @@ const bookingTabs = [
 
 function BookingsNav() {
   return (
-    <TabbedNav
-      ariaLabel="Filter bookings"
-      className="max-md:hidden"
-      dataSlot="bookings-nav"
-      tabs={bookingTabs}
-    />
+    <ScrollArea scrollbarGutter scrollFade>
+      <TabbedNav
+        ariaLabel="Filter bookings"
+        data-slot="bookings-nav"
+        tabs={bookingTabs}
+      />
+    </ScrollArea>
   );
 }
 
