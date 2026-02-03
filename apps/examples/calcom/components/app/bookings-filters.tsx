@@ -313,7 +313,7 @@ function FilterMenu({
     <Menu>
       <MenuTrigger render={<Button size="sm" variant="outline" />}>
         <ListFilterIcon />
-        Add Filter
+        <span className="max-sm:sr-only">Add Filter</span>
       </MenuTrigger>
       <MenuPopup align="start">
         <MenuGroup>
@@ -539,29 +539,31 @@ function BookingsFilters() {
   const activeFilterIds = activeFilters.map((f) => f.f);
 
   return (
-    <div className="mt-6 flex items-center justify-between gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mt-6 grid grid-cols-[auto_1fr] items-start justify-between gap-2 sm:flex">
+      <div className="flex flex-1 flex-wrap gap-2 max-sm:contents">
         <FilterMenu
           activeFilterIds={activeFilterIds}
           hasFilters={hasFilters}
           onSelectFilter={handleSelectFilter}
         />
-        {activeFilters.map((filter) => {
-          const category = filterCategories.find((c) => c.id === filter.f);
-          if (!category) return null;
-          return (
-            <ActiveFilterComponent
-              autoOpen={newlyAddedFilter === filter.f}
-              category={category}
-              filter={filter}
-              key={filter.f}
-              onRemove={() => handleRemoveFilter(filter.f)}
-              onUpdate={(values) => handleUpdateFilter(filter.f, values)}
-            />
-          );
-        })}
+        <div className="flex flex-wrap gap-2 max-sm:order-1 max-sm:col-span-2 sm:contents">
+          {activeFilters.map((filter) => {
+            const category = filterCategories.find((c) => c.id === filter.f);
+            if (!category) return null;
+            return (
+              <ActiveFilterComponent
+                autoOpen={newlyAddedFilter === filter.f}
+                category={category}
+                filter={filter}
+                key={filter.f}
+                onRemove={() => handleRemoveFilter(filter.f)}
+                onUpdate={(values) => handleUpdateFilter(filter.f, values)}
+              />
+            );
+          })}
+        </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         {hasFilters && (
           <>
             <div className="flex items-center gap-1">

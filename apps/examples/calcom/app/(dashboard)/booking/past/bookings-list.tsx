@@ -78,7 +78,7 @@ export function BookingsList() {
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-4">
       <TooltipProvider delay={150} timeout={0}>
         <CardFrame>
           <Card>
