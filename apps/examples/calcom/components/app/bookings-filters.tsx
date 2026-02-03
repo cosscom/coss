@@ -170,6 +170,25 @@ function SelectionDisplay({
   );
 }
 
+function MemberAvatar({
+  name,
+  avatarUrl,
+  className,
+}: {
+  name: string;
+  avatarUrl?: string | null;
+  className?: string;
+}) {
+  return (
+    <Avatar className={cn("size-5", className)}>
+      {avatarUrl ? <AvatarImage alt={name} src={avatarUrl} /> : null}
+      <AvatarFallback className="text-[0.5rem]">
+        {getInitials(name)}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
 const allBookings = [...mockPastBookings, ...mockUpcomingBookings];
 
 export type FilterOption = {
@@ -353,14 +372,10 @@ function ActiveFilterComponent({
           label={firstOption?.label ?? ""}
           remainingCount={remainingCount}
         >
-          <Avatar className="size-5">
-            {firstOption?.avatar ? (
-              <AvatarImage alt={firstOption.label} src={firstOption.avatar} />
-            ) : null}
-            <AvatarFallback className="text-[10px]">
-              {getInitials(firstOption?.label ?? "")}
-            </AvatarFallback>
-          </Avatar>
+          <MemberAvatar
+            avatarUrl={firstOption?.avatar}
+            name={firstOption?.label ?? ""}
+          />
         </SelectionDisplay>
       );
     }
@@ -428,6 +443,7 @@ function ActiveFilterComponent({
       </GroupText>
       <GroupSeparator />
       <Combobox
+        autoHighlight
         items={sortedItems}
         multiple
         onOpenChange={handleOpenChange}
@@ -466,14 +482,10 @@ function ActiveFilterComponent({
               <ComboboxItem key={option.id} value={option}>
                 {category.id === "userIds" ? (
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-5">
-                      {option.avatar ? (
-                        <AvatarImage alt={option.label} src={option.avatar} />
-                      ) : null}
-                      <AvatarFallback className="text-[10px]">
-                        {getInitials(option.label)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <MemberAvatar
+                      avatarUrl={option.avatar}
+                      name={option.label}
+                    />
                     <span>{option.label}</span>
                   </div>
                 ) : (
