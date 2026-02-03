@@ -309,11 +309,46 @@ function ActiveFilterComponent({
     selectedValues.includes(opt.id),
   );
 
-  const getTriggerText = () => {
+  const renderTriggerContent = () => {
     if (selectedOptions.length === 0) return "Select";
-    if (selectedOptions.length === 1)
-      return selectedOptions[0]?.label ?? "Select";
-    return `${selectedOptions.length} selected`;
+    const firstOption = selectedOptions[0];
+    const remainingCount = selectedOptions.length - 1;
+
+    // For members, show avatar + name + badge
+    if (category.id === "userIds") {
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar className="size-5">
+            {firstOption?.avatar ? (
+              <AvatarImage alt={firstOption.label} src={firstOption.avatar} />
+            ) : null}
+            <AvatarFallback className="text-[10px]">
+              {getInitials(firstOption?.label ?? "")}
+            </AvatarFallback>
+          </Avatar>
+          <span className="truncate">{firstOption?.label}</span>
+          {remainingCount > 0 && (
+            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs">
+              +{remainingCount}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // For other filters, show text + badge
+    if (remainingCount > 0) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="truncate">{firstOption?.label}</span>
+          <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs">
+            +{remainingCount}
+          </span>
+        </div>
+      );
+    }
+
+    return firstOption?.label ?? "Select";
   };
 
   const handleValueChange = (
@@ -370,7 +405,7 @@ function ActiveFilterComponent({
             />
           }
         >
-          {getTriggerText()}
+          {renderTriggerContent()}
           {selectedOptions.length === 0 && (
             <ChevronsUpDownIcon className="-me-1!" />
           )}
