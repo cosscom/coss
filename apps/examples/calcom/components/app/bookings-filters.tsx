@@ -475,7 +475,6 @@ function ActiveFilterComponent({
         <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
             <ComboboxInput
-              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
               placeholder={`Search ${category.label.toLowerCase()}…`}
               showTrigger={false}
               startAddon={<SearchIcon />}
@@ -619,7 +618,6 @@ function SavedFiltersCombobox() {
         <ComboboxPopup align="end" aria-label="Select saved filter">
           <div className="border-b p-2">
             <ComboboxInput
-              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
               placeholder="Search saved filters…"
               showTrigger={false}
               startAddon={<SearchIcon />}
@@ -654,7 +652,6 @@ function SavedFiltersCombobox() {
           <ComboboxPopup align="end" aria-label="Select saved filter">
             <div className="border-b p-2">
               <ComboboxInput
-                className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
                 placeholder="Search saved filters…"
                 showTrigger={false}
                 startAddon={<SearchIcon />}
