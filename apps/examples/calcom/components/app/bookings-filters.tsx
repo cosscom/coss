@@ -598,7 +598,7 @@ function SavedFiltersCombobox() {
     >
       <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
         {selectedFilter?.label ?? "Saved Filters"}
-        <ChevronsUpDownIcon className="-me-1!" />
+        <ChevronsUpDownIcon />
       </ComboboxTrigger>
       <ComboboxPopup align="end" aria-label="Select saved filter">
         <div className="border-b p-2">
