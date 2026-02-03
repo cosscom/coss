@@ -587,42 +587,31 @@ type SavedFilter = {
   label: string;
 };
 
-const allBookingsFilter: SavedFilter = {
-  id: "all-bookings",
-  label: "All bookings",
-};
-
 const savedFilters: SavedFilter[] = [
   { id: "my-bookings", isDefault: true, label: "My bookings" },
   { id: "team-meetings", label: "Team meetings" },
   { id: "client-calls", label: "Client calls" },
 ];
 
-const allSavedFilters: SavedFilter[] = [allBookingsFilter, ...savedFilters];
-
 function SavedFiltersCombobox() {
   const [selectedFilter, setSelectedFilter] = useState<SavedFilter | null>(
     null,
   );
 
-  const handleValueChange = (value: SavedFilter | null) => {
-    // If "All bookings" is selected, clear the selection
-    if (value?.id === "all-bookings") {
-      setSelectedFilter(null);
-    } else {
-      setSelectedFilter(value);
-    }
+  const handleClearSelection = () => {
+    setSelectedFilter(null);
   };
 
-  return (
-    <div className="flex items-center gap-2">
+  // When no filter is selected, show just the combobox trigger
+  if (!selectedFilter) {
+    return (
       <Combobox
-        items={allSavedFilters}
-        onValueChange={handleValueChange}
+        items={savedFilters}
+        onValueChange={setSelectedFilter}
         value={selectedFilter}
       >
         <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-          {selectedFilter?.label ?? "Saved Filters"}
+          Saved Filters
           <ChevronsUpDownIcon />
         </ComboboxTrigger>
         <ComboboxPopup align="end" aria-label="Select saved filter">
@@ -639,45 +628,84 @@ function SavedFiltersCombobox() {
             {(filter: SavedFilter) => (
               <ComboboxItem key={filter.id} value={filter}>
                 {filter.label}
-                {filter.id === "all-bookings" && (
-                  <Separator className="-bottom-0.5 absolute inset-x-1" />
-                )}
               </ComboboxItem>
             )}
           </ComboboxList>
         </ComboboxPopup>
       </Combobox>
-      {selectedFilter && (
-        <Menu>
-          <MenuTrigger
-            render={
-              <Button
-                aria-label="Edit saved filter"
-                size="icon-sm"
-                variant="outline"
-              />
-            }
-          >
-            <EllipsisIcon />
-          </MenuTrigger>
-          <MenuPopup align="end">
-            <MenuItem disabled={selectedFilter.isDefault}>
-              <PencilIcon />
-              Rename
-            </MenuItem>
-            <MenuItem>
-              <CopyIcon />
-              Duplicate
-            </MenuItem>
-            <MenuSeparator />
-            <MenuItem disabled={selectedFilter.isDefault} variant="destructive">
-              <TrashIcon />
-              Delete
-            </MenuItem>
-          </MenuPopup>
-        </Menu>
-      )}
-    </div>
+    );
+  }
+
+  // When a filter is selected, show Group with combobox, edit menu, and X button
+  return (
+    <Group>
+      <Combobox
+        items={savedFilters}
+        onValueChange={setSelectedFilter}
+        value={selectedFilter}
+      >
+        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+          {selectedFilter.label}
+          <ChevronsUpDownIcon />
+        </ComboboxTrigger>
+        <ComboboxPopup align="end" aria-label="Select saved filter">
+          <div className="border-b p-2">
+            <ComboboxInput
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              placeholder="Search saved filters…"
+              showTrigger={false}
+              startAddon={<SearchIcon />}
+            />
+          </div>
+          <ComboboxEmpty>No saved filters.</ComboboxEmpty>
+          <ComboboxList>
+            {(filter: SavedFilter) => (
+              <ComboboxItem key={filter.id} value={filter}>
+                {filter.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxPopup>
+      </Combobox>
+      <GroupSeparator />
+      <Menu>
+        <MenuTrigger
+          render={
+            <Button
+              aria-label="Edit saved filter"
+              size="icon-sm"
+              variant="outline"
+            />
+          }
+        >
+          <EllipsisIcon />
+        </MenuTrigger>
+        <MenuPopup align="end">
+          <MenuItem disabled={selectedFilter.isDefault}>
+            <PencilIcon />
+            Rename
+          </MenuItem>
+          <MenuItem>
+            <CopyIcon />
+            Duplicate
+          </MenuItem>
+          <MenuSeparator />
+          <MenuItem disabled={selectedFilter.isDefault} variant="destructive">
+            <TrashIcon />
+            Delete
+          </MenuItem>
+        </MenuPopup>
+      </Menu>
+      <GroupSeparator />
+      <Button
+        aria-label="Clear saved filter"
+        onClick={handleClearSelection}
+        size="icon-sm"
+        variant="outline"
+      >
+        <XIcon />
+      </Button>
+    </Group>
   );
 }
 
