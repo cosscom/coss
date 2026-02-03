@@ -311,9 +311,43 @@ function ActiveFilterComponent({
 
   const getTriggerText = () => {
     if (selectedOptions.length === 0) return "Select";
+    if (category.id === "userIds") {
+      // For members, we show avatars instead of text
+      return null;
+    }
     if (selectedOptions.length === 1)
       return selectedOptions[0]?.label ?? "Select";
     return `${selectedOptions.length} selected`;
+  };
+
+  const renderMemberAvatars = () => {
+    if (category.id !== "userIds" || selectedOptions.length === 0) return null;
+    const maxVisible = 3;
+    const visibleOptions = selectedOptions.slice(0, maxVisible);
+    const remainingCount = selectedOptions.length - maxVisible;
+
+    return (
+      <div className="flex items-center">
+        <div className="-space-x-2 flex">
+          {visibleOptions.map((option) => (
+            <Avatar
+              className="size-6 border-2 border-background"
+              key={option.id}
+            >
+              {option.avatar ? (
+                <AvatarImage alt={option.label} src={option.avatar} />
+              ) : null}
+              <AvatarFallback className="text-[10px]">
+                {getInitials(option.label)}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+        </div>
+        {remainingCount > 0 && (
+          <span className="ml-2 text-sm">+{remainingCount}</span>
+        )}
+      </div>
+    );
   };
 
   const handleValueChange = (
@@ -370,7 +404,9 @@ function ActiveFilterComponent({
             />
           }
         >
-          {getTriggerText()}
+          {category.id === "userIds" && selectedOptions.length > 0
+            ? renderMemberAvatars()
+            : getTriggerText()}
           {selectedOptions.length === 0 && (
             <ChevronsUpDownIcon className="-me-1!" />
           )}
