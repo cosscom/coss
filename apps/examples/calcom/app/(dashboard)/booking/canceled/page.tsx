@@ -8,7 +8,6 @@ import {
   EmptyTitle,
 } from "@coss/ui/components/empty";
 import { CalendarIcon } from "lucide-react";
-import { BookingsFilters } from "@/components/app/bookings-filters";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsView } from "@/components/app/bookings-view";
 import { useLoadingState } from "@/hooks/use-loading-state";
@@ -25,7 +24,7 @@ export default function Page() {
         <BookingsNav />
         <BookingsView />
       </div>
-      <BookingsFilters />
+      {/* <BookingsFilters /> */}
       {showLoading ? (
         <BookingsListSkeleton />
       ) : (
