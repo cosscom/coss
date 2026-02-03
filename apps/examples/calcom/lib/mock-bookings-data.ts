@@ -171,7 +171,8 @@ export interface Booking {
 // =============================================================================
 
 const userPasquale: BookingUser = {
-  avatarUrl: null,
+  avatarUrl:
+    "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80",
   email: "pasquale@cal.com",
   id: 1,
   name: "Pasquale Vitiello",
@@ -179,8 +180,9 @@ const userPasquale: BookingUser = {
   username: "pasquale",
 };
 
-const _userKeith: BookingUser = {
-  avatarUrl: null,
+const userKeith: BookingUser = {
+  avatarUrl:
+    "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80",
   email: "keith@cal.com",
   id: 2,
   name: "Keith Williams",
@@ -188,8 +190,9 @@ const _userKeith: BookingUser = {
   username: "keith",
 };
 
-const _userPeer: BookingUser = {
-  avatarUrl: null,
+const userPeer: BookingUser = {
+  avatarUrl:
+    "https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80",
   email: "peer@cal.com",
   id: 3,
   name: "Peer Richelsen",
@@ -1000,6 +1003,96 @@ export const mockUpcomingBookings: Booking[] = [
     updatedAt: new Date("2026-01-12T09:00:00"),
     user: userPasquale,
     userPrimaryEmail: "pasquale@cal.com",
+  },
+  {
+    ...defaultBookingFields,
+    attendees: [
+      {
+        bookingId: 102,
+        email: "pasquale@cal.com",
+        id: 103,
+        locale: "en",
+        name: "Pasquale Vitiello",
+        noShow: null,
+        timeZone: "Europe/Rome",
+      },
+      {
+        bookingId: 102,
+        email: "carina@cal.com",
+        id: 104,
+        locale: "en",
+        name: "Carina Wollheim",
+        noShow: null,
+        timeZone: "Europe/Berlin",
+      },
+    ],
+    createdAt: new Date("2026-01-18T11:00:00"),
+    description: "Weekly engineering standup and code review session.",
+    endTime: new Date("2026-01-25T16:00:00"),
+    eventType: {
+      ...defaultEventType,
+      id: 10,
+      length: 30,
+      slug: "engineering-chat",
+      title: "Engineering Chat",
+    },
+    id: 102,
+    location: "integrations:daily",
+    rescheduled: false,
+    startTime: new Date("2026-01-25T15:30:00"),
+    status: "ACCEPTED",
+    title: "Engineering Chat with Keith Williams",
+    uid: "upcoming-booking-3",
+    updatedAt: new Date("2026-01-18T11:00:00"),
+    user: userKeith,
+    userPrimaryEmail: "keith@cal.com",
+  },
+  {
+    ...defaultBookingFields,
+    attendees: [
+      {
+        bookingId: 103,
+        email: "keith@cal.com",
+        id: 105,
+        locale: "en",
+        name: "Keith Williams",
+        noShow: null,
+        timeZone: "America/Los_Angeles",
+      },
+      {
+        bookingId: 103,
+        email: "jonathan@cal.com",
+        id: 106,
+        locale: "en",
+        name: "Jonathan Djalo",
+        noShow: null,
+        timeZone: "Europe/London",
+      },
+    ],
+    createdAt: new Date("2026-01-20T09:00:00"),
+    description: "Design review for the new dashboard components.",
+    endTime: new Date("2026-01-28T12:00:00"),
+    eventType: {
+      ...defaultEventType,
+      eventTypeColor: {
+        darkEventTypeColor: "#3b82f6",
+        lightEventTypeColor: "#3b82f6",
+      },
+      id: 15,
+      length: 45,
+      slug: "design-review",
+      title: "Design Review",
+    },
+    id: 103,
+    location: "integrations:google_meet",
+    rescheduled: false,
+    startTime: new Date("2026-01-28T11:15:00"),
+    status: "ACCEPTED",
+    title: "Design Review with Peer Richelsen",
+    uid: "upcoming-booking-4",
+    updatedAt: new Date("2026-01-20T09:00:00"),
+    user: userPeer,
+    userPrimaryEmail: "peer@cal.com",
   },
 ];
 
