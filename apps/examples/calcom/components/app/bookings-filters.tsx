@@ -23,6 +23,7 @@ import { Separator } from "@coss/ui/components/separator";
 import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronsUpDownIcon,
+  FunnelIcon,
   ListFilterIcon,
   SearchIcon,
   XIcon,
@@ -339,6 +340,7 @@ function ActiveFilterComponent({
           "pointer-events-none",
         )}
       >
+        <FunnelIcon />
         {category.label}
       </GroupText>
       <GroupSeparator />
