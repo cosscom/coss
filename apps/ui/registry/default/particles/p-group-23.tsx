@@ -7,6 +7,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/registry/default/lib/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -24,7 +25,6 @@ import {
   ComboboxTrigger,
 } from "@/registry/default/ui/combobox";
 import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group";
-import { cn } from "@/registry/default/ui/lib/utils";
 
 type FilterOption = {
   id: string;

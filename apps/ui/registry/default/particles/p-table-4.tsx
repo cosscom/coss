@@ -13,7 +13,7 @@ import {
 import { ChevronDownIcon, ChevronUpIcon, PlaneTakeoffIcon } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import { Checkbox } from "@/registry/default/ui/checkbox";
