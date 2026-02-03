@@ -5018,6 +5018,31 @@
     },
     {
       "categories": [
+        "avatar",
+        "badge",
+        "button",
+        "combobox",
+        "group"
+      ],
+      "description": "Group with filter label, combobox multi-select, and remove button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-group-23.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-group-23",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/badge",
+        "@coss/button",
+        "@coss/combobox",
+        "@coss/group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "input"
       ],
       "description": "Basic input",
