@@ -5,6 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
+import { Badge } from "@coss/ui/components/badge";
 import { Button, buttonVariants } from "@coss/ui/components/button";
 import {
   Combobox,
@@ -141,6 +142,32 @@ function getInitials(name: string): string {
   const first = parts[0]?.charAt(0) ?? "";
   const last = parts[parts.length - 1]?.charAt(0) ?? "";
   return (first + last).toUpperCase();
+}
+
+function CountBadge({ count }: { count: number }) {
+  return (
+    <Badge className="tabular-nums" variant="secondary">
+      +{count}
+    </Badge>
+  );
+}
+
+function SelectionDisplay({
+  children,
+  label,
+  remainingCount,
+}: {
+  children?: React.ReactNode;
+  label: string;
+  remainingCount: number;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      {children}
+      <span className="truncate">{label}</span>
+      {remainingCount > 0 && <CountBadge count={remainingCount} />}
+    </div>
+  );
 }
 
 const allBookings = [...mockPastBookings, ...mockUpcomingBookings];
@@ -322,7 +349,10 @@ function ActiveFilterComponent({
     // For members, show avatar + name + badge
     if (category.id === "userIds") {
       return (
-        <div className="flex items-center gap-2">
+        <SelectionDisplay
+          label={firstOption?.label ?? ""}
+          remainingCount={remainingCount}
+        >
           <Avatar className="size-5">
             {firstOption?.avatar ? (
               <AvatarImage alt={firstOption.label} src={firstOption.avatar} />
@@ -331,25 +361,17 @@ function ActiveFilterComponent({
               {getInitials(firstOption?.label ?? "")}
             </AvatarFallback>
           </Avatar>
-          <span className="truncate">{firstOption?.label}</span>
-          {remainingCount > 0 && (
-            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs">
-              +{remainingCount}
-            </span>
-          )}
-        </div>
+        </SelectionDisplay>
       );
     }
 
     // For other filters, show text + badge
     if (remainingCount > 0) {
       return (
-        <div className="flex items-center gap-2">
-          <span className="truncate">{firstOption?.label}</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs">
-            +{remainingCount}
-          </span>
-        </div>
+        <SelectionDisplay
+          label={firstOption?.label ?? ""}
+          remainingCount={remainingCount}
+        />
       );
     }
 
@@ -444,7 +466,7 @@ function ActiveFilterComponent({
               <ComboboxItem key={option.id} value={option}>
                 {category.id === "userIds" ? (
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-6">
+                    <Avatar className="size-5">
                       {option.avatar ? (
                         <AvatarImage alt={option.label} src={option.avatar} />
                       ) : null}
