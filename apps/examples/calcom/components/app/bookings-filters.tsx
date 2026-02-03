@@ -587,22 +587,38 @@ type SavedFilter = {
   label: string;
 };
 
+const allBookingsFilter: SavedFilter = {
+  id: "all-bookings",
+  label: "All bookings",
+};
+
 const savedFilters: SavedFilter[] = [
   { id: "my-bookings", isDefault: true, label: "My bookings" },
   { id: "team-meetings", label: "Team meetings" },
   { id: "client-calls", label: "Client calls" },
 ];
 
+const allSavedFilters: SavedFilter[] = [allBookingsFilter, ...savedFilters];
+
 function SavedFiltersCombobox() {
   const [selectedFilter, setSelectedFilter] = useState<SavedFilter | null>(
     null,
   );
 
+  const handleValueChange = (value: SavedFilter | null) => {
+    // If "All bookings" is selected, clear the selection
+    if (value?.id === "all-bookings") {
+      setSelectedFilter(null);
+    } else {
+      setSelectedFilter(value);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       <Combobox
-        items={savedFilters}
-        onValueChange={setSelectedFilter}
+        items={allSavedFilters}
+        onValueChange={handleValueChange}
         value={selectedFilter}
       >
         <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
