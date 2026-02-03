@@ -23,15 +23,20 @@ import {
   MenuGroupLabel,
   MenuItem,
   MenuPopup,
+  MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
 import { Separator } from "@coss/ui/components/separator";
 import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronsUpDownIcon,
+  CopyIcon,
+  EllipsisIcon,
   FunnelIcon,
   ListFilterIcon,
+  PencilIcon,
   SearchIcon,
+  TrashIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -578,11 +583,14 @@ function BookingsFilters() {
 
 type SavedFilter = {
   id: string;
+  isDefault?: boolean;
   label: string;
 };
 
 const savedFilters: SavedFilter[] = [
-  { id: "my-bookings", label: "My bookings" },
+  { id: "my-bookings", isDefault: true, label: "My bookings" },
+  { id: "team-meetings", label: "Team meetings" },
+  { id: "client-calls", label: "Client calls" },
 ];
 
 function SavedFiltersCombobox() {
@@ -591,34 +599,66 @@ function SavedFiltersCombobox() {
   );
 
   return (
-    <Combobox
-      items={savedFilters}
-      onValueChange={setSelectedFilter}
-      value={selectedFilter}
-    >
-      <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-        {selectedFilter?.label ?? "Saved Filters"}
-        <ChevronsUpDownIcon />
-      </ComboboxTrigger>
-      <ComboboxPopup align="end" aria-label="Select saved filter">
-        <div className="border-b p-2">
-          <ComboboxInput
-            className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-            placeholder="Search saved filters…"
-            showTrigger={false}
-            startAddon={<SearchIcon />}
-          />
-        </div>
-        <ComboboxEmpty>No saved filters.</ComboboxEmpty>
-        <ComboboxList>
-          {(filter: SavedFilter) => (
-            <ComboboxItem key={filter.id} value={filter}>
-              {filter.label}
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxPopup>
-    </Combobox>
+    <div className="flex items-center gap-2">
+      <Combobox
+        items={savedFilters}
+        onValueChange={setSelectedFilter}
+        value={selectedFilter}
+      >
+        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+          {selectedFilter?.label ?? "Saved Filters"}
+          <ChevronsUpDownIcon />
+        </ComboboxTrigger>
+        <ComboboxPopup align="end" aria-label="Select saved filter">
+          <div className="border-b p-2">
+            <ComboboxInput
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              placeholder="Search saved filters…"
+              showTrigger={false}
+              startAddon={<SearchIcon />}
+            />
+          </div>
+          <ComboboxEmpty>No saved filters.</ComboboxEmpty>
+          <ComboboxList>
+            {(filter: SavedFilter) => (
+              <ComboboxItem key={filter.id} value={filter}>
+                {filter.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxPopup>
+      </Combobox>
+      {selectedFilter && (
+        <Menu>
+          <MenuTrigger
+            render={
+              <Button
+                aria-label="Edit saved filter"
+                size="icon-sm"
+                variant="outline"
+              />
+            }
+          >
+            <EllipsisIcon />
+          </MenuTrigger>
+          <MenuPopup align="end">
+            <MenuItem disabled={selectedFilter.isDefault}>
+              <PencilIcon />
+              Rename
+            </MenuItem>
+            <MenuItem>
+              <CopyIcon />
+              Duplicate
+            </MenuItem>
+            <MenuSeparator />
+            <MenuItem disabled={selectedFilter.isDefault} variant="destructive">
+              <TrashIcon />
+              Delete
+            </MenuItem>
+          </MenuPopup>
+        </Menu>
+      )}
+    </div>
   );
 }
 
