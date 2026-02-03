@@ -11,7 +11,9 @@ export default function Page() {
         <BookingsView />
       </div>
       <BookingsFilters />
-      <BookingsList />
+      <div className="mt-4">
+        <BookingsList />
+      </div>
     </>
   );
 }
