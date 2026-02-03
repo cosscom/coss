@@ -296,6 +296,10 @@ function ActiveFilterComponent({
 }) {
   const [open, setOpen] = useState(autoOpen);
   const hasAutoOpened = useRef(false);
+  // Snapshot of sorted items when combobox opens (selected first)
+  const [sortedItems, setSortedItems] = useState<FilterOption[]>(
+    category.options,
+  );
 
   useEffect(() => {
     if (autoOpen && !hasAutoOpened.current) {
@@ -305,9 +309,10 @@ function ActiveFilterComponent({
   }, [autoOpen]);
 
   const selectedValues = filter.v ?? [];
-  const selectedOptions = category.options.filter((opt) =>
-    selectedValues.includes(opt.id),
-  );
+  // Get selected options in the order they were selected (based on filter.v order)
+  const selectedOptions = selectedValues
+    .map((id) => category.options.find((opt) => opt.id === id))
+    .filter((opt): opt is FilterOption => opt !== undefined);
 
   const renderTriggerContent = () => {
     if (selectedOptions.length === 0) return "Select";
@@ -355,7 +360,11 @@ function ActiveFilterComponent({
     newValue: FilterOption | FilterOption[] | null,
   ) => {
     if (Array.isArray(newValue)) {
-      onUpdate(newValue.map((v) => v.id));
+      // Maintain selection order: keep existing selections in order, append new ones
+      const newIds = newValue.map((v) => v.id);
+      const existingIds = selectedValues.filter((id) => newIds.includes(id));
+      const addedIds = newIds.filter((id) => !selectedValues.includes(id));
+      onUpdate([...existingIds, ...addedIds]);
     } else if (newValue) {
       onUpdate([newValue.id]);
     } else {
@@ -365,6 +374,16 @@ function ActiveFilterComponent({
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
+    if (isOpen) {
+      // When opening, sort items: selected first, then unselected
+      const selected = category.options.filter((opt) =>
+        selectedValues.includes(opt.id),
+      );
+      const unselected = category.options.filter(
+        (opt) => !selectedValues.includes(opt.id),
+      );
+      setSortedItems([...selected, ...unselected]);
+    }
     // Remove filter if combobox closes with no selection
     if (!isOpen && selectedValues.length === 0) {
       onRemove();
@@ -387,7 +406,7 @@ function ActiveFilterComponent({
       </GroupText>
       <GroupSeparator />
       <Combobox
-        items={category.options}
+        items={sortedItems}
         multiple
         onOpenChange={handleOpenChange}
         onValueChange={handleValueChange}
