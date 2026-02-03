@@ -135,7 +135,6 @@ export default function GeneralSettingsPage() {
                         items={formattedTimezones}
                       >
                         <ComboboxTrigger
-                          className="flex-1"
                           render={
                             <Button
                               className="w-full justify-between font-normal"
