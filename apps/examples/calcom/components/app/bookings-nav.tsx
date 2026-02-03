@@ -11,13 +11,17 @@ const bookingTabs = [
 
 function BookingsNav() {
   return (
-    <ScrollArea scrollbarGutter scrollFade>
-      <TabbedNav
-        ariaLabel="Filter bookings"
-        data-slot="bookings-nav"
-        tabs={bookingTabs}
-      />
-    </ScrollArea>
+    <div className="max-sm:-mx-4 max-sm:-my-0.5">
+      <ScrollArea scrollbarGutter scrollFade>
+        <div className="w-fit max-sm:px-4 max-sm:py-0.5">
+          <TabbedNav
+            ariaLabel="Filter bookings"
+            data-slot="bookings-nav"
+            tabs={bookingTabs}
+          />
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
 
