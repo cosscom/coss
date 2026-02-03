@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@coss/ui/components/button";
 import {
   Empty,
   EmptyDescription,
@@ -8,14 +7,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@coss/ui/components/empty";
-import { TooltipProvider } from "@coss/ui/components/tooltip";
-import { CalendarIcon, SaveIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
+import { BookingsFilters } from "@/components/app/bookings-filters";
 import { BookingsNav } from "@/components/app/bookings-nav";
+import { BookingsView } from "@/components/app/bookings-view";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingsListSkeleton } from "../booking-skeleton";
 
@@ -25,7 +25,7 @@ export default function Page() {
   const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
 
   return (
-    <TooltipProvider delay={150} timeout={0}>
+    <>
       <AppHeader>
         <AppHeaderContent title="Bookings">
           <AppHeaderDescription>
@@ -36,14 +36,10 @@ export default function Page() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <BookingsNav />
+        <BookingsView />
       </div>
 
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <Button variant="outline">
-          <SaveIcon />
-          Saved Filters
-        </Button>
-      </div>
+      <BookingsFilters />
 
       {showLoading ? (
         <BookingsListSkeleton />
@@ -61,6 +57,6 @@ export default function Page() {
           </EmptyHeader>
         </Empty>
       )}
-    </TooltipProvider>
+    </>
   );
 }
