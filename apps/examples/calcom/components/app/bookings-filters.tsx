@@ -250,17 +250,6 @@ function FilterMenu({
   onSelectFilter: (categoryId: string) => void;
   activeFilterIds: string[];
 }) {
-  const triggerButton = hasFilters ? (
-    <Button aria-label="Add filter" size="icon-sm" variant="outline">
-      <ListFilterIcon />
-    </Button>
-  ) : (
-    <Button size="sm" variant="outline">
-      <ListFilterIcon />
-      Add filter
-    </Button>
-  );
-
   const availableCategories = filterCategories.filter(
     (category) => !activeFilterIds.includes(category.id),
   );
@@ -271,7 +260,10 @@ function FilterMenu({
 
   return (
     <Menu>
-      <MenuTrigger render={triggerButton} />
+      <MenuTrigger render={<Button size="sm" variant="outline" />}>
+        <ListFilterIcon />
+        Add Filter
+      </MenuTrigger>
       <MenuPopup align="start">
         <MenuGroup>
           <MenuGroupLabel>Filter by</MenuGroupLabel>
