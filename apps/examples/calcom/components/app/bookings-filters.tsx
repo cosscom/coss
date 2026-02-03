@@ -691,19 +691,25 @@ function SavedFiltersCombobox() {
           <EllipsisIcon />
         </MenuTrigger>
         <MenuPopup align="end">
-          <MenuItem disabled={selectedFilter.isDefault}>
-            <PencilIcon />
-            Rename
-          </MenuItem>
+          {!selectedFilter.isDefault && (
+            <MenuItem>
+              <PencilIcon />
+              Rename
+            </MenuItem>
+          )}
           <MenuItem>
             <CopyIcon />
             Duplicate
           </MenuItem>
-          <MenuSeparator />
-          <MenuItem disabled={selectedFilter.isDefault} variant="destructive">
-            <TrashIcon />
-            Delete
-          </MenuItem>
+          {!selectedFilter.isDefault && (
+            <>
+              <MenuSeparator />
+              <MenuItem variant="destructive">
+                <TrashIcon />
+                Delete
+              </MenuItem>
+            </>
+          )}
         </MenuPopup>
       </Menu>
     </div>
