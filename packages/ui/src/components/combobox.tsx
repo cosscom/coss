@@ -27,6 +27,31 @@ function Combobox<Value, Multiple extends boolean | undefined = false>(
   );
 }
 
+function ComboboxChipsInput({
+  className,
+  size,
+  ...props
+}: Omit<ComboboxPrimitive.Input.Props, "size"> & {
+  size?: "sm" | "default" | "lg" | number;
+  ref?: React.Ref<HTMLInputElement>;
+}) {
+  const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
+
+  return (
+    <ComboboxPrimitive.Input
+      className={cn(
+        "min-w-12 flex-1 text-base outline-none sm:text-sm [[data-slot=combobox-chip]+&]:ps-0.5",
+        sizeValue === "sm" ? "ps-1.5" : "ps-2",
+        className,
+      )}
+      data-size={typeof sizeValue === "string" ? sizeValue : undefined}
+      data-slot="combobox-chips-input"
+      size={typeof sizeValue === "number" ? sizeValue : undefined}
+      {...props}
+    />
+  );
+}
+
 function ComboboxInput({
   className,
   showTrigger = true,
@@ -41,29 +66,13 @@ function ComboboxInput({
   size?: "sm" | "default" | "lg" | number;
   ref?: React.Ref<HTMLInputElement>;
 }) {
-  const { multiple } = React.useContext(ComboboxContext);
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
-  // multiple mode
-  if (multiple) {
-    return (
-      <ComboboxPrimitive.Input
-        className={cn(
-          "min-w-12 flex-1 text-base outline-none sm:text-sm [[data-slot=combobox-chip]+&]:ps-0.5",
-          sizeValue === "sm" ? "ps-1.5" : "ps-2",
-          className,
-        )}
-        data-size={typeof sizeValue === "string" ? sizeValue : undefined}
-        data-slot="combobox-input"
-        size={typeof sizeValue === "number" ? sizeValue : undefined}
-        {...props}
-      />
-    );
-  }
-
-  // single mode
   return (
-    <div className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64">
+    <div
+      className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64"
+      data-slot="combobox-input"
+    >
       {startAddon && (
         <div
           aria-hidden="true"
@@ -76,13 +85,12 @@ function ComboboxInput({
       <ComboboxPrimitive.Input
         className={cn(
           startAddon &&
-            "data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-1px)]",
+            "data-[size=sm]:*:data-[slot=input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=input]:ps-[calc(--spacing(8)-1px)]",
           sizeValue === "sm"
-            ? "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-6.5"
-            : "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-7",
+            ? "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=input]:pe-6.5"
+            : "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=input]:pe-7",
           className,
         )}
-        data-slot="combobox-input"
         render={
           <Input
             className="has-disabled:opacity-100"
@@ -397,6 +405,7 @@ const useComboboxFilter = ComboboxPrimitive.useFilter;
 
 export {
   Combobox,
+  ComboboxChipsInput,
   ComboboxInput,
   ComboboxTrigger,
   ComboboxPopup,
