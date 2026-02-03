@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Empty,
   EmptyDescription,
@@ -16,14 +14,8 @@ import {
 import { BookingsFilters } from "@/components/app/bookings-filters";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsView } from "@/components/app/bookings-view";
-import { useLoadingState } from "@/hooks/use-loading-state";
-import { BookingsListSkeleton } from "../booking-skeleton";
-
-const ARTIFICIAL_DELAY_MS = 300;
 
 export default function Page() {
-  const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
-
   return (
     <>
       <AppHeader>
@@ -41,22 +33,18 @@ export default function Page() {
 
       <BookingsFilters />
 
-      {showLoading ? (
-        <BookingsListSkeleton />
-      ) : (
-        <Empty className="rounded-xl border border-dashed md:py-32">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <CalendarIcon />
-            </EmptyMedia>
-            <EmptyTitle>No recurring bookings</EmptyTitle>
-            <EmptyDescription>
-              You have no recurring bookings found. Recurring booking series
-              will appear here.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      )}
+      <Empty className="rounded-xl border border-dashed md:py-32">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <CalendarIcon />
+          </EmptyMedia>
+          <EmptyTitle>No recurring bookings</EmptyTitle>
+          <EmptyDescription>
+            You have no recurring bookings found. Recurring booking series will
+            appear here.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     </>
   );
 }
