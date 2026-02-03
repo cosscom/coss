@@ -558,12 +558,47 @@ function BookingsFilters() {
             <Separator className="my-1" orientation="vertical" />
           </>
         )}
-        <Button size="sm" variant="outline">
-          Saved Filters
-          <ChevronsUpDownIcon />
-        </Button>
+        <SavedFiltersCombobox />
       </div>
     </div>
+  );
+}
+
+type SavedFilter = {
+  id: string;
+  label: string;
+};
+
+const savedFilters: SavedFilter[] = [
+  { id: "my-bookings", label: "My bookings" },
+];
+
+function SavedFiltersCombobox() {
+  const [selectedFilter, setSelectedFilter] = useState<SavedFilter | null>(
+    null,
+  );
+
+  return (
+    <Combobox
+      items={savedFilters}
+      onValueChange={setSelectedFilter}
+      value={selectedFilter}
+    >
+      <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+        {selectedFilter?.label ?? "Saved Filters"}
+        <ChevronsUpDownIcon className="-me-1!" />
+      </ComboboxTrigger>
+      <ComboboxPopup align="end" aria-label="Select saved filter">
+        <ComboboxEmpty>No saved filters.</ComboboxEmpty>
+        <ComboboxList>
+          {(filter: SavedFilter) => (
+            <ComboboxItem key={filter.id} value={filter}>
+              {filter.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxPopup>
+    </Combobox>
   );
 }
 
