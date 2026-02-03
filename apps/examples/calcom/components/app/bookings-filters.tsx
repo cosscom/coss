@@ -428,6 +428,7 @@ function ActiveFilterComponent({
       </GroupText>
       <GroupSeparator />
       <Combobox
+        autoHighlight
         items={sortedItems}
         multiple
         onOpenChange={handleOpenChange}
