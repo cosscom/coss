@@ -181,8 +181,7 @@ const userPasquale: BookingUser = {
 };
 
 const userKeith: BookingUser = {
-  avatarUrl:
-    "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?w=72&h=72&dpr=2&q=80",
+  avatarUrl: null,
   email: "keith@cal.com",
   id: 2,
   name: "Keith Williams",
