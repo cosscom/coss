@@ -260,13 +260,15 @@ export function EventTypesList() {
   if (showLoading) {
     return (
       <>
-        <div className="flex flex-col gap-2">
-          <EventTypeSkeletonItem />
-          <EventTypeSkeletonItem />
-          <EventTypeSkeletonItem />
-          <EventTypeSkeletonItem />
-          <EventTypeSkeletonItem />
-        </div>
+        <Card>
+          <CardPanel className="p-0">
+            <EventTypeSkeletonItem />
+            <EventTypeSkeletonItem />
+            <EventTypeSkeletonItem />
+            <EventTypeSkeletonItem />
+            <EventTypeSkeletonItem />
+          </CardPanel>
+        </Card>
         <div className="mt-6 text-center text-muted-foreground/72 text-sm">
           <Skeleton className="mx-auto h-5 w-32" />
         </div>

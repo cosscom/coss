@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardFrame,
-  CardFrameHeader,
-  CardPanel,
-} from "@coss/ui/components/card";
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { FrameFooter } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
 import {
@@ -49,9 +44,6 @@ export function BookingSkeletonItem() {
 export function BookingsListSkeleton() {
   return (
     <CardFrame>
-      <CardFrameHeader>
-        <Skeleton className="h-6 w-40 sm:h-5" />
-      </CardFrameHeader>
       <Card>
         <CardPanel className="p-0">
           <BookingSkeletonItem />
