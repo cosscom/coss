@@ -357,7 +357,7 @@ function ActiveFilterComponent({
             {firstOption?.avatar ? (
               <AvatarImage alt={firstOption.label} src={firstOption.avatar} />
             ) : null}
-            <AvatarFallback className="text-[10px]">
+            <AvatarFallback className="text-[0.5rem]">
               {getInitials(firstOption?.label ?? "")}
             </AvatarFallback>
           </Avatar>
@@ -471,7 +471,7 @@ function ActiveFilterComponent({
                       {option.avatar ? (
                         <AvatarImage alt={option.label} src={option.avatar} />
                       ) : null}
-                      <AvatarFallback className="text-[10px]">
+                      <AvatarFallback className="text-[0.5rem]">
                         {getInitials(option.label)}
                       </AvatarFallback>
                     </Avatar>
