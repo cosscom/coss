@@ -25,6 +25,8 @@ function Calendar({
       buttonClassNames,
       "in-[[data-selected]:not(.range-middle)]:transition-[color,background-color,border-radius,box-shadow] in-data-disabled:pointer-events-none focus-visible:z-1 in-data-selected:bg-primary in-data-selected:text-primary-foreground in-data-disabled:text-foreground/30 in-data-disabled:line-through in-data-outside:text-foreground/30 in-data-selected:in-data-outside:text-primary-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] in-[.range-start:not(.range-end)]:rounded-e-none in-[.range-end:not(.range-start)]:rounded-s-none in-[.range-middle]:rounded-none in-[.range-middle]:in-data-selected:bg-accent in-[.range-middle]:in-data-selected:text-foreground",
     ),
+    dropdowns:
+      "w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5",
     hidden: "invisible",
     month: "w-full",
     month_caption:
