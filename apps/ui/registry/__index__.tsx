@@ -2923,6 +2923,24 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: undefined,
   },
+  "p-calendar-4": {
+    name: "p-calendar-4",
+    description: "Calendar with month/year dropdown navigation",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",

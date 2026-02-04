@@ -2962,6 +2962,23 @@
     },
     {
       "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with month/year dropdown navigation",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-4",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card",
         "form"
       ],
