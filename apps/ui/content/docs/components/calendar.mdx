@@ -64,9 +64,13 @@ A calendar component for date selection.
 | Prop              | Type                                                | Default    | Description                                      |
 | ----------------- | --------------------------------------------------- | ---------- | ------------------------------------------------ |
 | `mode`            | `"single" \| "multiple" \| "range"`                 | `"single"` | Selection mode for the calendar                  |
+| `captionLayout`   | `"label" \| "dropdown" \| "dropdown-months" \| "dropdown-years"` | `"label"` | Caption layout - use `"dropdown"` for month/year dropdowns |
 | `selected`        | `Date \| Date[] \| DateRange`                       | -          | The selected date(s)                             |
 | `onSelect`        | `(date: Date \| Date[] \| DateRange) => void`       | -          | Callback when date selection changes             |
 | `showOutsideDays` | `boolean`                                           | `true`     | Show days from adjacent months                   |
+| `startMonth`      | `Date`                                              | -          | First month to show in dropdown navigation       |
+| `endMonth`        | `Date`                                              | -          | Last month to show in dropdown navigation        |
+| `buttonVariant`   | `"ghost" \| "outline" \| ...`                       | `"ghost"`  | Button variant for navigation buttons            |
 | `classNames`      | `object`                                            | -          | Custom class names for calendar parts            |
 | `components`      | `object`                                            | -          | Custom components to override defaults           |
 
@@ -101,3 +105,9 @@ Or use responsive values:
 ### Date Range Selection
 
 <ComponentPreview name="p-calendar-3" />
+
+### Dropdown Navigation
+
+Use `captionLayout="dropdown"` with `startMonth` and `endMonth` to enable month/year dropdown navigation:
+
+<ComponentPreview name="p-calendar-4" />
