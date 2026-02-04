@@ -12,6 +12,7 @@
         "@coss/badge",
         "@coss/breadcrumb",
         "@coss/button",
+        "@coss/calendar",
         "@coss/card",
         "@coss/checkbox",
         "@coss/checkbox-group",
@@ -208,6 +209,23 @@
         }
       ],
       "name": "button",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "react-day-picker",
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/calendar.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "calendar",
+      "registryDependencies": [
+        "@coss/button"
+      ],
       "type": "registry:ui"
     },
     {
@@ -2888,6 +2906,40 @@
       "name": "p-button-38",
       "registryDependencies": [
         "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Basic calendar",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-1",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with single date selection",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-2",
+      "registryDependencies": [
+        "@coss/calendar"
       ],
       "type": "registry:block"
     },
