@@ -2997,6 +2997,28 @@
     },
     {
       "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Calendar with Combobox dropdown for month/year",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-6",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/combobox",
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card",
         "form"
       ],
