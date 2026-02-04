@@ -1083,6 +1083,14 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("calendar"),
+    description: "Calendar with custom Select dropdown for month/year",
+    files: [{ path: "particles/p-calendar-5.tsx", type: "registry:block" }],
+    name: "p-calendar-5",
+    registryDependencies: ["@coss/calendar", "@coss/select"],
+    type: "registry:block",
+  },
+  {
     categories: categories("card", "form"),
     dependencies: ["lucide-react"],
     description: "A basic card with header and footer",
