@@ -25,11 +25,7 @@ function CalendarDropdown(props: DropdownProps) {
 
   return (
     <Select onValueChange={handleValueChange} value={value?.toString()}>
-      <SelectTrigger
-        aria-label={ariaLabel}
-        className="h-8 gap-1 px-2"
-        size="sm"
-      >
+      <SelectTrigger aria-label={ariaLabel} className="min-w-none">
         <SelectValue />
       </SelectTrigger>
       <SelectPopup>
