@@ -16,6 +16,7 @@ export const registryCategories = [
   "badge",
   "breadcrumb",
   "button",
+  "calendar",
   "card",
   "checkbox",
   "checkbox group",

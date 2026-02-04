@@ -12,6 +12,7 @@ export const ui: Registry["items"] = [
       "@coss/badge",
       "@coss/breadcrumb",
       "@coss/button",
+      "@coss/calendar",
       "@coss/card",
       "@coss/checkbox",
       "@coss/checkbox-group",
@@ -191,6 +192,18 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button",
+    type: "registry:ui",
+  },
+  {
+    dependencies: ["react-day-picker", "lucide-react"],
+    files: [
+      {
+        path: "ui/calendar.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "calendar",
+    registryDependencies: ["@coss/button"],
     type: "registry:ui",
   },
   {

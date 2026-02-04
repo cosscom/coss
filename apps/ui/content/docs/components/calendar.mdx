@@ -1,0 +1,79 @@
+---
+title: Calendar
+description: A date picker component with range and multi-select support.
+---
+
+<ComponentPreview name="p-calendar-1" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTab value="cli">CLI</TabsTab>
+  <TabsTab value="manual">Manual</TabsTab>
+</TabsList>
+<TabsPanel value="cli">
+
+```bash
+npx shadcn@latest add @coss/calendar
+```
+
+</TabsPanel>
+
+<TabsPanel value="manual">
+
+<Steps>
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-day-picker lucide-react
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="calendar" title="components/ui/calendar.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsPanel>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Calendar } from "@/components/ui/calendar"
+```
+
+```tsx
+<Calendar />
+```
+
+## API Reference
+
+This component wraps [react-day-picker](https://daypicker.dev/) with custom styling.
+
+### Calendar
+
+A calendar component for date selection.
+
+| Prop              | Type                                                | Default | Description                                      |
+| ----------------- | --------------------------------------------------- | ------- | ------------------------------------------------ |
+| `mode`            | `"single" \| "multiple" \| "range"`                 | -       | Selection mode for the calendar                  |
+| `selected`        | `Date \| Date[] \| DateRange`                       | -       | The selected date(s)                             |
+| `onSelect`        | `(date: Date \| Date[] \| DateRange) => void`       | -       | Callback when date selection changes             |
+| `showOutsideDays` | `boolean`                                           | `true`  | Show days from adjacent months                   |
+| `classNames`      | `object`                                            | -       | Custom class names for calendar parts            |
+| `components`      | `object`                                            | -       | Custom components to override defaults           |
+
+For the full list of props, see the [react-day-picker documentation](https://daypicker.dev/docs/props).
+
+## Examples
+
+### Single Date Selection
+
+<ComponentPreview name="p-calendar-2" />
