@@ -61,16 +61,36 @@ This component wraps [react-day-picker](https://daypicker.dev/) with custom styl
 
 A calendar component for date selection.
 
-| Prop              | Type                                                | Default | Description                                      |
-| ----------------- | --------------------------------------------------- | ------- | ------------------------------------------------ |
-| `mode`            | `"single" \| "multiple" \| "range"`                 | -       | Selection mode for the calendar                  |
-| `selected`        | `Date \| Date[] \| DateRange`                       | -       | The selected date(s)                             |
-| `onSelect`        | `(date: Date \| Date[] \| DateRange) => void`       | -       | Callback when date selection changes             |
-| `showOutsideDays` | `boolean`                                           | `true`  | Show days from adjacent months                   |
-| `classNames`      | `object`                                            | -       | Custom class names for calendar parts            |
-| `components`      | `object`                                            | -       | Custom components to override defaults           |
+| Prop              | Type                                                | Default    | Description                                      |
+| ----------------- | --------------------------------------------------- | ---------- | ------------------------------------------------ |
+| `mode`            | `"single" \| "multiple" \| "range"`                 | `"single"` | Selection mode for the calendar                  |
+| `selected`        | `Date \| Date[] \| DateRange`                       | -          | The selected date(s)                             |
+| `onSelect`        | `(date: Date \| Date[] \| DateRange) => void`       | -          | Callback when date selection changes             |
+| `showOutsideDays` | `boolean`                                           | `true`     | Show days from adjacent months                   |
+| `classNames`      | `object`                                            | -          | Custom class names for calendar parts            |
+| `components`      | `object`                                            | -          | Custom components to override defaults           |
 
 For the full list of props, see the [react-day-picker documentation](https://daypicker.dev/docs/props).
+
+### Customizing Cell Size
+
+The calendar uses CSS custom properties for cell sizing. By default, the cell size is `--spacing(9)` on mobile and `--spacing(8)` on larger screens:
+
+```css
+[--cell-size:--spacing(9)] sm:[--cell-size:--spacing(8)]
+```
+
+You can customize the cell size by passing a custom `className`:
+
+```tsx
+<Calendar className="[--cell-size:--spacing(10)]" />
+```
+
+Or use responsive values:
+
+```tsx
+<Calendar className="[--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)] lg:[--cell-size:--spacing(8)]" />
+```
 
 ## Examples
 
