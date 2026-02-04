@@ -2941,6 +2941,24 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: undefined,
   },
+  "p-calendar-5": {
+    name: "p-calendar-5",
+    description: "Calendar with custom Select dropdown for month/year",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-calendar-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-calendar-5",
+  "type": "registry:block",
+  "description": "Calendar with custom Select dropdown for month/year",
+  "registryDependencies": [
+    "@coss/calendar",
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-calendar-5.tsx",
+      "content": "\"use client\";\nimport * as React from \"react\";\nimport type { DropdownProps } from \"react-day-picker\";\n\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\";\n\nfunction CalendarDropdown(props: DropdownProps) {\n  const { options, value, onChange, \"aria-label\": ariaLabel } = props;\n\n  const handleValueChange = (newValue: string | null) => {\n    if (onChange && newValue) {\n      const syntheticEvent = {\n        target: { value: newValue },\n      } as React.ChangeEvent<HTMLSelectElement>;\n      onChange(syntheticEvent);\n    }\n  };\n\n  return (\n    <Select onValueChange={handleValueChange} value={value?.toString()}>\n      <SelectTrigger\n        aria-label={ariaLabel}\n        className=\"h-8 gap-1 px-2\"\n        size=\"sm\"\n      >\n        <SelectValue />\n      </SelectTrigger>\n      <SelectPopup>\n        {options?.map((option) => (\n          <SelectItem\n            disabled={option.disabled}\n            key={option.value}\n            value={option.value.toString()}\n          >\n            {option.label}\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  );\n}\n\nexport default function Particle() {\n  const [date, setDate] = React.useState<Date | undefined>(new Date());\n  return (\n    <Calendar\n      captionLayout=\"dropdown\"\n      components={{ Dropdown: CalendarDropdown }}\n      endMonth={new Date(2030, 11)}\n      mode=\"single\"\n      onSelect={setDate}\n      selected={date}\n      startMonth={new Date(2020, 0)}\n    />\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "calendar"
+  ]
+}
