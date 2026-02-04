@@ -92,7 +92,7 @@ export default function GeneralSettingsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>General</CardFrameTitle>
@@ -135,6 +135,7 @@ export default function GeneralSettingsPage() {
                         items={formattedTimezones}
                       >
                         <ComboboxTrigger
+                          className="flex-1"
                           render={
                             <Button
                               className="w-full justify-between font-normal"
