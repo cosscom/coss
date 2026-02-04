@@ -23,19 +23,31 @@ function CalendarDropdown(props: DropdownProps) {
     }
   };
 
+  const items =
+    options?.map((option) => ({
+      disabled: option.disabled,
+      label: option.label,
+      value: option.value.toString(),
+    })) ?? [];
+
   return (
-    <Select onValueChange={handleValueChange} value={value?.toString()}>
-      <SelectTrigger aria-label={ariaLabel} className="min-w-none">
+    <Select
+      aria-label={ariaLabel}
+      items={items}
+      onValueChange={handleValueChange}
+      value={value?.toString()}
+    >
+      <SelectTrigger className="min-w-none">
         <SelectValue />
       </SelectTrigger>
       <SelectPopup>
-        {options?.map((option) => (
+        {items.map((item) => (
           <SelectItem
-            disabled={option.disabled}
-            key={option.value}
-            value={option.value.toString()}
+            disabled={item.disabled}
+            key={item.value}
+            value={item.value}
           >
-            {option.label}
+            {item.label}
           </SelectItem>
         ))}
       </SelectPopup>
