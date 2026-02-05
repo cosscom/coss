@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-calendar-18",
+  "type": "registry:block",
+  "description": "Calendar with time input",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/calendar",
+    "@coss/input",
+    "@coss/label"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-calendar-18.tsx",
+      "content": "\"use client\";\n\nimport { ClockIcon } from \"lucide-react\";\nimport { useId, useState } from \"react\";\n\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  const [date, setDate] = useState<Date | undefined>(new Date());\n\n  return (\n    <div className=\"rounded-md border\">\n      <Calendar\n        className=\"p-2\"\n        mode=\"single\"\n        onSelect={setDate}\n        selected={date}\n      />\n      <div className=\"border-t p-3\">\n        <div className=\"flex items-center gap-3\">\n          <Label className=\"text-xs\" htmlFor={id}>\n            Enter time\n          </Label>\n          <div className=\"relative grow\">\n            <Input\n              className=\"peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none\"\n              defaultValue=\"12:00:00\"\n              id={id}\n              step=\"1\"\n              type=\"time\"\n            />\n            <div className=\"pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50\">\n              <ClockIcon aria-hidden=\"true\" size={16} />\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "calendar"
+  ]
+}

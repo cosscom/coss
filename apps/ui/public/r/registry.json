@@ -3130,6 +3130,253 @@
     },
     {
       "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with year-only combobox dropdown",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-13",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar without arrow navigation (dropdown only)",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-14",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with current month button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-15",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with today button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-16",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns",
+        "lucide-react"
+      ],
+      "description": "Calendar with date input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-17.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-17",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/input",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Calendar with time input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-18.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-18",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/input",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with time slots (appointment picker)",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-19",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/button",
+        "@coss/scroll-area"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with date presets",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-20.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-20",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Range calendar with date presets",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-21.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-21",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Two months calendar",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-22.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-22",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Three months calendar",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-23.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-23",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Pricing calendar with custom day buttons",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-24.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-24",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card",
         "form"
       ],

@@ -3085,6 +3085,222 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: undefined,
   },
+  "p-calendar-13": {
+    name: "p-calendar-13",
+    description: "Calendar with year-only combobox dropdown",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-calendar-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-14": {
+    name: "p-calendar-14",
+    description: "Calendar without arrow navigation (dropdown only)",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-calendar-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-15": {
+    name: "p-calendar-15",
+    description: "Calendar with current month button",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-calendar-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-16": {
+    name: "p-calendar-16",
+    description: "Calendar with today button",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-calendar-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-17": {
+    name: "p-calendar-17",
+    description: "Calendar with date input",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-calendar-17.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-17.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-18": {
+    name: "p-calendar-18",
+    description: "Calendar with time input",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/input","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-calendar-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-19": {
+    name: "p-calendar-19",
+    description: "Calendar with time slots (appointment picker)",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/button","@coss/scroll-area"],
+    files: [{
+      path: "registry/default/particles/p-calendar-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-20": {
+    name: "p-calendar-20",
+    description: "Calendar with date presets",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-calendar-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-21": {
+    name: "p-calendar-21",
+    description: "Range calendar with date presets",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-calendar-21.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-21.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-22": {
+    name: "p-calendar-22",
+    description: "Two months calendar",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-22.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-23": {
+    name: "p-calendar-23",
+    description: "Three months calendar",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-24": {
+    name: "p-calendar-24",
+    description: "Pricing calendar with custom day buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-24.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-24.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",
