@@ -75,6 +75,9 @@ export default function Particle() {
   return (
     <Calendar
       captionLayout="dropdown-years"
+      classNames={{
+        dropdowns: "*:flex-1 *:[span]:text-center",
+      }}
       components={{ Dropdown: YearDropdown }}
       endMonth={new Date(2030, 11)}
       mode="single"

@@ -3263,7 +3263,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["calendar"],
-    meta: undefined,
+    meta: {"colSpan":2},
   },
   "p-calendar-23": {
     name: "p-calendar-23",
@@ -3281,7 +3281,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["calendar"],
-    meta: undefined,
+    meta: {"colSpan":2},
   },
   "p-calendar-24": {
     name: "p-calendar-24",
@@ -3299,7 +3299,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["calendar"],
-    meta: undefined,
+    meta: {"colSpan":2},
   },
   "p-card-1": {
     name: "p-card-1",

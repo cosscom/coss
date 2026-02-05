@@ -10,7 +10,7 @@ export default function Particle() {
   return (
     <Calendar
       classNames={{
-        month_caption: "ms-2.5 me-20 justify-start",
+        month_caption: "ms-0 me-[calc(var(--cell-size)*2)] justify-start",
         nav: "justify-end",
       }}
       mode="single"

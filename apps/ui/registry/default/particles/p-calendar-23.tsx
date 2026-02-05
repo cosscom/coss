@@ -15,7 +15,6 @@ export default function Particle() {
 
   return (
     <Calendar
-      className="rounded-md border p-2"
       classNames={{
         month:
           "relative first-of-type:before:hidden before:absolute max-md:before:inset-x-2 max-md:before:h-px max-md:before:-top-4 md:before:inset-y-2 md:before:w-px before:bg-border md:before:-left-4",

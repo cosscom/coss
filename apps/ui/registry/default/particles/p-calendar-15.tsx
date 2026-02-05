@@ -13,7 +13,7 @@ export default function Particle() {
   const [date, setDate] = useState<Date | undefined>(selectedDay);
 
   return (
-    <div className="rounded-md border p-2">
+    <div className="flex flex-col items-start gap-2">
       <Calendar
         mode="single"
         month={month}
@@ -21,12 +21,7 @@ export default function Particle() {
         onSelect={setDate}
         selected={date}
       />
-      <Button
-        className="mt-2 mb-1"
-        onClick={() => setMonth(today)}
-        size="sm"
-        variant="outline"
-      >
+      <Button onClick={() => setMonth(today)} size="sm" variant="outline">
         Current month
       </Button>
     </div>

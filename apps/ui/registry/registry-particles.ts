@@ -1238,6 +1238,9 @@ export const particles: ParticleItem[] = [
     dependencies: ["date-fns"],
     description: "Two months calendar",
     files: [{ path: "particles/p-calendar-22.tsx", type: "registry:block" }],
+    meta: {
+      colSpan: 2,
+    },
     name: "p-calendar-22",
     registryDependencies: ["@coss/calendar"],
     type: "registry:block",
@@ -1247,6 +1250,9 @@ export const particles: ParticleItem[] = [
     dependencies: ["date-fns"],
     description: "Three months calendar",
     files: [{ path: "particles/p-calendar-23.tsx", type: "registry:block" }],
+    meta: {
+      colSpan: 2,
+    },
     name: "p-calendar-23",
     registryDependencies: ["@coss/calendar"],
     type: "registry:block",
@@ -1256,6 +1262,9 @@ export const particles: ParticleItem[] = [
     dependencies: ["date-fns"],
     description: "Pricing calendar with custom day buttons",
     files: [{ path: "particles/p-calendar-24.tsx", type: "registry:block" }],
+    meta: {
+      colSpan: 2,
+    },
     name: "p-calendar-24",
     registryDependencies: ["@coss/calendar"],
     type: "registry:block",

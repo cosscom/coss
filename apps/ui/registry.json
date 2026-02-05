@@ -3329,6 +3329,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "colSpan": 2
+      },
       "name": "p-calendar-22",
       "registryDependencies": [
         "@coss/calendar"
@@ -3349,6 +3352,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "colSpan": 2
+      },
       "name": "p-calendar-23",
       "registryDependencies": [
         "@coss/calendar"
@@ -3369,6 +3375,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "colSpan": 2
+      },
       "name": "p-calendar-24",
       "registryDependencies": [
         "@coss/calendar"

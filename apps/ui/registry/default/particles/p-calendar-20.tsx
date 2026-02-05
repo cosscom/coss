@@ -16,83 +16,79 @@ export default function Particle() {
   const [date, setDate] = useState<Date>(today);
 
   return (
-    <div className="rounded-md border">
-      <div className="flex max-sm:flex-col">
-        <div className="relative py-4 max-sm:order-1 max-sm:border-t sm:w-32">
-          <div className="h-full sm:border-e">
-            <div className="flex flex-col px-2">
-              <Button
-                className="w-full justify-start"
-                onClick={() => {
-                  setDate(today);
-                  setMonth(today);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                Today
-              </Button>
-              <Button
-                className="w-full justify-start"
-                onClick={() => {
-                  setDate(yesterday);
-                  setMonth(yesterday);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                Yesterday
-              </Button>
-              <Button
-                className="w-full justify-start"
-                onClick={() => {
-                  setDate(lastWeek);
-                  setMonth(lastWeek);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                Last week
-              </Button>
-              <Button
-                className="w-full justify-start"
-                onClick={() => {
-                  setDate(lastMonth);
-                  setMonth(lastMonth);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                Last month
-              </Button>
-              <Button
-                className="w-full justify-start"
-                onClick={() => {
-                  setDate(lastYear);
-                  setMonth(lastYear);
-                }}
-                size="sm"
-                variant="ghost"
-              >
-                Last year
-              </Button>
-            </div>
-          </div>
+    <div className="flex max-sm:flex-col">
+      <div className="relative py-4 max-sm:order-1 max-sm:border-t">
+        <div className="flex h-full flex-col sm:border-e sm:px-5">
+          <Button
+            className="w-full justify-start"
+            onClick={() => {
+              setDate(today);
+              setMonth(today);
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            Today
+          </Button>
+          <Button
+            className="w-full justify-start"
+            onClick={() => {
+              setDate(yesterday);
+              setMonth(yesterday);
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            Yesterday
+          </Button>
+          <Button
+            className="w-full justify-start"
+            onClick={() => {
+              setDate(lastWeek);
+              setMonth(lastWeek);
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            Last week
+          </Button>
+          <Button
+            className="w-full justify-start"
+            onClick={() => {
+              setDate(lastMonth);
+              setMonth(lastMonth);
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            Last month
+          </Button>
+          <Button
+            className="w-full justify-start"
+            onClick={() => {
+              setDate(lastYear);
+              setMonth(lastYear);
+            }}
+            size="sm"
+            variant="ghost"
+          >
+            Last year
+          </Button>
         </div>
-        <Calendar
-          className="p-2"
-          disabled={[{ after: today }]}
-          mode="single"
-          month={month}
-          onMonthChange={setMonth}
-          onSelect={(newDate) => {
-            if (newDate) {
-              setDate(newDate);
-            }
-          }}
-          selected={date}
-        />
       </div>
+      <Calendar
+        className="max-sm:pb-3 sm:ps-5"
+        disabled={[{ after: today }]}
+        mode="single"
+        month={month}
+        onMonthChange={setMonth}
+        onSelect={(newDate) => {
+          if (newDate) {
+            setDate(newDate);
+          }
+        }}
+        selected={date}
+      />
     </div>
   );
 }

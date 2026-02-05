@@ -1,28 +1,32 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, isValid, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useState } from "react";
 
 import { Calendar } from "@/registry/default/ui/calendar";
-import { Input } from "@/registry/default/ui/input";
-import { Label } from "@/registry/default/ui/label";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/registry/default/ui/input-group";
 
 export default function Particle() {
-  const id = useId();
-  const today = new Date();
-  const [month, setMonth] = useState(today);
-  const [date, setDate] = useState<Date | undefined>(today);
-  const [inputValue, setInputValue] = useState("");
+  const [date, setDate] = useState<Date | undefined>(() => new Date());
+  const [month, setMonth] = useState<Date>(() => new Date());
+  const [inputValue, setInputValue] = useState(() =>
+    format(new Date(), "yyyy-MM-dd"),
+  );
 
-  const handleDayPickerSelect = (date: Date | undefined) => {
-    if (!date) {
+  const handleDayPickerSelect = (selectedDate: Date | undefined) => {
+    if (!selectedDate) {
       setInputValue("");
       setDate(undefined);
     } else {
-      setDate(date);
-      setMonth(date);
-      setInputValue(format(date, "yyyy-MM-dd"));
+      setDate(selectedDate);
+      setMonth(selectedDate);
+      setInputValue(format(selectedDate, "yyyy-MM-dd"));
     }
   };
 
@@ -31,48 +35,40 @@ export default function Particle() {
     setInputValue(value);
 
     if (value) {
-      const parsedDate = new Date(value);
-      setDate(parsedDate);
-      setMonth(parsedDate);
+      const parsedDate = parse(value, "yyyy-MM-dd", new Date());
+      if (isValid(parsedDate)) {
+        setDate(parsedDate);
+        setMonth(parsedDate);
+      }
     } else {
       setDate(undefined);
     }
   };
 
-  useEffect(() => {
-    setInputValue(format(today, "yyyy-MM-dd"));
-  }, [today]);
-
   return (
-    <div className="rounded-md border">
+    <div className="flex flex-col gap-2">
       <Calendar
-        className="p-2"
         mode="single"
         month={month}
         onMonthChange={setMonth}
         onSelect={handleDayPickerSelect}
         selected={date}
       />
-      <div className="border-t p-3">
-        <div className="flex items-center gap-3">
-          <Label className="text-xs" htmlFor={id}>
-            Enter date
-          </Label>
-          <div className="relative grow">
-            <Input
-              aria-label="Select date"
-              className="peer appearance-none ps-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-              id={id}
-              onChange={handleInputChange}
-              type="date"
-              value={inputValue}
-            />
-            <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
-              <CalendarIcon aria-hidden="true" size={16} />
-            </div>
-          </div>
-        </div>
-      </div>
+      <Field className="flex-row items-center gap-4">
+        <FieldLabel className="whitespace-nowrap">Enter date</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            aria-label="Select date"
+            className="*:[input]:[&::-webkit-calendar-picker-indicator]:hidden *:[input]:[&::-webkit-calendar-picker-indicator]:appearance-none"
+            onChange={handleInputChange}
+            type="date"
+            value={inputValue}
+          />
+          <InputGroupAddon>
+            <CalendarIcon aria-hidden="true" />
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
     </div>
   );
 }

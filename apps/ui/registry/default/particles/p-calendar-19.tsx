@@ -3,9 +3,10 @@
 import { format } from "date-fns";
 import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
+import { Toggle } from "@/registry/default/ui/toggle";
+import { ToggleGroup } from "@/registry/default/ui/toggle-group";
 
 export default function Particle() {
   const today = new Date();
@@ -34,46 +35,45 @@ export default function Particle() {
   ];
 
   return (
-    <div className="rounded-md border">
-      <div className="flex max-sm:flex-col">
-        <Calendar
-          className="p-2 sm:pe-5"
-          disabled={[{ before: today }]}
-          mode="single"
-          onSelect={(newDate) => {
-            if (newDate) {
-              setDate(newDate);
-              setTime(null);
-            }
-          }}
-          selected={date}
-        />
-        <div className="relative w-full max-sm:h-48 sm:w-40">
-          <div className="absolute inset-0 py-4 max-sm:border-t">
-            <ScrollArea className="h-full sm:border-s">
-              <div className="space-y-3">
-                <div className="flex h-5 shrink-0 items-center px-5">
-                  <p className="font-medium text-sm">
-                    {format(date, "EEEE, d")}
-                  </p>
-                </div>
-                <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
-                  {timeSlots.map(({ time: timeSlot, available }) => (
-                    <Button
-                      className="w-full"
-                      disabled={!available}
-                      key={timeSlot}
-                      onClick={() => setTime(timeSlot)}
-                      size="sm"
-                      variant={time === timeSlot ? "default" : "outline"}
-                    >
-                      {timeSlot}
-                    </Button>
-                  ))}
-                </div>
+    <div className="flex max-sm:flex-col">
+      <Calendar
+        className="max-sm:pb-3 sm:pe-5"
+        disabled={[{ before: today }]}
+        mode="single"
+        onSelect={(newDate) => {
+          if (newDate) {
+            setDate(newDate);
+            setTime(null);
+          }
+        }}
+        selected={date}
+      />
+      <div className="relative w-full max-sm:h-48 sm:w-40">
+        <div className="absolute inset-0 max-sm:border-t">
+          <ScrollArea className="h-full sm:border-s" scrollbarGutter scrollFade>
+            <div className="flex flex-col gap-3 py-3 sm:pt-0 sm:pb-2">
+              <div className="flex shrink-0 items-center font-medium text-sm sm:h-8 sm:px-5">
+                {format(date, "EEEE, d")}
               </div>
-            </ScrollArea>
-          </div>
+              <ToggleGroup
+                className="grid w-full gap-1.5 max-sm:grid-cols-2 sm:px-5"
+                onValueChange={(values) => setTime(values[0] || null)}
+                value={time ? [time] : []}
+              >
+                {timeSlots.map(({ time: timeSlot, available }) => (
+                  <Toggle
+                    disabled={!available}
+                    key={timeSlot}
+                    size="sm"
+                    value={timeSlot}
+                    variant="outline"
+                  >
+                    {timeSlot}
+                  </Toggle>
+                ))}
+              </ToggleGroup>
+            </div>
+          </ScrollArea>
         </div>
       </div>
     </div>

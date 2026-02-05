@@ -39,7 +39,6 @@ export default function Particle() {
 
   return (
     <Calendar
-      className="rounded-md border p-2"
       classNames={{
         day_button: "size-12",
         month:
@@ -76,10 +75,10 @@ function DayButton(props: DayButtonProps & { prices: Record<string, number> }) {
         {price && (
           <span
             className={cn(
-              "font-medium text-[10px]",
+              "font-normal text-xs",
               isGoodPrice
                 ? "text-emerald-500"
-                : "text-muted-foreground group-data-selected:text-primary-foreground/70",
+                : "in-data-selected:text-primary-foreground/70 text-muted-foreground",
             )}
           >
             ${price}

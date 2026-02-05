@@ -51,10 +51,10 @@ export default function Particle() {
               }}
               value={String(props.value)}
             >
-              <SelectTrigger className="h-8 w-fit font-medium first:grow">
+              <SelectTrigger className="min-w-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectPopup className="max-h-[min(26rem,var(--available-height))]">
+              <SelectPopup>
                 {items.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
                     {item.label}
