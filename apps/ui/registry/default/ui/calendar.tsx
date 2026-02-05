@@ -39,7 +39,7 @@ function Calendar({
     month: "w-full",
     month_caption:
       "relative mx-(--cell-size) px-1 mb-1 flex h-(--cell-size) items-center justify-center z-2",
-    months: "relative flex flex-col sm:flex-row gap-4",
+    months: "relative flex flex-col sm:flex-row gap-2",
     nav: "absolute top-0 flex w-full justify-between z-1",
     outside:
       "text-muted-foreground data-selected:bg-accent/50 data-selected:text-muted-foreground",
