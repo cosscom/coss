@@ -82,7 +82,7 @@ function Calendar({
       if (orientation === "left") {
         return (
           <ChevronLeftIcon
-            className={className}
+            className={cn(className, "rtl:rotate-180")}
             {...props}
             aria-hidden="true"
           />
@@ -92,7 +92,7 @@ function Calendar({
       if (orientation === "right") {
         return (
           <ChevronRightIcon
-            className={className}
+            className={cn(className, "rtl:rotate-180")}
             {...props}
             aria-hidden="true"
           />
