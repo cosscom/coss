@@ -2247,6 +2247,21 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("avatar", "badge", "button", "combobox", "group"),
+    description:
+      "Group with filter label, combobox multi-select, and remove button",
+    files: [{ path: "particles/p-group-23.tsx", type: "registry:block" }],
+    name: "p-group-23",
+    registryDependencies: [
+      "@coss/avatar",
+      "@coss/badge",
+      "@coss/button",
+      "@coss/combobox",
+      "@coss/group",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("input"),
     description: "Basic input",
     files: [{ path: "particles/p-input-1.tsx", type: "registry:block" }],

@@ -60,11 +60,7 @@ function SidebarProvider({
           {children}
           <Tooltip handle={sidebarTooltipHandle}>
             {({ payload: Payload }) => (
-              <TooltipPopup
-                align="center"
-                className={openMenuCount > 0 ? "hidden" : undefined}
-                side="right"
-              >
+              <TooltipPopup align="center" side="right">
                 {Payload !== undefined && <Payload />}
               </TooltipPopup>
             )}
@@ -117,7 +113,7 @@ function SidebarInset({
   return (
     <main
       className={cn(
-        "relative flex w-full min-w-0 flex-1 flex-col border-sidebar-border bg-background not-dark:bg-clip-padding shadow-black/5 shadow-lg before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] md:my-2 md:me-2 md:rounded-2xl md:border dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        "relative flex w-full min-w-0 flex-1 flex-col border-sidebar-border bg-background not-dark:bg-clip-padding shadow-lg/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] md:my-2 md:me-2 md:rounded-2xl md:border dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
         className,
       )}
       data-slot="sidebar-inset"
@@ -131,7 +127,7 @@ function SidebarInset({
 function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col gap-2 px-2 py-2", className)}
+      className={cn("flex flex-col gap-2 px-1 py-2 lg:px-2", className)}
       data-sidebar="header"
       data-slot="sidebar-header"
       {...props}
@@ -170,7 +166,7 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "relative flex w-full min-w-0 flex-col items-center px-2 py-2",
+        "relative flex w-full min-w-0 flex-col px-1 py-2",
         className,
       )}
       data-sidebar="group"
@@ -187,8 +183,8 @@ function SidebarGroupLabel({
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
     className: cn(
-      "flex h-8 shrink-0 items-center rounded-lg px-2 font-medium text-sidebar-foreground/70 text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-      "md:max-lg:-mt-8 md:max-lg:opacity-0",
+      "flex h-8 shrink-0 items-center rounded-lg px-2 gap-2 font-medium text-sidebar-foreground text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+      "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
       className,
     ),
     "data-sidebar": "group-label",
@@ -278,7 +274,7 @@ function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button cursor-pointer flex w-full items-center gap-2 overflow-hidden rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate md:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-5 [&>svg]:shrink-0",
+      "peer/menu-button relative cursor-pointer flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate sm:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-4.5 [&>svg]:shrink-0 font-medium text-sidebar-foreground after:absolute after:top-full after:h-1 after:w-full",
       className,
     ),
     "data-active": isActive,
@@ -303,7 +299,6 @@ function SidebarMenuButton({
 
   return (
     <TooltipTrigger
-      className="after:-bottom-1 after:-inset-x-1 after:absolute after:top-0"
       handle={sidebarTooltipHandle}
       payload={TooltipContent}
       render={buttonElement as React.ReactElement<Record<string, unknown>>}
@@ -416,7 +411,7 @@ function SidebarMenuSubButton({
 }) {
   const defaultProps = {
     className: cn(
-      "-translate-x-px flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-lg px-2 text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "-translate-x-px flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
       "md:max-lg:hidden",
       className,

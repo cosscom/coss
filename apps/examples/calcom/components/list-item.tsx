@@ -1,108 +1,149 @@
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
-import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import { ItemLabel } from "./item-label";
+
+const sortableListClasses =
+  "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
 
 interface ListItemProps {
-  labelColorLight?: string;
-  labelColorDark?: string;
   children: ReactNode;
   className?: string;
+  sortable?: boolean;
+  labelColorLight?: string;
+  labelColorDark?: string;
+  isOverlay?: boolean;
   sortableRef?: (node: HTMLElement | null) => void;
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
   sortableListeners?: SyntheticListenerMap;
+  hasDragged?: boolean;
 }
 
-export function ListItem({
-  labelColorLight,
-  labelColorDark,
+function ListItem({
   children,
   className,
+  sortable = false,
+  labelColorLight,
+  labelColorDark,
+  isOverlay,
   sortableRef,
   sortableStyle,
   sortableDragging,
   sortableDraggingAny,
   sortableListeners,
+  hasDragged,
 }: ListItemProps) {
-  const hasLabelColor = labelColorLight || labelColorDark;
-  const isDraggable = Boolean(sortableListeners || sortableRef);
-  const labelStyle = hasLabelColor
-    ? ({
-        "--event-label-dark": labelColorDark || "transparent",
-        "--event-label-light": labelColorLight || "transparent",
-      } as CSSProperties)
-    : undefined;
+  const baseClasses =
+    "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]";
 
-  const style =
-    labelStyle || sortableStyle
-      ? { ...labelStyle, ...sortableStyle }
-      : undefined;
+  const staticClasses =
+    "transition-[background-color] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)]";
+
+  const sortableClasses =
+    "after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 data-has-dragged:starting:after:rounded-2xl first:after:rounded-t-2xl last:after:rounded-b-2xl after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-muted/24 not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[5px] before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)] not-data-drag-overlay:before:hidden before:z-1";
 
   return (
     <div
       className={cn(
-        "after:-z-1 after:-inset-px relative z-0 flex translate-y-(--translate-y) after:pointer-events-none after:absolute after:rounded-[inherit] after:border after:border-border after:bg-background after:transition-[background-color,border-radius,inset,border] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)] has-[[data-slot=list-item-title]:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:after:bg-[color-mix(in_srgb,var(--color-background),var(--color-white)_2%)]",
-        isDraggable &&
-          "not-data-dragged:before:opacity- before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] not-last:not-data-dragging:before:rounded-b-none before:shadow-[0_1px_--theme(--color-black/6%)] before:transition-[opacity,border-radius,inset] data-dragging:pointer-events-none data-dragged:z-1 data-dragging:rounded-[calc(var(--radius-xl)-1px)] data-dragging:not-data-dragged:transition-transform data-dragging:after:inset-y-0.5 data-dragging:after:border data-dragged:after:bg-clip-padding data-dragged:after:shadow-lg/5 data-dragging:before:inset-y-[3px] dark:not-first:not-data-dragging:before:rounded-none dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+        baseClasses,
+        sortable ? sortableClasses : staticClasses,
         className,
       )}
-      data-dragged={sortableDragging ? "" : undefined}
-      data-dragging={sortableDraggingAny ? "" : undefined}
+      data-drag-ghost={sortable && sortableDragging ? "" : undefined}
+      data-drag-on={sortable && sortableDraggingAny ? "" : undefined}
+      data-drag-overlay={sortable && isOverlay ? "" : undefined}
+      data-draggable={sortable ? "" : undefined}
+      data-has-dragged={sortable && hasDragged ? "" : undefined}
       data-slot="list-item"
-      ref={sortableRef}
-      style={style}
-      {...sortableListeners}
+      ref={sortable ? sortableRef : undefined}
+      style={sortable ? sortableStyle : undefined}
+      {...(sortable ? sortableListeners : {})}
     >
-      {hasLabelColor && (
-        <div
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none absolute inset-y-0 start-0 w-8 overflow-hidden before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-(--event-label-light) dark:before:bg-(--event-label-dark)",
-            isDraggable &&
-              "in-[[data-slot=list-item]:first-child]:-mt-px in-[[data-slot=list-item]:last-child]:-mb-px in-data-dragging:inset-y-[3px] in-data-dragging:rounded-s-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:first-child]:rounded-t-[calc(var(--radius-xl)-2px)] in-[[data-slot=list-item]:last-child]:rounded-b-[calc(var(--radius-xl)-2px)] transition-[border-radius,inset]",
-          )}
-          data-slot="list-item-label-color"
-        />
-      )}
-      <div className="relative flex flex-1 items-center justify-between gap-4 px-6 py-4">
+      <div
+        className={cn(
+          "relative flex items-center justify-between gap-4 px-6 py-4",
+          sortable && "z-1",
+        )}
+      >
+        {sortable && (
+          <ItemLabel colorDark={labelColorDark} colorLight={labelColorLight} />
+        )}
         {children}
       </div>
     </div>
   );
 }
 
-interface ListItemDragHandleProps {
+interface SortableListItemProps {
+  children: ReactNode;
   className?: string;
-  listeners?: SyntheticListenerMap;
-  attributes?: DraggableAttributes;
+  labelColorLight?: string;
+  labelColorDark?: string;
+  isOverlay?: boolean;
+  sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
+  sortableDragging?: boolean;
+  sortableDraggingAny?: boolean;
+  sortableListeners?: SyntheticListenerMap;
+  hasDragged?: boolean;
 }
 
-export function ListItemDragHandle({
+function SortableListItem({
+  children,
   className,
-  listeners,
-  attributes,
-}: ListItemDragHandleProps) {
+  labelColorLight,
+  labelColorDark,
+  isOverlay,
+  sortableRef,
+  sortableStyle,
+  sortableDragging,
+  sortableDraggingAny,
+  sortableListeners,
+  hasDragged,
+}: SortableListItemProps) {
+  return (
+    <ListItem
+      className={className}
+      hasDragged={hasDragged}
+      isOverlay={isOverlay}
+      labelColorDark={labelColorDark}
+      labelColorLight={labelColorLight}
+      sortable
+      sortableDragging={sortableDragging}
+      sortableDraggingAny={sortableDraggingAny}
+      sortableListeners={sortableListeners}
+      sortableRef={sortableRef}
+      sortableStyle={sortableStyle}
+    >
+      {children}
+    </ListItem>
+  );
+}
+
+interface ListItemDragHandleProps {
+  className?: string;
+}
+
+function ListItemDragHandle({ className }: ListItemDragHandleProps) {
   return (
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.5 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-dragged]]:opacity-100 opacity-0 focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"
       size="icon-xs"
       variant="ghost"
-      {...listeners}
-      {...attributes}
     >
       <GripVerticalIcon
         aria-hidden="true"
-        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item-drag-handle]:focus-visible]:opacity-80 in-[[data-slot=list-item][data-dragged]]:opacity-100 opacity-40 transition-opacity"
+        className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item-drag-handle]:focus-visible]:opacity-100 opacity-40"
       />
     </Button>
   );
@@ -113,7 +154,7 @@ interface ListItemContentProps {
   className?: string;
 }
 
-export function ListItemContent({ children, className }: ListItemContentProps) {
+function ListItemContent({ children, className }: ListItemContentProps) {
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col gap-3", className)}>
       {children}
@@ -126,7 +167,7 @@ interface ListItemHeaderProps {
   className?: string;
 }
 
-export function ListItemHeader({ children, className }: ListItemHeaderProps) {
+function ListItemHeader({ children, className }: ListItemHeaderProps) {
   return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
 }
 
@@ -136,14 +177,14 @@ interface ListItemTitleProps
   className?: string;
 }
 
-export function ListItemTitle({
+function ListItemTitle({
   children,
   className,
   ...linkProps
 }: ListItemTitleProps) {
   return (
     <h2
-      className={cn("font-medium sm:text-sm", className)}
+      className={cn("font-semibold sm:text-sm", className)}
       data-slot="list-item-title"
     >
       <Link className="before:absolute before:inset-0" {...linkProps}>
@@ -158,7 +199,7 @@ interface ListItemDescriptionProps {
   className?: string;
 }
 
-export function ListItemDescription({
+function ListItemDescription({
   children,
   className,
 }: ListItemDescriptionProps) {
@@ -177,7 +218,7 @@ interface ListItemBadgesProps {
   className?: string;
 }
 
-export function ListItemBadges({ children, className }: ListItemBadgesProps) {
+function ListItemBadges({ children, className }: ListItemBadgesProps) {
   return (
     <div
       className={cn("flex flex-wrap items-center gap-2", className)}
@@ -193,7 +234,7 @@ interface ListItemActionsProps {
   className?: string;
 }
 
-export function ListItemActions({ children, className }: ListItemActionsProps) {
+function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
     <div
       className={cn("relative flex items-center", className)}
@@ -203,3 +244,17 @@ export function ListItemActions({ children, className }: ListItemActionsProps) {
     </div>
   );
 }
+
+export {
+  ItemLabel,
+  ListItem,
+  ListItemActions,
+  ListItemBadges,
+  ListItemContent,
+  ListItemDescription,
+  ListItemDragHandle,
+  ListItemHeader,
+  ListItemTitle,
+  sortableListClasses,
+  SortableListItem,
+};

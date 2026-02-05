@@ -4543,6 +4543,24 @@ export const Index: Record<string, any> = {
     categories: ["group","label","number field"],
     meta: undefined,
   },
+  "p-group-23": {
+    name: "p-group-23",
+    description: "Group with filter label, combobox multi-select, and remove button",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/badge","@coss/button","@coss/combobox","@coss/group"],
+    files: [{
+      path: "registry/default/particles/p-group-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-group-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["avatar","badge","button","combobox","group"],
+    meta: undefined,
+  },
   "p-input-1": {
     name: "p-input-1",
     description: "Basic input",

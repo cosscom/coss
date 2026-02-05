@@ -122,13 +122,13 @@
 .dark {
   --background: color-mix(
     in srgb,
-    var(--color-neutral-950) 95%,
+    var(--color-neutral-950) 96%,
     var(--color-white)
   );
   --foreground: var(--color-neutral-100);
   --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
   --card-foreground: var(--color-neutral-100);
-  --popover: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --popover: color-mix(in srgb, var(--background) 96%, var(--color-white));
   --popover-foreground: var(--color-neutral-100);
   --primary: var(--color-neutral-100);
   --primary-foreground: var(--color-neutral-800);
