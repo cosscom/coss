@@ -223,9 +223,7 @@
         }
       ],
       "name": "calendar",
-      "registryDependencies": [
-        "@coss/button"
-      ],
+      "registryDependencies": [],
       "type": "registry:ui"
     },
     {
@@ -635,6 +633,10 @@
       "type": "registry:ui"
     },
     {
+      "dependencies": [
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render"
+      ],
       "files": [
         {
           "path": "registry/default/ui/sidebar.tsx",
@@ -643,14 +645,15 @@
       ],
       "name": "sidebar",
       "registryDependencies": [
-        "@coss/button",
-        "@coss/input",
-        "@coss/scroll-area",
-        "@coss/separator",
-        "@coss/sheet",
-        "@coss/skeleton",
-        "@coss/tooltip",
-        "@coss/use-mobile"
+        "@coss/ui/components/button",
+        "@coss/ui/components/input",
+        "@coss/ui/hooks/use-mobile",
+        "@coss/ui/lib/utils",
+        "@coss/ui/components/scroll-area",
+        "@coss/ui/components/separator",
+        "@coss/ui/components/sheet",
+        "@coss/ui/components/skeleton",
+        "@coss/ui/components/tooltip"
       ],
       "type": "registry:ui"
     },
@@ -3014,8 +3017,7 @@
       "name": "p-calendar-6",
       "registryDependencies": [
         "@coss/calendar",
-        "@coss/combobox",
-        "@coss/button"
+        "@coss/combobox"
       ],
       "type": "registry:block"
     },
@@ -3232,8 +3234,8 @@
       "name": "p-calendar-17",
       "registryDependencies": [
         "@coss/calendar",
-        "@coss/input",
-        "@coss/label"
+        "@coss/field",
+        "@coss/input-group"
       ],
       "type": "registry:block"
     },
@@ -3256,8 +3258,8 @@
       "name": "p-calendar-18",
       "registryDependencies": [
         "@coss/calendar",
-        "@coss/input",
-        "@coss/label"
+        "@coss/field",
+        "@coss/input-group"
       ],
       "type": "registry:block"
     },
@@ -3281,8 +3283,9 @@
       "name": "p-calendar-19",
       "registryDependencies": [
         "@coss/calendar",
-        "@coss/button",
-        "@coss/scroll-area"
+        "@coss/scroll-area",
+        "@coss/toggle",
+        "@coss/toggle-group"
       ],
       "type": "registry:block"
     },
@@ -3402,6 +3405,7 @@
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button"
       ],
@@ -3430,6 +3434,7 @@
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button"
       ],
@@ -3479,16 +3484,18 @@
       },
       "name": "p-date-picker-3",
       "registryDependencies": [
-        "@coss/calendar",
-        "@coss/popover",
         "@coss/button",
-        "@coss/field"
+        "@coss/calendar",
+        "@coss/combobox",
+        "@coss/field",
+        "@coss/popover"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button"
       ],
@@ -3508,16 +3515,16 @@
       },
       "name": "p-date-picker-4",
       "registryDependencies": [
-        "@coss/calendar",
-        "@coss/popover",
         "@coss/button",
-        "@coss/select"
+        "@coss/calendar",
+        "@coss/popover"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button",
         "input"
@@ -3538,16 +3545,17 @@
       },
       "name": "p-date-picker-5",
       "registryDependencies": [
-        "@coss/calendar",
-        "@coss/popover",
         "@coss/button",
-        "@coss/input"
+        "@coss/calendar",
+        "@coss/input-group",
+        "@coss/popover"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button"
       ],
@@ -3576,6 +3584,7 @@
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button",
         "badge"
@@ -3596,15 +3605,17 @@
       },
       "name": "p-date-picker-7",
       "registryDependencies": [
+        "@coss/badge",
+        "@coss/button",
         "@coss/calendar",
-        "@coss/popover",
-        "@coss/button"
+        "@coss/popover"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button"
       ],

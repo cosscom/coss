@@ -8,10 +8,11 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/calendar",
-    "@coss/popover",
     "@coss/button",
-    "@coss/field"
+    "@coss/calendar",
+    "@coss/combobox",
+    "@coss/field",
+    "@coss/popover"
   ],
   "files": [
     {

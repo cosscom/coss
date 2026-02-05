@@ -8,8 +8,8 @@
   ],
   "registryDependencies": [
     "@coss/calendar",
-    "@coss/input",
-    "@coss/label"
+    "@coss/field",
+    "@coss/input-group"
   ],
   "files": [
     {

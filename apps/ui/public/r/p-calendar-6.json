@@ -8,8 +8,7 @@
   ],
   "registryDependencies": [
     "@coss/calendar",
-    "@coss/combobox",
-    "@coss/button"
+    "@coss/combobox"
   ],
   "files": [
     {

@@ -8,8 +8,9 @@
   ],
   "registryDependencies": [
     "@coss/calendar",
-    "@coss/button",
-    "@coss/scroll-area"
+    "@coss/scroll-area",
+    "@coss/toggle",
+    "@coss/toggle-group"
   ],
   "files": [
     {

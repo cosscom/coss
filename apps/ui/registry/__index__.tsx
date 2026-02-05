@@ -155,7 +155,7 @@ export const Index: Record<string, any> = {
     name: "calendar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button"],
+    registryDependencies: [],
     files: [{
       path: "registry/default/ui/calendar.tsx",
       type: "registry:ui",
@@ -695,7 +695,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile"],
+    registryDependencies: ["@coss/ui/components/button","@coss/ui/components/input","@coss/ui/hooks/use-mobile","@coss/ui/lib/utils","@coss/ui/components/scroll-area","@coss/ui/components/separator","@coss/ui/components/sheet","@coss/ui/components/skeleton","@coss/ui/components/tooltip"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -2963,7 +2963,7 @@ export const Index: Record<string, any> = {
     name: "p-calendar-6",
     description: "Calendar with Combobox dropdown for month/year",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/combobox","@coss/button"],
+    registryDependencies: ["@coss/calendar","@coss/combobox"],
     files: [{
       path: "registry/default/particles/p-calendar-6.tsx",
       type: "registry:block",
@@ -3161,7 +3161,7 @@ export const Index: Record<string, any> = {
     name: "p-calendar-17",
     description: "Calendar with date input",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/input","@coss/label"],
+    registryDependencies: ["@coss/calendar","@coss/field","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-calendar-17.tsx",
       type: "registry:block",
@@ -3179,7 +3179,7 @@ export const Index: Record<string, any> = {
     name: "p-calendar-18",
     description: "Calendar with time input",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/input","@coss/label"],
+    registryDependencies: ["@coss/calendar","@coss/field","@coss/input-group"],
     files: [{
       path: "registry/default/particles/p-calendar-18.tsx",
       type: "registry:block",
@@ -3197,7 +3197,7 @@ export const Index: Record<string, any> = {
     name: "p-calendar-19",
     description: "Calendar with time slots (appointment picker)",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/button","@coss/scroll-area"],
+    registryDependencies: ["@coss/calendar","@coss/scroll-area","@coss/toggle","@coss/toggle-group"],
     files: [{
       path: "registry/default/particles/p-calendar-19.tsx",
       type: "registry:block",
@@ -3316,7 +3316,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button"],
+    categories: ["date picker","calendar","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-2": {
@@ -3334,14 +3334,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button"],
+    categories: ["date picker","calendar","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-3": {
     name: "p-date-picker-3",
     description: "Date picker with field and dropdown navigation",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/field"],
+    registryDependencies: ["@coss/button","@coss/calendar","@coss/combobox","@coss/field","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-date-picker-3.tsx",
       type: "registry:block",
@@ -3359,7 +3359,7 @@ export const Index: Record<string, any> = {
     name: "p-date-picker-4",
     description: "Date picker with presets",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/select"],
+    registryDependencies: ["@coss/button","@coss/calendar","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-date-picker-4.tsx",
       type: "registry:block",
@@ -3370,14 +3370,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button"],
+    categories: ["date picker","calendar","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-5": {
     name: "p-date-picker-5",
     description: "Date picker with input",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/input"],
+    registryDependencies: ["@coss/button","@coss/calendar","@coss/input-group","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-date-picker-5.tsx",
       type: "registry:block",
@@ -3388,7 +3388,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button","input"],
+    categories: ["date picker","calendar","popover","button","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-6": {
@@ -3406,14 +3406,14 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button"],
+    categories: ["date picker","calendar","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-7": {
     name: "p-date-picker-7",
     description: "Multiple dates picker",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    registryDependencies: ["@coss/badge","@coss/button","@coss/calendar","@coss/popover"],
     files: [{
       path: "registry/default/particles/p-date-picker-7.tsx",
       type: "registry:block",
@@ -3424,7 +3424,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button","badge"],
+    categories: ["date picker","calendar","popover","button","badge"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-8": {
@@ -3442,7 +3442,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker","popover","button"],
+    categories: ["date picker","calendar","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-card-1": {

@@ -8,10 +8,10 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "@coss/calendar",
-    "@coss/popover",
     "@coss/button",
-    "@coss/input"
+    "@coss/calendar",
+    "@coss/input-group",
+    "@coss/popover"
   ],
   "files": [
     {
@@ -25,6 +25,7 @@
   },
   "categories": [
     "date picker",
+    "calendar",
     "popover",
     "button",
     "input"

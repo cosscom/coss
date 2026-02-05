@@ -6,9 +6,7 @@
     "react-day-picker",
     "lucide-react"
   ],
-  "registryDependencies": [
-    "@coss/button"
-  ],
+  "registryDependencies": [],
   "files": [
     {
       "path": "registry/default/ui/calendar.tsx",
