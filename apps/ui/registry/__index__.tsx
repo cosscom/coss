@@ -3427,6 +3427,24 @@ export const Index: Record<string, any> = {
     categories: ["date picker"],
     meta: undefined,
   },
+  "p-date-picker-8": {
+    name: "p-date-picker-8",
+    description: "Date picker with select-like trigger",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date picker"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",
