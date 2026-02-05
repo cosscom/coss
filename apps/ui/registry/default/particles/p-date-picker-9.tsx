@@ -38,6 +38,7 @@ export default function Particle() {
         <Calendar
           defaultMonth={date?.from}
           mode="range"
+          numberOfMonths={2}
           onSelect={setDate}
           selected={date}
         />

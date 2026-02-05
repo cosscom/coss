@@ -1060,7 +1060,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("calendar"),
-    description: "Calendar with single date selection",
+    description: "Calendar with range date selection",
     files: [{ path: "particles/p-calendar-2.tsx", type: "registry:block" }],
     name: "p-calendar-2",
     registryDependencies: ["@coss/calendar"],
@@ -1301,6 +1301,19 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-date-picker-2",
+    registryDependencies: ["@coss/calendar", "@coss/popover", "@coss/button"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("date picker", "calendar", "popover", "button"),
+    dependencies: ["date-fns", "lucide-react"],
+    description: "Two months calendar with range date",
+    files: [{ path: "particles/p-date-picker-9.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-date-picker-9",
     registryDependencies: ["@coss/calendar", "@coss/popover", "@coss/button"],
     type: "registry:block",
   },

@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-2",
   "type": "registry:block",
-  "description": "Calendar with single date selection",
+  "description": "Calendar with range date selection",
   "registryDependencies": [
     "@coss/calendar"
   ],
