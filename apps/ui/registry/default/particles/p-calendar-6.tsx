@@ -1,17 +1,15 @@
 "use client";
-import { ChevronsUpDownIcon } from "lucide-react";
 import * as React from "react";
 import type { DropdownProps } from "react-day-picker";
 
-import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Combobox,
+  ComboboxEmpty,
+  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
-  ComboboxTrigger,
-  ComboboxValue,
 } from "@/registry/default/ui/combobox";
 
 interface DropdownItem {
@@ -44,22 +42,17 @@ function CalendarDropdown(props: DropdownProps) {
   return (
     <Combobox
       aria-label={ariaLabel}
+      autoHighlight
       items={items}
       onValueChange={handleValueChange}
       value={selectedItem}
     >
-      <ComboboxTrigger
-        render={
-          <Button
-            className="min-w-none justify-between font-normal"
-            variant="outline"
-          />
-        }
-      >
-        <ComboboxValue />
-        <ChevronsUpDownIcon className="-me-1! size-3.5" />
-      </ComboboxTrigger>
+      <ComboboxInput
+        className="**:[input]:w-0 **:[input]:flex-1"
+        onFocus={(e) => e.currentTarget.select()}
+      />
       <ComboboxPopup aria-label={ariaLabel}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
         <ComboboxList>
           {(item: DropdownItem) => (
             <ComboboxItem
@@ -83,14 +76,10 @@ export default function Particle() {
       captionLayout="dropdown"
       components={{ Dropdown: CalendarDropdown }}
       endMonth={new Date(2030, 11)}
-      formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
-      }}
       mode="single"
       onSelect={setDate}
       selected={date}
-      startMonth={new Date(2020, 0)}
+      startMonth={new Date(1930, 0)}
     />
   );
 }

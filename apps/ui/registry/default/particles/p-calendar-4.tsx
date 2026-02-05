@@ -12,7 +12,7 @@ export default function Particle() {
       mode="single"
       onSelect={setDate}
       selected={date}
-      startMonth={new Date(2020, 0)}
+      startMonth={new Date(1930, 0)}
     />
   );
 }

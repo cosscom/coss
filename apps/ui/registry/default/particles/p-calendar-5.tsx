@@ -62,14 +62,10 @@ export default function Particle() {
       captionLayout="dropdown"
       components={{ Dropdown: CalendarDropdown }}
       endMonth={new Date(2030, 11)}
-      formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
-      }}
       mode="single"
       onSelect={setDate}
       selected={date}
-      startMonth={new Date(2020, 0)}
+      startMonth={new Date(1930, 0)}
     />
   );
 }
