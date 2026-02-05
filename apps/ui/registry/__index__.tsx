@@ -3301,6 +3301,132 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: {"colSpan":2},
   },
+  "p-date-picker-1": {
+    name: "p-date-picker-1",
+    description: "Basic date picker",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: undefined,
+  },
+  "p-date-picker-2": {
+    name: "p-date-picker-2",
+    description: "Date range picker",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: {"colSpan":2},
+  },
+  "p-date-picker-3": {
+    name: "p-date-picker-3",
+    description: "Date picker with dropdown navigation",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/field"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: undefined,
+  },
+  "p-date-picker-4": {
+    name: "p-date-picker-4",
+    description: "Date range picker with presets",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: {"colSpan":2},
+  },
+  "p-date-picker-5": {
+    name: "p-date-picker-5",
+    description: "Date picker with input",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: undefined,
+  },
+  "p-date-picker-6": {
+    name: "p-date-picker-6",
+    description: "Date picker that closes on select",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: undefined,
+  },
+  "p-date-picker-7": {
+    name: "p-date-picker-7",
+    description: "Multiple dates picker",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-date-picker-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-date-picker-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["date-picker"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",

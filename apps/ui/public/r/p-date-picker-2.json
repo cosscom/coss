@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-date-picker-2",
+  "type": "registry:block",
+  "description": "Date range picker",
+  "dependencies": [
+    "date-fns",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/calendar",
+    "@coss/popover",
+    "@coss/button"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-date-picker-2.tsx",
+      "content": "\"use client\";\n\nimport { format } from \"date-fns\";\nimport { CalendarIcon } from \"lucide-react\";\nimport { useState } from \"react\";\nimport type { DateRange } from \"react-day-picker\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<DateRange | undefined>();\n\n  return (\n    <Popover>\n      <PopoverTrigger\n        render={\n          <Button\n            className=\"w-[300px] justify-start text-left font-normal\"\n            variant=\"outline\"\n          />\n        }\n      >\n        <CalendarIcon />\n        {date?.from ? (\n          date.to ? (\n            <>\n              {format(date.from, \"LLL dd, y\")} - {format(date.to, \"LLL dd, y\")}\n            </>\n          ) : (\n            format(date.from, \"LLL dd, y\")\n          )\n        ) : (\n          <span>Pick a date range</span>\n        )}\n      </PopoverTrigger>\n      <PopoverPopup align=\"start\" className=\"w-auto p-0\">\n        <Calendar\n          defaultMonth={date?.from}\n          mode=\"range\"\n          numberOfMonths={2}\n          onSelect={setDate}\n          selected={date}\n        />\n      </PopoverPopup>\n    </Popover>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "colSpan": 2
+  },
+  "categories": [
+    "date-picker"
+  ]
+}

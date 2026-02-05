@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-date-picker-3",
+  "type": "registry:block",
+  "description": "Date picker with dropdown navigation",
+  "dependencies": [
+    "date-fns",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@coss/calendar",
+    "@coss/popover",
+    "@coss/button",
+    "@coss/field"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-date-picker-3.tsx",
+      "content": "\"use client\";\n\nimport { format } from \"date-fns\";\nimport { CalendarIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>();\n\n  return (\n    <Field className=\"flex flex-col gap-2\">\n      <FieldLabel>Date of birth</FieldLabel>\n      <Popover>\n        <PopoverTrigger\n          render={\n            <Button\n              className=\"w-[280px] justify-start text-left font-normal\"\n              variant=\"outline\"\n            />\n          }\n        >\n          <CalendarIcon />\n          {date ? format(date, \"PPP\") : <span>Pick a date</span>}\n        </PopoverTrigger>\n        <PopoverPopup align=\"start\" className=\"w-auto p-0\">\n          <Calendar\n            captionLayout=\"dropdown\"\n            endMonth={new Date()}\n            mode=\"single\"\n            onSelect={setDate}\n            selected={date}\n            startMonth={new Date(1900, 0)}\n          />\n        </PopoverPopup>\n      </Popover>\n    </Field>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "date-picker"
+  ]
+}
