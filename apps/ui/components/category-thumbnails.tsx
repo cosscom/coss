@@ -2,6 +2,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertCircleIcon,
+  CalendarIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -314,6 +315,47 @@ export const buttonThumbnail = (
   </Card>
 );
 
+// Calendar
+export const calendarThumbnail = (
+  <Card className="max-w-36 [--radius-2xl:14px]">
+    <CardPanel className="flex flex-col gap-4 p-4">
+      <div className="flex items-center gap-2">
+        <Icon icon={ChevronLeftIcon} />
+        <Text className="w-[60%]" variant="secondary" />
+        <Icon icon={ChevronRightIcon} />
+      </div>
+      <div className="flex items-center gap-2">
+        <Text className="flex-1" variant="secondary" />
+        <Text className="flex-1" variant="secondary" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1 bg-transparent" variant="main" />
+        <Text className="flex-1" variant="main" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1 bg-transparent" variant="main" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1" variant="main" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Text className="flex-1 bg-transparent" variant="main" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1 bg-primary" variant="main" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1 bg-transparent" variant="main" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1" variant="main" />
+        <Text className="flex-1 bg-transparent" variant="main" />
+        <Text className="flex-1" variant="secondary" />
+        <Text className="flex-1" variant="secondary" />
+      </div>
+    </CardPanel>
+  </Card>
+);
+
 // Card
 export const cardThumbnail = (
   <Card className="max-w-36 [--radius-2xl:14px]">
@@ -394,6 +436,16 @@ export const commandThumbnail = (
         <CommandItem />
         <CommandItem />
       </div>
+    </CardPanel>
+  </Card>
+);
+
+// Date Picker
+export const datePickerThumbnail = (
+  <Card className="[--radius-2xl:14px]" withGradient={false}>
+    <CardPanel className="flex items-center gap-2 p-3">
+      <Icon icon={CalendarIcon} />
+      <Text className="w-[60%]" />
     </CardPanel>
   </Card>
 );
@@ -913,12 +965,14 @@ export const categoryThumbnails: Record<string, ReactNode> = {
   badge: badgeThumbnail,
   breadcrumb: breadcrumbThumbnail,
   button: buttonThumbnail,
+  calendar: calendarThumbnail,
   card: cardThumbnail,
   checkbox: checkboxThumbnail,
   "checkbox-group": checkboxGroupThumbnail,
   collapsible: collapsibleThumbnail,
   combobox: comboboxThumbnail,
   command: commandThumbnail,
+  "date-picker": datePickerThumbnail,
   dialog: dialogThumbnail,
   empty: emptyThumbnail,
   field: fieldThumbnail,

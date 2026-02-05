@@ -12,6 +12,7 @@ export const ui: Registry["items"] = [
       "@coss/badge",
       "@coss/breadcrumb",
       "@coss/button",
+      "@coss/calendar",
       "@coss/card",
       "@coss/checkbox",
       "@coss/checkbox-group",
@@ -191,6 +192,18 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button",
+    type: "registry:ui",
+  },
+  {
+    dependencies: ["react-day-picker", "lucide-react"],
+    files: [
+      {
+        path: "ui/calendar.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "calendar",
+    registryDependencies: [],
     type: "registry:ui",
   },
   {
@@ -532,6 +545,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react/merge-props", "@base-ui/react/use-render"],
     files: [
       {
         path: "ui/sidebar.tsx",
@@ -540,14 +554,15 @@ export const ui: Registry["items"] = [
     ],
     name: "sidebar",
     registryDependencies: [
-      "@coss/button",
-      "@coss/input",
-      "@coss/scroll-area",
-      "@coss/separator",
-      "@coss/sheet",
-      "@coss/skeleton",
-      "@coss/tooltip",
-      "@coss/use-mobile",
+      "@coss/ui/components/button",
+      "@coss/ui/components/input",
+      "@coss/ui/hooks/use-mobile",
+      "@coss/ui/lib/utils",
+      "@coss/ui/components/scroll-area",
+      "@coss/ui/components/separator",
+      "@coss/ui/components/sheet",
+      "@coss/ui/components/skeleton",
+      "@coss/ui/components/tooltip",
     ],
     type: "registry:ui",
   },
