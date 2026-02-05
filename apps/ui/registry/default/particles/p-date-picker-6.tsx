@@ -23,18 +23,11 @@ export default function Particle() {
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
-      <PopoverTrigger
-        render={
-          <Button
-            className="w-[280px] justify-start text-left font-normal"
-            variant="outline"
-          />
-        }
-      >
+      <PopoverTrigger render={<Button variant="outline" />}>
         <CalendarIcon />
         {date ? format(date, "PPP") : <span>Pick a date</span>}
       </PopoverTrigger>
-      <PopoverPopup align="start" className="w-auto p-0">
+      <PopoverPopup>
         <Calendar mode="single" onSelect={handleSelect} selected={date} />
       </PopoverPopup>
     </Popover>

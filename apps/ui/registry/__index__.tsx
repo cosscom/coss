@@ -3316,7 +3316,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
+    categories: ["date picker"],
     meta: undefined,
   },
   "p-date-picker-2": {
@@ -3334,12 +3334,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
-    meta: {"colSpan":2},
+    categories: ["date picker"],
+    meta: undefined,
   },
   "p-date-picker-3": {
     name: "p-date-picker-3",
-    description: "Date picker with dropdown navigation",
+    description: "Date picker with field and dropdown navigation",
     type: "registry:block",
     registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/field"],
     files: [{
@@ -3352,7 +3352,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
+    categories: ["date picker"],
     meta: undefined,
   },
   "p-date-picker-4": {
@@ -3370,8 +3370,8 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
-    meta: {"colSpan":2},
+    categories: ["date picker"],
+    meta: undefined,
   },
   "p-date-picker-5": {
     name: "p-date-picker-5",
@@ -3388,7 +3388,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
+    categories: ["date picker"],
     meta: undefined,
   },
   "p-date-picker-6": {
@@ -3406,7 +3406,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
+    categories: ["date picker"],
     meta: undefined,
   },
   "p-date-picker-7": {
@@ -3424,7 +3424,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date-picker"],
+    categories: ["date picker"],
     meta: undefined,
   },
   "p-card-1": {

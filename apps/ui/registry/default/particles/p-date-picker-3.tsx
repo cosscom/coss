@@ -2,10 +2,19 @@
 
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
+import * as React from "react";
+import type { DropdownProps } from "react-day-picker";
 
 import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
+import {
+  Combobox,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxPopup,
+} from "@/registry/default/ui/combobox";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import {
   Popover,
@@ -13,27 +22,79 @@ import {
   PopoverTrigger,
 } from "@/registry/default/ui/popover";
 
-export default function Particle() {
-  const [date, setDate] = useState<Date | undefined>();
+interface DropdownItem {
+  disabled?: boolean;
+  label: string;
+  value: string;
+}
+
+function CalendarDropdown(props: DropdownProps) {
+  const { options, value, onChange, "aria-label": ariaLabel } = props;
+
+  const items: DropdownItem[] =
+    options?.map((option) => ({
+      disabled: option.disabled,
+      label: option.label,
+      value: option.value.toString(),
+    })) ?? [];
+
+  const selectedItem = items.find((item) => item.value === value?.toString());
+
+  const handleValueChange = (newValue: DropdownItem | null) => {
+    if (onChange && newValue) {
+      const syntheticEvent = {
+        target: { value: newValue.value },
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(syntheticEvent);
+    }
+  };
 
   return (
-    <Field className="flex flex-col gap-2">
-      <FieldLabel>Date of birth</FieldLabel>
+    <Combobox
+      aria-label={ariaLabel}
+      autoHighlight
+      items={items}
+      onValueChange={handleValueChange}
+      value={selectedItem}
+    >
+      <ComboboxInput
+        className="**:[input]:w-0 **:[input]:flex-1"
+        onFocus={(e) => e.currentTarget.select()}
+      />
+      <ComboboxPopup aria-label={ariaLabel}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item: DropdownItem) => (
+            <ComboboxItem
+              disabled={item.disabled}
+              key={item.value}
+              value={item}
+            >
+              {item.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxPopup>
+    </Combobox>
+  );
+}
+
+export default function Particle() {
+  const [date, setDate] = React.useState<Date | undefined>();
+  const id = React.useId();
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>Start date</FieldLabel>
       <Popover>
-        <PopoverTrigger
-          render={
-            <Button
-              className="w-[280px] justify-start text-left font-normal"
-              variant="outline"
-            />
-          }
-        >
-          <CalendarIcon />
+        <PopoverTrigger id={id} render={<Button variant="outline" />}>
+          <CalendarIcon aria-hidden="true" />
           {date ? format(date, "PPP") : <span>Pick a date</span>}
         </PopoverTrigger>
-        <PopoverPopup align="start" className="w-auto p-0">
+        <PopoverPopup>
           <Calendar
             captionLayout="dropdown"
+            components={{ Dropdown: CalendarDropdown }}
+            defaultMonth={date}
             endMonth={new Date()}
             mode="single"
             onSelect={setDate}

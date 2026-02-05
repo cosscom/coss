@@ -3,7 +3,6 @@
 import { addDays, format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
@@ -12,81 +11,80 @@ import {
   PopoverPopup,
   PopoverTrigger,
 } from "@/registry/default/ui/popover";
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from "@/registry/default/ui/select";
-
-const presets = [
-  { label: "Select a preset", value: null },
-  { label: "Today", value: "0" },
-  { label: "Tomorrow", value: "1" },
-  { label: "In 3 days", value: "3" },
-  { label: "In a week", value: "7" },
-];
 
 export default function Particle() {
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: addDays(new Date(), 7),
-  });
-
-  const handlePresetChange = (value: string | null) => {
-    if (value) {
-      const days = Number.parseInt(value, 10);
-      setDate({
-        from: new Date(),
-        to: addDays(new Date(), days),
-      });
-    }
-  };
+  const today = new Date();
+  const [month, setMonth] = useState(today);
+  const [date, setDate] = useState<Date | undefined>(today);
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className="w-[300px] justify-start text-left font-normal"
-            variant="outline"
-          />
-        }
-      >
-        <CalendarIcon />
-        {date?.from ? (
-          date.to ? (
-            <>
-              {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-            </>
-          ) : (
-            format(date.from, "LLL dd, y")
-          )
-        ) : (
-          <span>Pick a date</span>
-        )}
+      <PopoverTrigger render={<Button variant="outline" />}>
+        <CalendarIcon aria-hidden="true" />
+        {date ? format(date, "PPP") : <span>Pick a date</span>}
       </PopoverTrigger>
-      <PopoverPopup align="start" className="flex w-auto flex-col gap-2 p-2">
-        <Select items={presets} onValueChange={handlePresetChange}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectPopup>
-            {presets.map((preset) => (
-              <SelectItem key={preset.value} value={preset.value}>
-                {preset.label}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
-        <Calendar
-          defaultMonth={date?.from}
-          mode="range"
-          numberOfMonths={2}
-          onSelect={setDate}
-          selected={date}
-        />
+      <PopoverPopup>
+        <div className="flex max-sm:flex-col">
+          <div className="relative py-1 ps-1 max-sm:order-1 max-sm:border-t">
+            <div className="flex h-full flex-col sm:border-e sm:pe-3">
+              <Button
+                className="w-full justify-start"
+                onClick={() => {
+                  setDate(today);
+                  setMonth(today);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                Today
+              </Button>
+              <Button
+                className="w-full justify-start"
+                onClick={() => {
+                  const tomorrow = addDays(today, 1);
+                  setDate(tomorrow);
+                  setMonth(tomorrow);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                Tomorrow
+              </Button>
+              <Button
+                className="w-full justify-start"
+                onClick={() => {
+                  const in3Days = addDays(today, 3);
+                  setDate(in3Days);
+                  setMonth(in3Days);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                In 3 days
+              </Button>
+              <Button
+                className="w-full justify-start"
+                onClick={() => {
+                  const inAWeek = addDays(today, 7);
+                  setDate(inAWeek);
+                  setMonth(inAWeek);
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                In a week
+              </Button>
+            </div>
+          </div>
+          <Calendar
+            className="max-sm:pb-3 sm:ps-2"
+            mode="single"
+            month={month}
+            onMonthChange={setMonth}
+            onSelect={setDate}
+            selected={date}
+          />
+        </div>
       </PopoverPopup>
     </Popover>
   );

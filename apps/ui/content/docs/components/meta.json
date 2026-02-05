@@ -15,6 +15,7 @@
     "collapsible",
     "combobox",
     "command",
+    "date-picker",
     "dialog",
     "empty",
     "field",

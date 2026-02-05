@@ -3386,7 +3386,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
@@ -3409,7 +3409,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
@@ -3422,9 +3422,6 @@
           "type": "registry:block"
         }
       ],
-      "meta": {
-        "colSpan": 2
-      },
       "name": "p-date-picker-2",
       "registryDependencies": [
         "@coss/calendar",
@@ -3435,13 +3432,13 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
         "lucide-react"
       ],
-      "description": "Date picker with dropdown navigation",
+      "description": "Date picker with field and dropdown navigation",
       "files": [
         {
           "path": "registry/default/particles/p-date-picker-3.tsx",
@@ -3459,7 +3456,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
@@ -3472,9 +3469,6 @@
           "type": "registry:block"
         }
       ],
-      "meta": {
-        "colSpan": 2
-      },
       "name": "p-date-picker-4",
       "registryDependencies": [
         "@coss/calendar",
@@ -3486,7 +3480,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
@@ -3510,7 +3504,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",
@@ -3533,7 +3527,7 @@
     },
     {
       "categories": [
-        "date-picker"
+        "date picker"
       ],
       "dependencies": [
         "date-fns",

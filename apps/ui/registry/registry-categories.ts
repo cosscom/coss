@@ -18,7 +18,7 @@ export const registryCategories = [
   "button",
   "calendar",
   "card",
-  "date-picker",
+  "date picker",
   "checkbox",
   "checkbox group",
   "collapsible",

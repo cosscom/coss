@@ -18,15 +18,8 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className="w-[300px] justify-start text-left font-normal"
-            variant="outline"
-          />
-        }
-      >
-        <CalendarIcon />
+      <PopoverTrigger render={<Button variant="outline" />}>
+        <CalendarIcon aria-hidden="true" />
         {date?.from ? (
           date.to ? (
             <>
@@ -39,7 +32,7 @@ export default function Particle() {
           <span>Pick a date range</span>
         )}
       </PopoverTrigger>
-      <PopoverPopup align="start" className="w-auto p-0">
+      <PopoverPopup>
         <Calendar
           defaultMonth={date?.from}
           mode="range"

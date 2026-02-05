@@ -15,11 +15,11 @@
   "files": [
     {
       "path": "registry/default/particles/p-date-picker-1.tsx",
-      "content": "\"use client\";\n\nimport { format } from \"date-fns\";\nimport { CalendarIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>();\n\n  return (\n    <Popover>\n      <PopoverTrigger\n        render={\n          <Button\n            className=\"w-[280px] justify-start text-left font-normal\"\n            variant=\"outline\"\n          />\n        }\n      >\n        <CalendarIcon />\n        {date ? format(date, \"PPP\") : <span>Pick a date</span>}\n      </PopoverTrigger>\n      <PopoverPopup align=\"start\" className=\"w-auto p-0\">\n        <Calendar mode=\"single\" onSelect={setDate} selected={date} />\n      </PopoverPopup>\n    </Popover>\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { format } from \"date-fns\";\nimport { CalendarIcon } from \"lucide-react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\nimport {\n  Popover,\n  PopoverPopup,\n  PopoverTrigger,\n} from \"@/registry/default/ui/popover\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>();\n\n  return (\n    <Popover>\n      <PopoverTrigger render={<Button variant=\"outline\" />}>\n        <CalendarIcon aria-hidden=\"true\" />\n        {date ? format(date, \"PPP\") : <span>Pick a date</span>}\n      </PopoverTrigger>\n      <PopoverPopup>\n        <Calendar\n          defaultMonth={date}\n          mode=\"single\"\n          onSelect={setDate}\n          selected={date}\n        />\n      </PopoverPopup>\n    </Popover>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
   "categories": [
-    "date-picker"
+    "date picker"
   ]
 }

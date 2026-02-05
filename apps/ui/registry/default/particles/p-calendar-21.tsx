@@ -50,8 +50,8 @@ export default function Particle() {
 
   return (
     <div className="flex max-sm:flex-col">
-      <div className="relative py-4 max-sm:order-1 max-sm:border-t">
-        <div className="flex h-full flex-col sm:border-e sm:px-5">
+      <div className="relative py-1 ps-1 max-sm:order-1 max-sm:border-t">
+        <div className="flex h-full flex-col sm:border-e sm:pe-3">
           <Button
             className="w-full justify-start"
             onClick={() => {

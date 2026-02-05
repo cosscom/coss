@@ -17,19 +17,17 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className="w-[280px] justify-start text-left font-normal"
-            variant="outline"
-          />
-        }
-      >
-        <CalendarIcon />
+      <PopoverTrigger render={<Button variant="outline" />}>
+        <CalendarIcon aria-hidden="true" />
         {date ? format(date, "PPP") : <span>Pick a date</span>}
       </PopoverTrigger>
-      <PopoverPopup align="start" className="w-auto p-0">
-        <Calendar mode="single" onSelect={setDate} selected={date} />
+      <PopoverPopup>
+        <Calendar
+          defaultMonth={date}
+          mode="single"
+          onSelect={setDate}
+          selected={date}
+        />
       </PopoverPopup>
     </Popover>
   );
