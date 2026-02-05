@@ -1348,6 +1348,15 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("date picker"),
+    dependencies: ["date-fns", "lucide-react"],
+    description: "Date picker with select-like trigger",
+    files: [{ path: "particles/p-date-picker-8.tsx", type: "registry:block" }],
+    name: "p-date-picker-8",
+    registryDependencies: ["@coss/calendar", "@coss/popover", "@coss/button"],
+    type: "registry:block",
+  },
+  {
     categories: categories("card", "form"),
     dependencies: ["lucide-react"],
     description: "A basic card with header and footer",
