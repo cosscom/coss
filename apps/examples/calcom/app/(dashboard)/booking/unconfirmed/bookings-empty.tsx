@@ -1,0 +1,37 @@
+"use client";
+
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@coss/ui/components/empty";
+import { CalendarIcon } from "lucide-react";
+import { useLoadingState } from "@/hooks/use-loading-state";
+import { BookingsListSkeleton } from "../booking-skeleton";
+
+const ARTIFICIAL_DELAY_MS = 400;
+
+export function BookingsEmpty() {
+  const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
+
+  if (showLoading) {
+    return <BookingsListSkeleton />;
+  }
+
+  return (
+    <Empty className="rounded-xl border border-dashed md:py-32">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <CalendarIcon />
+        </EmptyMedia>
+        <EmptyTitle>No unconfirmed bookings</EmptyTitle>
+        <EmptyDescription>
+          You have no unconfirmed bookings found. Bookings awaiting your
+          confirmation will appear here.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
+}

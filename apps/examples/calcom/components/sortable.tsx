@@ -6,7 +6,7 @@ import {
   DndContext,
   type DragCancelEvent,
   type DragEndEvent,
-  type DragOverEvent,
+  DragOverlay,
   type DragStartEvent,
   KeyboardSensor,
   MouseSensor,
@@ -16,10 +16,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import {
-  restrictToParentElement,
-  restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -33,13 +29,16 @@ import {
   type ReactNode,
   useContext,
   useId,
-  useMemo,
   useState,
 } from "react";
 
 const SortableStateContext = createContext<{
   isDraggingAny: boolean;
+  activeId: UniqueIdentifier | null;
+  hasDragged: boolean;
 }>({
+  activeId: null,
+  hasDragged: false,
   isDraggingAny: false,
 });
 
@@ -48,6 +47,7 @@ export interface SortableItemRenderProps {
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
   isDraggingAny: boolean;
+  hasDragged: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
 }
@@ -58,7 +58,7 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children }: SortableItemProps) {
-  const { isDraggingAny } = useContext(SortableStateContext);
+  const { isDraggingAny, hasDragged } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
 
@@ -68,6 +68,7 @@ export function SortableItem({ id, children }: SortableItemProps) {
 
   return children({
     attributes,
+    hasDragged,
     isDragging,
     isDraggingAny,
     listeners,
@@ -80,17 +81,19 @@ interface SortableListProps<T extends { id: UniqueIdentifier }> {
   items: T[];
   onReorder: (items: T[]) => void;
   children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
+  renderOverlay,
 }: SortableListProps<T>) {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+  const [hasDragged, setHasDragged] = useState(false);
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
@@ -109,47 +112,18 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   );
 
   const ids = items.map((item) => item.id);
-  const activeIndex = activeId !== null ? ids.indexOf(activeId) : -1;
-  const overIndex = overId !== null ? ids.indexOf(overId) : -1;
-  const projectedIndex =
-    activeIndex >= 0 && overIndex >= 0 ? overIndex : activeIndex;
-
-  const announcements = useMemo(
-    () => ({
-      onDragCancel: () =>
-        "Sorting cancelled. Item returned to original position.",
-      onDragEnd: () =>
-        projectedIndex >= 0
-          ? `Sortable item dropped at position ${projectedIndex + 1} of ${ids.length}.`
-          : "Sortable item dropped.",
-      onDragOver: () =>
-        projectedIndex >= 0
-          ? `Sortable item moved to position ${projectedIndex + 1} of ${ids.length}.`
-          : undefined,
-      onDragStart: ({ active }: DragStartEvent) => {
-        const index = ids.indexOf(active.id);
-
-        return index >= 0
-          ? `Picked up sortable item. Current position: ${index + 1} of ${ids.length}.`
-          : "Picked up sortable item.";
-      },
-    }),
-    [projectedIndex, ids],
-  );
 
   const handleDragStart = (event: DragStartEvent) => {
     setIsDraggingAny(true);
     setActiveId(event.active.id);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    setOverId(event.over?.id ?? null);
+    if (!hasDragged) {
+      setHasDragged(true);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDraggingAny(false);
     setActiveId(null);
-    setOverId(null);
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -162,25 +136,51 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
   const handleDragCancel = (_event: DragCancelEvent) => {
     setIsDraggingAny(false);
     setActiveId(null);
-    setOverId(null);
   };
 
+  const activeItem =
+    activeId !== null ? items.find((item) => item.id === activeId) : null;
+
   return (
-    <SortableStateContext.Provider value={{ isDraggingAny }}>
+    <SortableStateContext.Provider
+      value={{ activeId, hasDragged, isDraggingAny }}
+    >
       <DndContext
-        accessibility={{ announcements }}
         collisionDetection={closestCenter}
         id={id}
-        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
         onDragStart={handleDragStart}
         sensors={sensors}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           {children}
         </SortableContext>
+        <DragOverlay
+          dropAnimation={{
+            duration: 150,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+            sideEffects({ active, dragOverlay }) {
+              active.node.setAttribute("data-drag-release", "");
+              dragOverlay.node.firstElementChild?.setAttribute(
+                "data-drag-release",
+                "",
+              );
+              return () => {
+                requestAnimationFrame(() =>
+                  requestAnimationFrame(() => {
+                    active.node.removeAttribute("data-drag-release");
+                    dragOverlay.node.firstElementChild?.removeAttribute(
+                      "data-drag-release",
+                    );
+                  }),
+                );
+              };
+            },
+          }}
+        >
+          {activeItem && renderOverlay ? renderOverlay(activeItem) : null}
+        </DragOverlay>
       </DndContext>
     </SortableStateContext.Provider>
   );

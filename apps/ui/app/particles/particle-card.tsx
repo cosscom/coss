@@ -86,10 +86,7 @@ export async function ParticleCard({
               >
                 View code
               </SheetTrigger>
-              <SheetPopup
-                className="bg-sidebar duration-200 data-ending-style:translate-x-8 data-starting-style:translate-x-8 data-ending-style:opacity-0 data-starting-style:opacity-0 sm:max-w-3xl"
-                showCloseButton={false}
-              >
+              <SheetPopup className="sm:max-w-3xl" showCloseButton={false}>
                 <div className="flex flex-1 flex-col overflow-hidden p-6">
                   <div>
                     <h2 className="mb-4 font-heading font-semibold text-xl">

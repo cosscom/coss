@@ -171,7 +171,8 @@ export interface Booking {
 // =============================================================================
 
 const userPasquale: BookingUser = {
-  avatarUrl: null,
+  avatarUrl:
+    "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=72&h=72&dpr=2&q=80",
   email: "pasquale@cal.com",
   id: 1,
   name: "Pasquale Vitiello",
@@ -179,7 +180,7 @@ const userPasquale: BookingUser = {
   username: "pasquale",
 };
 
-const _userKeith: BookingUser = {
+const userKeith: BookingUser = {
   avatarUrl: null,
   email: "keith@cal.com",
   id: 2,
@@ -188,8 +189,9 @@ const _userKeith: BookingUser = {
   username: "keith",
 };
 
-const _userPeer: BookingUser = {
-  avatarUrl: null,
+const userPeer: BookingUser = {
+  avatarUrl:
+    "https://images.unsplash.com/photo-1655874819398-c6dfbec68ac7?w=72&h=72&dpr=2&q=80",
   email: "peer@cal.com",
   id: 3,
   name: "Peer Richelsen",
@@ -366,8 +368,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#ef5d9a",
-        lightEventTypeColor: "#ef5d9a",
+        darkEventTypeColor: "#f53468",
+        lightEventTypeColor: "#f53468",
       },
       id: 11,
       slug: "platform-meeting",
@@ -579,8 +581,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#fa9c67",
-        lightEventTypeColor: "#fa9c67",
+        darkEventTypeColor: "#fd6d06",
+        lightEventTypeColor: "#fd6d06",
       },
       id: 5,
       length: 45,
@@ -712,8 +714,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#3dcb9b",
-        lightEventTypeColor: "#3dcb9b",
+        darkEventTypeColor: "#0dbf82",
+        lightEventTypeColor: "#0dbf82",
       },
       hosts: [
         {
@@ -862,8 +864,8 @@ export const mockPastBookings: Booking[] = [
     eventType: {
       ...defaultEventType,
       eventTypeColor: {
-        darkEventTypeColor: "#3dcb9b",
-        lightEventTypeColor: "#3dcb9b",
+        darkEventTypeColor: "#0dbf82",
+        lightEventTypeColor: "#0dbf82",
       },
       id: 20,
       length: 60,
@@ -1001,6 +1003,96 @@ export const mockUpcomingBookings: Booking[] = [
     user: userPasquale,
     userPrimaryEmail: "pasquale@cal.com",
   },
+  {
+    ...defaultBookingFields,
+    attendees: [
+      {
+        bookingId: 102,
+        email: "pasquale@cal.com",
+        id: 103,
+        locale: "en",
+        name: "Pasquale Vitiello",
+        noShow: null,
+        timeZone: "Europe/Rome",
+      },
+      {
+        bookingId: 102,
+        email: "carina@cal.com",
+        id: 104,
+        locale: "en",
+        name: "Carina Wollheim",
+        noShow: null,
+        timeZone: "Europe/Berlin",
+      },
+    ],
+    createdAt: new Date("2026-01-18T11:00:00"),
+    description: "Weekly engineering standup and code review session.",
+    endTime: new Date("2026-01-25T16:00:00"),
+    eventType: {
+      ...defaultEventType,
+      id: 10,
+      length: 30,
+      slug: "engineering-chat",
+      title: "Engineering Chat",
+    },
+    id: 102,
+    location: "integrations:daily",
+    rescheduled: false,
+    startTime: new Date("2026-01-25T15:30:00"),
+    status: "ACCEPTED",
+    title: "Engineering Chat with Keith Williams",
+    uid: "upcoming-booking-3",
+    updatedAt: new Date("2026-01-18T11:00:00"),
+    user: userKeith,
+    userPrimaryEmail: "keith@cal.com",
+  },
+  {
+    ...defaultBookingFields,
+    attendees: [
+      {
+        bookingId: 103,
+        email: "keith@cal.com",
+        id: 105,
+        locale: "en",
+        name: "Keith Williams",
+        noShow: null,
+        timeZone: "America/Los_Angeles",
+      },
+      {
+        bookingId: 103,
+        email: "jonathan@cal.com",
+        id: 106,
+        locale: "en",
+        name: "Jonathan Djalo",
+        noShow: null,
+        timeZone: "Europe/London",
+      },
+    ],
+    createdAt: new Date("2026-01-20T09:00:00"),
+    description: "Design review for the new dashboard components.",
+    endTime: new Date("2026-01-28T12:00:00"),
+    eventType: {
+      ...defaultEventType,
+      eventTypeColor: {
+        darkEventTypeColor: "#3b82f6",
+        lightEventTypeColor: "#3b82f6",
+      },
+      id: 15,
+      length: 45,
+      slug: "design-review",
+      title: "Design Review",
+    },
+    id: 103,
+    location: "integrations:google_meet",
+    rescheduled: false,
+    startTime: new Date("2026-01-28T11:15:00"),
+    status: "ACCEPTED",
+    title: "Design Review with Peer Richelsen",
+    uid: "upcoming-booking-4",
+    updatedAt: new Date("2026-01-20T09:00:00"),
+    user: userPeer,
+    userPrimaryEmail: "peer@cal.com",
+  },
 ];
 
 export const mockCancelledBookings: Booking[] = mockPastBookings.filter(
@@ -1058,4 +1150,158 @@ export function getLocationIcon(
   if (location.startsWith("integrations:")) return "video";
   if (location.includes("phone")) return "phone";
   return "location";
+}
+
+// =============================================================================
+// FILTER FUNCTIONS
+// =============================================================================
+
+export interface BookingFilter {
+  categoryId: string;
+  selectedOptionIds: string[];
+}
+
+export function filterBookings(
+  bookings: Booking[],
+  filters: BookingFilter[],
+): Booking[] {
+  if (filters.length === 0) return bookings;
+
+  return bookings.filter((booking) => {
+    return filters.every((filter) => {
+      const { categoryId, selectedOptionIds } = filter;
+      if (selectedOptionIds.length === 0) return true;
+
+      switch (categoryId) {
+        case "event-type": {
+          const eventTypeTitle = booking.eventType?.title?.toLowerCase() ?? "";
+          const eventTypeSlug = booking.eventType?.slug?.toLowerCase() ?? "";
+          return selectedOptionIds.some((optionId) => {
+            const optionLabel = getEventTypeLabel(optionId).toLowerCase();
+            return (
+              eventTypeTitle.includes(optionLabel) ||
+              eventTypeSlug.includes(optionId.replace(/-/g, ""))
+            );
+          });
+        }
+        case "member": {
+          const hostName = booking.user?.name?.toLowerCase() ?? "";
+          const hostEmail = booking.user?.email?.toLowerCase() ?? "";
+          return selectedOptionIds.some((optionId) => {
+            const memberName = optionId.replace(/-/g, " ").toLowerCase();
+            return (
+              hostName.includes(memberName) ||
+              hostEmail.includes(optionId.replace(/-/g, ""))
+            );
+          });
+        }
+        case "attendees-name": {
+          return selectedOptionIds.some((optionId) => {
+            const searchName = optionId.replace(/-/g, " ").toLowerCase();
+            return booking.attendees.some((attendee) =>
+              attendee.name.toLowerCase().includes(searchName),
+            );
+          });
+        }
+        case "attendee-email": {
+          return selectedOptionIds.some((optionId) => {
+            return booking.attendees.some((attendee) =>
+              attendee.email
+                .toLowerCase()
+                .includes(optionId.split("-")[0] ?? ""),
+            );
+          });
+        }
+        case "date-range": {
+          const now = new Date();
+          const bookingDate = new Date(booking.startTime);
+          return selectedOptionIds.some((optionId) => {
+            switch (optionId) {
+              case "today":
+                return isSameDay(bookingDate, now);
+              case "yesterday":
+                return isSameDay(bookingDate, addDays(now, -1));
+              case "this-week":
+                return isWithinWeek(bookingDate, now);
+              case "last-week":
+                return isWithinLastWeek(bookingDate, now);
+              case "this-month":
+                return isSameMonth(bookingDate, now);
+              case "last-month":
+                return isLastMonth(bookingDate, now);
+              default:
+                return true;
+            }
+          });
+        }
+        case "booking-uid": {
+          return selectedOptionIds.some((optionId) =>
+            booking.uid.toLowerCase().includes(optionId.toLowerCase()),
+          );
+        }
+        default:
+          return true;
+      }
+    });
+  });
+}
+
+function getEventTypeLabel(optionId: string): string {
+  const labels: Record<string, string> = {
+    "15-min": "15 Min Meeting",
+    "30-min": "30 Min Meeting",
+    "60-min": "60 Min Meeting",
+    consultation: "Consultation",
+    interview: "Interview",
+    onboarding: "Onboarding Call",
+  };
+  return labels[optionId] ?? optionId;
+}
+
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function isWithinWeek(date: Date, referenceDate: Date): boolean {
+  const startOfWeek = new Date(referenceDate);
+  startOfWeek.setDate(referenceDate.getDate() - referenceDate.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 7);
+  return date >= startOfWeek && date < endOfWeek;
+}
+
+function isWithinLastWeek(date: Date, referenceDate: Date): boolean {
+  const startOfLastWeek = new Date(referenceDate);
+  startOfLastWeek.setDate(referenceDate.getDate() - referenceDate.getDay() - 7);
+  startOfLastWeek.setHours(0, 0, 0, 0);
+  const endOfLastWeek = new Date(startOfLastWeek);
+  endOfLastWeek.setDate(startOfLastWeek.getDate() + 7);
+  return date >= startOfLastWeek && date < endOfLastWeek;
+}
+
+function isSameMonth(date: Date, referenceDate: Date): boolean {
+  return (
+    date.getFullYear() === referenceDate.getFullYear() &&
+    date.getMonth() === referenceDate.getMonth()
+  );
+}
+
+function isLastMonth(date: Date, referenceDate: Date): boolean {
+  const lastMonth = new Date(referenceDate);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  return (
+    date.getFullYear() === lastMonth.getFullYear() &&
+    date.getMonth() === lastMonth.getMonth()
+  );
 }

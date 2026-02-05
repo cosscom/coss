@@ -58,9 +58,9 @@ export default async function Page(props: {
 
   return (
     <div className="flex items-stretch xl:w-full" data-slot="docs">
-      <div className="relative flex w-full min-w-0 flex-1 flex-col before:pointer-events-none before:absolute before:inset-px before:rounded-[calc(var(--radius-2xl)-1px)] before:bg-background lg:mt-8 lg:mr-4 lg:mb-8">
-        <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64 max-lg:border-none">
-          <Card className="bg-background max-lg:rounded-none! max-lg:[clip-path:none]!">
+      <div className="relative flex w-full min-w-0 flex-1 flex-col lg:mt-8 lg:mr-4 lg:mb-8">
+        <CardFrame className="border-sidebar-border shadow-lg/5 max-lg:border-none dark:bg-background">
+          <Card className="max-lg:rounded-none! dark:bg-background max-lg:[clip-path:none]!">
             <CardPanel className="px-4 py-6 sm:px-6 lg:p-8">
               <div className="mx-auto w-full max-w-3xl">
                 <div className="flex min-w-0 flex-col gap-8">

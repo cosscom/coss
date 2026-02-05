@@ -10,11 +10,11 @@ import {
   Combobox,
   ComboboxChip,
   ComboboxChips,
+  ComboboxChipsInput,
   ComboboxCollection,
   ComboboxEmpty,
   ComboboxGroup,
   ComboboxGroupLabel,
-  ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
@@ -169,7 +169,7 @@ export default function SearchField({
                     </div>
                   </ComboboxChip>
                 ))}
-                <ComboboxInput
+                <ComboboxChipsInput
                   aria-label="Search components"
                   autoFocus
                   size="lg"
