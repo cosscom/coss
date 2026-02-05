@@ -1320,6 +1320,7 @@ export const particles: ParticleItem[] = [
   {
     categories: categories(
       "date picker",
+      "calendar",
       "popover",
       "button",
       "field",

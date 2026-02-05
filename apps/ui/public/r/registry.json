@@ -3492,6 +3492,7 @@
     {
       "categories": [
         "date picker",
+        "calendar",
         "popover",
         "button",
         "field",
