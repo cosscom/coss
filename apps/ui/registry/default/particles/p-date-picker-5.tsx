@@ -49,7 +49,7 @@ export default function Particle() {
 
   return (
     <Popover>
-      <InputGroup className="w-fit">
+      <InputGroup>
         <InputGroupInput
           aria-label="Select date"
           className="*:[input]:[&::-webkit-calendar-picker-indicator]:hidden *:[input]:[&::-webkit-calendar-picker-indicator]:appearance-none"

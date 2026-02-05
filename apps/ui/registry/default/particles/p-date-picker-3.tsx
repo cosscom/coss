@@ -86,9 +86,12 @@ export default function Particle() {
     <Field>
       <FieldLabel htmlFor={id}>Start date</FieldLabel>
       <Popover>
-        <PopoverTrigger id={id} render={<Button variant="outline" />}>
+        <PopoverTrigger
+          id={id}
+          render={<Button className="w-full justify-start" variant="outline" />}
+        >
           <CalendarIcon aria-hidden="true" />
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
+          {date ? format(date, "PPP") : "Pick a date"}
         </PopoverTrigger>
         <PopoverPopup>
           <Calendar

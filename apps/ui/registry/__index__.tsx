@@ -3317,7 +3317,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-2": {
     name: "p-date-picker-2",
@@ -3335,7 +3335,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-3": {
     name: "p-date-picker-3",
@@ -3353,7 +3353,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-4": {
     name: "p-date-picker-4",
@@ -3371,7 +3371,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-5": {
     name: "p-date-picker-5",
@@ -3389,7 +3389,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-6": {
     name: "p-date-picker-6",
@@ -3407,7 +3407,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-7": {
     name: "p-date-picker-7",
@@ -3425,7 +3425,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-8": {
     name: "p-date-picker-8",
@@ -3443,7 +3443,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["date picker"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-card-1": {
     name: "p-card-1",

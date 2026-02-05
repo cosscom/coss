@@ -18,7 +18,9 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger render={<Button variant="outline" />}>
+      <PopoverTrigger
+        render={<Button className="w-full justify-start" variant="outline" />}
+      >
         <CalendarIcon aria-hidden="true" />
         {date?.from ? (
           date.to ? (

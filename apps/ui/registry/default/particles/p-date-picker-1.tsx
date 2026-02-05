@@ -17,9 +17,11 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger render={<Button variant="outline" />}>
+      <PopoverTrigger
+        render={<Button className="w-full justify-start" variant="outline" />}
+      >
         <CalendarIcon aria-hidden="true" />
-        {date ? format(date, "PPP") : <span>Pick a date</span>}
+        {date ? format(date, "PPP") : "Pick a date"}
       </PopoverTrigger>
       <PopoverPopup>
         <Calendar

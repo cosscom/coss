@@ -17,8 +17,10 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger render={<Button variant="outline" />}>
-        {date ? format(date, "PPP") : <span>Pick a date</span>}
+      <PopoverTrigger
+        render={<Button className="w-full justify-between" variant="outline" />}
+      >
+        {date ? format(date, "PPP") : "Pick a date"}
         <ChevronsUpDownIcon
           aria-hidden="true"
           className="-me-1! size-4.5 opacity-80 sm:size-4"

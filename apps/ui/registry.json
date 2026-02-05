@@ -3399,6 +3399,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-1",
       "registryDependencies": [
         "@coss/calendar",
@@ -3422,6 +3425,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-2",
       "registryDependencies": [
         "@coss/calendar",
@@ -3445,6 +3451,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-3",
       "registryDependencies": [
         "@coss/calendar",
@@ -3469,6 +3478,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-4",
       "registryDependencies": [
         "@coss/calendar",
@@ -3493,6 +3505,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-5",
       "registryDependencies": [
         "@coss/calendar",
@@ -3517,6 +3532,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-6",
       "registryDependencies": [
         "@coss/calendar",
@@ -3540,6 +3558,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-7",
       "registryDependencies": [
         "@coss/calendar",
@@ -3563,6 +3584,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
       "name": "p-date-picker-8",
       "registryDependencies": [
         "@coss/calendar",
