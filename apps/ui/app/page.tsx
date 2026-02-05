@@ -8,6 +8,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCategoryThumbnail } from "@/components/category-thumbnails";
 import { categories } from "@/config/categories";
+import { PAGES_NEW } from "@/lib/docs";
+import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
@@ -88,6 +90,7 @@ function CategoryCard({
   thumbnail,
 }: CategoryCardProps) {
   const href = `/docs/components/${slug}`;
+  const isNew = PAGES_NEW.includes(href);
 
   return (
     <CardFrame className="after:-inset-[5px] after:-z-1 w-full after:pointer-events-none after:absolute after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
@@ -110,6 +113,11 @@ function CategoryCard({
         </CardFrameDescription>
       </CardFrameHeader>
       <Card className="pointer-events-none min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
+        {isNew && (
+          <Badge className="absolute end-3 top-3" variant="info">
+            New
+          </Badge>
+        )}
         <CardPanel className="flex flex-1 items-center justify-center px-8 [--border:--alpha(var(--color-black)/7%)] [--btn-from:--alpha(var(--color-primary)/90%)] [--btn-to:var(--color-primary)] in-[[data-slot=card-frame]:has(a:not(:hover))]:*:translate-y-0.5 *:transition-transform *:duration-200 dark:[--border:--alpha(var(--color-white)/3%)] dark:[--btn-from:var(--color-primary)] dark:[--btn-to:--alpha(var(--color-primary)/90%)]">
           {thumbnail}
         </CardPanel>
