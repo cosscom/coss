@@ -1083,7 +1083,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "select"),
     description: "Calendar with custom Select dropdown for month/year",
     files: [{ path: "particles/p-calendar-5.tsx", type: "registry:block" }],
     name: "p-calendar-5",
@@ -1091,7 +1091,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "combobox"),
     dependencies: ["lucide-react"],
     description: "Calendar with Combobox dropdown for month/year",
     files: [{ path: "particles/p-calendar-6.tsx", type: "registry:block" }],
@@ -1151,7 +1151,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "combobox"),
     description: "Calendar with year-only combobox dropdown",
     files: [{ path: "particles/p-calendar-13.tsx", type: "registry:block" }],
     name: "p-calendar-13",
@@ -1159,7 +1159,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "select"),
     description: "Calendar without arrow navigation (dropdown only)",
     files: [{ path: "particles/p-calendar-14.tsx", type: "registry:block" }],
     name: "p-calendar-14",
@@ -1167,7 +1167,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "button"),
     dependencies: ["date-fns"],
     description: "Calendar with current month button",
     files: [{ path: "particles/p-calendar-15.tsx", type: "registry:block" }],
@@ -1176,7 +1176,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "button"),
     dependencies: ["date-fns"],
     description: "Calendar with today button",
     files: [{ path: "particles/p-calendar-16.tsx", type: "registry:block" }],
@@ -1185,7 +1185,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "input", "field"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Calendar with date input",
     files: [{ path: "particles/p-calendar-17.tsx", type: "registry:block" }],
@@ -1194,7 +1194,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "input", "field"),
     dependencies: ["lucide-react"],
     description: "Calendar with time input",
     files: [{ path: "particles/p-calendar-18.tsx", type: "registry:block" }],
@@ -1203,7 +1203,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "toggle", "toggle group", "scroll area"),
     dependencies: ["date-fns"],
     description: "Calendar with time slots (appointment picker)",
     files: [{ path: "particles/p-calendar-19.tsx", type: "registry:block" }],
@@ -1216,7 +1216,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "button"),
     dependencies: ["date-fns"],
     description: "Calendar with date presets",
     files: [{ path: "particles/p-calendar-20.tsx", type: "registry:block" }],
@@ -1225,7 +1225,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("calendar"),
+    categories: categories("calendar", "button"),
     dependencies: ["date-fns"],
     description: "Range calendar with date presets",
     files: [{ path: "particles/p-calendar-21.tsx", type: "registry:block" }],
@@ -1270,7 +1270,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Basic date picker",
     files: [{ path: "particles/p-date-picker-1.tsx", type: "registry:block" }],
@@ -1283,7 +1283,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Date range picker",
     files: [{ path: "particles/p-date-picker-2.tsx", type: "registry:block" }],
@@ -1296,7 +1296,13 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories(
+      "date picker",
+      "popover",
+      "button",
+      "field",
+      "combobox",
+    ),
     dependencies: ["date-fns", "lucide-react"],
     description: "Date picker with field and dropdown navigation",
     files: [{ path: "particles/p-date-picker-3.tsx", type: "registry:block" }],
@@ -1314,9 +1320,9 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
-    description: "Date range picker with presets",
+    description: "Date picker with presets",
     files: [{ path: "particles/p-date-picker-4.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -1332,7 +1338,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button", "input"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Date picker with input",
     files: [{ path: "particles/p-date-picker-5.tsx", type: "registry:block" }],
@@ -1350,7 +1356,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Date picker that closes on select",
     files: [{ path: "particles/p-date-picker-6.tsx", type: "registry:block" }],
@@ -1363,7 +1369,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button", "badge"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Multiple dates picker",
     files: [{ path: "particles/p-date-picker-7.tsx", type: "registry:block" }],
@@ -1376,7 +1382,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("date picker"),
+    categories: categories("date picker", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Date picker with select-like trigger",
     files: [{ path: "particles/p-date-picker-8.tsx", type: "registry:block" }],
