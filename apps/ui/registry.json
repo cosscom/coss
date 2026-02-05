@@ -3019,6 +3019,117 @@
     },
     {
       "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with disabled dates",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-7",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with multiple date selection",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-8",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with rounded day buttons",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-9",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "dependencies": [
+        "date-fns"
+      ],
+      "description": "Calendar with rounded range selection style",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-10",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with right-aligned navigation",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-11",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with week numbers",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-12",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "card",
         "form"
       ],

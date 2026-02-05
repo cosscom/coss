@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-calendar-11",
+  "type": "registry:block",
+  "description": "Calendar with right-aligned navigation",
+  "registryDependencies": [
+    "@coss/calendar"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-calendar-11.tsx",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>(new Date());\n\n  return (\n    <Calendar\n      classNames={{\n        month_caption: \"ms-2.5 me-20 justify-start\",\n        nav: \"justify-end\",\n      }}\n      mode=\"single\"\n      onSelect={setDate}\n      selected={date}\n    />\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "calendar"
+  ]
+}

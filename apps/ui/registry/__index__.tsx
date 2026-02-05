@@ -2977,6 +2977,114 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: undefined,
   },
+  "p-calendar-7": {
+    name: "p-calendar-7",
+    description: "Calendar with disabled dates",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-8": {
+    name: "p-calendar-8",
+    description: "Calendar with multiple date selection",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-9": {
+    name: "p-calendar-9",
+    description: "Calendar with rounded day buttons",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-10": {
+    name: "p-calendar-10",
+    description: "Calendar with rounded range selection style",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-11": {
+    name: "p-calendar-11",
+    description: "Calendar with right-aligned navigation",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
+  "p-calendar-12": {
+    name: "p-calendar-12",
+    description: "Calendar with week numbers",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar"],
+    files: [{
+      path: "registry/default/particles/p-calendar-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar"],
+    meta: undefined,
+  },
   "p-card-1": {
     name: "p-card-1",
     description: "A basic card with header and footer",
