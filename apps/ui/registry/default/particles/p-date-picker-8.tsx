@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronsUpDownIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/registry/default/ui/button";
@@ -17,16 +17,12 @@ export default function Particle() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className="w-[200px] justify-between text-left font-normal"
-            variant="outline"
-          />
-        }
-      >
+      <PopoverTrigger render={<Button variant="outline" />}>
         {date ? format(date, "PPP") : <span>Pick a date</span>}
-        <ChevronDownIcon aria-hidden="true" />
+        <ChevronsUpDownIcon
+          aria-hidden="true"
+          className="-me-1! size-4.5 opacity-80 sm:size-4"
+        />
       </PopoverTrigger>
       <PopoverPopup>
         <Calendar
