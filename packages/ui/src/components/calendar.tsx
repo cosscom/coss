@@ -34,7 +34,7 @@ function Calendar({
     dropdown_root:
       "relative has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] border border-input shadow-xs/5 rounded-lg px-[calc(--spacing(3)-1px)] h-9 sm:h-8 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:-me-1",
     dropdowns:
-      "w-full flex items-center font-medium justify-center h-(--cell-size) gap-1.5",
+      "w-full flex items-center text-base sm:text-sm justify-center h-(--cell-size) gap-1.5 *:[span]:font-medium",
     hidden: "invisible",
     month: "w-full",
     month_caption:
@@ -49,9 +49,9 @@ function Calendar({
     today:
       "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-1 *:after:size-[3px] *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
     week_number:
-      "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/80",
+      "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/70",
     weekday:
-      "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/80",
+      "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/70",
   };
   const mergedClassNames: typeof defaultClassNames = Object.keys(
     defaultClassNames,
