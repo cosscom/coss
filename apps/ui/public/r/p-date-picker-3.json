@@ -24,6 +24,10 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "date picker"
+    "date picker",
+    "popover",
+    "button",
+    "field",
+    "combobox"
   ]
 }

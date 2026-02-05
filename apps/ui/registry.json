@@ -2979,7 +2979,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "select"
       ],
       "description": "Calendar with custom Select dropdown for month/year",
       "files": [
@@ -2997,7 +2998,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "combobox"
       ],
       "dependencies": [
         "lucide-react"
@@ -3130,7 +3132,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "combobox"
       ],
       "description": "Calendar with year-only combobox dropdown",
       "files": [
@@ -3148,7 +3151,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "select"
       ],
       "description": "Calendar without arrow navigation (dropdown only)",
       "files": [
@@ -3166,7 +3170,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "button"
       ],
       "dependencies": [
         "date-fns"
@@ -3187,7 +3192,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "button"
       ],
       "dependencies": [
         "date-fns"
@@ -3208,7 +3214,9 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "input",
+        "field"
       ],
       "dependencies": [
         "date-fns",
@@ -3231,7 +3239,9 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "input",
+        "field"
       ],
       "dependencies": [
         "lucide-react"
@@ -3253,7 +3263,10 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "toggle",
+        "toggle group",
+        "scroll area"
       ],
       "dependencies": [
         "date-fns"
@@ -3275,7 +3288,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "button"
       ],
       "dependencies": [
         "date-fns"
@@ -3296,7 +3310,8 @@
     },
     {
       "categories": [
-        "calendar"
+        "calendar",
+        "button"
       ],
       "dependencies": [
         "date-fns"
@@ -3386,7 +3401,9 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button"
       ],
       "dependencies": [
         "date-fns",
@@ -3412,7 +3429,9 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button"
       ],
       "dependencies": [
         "date-fns",
@@ -3438,7 +3457,11 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button",
+        "field",
+        "combobox"
       ],
       "dependencies": [
         "date-fns",
@@ -3465,13 +3488,15 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button"
       ],
       "dependencies": [
         "date-fns",
         "lucide-react"
       ],
-      "description": "Date range picker with presets",
+      "description": "Date picker with presets",
       "files": [
         {
           "path": "registry/default/particles/p-date-picker-4.tsx",
@@ -3492,7 +3517,10 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button",
+        "input"
       ],
       "dependencies": [
         "date-fns",
@@ -3519,7 +3547,9 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button"
       ],
       "dependencies": [
         "date-fns",
@@ -3545,7 +3575,10 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button",
+        "badge"
       ],
       "dependencies": [
         "date-fns",
@@ -3571,7 +3604,9 @@
     },
     {
       "categories": [
-        "date picker"
+        "date picker",
+        "popover",
+        "button"
       ],
       "dependencies": [
         "date-fns",

@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-date-picker-4",
   "type": "registry:block",
-  "description": "Date range picker with presets",
+  "description": "Date picker with presets",
   "dependencies": [
     "date-fns",
     "lucide-react"
@@ -24,6 +24,8 @@
     "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
   },
   "categories": [
-    "date picker"
+    "date picker",
+    "popover",
+    "button"
   ]
 }

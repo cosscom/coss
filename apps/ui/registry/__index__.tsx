@@ -2956,7 +2956,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","select"],
     meta: undefined,
   },
   "p-calendar-6": {
@@ -2974,7 +2974,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","combobox"],
     meta: undefined,
   },
   "p-calendar-7": {
@@ -3100,7 +3100,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","combobox"],
     meta: undefined,
   },
   "p-calendar-14": {
@@ -3118,7 +3118,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","select"],
     meta: undefined,
   },
   "p-calendar-15": {
@@ -3136,7 +3136,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","button"],
     meta: undefined,
   },
   "p-calendar-16": {
@@ -3154,7 +3154,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","button"],
     meta: undefined,
   },
   "p-calendar-17": {
@@ -3172,7 +3172,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","input","field"],
     meta: undefined,
   },
   "p-calendar-18": {
@@ -3190,7 +3190,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","input","field"],
     meta: undefined,
   },
   "p-calendar-19": {
@@ -3208,7 +3208,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","toggle","toggle group","scroll area"],
     meta: undefined,
   },
   "p-calendar-20": {
@@ -3226,7 +3226,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","button"],
     meta: undefined,
   },
   "p-calendar-21": {
@@ -3244,7 +3244,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["calendar"],
+    categories: ["calendar","button"],
     meta: undefined,
   },
   "p-calendar-22": {
@@ -3316,7 +3316,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-2": {
@@ -3334,7 +3334,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-3": {
@@ -3352,12 +3352,12 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button","field","combobox"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-4": {
     name: "p-date-picker-4",
-    description: "Date range picker with presets",
+    description: "Date picker with presets",
     type: "registry:block",
     registryDependencies: ["@coss/calendar","@coss/popover","@coss/button","@coss/select"],
     files: [{
@@ -3370,7 +3370,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-5": {
@@ -3388,7 +3388,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-6": {
@@ -3406,7 +3406,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-7": {
@@ -3424,7 +3424,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button","badge"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-date-picker-8": {
@@ -3442,7 +3442,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["date picker"],
+    categories: ["date picker","popover","button"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-card-1": {

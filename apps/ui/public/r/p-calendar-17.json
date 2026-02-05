@@ -20,6 +20,8 @@
     }
   ],
   "categories": [
-    "calendar"
+    "calendar",
+    "input",
+    "field"
   ]
 }

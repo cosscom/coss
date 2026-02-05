@@ -19,6 +19,9 @@
     }
   ],
   "categories": [
-    "calendar"
+    "calendar",
+    "toggle",
+    "toggle group",
+    "scroll area"
   ]
 }
