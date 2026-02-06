@@ -197,6 +197,7 @@ export function NewWebhookFormFields() {
         <Field>
           <FieldLabel>
             <CollapsibleTrigger
+              nativeButton={false}
               render={
                 <Switch
                   checked={customPayloadOpen}
