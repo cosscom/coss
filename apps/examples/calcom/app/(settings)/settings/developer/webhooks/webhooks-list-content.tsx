@@ -150,7 +150,9 @@ function WebhookRow({ webhook }: { webhook: WebhookItem }) {
           {webhook.date != null && <Badge variant="info">{webhook.date}</Badge>}
         </div>
         <ListItemHeader>
-          <ListItemTitle className="truncate">{webhook.url}</ListItemTitle>
+          <ListItemTitle className="truncate font-normal">
+            {webhook.url}
+          </ListItemTitle>
         </ListItemHeader>
         <ListItemBadges>
           {visibleEvents.map((event) => (
