@@ -6,7 +6,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { WebhooksListContent } from "./webhooks-list-content";
+import { WebhooksEmpty } from "./webhooks-empty";
 
 export default function WebhooksSettingsPage() {
   const webhooks: { id: string; url: string; events: string }[] = [];
@@ -23,7 +23,7 @@ export default function WebhooksSettingsPage() {
 
         <Card className="rounded-b-none!">
           <CardPanel>
-            <WebhooksListContent webhooks={webhooks} />
+            <WebhooksEmpty webhooks={webhooks} />
           </CardPanel>
         </Card>
       </CardFrame>

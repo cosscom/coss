@@ -171,26 +171,40 @@ function ListItemHeader({ children, className }: ListItemHeaderProps) {
   return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
 }
 
-interface ListItemTitleProps
-  extends Omit<ComponentProps<typeof Link>, "className"> {
+interface ListItemTitleProps {
   children: ReactNode;
   className?: string;
 }
 
-function ListItemTitle({
-  children,
-  className,
-  ...linkProps
-}: ListItemTitleProps) {
+function ListItemTitle({ children, className }: ListItemTitleProps) {
   return (
     <h2
       className={cn("font-semibold sm:text-sm", className)}
       data-slot="list-item-title"
     >
-      <Link className="before:absolute before:inset-0" {...linkProps}>
-        {children}
-      </Link>
+      {children}
     </h2>
+  );
+}
+
+interface ListItemLinkProps
+  extends Omit<ComponentProps<typeof Link>, "className"> {
+  children: ReactNode;
+  className?: string;
+}
+
+function ListItemLink({
+  children,
+  className,
+  ...linkProps
+}: ListItemLinkProps) {
+  return (
+    <Link
+      className={cn("before:absolute before:inset-0", className)}
+      {...linkProps}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -237,7 +251,7 @@ interface ListItemActionsProps {
 function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
     <div
-      className={cn("relative flex items-center", className)}
+      className={cn("relative flex items-center gap-4", className)}
       data-slot="list-item-actions"
     >
       {children}
@@ -254,6 +268,7 @@ export {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemLink,
   ListItemTitle,
   sortableListClasses,
   SortableListItem,

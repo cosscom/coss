@@ -28,6 +28,7 @@ import {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemLink,
   ListItemTitle,
   SortableListItem,
   sortableListClasses,
@@ -141,7 +142,9 @@ function EventTypeItemContent({
       <ListItemContent>
         <ListItemHeader>
           <div className="flex items-center gap-2">
-            <ListItemTitle href={eventPath}>{eventType.title}</ListItemTitle>
+            <ListItemTitle>
+              <ListItemLink href={eventPath}>{eventType.title}</ListItemLink>
+            </ListItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}
             </span>
