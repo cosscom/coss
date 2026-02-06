@@ -133,7 +133,10 @@ export function NewWebhookFormFields() {
         <FieldLabel>
           How long after the users don&apos;t show up on cal video meeting?
         </FieldLabel>
-        <Group aria-label="How long after the users don't show up on cal video meeting?">
+        <Group
+          aria-label="How long after the users don't show up on cal video meeting?"
+          className="w-full"
+        >
           <NumberField
             aria-label="Duration"
             className="gap-0"

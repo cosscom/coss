@@ -4849,7 +4849,8 @@
     {
       "categories": [
         "group",
-        "select"
+        "select",
+        "number field"
       ],
       "description": "Group with select",
       "files": [
