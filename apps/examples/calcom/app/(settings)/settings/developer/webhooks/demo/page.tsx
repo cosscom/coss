@@ -1,13 +1,5 @@
-import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
 import type { WebhookItem } from "../webhooks-list-content";
-import { WebhooksListContent } from "../webhooks-list-content";
+import { WebhooksPageContent } from "../webhooks-page-content";
 
 const demoWebhooks: WebhookItem[] = [
   {
@@ -61,22 +53,5 @@ const demoWebhooks: WebhookItem[] = [
 ];
 
 export default function WebhooksDemoPage() {
-  return (
-    <div className="space-y-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Webhooks</CardFrameTitle>
-          <CardFrameDescription>
-            Receive meeting data in real-time when something happens in Cal.com.
-          </CardFrameDescription>
-        </CardFrameHeader>
-
-        <Card>
-          <CardPanel className="p-0">
-            <WebhooksListContent webhooks={demoWebhooks} />
-          </CardPanel>
-        </Card>
-      </CardFrame>
-    </div>
-  );
+  return <WebhooksPageContent webhooks={demoWebhooks} />;
 }

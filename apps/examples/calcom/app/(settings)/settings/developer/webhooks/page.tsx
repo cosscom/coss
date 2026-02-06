@@ -12,21 +12,19 @@ export default function WebhooksSettingsPage() {
   const webhooks: { id: string; url: string; events: string }[] = [];
 
   return (
-    <div className="space-y-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Webhooks</CardFrameTitle>
-          <CardFrameDescription>
-            Receive meeting data in real-time when something happens in Cal.com.
-          </CardFrameDescription>
-        </CardFrameHeader>
+    <CardFrame>
+      <CardFrameHeader>
+        <CardFrameTitle>Webhooks</CardFrameTitle>
+        <CardFrameDescription>
+          Receive meeting data in real-time when something happens in Cal.com.
+        </CardFrameDescription>
+      </CardFrameHeader>
 
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <WebhooksEmpty webhooks={webhooks} />
-          </CardPanel>
-        </Card>
-      </CardFrame>
-    </div>
+      <Card className="rounded-b-none!">
+        <CardPanel>
+          <WebhooksEmpty webhooks={webhooks} />
+        </CardPanel>
+      </Card>
+    </CardFrame>
   );
 }

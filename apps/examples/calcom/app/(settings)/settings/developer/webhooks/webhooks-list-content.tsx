@@ -47,7 +47,7 @@ export type WebhookItem = {
   userInitials?: string;
 };
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   return name
     .split(" ")
     .map((n) => n[0])
@@ -56,33 +56,71 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function normalizeWebhook(
-  webhook: WebhookItem | { id: string; url: string; events: string },
-): WebhookItem {
+export type UserFilterOption = {
+  id: string;
+  label: string;
+  avatar?: string;
+};
+
+export function getUniqueUsers(webhooks: WebhookItem[]): UserFilterOption[] {
+  const userMap = new Map<string, UserFilterOption>();
+
+  for (const webhook of webhooks) {
+    if (!userMap.has(webhook.userId)) {
+      userMap.set(webhook.userId, {
+        avatar: webhook.userAvatar,
+        id: webhook.userId,
+        label: webhook.userName,
+      });
+    }
+  }
+
+  return Array.from(userMap.values());
+}
+
+type WebhookInput =
+  | WebhookItem
+  | {
+      id: string;
+      url: string;
+      events: string;
+      userName?: string;
+      userAvatar?: string;
+      userId?: string;
+      userInitials?: string;
+    };
+
+function normalizeWebhook(webhook: WebhookInput): WebhookItem {
   if (Array.isArray(webhook.events)) {
     return webhook as WebhookItem;
   }
-  const userName = (webhook as any).userName || "Default User";
+  const userName = webhook.userName || "Default User";
   return {
     ...webhook,
-    events: (webhook.events as string).split(",").map((e) => e.trim()),
-    userAvatar: (webhook as any).userAvatar,
-    userId: (webhook as any).userId || "default",
-    userInitials: (webhook as any).userInitials || getInitials(userName),
+    events: webhook.events.split(",").map((e) => e.trim()),
+    userAvatar: webhook.userAvatar,
+    userId: webhook.userId || "default",
+    userInitials: webhook.userInitials || getInitials(userName),
     userName,
   };
 }
 
 export function WebhooksListContent({
   webhooks,
+  selectedUserIds,
 }: {
-  webhooks: (WebhookItem | { id: string; url: string; events: string })[];
+  webhooks: WebhookInput[];
+  selectedUserIds?: string[];
 }) {
   const normalized = webhooks.map(normalizeWebhook);
+  const filtered =
+    selectedUserIds && selectedUserIds.length > 0
+      ? normalized.filter((webhook) => selectedUserIds.includes(webhook.userId))
+      : normalized;
 
   return (
     <div>
-      {normalized.map((webhook) => (
+      {filtered.map((webhook) => (
         <WebhookRow key={webhook.id} webhook={webhook} />
       ))}
     </div>

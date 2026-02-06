@@ -15,7 +15,7 @@ import { WebhookTestSection } from "./webhook-test-section";
 
 export default function NewWebhookPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
