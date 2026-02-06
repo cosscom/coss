@@ -52,7 +52,7 @@ export default function Particle() {
             <span className="flex items-center gap-2">
               <Avatar className="size-5">
                 <AvatarImage alt={item.label} src={item.avatar} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-[.625rem]">
                   {item.initials}
                 </AvatarFallback>
               </Avatar>
