@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -36,7 +41,20 @@ export type WebhookItem = {
   date?: string;
   events: string[];
   enabled?: boolean;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  userInitials?: string;
 };
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 function normalizeWebhook(
   webhook: WebhookItem | { id: string; url: string; events: string },
@@ -44,9 +62,14 @@ function normalizeWebhook(
   if (Array.isArray(webhook.events)) {
     return webhook as WebhookItem;
   }
+  const userName = (webhook as any).userName || "Default User";
   return {
     ...webhook,
     events: (webhook.events as string).split(",").map((e) => e.trim()),
+    userAvatar: (webhook as any).userAvatar,
+    userId: (webhook as any).userId || "default",
+    userInitials: (webhook as any).userInitials || getInitials(userName),
+    userName,
   };
 }
 
@@ -74,11 +97,24 @@ function WebhookRow({ webhook }: { webhook: WebhookItem }) {
   return (
     <ListItem>
       <ListItemContent>
-        <ListItemHeader className="flex min-w-0 flex-row items-center gap-2">
-          <ListItemTitle className="truncate">{webhook.url}</ListItemTitle>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Avatar className="size-4">
+              {webhook.userAvatar ? (
+                <AvatarImage alt={webhook.userName} src={webhook.userAvatar} />
+              ) : null}
+              <AvatarFallback className="text-[.625rem]">
+                {webhook.userInitials || getInitials(webhook.userName)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-medium text-sm">{webhook.userName}</span>
+          </div>
           {webhook.date != null && <Badge variant="info">{webhook.date}</Badge>}
+        </div>
+        <ListItemHeader>
+          <ListItemTitle className="truncate">{webhook.url}</ListItemTitle>
         </ListItemHeader>
-        <ListItemBadges className="gap-1.5">
+        <ListItemBadges>
           {visibleEvents.map((event) => (
             <Badge key={event} variant="outline">
               <WebhookIcon />

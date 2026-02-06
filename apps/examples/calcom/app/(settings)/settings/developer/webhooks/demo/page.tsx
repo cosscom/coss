@@ -30,6 +30,11 @@ const demoWebhooks: WebhookItem[] = [
     ],
     id: "wh_1",
     url: "https://testurl.com/894357943857",
+    userAvatar:
+      "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+    userId: "user_1",
+    userInitials: "JD",
+    userName: "John Doe",
   },
   {
     date: "2024-01-15",
@@ -37,6 +42,11 @@ const demoWebhooks: WebhookItem[] = [
     events: ["Booking created", "Booking canceled"],
     id: "wh_2",
     url: "https://api.example.com/webhooks/booking-created",
+    userAvatar:
+      "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+    userId: "user_1",
+    userInitials: "JD",
+    userName: "John Doe",
   },
   {
     date: "2024-02-01",
@@ -44,6 +54,9 @@ const demoWebhooks: WebhookItem[] = [
     events: ["Meeting started", "Meeting ended"],
     id: "wh_3",
     url: "https://hooks.myapp.com/calcom",
+    userId: "user_2",
+    userInitials: "JS",
+    userName: "Jane Smith",
   },
 ];
 
