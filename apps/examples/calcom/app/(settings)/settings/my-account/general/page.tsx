@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { CalendarIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { CalendarIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
 import { SettingsToggle } from "@/components/settings/settings-toggle";
 
