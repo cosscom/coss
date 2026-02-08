@@ -8,8 +8,20 @@ const PopoverCreateHandle = PopoverPrimitive.createHandle;
 
 const Popover = PopoverPrimitive.Root;
 
-function PopoverTrigger(props: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+function PopoverTrigger({
+  className,
+  children,
+  ...props
+}: PopoverPrimitive.Trigger.Props) {
+  return (
+    <PopoverPrimitive.Trigger
+      className={className}
+      data-slot="popover-trigger"
+      {...props}
+    >
+      {children}
+    </PopoverPrimitive.Trigger>
+  );
 }
 
 function PopoverPopup({
