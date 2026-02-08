@@ -56,7 +56,9 @@ function AutocompleteInput({
             sizeValue === "sm" ? "end-0" : "end-0.5",
           )}
         >
-          <ChevronsUpDownIcon />
+          <AutocompletePrimitive.Icon data-slot="autocomplete-icon">
+            <ChevronsUpDownIcon />
+          </AutocompletePrimitive.Icon>
         </AutocompleteTrigger>
       )}
       {showClear && (
@@ -277,6 +279,7 @@ function AutocompleteCollection({
 
 function AutocompleteTrigger({
   className,
+  children,
   ...props
 }: AutocompletePrimitive.Trigger.Props) {
   return (
@@ -284,7 +287,9 @@ function AutocompleteTrigger({
       className={className}
       data-slot="autocomplete-trigger"
       {...props}
-    />
+    >
+      {children}
+    </AutocompletePrimitive.Trigger>
   );
 }
 

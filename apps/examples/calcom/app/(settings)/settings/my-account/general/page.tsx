@@ -25,12 +25,13 @@ import { Fieldset, FieldsetLegend } from "@coss/ui/components/fieldset";
 import { Label } from "@coss/ui/components/label";
 import {
   Select,
+  SelectButton,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { CalendarIcon, ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { CalendarIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
 import { SettingsToggle } from "@/components/settings/settings-toggle";
 
@@ -134,17 +135,8 @@ export default function GeneralSettingsPage() {
                         defaultValue={defaultTimezone}
                         items={formattedTimezones}
                       >
-                        <ComboboxTrigger
-                          className="flex-1"
-                          render={
-                            <Button
-                              className="w-full justify-between font-normal"
-                              variant="outline"
-                            />
-                          }
-                        >
+                        <ComboboxTrigger render={<SelectButton />}>
                           <ComboboxValue />
-                          <ChevronsUpDownIcon className="-me-1!" />
                         </ComboboxTrigger>
                         <ComboboxPopup aria-label="Select timezone">
                           <div className="border-b p-2">

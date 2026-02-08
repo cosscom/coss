@@ -105,7 +105,9 @@ function ComboboxInput({
             sizeValue === "sm" ? "end-0" : "end-0.5",
           )}
         >
-          <ChevronsUpDownIcon />
+          <ComboboxPrimitive.Icon data-slot="combobox-icon">
+            <ChevronsUpDownIcon />
+          </ComboboxPrimitive.Icon>
         </ComboboxTrigger>
       )}
       {showClear && (
@@ -124,6 +126,7 @@ function ComboboxInput({
 
 function ComboboxTrigger({
   className,
+  children,
   ...props
 }: ComboboxPrimitive.Trigger.Props) {
   return (
@@ -131,7 +134,9 @@ function ComboboxTrigger({
       className={className}
       data-slot="combobox-trigger"
       {...props}
-    />
+    >
+      {children}
+    </ComboboxPrimitive.Trigger>
   );
 }
 

@@ -3521,7 +3521,7 @@ export const Index: Record<string, any> = {
     name: "p-combobox-17",
     description: "Timezone combobox with search input",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/combobox"],
+    registryDependencies: ["@coss/combobox","@coss/select"],
     files: [{
       path: "registry/default/particles/p-combobox-17.tsx",
       type: "registry:block",
@@ -3533,6 +3533,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["combobox","input","timezone"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-18": {
+    name: "p-combobox-18",
+    description: "Combobox with select trigger",
+    type: "registry:block",
+    registryDependencies: ["@coss/combobox","@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-combobox-18.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-18.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
   "p-command-1": {
