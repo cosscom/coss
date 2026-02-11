@@ -345,17 +345,6 @@ function ComboboxChips({
         className,
       )}
       data-slot="combobox-chips"
-      onMouseDown={(e) => {
-        const target = e.target as HTMLElement;
-        const isChip = target.closest('[data-slot="combobox-chip"]');
-        if (isChip || !chipsRef?.current) return;
-        e.preventDefault();
-        const input: HTMLInputElement | null =
-          chipsRef.current.querySelector("input");
-        if (input && !chipsRef.current.querySelector("input:focus")) {
-          input.focus();
-        }
-      }}
       ref={chipsRef as React.Ref<HTMLDivElement> | null}
       {...props}
     >
