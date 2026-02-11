@@ -64,7 +64,7 @@ export default function Particle() {
 }
 
 function DayButton(props: DayButtonProps & { prices: Record<string, number> }) {
-  const { day, prices, ...buttonProps } = props;
+  const { day, prices, modifiers, ...buttonProps } = props;
   const price = prices[format(day.date, "yyyy-MM-dd")];
   const isGoodPrice = price !== undefined && price < GOOD_PRICE_THRESHOLD;
 
