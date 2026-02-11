@@ -81,19 +81,19 @@ For the full list of props, see the [react-day-picker documentation](https://day
 The calendar uses CSS custom properties for cell sizing. By default, the cell size is `--spacing(9)` on mobile and `--spacing(8)` on larger screens:
 
 ```css
-[--cell-size:--spacing(9)] sm:[--cell-size:--spacing(8)]
+[--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)]
 ```
 
 You can customize the cell size by passing a custom `className`:
 
 ```tsx
-<Calendar className="[--cell-size:--spacing(10)]" />
+<Calendar className="[--cell-size:--spacing(11)]" />
 ```
 
 Or use responsive values:
 
 ```tsx
-<Calendar className="[--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)] lg:[--cell-size:--spacing(8)]" />
+<Calendar className="[--cell-size:--spacing(11)] sm:[--cell-size:--spacing(10)] lg:[--cell-size:--spacing(9)]" />
 ```
 
 ## Examples
