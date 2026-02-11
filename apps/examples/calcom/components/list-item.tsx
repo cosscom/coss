@@ -3,7 +3,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ItemLabel } from "./item-label";
 
 const sortableListClasses =
@@ -171,26 +171,35 @@ function ListItemHeader({ children, className }: ListItemHeaderProps) {
   return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
 }
 
-interface ListItemTitleProps
-  extends Omit<ComponentProps<typeof Link>, "className"> {
+interface ListItemTitleProps {
   children: ReactNode;
   className?: string;
 }
 
-function ListItemTitle({
-  children,
-  className,
-  ...linkProps
-}: ListItemTitleProps) {
+function ListItemTitle({ children, className }: ListItemTitleProps) {
   return (
     <h2
       className={cn("font-semibold sm:text-sm", className)}
       data-slot="list-item-title"
     >
-      <Link className="before:absolute before:inset-0" {...linkProps}>
-        {children}
-      </Link>
+      {children}
     </h2>
+  );
+}
+
+function ListItemTitleLink({
+  children,
+  className,
+  href,
+}: ListItemTitleProps & { href: string }) {
+  return (
+    <Link
+      className={cn("before:absolute before:inset-0", className)}
+      data-slot="list-item-title"
+      href={href}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -255,6 +264,7 @@ export {
   ListItemDragHandle,
   ListItemHeader,
   ListItemTitle,
+  ListItemTitleLink,
   sortableListClasses,
   SortableListItem,
 };
