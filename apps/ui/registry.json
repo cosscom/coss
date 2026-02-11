@@ -2933,23 +2933,6 @@
       "categories": [
         "calendar"
       ],
-      "description": "Calendar with range date selection",
-      "files": [
-        {
-          "path": "registry/default/particles/p-calendar-2.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-calendar-2",
-      "registryDependencies": [
-        "@coss/calendar"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "calendar"
-      ],
       "description": "Calendar with date range selection",
       "files": [
         {
@@ -3056,6 +3039,23 @@
         }
       ],
       "name": "p-calendar-8",
+      "registryDependencies": [
+        "@coss/calendar"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "calendar"
+      ],
+      "description": "Calendar with custom cell size",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-2",
       "registryDependencies": [
         "@coss/calendar"
       ],
