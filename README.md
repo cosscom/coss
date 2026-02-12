@@ -141,3 +141,4 @@ Special thanks to:
 - **[Base UI](https://base-ui.com/)** - For providing the robust, accessible primitives that form the foundation of our components
 - **[shadcn/ui](https://ui.shadcn.com/)** - For inspiring our copy-paste approach and component philosophy
 - **[Fumadocs](https://fumadocs.dev/)** - For providing the documentation framework that powers our component docs
+
