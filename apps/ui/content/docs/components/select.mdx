@@ -123,6 +123,24 @@ Label for a select group. Styled wrapper for `Select.GroupLabel` from Base UI.
 
 Visual separator between items. Styled wrapper for `Select.Separator` from Base UI.
 
+### SelectButton
+
+A standalone button styled like a `SelectTrigger`. Use it as a `render` prop on other trigger components (e.g., `ComboboxTrigger`, `MenuTrigger`) to give them select-like appearance.
+
+| Prop   | Type                        | Default     | Description                                      |
+| ------ | --------------------------- | ----------- | ------------------------------------------------ |
+| `size` | `"sm" \| "default" \| "lg"` | `"default"` | Controls the size of the button                 |
+
+```tsx
+import { SelectButton } from "@/components/ui/select"
+```
+
+```tsx
+<ComboboxTrigger render={<SelectButton />}>
+  <ComboboxValue placeholder="Select a fruit" />
+</ComboboxTrigger>
+```
+
 ## Examples
 
 For accessible labelling and validation, prefer using the `Field` component to wrap selects. See the related example: [Select field](/ui/docs/components/field#select-field).
@@ -163,6 +181,13 @@ For accessible labelling and validation, prefer using the `Field` component to w
 
 <ComponentPreview name="p-select-10" />
 
+### SelectButton with Combobox
+
+Use `SelectButton` as a `render` prop on `ComboboxTrigger` to create a combobox that looks like a select.
+
+<ComponentPreview name="p-combobox-18" />
+
 ### Form Integration
 
 <ComponentPreview name="p-select-11" />
+
