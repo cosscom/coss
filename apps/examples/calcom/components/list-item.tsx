@@ -3,7 +3,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link from "next/link";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ItemLabel } from "./item-label";
 
 const sortableListClasses =
