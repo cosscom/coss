@@ -545,7 +545,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui/react/merge-props", "@base-ui/react/use-render"],
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/sidebar.tsx",

@@ -3,8 +3,7 @@
   "name": "sidebar",
   "type": "registry:ui",
   "dependencies": [
-    "@base-ui/react/merge-props",
-    "@base-ui/react/use-render"
+    "@base-ui/react"
   ],
   "registryDependencies": [
     "@coss/button",

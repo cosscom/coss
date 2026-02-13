@@ -634,8 +634,7 @@
     },
     {
       "dependencies": [
-        "@base-ui/react/merge-props",
-        "@base-ui/react/use-render"
+        "@base-ui/react"
       ],
       "files": [
         {
