@@ -39,10 +39,10 @@ function ListItem({
   hasDragged,
 }: ListItemProps) {
   const baseClasses =
-    "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]:hover]:z-1 has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]:hover]:bg-[color-mix(in_srgb,var(--color-card),var(--color-white)_2%)]";
+    "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]_a:hover]:z-1 has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]";
 
   const staticClasses =
-    "transition-[background-color] first:rounded-t-[calc(var(--radius-xl)-1px)] last:rounded-b-[calc(var(--radius-xl)-1px)]";
+    "transition-[background-color] first:rounded-t-[calc(var(--radius-xl)+1px)] last:rounded-b-[calc(var(--radius-xl)+1px)]";
 
   const sortableClasses =
     "after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 data-has-dragged:starting:after:rounded-2xl first:after:rounded-t-2xl last:after:rounded-b-2xl after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-muted/24 not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[5px] before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)] not-data-drag-overlay:before:hidden before:z-1";
@@ -134,7 +134,7 @@ function ListItemDragHandle({ className }: ListItemDragHandleProps) {
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]_a:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"
@@ -195,7 +195,7 @@ function ListItemTitleLink({
   return (
     <Link
       className={cn("before:absolute before:inset-0", className)}
-      data-slot="list-item-title"
+      data-slot="list-item-title-link"
       href={href}
     >
       {children}
@@ -246,7 +246,7 @@ interface ListItemActionsProps {
 function ListItemActions({ children, className }: ListItemActionsProps) {
   return (
     <div
-      className={cn("relative flex items-center", className)}
+      className={cn("relative flex items-center gap-4", className)}
       data-slot="list-item-actions"
     >
       {children}
@@ -263,6 +263,7 @@ export {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemTitleLink,
   ListItemTitle,
   ListItemTitleLink,
   sortableListClasses,
