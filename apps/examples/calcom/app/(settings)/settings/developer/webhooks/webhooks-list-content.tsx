@@ -7,6 +7,7 @@ import {
 } from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
+import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Menu,
   MenuCheckboxItem,
@@ -105,6 +106,25 @@ function normalizeWebhook(webhook: WebhookInput): WebhookItem {
   };
 }
 
+function groupWebhooksByUser(webhooks: WebhookItem[]) {
+  const groups = new Map<string, WebhookItem[]>();
+  for (const webhook of webhooks) {
+    const existing = groups.get(webhook.userId) ?? [];
+    existing.push(webhook);
+    groups.set(webhook.userId, existing);
+  }
+  return Array.from(groups.entries()).map(([userId, items]) => {
+    const first = items[0];
+    return {
+      userAvatar: first?.userAvatar,
+      userId,
+      userInitials: first?.userInitials ?? getInitials(first?.userName ?? ""),
+      userName: first?.userName ?? "Unknown",
+      webhooks: items,
+    };
+  });
+}
+
 export function WebhooksListContent({
   webhooks,
   selectedUserIds,
@@ -117,12 +137,34 @@ export function WebhooksListContent({
     selectedUserIds && selectedUserIds.length > 0
       ? normalized.filter((webhook) => selectedUserIds.includes(webhook.userId))
       : normalized;
+  const grouped = groupWebhooksByUser(filtered);
 
   return (
-    <div>
-      {filtered.map((webhook) => (
-        <WebhookRow key={webhook.id} webhook={webhook} />
-      ))}
+    <div className="flex flex-col gap-6">
+      {grouped.map(
+        ({ userId, userName, userAvatar, userInitials, webhooks }) => (
+          <section key={userId}>
+            <div className="mb-3 flex items-center gap-2">
+              <Avatar className="size-5">
+                {userAvatar ? (
+                  <AvatarImage alt={userName} src={userAvatar} />
+                ) : null}
+                <AvatarFallback className="text-xs">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-medium text-sm">{userName}</span>
+            </div>
+            <Card>
+              <CardPanel className="p-0">
+                {webhooks.map((webhook) => (
+                  <WebhookRow key={webhook.id} webhook={webhook} />
+                ))}
+              </CardPanel>
+            </Card>
+          </section>
+        ),
+      )}
     </div>
   );
 }
@@ -135,24 +177,15 @@ function WebhookRow({ webhook }: { webhook: WebhookItem }) {
   return (
     <ListItem>
       <ListItemContent>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Avatar className="size-4">
-              {webhook.userAvatar ? (
-                <AvatarImage alt={webhook.userName} src={webhook.userAvatar} />
-              ) : null}
-              <AvatarFallback className="text-[.625rem]">
-                {webhook.userInitials || getInitials(webhook.userName)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-medium text-sm">{webhook.userName}</span>
-          </div>
-          {webhook.date != null && <Badge variant="info">{webhook.date}</Badge>}
-        </div>
         <ListItemHeader>
-          <ListItemTitle className="truncate font-normal">
-            {webhook.url}
-          </ListItemTitle>
+          <div className="flex items-center gap-2">
+            <ListItemTitle className="truncate font-normal">
+              {webhook.url}
+            </ListItemTitle>
+            {webhook.date != null && (
+              <Badge variant="info">{webhook.date}</Badge>
+            )}
+          </div>
         </ListItemHeader>
         <ListItemBadges>
           {visibleEvents.map((event) => (

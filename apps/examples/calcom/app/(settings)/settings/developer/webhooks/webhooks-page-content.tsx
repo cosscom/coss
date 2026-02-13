@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
@@ -8,8 +9,8 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
-import { WebhooksFilter } from "./webhooks-filter";
 import type { WebhookItem } from "./webhooks-list-content";
 import { WebhooksListContent } from "./webhooks-list-content";
 
@@ -21,7 +22,7 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <div className="flex items-center justify-between gap-4">
@@ -32,16 +33,15 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
                 Cal.com.
               </CardFrameDescription>
             </div>
-            <WebhooksFilter
-              onSelectionChange={setSelectedUserIds}
-              selectedUserIds={selectedUserIds}
-              webhooks={webhooks}
-            />
+            <Button variant="outline">
+              New
+              <ChevronDownIcon />
+            </Button>
           </div>
         </CardFrameHeader>
 
         <Card>
-          <CardPanel className="p-0">
+          <CardPanel>
             <WebhooksListContent
               selectedUserIds={selectedUserIds}
               webhooks={webhooks}
