@@ -19,7 +19,7 @@ interface WebhooksPageContentProps {
 }
 
 export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUserIds, _setSelectedUserIds] = useState<string[]>([]);
 
   return (
     <div className="flex flex-col gap-4">
