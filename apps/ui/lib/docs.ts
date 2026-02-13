@@ -1,4 +1,5 @@
 export const PAGES_NEW = [
   // "/docs/components/{component-name}",
-  "/docs/components/command",
+  "/docs/components/calendar",
+  "/docs/components/date-picker",
 ];

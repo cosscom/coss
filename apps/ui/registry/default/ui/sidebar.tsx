@@ -2,28 +2,28 @@
 
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
-import { Button } from "@coss/ui/components/button";
-import { Input } from "@coss/ui/components/input";
-import { ScrollArea } from "@coss/ui/components/scroll-area";
-import { Separator } from "@coss/ui/components/separator";
+import { cva, type VariantProps } from "class-variance-authority";
+import { PanelLeftIcon } from "lucide-react";
+import * as React from "react";
+import { useIsMobile } from "@/registry/default/hooks/use-mobile";
+import { cn } from "@/registry/default/lib/utils";
+import { Button } from "@/registry/default/ui/button";
+import { Input } from "@/registry/default/ui/input";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
+import { Separator } from "@/registry/default/ui/separator";
 import {
   Sheet,
   SheetDescription,
   SheetHeader,
   SheetPopup,
   SheetTitle,
-} from "@coss/ui/components/sheet";
-import { Skeleton } from "@coss/ui/components/skeleton";
+} from "@/registry/default/ui/sheet";
+import { Skeleton } from "@/registry/default/ui/skeleton";
 import {
   Tooltip,
   TooltipPopup,
   TooltipTrigger,
-} from "@coss/ui/components/tooltip";
-import { useIsMobile } from "@coss/ui/hooks/use-mobile";
-import { cn } from "@coss/ui/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
-import * as React from "react";
+} from "@/registry/default/ui/tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
