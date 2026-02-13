@@ -82,18 +82,21 @@ function AutocompletePopup({
   sideOffset = 4,
   alignOffset,
   align = "start",
+  anchor,
   ...props
 }: AutocompletePrimitive.Popup.Props & {
   align?: AutocompletePrimitive.Positioner.Props["align"];
   sideOffset?: AutocompletePrimitive.Positioner.Props["sideOffset"];
   alignOffset?: AutocompletePrimitive.Positioner.Props["alignOffset"];
   side?: AutocompletePrimitive.Positioner.Props["side"];
+  anchor?: AutocompletePrimitive.Positioner.Props["anchor"];
 }) {
   return (
     <AutocompletePrimitive.Portal>
       <AutocompletePrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
+        anchor={anchor}
         className="z-50 select-none"
         data-slot="autocomplete-positioner"
         side={side}

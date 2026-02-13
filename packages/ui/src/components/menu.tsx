@@ -35,18 +35,21 @@ function MenuPopup({
   align = "center",
   alignOffset,
   side = "bottom",
+  anchor,
   ...props
 }: MenuPrimitive.Popup.Props & {
   align?: MenuPrimitive.Positioner.Props["align"];
   sideOffset?: MenuPrimitive.Positioner.Props["sideOffset"];
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
   side?: MenuPrimitive.Positioner.Props["side"];
+  anchor?: MenuPrimitive.Positioner.Props["anchor"];
 }) {
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
+        anchor={anchor}
         className="z-50"
         data-slot="menu-positioner"
         side={side}
