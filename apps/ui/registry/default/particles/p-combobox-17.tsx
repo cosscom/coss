@@ -1,9 +1,8 @@
 "use client";
 
-import { ChevronsUpDownIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useMemo } from "react";
 
-import { Button } from "@/registry/default/ui/button";
 import {
   Combobox,
   ComboboxEmpty,
@@ -14,6 +13,7 @@ import {
   ComboboxTrigger,
   ComboboxValue,
 } from "@/registry/default/ui/combobox";
+import { SelectButton } from "@/registry/default/ui/select";
 
 export default function Particle() {
   const timezones = Intl.supportedValuesOf("timeZone");
@@ -45,26 +45,14 @@ export default function Particle() {
       .sort((a, b) => a.numericOffset - b.numericOffset);
   }, [timezones]);
 
-  const defaultTimezone = formattedTimezones.find(
+  const _defaultTimezone = formattedTimezones.find(
     (tz) => tz.value === "Europe/London",
   );
 
   return (
-    <Combobox
-      autoHighlight
-      defaultValue={defaultTimezone}
-      items={formattedTimezones}
-    >
-      <ComboboxTrigger
-        render={
-          <Button
-            className="w-full justify-between font-normal"
-            variant="outline"
-          />
-        }
-      >
-        <ComboboxValue />
-        <ChevronsUpDownIcon className="-me-1!" />
+    <Combobox autoHighlight items={formattedTimezones}>
+      <ComboboxTrigger render={<SelectButton />}>
+        <ComboboxValue placeholder="Select timezone" />
       </ComboboxTrigger>
       <ComboboxPopup aria-label="Select timezone">
         <div className="border-b p-2">

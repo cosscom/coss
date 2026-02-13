@@ -1970,7 +1970,19 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-combobox-17",
-    registryDependencies: ["@coss/button", "@coss/combobox"],
+    registryDependencies: ["@coss/combobox", "@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("combobox", "select"),
+    description: "Combobox with select trigger",
+    files: [{ path: "particles/p-combobox-18.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-combobox-18",
+    registryDependencies: ["@coss/combobox", "@coss/select"],
     type: "registry:block",
   },
   {
