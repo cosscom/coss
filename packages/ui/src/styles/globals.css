@@ -58,10 +58,51 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --animate-skeleton: skeleton 2s -1s infinite linear;
+  --animate-toast-bounce: toast-bounce 0.5s both;
+  --animate-toast-shake: toast-shake 0.5s both;
   --tw-shadow-color: #000;
   @keyframes skeleton {
     to {
       background-position: -200% 0;
+    }
+  }
+  @keyframes toast-bounce {
+    0% {
+      translate: 0 0;
+      animation-timing-function: ease-out;
+    }
+    28% {
+      translate: 0 -8px;
+      animation-timing-function: ease-in;
+    }
+    48% {
+      translate: 0 2px;
+      animation-timing-function: ease-out;
+    }
+    62% {
+      translate: 0 -2px;
+      animation-timing-function: ease-in;
+    }
+    78% {
+      translate: 0 0.5px;
+      animation-timing-function: ease-out;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+  @keyframes toast-shake {
+    20% {
+      translate: -4px 0;
+    }
+    40% {
+      translate: 4px 0;
+    }
+    60% {
+      translate: -4px 0;
+    }
+    80% {
+      translate: 4px 0;
     }
   }
 }

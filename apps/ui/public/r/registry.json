@@ -752,6 +752,53 @@
       "type": "registry:ui"
     },
     {
+      "css": {
+        "@keyframes toast-bounce": {
+          "0%": {
+            "animation-timing-function": "ease-out",
+            "translate": "0 0"
+          },
+          "28%": {
+            "animation-timing-function": "ease-in",
+            "translate": "0 -8px"
+          },
+          "48%": {
+            "animation-timing-function": "ease-out",
+            "translate": "0 2px"
+          },
+          "62%": {
+            "animation-timing-function": "ease-in",
+            "translate": "0 -2px"
+          },
+          "78%": {
+            "animation-timing-function": "ease-out",
+            "translate": "0 0.5px"
+          },
+          "100%": {
+            "translate": "0 0"
+          }
+        },
+        "@keyframes toast-shake": {
+          "20%": {
+            "translate": "-4px 0"
+          },
+          "40%": {
+            "translate": "4px 0"
+          },
+          "60%": {
+            "translate": "-4px 0"
+          },
+          "80%": {
+            "translate": "4px 0"
+          }
+        }
+      },
+      "cssVars": {
+        "theme": {
+          "--animate-toast-bounce": "toast-bounce 0.5s both",
+          "--animate-toast-shake": "toast-shake 0.5s both"
+        }
+      },
       "dependencies": [
         "@base-ui/react"
       ],

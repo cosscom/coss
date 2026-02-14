@@ -152,6 +152,41 @@ anchoredToastManager.add({
 })
 ```
 
+### Deduplication
+
+Toasts are deduplicated by default. Repeated triggers with the same `type`, `title`, and `description` do not stack—instead, the existing toast updates in place and plays a repeat effect (bounce for success/info/warning, shake for error). This reduces visual clutter and keeps screen reader announcements minimal.
+
+Deduplication works automatically for string-based content. For custom JSX titles, provide an explicit `dedupeKey`:
+
+```tsx
+toastManager.add({
+  title: <span>Custom <strong>content</strong></span>,
+  dedupeKey: "custom-save",
+  type: "success",
+})
+```
+
+To allow stacking for a specific toast (e.g. multiple download completions), opt out with `dedupe: false`:
+
+```tsx
+toastManager.add({
+  title: "Downloaded report.pdf",
+  dedupe: false,
+})
+```
+
+Override the repeat effect per toast with `repeatEffect`:
+
+```tsx
+toastManager.add({
+  title: "Rate limited",
+  type: "warning",
+  repeatEffect: "shake",
+})
+```
+
+The deduplication behavior was inspired by [Mindful toast notifications by Jan Toman](https://honza.codes/articles/taming-toast-notifications).
+
 ## API Reference
 
 ### ToastProvider
@@ -169,6 +204,14 @@ Provider component for toasts anchored to specific elements. Use with `anchoredT
 ### toastManager
 
 Manager object for creating stacked toasts. Use `toastManager.add()` to show a toast.
+
+#### add(options)
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `dedupe` | `boolean` | `true` | When `false`, skips deduplication and always creates a new toast. |
+| `dedupeKey` | `string` | — | Explicit key for deduplication. Required when using JSX for `title` or `description`. |
+| `repeatEffect` | `"bounce" \| "shake"` | type-based | Visual effect when a duplicate is triggered: `bounce` (success/info/warning) or `shake` (error). |
 
 ### anchoredToastManager
 
