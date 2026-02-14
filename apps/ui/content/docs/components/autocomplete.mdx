@@ -95,14 +95,16 @@ The root autocomplete component. Manages the autocomplete state and provides con
 
 The input field component with extended features for size variants and addon support.
 
-| Prop          | Type                        | Default     | Description                                                                                      |
-| ------------- | --------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| `size`        | `"sm" \| "default" \| "lg"` | `"default"` | The size variant of the input field                                                              |
-| `startAddon`  | `React.ReactNode`           | -           | Element to display at the start (left side) of the input, such as an icon                        |
-| `showTrigger` | `boolean`                   | `false`     | Whether to display a trigger button (chevron icon) on the right side of the input                |
-| `showClear`   | `boolean`                   | `false`     | Whether to display a clear button (X icon) on the right side of the input when there is a value |
-| `className`   | `string`                    | -           | Additional CSS classes to apply to the component                                                 |
-| `...props`    | Base UI Autocomplete Input props | -      | All standard autocomplete input attributes are supported                                         |
+| Prop           | Type                              | Default     | Description                                                                                      |
+| -------------- | --------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `size`         | `"sm" \| "default" \| "lg"`       | `"default"` | The size variant of the input field                                                              |
+| `startAddon`   | `React.ReactNode`                 | -           | Element to display at the start (left side) of the input, such as an icon                        |
+| `showTrigger`  | `boolean`                         | `false`     | Whether to display a trigger button (chevron icon) on the right side of the input                |
+| `showClear`    | `boolean`                         | `false`     | Whether to display a clear button (X icon) on the right side of the input when there is a value |
+| `triggerProps`  | `Autocomplete.Trigger.Props`     | -           | Props forwarded to the internal trigger button, useful for overriding `aria-label`               |
+| `clearProps`    | `Autocomplete.Clear.Props`       | -           | Props forwarded to the internal clear button, useful for overriding `aria-label`                 |
+| `className`    | `string`                          | -           | Additional CSS classes to apply to the component                                                 |
+| `...props`     | Base UI Autocomplete Input props  | -           | All standard autocomplete input attributes are supported                                         |
 
 ### AutocompletePopup
 
