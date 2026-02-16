@@ -50,7 +50,7 @@ function DrawerBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-black/32 backdrop-blur-sm transition-all duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0",
+        "fixed inset-0 z-50 bg-black/32 opacity-[calc(1-var(--drawer-swipe-progress))] backdrop-blur-sm transition-[opacity] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0",
         className,
       )}
       data-slot="drawer-backdrop"
@@ -102,27 +102,19 @@ function DrawerPopup({
       <DrawerViewport side={side} variant={variant}>
         <DrawerPrimitive.Popup
           className={cn(
-            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[opacity,translate,scale] duration-200 ease-in-out will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:opacity-0 data-starting-style:opacity-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[transform] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
             side === "bottom" &&
-              "row-start-2 border-t data-ending-style:translate-y-8 data-starting-style:translate-y-8",
+              "row-start-2 translate-y-[calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y))] border-t data-ending-style:translate-y-full data-starting-style:translate-y-full",
             side === "top" &&
-              "data-ending-style:-translate-y-8 data-starting-style:-translate-y-8 border-b",
+              "data-starting-style:-translate-y-full data-ending-style:-translate-y-full translate-y-[var(--drawer-swipe-movement-y)] border-b",
             side === "left" &&
-              "data-ending-style:-translate-x-8 data-starting-style:-translate-x-8 w-[calc(100%-(--spacing(12)))] max-w-md border-e",
+              "data-starting-style:-translate-x-full data-ending-style:-translate-x-full w-[calc(100%-(--spacing(12)))] max-w-md translate-x-[var(--drawer-swipe-movement-x)] border-e",
             side === "right" &&
-              "col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s data-ending-style:translate-x-8 data-starting-style:translate-x-8",
+              "col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md translate-x-[var(--drawer-swipe-movement-x)] border-s data-ending-style:translate-x-full data-starting-style:translate-x-full",
             variant === "inset" &&
               "before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
             "data-nested-drawer-open:origin-top data-nested-drawer-open:scale-[calc(1-0.05*var(--nested-drawers))] data-nested-drawer-open:opacity-[calc(1-0.1*var(--nested-drawers))]",
-            side === "bottom" &&
-              "[--drawer-transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
-            side === "top" &&
-              "[--drawer-transform:translateY(calc(-1*var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
-            side === "left" &&
-              "[--drawer-transform:translateX(var(--drawer-swipe-movement-x))]",
-            side === "right" &&
-              "[--drawer-transform:translateX(var(--drawer-swipe-movement-x))]",
-            "data-swiping:transition-none data-swiping:duration-0",
+            "data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0",
             className,
           )}
           data-slot="drawer-popup"
