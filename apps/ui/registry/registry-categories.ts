@@ -25,6 +25,7 @@ export const registryCategories = [
   "command",
   "date picker",
   "dialog",
+  "drawer",
   "dropdown",
   "empty state",
   "field",

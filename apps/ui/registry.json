@@ -20,6 +20,7 @@
         "@coss/combobox",
         "@coss/command",
         "@coss/dialog",
+        "@coss/drawer",
         "@coss/empty",
         "@coss/field",
         "@coss/fieldset",
@@ -322,6 +323,23 @@
         }
       ],
       "name": "dialog",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/scroll-area"
+      ],
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/drawer.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "drawer",
       "registryDependencies": [
         "@coss/button",
         "@coss/scroll-area"
@@ -4752,6 +4770,104 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/dialog"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Default drawer with form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-1",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Drawer with inset variant",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-2",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Drawers opening from all four sides",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-3",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Nested drawers",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-4",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Bottom drawer with snap points",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-5",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
       ],
       "type": "registry:block"
     },
