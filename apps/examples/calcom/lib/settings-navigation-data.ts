@@ -39,6 +39,7 @@ export const userSettingsItems: SettingsNavItem[] = [
         title: "Push notifications",
         url: "/settings/my-account/push-notifications",
       },
+      { title: "Features", url: "/settings/my-account/features" },
     ],
     title: "Luke Tracy",
     url: "/settings/my-account",
