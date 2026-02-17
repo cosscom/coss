@@ -30,8 +30,10 @@ export function FeaturesList() {
     "bookings-v3": "inherit",
   });
 
-  function handleFeatureChange(slug: string, value: string) {
-    const state = value as FeatureState;
+  function handleFeatureChange(slug: string, values: readonly string[]) {
+    const newValue = values[0];
+    if (!newValue) return;
+    const state = newValue as FeatureState;
     setFeatureStates((prev) => ({ ...prev, [slug]: state }));
     toastManager.add({
       title: `Feature "${features.find((f) => f.slug === slug)?.name}" set to ${state}`,
@@ -54,28 +56,15 @@ export function FeaturesList() {
           </div>
           <ToggleGroup
             className="shrink-0"
-            toggleMultiple={false}
-            value={featureStates[feature.slug]}
+            onValueChange={(values) =>
+              handleFeatureChange(feature.slug, values)
+            }
+            value={[featureStates[feature.slug]]}
             variant="outline"
           >
-            <ToggleGroupItem
-              onClick={() => handleFeatureChange(feature.slug, "disabled")}
-              value="disabled"
-            >
-              Off
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              onClick={() => handleFeatureChange(feature.slug, "enabled")}
-              value="enabled"
-            >
-              On
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              onClick={() => handleFeatureChange(feature.slug, "inherit")}
-              value="inherit"
-            >
-              Default
-            </ToggleGroupItem>
+            <ToggleGroupItem value="disabled">Off</ToggleGroupItem>
+            <ToggleGroupItem value="enabled">On</ToggleGroupItem>
+            <ToggleGroupItem value="inherit">Default</ToggleGroupItem>
           </ToggleGroup>
         </div>
       ))}
