@@ -6,15 +6,6 @@ import {
   AvatarImage,
 } from "@coss/ui/components/avatar";
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameFooter,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import {
   InputGroup,
@@ -39,141 +30,109 @@ import {
   LinkIcon,
 } from "lucide-react";
 
-export function OrganizationProfileForm() {
+export function OrganizationProfileFields() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
-    <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Profile</CardFrameTitle>
-          <CardFrameDescription>
-            Manage settings for your team profile
-          </CardFrameDescription>
-        </CardFrameHeader>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-4">
+        <Avatar className="size-16">
+          <AvatarImage
+            alt="Team logo"
+            src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
+          />
+          <AvatarFallback className="text-xl">AI</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col gap-1">
+          <Label className="text-sm">Team logo</Label>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline">
+              Upload logo
+            </Button>
+            <Button size="sm" variant="ghost">
+              Remove
+            </Button>
+          </div>
+        </div>
+      </div>
 
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-4">
-                <Avatar className="size-16">
-                  <AvatarImage
-                    alt="Team logo"
-                    src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
+      <Field>
+        <FieldLabel>Team name</FieldLabel>
+        <InputGroup>
+          <InputGroupInput defaultValue="Acme Inc." />
+        </InputGroup>
+      </Field>
+
+      <Field>
+        <FieldLabel>Team URL</FieldLabel>
+        <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+          <InputGroupAddon>
+            <InputGroupText>localhost:3000/team/</InputGroupText>
+          </InputGroupAddon>
+          <InputGroupInput
+            aria-label="Set your team URL"
+            className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+            defaultValue="acme-inc"
+            disabled
+          />
+        </InputGroup>
+      </Field>
+
+      <Field>
+        <FieldLabel>Team ID</FieldLabel>
+        <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+          <InputGroupInput
+            aria-label="Team ID"
+            className="has-disabled:*:[input]:cursor-not-allowed"
+            defaultValue="47"
+            disabled
+          />
+          <InputGroupAddon align="inline-end">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label="Copy team ID"
+                    onClick={() => copyToClipboard("47")}
+                    size="icon-xs"
+                    variant="ghost"
                   />
-                  <AvatarFallback className="text-xl">AI</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-sm">Team logo</Label>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
-                      Upload logo
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                }
+              >
+                {isCopied ? <CheckIcon /> : <CopyIcon />}
+              </TooltipTrigger>
+              <TooltipPopup>
+                <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+              </TooltipPopup>
+            </Tooltip>
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
 
-              <Field>
-                <FieldLabel>Team name</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput defaultValue="Acme Inc." />
-                </InputGroup>
-              </Field>
-
-              <Field>
-                <FieldLabel>Team URL</FieldLabel>
-                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-                  <InputGroupAddon>
-                    <InputGroupText>localhost:3000/team/</InputGroupText>
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    aria-label="Set your team URL"
-                    className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
-                    defaultValue="acme-inc"
-                    disabled
-                  />
-                </InputGroup>
-              </Field>
-
-              <Field>
-                <FieldLabel>Team ID</FieldLabel>
-                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-                  <InputGroupInput
-                    aria-label="Team ID"
-                    className="has-disabled:*:[input]:cursor-not-allowed"
-                    defaultValue="47"
-                    disabled
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <Button
-                            aria-label="Copy team ID"
-                            onClick={() => copyToClipboard("47")}
-                            size="icon-xs"
-                            variant="ghost"
-                          />
-                        }
-                      >
-                        {isCopied ? <CheckIcon /> : <CopyIcon />}
-                      </TooltipTrigger>
-                      <TooltipPopup>
-                        <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
-                      </TooltipPopup>
-                    </Tooltip>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-
-              <Field>
-                <FieldLabel>About</FieldLabel>
-                <InputGroup>
-                  <InputGroupTextarea placeholder="Tell us about your team…" />
-                  <InputGroupAddon
-                    align="block-start"
-                    className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
-                  >
-                    <Toggle aria-label="Toggle bold" size="sm">
-                      <BoldIcon aria-hidden="true" />
-                    </Toggle>
-                    <Toggle aria-label="Toggle italic" size="sm">
-                      <ItalicIcon aria-hidden="true" />
-                    </Toggle>
-                    <Button aria-label="Link" size="icon-sm" variant="ghost">
-                      <LinkIcon aria-hidden="true" />
-                    </Button>
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldDescription>
-                  A few sentences about your team. This will appear on your
-                  team&apos;s url page.
-                </FieldDescription>
-              </Field>
-            </div>
-          </CardPanel>
-        </Card>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button>Update</Button>
-        </CardFrameFooter>
-      </CardFrame>
-
-      <CardFrame className="flex-row items-center justify-between">
-        <CardFrameHeader>
-          <CardFrameTitle>Danger zone</CardFrameTitle>
-          <CardFrameDescription>
-            Be careful. Team deletion cannot be undone.
-          </CardFrameDescription>
-        </CardFrameHeader>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button variant="destructive-outline">Disband team</Button>
-        </CardFrameFooter>
-      </CardFrame>
+      <Field>
+        <FieldLabel>About</FieldLabel>
+        <InputGroup>
+          <InputGroupTextarea placeholder="Tell us about your team…" />
+          <InputGroupAddon
+            align="block-start"
+            className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
+          >
+            <Toggle aria-label="Toggle bold" size="sm">
+              <BoldIcon aria-hidden="true" />
+            </Toggle>
+            <Toggle aria-label="Toggle italic" size="sm">
+              <ItalicIcon aria-hidden="true" />
+            </Toggle>
+            <Button aria-label="Link" size="icon-sm" variant="ghost">
+              <LinkIcon aria-hidden="true" />
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        <FieldDescription>
+          A few sentences about your team. This will appear on your team&apos;s
+          url page.
+        </FieldDescription>
+      </Field>
     </div>
   );
 }

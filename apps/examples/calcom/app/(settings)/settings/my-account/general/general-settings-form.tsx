@@ -2,15 +2,6 @@
 
 import { Button } from "@coss/ui/components/button";
 import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameFooter,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
-import {
   Combobox,
   ComboboxEmpty,
   ComboboxInput,
@@ -33,9 +24,8 @@ import {
 } from "@coss/ui/components/select";
 import { CalendarIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
-import { SettingsToggle } from "@/components/settings/settings-toggle";
 
-export function GeneralSettingsForm() {
+export function GeneralSettingsFields() {
   const languageItems = [
     { label: "English", value: "en" },
     { label: "Spanish", value: "es" },
@@ -93,156 +83,109 @@ export function GeneralSettingsForm() {
   ];
 
   return (
-    <div className="space-y-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>General</CardFrameTitle>
-          <CardFrameDescription>
-            Manage settings for your language and timezone
-          </CardFrameDescription>
-        </CardFrameHeader>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <Field className="max-md:col-span-2">
+        <FieldLabel>Language</FieldLabel>
+        <Select aria-label="Language" defaultValue="en" items={languageItems}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup>
+            {languageItems.map(({ label, value }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
+      </Field>
 
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Field className="max-md:col-span-2">
-                <FieldLabel>Language</FieldLabel>
-                <Select
-                  aria-label="Language"
-                  defaultValue="en"
-                  items={languageItems}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopup>
-                    {languageItems.map(({ label, value }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectPopup>
-                </Select>
-              </Field>
-
-              <div className="col-span-2">
-                <Fieldset className="max-w-none gap-2">
-                  <Label render={<FieldsetLegend />}>Timezone</Label>
-                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <Field className="contents">
-                      <Combobox
-                        autoHighlight
-                        defaultValue={defaultTimezone}
-                        items={formattedTimezones}
-                      >
-                        <ComboboxTrigger render={<SelectButton />}>
-                          <ComboboxValue />
-                        </ComboboxTrigger>
-                        <ComboboxPopup aria-label="Select timezone">
-                          <div className="border-b p-2">
-                            <ComboboxInput
-                              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-                              placeholder="e.g. Europe/Rome"
-                              showTrigger={false}
-                              startAddon={<SearchIcon />}
-                            />
-                          </div>
-                          <ComboboxEmpty>No timezones found.</ComboboxEmpty>
-                          <ComboboxList>
-                            {(item) => (
-                              <ComboboxItem key={item.value} value={item}>
-                                {item.label}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                        </ComboboxPopup>
-                      </Combobox>
-                    </Field>
-                    <Button variant="outline">
-                      <CalendarIcon />
-                      <span>Schedule timezone change</span>
-                    </Button>
+      <div className="col-span-2">
+        <Fieldset className="max-w-none gap-2">
+          <Label render={<FieldsetLegend />}>Timezone</Label>
+          <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+            <Field className="contents">
+              <Combobox
+                autoHighlight
+                defaultValue={defaultTimezone}
+                items={formattedTimezones}
+              >
+                <ComboboxTrigger render={<SelectButton />}>
+                  <ComboboxValue />
+                </ComboboxTrigger>
+                <ComboboxPopup aria-label="Select timezone">
+                  <div className="border-b p-2">
+                    <ComboboxInput
+                      className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                      placeholder="e.g. Europe/Rome"
+                      showTrigger={false}
+                      startAddon={<SearchIcon />}
+                    />
                   </div>
-                </Fieldset>
-              </div>
+                  <ComboboxEmpty>No timezones found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxPopup>
+              </Combobox>
+            </Field>
+            <Button variant="outline">
+              <CalendarIcon />
+              <span>Schedule timezone change</span>
+            </Button>
+          </div>
+        </Fieldset>
+      </div>
 
-              <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field>
-                  <FieldLabel>Time format</FieldLabel>
-                  <Select
-                    aria-label="Time format"
-                    defaultValue="12"
-                    items={timeFormatItems}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectPopup>
-                      {timeFormatItems.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectPopup>
-                  </Select>
-                  <FieldDescription>
-                    This is an internal setting and will not affect how times
-                    are displayed on public booking pages for you or anyone
-                    booking you.
-                  </FieldDescription>
-                </Field>
+      <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Field>
+          <FieldLabel>Time format</FieldLabel>
+          <Select
+            aria-label="Time format"
+            defaultValue="12"
+            items={timeFormatItems}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup>
+              {timeFormatItems.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+          <FieldDescription>
+            This is an internal setting and will not affect how times are
+            displayed on public booking pages for you or anyone booking you.
+          </FieldDescription>
+        </Field>
 
-                <Field>
-                  <FieldLabel>Start of week</FieldLabel>
-                  <Select
-                    aria-label="Start of week"
-                    defaultValue="sunday"
-                    items={startOfWeekItems}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectPopup>
-                      {startOfWeekItems.map(({ label, value }) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectPopup>
-                  </Select>
-                </Field>
-              </div>
-            </div>
-          </CardPanel>
-        </Card>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button>Update</Button>
-        </CardFrameFooter>
-      </CardFrame>
-
-      <SettingsToggle
-        defaultChecked
-        description="Allow attendees to book you through dynamic group bookings"
-        title="Dynamic group links"
-      />
-
-      <SettingsToggle
-        defaultChecked
-        description="Allow search engines to access your public content"
-        title="Allow search engine indexing"
-      />
-
-      <SettingsToggle
-        defaultChecked
-        description="Monthly digest email for teams"
-        title="Monthly digest email"
-      />
-
-      <SettingsToggle
-        description="When enabled, anyone trying to book events using your email address must verify they own it via a one time code or be logged in to prevent impersonation"
-        title="Prevent impersonation on bookings"
-      />
+        <Field>
+          <FieldLabel>Start of week</FieldLabel>
+          <Select
+            aria-label="Start of week"
+            defaultValue="sunday"
+            items={startOfWeekItems}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup>
+              {startOfWeekItems.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+        </Field>
+      </div>
     </div>
   );
 }
