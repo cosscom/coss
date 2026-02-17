@@ -1,6 +1,9 @@
 import "./globals.css";
 
-import { ToastProvider } from "@coss/ui/components/toast";
+import {
+  AnchoredToastProvider,
+  ToastProvider,
+} from "@coss/ui/components/toast";
 import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
@@ -25,10 +28,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ToastProvider position="bottom-center">
-            <DebugProvider>
-              <AppCommand />
-              {children}
-            </DebugProvider>
+            <AnchoredToastProvider>
+              <DebugProvider>
+                <AppCommand />
+                {children}
+              </DebugProvider>
+            </AnchoredToastProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>
