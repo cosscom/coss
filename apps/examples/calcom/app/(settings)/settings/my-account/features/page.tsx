@@ -11,7 +11,7 @@ import { AutoOptInToggle, FeaturesList } from "./features-list";
 
 export default function FeaturesPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Features</CardFrameTitle>
@@ -20,7 +20,7 @@ export default function FeaturesPage() {
           </CardFrameDescription>
         </CardFrameHeader>
 
-        <Card className="rounded-t-none!">
+        <Card>
           <CardPanel>
             <FeaturesList />
           </CardPanel>
