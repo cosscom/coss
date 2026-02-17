@@ -15,8 +15,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { Field, FieldLabel } from "@coss/ui/components/field";
-import { Input } from "@coss/ui/components/input";
+import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -26,9 +25,24 @@ import {
 } from "@coss/ui/components/input-group";
 import { Label } from "@coss/ui/components/label";
 import { Toggle } from "@coss/ui/components/toggle";
-import { BoldIcon, ItalicIcon, LinkIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
+import {
+  BoldIcon,
+  CheckIcon,
+  CopyIcon,
+  ItalicIcon,
+  LinkIcon,
+  PlusIcon,
+} from "lucide-react";
 
 export default function OrganizationProfilePage() {
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
+
   return (
     <div className="flex flex-col gap-4">
       <CardFrame>
@@ -41,51 +55,109 @@ export default function OrganizationProfilePage() {
 
         <Card className="rounded-t-none!">
           <CardPanel>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="flex items-center gap-4 max-md:col-span-2">
-                <Avatar className="size-16">
-                  <AvatarImage
-                    alt="Organization logo"
-                    src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
-                  />
-                  <AvatarFallback className="text-xl">CC</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-sm">Organization logo</Label>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
-                      Upload logo
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      Remove
-                    </Button>
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="flex items-center gap-4">
+                  <Avatar className="size-16">
+                    <AvatarImage
+                      alt="Organization logo"
+                      src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
+                    />
+                    <AvatarFallback className="text-xl">CC</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-sm">Organization logo</Label>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline">
+                        Upload logo
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Avatar className="size-16">
+                    <AvatarFallback>
+                      <PlusIcon className="size-6 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-sm">Cal Video logo</Label>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline">
+                        Upload Cal Video logo
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field>
-                  <FieldLabel>Organization name</FieldLabel>
-                  <Input defaultValue="Cal.com" />
-                </Field>
-
-                <Field>
-                  <FieldLabel>Organization URL</FieldLabel>
-                  <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-                    <InputGroupAddon>
-                      <InputGroupText>cal.com/org/</InputGroupText>
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      aria-label="Set your organization URL"
-                      className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
-                      defaultValue="calcom"
-                      disabled
-                    />
-                  </InputGroup>
-                </Field>
+              <div className="grid min-h-[150px] w-full place-items-center rounded-md border border-dashed bg-muted/50 sm:min-h-[200px]">
+                <div className="flex flex-col items-center gap-3">
+                  <p className="text-muted-foreground text-sm">No banner</p>
+                  <Button size="sm" variant="outline">
+                    Upload banner
+                  </Button>
+                </div>
               </div>
 
-              <Field className="col-span-2">
+              <Field>
+                <FieldLabel>Organization name</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput defaultValue="Cal.com" />
+                </InputGroup>
+              </Field>
+
+              <Field>
+                <FieldLabel>Organization URL</FieldLabel>
+                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+                  <InputGroupInput
+                    aria-label="Set your organization URL"
+                    className="has-disabled:*:[input]:cursor-not-allowed"
+                    defaultValue="calcom"
+                    disabled
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>.cal.com</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+
+              <Field>
+                <FieldLabel>Organization ID</FieldLabel>
+                <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+                  <InputGroupInput
+                    aria-label="Organization ID"
+                    className="has-disabled:*:[input]:cursor-not-allowed"
+                    defaultValue="42"
+                    disabled
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            aria-label="Copy organization ID"
+                            onClick={() => copyToClipboard("42")}
+                            size="icon-xs"
+                            variant="ghost"
+                          />
+                        }
+                      >
+                        {isCopied ? <CheckIcon /> : <CopyIcon />}
+                      </TooltipTrigger>
+                      <TooltipPopup>
+                        <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+                      </TooltipPopup>
+                    </Tooltip>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+
+              <Field>
                 <FieldLabel>About</FieldLabel>
                 <InputGroup>
                   <InputGroupTextarea placeholder="Tell us about your organization…" />
@@ -104,6 +176,10 @@ export default function OrganizationProfilePage() {
                     </Button>
                   </InputGroupAddon>
                 </InputGroup>
+                <FieldDescription>
+                  A few sentences about your organization. This will appear on
+                  your organization page.
+                </FieldDescription>
               </Field>
             </div>
           </CardPanel>
