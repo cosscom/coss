@@ -8,7 +8,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { Label } from "@coss/ui/components/label";
+import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Switch } from "@coss/ui/components/switch";
 
 export default function PushNotificationsPage() {
@@ -25,12 +25,12 @@ export default function PushNotificationsPage() {
 
         <Card className="rounded-t-none!">
           <CardPanel>
-            <div className="flex items-center justify-between gap-4">
-              <Label htmlFor="browser-notifications">
+            <Field>
+              <FieldLabel>
+                <Switch />
                 Allow browser notifications
-              </Label>
-              <Switch id="browser-notifications" />
-            </div>
+              </FieldLabel>
+            </Field>
           </CardPanel>
         </Card>
       </CardFrame>
