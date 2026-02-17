@@ -13,13 +13,18 @@ interface SettingsToggleProps {
   title: string;
   description: string;
   defaultChecked?: boolean;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 export function SettingsToggle({
   title,
   description,
   defaultChecked = false,
+  checked,
+  onCheckedChange,
 }: SettingsToggleProps) {
+  const isControlled = checked !== undefined;
   return (
     <Card>
       <CardPanel>
@@ -28,7 +33,11 @@ export function SettingsToggle({
             <CardFrameTitle>{title}</CardFrameTitle>
             <CardFrameDescription>{description}</CardFrameDescription>
           </CardFrameHeader>
-          <Switch defaultChecked={defaultChecked} />
+          <Switch
+            checked={isControlled ? checked : undefined}
+            defaultChecked={isControlled ? undefined : defaultChecked}
+            onCheckedChange={onCheckedChange}
+          />
         </div>
       </CardPanel>
     </Card>

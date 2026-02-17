@@ -27,11 +27,7 @@ export default function FeaturesPage() {
         </Card>
       </CardFrame>
 
-      <Card>
-        <CardPanel>
-          <AutoOptInToggle />
-        </CardPanel>
-      </Card>
+      <AutoOptInToggle />
     </div>
   );
 }
