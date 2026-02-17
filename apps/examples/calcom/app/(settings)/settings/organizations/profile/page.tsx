@@ -23,6 +23,7 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@coss/ui/components/input-group";
+import { Label } from "@coss/ui/components/label";
 import { Toggle } from "@coss/ui/components/toggle";
 import {
   Tooltip,
@@ -36,7 +37,6 @@ import {
   CopyIcon,
   ItalicIcon,
   LinkIcon,
-  Trash2Icon,
 } from "lucide-react";
 
 export default function OrganizationProfilePage() {
@@ -52,7 +52,7 @@ export default function OrganizationProfilePage() {
           </CardFrameDescription>
         </CardFrameHeader>
 
-        <Card className="rounded-t-none!">
+        <Card className="rounded-b-none!">
           <CardPanel>
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-4">
@@ -63,9 +63,17 @@ export default function OrganizationProfilePage() {
                   />
                   <AvatarFallback className="text-xl">AI</AvatarFallback>
                 </Avatar>
-                <Button size="sm" variant="outline">
-                  Upload Logo
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm">Team logo</Label>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline">
+                      Upload logo
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      Remove
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               <Field>
@@ -156,19 +164,14 @@ export default function OrganizationProfilePage() {
 
       <CardFrame className="flex-row items-center justify-between">
         <CardFrameHeader>
-          <CardFrameTitle className="text-destructive">
-            Danger zone
-          </CardFrameTitle>
+          <CardFrameTitle>Danger zone</CardFrameTitle>
           <CardFrameDescription>
             Be careful. Team deletion cannot be undone.
           </CardFrameDescription>
         </CardFrameHeader>
 
         <CardFrameFooter className="flex justify-end">
-          <Button variant="destructive-outline">
-            <Trash2Icon />
-            Disband team
-          </Button>
+          <Button variant="destructive-outline">Disband team</Button>
         </CardFrameFooter>
       </CardFrame>
     </div>
