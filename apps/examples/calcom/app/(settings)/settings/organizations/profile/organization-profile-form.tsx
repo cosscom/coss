@@ -73,7 +73,6 @@ export function OrganizationProfileFields() {
             aria-label="Set your team URL"
             className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
             defaultValue="acme-inc"
-            disabled
           />
         </InputGroup>
       </Field>
