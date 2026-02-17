@@ -70,7 +70,7 @@ function SettingsNavSection({
         {section.avatar && (
           <Avatar className="size-4">
             <AvatarImage alt={section.title} src={section.avatar.src} />
-            <AvatarFallback className="text-[10px]">
+            <AvatarFallback className="text-[.625rem]">
               {section.avatar.fallback}
             </AvatarFallback>
           </Avatar>

@@ -2564,7 +2564,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "select"),
+    categories: categories("group", "select", "number field"),
     description: "Group with select",
     files: [{ path: "particles/p-group-14.tsx", type: "registry:block" }],
     name: "p-group-14",

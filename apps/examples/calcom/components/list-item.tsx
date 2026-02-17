@@ -263,6 +263,7 @@ export {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemTitleLink,
   ListItemTitle,
   ListItemTitleLink,
   sortableListClasses,
