@@ -1,10 +1,13 @@
 "use client";
 
-import { Field, FieldLabel } from "@coss/ui/components/field";
-import { Switch } from "@coss/ui/components/switch";
 import { toastManager } from "@coss/ui/components/toast";
-import { ToggleGroup, ToggleGroupItem } from "@coss/ui/components/toggle-group";
+import {
+  Toggle,
+  ToggleGroup,
+  ToggleGroupSeparator,
+} from "@coss/ui/components/toggle-group";
 import { useState } from "react";
+import { SettingsToggle } from "@/components/settings/settings-toggle";
 
 interface Feature {
   slug: string;
@@ -36,7 +39,7 @@ export function FeaturesList() {
     const state = newValue as FeatureState;
     setFeatureStates((prev) => ({ ...prev, [slug]: state }));
     toastManager.add({
-      title: `Feature "${features.find((f) => f.slug === slug)?.name}" set to ${state}`,
+      title: "Settings updated successfully",
       type: "success",
     });
   }
@@ -59,12 +62,20 @@ export function FeaturesList() {
             onValueChange={(values) =>
               handleFeatureChange(feature.slug, values)
             }
-            value={[featureStates[feature.slug]]}
+            value={[featureStates[feature.slug] ?? "inherit"]}
             variant="outline"
           >
-            <ToggleGroupItem value="disabled">Off</ToggleGroupItem>
-            <ToggleGroupItem value="enabled">On</ToggleGroupItem>
-            <ToggleGroupItem value="inherit">Default</ToggleGroupItem>
+            <Toggle aria-label="Off" value="disabled">
+              Off
+            </Toggle>
+            <ToggleGroupSeparator />
+            <Toggle aria-label="On" value="enabled">
+              On
+            </Toggle>
+            <ToggleGroupSeparator />
+            <Toggle aria-label="Default" value="inherit">
+              Default
+            </Toggle>
           </ToggleGroup>
         </div>
       ))}
@@ -78,17 +89,17 @@ export function AutoOptInToggle() {
   function handleToggle(checked: boolean) {
     setAutoOptIn(checked);
     toastManager.add({
-      title: checked ? "Auto opt-in enabled" : "Auto opt-in disabled",
+      title: "Settings updated successfully",
       type: "success",
     });
   }
 
   return (
-    <Field>
-      <FieldLabel>
-        <Switch checked={autoOptIn} onCheckedChange={handleToggle} />
-        Automatically opt in to new experimental features
-      </FieldLabel>
-    </Field>
+    <SettingsToggle
+      checked={autoOptIn}
+      description="Automatically opt into new experimental features, unless disabled by your team or organization"
+      onCheckedChange={handleToggle}
+      title="Automatically opt-in for future experimental features"
+    />
   );
 }
