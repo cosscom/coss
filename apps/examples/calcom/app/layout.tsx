@@ -24,7 +24,7 @@ export default function RootLayout({
         className={`${fontHeading.variable} ${fontSans.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
-          <ToastProvider>
+          <ToastProvider position="bottom-center">
             <DebugProvider>
               <AppCommand />
               {children}
