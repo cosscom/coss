@@ -56,29 +56,31 @@ export function OrganizationProfileFields() {
         </div>
       </div>
 
-      <Field>
-        <FieldLabel>Team name</FieldLabel>
-        <InputGroup>
-          <InputGroupInput defaultValue="Acme Inc." />
-        </InputGroup>
-      </Field>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Field>
+          <FieldLabel>Team name</FieldLabel>
+          <InputGroup>
+            <InputGroupInput defaultValue="Acme Inc." />
+          </InputGroup>
+        </Field>
 
-      <Field>
-        <FieldLabel>Team URL</FieldLabel>
-        <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-          <InputGroupAddon>
-            <InputGroupText>localhost:3000/team/</InputGroupText>
-          </InputGroupAddon>
-          <InputGroupInput
-            aria-label="Set your team URL"
-            className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
-            defaultValue="acme-inc"
-            disabled
-          />
-        </InputGroup>
-      </Field>
+        <Field>
+          <FieldLabel>Team URL</FieldLabel>
+          <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+            <InputGroupAddon>
+              <InputGroupText>localhost:3000/team/</InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput
+              aria-label="Set your team URL"
+              className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+              defaultValue="acme-inc"
+              disabled
+            />
+          </InputGroup>
+        </Field>
+      </div>
 
-      <Field>
+      <Field className="md:w-1/2">
         <FieldLabel>Team ID</FieldLabel>
         <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
           <InputGroupInput
