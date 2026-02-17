@@ -23,7 +23,6 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@coss/ui/components/input-group";
-import { Label } from "@coss/ui/components/label";
 import { Toggle } from "@coss/ui/components/toggle";
 import {
   Tooltip,
@@ -37,7 +36,7 @@ import {
   CopyIcon,
   ItalicIcon,
   LinkIcon,
-  PlusIcon,
+  Trash2Icon,
 } from "lucide-react";
 
 export default function OrganizationProfilePage() {
@@ -47,92 +46,57 @@ export default function OrganizationProfilePage() {
     <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
-          <CardFrameTitle>Organization profile</CardFrameTitle>
+          <CardFrameTitle>Profile</CardFrameTitle>
           <CardFrameDescription>
-            Manage settings for your organization profile
+            Manage settings for your team profile
           </CardFrameDescription>
         </CardFrameHeader>
 
         <Card className="rounded-t-none!">
           <CardPanel>
             <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="flex items-center gap-4">
-                  <Avatar className="size-16">
-                    <AvatarImage
-                      alt="Organization logo"
-                      src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
-                    />
-                    <AvatarFallback className="text-xl">CC</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col gap-1">
-                    <Label className="text-sm">Organization logo</Label>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
-                        Upload logo
-                      </Button>
-                      <Button size="sm" variant="ghost">
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Avatar className="size-16">
-                    <AvatarFallback>
-                      <PlusIcon className="size-6 text-muted-foreground" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col gap-1">
-                    <Label className="text-sm">Cal Video logo</Label>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline">
-                        Upload Cal Video logo
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid min-h-[150px] w-full place-items-center rounded-md border border-dashed bg-muted/50 sm:min-h-[200px]">
-                <div className="flex flex-col items-center gap-3">
-                  <p className="text-muted-foreground text-sm">No banner</p>
-                  <Button size="sm" variant="outline">
-                    Upload banner
-                  </Button>
-                </div>
+              <div className="flex items-center gap-4">
+                <Avatar className="size-16">
+                  <AvatarImage
+                    alt="Team logo"
+                    src="https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg"
+                  />
+                  <AvatarFallback className="text-xl">AI</AvatarFallback>
+                </Avatar>
+                <Button size="sm" variant="outline">
+                  Upload Logo
+                </Button>
               </div>
 
               <Field>
-                <FieldLabel>Organization name</FieldLabel>
+                <FieldLabel>Team name</FieldLabel>
                 <InputGroup>
-                  <InputGroupInput defaultValue="Cal.com" />
+                  <InputGroupInput defaultValue="Acme Inc." />
                 </InputGroup>
               </Field>
 
               <Field>
-                <FieldLabel>Organization URL</FieldLabel>
+                <FieldLabel>Team URL</FieldLabel>
                 <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+                  <InputGroupAddon>
+                    <InputGroupText>localhost:3000/team/</InputGroupText>
+                  </InputGroupAddon>
                   <InputGroupInput
-                    aria-label="Set your organization URL"
-                    className="has-disabled:*:[input]:cursor-not-allowed"
-                    defaultValue="calcom"
+                    aria-label="Set your team URL"
+                    className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+                    defaultValue="acme-inc"
                     disabled
                   />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupText>.cal.com</InputGroupText>
-                  </InputGroupAddon>
                 </InputGroup>
               </Field>
 
               <Field>
-                <FieldLabel>Organization ID</FieldLabel>
+                <FieldLabel>Team ID</FieldLabel>
                 <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
                   <InputGroupInput
-                    aria-label="Organization ID"
+                    aria-label="Team ID"
                     className="has-disabled:*:[input]:cursor-not-allowed"
-                    defaultValue="42"
+                    defaultValue="47"
                     disabled
                   />
                   <InputGroupAddon align="inline-end">
@@ -140,8 +104,8 @@ export default function OrganizationProfilePage() {
                       <TooltipTrigger
                         render={
                           <Button
-                            aria-label="Copy organization ID"
-                            onClick={() => copyToClipboard("42")}
+                            aria-label="Copy team ID"
+                            onClick={() => copyToClipboard("47")}
                             size="icon-xs"
                             variant="ghost"
                           />
@@ -160,7 +124,7 @@ export default function OrganizationProfilePage() {
               <Field>
                 <FieldLabel>About</FieldLabel>
                 <InputGroup>
-                  <InputGroupTextarea placeholder="Tell us about your organization…" />
+                  <InputGroupTextarea placeholder="Tell us about your team…" />
                   <InputGroupAddon
                     align="block-start"
                     className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
@@ -177,8 +141,8 @@ export default function OrganizationProfilePage() {
                   </InputGroupAddon>
                 </InputGroup>
                 <FieldDescription>
-                  A few sentences about your organization. This will appear on
-                  your organization page.
+                  A few sentences about your team. This will appear on your
+                  team&apos;s url page.
                 </FieldDescription>
               </Field>
             </div>
@@ -187,6 +151,24 @@ export default function OrganizationProfilePage() {
 
         <CardFrameFooter className="flex justify-end">
           <Button>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
+
+      <CardFrame className="flex-row items-center justify-between">
+        <CardFrameHeader>
+          <CardFrameTitle className="text-destructive">
+            Danger zone
+          </CardFrameTitle>
+          <CardFrameDescription>
+            Be careful. Team deletion cannot be undone.
+          </CardFrameDescription>
+        </CardFrameHeader>
+
+        <CardFrameFooter className="flex justify-end">
+          <Button variant="destructive-outline">
+            <Trash2Icon />
+            Disband team
+          </Button>
         </CardFrameFooter>
       </CardFrame>
     </div>
