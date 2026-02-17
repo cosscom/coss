@@ -9,13 +9,13 @@ import {
 
 import { CopyLink } from "./copy-link";
 
-export default function OrganizationProfileNoPermissionsPage() {
+export default function TeamProfileNoPermissionsPage() {
   return (
     <CardFrame>
       <CardFrameHeader>
         <CardFrameTitle>Profile</CardFrameTitle>
         <CardFrameDescription>
-          Manage settings for your organization profile
+          Manage settings for your team profile
         </CardFrameDescription>
       </CardFrameHeader>
 

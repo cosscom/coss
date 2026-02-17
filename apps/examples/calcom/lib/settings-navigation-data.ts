@@ -3,6 +3,7 @@ import {
   KeyIcon,
   type LucideIcon,
   TerminalIcon,
+  UsersIcon,
 } from "lucide-react";
 
 export interface SettingsNavChild {
@@ -75,6 +76,24 @@ export const userSettingsItems: SettingsNavItem[] = [
   },
 ];
 
+export const teamSettingsItems: SettingsNavItem[] = [
+  {
+    avatar: {
+      fallback: "AI",
+      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+    },
+    children: [
+      { title: "Profile", url: "/settings/teams/47/profile" },
+      { title: "General", url: "/settings/teams/47/general" },
+      { title: "Members", url: "/settings/teams/47/members" },
+      { title: "Appearance", url: "/settings/teams/47/appearance" },
+    ],
+    icon: UsersIcon,
+    title: "Acme Inc.",
+    url: "/settings/teams/47",
+  },
+];
+
 export const orgSettingsItems: SettingsNavItem[] = [
   {
     avatar: {
@@ -115,5 +134,6 @@ export const orgSettingsItems: SettingsNavItem[] = [
 
 export const settingsNavItems: SettingsNavItem[] = [
   ...userSettingsItems,
+  ...teamSettingsItems,
   ...orgSettingsItems,
 ];

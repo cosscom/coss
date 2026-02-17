@@ -9,9 +9,9 @@ import {
   CardPanel,
 } from "@coss/ui/components/card";
 
-import { OrganizationProfileFields } from "./organization-profile-form";
+import { TeamProfileFields } from "./team-profile-form";
 
-export default function OrganizationProfilePage() {
+export default function TeamProfilePage() {
   return (
     <div className="flex flex-col gap-4">
       <CardFrame>
@@ -24,7 +24,7 @@ export default function OrganizationProfilePage() {
 
         <Card className="rounded-b-none!">
           <CardPanel>
-            <OrganizationProfileFields />
+            <TeamProfileFields />
           </CardPanel>
         </Card>
 

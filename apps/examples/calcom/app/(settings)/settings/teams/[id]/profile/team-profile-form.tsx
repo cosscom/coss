@@ -30,7 +30,7 @@ import {
   LinkIcon,
 } from "lucide-react";
 
-export function OrganizationProfileFields() {
+export function TeamProfileFields() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
