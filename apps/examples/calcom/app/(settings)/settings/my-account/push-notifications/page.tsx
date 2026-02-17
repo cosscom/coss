@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  Card,
   CardFrame,
   CardFrameDescription,
   CardFrameHeader,
   CardFrameTitle,
+  CardPanel,
 } from "@coss/ui/components/card";
-import { SettingsToggle } from "@/components/settings/settings-toggle";
+import { Label } from "@coss/ui/components/label";
+import { Switch } from "@coss/ui/components/switch";
 
 export default function PushNotificationsPage() {
   return (
@@ -15,15 +18,22 @@ export default function PushNotificationsPage() {
         <CardFrameHeader>
           <CardFrameTitle>Push notifications</CardFrameTitle>
           <CardFrameDescription>
-            Manage your browser push notification preferences
+            Receive push notifications when booker submits instant meeting
+            booking.
           </CardFrameDescription>
         </CardFrameHeader>
-      </CardFrame>
 
-      <SettingsToggle
-        description="Receive push notifications when booker submits instant meeting booking."
-        title="Allow browser notifications"
-      />
+        <Card className="rounded-t-none!">
+          <CardPanel>
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="browser-notifications">
+                Allow browser notifications
+              </Label>
+              <Switch id="browser-notifications" />
+            </div>
+          </CardPanel>
+        </Card>
+      </CardFrame>
     </div>
   );
 }
