@@ -21,7 +21,7 @@ export default function PushNotificationsPage() {
           </CardFrameDescription>
         </CardFrameHeader>
 
-        <Card className="rounded-t-none!">
+        <Card>
           <CardPanel>
             <PushNotificationsToggle />
           </CardPanel>
