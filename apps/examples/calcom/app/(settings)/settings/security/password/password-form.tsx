@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
+import { Field, FieldLabel } from "@coss/ui/components/field";
 import {
   InputGroup,
   InputGroupAddon,
