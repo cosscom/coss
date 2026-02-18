@@ -7739,6 +7739,32 @@
     },
     {
       "categories": [
+        "radio group",
+        "form"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Theme selector with image cards",
+      "files": [
+        {
+          "path": "registry/default/particles/p-radio-group-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-[320px]"
+      },
+      "name": "p-radio-group-6",
+      "registryDependencies": [
+        "@coss/field",
+        "@coss/fieldset",
+        "@coss/radio-group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "scroll area"
       ],
       "description": "Basic scroll area",

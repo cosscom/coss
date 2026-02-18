@@ -3715,6 +3715,23 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("radio group", "form"),
+    dependencies: ["lucide-react"],
+    description: "Theme selector with image cards",
+    files: [{ path: "particles/p-radio-group-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-[320px]",
+    },
+    name: "p-radio-group-6",
+    registryDependencies: [
+      "@coss/field",
+      "@coss/fieldset",
+      "@coss/radio-group",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("scroll area"),
     description: "Basic scroll area",
     files: [{ path: "particles/p-scroll-area-1.tsx", type: "registry:block" }],
