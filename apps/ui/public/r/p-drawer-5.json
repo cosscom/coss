@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-drawer-5",
+  "type": "registry:block",
+  "description": "Bottom drawer with snap points",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/drawer"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-drawer-5.tsx",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport {\n  Drawer,\n  DrawerDescription,\n  DrawerHeader,\n  DrawerPanel,\n  DrawerPopup,\n  DrawerTitle,\n  DrawerTrigger,\n} from \"@/registry/default/ui/drawer\";\n\nexport default function Particle() {\n  const snapPoints = [\"148px\", 1] as const;\n  const [snapPoint, setSnapPoint] = useState<\n    (typeof snapPoints)[number] | null\n  >(snapPoints[0]);\n\n  return (\n    <Drawer\n      onSnapPointChange={(point) =>\n        setSnapPoint(point as (typeof snapPoints)[number] | null)\n      }\n      side=\"bottom\"\n      snapPoint={snapPoint}\n      snapPoints={[...snapPoints]}\n    >\n      <DrawerTrigger render={<Button variant=\"outline\" />}>\n        Open Bottom Drawer\n      </DrawerTrigger>\n      <DrawerPopup showCloseButton={false} side=\"bottom\">\n        <DrawerHeader>\n          <DrawerTitle>Snap Points</DrawerTitle>\n          <DrawerDescription>\n            This drawer snaps to predefined positions. Drag to resize.\n          </DrawerDescription>\n        </DrawerHeader>\n        <DrawerPanel>\n          <div className=\"grid gap-4\">\n            <p>\n              This drawer uses snap points to lock into specific heights. The\n              first snap point is at 148px, and the second expands to\n              full-screen.\n            </p>\n            <p>\n              Try dragging the drawer up and down to see it snap between\n              positions. You can also flick quickly to skip between snap points.\n            </p>\n            <p className=\"text-muted-foreground text-sm\">\n              Current snap point: {snapPoint ?? \"none\"}\n            </p>\n          </div>\n        </DrawerPanel>\n      </DrawerPopup>\n    </Drawer>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "drawer"
+  ]
+}

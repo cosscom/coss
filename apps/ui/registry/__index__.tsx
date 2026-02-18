@@ -295,6 +295,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "drawer": {
+    name: "drawer",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
+    files: [{
+      path: "registry/default/ui/drawer.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/drawer.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "empty": {
     name: "empty",
     description: "",
@@ -4307,6 +4325,96 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["dialog"],
+    meta: undefined,
+  },
+  "p-drawer-1": {
+    name: "p-drawer-1",
+    description: "Default drawer with form",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/form","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-2": {
+    name: "p-drawer-2",
+    description: "Drawer with inset variant",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/form","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-3": {
+    name: "p-drawer-3",
+    description: "Drawers opening from all four sides",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-4": {
+    name: "p-drawer-4",
+    description: "Nested drawers",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-5": {
+    name: "p-drawer-5",
+    description: "Bottom drawer with snap points",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
     meta: undefined,
   },
   "p-empty-1": {

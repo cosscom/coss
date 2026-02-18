@@ -19,6 +19,7 @@
     "@coss/combobox",
     "@coss/command",
     "@coss/dialog",
+    "@coss/drawer",
     "@coss/empty",
     "@coss/field",
     "@coss/fieldset",
