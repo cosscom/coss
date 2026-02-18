@@ -4,6 +4,7 @@ import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
+  CardFrameAction,
   CardFrameDescription,
   CardFrameHeader,
   CardFrameTitle,
@@ -25,19 +26,16 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
     <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <CardFrameTitle>Webhooks</CardFrameTitle>
-              <CardFrameDescription>
-                Receive meeting data in real-time when something happens in
-                Cal.com.
-              </CardFrameDescription>
-            </div>
+          <CardFrameTitle>Webhooks</CardFrameTitle>
+          <CardFrameDescription>
+            Receive meeting data in real-time when something happens in Cal.com.
+          </CardFrameDescription>
+          <CardFrameAction>
             <Button variant="outline">
               New
               <ChevronDownIcon />
             </Button>
-          </div>
+          </CardFrameAction>
         </CardFrameHeader>
 
         <Card>
