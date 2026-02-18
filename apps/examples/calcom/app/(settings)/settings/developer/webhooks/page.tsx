@@ -20,8 +20,8 @@ export default function WebhooksSettingsPage() {
         </CardFrameDescription>
       </CardFrameHeader>
 
-      <Card className="rounded-b-none!">
-        <CardPanel>
+      <Card>
+        <CardPanel className="p-0">
           <WebhooksEmpty webhooks={webhooks} />
         </CardPanel>
       </Card>

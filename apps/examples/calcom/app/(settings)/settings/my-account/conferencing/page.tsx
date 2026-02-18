@@ -27,7 +27,7 @@ export default function ConferencingSettingsPage() {
         </CardFrameAction>
       </CardFrameHeader>
 
-      <Card className="rounded-b-none!">
+      <Card>
         <CardPanel className="p-0">
           <ConferencingEmpty />
         </CardPanel>
