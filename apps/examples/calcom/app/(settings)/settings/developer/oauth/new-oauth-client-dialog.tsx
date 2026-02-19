@@ -5,6 +5,7 @@ import { Button } from "@coss/ui/components/button";
 import {
   Dialog,
   DialogClose,
+  DialogCreateHandle,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -20,13 +21,23 @@ import { Switch } from "@coss/ui/components/switch";
 import { Textarea } from "@coss/ui/components/textarea";
 import { KeyIcon, PlusIcon, UploadIcon } from "lucide-react";
 
-export function NewOAuthClientDialog() {
+const newOAuthClientDialog = DialogCreateHandle();
+
+function NewOAuthClientTrigger({ variant }: { variant?: "outline" }) {
   return (
-    <Dialog>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <PlusIcon />
-        New
-      </DialogTrigger>
+    <DialogTrigger
+      handle={newOAuthClientDialog}
+      render={<Button variant={variant} />}
+    >
+      <PlusIcon />
+      New
+    </DialogTrigger>
+  );
+}
+
+function NewOAuthClientDialogRoot() {
+  return (
+    <Dialog handle={newOAuthClientDialog}>
       <DialogPopup className="sm:max-w-xl">
         <Form className="contents">
           <DialogHeader>
@@ -108,3 +119,5 @@ export function NewOAuthClientDialog() {
     </Dialog>
   );
 }
+
+export { NewOAuthClientTrigger, NewOAuthClientDialogRoot };

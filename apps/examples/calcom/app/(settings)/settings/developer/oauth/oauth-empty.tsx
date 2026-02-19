@@ -9,7 +9,7 @@ import {
   EmptyTitle,
 } from "@coss/ui/components/empty";
 import { KeyIcon } from "lucide-react";
-import { NewOAuthClientDialog } from "./new-oauth-client-dialog";
+import { NewOAuthClientTrigger } from "./new-oauth-client-dialog";
 
 export function OAuthEmpty() {
   return (
@@ -25,7 +25,7 @@ export function OAuthEmpty() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <NewOAuthClientDialog />
+        <NewOAuthClientTrigger />
       </EmptyContent>
     </Empty>
   );
