@@ -58,7 +58,7 @@ export function EditOAuthClientDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogPopup className="max-w-xl">
+      <DialogPopup className="max-w-xl" showCloseButton={false}>
         <Form className="contents">
           <DialogHeader>
             <DialogTitle>Edit OAuth client</DialogTitle>

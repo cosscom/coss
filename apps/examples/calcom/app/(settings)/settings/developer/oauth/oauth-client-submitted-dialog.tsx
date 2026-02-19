@@ -39,7 +39,7 @@ export function OAuthClientSubmittedDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogPopup className="max-w-xl">
+      <DialogPopup className="max-w-xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>OAuth Client Submitted</DialogTitle>
           <DialogDescription>
