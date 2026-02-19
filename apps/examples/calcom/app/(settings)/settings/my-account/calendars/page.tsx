@@ -4,35 +4,45 @@ import {
   CardFrame,
   CardFrameAction,
   CardFrameDescription,
+  CardFrameFooter,
   CardFrameHeader,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 
-import { CalendarsEmpty } from "./calendars-empty";
+import { CalendarsDemoForm } from "./calendars-demo-form";
+import { CheckForConflictsCard } from "./check-for-conflicts-card";
 
 export default function CalendarsSettingsPage() {
   return (
-    <CardFrame>
-      <CardFrameHeader>
-        <CardFrameTitle>Calendars</CardFrameTitle>
-        <CardFrameDescription>
-          Configure how your event types interact with your calendars
-        </CardFrameDescription>
-        <CardFrameAction>
-          <Button variant="outline">
-            <PlusIcon />
-            Add calendar
-          </Button>
-        </CardFrameAction>
-      </CardFrameHeader>
+    <div className="flex flex-col gap-4">
+      <CardFrame>
+        <CardFrameHeader>
+          <CardFrameTitle>Calendars</CardFrameTitle>
+          <CardFrameDescription>
+            Configure how your event types interact with your calendars
+          </CardFrameDescription>
+          <CardFrameAction>
+            <Button variant="outline">
+              <PlusIcon />
+              Add calendar
+            </Button>
+          </CardFrameAction>
+        </CardFrameHeader>
 
-      <Card>
-        <CardPanel className="p-0">
-          <CalendarsEmpty />
-        </CardPanel>
-      </Card>
-    </CardFrame>
+        <Card className="rounded-b-none!">
+          <CardPanel>
+            <CalendarsDemoForm />
+          </CardPanel>
+        </Card>
+
+        <CardFrameFooter className="flex justify-end">
+          <Button>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
+
+      <CheckForConflictsCard />
+    </div>
   );
 }
