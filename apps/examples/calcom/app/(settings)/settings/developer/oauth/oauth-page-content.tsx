@@ -12,6 +12,7 @@ import {
 } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { EditOAuthClientDialog } from "./edit-oauth-client-dialog";
 import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
 import type { OAuthClientSubmittedData } from "./oauth-client-submitted-dialog";
 import { OAuthClientSubmittedDialog } from "./oauth-client-submitted-dialog";
@@ -20,8 +21,27 @@ import { OAuthClientsList } from "./oauth-clients-list";
 import { OAuthEmpty } from "./oauth-empty";
 
 const mockClients: OAuthClientItem[] = [
-  { id: "1", name: "Test", status: "pending" },
-  { id: "2", name: "test", status: "pending" },
+  {
+    clientId: "cl_mock_1",
+    clientSecret: "cs_mock_1",
+    id: "1",
+    name: "Test",
+    purpose: "Internal testing app",
+    redirectUri: "https://example.com/callback",
+    status: "pending",
+    usePkce: false,
+    websiteUrl: "https://example.com",
+  },
+  {
+    clientId: "cl_mock_2",
+    clientSecret: "cs_mock_2",
+    id: "2",
+    name: "test",
+    redirectUri: "http://localhost:3000/callback",
+    status: "pending",
+    usePkce: true,
+    websiteUrl: "http://localhost:3000",
+  },
 ];
 
 export function OAuthPageContent() {
@@ -29,6 +49,10 @@ export function OAuthPageContent() {
   const [submittedDialogOpen, setSubmittedDialogOpen] = useState(false);
   const [submittedData, setSubmittedData] =
     useState<OAuthClientSubmittedData | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<OAuthClientItem | null>(
+    null,
+  );
 
   const clients = mockClients;
   const hasClients = clients.length > 0;
@@ -37,6 +61,11 @@ export function OAuthPageContent() {
     setCreateDialogOpen(false);
     setSubmittedData(data);
     setSubmittedDialogOpen(true);
+  }
+
+  function handleEditClick(client: OAuthClientItem) {
+    setEditingClient(client);
+    setEditDialogOpen(true);
   }
 
   return (
@@ -63,7 +92,10 @@ export function OAuthPageContent() {
         <Card>
           <CardPanel className="p-0">
             {hasClients ? (
-              <OAuthClientsList clients={clients} />
+              <OAuthClientsList
+                clients={clients}
+                onEditClick={handleEditClick}
+              />
             ) : (
               <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
             )}
@@ -81,6 +113,12 @@ export function OAuthPageContent() {
         data={submittedData}
         onOpenChange={setSubmittedDialogOpen}
         open={submittedDialogOpen}
+      />
+
+      <EditOAuthClientDialog
+        client={editingClient}
+        onOpenChange={setEditDialogOpen}
+        open={editDialogOpen}
       />
     </>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { ChevronRightIcon, KeyIcon } from "lucide-react";
 import {
   ListItem,
@@ -10,13 +10,18 @@ import {
   ListItemContent,
   ListItemHeader,
   ListItemTitle,
-  ListItemTitleLink,
 } from "@/components/list-item";
 
 export interface OAuthClientItem {
   id: string;
   name: string;
   status: "pending" | "approved" | "rejected";
+  clientId: string;
+  clientSecret: string;
+  purpose?: string;
+  redirectUri?: string;
+  websiteUrl?: string;
+  usePkce?: boolean;
   logo?: string;
 }
 
@@ -32,7 +37,13 @@ const statusLabelMap = {
   rejected: "Rejected",
 } as const;
 
-export function OAuthClientsList({ clients }: { clients: OAuthClientItem[] }) {
+export function OAuthClientsList({
+  clients,
+  onEditClick,
+}: {
+  clients: OAuthClientItem[];
+  onEditClick: (client: OAuthClientItem) => void;
+}) {
   return (
     <>
       {clients.map((client) => (
@@ -41,7 +52,7 @@ export function OAuthClientsList({ clients }: { clients: OAuthClientItem[] }) {
             <ListItemHeader>
               <ListItemTitle className="flex items-center gap-2">
                 <KeyIcon aria-hidden="true" className="size-4 opacity-80" />
-                <ListItemTitleLink href="#">{client.name}</ListItemTitleLink>
+                {client.name}
               </ListItemTitle>
             </ListItemHeader>
           </ListItemContent>
@@ -54,10 +65,14 @@ export function OAuthClientsList({ clients }: { clients: OAuthClientItem[] }) {
             </Badge>
           </ListItemBadges>
           <ListItemActions>
-            <ChevronRightIcon
-              aria-hidden="true"
-              className="size-4 opacity-80"
-            />
+            <Button
+              aria-label={`Edit ${client.name}`}
+              onClick={() => onEditClick(client)}
+              size="icon"
+              variant="ghost"
+            >
+              <ChevronRightIcon aria-hidden="true" />
+            </Button>
           </ListItemActions>
         </ListItem>
       ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@coss/ui/components/avatar";
+import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
   Dialog,
@@ -15,57 +16,131 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Form } from "@coss/ui/components/form";
 import { Input } from "@coss/ui/components/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@coss/ui/components/input-group";
 import { Label } from "@coss/ui/components/label";
 import { Switch } from "@coss/ui/components/switch";
 import { Textarea } from "@coss/ui/components/textarea";
-import { KeyIcon } from "lucide-react";
-import type { FormEvent } from "react";
-import type { OAuthClientSubmittedData } from "./oauth-client-submitted-dialog";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
+import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
+import { CheckIcon, CopyIcon, KeyIcon } from "lucide-react";
+import type { OAuthClientItem } from "./oauth-clients-list";
 
-interface NewOAuthClientDialogRootProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreateSuccess: (data: OAuthClientSubmittedData) => void;
+const statusVariantMap = {
+  approved: "success",
+  pending: "warning",
+  rejected: "error",
+} as const;
+
+const statusLabelMap = {
+  approved: "Approved",
+  pending: "Pending",
+  rejected: "Rejected",
+} as const;
+
+function CopyableField({
+  label,
+  value,
+  "aria-label": ariaLabel,
+}: {
+  label: string;
+  value: string;
+  "aria-label": string;
+}) {
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <InputGroup>
+        <InputGroupInput
+          aria-label={ariaLabel}
+          className="font-mono"
+          readOnly
+          value={value}
+        />
+        <InputGroupAddon align="inline-end">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  aria-label={`Copy ${label}`}
+                  onClick={() => copyToClipboard(value)}
+                  size="icon-xs"
+                  variant="ghost"
+                />
+              }
+            >
+              {isCopied ? <CheckIcon /> : <CopyIcon />}
+            </TooltipTrigger>
+            <TooltipPopup>
+              <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+            </TooltipPopup>
+          </Tooltip>
+        </InputGroupAddon>
+      </InputGroup>
+    </Field>
+  );
 }
 
-function NewOAuthClientDialogRoot({
+interface EditOAuthClientDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  client: OAuthClientItem | null;
+}
+
+export function EditOAuthClientDialog({
   open,
   onOpenChange,
-  onCreateSuccess,
-}: NewOAuthClientDialogRootProps) {
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const name = (formData.get("clientName") as string) || "My OAuth App";
-    onCreateSuccess({
-      clientId: "cl_mock_1",
-      clientSecret: "cs_mock_1",
-      name,
-    });
-    form.reset();
-  }
+  client,
+}: EditOAuthClientDialogProps) {
+  if (!client) return null;
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl">
-        <Form className="contents" onSubmit={handleSubmit}>
+        <Form className="contents">
           <DialogHeader>
-            <DialogTitle>Create OAuth client</DialogTitle>
+            <DialogTitle>Edit OAuth client</DialogTitle>
             <DialogDescription>
-              Create a new OAuth client to allow third-party applications to
-              access Cal.com on behalf of your users.
+              View and manage your OAuth client settings.
             </DialogDescription>
           </DialogHeader>
           <DialogPanel className="grid gap-5">
+            <div>
+              <Badge variant={statusVariantMap[client.status]}>
+                {statusLabelMap[client.status]}
+              </Badge>
+            </div>
+
             <Field>
               <FieldLabel>Client name</FieldLabel>
-              <Input name="clientName" placeholder="My Oauth App" type="text" />
+              <Input defaultValue={client.name} name="clientName" type="text" />
             </Field>
+
+            <CopyableField
+              aria-label="Client ID"
+              label="Client ID"
+              value={client.clientId}
+            />
+
+            <CopyableField
+              aria-label="Client secret"
+              label="Client Secret"
+              value={client.clientSecret}
+            />
 
             <Field>
               <FieldLabel>Purpose</FieldLabel>
               <Textarea
+                defaultValue={client.purpose}
                 name="purpose"
                 placeholder="Explain what this OAuth client is for and how it will be used"
                 rows={3}
@@ -79,6 +154,7 @@ function NewOAuthClientDialogRoot({
             <Field>
               <FieldLabel>Redirect URI</FieldLabel>
               <Input
+                defaultValue={client.redirectUri}
                 name="redirectUri"
                 placeholder="https://example.com/callback"
                 type="url"
@@ -91,6 +167,7 @@ function NewOAuthClientDialogRoot({
             <Field>
               <FieldLabel>Website URL</FieldLabel>
               <Input
+                defaultValue={client.websiteUrl}
                 name="websiteUrl"
                 placeholder="https://example.com"
                 type="url"
@@ -103,7 +180,7 @@ function NewOAuthClientDialogRoot({
 
             <Field>
               <FieldLabel>
-                <Switch />
+                <Switch defaultChecked={client.usePkce} />
                 Use PKCE
               </FieldLabel>
               <FieldDescription>
@@ -135,12 +212,10 @@ function NewOAuthClientDialogRoot({
             <DialogClose render={<Button variant="ghost" />}>
               Cancel
             </DialogClose>
-            <Button type="submit">Create</Button>
+            <Button type="submit">Save</Button>
           </DialogFooter>
         </Form>
       </DialogPopup>
     </Dialog>
   );
 }
-
-export { NewOAuthClientDialogRoot };
