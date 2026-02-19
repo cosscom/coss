@@ -1,14 +1,13 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
-import { Button } from "@coss/ui/components/button";
 import { ChevronRightIcon, KeyIcon } from "lucide-react";
 import {
   ListItem,
-  ListItemActions,
   ListItemBadges,
   ListItemContent,
   ListItemHeader,
+  ListItemSpanningTrigger,
   ListItemTitle,
 } from "@/components/list-item";
 
@@ -64,16 +63,20 @@ export function OAuthClientsList({
               {statusLabelMap[client.status]}
             </Badge>
           </ListItemBadges>
-          <ListItemActions>
-            <Button
-              aria-label={`Edit ${client.name}`}
-              onClick={() => onEditClick(client)}
-              size="icon"
-              variant="ghost"
-            >
-              <ChevronRightIcon aria-hidden="true" />
-            </Button>
-          </ListItemActions>
+          <ListItemSpanningTrigger
+            render={
+              <button
+                aria-label={`Edit ${client.name}`}
+                onClick={() => onEditClick(client)}
+                type="button"
+              />
+            }
+          >
+            <ChevronRightIcon
+              aria-hidden="true"
+              className="size-4 opacity-80"
+            />
+          </ListItemSpanningTrigger>
         </ListItem>
       ))}
     </>

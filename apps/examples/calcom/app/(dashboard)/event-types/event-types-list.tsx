@@ -20,6 +20,7 @@ import {
   ShuffleIcon,
   UsersIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import {
   ListItem,
@@ -28,8 +29,8 @@ import {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemSpanningTrigger,
   ListItemTitle,
-  ListItemTitleLink,
   SortableListItem,
   sortableListClasses,
 } from "@/components/list-item";
@@ -143,9 +144,9 @@ function EventTypeItemContent({
         <ListItemHeader>
           <div className="flex items-center gap-2">
             <ListItemTitle>
-              <ListItemTitleLink href={eventPath}>
+              <ListItemSpanningTrigger render={<Link href={eventPath} />}>
                 {eventType.title}
-              </ListItemTitleLink>
+              </ListItemSpanningTrigger>
             </ListItemTitle>
             <span className="text-muted-foreground text-xs max-sm:hidden">
               {eventPath}

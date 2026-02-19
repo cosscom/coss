@@ -43,8 +43,8 @@ import {
   ListItemContent,
   ListItemDescription,
   ListItemHeader,
+  ListItemSpanningTrigger,
   ListItemTitle,
-  ListItemTitleLink,
 } from "@/components/list-item";
 import { useLoadingState } from "@/hooks/use-loading-state";
 import {
@@ -115,9 +115,9 @@ export function BookingsList() {
                         <ListItemTitle
                           className={cn(isCancelled && "line-through")}
                         >
-                          <ListItemTitleLink href="#">
+                          <ListItemSpanningTrigger render={<Link href="#" />}>
                             {booking.title}
-                          </ListItemTitleLink>
+                          </ListItemSpanningTrigger>
                         </ListItemTitle>
                         <ListItemDescription>
                           {participants}
