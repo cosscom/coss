@@ -17,9 +17,10 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Form } from "@coss/ui/components/form";
 import { Input } from "@coss/ui/components/input";
+import { Label } from "@coss/ui/components/label";
 import { Switch } from "@coss/ui/components/switch";
 import { Textarea } from "@coss/ui/components/textarea";
-import { KeyIcon, PlusIcon, UploadIcon } from "lucide-react";
+import { KeyIcon, PlusIcon } from "lucide-react";
 
 const newOAuthClientDialog = DialogCreateHandle();
 
@@ -93,20 +94,24 @@ function NewOAuthClientDialogRoot() {
               </FieldDescription>
             </Field>
 
-            <Field>
-              <FieldLabel>Logo</FieldLabel>
-              <div className="flex items-center gap-4">
-                <Avatar className="size-12">
-                  <AvatarFallback>
-                    <KeyIcon className="size-5 text-muted-foreground" />
-                  </AvatarFallback>
-                </Avatar>
-                <Button size="sm" type="button" variant="outline">
-                  <UploadIcon />
-                  Upload logo
-                </Button>
+            <div className="flex items-center gap-4">
+              <Avatar className="size-16">
+                <AvatarFallback className="text-xl">
+                  <KeyIcon className="size-5 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1">
+                <Label className="text-sm">Logo</Label>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" type="button" variant="outline">
+                    Upload logo
+                  </Button>
+                  <Button size="sm" type="button" variant="ghost">
+                    Remove
+                  </Button>
+                </div>
               </div>
-            </Field>
+            </div>
           </DialogPanel>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>
