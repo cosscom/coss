@@ -68,6 +68,7 @@ export const userSettingsItems: SettingsNavItem[] = [
   {
     children: [
       { title: "Webhooks", url: "/settings/developer/webhooks" },
+      { title: "OAuth", url: "/settings/developer/oauth" },
       { title: "API keys", url: "/settings/developer/api-keys" },
     ],
     icon: TerminalIcon,
