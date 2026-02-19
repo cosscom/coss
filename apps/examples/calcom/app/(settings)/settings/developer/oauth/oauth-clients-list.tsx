@@ -1,14 +1,26 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { EmptyMedia } from "@coss/ui/components/empty";
-import { ChevronRightIcon, KeyIcon } from "lucide-react";
+import {
+  Menu,
+  MenuItem,
+  MenuPopup,
+  MenuTrigger,
+} from "@coss/ui/components/menu";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
+import { EllipsisIcon, KeyIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import {
   ListItem,
+  ListItemActions,
   ListItemBadges,
   ListItemContent,
   ListItemHeader,
-  ListItemSpanningTrigger,
   ListItemTitle,
 } from "@/components/list-item";
 
@@ -40,9 +52,11 @@ const statusLabelMap = {
 export function OAuthClientsList({
   clients,
   onEditClick,
+  onRemoveClick,
 }: {
   clients: OAuthClientItem[];
   onEditClick: (client: OAuthClientItem) => void;
+  onRemoveClick: (client: OAuthClientItem) => void;
 }) {
   return (
     <>
@@ -66,20 +80,41 @@ export function OAuthClientsList({
               {statusLabelMap[client.status]}
             </Badge>
           </ListItemBadges>
-          <ListItemSpanningTrigger
-            render={
-              <button
-                aria-label={`Edit ${client.name}`}
-                onClick={() => onEditClick(client)}
-                type="button"
-              />
-            }
-          >
-            <ChevronRightIcon
-              aria-hidden="true"
-              className="size-4 opacity-80"
-            />
-          </ListItemSpanningTrigger>
+          <ListItemActions>
+            <Menu>
+              <Tooltip>
+                <MenuTrigger
+                  render={
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          aria-label={`Options for ${client.name}`}
+                          size="icon"
+                          variant="outline"
+                        >
+                          <EllipsisIcon />
+                        </Button>
+                      }
+                    />
+                  }
+                />
+                <TooltipPopup>Options</TooltipPopup>
+              </Tooltip>
+              <MenuPopup align="end">
+                <MenuItem onClick={() => onEditClick(client)}>
+                  <PencilIcon />
+                  Edit
+                </MenuItem>
+                <MenuItem
+                  onClick={() => onRemoveClick(client)}
+                  variant="destructive"
+                >
+                  <Trash2Icon />
+                  Remove
+                </MenuItem>
+              </MenuPopup>
+            </Menu>
+          </ListItemActions>
         </ListItem>
       ))}
     </>

@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogPopup,
+  AlertDialogTitle,
+} from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
 import {
   Card,
@@ -18,7 +27,7 @@ import type { OAuthClientItem } from "./oauth-clients-list";
 import { OAuthClientsList } from "./oauth-clients-list";
 import { OAuthEmpty } from "./oauth-empty";
 
-const mockClients: OAuthClientItem[] = [
+const initialMockClients: OAuthClientItem[] = [
   {
     clientId: "cl_mock_1",
     clientSecret: "cs_mock_1",
@@ -44,18 +53,42 @@ const mockClients: OAuthClientItem[] = [
 ];
 
 export function OAuthPageContent() {
+  const [clients, setClients] = useState<OAuthClientItem[]>(initialMockClients);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<OAuthClientItem | null>(
     null,
   );
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [clientToRemove, setClientToRemove] = useState<OAuthClientItem | null>(
+    null,
+  );
 
-  const clients = mockClients;
   const hasClients = clients.length > 0;
 
   function handleEditClick(client: OAuthClientItem) {
     setEditingClient(client);
     setEditDialogOpen(true);
+  }
+
+  function handleRemoveClick(client: OAuthClientItem) {
+    setClientToRemove(client);
+    setRemoveDialogOpen(true);
+  }
+
+  function handleRemoveConfirm() {
+    if (clientToRemove) {
+      setClients((prev) => prev.filter((c) => c.id !== clientToRemove.id));
+      setClientToRemove(null);
+    }
+    setRemoveDialogOpen(false);
+  }
+
+  function handleRemoveDialogOpenChange(open: boolean) {
+    if (!open) {
+      setClientToRemove(null);
+    }
+    setRemoveDialogOpen(open);
   }
 
   return (
@@ -85,6 +118,7 @@ export function OAuthPageContent() {
               <OAuthClientsList
                 clients={clients}
                 onEditClick={handleEditClick}
+                onRemoveClick={handleRemoveClick}
               />
             ) : (
               <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
@@ -103,6 +137,30 @@ export function OAuthPageContent() {
         onOpenChange={setEditDialogOpen}
         open={editDialogOpen}
       />
+
+      <AlertDialog
+        onOpenChange={handleRemoveDialogOpenChange}
+        open={removeDialogOpen}
+      >
+        <AlertDialogPopup>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove OAuth client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this OAuth client? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogClose render={<Button variant="ghost" />}>
+              Cancel
+            </AlertDialogClose>
+            <AlertDialogClose
+              onClick={handleRemoveConfirm}
+              render={<Button variant="destructive">Remove</Button>}
+            />
+          </AlertDialogFooter>
+        </AlertDialogPopup>
+      </AlertDialog>
     </>
   );
 }
