@@ -40,7 +40,7 @@ export function AddEventTypeDialog({
       <DialogTrigger render={<Button className={className} />}>
         {children}
       </DialogTrigger>
-      <DialogPopup className="sm:max-w-xl">
+      <DialogPopup className="max-w-xl">
         <Form className="contents">
           <DialogHeader>
             <DialogTitle>Add a new event type</DialogTitle>

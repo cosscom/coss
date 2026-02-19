@@ -1,31 +1,5 @@
-import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
-import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
-import { OAuthEmpty } from "./oauth-empty";
+import { OAuthPageContent } from "./oauth-page-content";
 
 export default function OAuthSettingsPage() {
-  return (
-    <CardFrame>
-      <CardFrameHeader>
-        <CardFrameTitle>OAuth Clients</CardFrameTitle>
-        <CardFrameDescription>
-          Create and manage OAuth clients for third-party integrations
-        </CardFrameDescription>
-      </CardFrameHeader>
-
-      <Card>
-        <CardPanel className="p-0">
-          <OAuthEmpty />
-        </CardPanel>
-      </Card>
-
-      <NewOAuthClientDialogRoot />
-    </CardFrame>
-  );
+  return <OAuthPageContent />;
 }

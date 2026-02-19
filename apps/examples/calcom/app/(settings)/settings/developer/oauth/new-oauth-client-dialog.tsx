@@ -5,14 +5,12 @@ import { Button } from "@coss/ui/components/button";
 import {
   Dialog,
   DialogClose,
-  DialogCreateHandle,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogPanel,
   DialogPopup,
   DialogTitle,
-  DialogTrigger,
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Form } from "@coss/ui/components/form";
@@ -20,27 +18,39 @@ import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Switch } from "@coss/ui/components/switch";
 import { Textarea } from "@coss/ui/components/textarea";
-import { KeyIcon, PlusIcon } from "lucide-react";
+import { KeyIcon } from "lucide-react";
+import type { FormEvent } from "react";
+import type { OAuthClientSubmittedData } from "./oauth-client-submitted-dialog";
 
-const newOAuthClientDialog = DialogCreateHandle();
-
-function NewOAuthClientTrigger({ variant }: { variant?: "outline" }) {
-  return (
-    <DialogTrigger
-      handle={newOAuthClientDialog}
-      render={<Button variant={variant} />}
-    >
-      <PlusIcon />
-      New
-    </DialogTrigger>
-  );
+interface NewOAuthClientDialogRootProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreateSuccess: (data: OAuthClientSubmittedData) => void;
 }
 
-function NewOAuthClientDialogRoot() {
+function NewOAuthClientDialogRoot({
+  open,
+  onOpenChange,
+  onCreateSuccess,
+}: NewOAuthClientDialogRootProps) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const name = (formData.get("clientName") as string) || "My OAuth App";
+    onCreateSuccess({
+      clientId: "c9x7k2m4p9q1r3s5t8v0w2y4",
+      clientSecret:
+        "ddbec2e307affb39900d524ae0feaca7fb2edcacfa85705a3f1c2b4d6e8f0a2",
+      name,
+    });
+    form.reset();
+  }
+
   return (
-    <Dialog handle={newOAuthClientDialog}>
-      <DialogPopup className="sm:max-w-xl">
-        <Form className="contents">
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogPopup className="max-w-xl">
+        <Form className="contents" onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create OAuth client</DialogTitle>
             <DialogDescription>
@@ -51,12 +61,13 @@ function NewOAuthClientDialogRoot() {
           <DialogPanel className="grid gap-5">
             <Field>
               <FieldLabel>Client name</FieldLabel>
-              <Input placeholder="My Oauth App" type="text" />
+              <Input name="clientName" placeholder="My Oauth App" type="text" />
             </Field>
 
             <Field>
               <FieldLabel>Purpose</FieldLabel>
               <Textarea
+                name="purpose"
                 placeholder="Explain what this OAuth client is for and how it will be used"
                 rows={3}
               />
@@ -68,7 +79,11 @@ function NewOAuthClientDialogRoot() {
 
             <Field>
               <FieldLabel>Redirect URI</FieldLabel>
-              <Input placeholder="https://example.com/callback" type="url" />
+              <Input
+                name="redirectUri"
+                placeholder="https://example.com/callback"
+                type="url"
+              />
               <FieldDescription>
                 The URL where users will be redirected after authorization.
               </FieldDescription>
@@ -76,7 +91,11 @@ function NewOAuthClientDialogRoot() {
 
             <Field>
               <FieldLabel>Website URL</FieldLabel>
-              <Input placeholder="https://example.com" type="url" />
+              <Input
+                name="websiteUrl"
+                placeholder="https://example.com"
+                type="url"
+              />
               <FieldDescription>
                 For development, you can use a localhost URL (e.g.
                 http://localhost:3000).
@@ -125,4 +144,4 @@ function NewOAuthClientDialogRoot() {
   );
 }
 
-export { NewOAuthClientTrigger, NewOAuthClientDialogRoot };
+export { NewOAuthClientDialogRoot };
