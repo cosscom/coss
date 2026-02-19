@@ -18,12 +18,7 @@ import { Form } from "@coss/ui/components/form";
 import { Input } from "@coss/ui/components/input";
 import { Switch } from "@coss/ui/components/switch";
 import { Textarea } from "@coss/ui/components/textarea";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
-import { InfoIcon, KeyIcon, PlusIcon, UploadIcon } from "lucide-react";
+import { KeyIcon, PlusIcon, UploadIcon } from "lucide-react";
 
 export function NewOAuthClientDialog() {
   return (
@@ -44,30 +39,19 @@ export function NewOAuthClientDialog() {
           <DialogPanel className="grid gap-5">
             <Field>
               <FieldLabel>Client name</FieldLabel>
-              <Input placeholder="My App" type="text" />
+              <Input placeholder="My Oauth App" type="text" />
             </Field>
 
             <Field>
-              <FieldLabel>
-                Purpose
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <span className="inline-flex text-muted-foreground">
-                        <InfoIcon className="size-4" />
-                      </span>
-                    }
-                  />
-                  <TooltipPopup>
-                    Briefly describe what your application does and how it will
-                    use the Cal.com API.
-                  </TooltipPopup>
-                </Tooltip>
-              </FieldLabel>
+              <FieldLabel>Purpose</FieldLabel>
               <Textarea
-                placeholder="Describe how your application will use Cal.com..."
+                placeholder="Explain what this OAuth client is for and how it will be used"
                 rows={3}
               />
+              <FieldDescription>
+                Please explain how and what this OAuth client will be used for.
+                This helps us review and approve your request.
+              </FieldDescription>
             </Field>
 
             <Field>
@@ -79,23 +63,12 @@ export function NewOAuthClientDialog() {
             </Field>
 
             <Field>
-              <FieldLabel>
-                Website URL
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <span className="inline-flex text-muted-foreground">
-                        <InfoIcon className="size-4" />
-                      </span>
-                    }
-                  />
-                  <TooltipPopup>
-                    The public-facing URL of your application. This will be
-                    shown to users during the authorization flow.
-                  </TooltipPopup>
-                </Tooltip>
-              </FieldLabel>
+              <FieldLabel>Website URL</FieldLabel>
               <Input placeholder="https://example.com" type="url" />
+              <FieldDescription>
+                For development, you can use a localhost URL (e.g.
+                http://localhost:3000).
+              </FieldDescription>
             </Field>
 
             <Field>
