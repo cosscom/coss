@@ -1,24 +1,37 @@
 "use client";
 
+import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
+  CardFrameAction,
   CardFrameDescription,
   CardFrameHeader,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
 import type { OAuthClientSubmittedData } from "./oauth-client-submitted-dialog";
 import { OAuthClientSubmittedDialog } from "./oauth-client-submitted-dialog";
+import type { OAuthClientItem } from "./oauth-clients-list";
+import { OAuthClientsList } from "./oauth-clients-list";
 import { OAuthEmpty } from "./oauth-empty";
+
+const mockClients: OAuthClientItem[] = [
+  { id: "1", name: "Test", status: "pending" },
+  { id: "2", name: "test", status: "pending" },
+];
 
 export function OAuthPageContent() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [submittedDialogOpen, setSubmittedDialogOpen] = useState(false);
   const [submittedData, setSubmittedData] =
     useState<OAuthClientSubmittedData | null>(null);
+
+  const clients = mockClients;
+  const hasClients = clients.length > 0;
 
   function handleCreateSuccess(data: OAuthClientSubmittedData) {
     setCreateDialogOpen(false);
@@ -34,11 +47,26 @@ export function OAuthPageContent() {
           <CardFrameDescription>
             Create and manage OAuth clients for third-party integrations
           </CardFrameDescription>
+          {hasClients && (
+            <CardFrameAction>
+              <Button
+                onClick={() => setCreateDialogOpen(true)}
+                variant="outline"
+              >
+                <PlusIcon />
+                New
+              </Button>
+            </CardFrameAction>
+          )}
         </CardFrameHeader>
 
         <Card>
           <CardPanel className="p-0">
-            <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
+            {hasClients ? (
+              <OAuthClientsList clients={clients} />
+            ) : (
+              <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
+            )}
           </CardPanel>
         </Card>
 
