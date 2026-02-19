@@ -3,13 +3,7 @@
 import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import { EmptyMedia } from "@coss/ui/components/empty";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
 import { DownloadIcon, FileTextIcon, LockIcon } from "lucide-react";
-import Link from "next/link";
 
 interface ComplianceDocument {
   id: string;
@@ -68,38 +62,6 @@ const DOCUMENT_SECTIONS = [
   documents: readonly ComplianceDocument[];
 }[];
 
-function DocumentCard({
-  document,
-  hasAccess,
-}: {
-  document: ComplianceDocument;
-  hasAccess: boolean;
-}) {
-  return (
-    <Card data-restricted={!hasAccess}>
-      <CardPanel className="p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <EmptyMedia className="m-0 ms-0.5 max-sm:hidden" variant="icon">
-              <FileTextIcon />
-            </EmptyMedia>
-            <div>
-              <p className="font-medium text-sm">{document.name}</p>
-              <p className="text-muted-foreground text-sm">
-                {document.description}
-              </p>
-            </div>
-          </div>
-          <Button disabled={!hasAccess} variant="outline">
-            {hasAccess ? <DownloadIcon /> : <LockIcon />}
-            {hasAccess ? "Download" : "Upgrade to access"}
-          </Button>
-        </div>
-      </CardPanel>
-    </Card>
-  );
-}
-
 export function ComplianceDocuments() {
   const hasRestrictedAccess = false;
 
@@ -109,13 +71,35 @@ export function ComplianceDocuments() {
         <section className="flex flex-col gap-2" key={section.title}>
           <h2 className="font-medium text-sm">{section.title}</h2>
           <div className="flex flex-col gap-2">
-            {section.documents.map((doc) => (
-              <DocumentCard
-                document={doc}
-                hasAccess={!doc.restricted || hasRestrictedAccess}
-                key={doc.id}
-              />
-            ))}
+            {section.documents.map((doc) => {
+              const hasAccess = !doc.restricted || hasRestrictedAccess;
+              return (
+                <Card data-restricted={!hasAccess} key={doc.id}>
+                  <CardPanel className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <EmptyMedia
+                          className="m-0 ms-0.5 max-sm:hidden"
+                          variant="icon"
+                        >
+                          <FileTextIcon />
+                        </EmptyMedia>
+                        <div>
+                          <p className="font-medium text-sm">{doc.name}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {doc.description}
+                          </p>
+                        </div>
+                      </div>
+                      <Button disabled={!hasAccess} variant="outline">
+                        {hasAccess ? <DownloadIcon /> : <LockIcon />}
+                        {hasAccess ? "Download" : "Upgrade to access"}
+                      </Button>
+                    </div>
+                  </CardPanel>
+                </Card>
+              );
+            })}
           </div>
         </section>
       ))}
