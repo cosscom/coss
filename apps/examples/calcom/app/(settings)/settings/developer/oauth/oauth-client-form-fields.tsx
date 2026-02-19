@@ -34,7 +34,7 @@ export function OAuthClientFormFields({
           <Input
             defaultValue={defaultValues?.clientName}
             name="clientName"
-            placeholder="My Oauth App"
+            placeholder="My OAuth App"
             type="text"
           />
         </Field>

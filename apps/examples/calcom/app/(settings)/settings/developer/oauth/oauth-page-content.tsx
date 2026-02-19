@@ -14,8 +14,6 @@ import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { EditOAuthClientDialog } from "./edit-oauth-client-dialog";
 import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
-import type { OAuthClientSubmittedData } from "./oauth-client-submitted-dialog";
-import { OAuthClientSubmittedDialog } from "./oauth-client-submitted-dialog";
 import type { OAuthClientItem } from "./oauth-clients-list";
 import { OAuthClientsList } from "./oauth-clients-list";
 import { OAuthEmpty } from "./oauth-empty";
@@ -47,9 +45,6 @@ const mockClients: OAuthClientItem[] = [
 
 export function OAuthPageContent() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [submittedDialogOpen, setSubmittedDialogOpen] = useState(false);
-  const [submittedData, setSubmittedData] =
-    useState<OAuthClientSubmittedData | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<OAuthClientItem | null>(
     null,
@@ -57,12 +52,6 @@ export function OAuthPageContent() {
 
   const clients = mockClients;
   const hasClients = clients.length > 0;
-
-  function handleCreateSuccess(data: OAuthClientSubmittedData) {
-    setCreateDialogOpen(false);
-    setSubmittedData(data);
-    setSubmittedDialogOpen(true);
-  }
 
   function handleEditClick(client: OAuthClientItem) {
     setEditingClient(client);
@@ -104,17 +93,10 @@ export function OAuthPageContent() {
         </Card>
 
         <NewOAuthClientDialogRoot
-          onCreateSuccess={handleCreateSuccess}
           onOpenChange={setCreateDialogOpen}
           open={createDialogOpen}
         />
       </CardFrame>
-
-      <OAuthClientSubmittedDialog
-        data={submittedData}
-        onOpenChange={setSubmittedDialogOpen}
-        open={submittedDialogOpen}
-      />
 
       <EditOAuthClientDialog
         client={editingClient}
