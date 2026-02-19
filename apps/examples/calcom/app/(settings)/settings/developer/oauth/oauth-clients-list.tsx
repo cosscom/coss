@@ -37,14 +37,10 @@ export function OAuthClientsList({ clients }: { clients: OAuthClientItem[] }) {
     <>
       {clients.map((client) => (
         <ListItem key={client.id}>
-          <Avatar className="size-10 shrink-0">
-            <AvatarFallback>
-              <KeyIcon className="size-4 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
           <ListItemContent>
             <ListItemHeader>
-              <ListItemTitle>
+              <ListItemTitle className="flex items-center gap-2">
+                <KeyIcon aria-hidden="true" className="size-4 opacity-80" />
                 <ListItemTitleLink href="#">{client.name}</ListItemTitleLink>
               </ListItemTitle>
             </ListItemHeader>
@@ -58,7 +54,10 @@ export function OAuthClientsList({ clients }: { clients: OAuthClientItem[] }) {
             </Badge>
           </ListItemBadges>
           <ListItemActions>
-            <ChevronRightIcon className="size-5 text-muted-foreground" />
+            <ChevronRightIcon
+              aria-hidden="true"
+              className="size-4 opacity-80"
+            />
           </ListItemActions>
         </ListItem>
       ))}
