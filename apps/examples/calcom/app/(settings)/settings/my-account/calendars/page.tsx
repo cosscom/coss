@@ -10,6 +10,8 @@ import {
 } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 
+import { CalendarsEmpty } from "./calendars-empty";
+
 export default function CalendarsSettingsPage() {
   return (
     <CardFrame>
@@ -27,7 +29,9 @@ export default function CalendarsSettingsPage() {
       </CardFrameHeader>
 
       <Card>
-        <CardPanel className="p-0">{/* Card content */}</CardPanel>
+        <CardPanel className="p-0">
+          <CalendarsEmpty />
+        </CardPanel>
       </Card>
     </CardFrame>
   );
