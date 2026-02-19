@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@coss/ui/components/badge";
+import { EmptyMedia } from "@coss/ui/components/empty";
 import { ChevronRightIcon, KeyIcon } from "lucide-react";
 import {
   ListItem,
@@ -49,8 +50,10 @@ export function OAuthClientsList({
         <ListItem key={client.id}>
           <ListItemContent>
             <ListItemHeader>
-              <ListItemTitle className="flex items-center gap-2">
-                <KeyIcon aria-hidden="true" className="size-4 opacity-80" />
+              <ListItemTitle className="flex items-center gap-4">
+                <EmptyMedia className="m-0 ms-0.5 max-sm:hidden" variant="icon">
+                  <KeyIcon aria-hidden="true" />
+                </EmptyMedia>
                 {client.name}
               </ListItemTitle>
             </ListItemHeader>
