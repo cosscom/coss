@@ -41,21 +41,26 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function getExpirationLabel(item: ApiKeyItem): string {
+function isExpired(item: ApiKeyItem): boolean {
+  if (item.neverExpires || !item.expiresAt) return false;
+  return new Date(item.expiresAt) < new Date();
+}
+
+function getStatusLabel(item: ApiKeyItem): string {
+  return isExpired(item) ? "Expired" : "Active";
+}
+
+function getStatusVariant(item: ApiKeyItem): "success" | "error" {
+  return isExpired(item) ? "error" : "success";
+}
+
+function getExpirationDescription(item: ApiKeyItem): string {
   if (item.neverExpires) return "Never expires";
   if (!item.expiresAt) return "No expiration set";
   const expiresDate = new Date(item.expiresAt);
   const now = new Date();
   if (expiresDate < now) return `Expired ${formatDate(item.expiresAt)}`;
   return `Expires ${formatDate(item.expiresAt)}`;
-}
-
-function getExpirationVariant(item: ApiKeyItem): "success" | "error" {
-  if (item.neverExpires) return "success";
-  if (!item.expiresAt) return "success";
-  const expiresDate = new Date(item.expiresAt);
-  const now = new Date();
-  return expiresDate < now ? "error" : "success";
 }
 
 export function ApiKeysList({
@@ -75,16 +80,16 @@ export function ApiKeysList({
             <ListItemHeader>
               <ListItemTitle>{apiKey.note || "Untitled API Key"}</ListItemTitle>
               <ListItemDescription>
-                Created {formatDate(apiKey.createdAt)}
+                {getExpirationDescription(apiKey)}
               </ListItemDescription>
             </ListItemHeader>
           </ListItemContent>
           <ListItemBadges>
             <Badge
               className="pointer-events-none"
-              variant={getExpirationVariant(apiKey)}
+              variant={getStatusVariant(apiKey)}
             >
-              {getExpirationLabel(apiKey)}
+              {getStatusLabel(apiKey)}
             </Badge>
           </ListItemBadges>
           <ListItemActions>
