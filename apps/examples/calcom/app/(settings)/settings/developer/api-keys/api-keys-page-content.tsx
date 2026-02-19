@@ -134,10 +134,13 @@ export function ApiKeysPageContent() {
       >
         <AlertDialogPopup>
           <AlertDialogHeader>
-            <AlertDialogTitle>Revoke API key</AlertDialogTitle>
+            <AlertDialogTitle>
+              Permanently remove this API key from your account?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to revoke this API key? Any applications
-              using this key will no longer be able to authenticate.
+              This will permanently delete the API key. Any applications using
+              this key will immediately lose access to your account. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -146,7 +149,9 @@ export function ApiKeysPageContent() {
             </AlertDialogClose>
             <AlertDialogClose
               onClick={handleRevokeConfirm}
-              render={<Button variant="destructive">Revoke</Button>}
+              render={
+                <Button variant="destructive">Revoke this API key</Button>
+              }
             />
           </AlertDialogFooter>
         </AlertDialogPopup>

@@ -22,10 +22,9 @@ export function ApiKeysEmpty({ onNewClick }: ApiKeysEmptyProps) {
         <EmptyMedia variant="icon">
           <KeyIcon />
         </EmptyMedia>
-        <EmptyTitle>No API Keys</EmptyTitle>
+        <EmptyTitle>Create your first API key</EmptyTitle>
         <EmptyDescription>
-          You haven&apos;t created any API keys yet. Create one to get started
-          with the Cal.com API.
+          API keys allow other apps to communicate with Cal.com
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

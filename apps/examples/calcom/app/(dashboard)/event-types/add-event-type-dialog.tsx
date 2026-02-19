@@ -48,7 +48,7 @@ export function AddEventTypeDialog({
               Set up event types to offer different types of meetings.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel className="grid gap-5">
+          <DialogPanel className="grid gap-6">
             <Field>
               <FieldLabel>Title</FieldLabel>
               <Input defaultValue="Quick Chat" type="text" />

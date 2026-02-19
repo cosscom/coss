@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { Field, FieldLabel } from "@coss/ui/components/field";
+import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -19,12 +19,14 @@ interface CopyableFieldProps {
   label: string;
   value: string;
   "aria-label": string;
+  description?: React.ReactNode;
 }
 
 export function CopyableField({
   label,
   value,
   "aria-label": ariaLabel,
+  description,
 }: CopyableFieldProps) {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
@@ -58,6 +60,7 @@ export function CopyableField({
           </Tooltip>
         </InputGroupAddon>
       </InputGroup>
+      {description && <FieldDescription>{description}</FieldDescription>}
     </Field>
   );
 }

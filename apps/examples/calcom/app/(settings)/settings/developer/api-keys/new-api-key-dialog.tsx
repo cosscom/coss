@@ -1,8 +1,12 @@
 "use client";
 
-import { Alert, AlertDescription } from "@coss/ui/components/alert";
+import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Button } from "@coss/ui/components/button";
-import { Checkbox } from "@coss/ui/components/checkbox";
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "@coss/ui/components/collapsible";
 import {
   Dialog,
   DialogClose,
@@ -16,7 +20,15 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Form } from "@coss/ui/components/form";
 import { Input } from "@coss/ui/components/input";
-import { TriangleAlertIcon } from "lucide-react";
+import {
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+} from "@coss/ui/components/select";
+import { Switch } from "@coss/ui/components/switch";
+import { InfoIcon, TriangleAlertIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CopyableField } from "../oauth/copyable-field";
 
@@ -55,44 +67,73 @@ export function NewApiKeyDialog({ open, onOpenChange }: NewApiKeyDialogProps) {
         {isFormStep ? (
           <Form className="contents" onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Create API key</DialogTitle>
+              <DialogTitle>Create an API key</DialogTitle>
               <DialogDescription>
-                Create a new API key to authenticate with the Cal.com API.
+                API keys allow you to make API calls for your own account.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-5">
+            <DialogPanel className="grid gap-6">
+              <Alert variant="info">
+                <InfoIcon />
+                <AlertDescription>
+                  Here we can say something about OAuth with a link to the docs.
+                </AlertDescription>
+              </Alert>
               <Field>
-                <FieldLabel>Personal note</FieldLabel>
-                <Input
-                  name="note"
-                  placeholder="What is this key for?"
-                  type="text"
-                />
-                <FieldDescription>
-                  A personal note to help you identify this key.
-                </FieldDescription>
+                <FieldLabel>Name this key</FieldLabel>
+                <Input name="note" placeholder="E.g. Development" type="text" />
               </Field>
 
-              <Field>
-                <FieldLabel>Expiration date</FieldLabel>
-                <Input disabled={neverExpires} name="expiresAt" type="date" />
-                <FieldDescription>
-                  The date this key will expire. Leave blank for 30 days from
-                  now.
-                </FieldDescription>
-              </Field>
-
-              <Field>
-                <FieldLabel>
-                  <Checkbox
-                    checked={neverExpires}
-                    onCheckedChange={(checked) =>
-                      setNeverExpires(checked === true)
-                    }
-                  />
-                  Never expires
-                </FieldLabel>
-              </Field>
+              <Collapsible
+                onOpenChange={(open) => setNeverExpires(!open)}
+                open={!neverExpires}
+              >
+                <Field>
+                  <FieldLabel>
+                    <CollapsibleTrigger
+                      nativeButton={false}
+                      render={
+                        <Switch
+                          checked={neverExpires}
+                          onCheckedChange={(checked) =>
+                            setNeverExpires(checked === true)
+                          }
+                        />
+                      }
+                    />
+                    Never expires
+                  </FieldLabel>
+                </Field>
+                <CollapsiblePanel>
+                  <Field className="mt-4">
+                    <FieldLabel>Expiration</FieldLabel>
+                    <Select
+                      aria-label="Expiration"
+                      defaultValue="30d"
+                      items={[
+                        { label: "7 days", value: "7d" },
+                        { label: "30 days", value: "30d" },
+                        { label: "3 months", value: "3m" },
+                        { label: "1 year", value: "1y" },
+                      ]}
+                      name="expiresAt"
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectPopup>
+                        <SelectItem value="7d">7 days</SelectItem>
+                        <SelectItem value="30d">30 days</SelectItem>
+                        <SelectItem value="3m">3 months</SelectItem>
+                        <SelectItem value="1y">1 year</SelectItem>
+                      </SelectPopup>
+                    </Select>
+                    <FieldDescription>
+                      The API key will expire on 21-03-2026
+                    </FieldDescription>
+                  </Field>
+                </CollapsiblePanel>
+              </Collapsible>
             </DialogPanel>
             <DialogFooter>
               <DialogClose render={<Button variant="ghost" />}>
@@ -104,25 +145,27 @@ export function NewApiKeyDialog({ open, onOpenChange }: NewApiKeyDialogProps) {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>API Key Created</DialogTitle>
+              <DialogTitle>API key created successfully</DialogTitle>
               <DialogDescription>
                 Your new API key has been created. Copy it now — you won&apos;t
                 be able to see it again.
               </DialogDescription>
             </DialogHeader>
             <DialogPanel className="flex flex-col gap-6">
+              <Alert variant="warning">
+                <TriangleAlertIcon />
+                <AlertTitle>Save this API key somewhere safe</AlertTitle>
+                <AlertDescription>
+                  You will not be able to view it again once you close this
+                  modal.
+                </AlertDescription>
+              </Alert>
               <CopyableField
                 aria-label="API key"
+                description="Expires 2/19/2027"
                 label="API Key"
                 value={generatedKey}
               />
-              <Alert variant="warning">
-                <TriangleAlertIcon />
-                <AlertDescription>
-                  This API key is shown only once. Copy it now — you won&apos;t
-                  be able to view it again after closing this dialog.
-                </AlertDescription>
-              </Alert>
             </DialogPanel>
             <DialogFooter>
               <DialogClose render={<Button />}>Done</DialogClose>

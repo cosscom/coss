@@ -59,7 +59,7 @@ export function EditOAuthClientDialog({
                 View and manage your OAuth client settings.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-5">
+            <DialogPanel className="grid gap-6">
               <div>
                 <Badge variant={statusVariantMap[client.status]}>
                   {statusLabelMap[client.status]}

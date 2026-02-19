@@ -77,7 +77,7 @@ function NewOAuthClientDialogRoot({
                 access Cal.com on behalf of your users.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-5">
+            <DialogPanel className="grid gap-6">
               <OAuthClientFormFields />
             </DialogPanel>
             <DialogFooter>

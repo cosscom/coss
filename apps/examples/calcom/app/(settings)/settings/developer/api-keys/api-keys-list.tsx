@@ -50,17 +50,12 @@ function getExpirationLabel(item: ApiKeyItem): string {
   return `Expires ${formatDate(item.expiresAt)}`;
 }
 
-function getExpirationVariant(
-  item: ApiKeyItem,
-): "default" | "success" | "warning" | "error" {
+function getExpirationVariant(item: ApiKeyItem): "success" | "error" {
   if (item.neverExpires) return "success";
-  if (!item.expiresAt) return "default";
+  if (!item.expiresAt) return "success";
   const expiresDate = new Date(item.expiresAt);
   const now = new Date();
-  if (expiresDate < now) return "error";
-  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-  if (expiresDate.valueOf() - now.valueOf() < thirtyDays) return "warning";
-  return "success";
+  return expiresDate < now ? "error" : "success";
 }
 
 export function ApiKeysList({
@@ -122,7 +117,7 @@ export function ApiKeysList({
                   variant="destructive"
                 >
                   <Trash2Icon />
-                  Revoke
+                  Delete
                 </MenuItem>
               </MenuPopup>
             </Menu>
