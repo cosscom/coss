@@ -15,18 +15,8 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@coss/ui/components/input-group";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
-import { useCopyToClipboard } from "@coss/ui/hooks/use-copy-to-clipboard";
-import { CheckIcon, CopyIcon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
+import { CopyableField } from "./copyable-field";
 
 export interface OAuthClientSubmittedData {
   name: string;
@@ -38,51 +28,6 @@ interface OAuthClientSubmittedDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   data: OAuthClientSubmittedData | null;
-}
-
-function CopyableField({
-  label,
-  value,
-  "aria-label": ariaLabel,
-}: {
-  label: string;
-  value: string;
-  "aria-label": string;
-}) {
-  const { copyToClipboard, isCopied } = useCopyToClipboard();
-
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <InputGroup>
-        <InputGroupInput
-          aria-label={ariaLabel}
-          className="font-mono"
-          readOnly
-          value={value}
-        />
-        <InputGroupAddon align="inline-end">
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  aria-label={`Copy ${label}`}
-                  onClick={() => copyToClipboard(value)}
-                  size="icon-xs"
-                  variant="ghost"
-                />
-              }
-            >
-              {isCopied ? <CheckIcon /> : <CopyIcon />}
-            </TooltipTrigger>
-            <TooltipPopup>
-              <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
-            </TooltipPopup>
-          </Tooltip>
-        </InputGroupAddon>
-      </InputGroup>
-    </Field>
-  );
 }
 
 export function OAuthClientSubmittedDialog({
