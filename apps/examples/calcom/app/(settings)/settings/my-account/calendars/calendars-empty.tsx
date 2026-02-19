@@ -9,7 +9,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@coss/ui/components/empty";
-import { CalendarIcon, ExternalLinkIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 export function CalendarsEmpty() {
   return (
@@ -25,10 +25,7 @@ export function CalendarsEmpty() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="outline">
-          Connect your first calendar
-          <ExternalLinkIcon />
-        </Button>
+        <Button variant="outline">Connect your first calendar</Button>
       </EmptyContent>
     </Empty>
   );
