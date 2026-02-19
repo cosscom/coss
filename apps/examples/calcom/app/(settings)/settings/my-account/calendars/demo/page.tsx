@@ -4,11 +4,14 @@ import {
   CardFrame,
   CardFrameAction,
   CardFrameDescription,
+  CardFrameFooter,
   CardFrameHeader,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
+
+import { CalendarsDemoForm } from "./calendars-demo-form";
 
 export default function CalendarsDemoPage() {
   return (
@@ -26,9 +29,15 @@ export default function CalendarsDemoPage() {
         </CardFrameAction>
       </CardFrameHeader>
 
-      <Card>
-        <CardPanel className="p-0">{/* Card content */}</CardPanel>
+      <Card className="rounded-b-none!">
+        <CardPanel>
+          <CalendarsDemoForm />
+        </CardPanel>
       </Card>
+
+      <CardFrameFooter className="flex justify-end">
+        <Button>Update</Button>
+      </CardFrameFooter>
     </CardFrame>
   );
 }
