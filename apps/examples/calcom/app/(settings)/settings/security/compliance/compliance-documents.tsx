@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
+import { Card, CardPanel } from "@coss/ui/components/card";
+import { EmptyMedia } from "@coss/ui/components/empty";
 import {
   Tooltip,
   TooltipPopup,
@@ -74,53 +76,27 @@ function DocumentCard({
   hasAccess: boolean;
 }) {
   return (
-    <div
-      className="flex items-center justify-between gap-4 rounded-lg border border-default p-4 data-[restricted=true]:opacity-60"
-      data-restricted={!hasAccess}
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-subtle">
-          <FileTextIcon className="size-5 text-muted-foreground" />
-        </div>
-        <div>
-          <p className="font-medium text-sm">{document.name}</p>
-          <p className="text-muted-foreground text-sm">
-            {document.description}
-          </p>
-        </div>
-      </div>
-
-      <div className="shrink-0">
-        {hasAccess ? (
-          <Button
-            onClick={() =>
-              window.open(document.url, "_blank", "noopener,noreferrer")
-            }
-            variant="outline"
-          >
-            <DownloadIcon />
-            Download
+    <Card data-restricted={!hasAccess}>
+      <CardPanel className="p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <EmptyMedia className="m-0 ms-0.5 max-sm:hidden" variant="icon">
+              <FileTextIcon />
+            </EmptyMedia>
+            <div>
+              <p className="font-medium text-sm">{document.name}</p>
+              <p className="text-muted-foreground text-sm">
+                {document.description}
+              </p>
+            </div>
+          </div>
+          <Button disabled={!hasAccess} variant="outline">
+            {hasAccess ? <DownloadIcon /> : <LockIcon />}
+            {hasAccess ? "Download" : "Upgrade to access"}
           </Button>
-        ) : (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  render={<Link href="/settings/billing" />}
-                  variant="outline"
-                />
-              }
-            >
-              <LockIcon />
-              Upgrade to access
-            </TooltipTrigger>
-            <TooltipPopup>
-              Upgrade to an organization plan to access this document
-            </TooltipPopup>
-          </Tooltip>
-        )}
-      </div>
-    </div>
+        </div>
+      </CardPanel>
+    </Card>
   );
 }
 
@@ -128,11 +104,11 @@ export function ComplianceDocuments() {
   const hasRestrictedAccess = false;
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       {DOCUMENT_SECTIONS.map((section) => (
-        <section key={section.title}>
-          <h2 className="mb-4 font-semibold text-base">{section.title}</h2>
-          <div className="space-y-3">
+        <section className="flex flex-col gap-2" key={section.title}>
+          <h2 className="font-medium text-sm">{section.title}</h2>
+          <div className="flex flex-col gap-2">
             {section.documents.map((doc) => (
               <DocumentCard
                 document={doc}
