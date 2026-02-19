@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@coss/ui/components/button";
 import {
   Empty,
   EmptyContent,
@@ -9,7 +8,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@coss/ui/components/empty";
-import { KeyIcon, PlusIcon } from "lucide-react";
+import { KeyIcon } from "lucide-react";
+import { NewOAuthClientDialog } from "./new-oauth-client-dialog";
 
 export function OAuthEmpty() {
   return (
@@ -25,10 +25,7 @@ export function OAuthEmpty() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="outline">
-          <PlusIcon />
-          New
-        </Button>
+        <NewOAuthClientDialog />
       </EmptyContent>
     </Empty>
   );

@@ -1,4 +1,3 @@
-import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
@@ -8,7 +7,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { PlusIcon } from "lucide-react";
+import { NewOAuthClientDialog } from "./new-oauth-client-dialog";
 import { OAuthEmpty } from "./oauth-empty";
 
 export default function OAuthSettingsPage() {
@@ -20,10 +19,7 @@ export default function OAuthSettingsPage() {
           Create and manage OAuth clients for third-party integrations
         </CardFrameDescription>
         <CardFrameAction>
-          <Button variant="outline">
-            <PlusIcon />
-            New
-          </Button>
+          <NewOAuthClientDialog />
         </CardFrameAction>
       </CardFrameHeader>
 
