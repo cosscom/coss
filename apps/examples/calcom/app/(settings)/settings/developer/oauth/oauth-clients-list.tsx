@@ -2,7 +2,6 @@
 
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { EmptyMedia } from "@coss/ui/components/empty";
 import {
   Menu,
   MenuItem,
@@ -14,7 +13,7 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
-import { EllipsisIcon, KeyIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { EllipsisIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import {
   ListItem,
   ListItemActions,
@@ -64,12 +63,7 @@ export function OAuthClientsList({
         <ListItem key={client.id}>
           <ListItemContent>
             <ListItemHeader>
-              <ListItemTitle className="flex items-center gap-4">
-                <EmptyMedia className="m-0 ms-0.5 max-sm:hidden" variant="icon">
-                  <KeyIcon aria-hidden="true" />
-                </EmptyMedia>
-                {client.name}
-              </ListItemTitle>
+              <ListItemTitle>{client.name}</ListItemTitle>
             </ListItemHeader>
           </ListItemContent>
           <ListItemBadges>
