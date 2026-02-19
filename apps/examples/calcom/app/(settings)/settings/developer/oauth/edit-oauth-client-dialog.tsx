@@ -126,6 +126,7 @@ export function EditOAuthClientDialog({
                 Cancel
               </AlertDialogClose>
               <AlertDialogClose
+                onClick={() => onOpenChange(false)}
                 render={<Button variant="destructive">Delete</Button>}
               />
             </AlertDialogFooter>
