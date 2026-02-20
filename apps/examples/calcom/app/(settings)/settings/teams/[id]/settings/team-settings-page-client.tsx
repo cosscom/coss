@@ -10,6 +10,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import {
   Select,
   SelectItem,
@@ -68,24 +69,16 @@ export function TeamSettingsPageClient() {
         </CardFrameHeader>
 
         <Card className="rounded-b-none!">
-          <CardPanel className="p-0!">
-            <div className="border-b p-6">
-              <CardFrameHeader className="gap-0 p-0!">
-                <CardFrameTitle>
-                  Reset interval for weighted Round Robin
-                </CardFrameTitle>
-                <CardFrameDescription>
-                  Determines how often the round robin booking count resets to
-                  ensure balanced distribution.
-                </CardFrameDescription>
-              </CardFrameHeader>
-              <div className="mt-4">
+          <CardPanel>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Field>
+                <FieldLabel>Reset interval for weighted Round Robin</FieldLabel>
                 <Select
                   items={resetIntervalItems}
                   onValueChange={(value) => value && setResetInterval(value)}
                   value={resetInterval}
                 >
-                  <SelectTrigger className="w-fit min-w-52">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectPopup>
@@ -96,20 +89,16 @@ export function TeamSettingsPageClient() {
                     ))}
                   </SelectPopup>
                 </Select>
-              </div>
-            </div>
+                <FieldDescription>
+                  Determines how often the round robin booking count resets to
+                  ensure balanced distribution.
+                </FieldDescription>
+              </Field>
 
-            <div className="p-6">
-              <CardFrameHeader className="gap-0 p-0!">
-                <CardFrameTitle>
+              <Field>
+                <FieldLabel>
                   Distribution basis for weighted Round Robin
-                </CardFrameTitle>
-                <CardFrameDescription>
-                  Determines which event timestamp is used as the basis for
-                  weighted round robin distribution.
-                </CardFrameDescription>
-              </CardFrameHeader>
-              <div className="mt-4">
+                </FieldLabel>
                 <Select
                   items={distributionBasisItems}
                   onValueChange={(value) =>
@@ -117,7 +106,7 @@ export function TeamSettingsPageClient() {
                   }
                   value={distributionBasis}
                 >
-                  <SelectTrigger className="w-fit min-w-64">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectPopup>
@@ -128,7 +117,11 @@ export function TeamSettingsPageClient() {
                     ))}
                   </SelectPopup>
                 </Select>
-              </div>
+                <FieldDescription>
+                  Determines which event timestamp is used as the basis for
+                  weighted round robin distribution.
+                </FieldDescription>
+              </Field>
             </div>
           </CardPanel>
         </Card>
