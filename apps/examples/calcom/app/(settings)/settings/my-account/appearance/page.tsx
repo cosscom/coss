@@ -12,6 +12,7 @@ import { SettingsToggle } from "@/components/particles";
 
 import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
 import { BookingLayoutSection } from "./booking-layout-section";
+import { CustomBrandColorsSection } from "./custom-brand-colors-section";
 
 export default function AppearanceSettingsPage() {
   return (
@@ -74,10 +75,24 @@ export default function AppearanceSettingsPage() {
         </CardFrameFooter>
       </CardFrame>
 
-      <SettingsToggle
-        description="Customize your own brand colour into your booking page."
-        title="Custom brand colors"
-      />
+      <CardFrame>
+        <CardFrameHeader>
+          <CardFrameTitle>Custom brand colors</CardFrameTitle>
+          <CardFrameDescription>
+            Customize your own brand colour into your booking page.
+          </CardFrameDescription>
+        </CardFrameHeader>
+
+        <Card className="rounded-b-none!">
+          <CardPanel>
+            <CustomBrandColorsSection />
+          </CardPanel>
+        </Card>
+
+        <CardFrameFooter className="flex justify-end">
+          <Button disabled>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
 
       <SettingsToggle
         description="Removes any Cal.com related brandings, i.e. 'Powered by Cal.com.'"
