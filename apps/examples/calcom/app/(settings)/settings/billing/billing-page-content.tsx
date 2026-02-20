@@ -82,48 +82,65 @@ export function BillingPageContent() {
     from: subDays(today, 6),
     to: today,
   });
+  const [invoiceMonth, setInvoiceMonth] = useState(today);
   const [selectedInvoicePreset, setSelectedInvoicePreset] = useState<
     string | null
   >("last-7-days");
+
+  const applyInvoicePreset = (
+    presetValue: string,
+    range: { from: Date; to: Date },
+  ) => {
+    setInvoiceRange(range);
+    setSelectedInvoicePreset(presetValue);
+    setInvoiceMonth(range.to);
+  };
 
   const invoicePresets = [
     {
       label: "Today",
       onClick: () => {
-        setInvoiceRange({ from: today, to: today });
-        setSelectedInvoicePreset("today");
+        applyInvoicePreset("today", { from: today, to: today });
       },
       value: "today",
     },
     {
       label: "Last 7 days",
       onClick: () => {
-        setInvoiceRange({ from: subDays(today, 6), to: today });
-        setSelectedInvoicePreset("last-7-days");
+        applyInvoicePreset("last-7-days", {
+          from: subDays(today, 6),
+          to: today,
+        });
       },
       value: "last-7-days",
     },
     {
       label: "Last 30 days",
       onClick: () => {
-        setInvoiceRange({ from: subDays(today, 29), to: today });
-        setSelectedInvoicePreset("last-30-days");
+        applyInvoicePreset("last-30-days", {
+          from: subDays(today, 29),
+          to: today,
+        });
       },
       value: "last-30-days",
     },
     {
       label: "Month to date",
       onClick: () => {
-        setInvoiceRange({ from: startOfMonth(today), to: today });
-        setSelectedInvoicePreset("month-to-date");
+        applyInvoicePreset("month-to-date", {
+          from: startOfMonth(today),
+          to: today,
+        });
       },
       value: "month-to-date",
     },
     {
       label: "Year to date",
       onClick: () => {
-        setInvoiceRange({ from: startOfYear(today), to: today });
-        setSelectedInvoicePreset("year-to-date");
+        applyInvoicePreset("year-to-date", {
+          from: startOfYear(today),
+          to: today,
+        });
       },
       value: "year-to-date",
     },
@@ -281,7 +298,9 @@ export function BillingPageContent() {
                   <Calendar
                     className="max-sm:pb-2 sm:ps-2"
                     mode="range"
+                    month={invoiceMonth}
                     numberOfMonths={1}
+                    onMonthChange={setInvoiceMonth}
                     onSelect={(range) => {
                       setInvoiceRange(range);
                       setSelectedInvoicePreset(null);
