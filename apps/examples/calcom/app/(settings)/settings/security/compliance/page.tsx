@@ -11,7 +11,7 @@ import { ComplianceDocuments } from "./compliance-documents";
 
 export default function ComplianceSettingsPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Compliance</CardFrameTitle>

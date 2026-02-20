@@ -14,7 +14,7 @@ import { GeneralSettingsFields } from "./general-settings-form";
 
 export default function GeneralSettingsPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>General</CardFrameTitle>

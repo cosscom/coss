@@ -39,7 +39,8 @@ export function BookingLayoutSection() {
     setDefaultView((prev) => {
       if (newValue.length === 0) return prev;
       if (newValue.includes(prev)) return prev;
-      return newValue[0]!;
+      const first = newValue[0];
+      return first !== undefined ? first : prev;
     });
   }, []);
 

@@ -11,7 +11,7 @@ import { TwoFactorAuthSection } from "./two-factor-auth-section";
 
 export default function TwoFactorAuthSettingsPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Two-factor authentication</CardFrameTitle>

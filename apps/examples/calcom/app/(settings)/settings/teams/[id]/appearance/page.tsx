@@ -8,34 +8,13 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { BookingThemeSection } from "@/app/(settings)/settings/my-account/appearance/appearance-form";
+import { CustomBrandColorsSection } from "@/app/(settings)/settings/my-account/appearance/custom-brand-colors-section";
 import { SettingsToggle } from "@/components/particles";
 
-import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
-import { BookingLayoutSection } from "./booking-layout-section";
-import { CustomBrandColorsSection } from "./custom-brand-colors-section";
-
-export default function AppearanceSettingsPage() {
+export default function TeamAppearancePage() {
   return (
     <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Dashboard theme</CardFrameTitle>
-          <CardFrameDescription>
-            This only applies to your logged in dashboard
-          </CardFrameDescription>
-        </CardFrameHeader>
-
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <DashboardThemeSection />
-          </CardPanel>
-        </Card>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button disabled>Update</Button>
-        </CardFrameFooter>
-      </CardFrame>
-
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Booking page theme</CardFrameTitle>
@@ -47,26 +26,6 @@ export default function AppearanceSettingsPage() {
         <Card className="rounded-b-none!">
           <CardPanel>
             <BookingThemeSection />
-          </CardPanel>
-        </Card>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button disabled>Update</Button>
-        </CardFrameFooter>
-      </CardFrame>
-
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Booking layout</CardFrameTitle>
-          <CardFrameDescription>
-            You can select multiple and bookers can switch views. This can be
-            overridden on a per event basis.
-          </CardFrameDescription>
-        </CardFrameHeader>
-
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <BookingLayoutSection />
           </CardPanel>
         </Card>
 

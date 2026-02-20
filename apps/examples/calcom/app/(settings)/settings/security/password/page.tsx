@@ -14,7 +14,7 @@ import { PasswordFormFields } from "./password-form";
 
 export default function PasswordSettingsPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Password</CardFrameTitle>

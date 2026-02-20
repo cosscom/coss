@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export default function BillingPage() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <CardFrame>
         <CardFrameHeader>
           <CardFrameTitle>Billing</CardFrameTitle>
@@ -35,7 +35,8 @@ export default function BillingPage() {
           </CardPanel>
         </Card>
       </CardFrame>
-      <div className="mt-6 text-center text-muted-foreground/72 text-sm">
+
+      <div className="my-2 text-center text-muted-foreground/72 text-sm">
         Need help?{" "}
         <Link
           className="text-muted-foreground underline hover:text-foreground"
