@@ -79,12 +79,12 @@ export function BillingPageContent() {
   const [credits, setCredits] = useState<number | null>(50);
   const [expenseLogMonth, setExpenseLogMonth] = useState("February 2026");
   const [invoiceRange, setInvoiceRange] = useState<DateRange | undefined>({
-    from: startOfMonth(today),
+    from: subDays(today, 6),
     to: today,
   });
   const [selectedInvoicePreset, setSelectedInvoicePreset] = useState<
     string | null
-  >("month-to-date");
+  >("last-7-days");
 
   const invoicePresets = [
     {
@@ -260,7 +260,7 @@ export function BillingPageContent() {
               <PopoverPopup align="end" className="p-0!">
                 <div className="flex max-sm:flex-col">
                   <div className="relative max-sm:order-1 max-sm:border-t max-sm:pt-2 sm:py-1">
-                    <div className="flex h-full flex-col sm:min-w-36 sm:border-e sm:pe-2">
+                    <div className="flex h-full flex-col gap-0.5 sm:min-w-36 sm:border-e sm:pe-2">
                       {invoicePresets.map((preset) => (
                         <Button
                           className="justify-start"
@@ -271,7 +271,6 @@ export function BillingPageContent() {
                           }
                           key={preset.label}
                           onClick={preset.onClick}
-                          size="sm"
                           variant="ghost"
                         >
                           {preset.label}
