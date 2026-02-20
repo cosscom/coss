@@ -123,11 +123,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
       </Menu>
 
       {/* Collapsible version for expanded sidebar */}
-      <Collapsible
-        className="md:max-lg:hidden"
-        onOpenChange={setIsExpanded}
-        open={isExpanded}
-      >
+      <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
         <CollapsibleTrigger
           className="justify-between"
           render={

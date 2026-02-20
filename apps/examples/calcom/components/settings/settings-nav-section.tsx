@@ -10,7 +10,6 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "@coss/ui/components/collapsible";
-import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
@@ -34,16 +33,12 @@ import {
   userSettingsItems,
 } from "@/lib/settings-navigation-data";
 
-/** Class to override md:max-lg:hidden when used inside the sheet (which is shown in that viewport) */
-const SHEET_VISIBLE = "!flex";
-
 export function SettingsNavContent({
   onItemClick,
 }: {
   onItemClick?: () => void;
 }) {
   const pathname = usePathname();
-  const sheetClassName = onItemClick ? SHEET_VISIBLE : undefined;
 
   return (
     <>
@@ -53,21 +48,15 @@ export function SettingsNavContent({
           onItemClick={onItemClick}
           pathname={pathname}
           section={section}
-          subClassName={sheetClassName}
         />
       ))}
-      <TeamsSection
-        onItemClick={onItemClick}
-        pathname={pathname}
-        subClassName={sheetClassName}
-      />
+      <TeamsSection onItemClick={onItemClick} pathname={pathname} />
       {orgSettingsItems.map((section) => (
         <SettingsNavSection
           key={section.url}
           onItemClick={onItemClick}
           pathname={pathname}
           section={section}
-          subClassName={sheetClassName}
         />
       ))}
     </>
@@ -78,12 +67,10 @@ function SettingsNavSection({
   section,
   pathname,
   onItemClick,
-  subClassName,
 }: {
   section: SettingsNavItem;
   pathname: string;
   onItemClick?: () => void;
-  subClassName?: string;
 }) {
   return (
     <SidebarGroup>
@@ -100,16 +87,11 @@ function SettingsNavSection({
         <span>{section.title}</span>
       </SidebarGroupLabel>
       {section.children && (
-        <SidebarMenuSub
-          className={cn("mx-0 gap-0.5 border-none px-0", subClassName)}
-        >
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0 md:max-lg:flex">
           {section.children.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className={cn(
-                  "ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent",
-                  subClassName,
-                )}
+                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent md:max-lg:flex"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
@@ -131,11 +113,9 @@ function SettingsNavSection({
 function TeamsSection({
   pathname,
   onItemClick,
-  subClassName,
 }: {
   pathname: string;
   onItemClick?: () => void;
-  subClassName?: string;
 }) {
   return (
     <SidebarGroup>
@@ -145,20 +125,16 @@ function TeamsSection({
           My teams
         </span>
       </SidebarGroupLabel>
-      <SidebarMenuSub
-        className={cn("mx-0 gap-0.5 border-none px-0", subClassName)}
-      >
+      <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
         {teamSettingsItems.map((team) => (
           <TeamCollapsible
             key={team.url}
             onItemClick={onItemClick}
             pathname={pathname}
-            subClassName={subClassName}
             team={team}
           />
         ))}
         <SidebarMenuSubButton
-          className={subClassName}
           render={<Link href="/settings/teams/new" onClick={onItemClick} />}
         >
           <PlusIcon className="opacity-80" />
@@ -173,12 +149,10 @@ function TeamCollapsible({
   team,
   pathname,
   onItemClick,
-  subClassName,
 }: {
   team: SettingsNavItem;
   pathname: string;
   onItemClick?: () => void;
-  subClassName?: string;
 }) {
   const isActive = team.children?.some((c) => pathname === c.url);
   const [open, setOpen] = useState(isActive);
@@ -186,7 +160,8 @@ function TeamCollapsible({
   return (
     <Collapsible onOpenChange={setOpen} open={open}>
       <CollapsibleTrigger
-        render={<SidebarMenuSubButton className={subClassName} />}
+        nativeButton={false}
+        render={<SidebarMenuSubButton />}
       >
         <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         {team.avatar && (
@@ -200,16 +175,11 @@ function TeamCollapsible({
         <span className="flex-1 truncate">{team.title}</span>
       </CollapsibleTrigger>
       <CollapsiblePanel>
-        <SidebarMenuSub
-          className={cn("mx-0 gap-0.5 border-none px-0", subClassName)}
-        >
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
           {team.children?.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className={cn(
-                  "ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent",
-                  subClassName,
-                )}
+                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
