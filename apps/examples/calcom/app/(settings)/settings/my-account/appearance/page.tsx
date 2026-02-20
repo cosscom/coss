@@ -8,27 +8,81 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { AppearanceForm } from "./appearance-form";
+import { SettingsToggle } from "@/components/settings/settings-toggle";
+
+import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
+import { BookingLayoutSection } from "./booking-layout-section";
 
 export default function AppearanceSettingsPage() {
   return (
-    <CardFrame>
-      <CardFrameHeader>
-        <CardFrameTitle>Appearance</CardFrameTitle>
-        <CardFrameDescription>
-          Manage settings for your booking appearance
-        </CardFrameDescription>
-      </CardFrameHeader>
+    <div className="space-y-4">
+      <CardFrame>
+        <CardFrameHeader>
+          <CardFrameTitle>Dashboard theme</CardFrameTitle>
+          <CardFrameDescription>
+            This only applies to your logged in dashboard
+          </CardFrameDescription>
+        </CardFrameHeader>
 
-      <Card className="rounded-b-none!">
-        <CardPanel>
-          <AppearanceForm />
-        </CardPanel>
-      </Card>
+        <Card className="rounded-b-none!">
+          <CardPanel>
+            <DashboardThemeSection />
+          </CardPanel>
+        </Card>
 
-      <CardFrameFooter className="flex justify-end">
-        <Button>Update</Button>
-      </CardFrameFooter>
-    </CardFrame>
+        <CardFrameFooter className="flex justify-end">
+          <Button disabled>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
+
+      <CardFrame>
+        <CardFrameHeader>
+          <CardFrameTitle>Booking page theme</CardFrameTitle>
+          <CardFrameDescription>
+            This only applies to your public booking pages
+          </CardFrameDescription>
+        </CardFrameHeader>
+
+        <Card className="rounded-b-none!">
+          <CardPanel>
+            <BookingThemeSection />
+          </CardPanel>
+        </Card>
+
+        <CardFrameFooter className="flex justify-end">
+          <Button disabled>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
+
+      <CardFrame>
+        <CardFrameHeader>
+          <CardFrameTitle>Booking layout</CardFrameTitle>
+          <CardFrameDescription>
+            You can select multiple and bookers can switch views. This can be
+            overridden on a per event basis.
+          </CardFrameDescription>
+        </CardFrameHeader>
+
+        <Card className="rounded-b-none!">
+          <CardPanel>
+            <BookingLayoutSection />
+          </CardPanel>
+        </Card>
+
+        <CardFrameFooter className="flex justify-end">
+          <Button disabled>Update</Button>
+        </CardFrameFooter>
+      </CardFrame>
+
+      <SettingsToggle
+        description="Customize your own brand colour into your booking page."
+        title="Custom brand colors"
+      />
+
+      <SettingsToggle
+        description="Removes any Cal.com related brandings, i.e. 'Powered by Cal.com.'"
+        title="Disable Cal.com branding"
+      />
+    </div>
   );
 }
