@@ -7,7 +7,7 @@ import {
   ToggleGroupSeparator,
 } from "@coss/ui/components/toggle-group";
 import { useState } from "react";
-import { SettingsToggle } from "@/components/settings/settings-toggle";
+import { SettingsToggle } from "@/components/particles";
 
 interface Feature {
   slug: string;

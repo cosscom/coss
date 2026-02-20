@@ -7,7 +7,7 @@ import {
   ToggleGroup,
   ToggleGroupSeparator,
 } from "@coss/ui/components/toggle-group";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ImageCheckboxOption } from "@/components/particles";
 
 const layoutItems = [
@@ -28,8 +28,20 @@ const layoutItems = [
   },
 ];
 
+const initialLayouts = ["month", "weekly", "column"];
+
 export function BookingLayoutSection() {
+  const [enabledLayouts, setEnabledLayouts] = useState(initialLayouts);
   const [defaultView, setDefaultView] = useState("month");
+
+  const handleValueChange = useCallback((newValue: string[]) => {
+    setEnabledLayouts(newValue);
+    setDefaultView((prev) => {
+      if (newValue.length === 0) return prev;
+      if (newValue.includes(prev)) return prev;
+      return newValue[0]!;
+    });
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,8 +51,10 @@ export function BookingLayoutSection() {
         render={(props) => <Fieldset {...props} />}
       >
         <ImageCheckboxOption
-          defaultValue={["month", "weekly", "column"]}
+          defaultItem={defaultView}
           items={layoutItems}
+          onValueChange={handleValueChange}
+          value={enabledLayouts}
         />
       </Field>
 
@@ -51,15 +65,27 @@ export function BookingLayoutSection() {
           value={[defaultView]}
           variant="outline"
         >
-          <Toggle aria-label="Month" value="month">
+          <Toggle
+            aria-label="Month"
+            disabled={!enabledLayouts.includes("month")}
+            value="month"
+          >
             Month
           </Toggle>
           <ToggleGroupSeparator />
-          <Toggle aria-label="Weekly" value="weekly">
+          <Toggle
+            aria-label="Weekly"
+            disabled={!enabledLayouts.includes("weekly")}
+            value="weekly"
+          >
             Weekly
           </Toggle>
           <ToggleGroupSeparator />
-          <Toggle aria-label="Column" value="column">
+          <Toggle
+            aria-label="Column"
+            disabled={!enabledLayouts.includes("column")}
+            value="column"
+          >
             Column
           </Toggle>
         </ToggleGroup>

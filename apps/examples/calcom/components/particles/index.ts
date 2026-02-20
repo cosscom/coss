@@ -8,3 +8,4 @@ export {
   type ImageRadioOptionItem,
   type ImageRadioOptionProps,
 } from "./image-radio-option";
+export { SettingsToggle } from "./settings-toggle";

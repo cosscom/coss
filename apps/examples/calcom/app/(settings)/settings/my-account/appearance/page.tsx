@@ -8,7 +8,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { SettingsToggle } from "@/components/settings/settings-toggle";
+import { SettingsToggle } from "@/components/particles";
 
 import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
 import { BookingLayoutSection } from "./booking-layout-section";
@@ -82,6 +82,16 @@ export default function AppearanceSettingsPage() {
       <SettingsToggle
         description="Removes any Cal.com related brandings, i.e. 'Powered by Cal.com.'"
         title="Disable Cal.com branding"
+      />
+
+      <SettingsToggle
+        description="Hide book a team member button from your public pages."
+        title="Hide book a team member button"
+      />
+
+      <SettingsToggle
+        description="Hide the team profile link on booking pages"
+        title="Hide team profile link"
       />
     </div>
   );

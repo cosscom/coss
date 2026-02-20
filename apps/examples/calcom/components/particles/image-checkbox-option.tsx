@@ -14,16 +14,31 @@ export interface ImageCheckboxOptionItem {
 export interface ImageCheckboxOptionProps {
   items: ImageCheckboxOptionItem[];
   defaultValue?: string[];
+  /** Controlled mode: which items are checked. */
+  value?: string[];
+  /** Called when checked items change. */
+  onValueChange?: (value: string[]) => void;
+  /** Value of the item that is the default. Shows "Default" after its label when set. */
+  defaultItem?: string;
 }
 
 export function ImageCheckboxOption({
   items,
   defaultValue,
+  value,
+  onValueChange,
+  defaultItem,
 }: ImageCheckboxOptionProps) {
+  const isControlled = value != null && onValueChange != null;
+
   return (
     <CheckboxGroup
       className="flex w-full flex-row gap-4 md:gap-6"
-      defaultValue={defaultValue ?? items.map((i) => i.value)}
+      defaultValue={
+        !isControlled ? (defaultValue ?? items.map((i) => i.value)) : undefined
+      }
+      onValueChange={onValueChange}
+      value={isControlled ? value : undefined}
     >
       {items.map((item) => (
         <FieldItem className="flex-1" key={item.value}>
@@ -41,8 +56,13 @@ export function ImageCheckboxOption({
                 src={item.imageSrc}
               />
             </span>
-            <span className="col-start-2 row-start-2 self-center not-peer-data-checked:text-muted-foreground/72 max-sm:col-start-1 max-sm:justify-self-center max-sm:text-center">
+            <span className="col-start-2 row-start-2 flex items-center gap-1 self-center not-peer-data-checked:text-muted-foreground/72 max-sm:col-start-1 max-sm:justify-self-center max-sm:text-center">
               {item.label}
+              {defaultItem === item.value && (
+                <span className="font-normal text-muted-foreground">
+                  (default)
+                </span>
+              )}
             </span>
           </FieldLabel>
         </FieldItem>

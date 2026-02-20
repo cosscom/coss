@@ -8,7 +8,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { SettingsToggle } from "@/components/settings/settings-toggle";
+import { SettingsToggle } from "@/components/particles";
 
 import { GeneralSettingsFields } from "./general-settings-form";
 
