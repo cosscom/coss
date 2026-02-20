@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
+import { Calendar } from "@coss/ui/components/calendar";
 import {
   Card,
   CardFrame,
@@ -38,16 +39,16 @@ import {
   NumberField,
   NumberFieldInput,
 } from "@coss/ui/components/number-field";
-import { SelectButton } from "@coss/ui/components/select";
 import {
-  CalendarIcon,
-  ChevronDownIcon,
-  ExternalLinkIcon,
-  FileTextIcon,
-  SearchIcon,
-} from "lucide-react";
+  Popover,
+  PopoverPopup,
+  PopoverTrigger,
+} from "@coss/ui/components/popover";
+import { SelectButton } from "@coss/ui/components/select";
+import { ExternalLinkIcon, FileTextIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 
 const monthOptions = [
   { label: "January 2026", value: "January 2026" },
@@ -59,8 +60,79 @@ const monthOptions = [
 ];
 
 export function BillingPageContent() {
+  const today = new Date();
+  const subDays = (date: Date, days: number) => {
+    const next = new Date(date);
+    next.setDate(next.getDate() - days);
+    return next;
+  };
+  const startOfMonth = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), 1);
+  const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
+  const formatDate = (date: Date) =>
+    new Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+
   const [credits, setCredits] = useState<number | null>(50);
   const [expenseLogMonth, setExpenseLogMonth] = useState("February 2026");
+  const [invoiceRange, setInvoiceRange] = useState<DateRange | undefined>({
+    from: startOfMonth(today),
+    to: today,
+  });
+  const [selectedInvoicePreset, setSelectedInvoicePreset] = useState<
+    string | null
+  >("month-to-date");
+
+  const invoicePresets = [
+    {
+      label: "Today",
+      onClick: () => {
+        setInvoiceRange({ from: today, to: today });
+        setSelectedInvoicePreset("today");
+      },
+      value: "today",
+    },
+    {
+      label: "Last 7 days",
+      onClick: () => {
+        setInvoiceRange({ from: subDays(today, 6), to: today });
+        setSelectedInvoicePreset("last-7-days");
+      },
+      value: "last-7-days",
+    },
+    {
+      label: "Last 30 days",
+      onClick: () => {
+        setInvoiceRange({ from: subDays(today, 29), to: today });
+        setSelectedInvoicePreset("last-30-days");
+      },
+      value: "last-30-days",
+    },
+    {
+      label: "Month to date",
+      onClick: () => {
+        setInvoiceRange({ from: startOfMonth(today), to: today });
+        setSelectedInvoicePreset("month-to-date");
+      },
+      value: "month-to-date",
+    },
+    {
+      label: "Year to date",
+      onClick: () => {
+        setInvoiceRange({ from: startOfYear(today), to: today });
+        setSelectedInvoicePreset("year-to-date");
+      },
+      value: "year-to-date",
+    },
+  ];
+
+  const invoiceRangeLabel =
+    invoiceRange?.from && invoiceRange?.to
+      ? `${formatDate(invoiceRange.from)} - ${formatDate(invoiceRange.to)}`
+      : "Select date range";
 
   return (
     <div className="flex flex-col gap-4">
@@ -181,11 +253,45 @@ export function BillingPageContent() {
         <CardFrameHeader>
           <div className="flex w-full items-center justify-between gap-4">
             <CardFrameTitle>Invoices</CardFrameTitle>
-            <Button size="sm" variant="outline">
-              <CalendarIcon aria-hidden size={16} />
-              Jan 01, 2026 - Feb 20, 2026
-              <ChevronDownIcon aria-hidden size={16} />
-            </Button>
+            <Popover>
+              <PopoverTrigger render={<SelectButton className="w-fit" />}>
+                {invoiceRangeLabel}
+              </PopoverTrigger>
+              <PopoverPopup align="end" className="p-0!">
+                <div className="flex max-sm:flex-col">
+                  <div className="relative max-sm:order-1 max-sm:border-t max-sm:pt-2 sm:py-1">
+                    <div className="flex h-full flex-col sm:min-w-36 sm:border-e sm:pe-2">
+                      {invoicePresets.map((preset) => (
+                        <Button
+                          className="justify-start"
+                          data-pressed={
+                            selectedInvoicePreset === preset.value
+                              ? ""
+                              : undefined
+                          }
+                          key={preset.label}
+                          onClick={preset.onClick}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <Calendar
+                    className="max-sm:pb-2 sm:ps-2"
+                    mode="range"
+                    numberOfMonths={1}
+                    onSelect={(range) => {
+                      setInvoiceRange(range);
+                      setSelectedInvoicePreset(null);
+                    }}
+                    selected={invoiceRange}
+                  />
+                </div>
+              </PopoverPopup>
+            </Popover>
           </div>
         </CardFrameHeader>
         <Card className="rounded-b-none!">

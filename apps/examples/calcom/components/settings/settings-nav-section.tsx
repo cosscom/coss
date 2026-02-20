@@ -135,6 +135,7 @@ function TeamsSection({
           />
         ))}
         <SidebarMenuSubButton
+          className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
           render={<Link href="/settings/teams/new" onClick={onItemClick} />}
         >
           <PlusIcon className="opacity-80" />
@@ -161,7 +162,9 @@ function TeamCollapsible({
     <Collapsible onOpenChange={setOpen} open={open}>
       <CollapsibleTrigger
         nativeButton={false}
-        render={<SidebarMenuSubButton />}
+        render={
+          <SidebarMenuSubButton className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent" />
+        }
       >
         <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         {team.avatar && (
