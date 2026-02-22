@@ -2,8 +2,11 @@ import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
-import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import React, {
+  type ComponentPropsWithoutRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { ItemLabel } from "./item-label";
 
 const sortableListClasses =
@@ -39,7 +42,7 @@ function ListItem({
   hasDragged,
 }: ListItemProps) {
   const baseClasses =
-    "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]_a:hover]:z-1 has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]";
+    "not-last:border-b bg-clip-padding has-[[data-spanning-trigger]:hover]:z-1 has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]";
 
   const staticClasses =
     "transition-[background-color] first:rounded-t-[calc(var(--radius-xl)+1px)] last:rounded-b-[calc(var(--radius-xl)+1px)]";
@@ -134,7 +137,7 @@ function ListItemDragHandle({ className }: ListItemDragHandleProps) {
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]_a:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]_[data-spanning-trigger]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"
@@ -187,20 +190,43 @@ function ListItemTitle({ children, className }: ListItemTitleProps) {
   );
 }
 
-function ListItemTitleLink({
+const spanningTriggerClasses = "cursor-pointer before:absolute before:inset-0";
+
+type ListItemSpanningTriggerProps = Omit<
+  ComponentPropsWithoutRef<"div">,
+  "render"
+> & {
+  render?: React.ReactElement;
+};
+
+function ListItemSpanningTrigger({
   children,
   className,
-  href,
-}: ListItemTitleProps & { href: string }) {
-  return (
-    <Link
-      className={cn("before:absolute before:inset-0", className)}
-      data-slot="list-item-title-link"
-      href={href}
-    >
-      {children}
-    </Link>
-  );
+  render,
+  ...props
+}: ListItemSpanningTriggerProps) {
+  const mergedProps = {
+    className: cn(spanningTriggerClasses, className),
+    "data-spanning-trigger": "",
+    ...props,
+  };
+
+  if (render) {
+    const renderProps = (render.props || {}) as Record<string, unknown>;
+    const props = {
+      ...renderProps,
+      ...mergedProps,
+      children: children ?? renderProps.children,
+      className: cn(
+        renderProps.className as string,
+        spanningTriggerClasses,
+        className,
+      ),
+    };
+    return React.cloneElement(render, props as React.Attributes);
+  }
+
+  return <div {...mergedProps}>{children}</div>;
 }
 
 interface ListItemDescriptionProps {
@@ -263,8 +289,8 @@ export {
   ListItemDescription,
   ListItemDragHandle,
   ListItemHeader,
+  ListItemSpanningTrigger,
   ListItemTitle,
-  ListItemTitleLink,
   sortableListClasses,
   SortableListItem,
 };

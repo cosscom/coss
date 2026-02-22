@@ -2564,7 +2564,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("group", "select"),
+    categories: categories("group", "select", "number field"),
     description: "Group with select",
     files: [{ path: "particles/p-group-14.tsx", type: "registry:block" }],
     name: "p-group-14",
@@ -3710,6 +3710,23 @@ export const particles: ParticleItem[] = [
       "@coss/field",
       "@coss/fieldset",
       "@coss/form",
+      "@coss/radio-group",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("radio group", "form"),
+    dependencies: ["lucide-react"],
+    description: "Theme selector with image cards",
+    files: [{ path: "particles/p-radio-group-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-[320px]",
+    },
+    name: "p-radio-group-6",
+    registryDependencies: [
+      "@coss/field",
+      "@coss/fieldset",
       "@coss/radio-group",
     ],
     type: "registry:block",

@@ -99,7 +99,7 @@ export default function Particle() {
         {getStrengthText(strengthScore)}. Must contain:
       </p>
 
-      <ul aria-label="Password requirements" className="space-y-1.5">
+      <ul aria-label="Password requirements" className="flex flex-col gap-1.5">
         {strength.map((req) => (
           <li className="flex items-center gap-2" key={req.text}>
             {req.met ? (

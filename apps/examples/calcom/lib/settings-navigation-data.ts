@@ -39,6 +39,7 @@ export const userSettingsItems: SettingsNavItem[] = [
         title: "Push notifications",
         url: "/settings/my-account/push-notifications",
       },
+      { title: "Features", url: "/settings/my-account/features" },
     ],
     title: "Luke Tracy",
     url: "/settings/my-account",
@@ -66,11 +67,33 @@ export const userSettingsItems: SettingsNavItem[] = [
   {
     children: [
       { title: "Webhooks", url: "/settings/developer/webhooks" },
+      { title: "OAuth", url: "/settings/developer/oauth" },
       { title: "API keys", url: "/settings/developer/api-keys" },
     ],
     icon: TerminalIcon,
     title: "Developer",
     url: "/settings/developer",
+  },
+];
+
+const teamNavChildren: SettingsNavChild[] = [
+  { title: "Profile", url: "/settings/teams/47/profile" },
+  { title: "Members", url: "/settings/teams/47/members" },
+  { title: "Appearance", url: "/settings/teams/47/appearance" },
+  { title: "Features", url: "/settings/teams/47/features" },
+  { title: "Billing", url: "/settings/teams/47/billing" },
+  { title: "Settings", url: "/settings/teams/47/settings" },
+];
+
+export const teamSettingsItems: SettingsNavItem[] = [
+  {
+    avatar: {
+      fallback: "AI",
+      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+    },
+    children: teamNavChildren,
+    title: "Acme Inc.",
+    url: "/settings/teams/47",
   },
 ];
 

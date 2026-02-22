@@ -21,9 +21,9 @@ export default function Particle() {
           <DialogTitle>Terms & Conditions</DialogTitle>
         </DialogHeader>
         <DialogPanel>
-          <div className="space-y-4 [&_strong]:font-semibold [&_strong]:text-foreground">
-            <div className="space-y-4">
-              <div className="space-y-1">
+          <div className="flex flex-col gap-4 [&_strong]:font-semibold [&_strong]:text-foreground">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Acceptance of Terms</strong>
                 </p>
@@ -34,7 +34,7 @@ export default function Particle() {
                   immediately.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>User Account Responsibilities</strong>
                 </p>
@@ -46,7 +46,7 @@ export default function Particle() {
                   immediately of any unauthorized account access.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Content Usage and Restrictions</strong>
                 </p>
@@ -58,7 +58,7 @@ export default function Particle() {
                   the website owners.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Limitation of Liability</strong>
                 </p>
@@ -69,7 +69,7 @@ export default function Particle() {
                   arising from user interactions with the platform.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>User Conduct Guidelines</strong>
                 </p>
@@ -82,7 +82,7 @@ export default function Particle() {
                   <li>Comply with applicable local and international laws</li>
                 </ul>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Modifications to Terms</strong>
                 </p>
@@ -92,7 +92,7 @@ export default function Particle() {
                   acceptance of the new terms.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Termination Clause</strong>
                 </p>
@@ -102,7 +102,7 @@ export default function Particle() {
                   deemed appropriate by the administration.
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="flex flex-col gap-1">
                 <p>
                   <strong>Governing Law</strong>
                 </p>

@@ -18,6 +18,7 @@
   ],
   "categories": [
     "group",
-    "select"
+    "select",
+    "number field"
   ]
 }

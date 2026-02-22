@@ -5,98 +5,198 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
-import { ExternalLinkIcon } from "lucide-react";
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+} from "@coss/ui/components/collapsible";
+import {
+  ChevronRightIcon,
+  ExternalLinkIcon,
+  PlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
-import type {
-  SettingsNavChild,
-  SettingsNavItem,
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import type { SettingsNavItem } from "@/lib/settings-navigation-data";
+import {
+  orgSettingsItems,
+  teamSettingsItems,
+  userSettingsItems,
 } from "@/lib/settings-navigation-data";
 
-interface SettingsNavSectionProps {
-  section: SettingsNavItem;
-  pathname: string;
-  variant: "sidebar" | "sheet";
+export function SettingsNavContent({
+  onItemClick,
+}: {
   onItemClick?: () => void;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {userSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+      <TeamsSection onItemClick={onItemClick} pathname={pathname} />
+      {orgSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+    </>
+  );
 }
 
-export function SettingsNavSection({
+function SettingsNavSection({
   section,
   pathname,
-  variant,
   onItemClick,
-}: SettingsNavSectionProps) {
-  if (variant === "sheet") {
-    return (
-      <div className="flex flex-col gap-2">
-        <SettingsNavSectionHeader section={section} variant="sheet" />
-        {section.children && (
-          <div className="flex flex-col gap-0.5 ps-6">
-            {section.children.map((item) => (
-              <SettingsNavSheetItem
-                isActive={pathname === item.url}
-                item={item}
-                key={item.url}
-                onClick={onItemClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Sidebar variant - uses sidebar-specific components
-  return null; // Sidebar uses its own components, this is handled in settings-sidebar.tsx
-}
-
-function SettingsNavSectionHeader({
-  section,
-  variant,
 }: {
   section: SettingsNavItem;
-  variant: "sidebar" | "sheet";
+  pathname: string;
+  onItemClick?: () => void;
 }) {
-  const baseClassName =
-    variant === "sheet"
-      ? "flex items-center gap-2 font-medium text-sidebar-accent-foreground text-sm"
-      : "flex items-center gap-2 font-medium text-sidebar-accent-foreground text-sm";
-
   return (
-    <div className={baseClassName}>
-      {section.avatar && (
-        <Avatar className="size-4">
-          <AvatarImage alt={section.title} src={section.avatar.src} />
-          <AvatarFallback className="text-[10px]">
-            {section.avatar.fallback}
-          </AvatarFallback>
-        </Avatar>
+    <SidebarGroup>
+      <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
+        {section.avatar && (
+          <Avatar className="size-4">
+            <AvatarImage alt={section.title} src={section.avatar.src} />
+            <AvatarFallback className="text-[.625rem]">
+              {section.avatar.fallback}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        {section.icon && <section.icon className="opacity-80" />}
+        <span>{section.title}</span>
+      </SidebarGroupLabel>
+      {section.children && (
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0 md:max-lg:flex">
+          {section.children.map((item) => (
+            <SidebarMenuSubItem key={item.url}>
+              <SidebarMenuSubButton
+                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent md:max-lg:flex"
+                isActive={pathname === item.url}
+                render={<Link href={item.url} onClick={onItemClick} />}
+              >
+                <span className="flex items-center gap-1">
+                  {item.title}
+                  {item.external && (
+                    <ExternalLinkIcon className="size-3 opacity-80" />
+                  )}
+                </span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
       )}
-      {section.icon && <section.icon className="size-4 opacity-80" />}
-      <span>{section.title}</span>
-    </div>
+    </SidebarGroup>
   );
 }
 
-function SettingsNavSheetItem({
-  item,
-  isActive,
-  onClick,
+function TeamsSection({
+  pathname,
+  onItemClick,
 }: {
-  item: SettingsNavChild;
-  isActive: boolean;
-  onClick?: () => void;
+  pathname: string;
+  onItemClick?: () => void;
 }) {
   return (
-    <Link
-      className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-muted-foreground text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
-      data-active={isActive}
-      href={item.url}
-      onClick={onClick}
-    >
-      {item.title}
-      {item.external && <ExternalLinkIcon className="size-3 opacity-80" />}
-    </Link>
+    <SidebarGroup>
+      <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
+        <UsersIcon className="opacity-80" />
+        <span className={onItemClick ? undefined : "max-lg:sr-only"}>
+          My teams
+        </span>
+      </SidebarGroupLabel>
+      <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
+        {teamSettingsItems.map((team) => (
+          <TeamCollapsible
+            key={team.url}
+            onItemClick={onItemClick}
+            pathname={pathname}
+            team={team}
+          />
+        ))}
+        <SidebarMenuSubButton
+          className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+          render={<Link href="/settings/teams/new" onClick={onItemClick} />}
+        >
+          <PlusIcon className="opacity-80" />
+          <span>Add a team</span>
+        </SidebarMenuSubButton>
+      </SidebarMenuSub>
+    </SidebarGroup>
   );
 }
 
-export { SettingsNavSectionHeader, SettingsNavSheetItem };
+function TeamCollapsible({
+  team,
+  pathname,
+  onItemClick,
+}: {
+  team: SettingsNavItem;
+  pathname: string;
+  onItemClick?: () => void;
+}) {
+  const isActive = team.children?.some((c) => pathname === c.url);
+  const [open, setOpen] = useState(isActive);
+
+  return (
+    <Collapsible onOpenChange={setOpen} open={open}>
+      <CollapsibleTrigger
+        nativeButton={false}
+        render={
+          <SidebarMenuSubButton className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent" />
+        }
+      >
+        <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
+        {team.avatar && (
+          <Avatar className="size-4 shrink-0">
+            <AvatarImage alt={team.title} src={team.avatar.src} />
+            <AvatarFallback className="text-[.625rem]">
+              {team.avatar.fallback}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <span className="flex-1 truncate">{team.title}</span>
+      </CollapsibleTrigger>
+      <CollapsiblePanel>
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
+          {team.children?.map((item) => (
+            <SidebarMenuSubItem key={item.url}>
+              <SidebarMenuSubButton
+                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+                isActive={pathname === item.url}
+                render={<Link href={item.url} onClick={onItemClick} />}
+              >
+                <span className="flex items-center gap-1">
+                  {item.title}
+                  {item.external && (
+                    <ExternalLinkIcon className="size-3 opacity-80" />
+                  )}
+                </span>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          ))}
+        </SidebarMenuSub>
+      </CollapsiblePanel>
+    </Collapsible>
+  );
+}
