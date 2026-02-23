@@ -1,11 +1,9 @@
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { PushNotificationsToggle } from "./push-notifications-toggle";
+import { SettingsToggle } from "@/components/particles";
 
 export default function PushNotificationsPage() {
   return (
@@ -18,13 +16,10 @@ export default function PushNotificationsPage() {
           </AppHeaderDescription>
         </AppHeaderContent>
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel>
-            <PushNotificationsToggle />
-          </CardPanel>
-        </Card>
-      </CardFrame>
+      <SettingsToggle
+        description="Allow browser notifications"
+        title="Enable push notifications"
+      />
     </>
   );
 }

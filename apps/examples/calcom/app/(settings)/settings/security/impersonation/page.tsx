@@ -1,11 +1,9 @@
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { ImpersonationToggle } from "./impersonation-toggle";
+import { SettingsToggle } from "@/components/particles";
 
 export default function ImpersonationSettingsPage() {
   return (
@@ -17,13 +15,10 @@ export default function ImpersonationSettingsPage() {
           </AppHeaderDescription>
         </AppHeaderContent>
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel>
-            <ImpersonationToggle />
-          </CardPanel>
-        </Card>
-      </CardFrame>
+      <SettingsToggle
+        description="Allows our support team to temporarily sign in as you to help us quickly resolve any issues you report to us."
+        title="User impersonation"
+      />
     </>
   );
 }
