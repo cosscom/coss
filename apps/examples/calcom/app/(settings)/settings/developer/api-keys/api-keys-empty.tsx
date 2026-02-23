@@ -28,7 +28,7 @@ export function ApiKeysEmpty({ onNewClick }: ApiKeysEmptyProps) {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button onClick={onNewClick} variant="outline">
+        <Button onClick={onNewClick}>
           <PlusIcon />
           New
         </Button>
