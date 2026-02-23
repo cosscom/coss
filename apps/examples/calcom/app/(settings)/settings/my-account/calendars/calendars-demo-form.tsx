@@ -41,7 +41,7 @@ const allAddEventsToItems = addEventsToGroups.flatMap((g) => g.items);
 
 export function CalendarsDemoForm() {
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Field>
         <FieldLabel>Add events to</FieldLabel>
         <Select
