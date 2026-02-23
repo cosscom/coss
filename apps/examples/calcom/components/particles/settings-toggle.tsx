@@ -29,7 +29,7 @@ export function SettingsToggle({
     <Card>
       <CardPanel>
         <div className="flex items-center justify-between gap-4">
-          <CardFrameHeader className="gap-0 p-0!">
+          <CardFrameHeader className="p-0">
             <CardFrameTitle>{title}</CardFrameTitle>
             <CardFrameDescription>{description}</CardFrameDescription>
           </CardFrameHeader>

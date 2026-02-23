@@ -1,7 +1,6 @@
 import { Button } from "@coss/ui/components/button";
 import {
   Card,
-  CardFrame,
   CardFrameDescription,
   CardFrameTitle,
   CardPanel,
@@ -23,24 +22,22 @@ export default function BillingPage() {
         </AppHeaderContent>
       </AppHeader>
       <div className="flex flex-col gap-4">
-        <CardFrame>
-          <Card className="rounded-b-none!">
-            <CardPanel>
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <CardFrameTitle>Manage billing</CardFrameTitle>
-                  <CardFrameDescription>
-                    View and manage your billing details
-                  </CardFrameDescription>
-                </div>
-                <Button>
-                  Billing portal
-                  <ExternalLinkIcon aria-hidden="true" />
-                </Button>
+        <Card>
+          <CardPanel>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardFrameTitle>Manage billing</CardFrameTitle>
+                <CardFrameDescription>
+                  View and manage your billing details
+                </CardFrameDescription>
               </div>
-            </CardPanel>
-          </Card>
-        </CardFrame>
+              <Button>
+                Billing portal
+                <ExternalLinkIcon aria-hidden="true" />
+              </Button>
+            </div>
+          </CardPanel>
+        </Card>
 
         <div className="my-2 text-center text-muted-foreground/72 text-sm">
           Need help?{" "}

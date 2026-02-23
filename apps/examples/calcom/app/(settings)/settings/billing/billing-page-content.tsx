@@ -284,7 +284,7 @@ export function BillingPageContent() {
                 <PopoverTrigger render={<SelectButton className="w-fit" />}>
                   {invoiceRangeLabel}
                 </PopoverTrigger>
-                <PopoverPopup align="end" className="p-0!">
+                <PopoverPopup align="end" className="p-0">
                   <div className="flex max-sm:flex-col">
                     <div className="relative max-sm:order-1 max-sm:border-t max-sm:pt-2 sm:py-1">
                       <div className="flex h-full flex-col gap-0.5 sm:min-w-36 sm:border-e sm:pe-2">

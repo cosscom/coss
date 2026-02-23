@@ -1,4 +1,3 @@
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
   AppHeader,
   AppHeaderContent,
@@ -17,13 +16,7 @@ export default function TwoFactorAuthSettingsPage() {
           </AppHeaderDescription>
         </AppHeaderContent>
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel>
-            <TwoFactorAuthSection />
-          </CardPanel>
-        </Card>
-      </CardFrame>
+      <TwoFactorAuthSection />
     </>
   );
 }
