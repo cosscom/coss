@@ -10,17 +10,15 @@ import {
   AlertDialogTitle,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameAction,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 import { ApiKeysEmpty } from "./api-keys-empty";
 import type { ApiKeyItem } from "./api-keys-list";
 import { ApiKeysList } from "./api-keys-list";
@@ -83,25 +81,22 @@ export function ApiKeysPageContent() {
 
   return (
     <>
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>API Keys</CardFrameTitle>
-          <CardFrameDescription>
+      <AppHeader>
+        <AppHeaderContent title="API Keys">
+          <AppHeaderDescription>
             Create and manage API keys for authenticating with the Cal.com API
-          </CardFrameDescription>
-          {hasApiKeys && (
-            <CardFrameAction>
-              <Button
-                onClick={() => setCreateDialogOpen(true)}
-                variant="outline"
-              >
-                <PlusIcon />
-                New
-              </Button>
-            </CardFrameAction>
-          )}
-        </CardFrameHeader>
-
+          </AppHeaderDescription>
+        </AppHeaderContent>
+        {hasApiKeys && (
+          <AppHeaderActions>
+            <Button onClick={() => setCreateDialogOpen(true)} variant="outline">
+              <PlusIcon />
+              New
+            </Button>
+          </AppHeaderActions>
+        )}
+      </AppHeader>
+      <CardFrame>
         <Card>
           <CardPanel className="p-0">
             {hasApiKeys ? (

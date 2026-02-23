@@ -1,38 +1,38 @@
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameAction,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 
 import { CalendarsEmpty } from "../calendars-empty";
 
 export default function CalendarsEmptyPage() {
   return (
-    <CardFrame>
-      <CardFrameHeader>
-        <CardFrameTitle>Calendars</CardFrameTitle>
-        <CardFrameDescription>
-          Configure how your event types interact with your calendars
-        </CardFrameDescription>
-        <CardFrameAction>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Calendars">
+          <AppHeaderDescription>
+            Configure how your event types interact with your calendars
+          </AppHeaderDescription>
+        </AppHeaderContent>
+        <AppHeaderActions>
           <Button variant="outline">
             <PlusIcon />
             Add calendar
           </Button>
-        </CardFrameAction>
-      </CardFrameHeader>
-
-      <Card>
-        <CardPanel className="p-0">
-          <CalendarsEmpty />
-        </CardPanel>
-      </Card>
-    </CardFrame>
+        </AppHeaderActions>
+      </AppHeader>
+      <CardFrame>
+        <Card>
+          <CardPanel className="p-0">
+            <CalendarsEmpty />
+          </CardPanel>
+        </Card>
+      </CardFrame>
+    </>
   );
 }

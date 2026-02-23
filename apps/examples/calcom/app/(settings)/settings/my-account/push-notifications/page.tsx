@@ -1,32 +1,30 @@
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+  AppHeader,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 
 import { PushNotificationsToggle } from "./push-notifications-toggle";
 
 export default function PushNotificationsPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Push notifications</CardFrameTitle>
-          <CardFrameDescription>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Push notifications">
+          <AppHeaderDescription>
             Receive push notifications when booker submits instant meeting
             booking.
-          </CardFrameDescription>
-        </CardFrameHeader>
-
+          </AppHeaderDescription>
+        </AppHeaderContent>
+      </AppHeader>
+      <CardFrame>
         <Card>
           <CardPanel>
             <PushNotificationsToggle />
           </CardPanel>
         </Card>
       </CardFrame>
-    </div>
+    </>
   );
 }

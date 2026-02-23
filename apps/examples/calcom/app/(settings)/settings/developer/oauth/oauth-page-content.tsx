@@ -10,17 +10,15 @@ import {
   AlertDialogTitle,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameAction,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 import { EditOAuthClientDialog } from "./edit-oauth-client-dialog";
 import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
 import type { OAuthClientItem } from "./oauth-clients-list";
@@ -93,25 +91,22 @@ export function OAuthPageContent() {
 
   return (
     <>
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>OAuth Clients</CardFrameTitle>
-          <CardFrameDescription>
+      <AppHeader>
+        <AppHeaderContent title="OAuth Clients">
+          <AppHeaderDescription>
             Create and manage OAuth clients for third-party integrations
-          </CardFrameDescription>
-          {hasClients && (
-            <CardFrameAction>
-              <Button
-                onClick={() => setCreateDialogOpen(true)}
-                variant="outline"
-              >
-                <PlusIcon />
-                New
-              </Button>
-            </CardFrameAction>
-          )}
-        </CardFrameHeader>
-
+          </AppHeaderDescription>
+        </AppHeaderContent>
+        {hasClients && (
+          <AppHeaderActions>
+            <Button onClick={() => setCreateDialogOpen(true)} variant="outline">
+              <PlusIcon />
+              New
+            </Button>
+          </AppHeaderActions>
+        )}
+      </AppHeader>
+      <CardFrame>
         <Card>
           <CardPanel className="p-0">
             {hasClients ? (

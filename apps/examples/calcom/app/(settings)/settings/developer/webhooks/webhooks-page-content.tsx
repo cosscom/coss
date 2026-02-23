@@ -1,17 +1,15 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardFrame,
-  CardFrameAction,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
+import {
+  AppHeader,
+  AppHeaderActions,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 import type { WebhookItem } from "./webhooks-list-content";
 import { WebhooksListContent } from "./webhooks-list-content";
 
@@ -23,21 +21,21 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
   const [selectedUserIds, _setSelectedUserIds] = useState<string[]>([]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Webhooks</CardFrameTitle>
-          <CardFrameDescription>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Webhooks">
+          <AppHeaderDescription>
             Receive meeting data in real-time when something happens in Cal.com.
-          </CardFrameDescription>
-          <CardFrameAction>
-            <Button variant="outline">
-              New
-              <ChevronDownIcon />
-            </Button>
-          </CardFrameAction>
-        </CardFrameHeader>
-
+          </AppHeaderDescription>
+        </AppHeaderContent>
+        <AppHeaderActions>
+          <Button variant="outline">
+            New
+            <ChevronDownIcon />
+          </Button>
+        </AppHeaderActions>
+      </AppHeader>
+      <CardFrame>
         <Card>
           <CardPanel>
             <WebhooksListContent
@@ -47,6 +45,6 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
           </CardPanel>
         </Card>
       </CardFrame>
-    </div>
+    </>
   );
 }

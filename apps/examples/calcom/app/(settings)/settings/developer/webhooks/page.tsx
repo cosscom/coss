@@ -1,30 +1,30 @@
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+  AppHeader,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 import { WebhooksEmpty } from "./webhooks-empty";
 
 export default function WebhooksSettingsPage() {
   const webhooks: { id: string; url: string; events: string }[] = [];
 
   return (
-    <CardFrame>
-      <CardFrameHeader>
-        <CardFrameTitle>Webhooks</CardFrameTitle>
-        <CardFrameDescription>
-          Receive meeting data in real-time when something happens in Cal.com.
-        </CardFrameDescription>
-      </CardFrameHeader>
-
-      <Card>
-        <CardPanel className="p-0">
-          <WebhooksEmpty webhooks={webhooks} />
-        </CardPanel>
-      </Card>
-    </CardFrame>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Webhooks">
+          <AppHeaderDescription>
+            Receive meeting data in real-time when something happens in Cal.com.
+          </AppHeaderDescription>
+        </AppHeaderContent>
+      </AppHeader>
+      <CardFrame>
+        <Card>
+          <CardPanel className="p-0">
+            <WebhooksEmpty webhooks={webhooks} />
+          </CardPanel>
+        </Card>
+      </CardFrame>
+    </>
   );
 }

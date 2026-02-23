@@ -1,31 +1,29 @@
+import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
-  Card,
-  CardFrame,
-  CardFrameDescription,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardPanel,
-} from "@coss/ui/components/card";
+  AppHeader,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 
 import { ImpersonationToggle } from "./impersonation-toggle";
 
 export default function ImpersonationSettingsPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Impersonation</CardFrameTitle>
-          <CardFrameDescription>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Impersonation">
+          <AppHeaderDescription>
             Settings to manage user impersonation
-          </CardFrameDescription>
-        </CardFrameHeader>
-
+          </AppHeaderDescription>
+        </AppHeaderContent>
+      </AppHeader>
+      <CardFrame>
         <Card>
           <CardPanel>
             <ImpersonationToggle />
           </CardPanel>
         </Card>
       </CardFrame>
-    </div>
+    </>
   );
 }

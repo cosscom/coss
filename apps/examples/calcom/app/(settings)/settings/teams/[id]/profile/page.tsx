@@ -8,43 +8,50 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import {
+  AppHeader,
+  AppHeaderContent,
+  AppHeaderDescription,
+} from "@/components/app/app-header";
 
 import { TeamProfileFields } from "./team-profile-form";
 
 export default function TeamProfilePage() {
   return (
-    <div className="flex flex-col gap-4">
-      <CardFrame>
-        <CardFrameHeader>
-          <CardFrameTitle>Profile</CardFrameTitle>
-          <CardFrameDescription>
+    <>
+      <AppHeader>
+        <AppHeaderContent title="Profile">
+          <AppHeaderDescription>
             Manage settings for your team profile
-          </CardFrameDescription>
-        </CardFrameHeader>
+          </AppHeaderDescription>
+        </AppHeaderContent>
+      </AppHeader>
+      <div className="flex flex-col gap-4">
+        <CardFrame>
+          <Card className="rounded-b-none!">
+            <CardPanel>
+              <TeamProfileFields />
+            </CardPanel>
+          </Card>
 
-        <Card className="rounded-b-none!">
-          <CardPanel>
-            <TeamProfileFields />
-          </CardPanel>
-        </Card>
+          <CardFrameFooter className="flex justify-end">
+            <Button>Update</Button>
+          </CardFrameFooter>
+        </CardFrame>
 
-        <CardFrameFooter className="flex justify-end">
-          <Button>Update</Button>
-        </CardFrameFooter>
-      </CardFrame>
+        <CardFrame className="flex-row items-center justify-between">
+          <CardFrameHeader>
+            <CardFrameTitle>Danger zone</CardFrameTitle>
+            <CardFrameDescription>
+              Be careful. Team deletion cannot be undone.
+            </CardFrameDescription>
+          </CardFrameHeader>
 
-      <CardFrame className="flex-row items-center justify-between">
-        <CardFrameHeader>
-          <CardFrameTitle>Danger zone</CardFrameTitle>
-          <CardFrameDescription>
-            Be careful. Team deletion cannot be undone.
-          </CardFrameDescription>
-        </CardFrameHeader>
-
-        <CardFrameFooter className="flex justify-end">
-          <Button variant="destructive-outline">Disband team</Button>
-        </CardFrameFooter>
-      </CardFrame>
-    </div>
+          <CardFrameFooter className="flex justify-end">
+            <Button variant="destructive-outline">Disband team</Button>
+          </CardFrameFooter>
+        </CardFrame>
+      </div>
+    </>
   );
 }
