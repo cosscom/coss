@@ -1,4 +1,3 @@
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import {
   AppHeader,
   AppHeaderContent,
@@ -18,13 +17,7 @@ export default function WebhooksSettingsPage() {
           </AppHeaderDescription>
         </AppHeaderContent>
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel className="p-0">
-            <WebhooksEmpty webhooks={webhooks} />
-          </CardPanel>
-        </Card>
-      </CardFrame>
+      <WebhooksEmpty webhooks={webhooks} />
     </>
   );
 }

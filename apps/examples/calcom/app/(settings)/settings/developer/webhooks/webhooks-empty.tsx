@@ -35,7 +35,7 @@ export function WebhooksEmpty({
 
   if (webhooks.length === 0) {
     return (
-      <Empty>
+      <Empty className="rounded-xl border border-dashed py-8 md:py-12">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <WebhookIcon />
