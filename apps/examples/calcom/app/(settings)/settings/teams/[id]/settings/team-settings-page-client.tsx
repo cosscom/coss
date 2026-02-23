@@ -24,7 +24,8 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { SettingsToggle } from "@/components/particles";
+import { FieldGrid } from "@/components/particles/field-grid";
+import { SettingsToggle } from "@/components/particles/settings-toggle";
 
 const resetIntervalItems = [
   { label: "Daily", value: "daily" },
@@ -83,7 +84,7 @@ export function TeamSettingsPageClient() {
 
           <Card className="rounded-b-none!">
             <CardPanel>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FieldGrid>
                 <Field>
                   <FieldLabel>
                     Reset interval for weighted Round Robin
@@ -137,7 +138,7 @@ export function TeamSettingsPageClient() {
                     weighted round robin distribution.
                   </FieldDescription>
                 </Field>
-              </div>
+              </FieldGrid>
             </CardPanel>
           </Card>
 

@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
+import { FieldGrid } from "@/components/particles/field-grid";
 
 const addEventsToGroups = [
   {
@@ -41,7 +42,7 @@ const allAddEventsToItems = addEventsToGroups.flatMap((g) => g.items);
 
 export function CalendarsDemoForm() {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <FieldGrid>
       <Field>
         <FieldLabel>Add events to</FieldLabel>
         <Select
@@ -98,6 +99,6 @@ export function CalendarsDemoForm() {
           Calendar.
         </FieldDescription>
       </Field>
-    </div>
+    </FieldGrid>
   );
 }

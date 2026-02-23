@@ -24,6 +24,7 @@ import {
 } from "@coss/ui/components/select";
 import { CalendarIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
+import { FieldGrid, FieldGridRow } from "@/components/particles/field-grid";
 
 export function GeneralSettingsFields() {
   const languageItems = [
@@ -83,8 +84,8 @@ export function GeneralSettingsFields() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <Field className="max-md:col-span-2">
+    <FieldGrid>
+      <Field>
         <FieldLabel>Language</FieldLabel>
         <Select aria-label="Language" defaultValue="en" items={languageItems}>
           <SelectTrigger>
@@ -100,10 +101,10 @@ export function GeneralSettingsFields() {
         </Select>
       </Field>
 
-      <div className="col-span-2">
+      <FieldGridRow>
         <Fieldset className="max-w-none gap-2">
           <Label render={<FieldsetLegend />}>Timezone</Label>
-          <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+          <FieldGrid className="gap-4">
             <Field className="contents">
               <Combobox
                 autoHighlight
@@ -137,55 +138,53 @@ export function GeneralSettingsFields() {
               <CalendarIcon />
               <span>Schedule timezone change</span>
             </Button>
-          </div>
+          </FieldGrid>
         </Fieldset>
-      </div>
+      </FieldGridRow>
 
-      <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field>
-          <FieldLabel>Time format</FieldLabel>
-          <Select
-            aria-label="Time format"
-            defaultValue="12"
-            items={timeFormatItems}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPopup>
-              {timeFormatItems.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectPopup>
-          </Select>
-          <FieldDescription>
-            This is an internal setting and will not affect how times are
-            displayed on public booking pages for you or anyone booking you.
-          </FieldDescription>
-        </Field>
+      <Field>
+        <FieldLabel>Time format</FieldLabel>
+        <Select
+          aria-label="Time format"
+          defaultValue="12"
+          items={timeFormatItems}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup>
+            {timeFormatItems.map(({ label, value }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
+        <FieldDescription>
+          This is an internal setting and will not affect how times are
+          displayed on public booking pages for you or anyone booking you.
+        </FieldDescription>
+      </Field>
 
-        <Field>
-          <FieldLabel>Start of week</FieldLabel>
-          <Select
-            aria-label="Start of week"
-            defaultValue="sunday"
-            items={startOfWeekItems}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPopup>
-              {startOfWeekItems.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectPopup>
-          </Select>
-        </Field>
-      </div>
-    </div>
+      <Field>
+        <FieldLabel>Start of week</FieldLabel>
+        <Select
+          aria-label="Start of week"
+          defaultValue="sunday"
+          items={startOfWeekItems}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup>
+            {startOfWeekItems.map(({ label, value }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
+      </Field>
+    </FieldGrid>
   );
 }
