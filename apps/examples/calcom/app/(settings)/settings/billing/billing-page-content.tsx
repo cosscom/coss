@@ -54,6 +54,7 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
+import { FieldGrid } from "@/components/particles/field-grid";
 
 const monthOptions = [
   { label: "January 2026", value: "January 2026" },
@@ -192,7 +193,7 @@ export function BillingPageContent() {
           </CardFrameHeader>
           <Card className="rounded-b-none!">
             <CardPanel>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FieldGrid>
                 <div>
                   <FieldsetLegend className="inline" render={<div />}>
                     Current balance:{" "}
@@ -271,7 +272,7 @@ export function BillingPageContent() {
                     </div>
                   </Group>
                 </Field>
-              </div>
+              </FieldGrid>
             </CardPanel>
           </Card>
         </CardFrame>

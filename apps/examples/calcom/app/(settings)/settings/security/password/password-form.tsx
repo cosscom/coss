@@ -14,13 +14,14 @@ import {
 } from "@coss/ui/components/tooltip";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
+import { FieldGrid, FieldGridRow } from "@/components/particles/field-grid";
 
 export function PasswordFormFields() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   return (
-    <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+    <FieldGrid className="gap-x-6 gap-y-4">
       <Field>
         <FieldLabel>Old password</FieldLabel>
         <InputGroup>
@@ -85,10 +86,10 @@ export function PasswordFormFields() {
         </InputGroup>
       </Field>
 
-      <div className="col-span-2 text-muted-foreground text-xs">
+      <FieldGridRow className="text-muted-foreground text-xs">
         The password must be a minimum of 7 characters long containing at least
         one number and have a mixture of uppercase and lowercase letters.
-      </div>
-    </div>
+      </FieldGridRow>
+    </FieldGrid>
   );
 }

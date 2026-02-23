@@ -40,6 +40,7 @@ import {
   LinkIcon,
   PlusIcon,
 } from "lucide-react";
+import { FieldGrid, FieldGridRow } from "@/components/particles/field-grid";
 
 function EmailInput({
   email,
@@ -98,7 +99,7 @@ export function ProfileFields() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <FieldGrid>
       <div className="flex items-center gap-4 max-md:col-span-2">
         <Avatar className="size-16">
           <AvatarImage
@@ -120,57 +121,59 @@ export function ProfileFields() {
         </div>
       </div>
 
-      <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field>
-          <FieldLabel>Username</FieldLabel>
-          <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
-            <InputGroupAddon>
-              <InputGroupText>i.cal.com/</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupInput
-              aria-label="Set your URL"
-              className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
-              defaultValue="pasquale"
-              disabled
-            />
-            <InputGroupAddon align="inline-end">
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      aria-label="Copy URL"
-                      onClick={() =>
-                        copyToClipboard("https://i.cal.com/pasquale")
-                      }
-                      size="icon-xs"
-                      variant="ghost"
-                    />
-                  }
-                >
-                  {isCopied ? <CheckIcon /> : <CopyIcon />}
-                </TooltipTrigger>
-                <TooltipPopup>
-                  <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
-                </TooltipPopup>
-              </Tooltip>
-            </InputGroupAddon>
-          </InputGroup>
-          <FieldDescription>
-            Tip: You can add a &apos;+&apos; between usernames (e.g.
-            cal.com/anna+brian) to meet with multiple people
-          </FieldDescription>
-        </Field>
+      <FieldGridRow>
+        <FieldGrid className="gap-4">
+          <Field>
+            <FieldLabel>Username</FieldLabel>
+            <InputGroup className="opacity-100! has-disabled:cursor-not-allowed has-disabled:bg-muted has-disabled:text-muted-foreground has-disabled:*:cursor-not-allowed">
+              <InputGroupAddon>
+                <InputGroupText>i.cal.com/</InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                aria-label="Set your URL"
+                className="*:[input]:ps-0! has-disabled:*:[input]:cursor-not-allowed"
+                defaultValue="pasquale"
+                disabled
+              />
+              <InputGroupAddon align="inline-end">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        aria-label="Copy URL"
+                        onClick={() =>
+                          copyToClipboard("https://i.cal.com/pasquale")
+                        }
+                        size="icon-xs"
+                        variant="ghost"
+                      />
+                    }
+                  >
+                    {isCopied ? <CheckIcon /> : <CopyIcon />}
+                  </TooltipTrigger>
+                  <TooltipPopup>
+                    <p>{isCopied ? "Copied!" : "Copy to clipboard"}</p>
+                  </TooltipPopup>
+                </Tooltip>
+              </InputGroupAddon>
+            </InputGroup>
+            <FieldDescription>
+              Tip: You can add a &apos;+&apos; between usernames (e.g.
+              cal.com/anna+brian) to meet with multiple people
+            </FieldDescription>
+          </Field>
 
-        <Field>
-          <FieldLabel>Full name</FieldLabel>
-          <Input defaultValue="Pasquale Vitiello" />
-        </Field>
-      </div>
+          <Field>
+            <FieldLabel>Full name</FieldLabel>
+            <Input defaultValue="Pasquale Vitiello" />
+          </Field>
+        </FieldGrid>
+      </FieldGridRow>
 
-      <div className="col-span-2">
+      <FieldGridRow>
         <Fieldset className="max-w-none gap-2">
           <Label render={<FieldsetLegend />}>Email</Label>
-          <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 md:gap-4">
+          <FieldGrid className="w-full gap-2 md:gap-4">
             {emails.map((item) => (
               <EmailInput
                 email={item.email}
@@ -179,7 +182,7 @@ export function ProfileFields() {
                 key={item.email}
               />
             ))}
-          </div>
+          </FieldGrid>
           <div>
             <Button size="sm" variant="outline">
               <PlusIcon />
@@ -187,28 +190,30 @@ export function ProfileFields() {
             </Button>
           </div>
         </Fieldset>
-      </div>
+      </FieldGridRow>
 
-      <Field className="col-span-2">
-        <FieldLabel>About</FieldLabel>
-        <InputGroup>
-          <InputGroupTextarea placeholder="Tell us about yourself…" />
-          <InputGroupAddon
-            align="block-start"
-            className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
-          >
-            <Toggle aria-label="Toggle bold" size="sm">
-              <BoldIcon aria-hidden="true" />
-            </Toggle>
-            <Toggle aria-label="Toggle italic" size="sm">
-              <ItalicIcon aria-hidden="true" />
-            </Toggle>
-            <Button aria-label="Link" size="icon-sm" variant="ghost">
-              <LinkIcon aria-hidden="true" />
-            </Button>
-          </InputGroupAddon>
-        </InputGroup>
-      </Field>
-    </div>
+      <FieldGridRow>
+        <Field>
+          <FieldLabel>About</FieldLabel>
+          <InputGroup>
+            <InputGroupTextarea placeholder="Tell us about yourself…" />
+            <InputGroupAddon
+              align="block-start"
+              className="gap-1 rounded-t-lg border-b bg-muted/72 p-2!"
+            >
+              <Toggle aria-label="Toggle bold" size="sm">
+                <BoldIcon aria-hidden="true" />
+              </Toggle>
+              <Toggle aria-label="Toggle italic" size="sm">
+                <ItalicIcon aria-hidden="true" />
+              </Toggle>
+              <Button aria-label="Link" size="icon-sm" variant="ghost">
+                <LinkIcon aria-hidden="true" />
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
+      </FieldGridRow>
+    </FieldGrid>
   );
 }

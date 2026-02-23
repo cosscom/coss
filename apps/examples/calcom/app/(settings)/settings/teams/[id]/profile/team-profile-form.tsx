@@ -29,6 +29,7 @@ import {
   ItalicIcon,
   LinkIcon,
 } from "lucide-react";
+import { FieldGrid } from "@/components/particles/field-grid";
 
 export function TeamProfileFields() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
@@ -56,7 +57,7 @@ export function TeamProfileFields() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <FieldGrid className="gap-4">
         <Field>
           <FieldLabel>Team name</FieldLabel>
           <InputGroup>
@@ -77,7 +78,7 @@ export function TeamProfileFields() {
             />
           </InputGroup>
         </Field>
-      </div>
+      </FieldGrid>
 
       <Field className="md:w-1/2">
         <FieldLabel>Team ID</FieldLabel>
