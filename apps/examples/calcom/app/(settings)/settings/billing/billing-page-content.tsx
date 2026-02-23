@@ -324,7 +324,7 @@ export function BillingPageContent() {
             </div>
           </CardFrameHeader>
           <Card className="rounded-b-none!">
-            <CardPanel>
+            <CardPanel className="p-0">
               <Empty>
                 <EmptyHeader>
                   <EmptyMedia variant="icon">

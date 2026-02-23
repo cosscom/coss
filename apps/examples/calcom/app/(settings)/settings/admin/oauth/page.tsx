@@ -1,6 +1,5 @@
-import { Avatar, AvatarFallback } from "@coss/ui/components/avatar";
-import { Badge } from "@coss/ui/components/badge";
-import { Button } from "@coss/ui/components/button";
+"use client";
+
 import {
   Card,
   CardFrame,
@@ -15,84 +14,60 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@coss/ui/components/empty";
+import { KeyRoundIcon } from "lucide-react";
 import {
-  Menu,
-  MenuItem,
-  MenuPopup,
-  MenuTrigger,
-} from "@coss/ui/components/menu";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
-import {
-  ChevronRightIcon,
-  EllipsisIcon,
-  KeyRoundIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
+  type OAuthClientItem,
+  OAuthClientsList,
+} from "@/app/(settings)/settings/developer/oauth/oauth-clients-list";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import {
-  ListItem,
-  ListItemActions,
-  ListItemBadges,
-  ListItemContent,
-  ListItemDescription,
-  ListItemHeader,
-  ListItemTitle,
-} from "@/components/list-item";
 
-interface OAuthClientSubmission {
-  email: string;
-  id: string;
-  name: string;
-  status: "approved" | "pending" | "rejected";
-}
+const STATUS_GROUPS = ["pending", "rejected", "approved"] as const;
 
-const OAUTH_CLIENTS: OAuthClientSubmission[] = [
+const STATUS_LABELS: Record<(typeof STATUS_GROUPS)[number], string> = {
+  approved: "Approved",
+  pending: "Pending",
+  rejected: "Rejected",
+};
+
+import { useState } from "react";
+
+const OAUTH_CLIENTS: OAuthClientItem[] = [
   {
-    email: "admin@example.com",
+    clientId: "cl_admin_1",
+    clientSecret: "cs_admin_1",
     id: "1",
     name: "another",
     status: "pending",
   },
   {
-    email: "admin@example.com",
+    clientId: "cl_admin_2",
+    clientSecret: "cs_admin_2",
     id: "2",
     name: "test",
     status: "pending",
   },
 ];
 
-const STATUS_GROUPS = ["pending", "rejected", "approved"] as const;
-
-const STATUS_LABELS: Record<OAuthClientSubmission["status"], string> = {
-  approved: "Approved",
-  pending: "Pending",
-  rejected: "Rejected",
-};
-
-const STATUS_BADGE_VARIANTS: Record<
-  OAuthClientSubmission["status"],
-  "error" | "success" | "warning"
-> = {
-  approved: "success",
-  pending: "warning",
-  rejected: "error",
-};
-
 export default function AdminOAuthPage() {
+  const [clients, setClients] = useState(OAUTH_CLIENTS);
+
   const grouped = STATUS_GROUPS.map((status) => ({
-    clients: OAUTH_CLIENTS.filter((c) => c.status === status),
+    clients: clients.filter((c) => c.status === status),
     label: STATUS_LABELS[status],
     status,
   }));
+
+  function handleEditClick(_client: OAuthClientItem) {
+    // TODO: open edit dialog
+  }
+
+  function handleRemoveClick(client: OAuthClientItem) {
+    setClients((prev) => prev.filter((c) => c.id !== client.id));
+  }
 
   return (
     <>
@@ -109,91 +84,32 @@ export default function AdminOAuthPage() {
             <CardFrameHeader>
               <CardFrameTitle>{group.label}</CardFrameTitle>
             </CardFrameHeader>
-            {group.clients.length > 0 ? (
-              <Card>
-                <CardPanel className="p-0">
-                  {group.clients.map((client) => (
-                    <ListItem key={client.id}>
-                      <Avatar className="size-10">
-                        <AvatarFallback>
-                          <KeyRoundIcon className="size-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <ListItemContent>
-                        <ListItemHeader>
-                          <ListItemTitle>{client.name}</ListItemTitle>
-                          <ListItemDescription>
-                            {client.email}
-                          </ListItemDescription>
-                        </ListItemHeader>
-                      </ListItemContent>
-                      <ListItemBadges>
-                        <Badge
-                          className="pointer-events-none"
-                          variant={STATUS_BADGE_VARIANTS[client.status]}
-                        >
-                          {STATUS_LABELS[client.status]}
-                        </Badge>
-                      </ListItemBadges>
-                      <ListItemActions>
-                        <Menu>
-                          <Tooltip>
-                            <MenuTrigger
-                              render={
-                                <TooltipTrigger
-                                  render={
-                                    <Button
-                                      aria-label={`Options for ${client.name}`}
-                                      size="icon"
-                                      variant="outline"
-                                    >
-                                      <EllipsisIcon />
-                                    </Button>
-                                  }
-                                />
-                              }
-                            />
-                            <TooltipPopup>Options</TooltipPopup>
-                          </Tooltip>
-                          <MenuPopup align="end">
-                            <MenuItem>
-                              <PencilIcon />
-                              Edit
-                            </MenuItem>
-                            <MenuItem variant="destructive">
-                              <Trash2Icon />
-                              Remove
-                            </MenuItem>
-                          </MenuPopup>
-                        </Menu>
-                        <Button
-                          aria-label={`View ${client.name}`}
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <ChevronRightIcon />
-                        </Button>
-                      </ListItemActions>
-                    </ListItem>
-                  ))}
-                </CardPanel>
-              </Card>
-            ) : (
-              <Empty className="rounded-xl border border-dashed py-8 md:py-12">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <KeyRoundIcon />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                    No {group.label.toLowerCase()} clients
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    There are no {group.label.toLowerCase()} OAuth client
-                    submissions.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            )}
+            <Card>
+              <CardPanel className="p-0">
+                {group.clients.length > 0 ? (
+                  <OAuthClientsList
+                    clients={group.clients}
+                    onEditClick={handleEditClick}
+                    onRemoveClick={handleRemoveClick}
+                  />
+                ) : (
+                  <Empty className="py-0">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <KeyRoundIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>
+                        No {group.label.toLowerCase()} clients
+                      </EmptyTitle>
+                      <EmptyDescription>
+                        There are no {group.label.toLowerCase()} OAuth client
+                        submissions.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
+              </CardPanel>
+            </Card>
           </CardFrame>
         ))}
       </div>
