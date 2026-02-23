@@ -75,6 +75,9 @@ export const userSettingsItems: SettingsNavItem[] = [
     title: "Developer",
     url: "/settings/developer",
   },
+];
+
+export const adminSettingsItems: SettingsNavItem[] = [
   {
     children: [
       { title: "Features", url: "/settings/admin/features" },
@@ -161,4 +164,5 @@ export const orgSettingsItems: SettingsNavItem[] = [
 export const settingsNavItems: SettingsNavItem[] = [
   ...userSettingsItems,
   ...orgSettingsItems,
+  ...adminSettingsItems,
 ];

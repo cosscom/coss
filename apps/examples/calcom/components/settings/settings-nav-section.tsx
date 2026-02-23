@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import {
+  adminSettingsItems,
   orgSettingsItems,
   teamSettingsItems,
   userSettingsItems,
@@ -52,6 +53,14 @@ export function SettingsNavContent({
       ))}
       <TeamsSection onItemClick={onItemClick} pathname={pathname} />
       {orgSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+      {adminSettingsItems.map((section) => (
         <SettingsNavSection
           key={section.url}
           onItemClick={onItemClick}
