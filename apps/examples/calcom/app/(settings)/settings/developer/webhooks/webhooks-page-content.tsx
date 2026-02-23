@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import {
@@ -35,16 +34,10 @@ export function WebhooksPageContent({ webhooks }: WebhooksPageContentProps) {
           </Button>
         </AppHeaderActions>
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel>
-            <WebhooksListContent
-              selectedUserIds={selectedUserIds}
-              webhooks={webhooks}
-            />
-          </CardPanel>
-        </Card>
-      </CardFrame>
+      <WebhooksListContent
+        selectedUserIds={selectedUserIds}
+        webhooks={webhooks}
+      />
     </>
   );
 }

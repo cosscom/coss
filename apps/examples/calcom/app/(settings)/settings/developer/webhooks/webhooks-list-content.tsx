@@ -7,7 +7,13 @@ import {
 } from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
+import {
+  Card,
+  CardFrame,
+  CardFrameHeader,
+  CardFrameTitle,
+  CardPanel,
+} from "@coss/ui/components/card";
 import {
   Menu,
   MenuCheckboxItem,
@@ -140,21 +146,23 @@ export function WebhooksListContent({
   const grouped = groupWebhooksByUser(filtered);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {grouped.map(
         ({ userId, userName, userAvatar, userInitials, webhooks }) => (
-          <section key={userId}>
-            <div className="mb-3 flex items-center gap-2">
-              <Avatar className="size-5">
-                {userAvatar ? (
-                  <AvatarImage alt={userName} src={userAvatar} />
-                ) : null}
-                <AvatarFallback className="text-xs">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-medium text-sm">{userName}</span>
-            </div>
+          <CardFrame key={userId}>
+            <CardFrameHeader>
+              <CardFrameTitle className="flex items-center gap-2">
+                <Avatar className="size-5">
+                  {userAvatar ? (
+                    <AvatarImage alt={userName} src={userAvatar} />
+                  ) : null}
+                  <AvatarFallback className="text-xs">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                {userName}
+              </CardFrameTitle>
+            </CardFrameHeader>
             <Card>
               <CardPanel className="p-0">
                 {webhooks.map((webhook) => (
@@ -162,7 +170,7 @@ export function WebhooksListContent({
                 ))}
               </CardPanel>
             </Card>
-          </section>
+          </CardFrame>
         ),
       )}
     </div>
