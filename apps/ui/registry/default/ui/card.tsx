@@ -96,6 +96,26 @@ function CardFrameDescription({
   });
 }
 
+function CardFrameAction({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn(
+      "col-start-2 row-span-2 row-start-1 self-center justify-self-end inline-flex",
+      className,
+    ),
+    "data-slot": "card-frame-action",
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render,
+  });
+}
+
 function CardFrameFooter({
   className,
   render,
@@ -233,6 +253,7 @@ export {
   CardFrameHeader,
   CardFrameTitle,
   CardFrameDescription,
+  CardFrameAction,
   CardFrameFooter,
   CardAction,
   CardDescription,
