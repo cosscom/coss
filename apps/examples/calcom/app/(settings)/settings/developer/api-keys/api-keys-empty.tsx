@@ -17,7 +17,7 @@ interface ApiKeysEmptyProps {
 
 export function ApiKeysEmpty({ onNewClick }: ApiKeysEmptyProps) {
   return (
-    <Empty>
+    <Empty className="rounded-xl border border-dashed py-8 md:py-12">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <KeyIcon />

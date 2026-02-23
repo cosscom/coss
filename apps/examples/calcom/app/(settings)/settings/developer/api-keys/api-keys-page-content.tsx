@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
+import { Card, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import {
@@ -96,26 +96,24 @@ export function ApiKeysPageContent() {
           </AppHeaderActions>
         )}
       </AppHeader>
-      <CardFrame>
+      {hasApiKeys ? (
         <Card>
           <CardPanel className="p-0">
-            {hasApiKeys ? (
-              <ApiKeysList
-                apiKeys={apiKeys}
-                onEditClick={handleEditClick}
-                onRemoveClick={handleRemoveClick}
-              />
-            ) : (
-              <ApiKeysEmpty onNewClick={() => setCreateDialogOpen(true)} />
-            )}
+            <ApiKeysList
+              apiKeys={apiKeys}
+              onEditClick={handleEditClick}
+              onRemoveClick={handleRemoveClick}
+            />
           </CardPanel>
         </Card>
+      ) : (
+        <ApiKeysEmpty onNewClick={() => setCreateDialogOpen(true)} />
+      )}
 
-        <NewApiKeyDialog
-          onOpenChange={setCreateDialogOpen}
-          open={createDialogOpen}
-        />
-      </CardFrame>
+      <NewApiKeyDialog
+        onOpenChange={setCreateDialogOpen}
+        open={createDialogOpen}
+      />
 
       <EditApiKeyDialog
         apiKey={editingKey}
