@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
+import { Card, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import {
@@ -106,26 +106,24 @@ export function OAuthPageContent() {
           </AppHeaderActions>
         )}
       </AppHeader>
-      <CardFrame>
-        <Card>
-          <CardPanel className="p-0">
-            {hasClients ? (
-              <OAuthClientsList
-                clients={clients}
-                onEditClick={handleEditClick}
-                onRemoveClick={handleRemoveClick}
-              />
-            ) : (
-              <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
-            )}
-          </CardPanel>
-        </Card>
+      <Card>
+        <CardPanel className="p-0">
+          {hasClients ? (
+            <OAuthClientsList
+              clients={clients}
+              onEditClick={handleEditClick}
+              onRemoveClick={handleRemoveClick}
+            />
+          ) : (
+            <OAuthEmpty onNewClick={() => setCreateDialogOpen(true)} />
+          )}
+        </CardPanel>
+      </Card>
 
-        <NewOAuthClientDialogRoot
-          onOpenChange={setCreateDialogOpen}
-          open={createDialogOpen}
-        />
-      </CardFrame>
+      <NewOAuthClientDialogRoot
+        onOpenChange={setCreateDialogOpen}
+        open={createDialogOpen}
+      />
 
       <EditOAuthClientDialog
         client={editingClient}

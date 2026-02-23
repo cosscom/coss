@@ -17,7 +17,7 @@ interface OAuthEmptyProps {
 
 export function OAuthEmpty({ onNewClick }: OAuthEmptyProps) {
   return (
-    <Empty>
+    <Empty className="rounded-xl border border-dashed py-8 md:py-12">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <KeyIcon />
@@ -29,7 +29,7 @@ export function OAuthEmpty({ onNewClick }: OAuthEmptyProps) {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button onClick={onNewClick} variant="outline">
+        <Button onClick={onNewClick}>
           <PlusIcon />
           New
         </Button>

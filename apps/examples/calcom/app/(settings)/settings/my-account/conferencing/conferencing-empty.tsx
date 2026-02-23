@@ -123,7 +123,7 @@ export function ConferencingEmpty({
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button variant="outline">Connect conference apps</Button>
+          <Button>Connect conference apps</Button>
         </EmptyContent>
       </Empty>
     );
