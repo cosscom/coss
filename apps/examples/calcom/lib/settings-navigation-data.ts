@@ -1,6 +1,7 @@
 import {
   CreditCardIcon,
   KeyIcon,
+  LockIcon,
   type LucideIcon,
   TerminalIcon,
 } from "lucide-react";
@@ -73,6 +74,28 @@ export const userSettingsItems: SettingsNavItem[] = [
     icon: TerminalIcon,
     title: "Developer",
     url: "/settings/developer",
+  },
+  {
+    children: [
+      { title: "Features", url: "/settings/admin/features" },
+      { title: "License", url: "/settings/admin/license" },
+      { title: "Billing", url: "/settings/admin/billing" },
+      { title: "Impersonation", url: "/settings/admin/impersonation" },
+      { title: "Apps", url: "/settings/admin/apps" },
+      { title: "Users", url: "/settings/admin/users" },
+      { title: "Organizations", url: "/settings/admin/organizations" },
+      { title: "Locked SMS", url: "/settings/admin/locked-sms" },
+      { title: "Blocklist", url: "/settings/admin/blocklist" },
+      { title: "OAuth", url: "/settings/admin/oauth" },
+      {
+        title: "Workspace Platforms",
+        url: "/settings/admin/workspace-platforms",
+      },
+      { title: "Playground", url: "/settings/admin/playground" },
+    ],
+    icon: LockIcon,
+    title: "Admin",
+    url: "/settings/admin",
   },
 ];
 
