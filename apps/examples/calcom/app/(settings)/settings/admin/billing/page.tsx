@@ -27,7 +27,7 @@ export default function AdminBillingPage() {
           <CardPanel>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardFrameTitle>Billing portal</CardFrameTitle>
+                <CardFrameTitle>Manage billing</CardFrameTitle>
                 <CardFrameDescription>
                   Open the Stripe billing portal for this license.
                 </CardFrameDescription>
