@@ -269,6 +269,7 @@ export function FlagAdminList() {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isAssignSheetOpen, setIsAssignSheetOpen] = useState(false);
   const [userQuery, setUserQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(5);
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = userQuery.trim().toLowerCase();
@@ -281,6 +282,9 @@ export function FlagAdminList() {
       ),
     );
   }, [userQuery]);
+
+  const visibleUsers = filteredUsers.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredUsers.length;
 
   const groupedFlags = groupFlagsByType(flags);
   const sortedTypes = Object.keys(groupedFlags).sort();
@@ -299,6 +303,7 @@ export function FlagAdminList() {
 
   function handleAssignUsersClick(slug: string) {
     setActiveFlagSlug(slug);
+    setVisibleCount(5);
     setIsAssignSheetOpen(true);
   }
 
@@ -343,12 +348,15 @@ export function FlagAdminList() {
 
         <SheetPanel className="flex flex-col gap-3">
           <Input
-            onChange={(e) => setUserQuery(e.currentTarget.value)}
+            onChange={(e) => {
+              setUserQuery(e.currentTarget.value);
+              setVisibleCount(5);
+            }}
             placeholder="Search users…"
             value={userQuery}
           />
           <div className="flex flex-col gap-2">
-            {filteredUsers.map((user) => {
+            {visibleUsers.map((user) => {
               const switchId = `assign-flag-user-${user.id}`;
 
               return (
@@ -392,6 +400,15 @@ export function FlagAdminList() {
               );
             })}
           </div>
+          {hasMore && (
+            <Button
+              className="w-full"
+              onClick={() => setVisibleCount((prev) => prev + 5)}
+              variant="outline"
+            >
+              Load more
+            </Button>
+          )}
         </SheetPanel>
 
         <SheetFooter>
