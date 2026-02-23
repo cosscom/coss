@@ -51,7 +51,7 @@ export type ConferencingApp = {
   isDefault?: boolean;
 };
 
-const initialApps: ConferencingApp[] = [
+export const initialConferencingApps: ConferencingApp[] = [
   {
     alt: "Cal Video",
     description:
@@ -72,7 +72,7 @@ const initialApps: ConferencingApp[] = [
 ];
 
 export function ConferencingEmpty({
-  apps = initialApps,
+  apps = initialConferencingApps,
   onAppsChange,
 }: {
   apps?: ConferencingApp[];
@@ -112,7 +112,7 @@ export function ConferencingEmpty({
 
   if (currentApps.length === 0) {
     return (
-      <Empty>
+      <Empty className="rounded-xl border border-dashed py-8 md:py-12">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <VideoIcon />
