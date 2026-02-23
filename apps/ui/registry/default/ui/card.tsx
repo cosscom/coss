@@ -51,7 +51,10 @@ function CardFrameHeader({
   ...props
 }: useRender.ComponentProps<"div">) {
   const defaultProps = {
-    className: cn("relative flex flex-col px-6 py-4", className),
+    className: cn(
+      "relative flex flex-col px-6 py-4 grid auto-rows-min grid-rows-[auto_auto] items-start gap-x-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]",
+      className,
+    ),
     "data-slot": "card-frame-header",
   };
 
