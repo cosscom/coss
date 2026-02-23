@@ -79,7 +79,7 @@ export default function AdminImpersonationPage() {
                     <ListItemHeader>
                       <ListItemTitle>{entry.user}</ListItemTitle>
                       <ListItemDescription>
-                        {entry.impersonatedAt}
+                        Impersonated at {entry.impersonatedAt}
                       </ListItemDescription>
                     </ListItemHeader>
                   </ListItemContent>
