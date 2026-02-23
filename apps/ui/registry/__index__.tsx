@@ -3643,6 +3643,24 @@ export const Index: Record<string, any> = {
     categories: ["card","form","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
+  "p-card-11": {
+    name: "p-card-11",
+    description: "CardFrame with header action",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/empty"],
+    files: [{
+      path: "registry/default/particles/p-card-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card","frame"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
   "p-checkbox-1": {
     name: "p-checkbox-1",
     description: "Basic checkbox",
