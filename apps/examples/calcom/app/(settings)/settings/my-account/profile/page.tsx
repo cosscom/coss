@@ -2,10 +2,7 @@ import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
-  CardFrameDescription,
   CardFrameFooter,
-  CardFrameHeader,
-  CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
 import {
@@ -13,6 +10,7 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
+import { DangerZoneSection } from "@/components/particles/danger-zone-section";
 
 import { ProfileFields } from "./profile-form";
 
@@ -39,18 +37,10 @@ export default function ProfileSettingsPage() {
           </CardFrameFooter>
         </CardFrame>
 
-        <CardFrame className="flex-row items-center justify-between">
-          <CardFrameHeader>
-            <CardFrameTitle>Danger zone</CardFrameTitle>
-            <CardFrameDescription>
-              Be careful. Account deletion cannot be undone.
-            </CardFrameDescription>
-          </CardFrameHeader>
-
-          <CardFrameFooter className="flex justify-end">
-            <Button variant="destructive-outline">Delete account</Button>
-          </CardFrameFooter>
-        </CardFrame>
+        <DangerZoneSection
+          buttonLabel="Delete account"
+          description="Be careful. Account deletion cannot be undone."
+        />
       </div>
     </>
   );
