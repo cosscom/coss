@@ -8,7 +8,12 @@ import {
 } from "@coss/ui/components/card";
 import { Field, FieldDescription } from "@coss/ui/components/field";
 import { Group } from "@coss/ui/components/group";
-import { Input } from "@coss/ui/components/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@coss/ui/components/input-group";
 import {
   AppHeader,
   AppHeaderContent,
@@ -51,10 +56,17 @@ export default function AdminImpersonationPage() {
             <CardPanel>
               <Field>
                 <Group aria-label="User impersonation" className="w-full gap-2">
-                  <Input
-                    defaultValue="http://localhost:3000/"
-                    placeholder="http://localhost:3000/"
-                  />
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start">
+                      <InputGroupText>http://localhost:3000/</InputGroupText>
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      aria-label="User to impersonate"
+                      className="*:[input]:ps-0!"
+                      placeholder="username"
+                      type="text"
+                    />
+                  </InputGroup>
                   <div>
                     <Button>Impersonate</Button>
                   </div>
@@ -79,7 +91,7 @@ export default function AdminImpersonationPage() {
                     <ListItemHeader>
                       <ListItemTitle>{entry.user}</ListItemTitle>
                       <ListItemDescription>
-                        {entry.impersonatedAt}
+                        Impersonated at {entry.impersonatedAt}
                       </ListItemDescription>
                     </ListItemHeader>
                   </ListItemContent>
