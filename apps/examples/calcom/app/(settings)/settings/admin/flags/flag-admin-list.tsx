@@ -6,7 +6,6 @@ import {
   AvatarImage,
 } from "@coss/ui/components/avatar";
 import { Button } from "@coss/ui/components/button";
-import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -24,10 +23,14 @@ import {
   SheetPanel,
   SheetPopup,
   SheetTitle,
-  SheetTrigger,
 } from "@coss/ui/components/sheet";
 import { Switch } from "@coss/ui/components/switch";
 import { toastManager } from "@coss/ui/components/toast";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
 import { ChevronDownIcon, UsersIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -224,6 +227,26 @@ const USERS: AssignableUser[] = [
     id: "usr_anna",
     name: "Anna Taylor",
   },
+  {
+    email: "sofia@cal.com",
+    id: "usr_sofia",
+    name: "Sofia Rodriguez",
+  },
+  {
+    email: "david@cal.com",
+    id: "usr_david",
+    name: "David Chen",
+  },
+  {
+    email: "elena@cal.com",
+    id: "usr_elena",
+    name: "Elena Rossi",
+  },
+  {
+    email: "james@cal.com",
+    id: "usr_james",
+    name: "James Lee",
+  },
 ];
 
 function groupFlagsByType(flags: FeatureFlag[]) {
@@ -244,6 +267,7 @@ export function FlagAdminList() {
   const [flags, setFlags] = useState(FEATURE_FLAGS);
   const [activeFlagSlug, setActiveFlagSlug] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [isAssignSheetOpen, setIsAssignSheetOpen] = useState(false);
   const [userQuery, setUserQuery] = useState("");
 
   const filteredUsers = useMemo(() => {
@@ -275,23 +299,13 @@ export function FlagAdminList() {
 
   function handleAssignUsersClick(slug: string) {
     setActiveFlagSlug(slug);
+    setIsAssignSheetOpen(true);
   }
 
-  function handleUserCheckedChange(
-    userId: string,
-    checked: boolean | "indeterminate",
-  ) {
-    const isChecked = checked === true;
-
+  function handleUserAssignedChange(userId: string, checked: boolean) {
     setSelectedUserIds((prev) => {
-      if (isChecked && !prev.includes(userId)) {
-        return [...prev, userId];
-      }
-
-      if (!isChecked) {
-        return prev.filter((id) => id !== userId);
-      }
-
+      if (checked && !prev.includes(userId)) return [...prev, userId];
+      if (!checked) return prev.filter((id) => id !== userId);
       return prev;
     });
   }
@@ -304,7 +318,7 @@ export function FlagAdminList() {
   }
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={setIsAssignSheetOpen} open={isAssignSheetOpen}>
       <div className="flex flex-col gap-4">
         {sortedTypes.map((type) => (
           <FlagGroup
@@ -334,39 +348,49 @@ export function FlagAdminList() {
             value={userQuery}
           />
           <div className="flex flex-col gap-2">
-            {filteredUsers.map((user) => (
-              <Label
-                className="flex items-start gap-3 rounded-lg border p-3 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50"
-                key={user.id}
-              >
-                <Checkbox
-                  checked={selectedUserIds.includes(user.id)}
-                  onCheckedChange={(checked) =>
-                    handleUserCheckedChange(user.id, checked)
-                  }
-                />
-                <div className="flex min-w-0 items-center gap-3">
-                  <Avatar className="size-8">
-                    {user.avatarUrl && (
-                      <AvatarImage alt={user.name} src={user.avatarUrl} />
-                    )}
-                    <AvatarFallback>
-                      {user.name
-                        .split(" ")
-                        .slice(0, 2)
-                        .map((part) => part[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex min-w-0 flex-col gap-0.5">
-                    <p className="truncate font-medium text-sm">{user.name}</p>
-                    <p className="truncate text-muted-foreground text-xs">
-                      {user.email}
-                    </p>
+            {filteredUsers.map((user) => {
+              const switchId = `assign-flag-user-${user.id}`;
+
+              return (
+                <Label
+                  className="flex items-center justify-between gap-6 rounded-lg border p-3 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50"
+                  htmlFor={switchId}
+                  key={user.id}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar className="size-8">
+                      {user.avatarUrl && (
+                        <AvatarImage alt={user.name} src={user.avatarUrl} />
+                      )}
+                      <AvatarFallback>
+                        {user.name
+                          .split(" ")
+                          .slice(0, 2)
+                          .map((part) => part[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <p className="truncate font-medium text-sm">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-muted-foreground text-xs">
+                        {user.email}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Label>
-            ))}
+
+                  <Switch
+                    checked={selectedUserIds.includes(user.id)}
+                    className="[--thumb-size:--spacing(4)] sm:[--thumb-size:--spacing(3)]"
+                    id={switchId}
+                    onCheckedChange={(checked) =>
+                      handleUserAssignedChange(user.id, checked)
+                    }
+                  />
+                </Label>
+              );
+            })}
           </div>
         </SheetPanel>
 
@@ -420,18 +444,21 @@ function FlagGroup({ type, flags, onAssignUsers, onToggle }: FlagGroupProps) {
                       handleToggle(flag.slug, checked)
                     }
                   />
-                  <SheetTrigger
-                    onClick={() => onAssignUsers(flag.slug)}
-                    render={
-                      <Button
-                        aria-label="Assign to users"
-                        size="icon"
-                        variant="outline"
-                      />
-                    }
-                  >
-                    <UsersIcon />
-                  </SheetTrigger>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          aria-label="Assign to users"
+                          onClick={() => onAssignUsers(flag.slug)}
+                          size="icon"
+                          variant="outline"
+                        >
+                          <UsersIcon />
+                        </Button>
+                      }
+                    />
+                    <TooltipPopup sideOffset={11}>Assign to users</TooltipPopup>
+                  </Tooltip>
                 </ListItemActions>
               </ListItem>
             ))}
