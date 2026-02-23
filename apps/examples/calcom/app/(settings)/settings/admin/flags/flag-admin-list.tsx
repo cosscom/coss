@@ -438,12 +438,21 @@ function FlagGroup({ type, flags, onAssignUsers, onToggle }: FlagGroupProps) {
                   </ListItemHeader>
                 </ListItemContent>
                 <ListItemActions>
-                  <Switch
-                    checked={flag.enabled}
-                    onCheckedChange={(checked) =>
-                      handleToggle(flag.slug, checked)
-                    }
-                  />
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Switch
+                          checked={flag.enabled}
+                          onCheckedChange={(checked) =>
+                            handleToggle(flag.slug, checked)
+                          }
+                        />
+                      }
+                    />
+                    <TooltipPopup sideOffset={11}>
+                      {flag.enabled ? "Disable flag" : "Enable flag"}
+                    </TooltipPopup>
+                  </Tooltip>
                   <Tooltip>
                     <TooltipTrigger
                       render={
