@@ -33,7 +33,7 @@ export default function AdminBillingPage() {
                 </CardFrameDescription>
               </div>
               <Button>
-                Open billing portal
+                Billing portal
                 <ExternalLinkIcon aria-hidden="true" />
               </Button>
             </div>
