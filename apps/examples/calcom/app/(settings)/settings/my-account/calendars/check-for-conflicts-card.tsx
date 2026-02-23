@@ -31,6 +31,15 @@ import { EllipsisIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
+import {
+  ListItem,
+  ListItemActions,
+  ListItemContent,
+  ListItemDescription,
+  ListItemHeader,
+  ListItemTitle,
+} from "@/components/list-item";
+
 const GOOGLE_CALENDAR_ICON =
   "https://app.cal.com/app-store/googlecalendar/icon.svg";
 
@@ -64,10 +73,10 @@ function CalendarAccountBlock({
 }) {
   const { email, calendars, showMenu } = account;
   return (
-    <Card>
-      <CardPanel className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
+    <ListItem>
+      <ListItemContent>
+        <ListItemHeader>
+          <div className="flex items-start gap-4">
             <Image
               alt="Google Calendar"
               className="size-10 shrink-0"
@@ -76,35 +85,11 @@ function CalendarAccountBlock({
               width={40}
             />
             <div>
-              <p className="font-medium text-sm">Google Calendar</p>
-              <p className="text-muted-foreground text-sm">{email}</p>
+              <ListItemTitle>Google Calendar</ListItemTitle>
+              <ListItemDescription>{email}</ListItemDescription>
             </div>
           </div>
-          {showMenu && (
-            <Menu>
-              <MenuTrigger
-                render={
-                  <Button
-                    aria-label="Calendar options"
-                    size="icon"
-                    variant="outline"
-                  />
-                }
-              >
-                <EllipsisIcon />
-              </MenuTrigger>
-              <MenuPopup align="end">
-                <MenuItem
-                  onClick={() => onRemoveClick(account)}
-                  variant="destructive"
-                >
-                  <Trash2Icon />
-                  Remove app
-                </MenuItem>
-              </MenuPopup>
-            </Menu>
-          )}
-        </div>
+        </ListItemHeader>
         <p className="text-muted-foreground text-sm">{CONFLICT_INSTRUCTION}</p>
         <div className="flex flex-col gap-3">
           {calendars.map((calendar) => (
@@ -116,8 +101,34 @@ function CalendarAccountBlock({
             </Field>
           ))}
         </div>
-      </CardPanel>
-    </Card>
+      </ListItemContent>
+      {showMenu && (
+        <ListItemActions>
+          <Menu>
+            <MenuTrigger
+              render={
+                <Button
+                  aria-label="Calendar options"
+                  size="icon"
+                  variant="outline"
+                />
+              }
+            >
+              <EllipsisIcon />
+            </MenuTrigger>
+            <MenuPopup align="end">
+              <MenuItem
+                onClick={() => onRemoveClick(account)}
+                variant="destructive"
+              >
+                <Trash2Icon />
+                Remove app
+              </MenuItem>
+            </MenuPopup>
+          </Menu>
+        </ListItemActions>
+      )}
+    </ListItem>
   );
 }
 
@@ -164,16 +175,14 @@ export function CheckForConflictsCard() {
         </CardFrameHeader>
 
         <Card>
-          <CardPanel>
-            <div className="flex flex-col gap-4">
-              {accounts.map((account) => (
-                <CalendarAccountBlock
-                  account={account}
-                  key={account.email}
-                  onRemoveClick={handleRemoveClick}
-                />
-              ))}
-            </div>
+          <CardPanel className="p-0!">
+            {accounts.map((account) => (
+              <CalendarAccountBlock
+                account={account}
+                key={account.email}
+                onRemoveClick={handleRemoveClick}
+              />
+            ))}
           </CardPanel>
         </Card>
       </CardFrame>
