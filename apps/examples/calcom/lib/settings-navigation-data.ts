@@ -80,7 +80,7 @@ export const userSettingsItems: SettingsNavItem[] = [
 export const adminSettingsItems: SettingsNavItem[] = [
   {
     children: [
-      { title: "Features", url: "/settings/admin/features" },
+      { title: "Flags", url: "/settings/admin/flags" },
       { title: "License", url: "/settings/admin/license" },
       { title: "Billing", url: "/settings/admin/billing" },
       { title: "Impersonation", url: "/settings/admin/impersonation" },
