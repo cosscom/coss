@@ -7,17 +7,17 @@ import {
   CardFrameTitle,
 } from "@coss/ui/components/card";
 
-interface DangerZoneSectionProps {
+interface DangerZoneProps {
   description: string;
   buttonLabel: string;
   onAction?: () => void;
 }
 
-export function DangerZoneSection({
+export function DangerZone({
   description,
   buttonLabel,
   onAction,
-}: DangerZoneSectionProps) {
+}: DangerZoneProps) {
   return (
     <CardFrame className="flex-row items-center justify-between">
       <CardFrameHeader>

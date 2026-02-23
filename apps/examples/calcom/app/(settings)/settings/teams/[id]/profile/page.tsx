@@ -10,7 +10,7 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { DangerZoneSection } from "@/components/particles/danger-zone-section";
+import { DangerZone } from "@/components/particles/danger-zone";
 
 import { TeamProfileFields } from "./team-profile-form";
 
@@ -37,7 +37,7 @@ export default function TeamProfilePage() {
           </CardFrameFooter>
         </CardFrame>
 
-        <DangerZoneSection
+        <DangerZone
           buttonLabel="Disband team"
           description="Be careful. Team deletion cannot be undone."
         />

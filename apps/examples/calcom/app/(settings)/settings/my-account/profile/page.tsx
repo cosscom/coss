@@ -10,7 +10,7 @@ import {
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { DangerZoneSection } from "@/components/particles/danger-zone-section";
+import { DangerZone } from "@/components/particles/danger-zone";
 
 import { ProfileFields } from "./profile-form";
 
@@ -37,7 +37,7 @@ export default function ProfileSettingsPage() {
           </CardFrameFooter>
         </CardFrame>
 
-        <DangerZoneSection
+        <DangerZone
           buttonLabel="Delete account"
           description="Be careful. Account deletion cannot be undone."
         />
