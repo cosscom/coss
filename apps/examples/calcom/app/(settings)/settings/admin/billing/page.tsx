@@ -1,11 +1,11 @@
 import { Button } from "@coss/ui/components/button";
 import {
   Card,
-  CardFrame,
-  CardFrameHeader,
+  CardFrameDescription,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { ExternalLinkIcon } from "lucide-react";
 import {
   AppHeader,
   AppHeaderContent,
@@ -23,19 +23,22 @@ export default function AdminBillingPage() {
         </AppHeaderContent>
       </AppHeader>
       <div className="flex flex-col gap-4">
-        <CardFrame>
-          <CardFrameHeader>
-            <CardFrameTitle>Billing portal</CardFrameTitle>
-          </CardFrameHeader>
-          <Card>
-            <CardPanel className="flex flex-col items-start gap-4">
-              <p className="text-muted-foreground text-sm">
-                Open the Stripe billing portal for this license.
-              </p>
-              <Button>Open billing portal</Button>
-            </CardPanel>
-          </Card>
-        </CardFrame>
+        <Card>
+          <CardPanel>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardFrameTitle>Billing portal</CardFrameTitle>
+                <CardFrameDescription>
+                  Open the Stripe billing portal for this license.
+                </CardFrameDescription>
+              </div>
+              <Button>
+                Open billing portal
+                <ExternalLinkIcon aria-hidden="true" />
+              </Button>
+            </div>
+          </CardPanel>
+        </Card>
       </div>
     </>
   );
