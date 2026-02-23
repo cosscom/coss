@@ -8,7 +8,31 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { ChevronRightIcon, KeyRoundIcon } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@coss/ui/components/empty";
+import {
+  Menu,
+  MenuItem,
+  MenuPopup,
+  MenuTrigger,
+} from "@coss/ui/components/menu";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
+import {
+  ChevronRightIcon,
+  EllipsisIcon,
+  KeyRoundIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import {
   AppHeader,
   AppHeaderContent,
@@ -85,7 +109,7 @@ export default function AdminOAuthPage() {
             <CardFrameHeader>
               <CardFrameTitle>{group.label}</CardFrameTitle>
             </CardFrameHeader>
-            {group.clients.length > 0 && (
+            {group.clients.length > 0 ? (
               <Card>
                 <CardPanel className="p-0">
                   {group.clients.map((client) => (
@@ -112,6 +136,36 @@ export default function AdminOAuthPage() {
                         </Badge>
                       </ListItemBadges>
                       <ListItemActions>
+                        <Menu>
+                          <Tooltip>
+                            <MenuTrigger
+                              render={
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      aria-label={`Options for ${client.name}`}
+                                      size="icon"
+                                      variant="outline"
+                                    >
+                                      <EllipsisIcon />
+                                    </Button>
+                                  }
+                                />
+                              }
+                            />
+                            <TooltipPopup>Options</TooltipPopup>
+                          </Tooltip>
+                          <MenuPopup align="end">
+                            <MenuItem>
+                              <PencilIcon />
+                              Edit
+                            </MenuItem>
+                            <MenuItem variant="destructive">
+                              <Trash2Icon />
+                              Remove
+                            </MenuItem>
+                          </MenuPopup>
+                        </Menu>
                         <Button
                           aria-label={`View ${client.name}`}
                           size="icon"
@@ -124,6 +178,21 @@ export default function AdminOAuthPage() {
                   ))}
                 </CardPanel>
               </Card>
+            ) : (
+              <Empty className="rounded-xl border border-dashed py-8 md:py-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <KeyRoundIcon />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    No {group.label.toLowerCase()} clients
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    There are no {group.label.toLowerCase()} OAuth client
+                    submissions.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
           </CardFrame>
         ))}
