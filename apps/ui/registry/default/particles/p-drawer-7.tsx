@@ -13,7 +13,7 @@ import {
 
 export default function Particle() {
   return (
-    <Drawer side="right">
+    <Drawer side="bottom">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open drawer
       </DrawerTrigger>
@@ -34,7 +34,7 @@ export default function Particle() {
           </div>
         </DrawerPanel>
         <DrawerFooter variant="bare">
-          <Drawer side="right">
+          <Drawer side="bottom">
             <DrawerTrigger render={<Button variant="outline" />}>
               Security settings
             </DrawerTrigger>
@@ -53,7 +53,7 @@ export default function Particle() {
                 </ul>
               </DrawerPanel>
               <DrawerFooter variant="bare">
-                <Drawer side="right">
+                <Drawer side="bottom">
                   <DrawerTrigger render={<Button variant="outline" />}>
                     Privacy settings
                   </DrawerTrigger>
@@ -72,7 +72,7 @@ export default function Particle() {
                       </ul>
                     </DrawerPanel>
                     <DrawerFooter variant="bare">
-                      <Drawer side="right">
+                      <Drawer side="bottom">
                         <DrawerTrigger render={<Button variant="outline" />}>
                           Notifications
                         </DrawerTrigger>
