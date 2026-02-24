@@ -116,17 +116,17 @@ function DrawerPopup({
       <DrawerViewport side={side} variant={variant}>
         <DrawerPrimitive.Popup
           className={cn(
-            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[transform,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-swiping:select-none data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)] after:pointer-events-none after:absolute after:bg-popover",
+            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[transform,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] after:pointer-events-none after:absolute after:bg-popover data-swiping:select-none data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
             side === "bottom" &&
-              "transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] data-ending-style:transform-[translateY(calc(100%+var(--inset)))] data-starting-style:transform-[translateY(calc(100%+var(--inset)))] row-start-2 border-t has-data-[slot=drawer-bar]:pt-2 after:inset-x-0 after:top-full after:h-(--bleed)",
+              "transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] data-ending-style:transform-[translateY(calc(100%+var(--inset)))] data-starting-style:transform-[translateY(calc(100%+var(--inset)))] row-start-2 border-t after:inset-x-0 after:top-full after:h-(--bleed) has-data-[slot=drawer-bar]:pt-2",
             side === "top" &&
-              "data-starting-style:transform-[translateY(calc(-100%+var(--inset)))] data-ending-style:transform-[translateY(calc(-100%+var(--inset)))] transform-[translateY(var(--drawer-swipe-movement-y))] border-b has-data-[slot=drawer-bar]:pb-2 after:inset-x-0 after:bottom-full after:h-(--bleed)",
+              "data-starting-style:transform-[translateY(calc(-100%+var(--inset)))] data-ending-style:transform-[translateY(calc(-100%+var(--inset)))] transform-[translateY(var(--drawer-swipe-movement-y))] border-b after:inset-x-0 after:bottom-full after:h-(--bleed) has-data-[slot=drawer-bar]:pb-2",
             side === "left" &&
-              "data-starting-style:transform-[translateX(calc(-100%-var(--inset)))] data-ending-style:transform-[translateX(calc(-100%-var(--inset)))] transform-[translateX(var(--drawer-swipe-movement-x))] w-[calc(100%-(--spacing(12)))] max-w-md border-e has-data-[slot=drawer-bar]:pe-2 after:inset-y-0 after:end-full after:w-(--bleed)",
+              "data-starting-style:transform-[translateX(calc(-100%-var(--inset)))] data-ending-style:transform-[translateX(calc(-100%-var(--inset)))] transform-[translateX(var(--drawer-swipe-movement-x))] w-[calc(100%-(--spacing(12)))] max-w-md border-e after:inset-y-0 after:end-full after:w-(--bleed) has-data-[slot=drawer-bar]:pe-2",
             side === "right" &&
-              "transform-[translateX(var(--drawer-swipe-movement-x))] data-ending-style:transform-[translateX(calc(100%+var(--inset)))] data-starting-style:transform-[translateX(calc(100%+var(--inset)))] col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s has-data-[slot=drawer-bar]:ps-2 after:inset-y-0 after:start-full after:w-(--bleed)",
+              "transform-[translateX(var(--drawer-swipe-movement-x))] data-ending-style:transform-[translateX(calc(100%+var(--inset)))] data-starting-style:transform-[translateX(calc(100%+var(--inset)))] col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s after:inset-y-0 after:start-full after:w-(--bleed) has-data-[slot=drawer-bar]:ps-2",
             variant === "inset" &&
-              "before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)] after:bg-transparent",
+              "before:hidden after:bg-transparent sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
             variant === "default" &&
               cn(
                 side === "bottom" &&
