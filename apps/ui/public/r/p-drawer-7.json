@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-drawer-7",
+  "type": "registry:block",
+  "description": "Nested bottom drawers with stacking",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/drawer"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-drawer-7.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Drawer,\n  DrawerBar,\n  DrawerClose,\n  DrawerDescription,\n  DrawerFooter,\n  DrawerHeader,\n  DrawerPanel,\n  DrawerPopup,\n  DrawerTitle,\n  DrawerTrigger,\n} from \"@/registry/default/ui/drawer\";\n\nexport default function Particle() {\n  return (\n    <Drawer>\n      <DrawerTrigger render={<Button variant=\"outline\" />}>\n        Open drawer\n      </DrawerTrigger>\n      <DrawerPopup showBar showCloseButton={false}>\n        <DrawerHeader className=\"items-center\">\n          <DrawerBar />\n          <DrawerTitle>Account</DrawerTitle>\n          <DrawerDescription>\n            Nested drawers stack on top of each other. Try opening the one\n            below.\n          </DrawerDescription>\n        </DrawerHeader>\n        <DrawerPanel>\n          <div aria-hidden className=\"grid gap-3\">\n            <div className=\"h-12 rounded-xl border bg-muted/50\" />\n            <div className=\"h-12 rounded-xl border bg-muted/50\" />\n            <div className=\"h-12 rounded-xl border bg-muted/50\" />\n            <div className=\"h-12 rounded-xl border bg-muted/50\" />\n          </div>\n        </DrawerPanel>\n        <DrawerFooter variant=\"bare\">\n          <Drawer>\n            <DrawerTrigger render={<Button variant=\"outline\" />}>\n              Security settings\n            </DrawerTrigger>\n            <DrawerPopup showBar showCloseButton={false}>\n              <DrawerHeader className=\"items-center\">\n                <DrawerBar />\n                <DrawerTitle>Security</DrawerTitle>\n                <DrawerDescription>\n                  Review sign-in activity and update your security preferences.\n                </DrawerDescription>\n              </DrawerHeader>\n              <DrawerPanel>\n                <ul className=\"list-disc pl-5 text-sm\">\n                  <li>Passkeys enabled</li>\n                  <li>2FA via authenticator app</li>\n                  <li>3 signed-in devices</li>\n                </ul>\n              </DrawerPanel>\n              <DrawerFooter variant=\"bare\">\n                <DrawerClose render={<Button variant=\"outline\" />}>\n                  Close\n                </DrawerClose>\n              </DrawerFooter>\n            </DrawerPopup>\n          </Drawer>\n        </DrawerFooter>\n      </DrawerPopup>\n    </Drawer>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "drawer"
+  ]
+}

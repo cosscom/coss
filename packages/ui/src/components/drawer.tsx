@@ -116,7 +116,7 @@ function DrawerPopup({
       <DrawerViewport side={side} variant={variant}>
         <DrawerPrimitive.Popup
           className={cn(
-            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[transform] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-swiping:select-none dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
+            "relative flex max-h-full min-h-0 w-full min-w-0 flex-col bg-popover not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 transition-[transform,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform before:pointer-events-none before:absolute before:inset-0 before:shadow-[0_1px_--theme(--color-black/4%)] data-swiping:select-none data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
             side === "bottom" &&
               "transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))] data-ending-style:transform-[translateY(calc(100%+var(--inset)))] data-starting-style:transform-[translateY(calc(100%+var(--inset)))] row-start-2 border-t has-data-[slot=drawer-bar]:pt-2",
             side === "top" &&
@@ -150,8 +150,7 @@ function DrawerPopup({
                 side === "right" &&
                   "after:inset-y-0 after:start-full after:w-(--bleed)",
               ),
-            "data-nested-drawer-open:origin-top data-nested-drawer-open:scale-[calc(1-0.05*var(--nested-drawers))] data-nested-drawer-open:opacity-[calc(1-0.1*var(--nested-drawers))]",
-            "data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-swiping:duration-0",
+            "data-nested-drawer-open:transform-[translateY(calc(var(--drawer-swipe-movement-y)-var(--stack-peek-offset)-(var(--shrink)*var(--height))))_scale(var(--scale))] h-(--drawer-height,auto) origin-top [--height:max(0px,calc(var(--drawer-frontmost-height,var(--drawer-height))))] [--peek:1rem] [--scale-base:calc(max(0,1-(var(--nested-drawers)*var(--stack-step))))] [--scale:clamp(0,calc(var(--scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--shrink:calc(1-var(--scale))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-step:0.05] data-nested-drawer-open:h-(--height) data-nested-drawer-open:overflow-hidden data-nested-drawer-open:opacity-[calc(1-0.1*var(--nested-drawers))]",
             className,
           )}
           data-slot="drawer-popup"
