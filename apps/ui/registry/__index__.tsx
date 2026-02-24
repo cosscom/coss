@@ -4435,6 +4435,24 @@ export const Index: Record<string, any> = {
     categories: ["drawer"],
     meta: undefined,
   },
+  "p-drawer-7": {
+    name: "p-drawer-7",
+    description: "Nested drawers",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
   "p-empty-1": {
     name: "p-empty-1",
     description: "Empty state with icon and actions",
