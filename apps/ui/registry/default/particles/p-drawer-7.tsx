@@ -1,7 +1,6 @@
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
-  DrawerBar,
   DrawerClose,
   DrawerDescription,
   DrawerFooter,
@@ -14,13 +13,12 @@ import {
 
 export default function Particle() {
   return (
-    <Drawer>
+    <Drawer side="bottom">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open drawer
       </DrawerTrigger>
-      <DrawerPopup showBar showCloseButton={false}>
+      <DrawerPopup showBar showCloseButton={false} variant="inset">
         <DrawerHeader className="items-center">
-          <DrawerBar />
           <DrawerTitle>Account</DrawerTitle>
           <DrawerDescription>
             Nested drawers stack on top of each other. Try opening the one
@@ -36,13 +34,12 @@ export default function Particle() {
           </div>
         </DrawerPanel>
         <DrawerFooter variant="bare">
-          <Drawer>
+          <Drawer side="bottom">
             <DrawerTrigger render={<Button variant="outline" />}>
               Security settings
             </DrawerTrigger>
-            <DrawerPopup showBar showCloseButton={false}>
+            <DrawerPopup showBar showCloseButton={false} variant="inset">
               <DrawerHeader className="items-center">
-                <DrawerBar />
                 <DrawerTitle>Security</DrawerTitle>
                 <DrawerDescription>
                   Review sign-in activity and update your security preferences.
@@ -56,13 +53,12 @@ export default function Particle() {
                 </ul>
               </DrawerPanel>
               <DrawerFooter variant="bare">
-                <Drawer>
+                <Drawer side="bottom">
                   <DrawerTrigger render={<Button variant="outline" />}>
                     Privacy settings
                   </DrawerTrigger>
-                  <DrawerPopup showBar showCloseButton={false}>
+                  <DrawerPopup showBar showCloseButton={false} variant="inset">
                     <DrawerHeader className="items-center">
-                      <DrawerBar />
                       <DrawerTitle>Privacy</DrawerTitle>
                       <DrawerDescription>
                         Manage your data sharing and visibility preferences.
@@ -76,13 +72,16 @@ export default function Particle() {
                       </ul>
                     </DrawerPanel>
                     <DrawerFooter variant="bare">
-                      <Drawer>
+                      <Drawer side="bottom">
                         <DrawerTrigger render={<Button variant="outline" />}>
                           Notifications
                         </DrawerTrigger>
-                        <DrawerPopup showBar showCloseButton={false}>
+                        <DrawerPopup
+                          showBar
+                          showCloseButton={false}
+                          variant="inset"
+                        >
                           <DrawerHeader className="items-center">
-                            <DrawerBar />
                             <DrawerTitle>Notifications</DrawerTitle>
                             <DrawerDescription>
                               Choose how and when you want to be notified.
