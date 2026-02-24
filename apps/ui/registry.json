@@ -4873,6 +4873,24 @@
     },
     {
       "categories": [
+        "drawer"
+      ],
+      "description": "Bottom drawer with drag bar",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-6",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "empty state"
       ],
       "dependencies": [

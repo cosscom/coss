@@ -16,11 +16,11 @@ import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
   return (
-    <Drawer>
+    <Drawer side="right">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open Drawer
       </DrawerTrigger>
-      <DrawerPopup>
+      <DrawerPopup variant="straight">
         <Form className="contents">
           <DrawerHeader>
             <DrawerTitle>Edit profile</DrawerTitle>

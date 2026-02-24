@@ -87,7 +87,7 @@ Root component. Wraps `Drawer.Root` from Base UI with automatic `swipeDirection`
 
 | Prop   | Type                                     | Default   | Description                                      |
 | ------ | ---------------------------------------- | --------- | ------------------------------------------------ |
-| `side` | `"right" \| "left" \| "top" \| "bottom"` | `"right"` | Controls which side the drawer opens from and sets the corresponding swipe direction |
+| `side` | `"right" \| "left" \| "top" \| "bottom"` | `"bottom"` | Controls which side the drawer opens from. Sets the swipe direction automatically and flows to child components via context |
 
 All other props from `Drawer.Root` are supported, including `open`, `onOpenChange`, `modal`, `snapPoints`, `snapPoint`, `onSnapPointChange`, and `snapToSequentialPoints`.
 
@@ -101,37 +101,33 @@ Popup container that displays the drawer content. Also exported as `DrawerConten
 
 | Prop              | Type                                      | Default     | Description                                      |
 | ----------------- | ----------------------------------------- | ----------- | ------------------------------------------------ |
-| `side`            | `"right" \| "left" \| "top" \| "bottom"`  | `"right"`   | Controls which side of the screen the drawer opens from |
-| `variant`         | `"default" \| "inset"`                    | `"default"` | Controls the drawer style. `inset` adds spacing around the drawer on desktop screens |
+| `side`            | `"right" \| "left" \| "top" \| "bottom"`  | inherited   | Overrides the side from context. Typically not needed — set `side` on `Drawer` instead |
+| `variant`         | `"default" \| "rounded" \| "inset"`       | `"default"` | Controls the drawer style. `rounded` adds rounded inner corners, `inset` adds spacing around the drawer on desktop screens |
 | `showCloseButton` | `boolean`                                 | `true`      | When true, displays a close button in the top-right corner |
+| `showBar`         | `boolean`                                 | `false`     | When true, displays a drag bar indicator |
 
 **Example:**
 
 ```tsx
-// Right side drawer (default)
-<DrawerPopup side="right">
-  ...
-</DrawerPopup>
+// Bottom drawer (default)
+<Drawer>
+  <DrawerPopup>...</DrawerPopup>
+</Drawer>
+
+// Right side drawer
+<Drawer side="right">
+  <DrawerPopup>...</DrawerPopup>
+</Drawer>
 
 // Left side drawer
-<DrawerPopup side="left">
-  ...
-</DrawerPopup>
-
-// Top drawer
-<DrawerPopup side="top">
-  ...
-</DrawerPopup>
-
-// Bottom drawer
-<DrawerPopup side="bottom">
-  ...
-</DrawerPopup>
+<Drawer side="left">
+  <DrawerPopup>...</DrawerPopup>
+</Drawer>
 
 // Drawer with inset variant
-<DrawerPopup side="right" variant="inset">
-  ...
-</DrawerPopup>
+<Drawer side="right">
+  <DrawerPopup variant="inset">...</DrawerPopup>
+</Drawer>
 ```
 
 ### DrawerHeader

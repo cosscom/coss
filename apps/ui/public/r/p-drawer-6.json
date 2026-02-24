@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-drawer-6",
+  "type": "registry:block",
+  "description": "Bottom drawer with drag bar",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/drawer"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-drawer-6.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Drawer,\n  DrawerHeader,\n  DrawerPanel,\n  DrawerPopup,\n  DrawerTitle,\n  DrawerTrigger,\n} from \"@/registry/default/ui/drawer\";\n\nexport default function Particle() {\n  return (\n    <Drawer side=\"bottom\">\n      <DrawerTrigger render={<Button variant=\"outline\" />}>\n        Open Bottom Drawer\n      </DrawerTrigger>\n      <DrawerPopup showBar showCloseButton={false}>\n        <DrawerHeader className=\"items-center\" preventSwipe>\n          <DrawerTitle>Bottom Drawer</DrawerTitle>\n        </DrawerHeader>\n        <DrawerPanel>\n          <p className=\"text-muted-foreground text-sm\">\n            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do\n            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim\n            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut\n            aliquip ex ea commodo consequat. Duis aute irure dolor in\n            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla\n            pariatur.\n          </p>\n        </DrawerPanel>\n      </DrawerPopup>\n    </Drawer>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "drawer"
+  ]
+}

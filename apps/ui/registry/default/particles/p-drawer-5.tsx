@@ -31,7 +31,7 @@ export default function Particle() {
       <DrawerTrigger render={<Button variant="outline" />}>
         Open Bottom Drawer
       </DrawerTrigger>
-      <DrawerPopup showCloseButton={false} side="bottom">
+      <DrawerPopup showCloseButton={false}>
         <DrawerHeader>
           <DrawerTitle>Snap Points</DrawerTitle>
           <DrawerDescription>

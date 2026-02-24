@@ -2143,6 +2143,14 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("drawer"),
+    description: "Bottom drawer with drag bar",
+    files: [{ path: "particles/p-drawer-6.tsx", type: "registry:block" }],
+    name: "p-drawer-6",
+    registryDependencies: ["@coss/button", "@coss/drawer"],
+    type: "registry:block",
+  },
+  {
     categories: categories("empty state"),
     dependencies: ["lucide-react"],
     description: "Empty state with icon and actions",

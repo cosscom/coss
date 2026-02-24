@@ -1,6 +1,7 @@
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
+  DrawerContent,
   DrawerDescription,
   DrawerHeader,
   DrawerPanel,
@@ -12,11 +13,11 @@ import {
 export default function Particle() {
   return (
     <div className="flex flex-wrap gap-2">
-      <Drawer>
+      <Drawer side="right">
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Right
         </DrawerTrigger>
-        <DrawerPopup showCloseButton={false}>
+        <DrawerPopup showCloseButton={false} variant="straight">
           <DrawerHeader>
             <DrawerTitle>Right</DrawerTitle>
             <DrawerDescription>Right side of the screen.</DrawerDescription>
@@ -29,6 +30,41 @@ export default function Particle() {
               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
               reprehenderit in voluptate velit esse cillum dolore eu fugiat
               nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
               sunt in culpa qui officia deserunt mollit anim id est laborum.
             </p>
           </DrawerPanel>
@@ -38,7 +74,7 @@ export default function Particle() {
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Left
         </DrawerTrigger>
-        <DrawerPopup showCloseButton={false} side="left">
+        <DrawerPopup showCloseButton={false} variant="straight">
           <DrawerHeader>
             <DrawerTitle>Left</DrawerTitle>
             <DrawerDescription>Left side of the screen.</DrawerDescription>
@@ -51,6 +87,41 @@ export default function Particle() {
               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
               reprehenderit in voluptate velit esse cillum dolore eu fugiat
               nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
               sunt in culpa qui officia deserunt mollit anim id est laborum.
             </p>
           </DrawerPanel>
@@ -60,7 +131,7 @@ export default function Particle() {
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Top
         </DrawerTrigger>
-        <DrawerPopup showCloseButton={false} side="top">
+        <DrawerPopup showCloseButton={false} variant="straight">
           <DrawerHeader>
             <DrawerTitle>Top</DrawerTitle>
             <DrawerDescription>Top of the screen.</DrawerDescription>
@@ -73,6 +144,41 @@ export default function Particle() {
               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
               reprehenderit in voluptate velit esse cillum dolore eu fugiat
               nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
               sunt in culpa qui officia deserunt mollit anim id est laborum.
             </p>
           </DrawerPanel>
@@ -82,12 +188,12 @@ export default function Particle() {
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Bottom
         </DrawerTrigger>
-        <DrawerPopup showCloseButton={false} side="bottom">
+        <DrawerPopup showCloseButton={false} variant="straight">
           <DrawerHeader>
             <DrawerTitle>Bottom</DrawerTitle>
             <DrawerDescription>Bottom of the screen.</DrawerDescription>
           </DrawerHeader>
-          <DrawerPanel>
+          <DrawerContent render={<DrawerPanel />}>
             <p>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
@@ -95,9 +201,44 @@ export default function Particle() {
               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
               reprehenderit in voluptate velit esse cillum dolore eu fugiat
               nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+              sunt in culpa qui officia deserunt mollit anim id est
+              laborum.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
               sunt in culpa qui officia deserunt mollit anim id est laborum.
             </p>
-          </DrawerPanel>
+          </DrawerContent>
         </DrawerPopup>
       </Drawer>
     </div>

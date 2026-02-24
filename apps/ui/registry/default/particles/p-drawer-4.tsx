@@ -15,7 +15,7 @@ import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
   return (
-    <Drawer>
+    <Drawer side="right">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open parent
       </DrawerTrigger>
@@ -37,7 +37,7 @@ export default function Particle() {
           </div>
         </DrawerPanel>
         <DrawerFooter>
-          <Drawer>
+          <Drawer side="right">
             <DrawerTrigger render={<Button variant="outline" />}>
               Edit details
             </DrawerTrigger>
