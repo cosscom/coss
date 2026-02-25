@@ -149,7 +149,7 @@ function DrawerPopup({
                   "before:rounded-s-[calc(var(--radius-2xl)-1px)]",
               ),
             variant === "inset" &&
-              "before:hidden after:bg-transparent sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
+              "before:hidden sm:rounded-2xl sm:border sm:after:bg-transparent sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
             variant === "straight" && "[--stack-step:0]",
             (side === "bottom" || side === "top") &&
               "h-(--drawer-height,auto) [--height:max(0px,calc(var(--drawer-frontmost-height,var(--drawer-height))))] data-nested-drawer-open:h-(--height)",
