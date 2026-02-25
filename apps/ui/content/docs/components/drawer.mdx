@@ -132,11 +132,11 @@ Popup container that displays the drawer content. Also exported as `DrawerConten
 
 ### DrawerHeader
 
-Container for the drawer title and description.
+Container for the drawer title and description. Supports the `render` prop for polymorphic composition (e.g. `render={<Link href="/" />}`).
 
 ### DrawerFooter
 
-Footer section for action buttons.
+Footer section for action buttons. Supports the `render` prop for polymorphic composition.
 
 | Prop        | Type                     | Default     | Description                                      |
 | ----------- | ------------------------ | ----------- | ------------------------------------------------ |
@@ -152,7 +152,7 @@ Description component. Alias for `Drawer.Description` from Base UI.
 
 ### DrawerPanel
 
-Scrollable content container. Automatically wraps content in a `ScrollArea` component.
+Scrollable content container. Automatically wraps content in a `ScrollArea` component. Supports the `render` prop for polymorphic composition.
 
 | Prop         | Type      | Default | Description                                      |
 | ------------ | --------- | ------- | ------------------------------------------------ |
