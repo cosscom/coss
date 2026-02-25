@@ -39,7 +39,6 @@ export default function Particle() {
       onSnapPointChange={(point) =>
         setSnapPoint(point as (typeof snapPoints)[number] | null)
       }
-      side="top"
       snapPoint={snapPoint}
       snapPoints={[...snapPoints]}
       snapToSequentialPoints
