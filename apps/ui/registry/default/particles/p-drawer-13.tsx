@@ -13,9 +13,12 @@ import {
   Drawer,
   DrawerClose,
   DrawerMenu,
+  DrawerMenuCheckboxItem,
   DrawerMenuGroup,
   DrawerMenuGroupLabel,
   DrawerMenuItem,
+  DrawerMenuRadioGroup,
+  DrawerMenuRadioItem,
   DrawerMenuSeparator,
   DrawerPanel,
   DrawerPopup,
@@ -23,10 +26,13 @@ import {
 } from "@/registry/default/ui/drawer";
 import {
   Menu,
+  MenuCheckboxItem,
   MenuGroup,
   MenuGroupLabel,
   MenuItem,
   MenuPopup,
+  MenuRadioGroup,
+  MenuRadioItem,
   MenuSeparator,
   MenuTrigger,
 } from "@/registry/default/ui/menu";
@@ -38,7 +44,7 @@ export default function Particle() {
 
   if (isMobile) {
     return (
-      <Drawer position="bottom">
+      <Drawer>
         <DrawerTrigger
           render={
             <Button
@@ -51,7 +57,7 @@ export default function Particle() {
           <EllipsisIcon aria-hidden />
         </DrawerTrigger>
         <DrawerPopup showBar>
-          <DrawerPanel scrollable={false}>
+          <DrawerPanel>
             <DrawerMenu>
               <DrawerMenuGroup>
                 <DrawerMenuGroupLabel>Actions</DrawerMenuGroupLabel>
@@ -68,6 +74,27 @@ export default function Particle() {
                   Share
                 </DrawerClose>
               </DrawerMenuGroup>
+              <DrawerMenuSeparator />
+              <DrawerMenuCheckboxItem>Shuffle</DrawerMenuCheckboxItem>
+              <DrawerMenuCheckboxItem>Repeat</DrawerMenuCheckboxItem>
+              <DrawerMenuCheckboxItem disabled>
+                Enhanced Audio
+              </DrawerMenuCheckboxItem>
+              <DrawerMenuSeparator />
+              <DrawerMenuGroup>
+                <DrawerMenuGroupLabel>Sort by</DrawerMenuGroupLabel>
+                <DrawerMenuRadioGroup defaultValue="artist">
+                  <DrawerMenuRadioItem value="artist">
+                    Artist
+                  </DrawerMenuRadioItem>
+                  <DrawerMenuRadioItem value="album">Album</DrawerMenuRadioItem>
+                  <DrawerMenuRadioItem value="title">Title</DrawerMenuRadioItem>
+                </DrawerMenuRadioGroup>
+              </DrawerMenuGroup>
+              <DrawerMenuSeparator />
+              <DrawerMenuCheckboxItem variant="switch">
+                Auto save
+              </DrawerMenuCheckboxItem>
               <DrawerMenuSeparator />
               <DrawerMenuGroup>
                 <DrawerMenuGroupLabel>Danger zone</DrawerMenuGroupLabel>
@@ -112,6 +139,21 @@ export default function Particle() {
             Share
           </MenuItem>
         </MenuGroup>
+        <MenuSeparator />
+        <MenuCheckboxItem>Shuffle</MenuCheckboxItem>
+        <MenuCheckboxItem>Repeat</MenuCheckboxItem>
+        <MenuCheckboxItem disabled>Enhanced Audio</MenuCheckboxItem>
+        <MenuSeparator />
+        <MenuGroup>
+          <MenuGroupLabel>Sort by</MenuGroupLabel>
+          <MenuRadioGroup defaultValue="artist">
+            <MenuRadioItem value="artist">Artist</MenuRadioItem>
+            <MenuRadioItem value="album">Album</MenuRadioItem>
+            <MenuRadioItem value="title">Title</MenuRadioItem>
+          </MenuRadioGroup>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuCheckboxItem variant="switch">Auto save</MenuCheckboxItem>
         <MenuSeparator />
         <MenuGroup>
           <MenuGroupLabel>Danger zone</MenuGroupLabel>

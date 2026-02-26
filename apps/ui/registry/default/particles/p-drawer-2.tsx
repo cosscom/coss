@@ -12,7 +12,7 @@ import {
 
 export default function Particle() {
   return (
-    <Drawer position="bottom">
+    <Drawer>
       <DrawerTrigger render={<Button variant="outline" />}>
         Open drawer
       </DrawerTrigger>

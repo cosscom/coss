@@ -54,7 +54,7 @@ export default function Particle() {
           </DrawerPanel>
         </DrawerPopup>
       </Drawer>
-      <Drawer position="bottom">
+      <Drawer>
         <DrawerTrigger render={<Button variant="outline" />}>
           Bottom
         </DrawerTrigger>

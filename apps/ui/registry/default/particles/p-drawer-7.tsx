@@ -13,7 +13,7 @@ import {
 
 export default function Particle() {
   return (
-    <Drawer position="bottom">
+    <Drawer>
       <DrawerTrigger render={<Button variant="outline" />}>
         Nested drawers
       </DrawerTrigger>
@@ -30,7 +30,7 @@ export default function Particle() {
           variant="bare"
         >
           <DrawerClose render={<Button variant="ghost" />}>Cancel</DrawerClose>
-          <Drawer position="bottom">
+          <Drawer>
             <DrawerTrigger render={<Button variant="outline" />}>
               Continue
             </DrawerTrigger>
@@ -54,7 +54,7 @@ export default function Particle() {
                 <DrawerClose render={<Button variant="ghost" />}>
                   Back
                 </DrawerClose>
-                <Drawer position="bottom">
+                <Drawer>
                   <DrawerTrigger render={<Button variant="outline" />}>
                     Continue
                   </DrawerTrigger>

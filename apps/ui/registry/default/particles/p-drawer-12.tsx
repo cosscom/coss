@@ -53,7 +53,7 @@ export default function Particle() {
 
   if (isMobile) {
     return (
-      <Drawer position="bottom">
+      <Drawer>
         <DrawerTrigger render={<Button variant="outline" />}>
           {TRIGGER_LABEL}
         </DrawerTrigger>
