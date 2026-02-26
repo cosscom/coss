@@ -86,7 +86,9 @@ function DrawerViewport({
         side === "top" && "grid grid-rows-[auto_1fr] pb-12",
         side === "left" && "flex justify-start",
         side === "right" && "flex justify-end",
-        variant === "inset" && "p-(--inset) sm:[--inset:--spacing(4)]",
+        variant === "inset" && "px-(--inset) sm:[--inset:--spacing(4)]",
+        variant === "inset" && side !== "bottom" && "pt-(--inset)",
+        variant === "inset" && side !== "top" && "pb-(--inset)",
       )}
       data-slot="drawer-viewport"
       {...props}

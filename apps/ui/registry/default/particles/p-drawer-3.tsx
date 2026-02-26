@@ -184,11 +184,11 @@ export default function Particle() {
           </DrawerPanel>
         </DrawerPopup>
       </Drawer>
-      <Drawer side="bottom">
+      <Drawer>
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Bottom
         </DrawerTrigger>
-        <DrawerPopup showCloseButton={false} variant="straight">
+        <DrawerPopup showCloseButton={false} variant="inset">
           <DrawerHeader>
             <DrawerTitle>Bottom</DrawerTitle>
             <DrawerDescription>Bottom of the screen.</DrawerDescription>

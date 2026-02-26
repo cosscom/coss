@@ -8,7 +8,12 @@ import { CopyRegistry } from "@/components/copy-registry";
 import { getRegistryItem } from "@/lib/registry";
 import { Index } from "@/registry/__index__";
 import { Button } from "@/registry/default/ui/button";
-import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerPopup,
+  DrawerTrigger,
+} from "@/registry/default/ui/drawer";
 
 import { ParticleCardContainer } from "./particle-card-container";
 
@@ -78,16 +83,21 @@ export async function ParticleCard({
               value={`${cossuiUrl}/r/${name}.json`}
               variant="outline"
             />
-            <Sheet>
-              <SheetTrigger
+            <Drawer side="right">
+              <DrawerTrigger
                 render={
                   <Button className="text-sm" size="sm" variant="outline" />
                 }
               >
                 View code
-              </SheetTrigger>
-              <SheetPopup className="sm:max-w-3xl" showCloseButton={false}>
-                <div className="flex flex-1 flex-col overflow-hidden p-6">
+              </DrawerTrigger>
+              <DrawerPopup
+                className="max-w-4xl"
+                showBar
+                showCloseButton={false}
+                variant="straight"
+              >
+                <DrawerContent className="flex flex-1 flex-col overflow-hidden p-6">
                   <div>
                     <h2 className="mb-4 font-heading font-semibold text-xl">
                       Installation
@@ -126,9 +136,9 @@ export async function ParticleCard({
                       name={name}
                     />
                   </div>
-                </div>
-              </SheetPopup>
-            </Sheet>
+                </DrawerContent>
+              </DrawerPopup>
+            </Drawer>
           </div>
         </>
       }

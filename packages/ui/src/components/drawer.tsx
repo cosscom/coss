@@ -82,11 +82,13 @@ function DrawerViewport({
       className={cn(
         "fixed inset-0 z-50 [--bleed:--spacing(12)] [--inset:--spacing(0)]",
         "touch-none",
-        side === "bottom" && "grid grid-rows-[1fr_auto] pt-12",
-        side === "top" && "grid grid-rows-[auto_1fr] pb-12",
+        side === "bottom" && "grid grid-cols-1 grid-rows-[1fr_auto] pt-12",
+        side === "top" && "grid grid-cols-1 grid-rows-[auto_1fr] pb-12",
         side === "left" && "flex justify-start",
         side === "right" && "flex justify-end",
-        variant === "inset" && "p-(--inset) sm:[--inset:--spacing(4)]",
+        variant === "inset" && "px-(--inset) sm:[--inset:--spacing(4)]",
+        variant === "inset" && side !== "bottom" && "pt-(--inset)",
+        variant === "inset" && side !== "top" && "pb-(--inset)",
       )}
       data-slot="drawer-viewport"
       {...props}
