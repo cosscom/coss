@@ -1,11 +1,6 @@
-"use client";
-
-import { useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
-  DrawerDescription,
   DrawerHeader,
   DrawerPanel,
   DrawerPopup,
@@ -13,54 +8,67 @@ import {
   DrawerTrigger,
 } from "@/registry/default/ui/drawer";
 
-const PLACEHOLDER_IDS = [
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-] as const;
-
 export default function Particle() {
-  const snapPoints = ["300px", 1] as const;
-  const [snapPoint, setSnapPoint] = useState<
-    (typeof snapPoints)[number] | null
-  >(snapPoints[0]);
-
   return (
-    <Drawer
-      onSnapPointChange={(point) =>
-        setSnapPoint(point as (typeof snapPoints)[number] | null)
-      }
-      snapPoint={snapPoint}
-      snapPoints={[...snapPoints]}
-      snapToSequentialPoints
-    >
-      <DrawerTrigger render={<Button variant="outline" />}>
-        Open snap drawer
-      </DrawerTrigger>
-      <DrawerPopup showBar showCloseButton={false}>
-        <DrawerHeader>
-          <DrawerTitle>Snap Points</DrawerTitle>
-          <DrawerDescription>
-            Drag the drawer to snap between a compact peek and full-height view.
-          </DrawerDescription>
-        </DrawerHeader>
-        <DrawerPanel>
-          <div className="grid gap-3">
-            {PLACEHOLDER_IDS.map((id) => (
-              <div className="h-12 rounded-xl border bg-muted/50" key={id} />
-            ))}
-          </div>
-        </DrawerPanel>
-      </DrawerPopup>
-    </Drawer>
+    <div className="flex flex-wrap gap-2">
+      <Drawer position="right">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Right
+        </DrawerTrigger>
+        <DrawerPopup variant="straight">
+          <DrawerHeader>
+            <DrawerTitle>Right</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the right.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="left">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Left
+        </DrawerTrigger>
+        <DrawerPopup variant="straight">
+          <DrawerHeader>
+            <DrawerTitle>Left</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the left.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="top">
+        <DrawerTrigger render={<Button variant="outline" />}>Top</DrawerTrigger>
+        <DrawerPopup variant="straight">
+          <DrawerHeader>
+            <DrawerTitle>Top</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the top.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="bottom">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Bottom
+        </DrawerTrigger>
+        <DrawerPopup variant="straight">
+          <DrawerHeader>
+            <DrawerTitle>Bottom</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the bottom.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+    </div>
   );
 }

@@ -1,73 +1,74 @@
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
-  DrawerClose,
-  DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerPanel,
   DrawerPopup,
   DrawerTitle,
   DrawerTrigger,
 } from "@/registry/default/ui/drawer";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
-import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
   return (
-    <Drawer position="right">
-      <DrawerTrigger render={<Button variant="outline" />}>
-        Open parent
-      </DrawerTrigger>
-      <DrawerPopup showCloseButton={false}>
-        <DrawerHeader>
-          <DrawerTitle>Manage team member</DrawerTitle>
-          <DrawerDescription>
-            View and manage a user in your team.
-          </DrawerDescription>
-        </DrawerHeader>
-        <DrawerPanel className="grid gap-4">
-          <div className="grid gap-1">
-            <p className="text-muted-foreground text-sm">Name</p>
-            <p className="font-medium text-sm">Bora Baloglu</p>
-          </div>
-          <div className="grid gap-1">
-            <p className="text-muted-foreground text-sm">Email</p>
-            <p className="font-medium text-sm">bora@example.com</p>
-          </div>
-        </DrawerPanel>
-        <DrawerFooter>
-          <Drawer position="right">
-            <DrawerTrigger render={<Button variant="outline" />}>
-              Edit details
-            </DrawerTrigger>
-            <DrawerPopup showCloseButton={false}>
-              <DrawerHeader>
-                <DrawerTitle>Edit details</DrawerTitle>
-                <DrawerDescription>
-                  Make changes to the member&apos;s information.
-                </DrawerDescription>
-              </DrawerHeader>
-              <DrawerPanel className="grid gap-4">
-                <Field>
-                  <FieldLabel>Name</FieldLabel>
-                  <Input defaultValue="Bora Baloglu" type="text" />
-                </Field>
-                <Field>
-                  <FieldLabel>Email</FieldLabel>
-                  <Input defaultValue="bora@example.com" type="text" />
-                </Field>
-              </DrawerPanel>
-              <DrawerFooter>
-                <DrawerClose render={<Button variant="ghost" />}>
-                  Cancel
-                </DrawerClose>
-                <Button type="submit">Save changes</Button>
-              </DrawerFooter>
-            </DrawerPopup>
-          </Drawer>
-        </DrawerFooter>
-      </DrawerPopup>
-    </Drawer>
+    <div className="flex flex-wrap gap-2">
+      <Drawer position="right">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Right
+        </DrawerTrigger>
+        <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Right</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the right.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="left">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Left
+        </DrawerTrigger>
+        <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Left</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the left.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="top">
+        <DrawerTrigger render={<Button variant="outline" />}>Top</DrawerTrigger>
+        <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Top</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the top.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+      <Drawer position="bottom">
+        <DrawerTrigger render={<Button variant="outline" />}>
+          Bottom
+        </DrawerTrigger>
+        <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Bottom</DrawerTitle>
+          </DrawerHeader>
+          <DrawerPanel>
+            <p className="text-muted-foreground text-sm">
+              Content from the bottom.
+            </p>
+          </DrawerPanel>
+        </DrawerPopup>
+      </Drawer>
+    </div>
   );
 }

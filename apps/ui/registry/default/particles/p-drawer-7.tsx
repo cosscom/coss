@@ -15,86 +15,62 @@ export default function Particle() {
   return (
     <Drawer position="bottom">
       <DrawerTrigger render={<Button variant="outline" />}>
-        Open drawer
+        Nested drawers
       </DrawerTrigger>
-      <DrawerPopup showBar showCloseButton={false} variant="inset">
-        <DrawerHeader className="items-center">
-          <DrawerTitle>Account</DrawerTitle>
+      <DrawerPopup showBar>
+        <DrawerHeader className="text-center">
+          <DrawerTitle>First step</DrawerTitle>
           <DrawerDescription>
-            Nested drawers stack on top of each other. Try opening the one
-            below.
+            This is the first step. Tap the button below to continue to the next
+            screen.
           </DrawerDescription>
         </DrawerHeader>
-        <DrawerPanel>
-          <div aria-hidden className="grid gap-3">
-            <div className="h-12 rounded-xl border bg-muted/50" />
-            <div className="h-12 rounded-xl border bg-muted/50" />
-            <div className="h-12 rounded-xl border bg-muted/50" />
-            <div className="h-12 rounded-xl border bg-muted/50" />
-          </div>
-        </DrawerPanel>
-        <DrawerFooter variant="bare">
+        <DrawerFooter
+          className="justify-center sm:justify-center"
+          variant="bare"
+        >
+          <DrawerClose render={<Button variant="ghost" />}>Cancel</DrawerClose>
           <Drawer position="bottom">
             <DrawerTrigger render={<Button variant="outline" />}>
-              Security settings
+              Continue
             </DrawerTrigger>
-            <DrawerPopup showBar showCloseButton={false} variant="inset">
-              <DrawerHeader className="items-center">
-                <DrawerTitle>Security</DrawerTitle>
+            <DrawerPopup showBar>
+              <DrawerHeader className="text-center">
+                <DrawerTitle>Second step</DrawerTitle>
                 <DrawerDescription>
-                  Review sign-in activity and update your security preferences.
+                  You&apos;ve reached the second step. Tap the button below to
+                  continue to the next screen.
                 </DrawerDescription>
               </DrawerHeader>
               <DrawerPanel>
-                <ul className="list-disc pl-5 text-sm">
-                  <li>Passkeys enabled</li>
-                  <li>2FA via authenticator app</li>
-                  <li>3 signed-in devices</li>
-                </ul>
+                <div className="flex justify-center">
+                  <div className="size-48 shrink-0 rounded-xl border bg-muted" />
+                </div>
               </DrawerPanel>
-              <DrawerFooter variant="bare">
+              <DrawerFooter
+                className="justify-center sm:justify-center"
+                variant="bare"
+              >
+                <DrawerClose render={<Button variant="ghost" />}>
+                  Back
+                </DrawerClose>
                 <Drawer position="bottom">
                   <DrawerTrigger render={<Button variant="outline" />}>
-                    Privacy settings
+                    Continue
                   </DrawerTrigger>
-                  <DrawerPopup showBar showCloseButton={false} variant="inset">
-                    <DrawerHeader className="items-center">
-                      <DrawerTitle>Privacy</DrawerTitle>
+                  <DrawerPopup showBar>
+                    <DrawerHeader className="text-center">
+                      <DrawerTitle>Third step</DrawerTitle>
                       <DrawerDescription>
-                        Manage your data sharing and visibility preferences.
+                        You&apos;ve reached the final step. You can close this
+                        drawer or go back.
                       </DrawerDescription>
                     </DrawerHeader>
                     <DrawerPanel>
-                      <ul className="list-disc pl-5 text-sm">
-                        <li>Profile visible to contacts only</li>
-                        <li>Activity status hidden</li>
-                        <li>Data export available</li>
-                      </ul>
+                      <div className="flex justify-center">
+                        <div className="size-32 shrink-0 rounded-full border bg-muted" />
+                      </div>
                     </DrawerPanel>
-                    <DrawerFooter variant="bare">
-                      <Drawer position="bottom">
-                        <DrawerTrigger render={<Button variant="outline" />}>
-                          Notifications
-                        </DrawerTrigger>
-                        <DrawerPopup
-                          showBar
-                          showCloseButton={false}
-                          variant="inset"
-                        >
-                          <DrawerHeader className="items-center">
-                            <DrawerTitle>Notifications</DrawerTitle>
-                            <DrawerDescription>
-                              Choose how and when you want to be notified.
-                            </DrawerDescription>
-                          </DrawerHeader>
-                          <DrawerFooter variant="bare">
-                            <DrawerClose render={<Button variant="outline" />}>
-                              Close
-                            </DrawerClose>
-                          </DrawerFooter>
-                        </DrawerPopup>
-                      </Drawer>
-                    </DrawerFooter>
                   </DrawerPopup>
                 </Drawer>
               </DrawerFooter>

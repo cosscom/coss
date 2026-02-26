@@ -103,7 +103,7 @@ Popup container that displays the drawer content.
 | Prop              | Type                                      | Default     | Description                                      |
 | ----------------- | ----------------------------------------- | ----------- | ------------------------------------------------ |
 | `variant`         | `"default" \| "straight" \| "inset"`     | `"default"` | Controls the drawer style. `straight` removes rounded corners, `inset` adds spacing around the drawer on desktop screens |
-| `showCloseButton` | `boolean`                                 | `true`      | When true, displays a close button in the top-right corner |
+| `showCloseButton` | `boolean`                                 | `false`     | When true, displays a close button in the top-right corner |
 | `showBar`         | `boolean`                                 | `false`     | When true, displays a drag bar indicator |
 
 **Example:**
@@ -190,18 +190,42 @@ Primitive content wrapper used for polymorphic composition with the `render` pro
 
 ## Examples
 
-### Drawer with Inset
+### Drawer with drag bar
 
 <ComponentPreview name="p-drawer-2" />
 
-### Side drawers
+### Drawer with close button (no footer)
 
 <ComponentPreview name="p-drawer-3" />
 
-### Nested Drawers
+### Inset variant (all positions)
 
 <ComponentPreview name="p-drawer-4" />
 
-### Bottom Drawer with Snap Points
+### Straight variant (all positions)
 
 <ComponentPreview name="p-drawer-5" />
+
+### Scrollable content
+
+<ComponentPreview name="p-drawer-6" />
+
+### Nested drawers (bottom)
+
+<ComponentPreview name="p-drawer-7" />
+
+### Nested drawers (right)
+
+<ComponentPreview name="p-drawer-8" />
+
+### Snap points (bottom)
+
+<ComponentPreview name="p-drawer-9" />
+
+### Edit profile (default vs bare footer)
+
+<ComponentPreview name="p-drawer-10" />
+
+### Mobile menu
+
+<ComponentPreview name="p-drawer-11" />
