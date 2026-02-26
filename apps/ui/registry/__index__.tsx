@@ -4547,7 +4547,7 @@ export const Index: Record<string, any> = {
     name: "p-drawer-13",
     description: "Responsive actions menu: menu on desktop, drawer on mobile",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/separator","@coss/use-mobile"],
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/use-mobile"],
     files: [{
       path: "registry/default/particles/p-drawer-13.tsx",
       type: "registry:block",

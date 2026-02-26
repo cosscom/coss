@@ -12,28 +12,26 @@ import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
   DrawerClose,
+  DrawerMenu,
+  DrawerMenuGroup,
+  DrawerMenuGroupLabel,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
   DrawerPanel,
   DrawerPopup,
   DrawerTrigger,
 } from "@/registry/default/ui/drawer";
 import {
   Menu,
+  MenuGroup,
+  MenuGroupLabel,
   MenuItem,
   MenuPopup,
   MenuSeparator,
   MenuTrigger,
 } from "@/registry/default/ui/menu";
-import { Separator } from "@/registry/default/ui/separator";
 
 const TRIGGER_ARIA_LABEL = "Open menu";
-const _MENU_TITLE = "Actions";
-
-const menuItems = [
-  { destructive: false, icon: PencilIcon, label: "Edit" },
-  { destructive: false, icon: CopyIcon, label: "Duplicate" },
-  { destructive: false, icon: ShareIcon, label: "Share" },
-  { destructive: true, icon: TrashIcon, label: "Delete" },
-] as const;
 
 export default function Particle() {
   const isMobile = useIsMobile();
@@ -54,38 +52,31 @@ export default function Particle() {
         </DrawerTrigger>
         <DrawerPopup showBar>
           <DrawerPanel scrollable={false}>
-            <nav className="flex flex-col gap-1">
-              {menuItems
-                .filter((item) => !item.destructive)
-                .map(({ label, icon: Icon }) => (
-                  <DrawerClose
-                    key={label}
-                    render={
-                      <Button className="justify-start" variant="ghost">
-                        <Icon aria-hidden />
-                        {label}
-                      </Button>
-                    }
-                  />
-                ))}
-              <Separator />
-              {menuItems
-                .filter((item) => item.destructive)
-                .map(({ label, icon: Icon }) => (
-                  <DrawerClose
-                    key={label}
-                    render={
-                      <Button
-                        className="justify-start text-destructive"
-                        variant="ghost"
-                      >
-                        <Icon aria-hidden />
-                        {label}
-                      </Button>
-                    }
-                  />
-                ))}
-            </nav>
+            <DrawerMenu>
+              <DrawerMenuGroup>
+                <DrawerMenuGroupLabel>Actions</DrawerMenuGroupLabel>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <PencilIcon aria-hidden />
+                  Edit
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <CopyIcon aria-hidden />
+                  Duplicate
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <ShareIcon aria-hidden />
+                  Share
+                </DrawerClose>
+              </DrawerMenuGroup>
+              <DrawerMenuSeparator />
+              <DrawerMenuGroup>
+                <DrawerMenuGroupLabel>Danger zone</DrawerMenuGroupLabel>
+                <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+                  <TrashIcon aria-hidden />
+                  Delete
+                </DrawerClose>
+              </DrawerMenuGroup>
+            </DrawerMenu>
           </DrawerPanel>
         </DrawerPopup>
       </Drawer>
@@ -106,23 +97,29 @@ export default function Particle() {
         <EllipsisIcon aria-hidden />
       </MenuTrigger>
       <MenuPopup>
-        {menuItems
-          .filter((item) => !item.destructive)
-          .map(({ label, icon: Icon }) => (
-            <MenuItem key={label}>
-              <Icon aria-hidden />
-              {label}
-            </MenuItem>
-          ))}
+        <MenuGroup>
+          <MenuGroupLabel>Actions</MenuGroupLabel>
+          <MenuItem>
+            <PencilIcon aria-hidden />
+            Edit
+          </MenuItem>
+          <MenuItem>
+            <CopyIcon aria-hidden />
+            Duplicate
+          </MenuItem>
+          <MenuItem>
+            <ShareIcon aria-hidden />
+            Share
+          </MenuItem>
+        </MenuGroup>
         <MenuSeparator />
-        {menuItems
-          .filter((item) => item.destructive)
-          .map(({ label, icon: Icon }) => (
-            <MenuItem key={label} variant="destructive">
-              <Icon aria-hidden />
-              {label}
-            </MenuItem>
-          ))}
+        <MenuGroup>
+          <MenuGroupLabel>Danger zone</MenuGroupLabel>
+          <MenuItem variant="destructive">
+            <TrashIcon aria-hidden />
+            Delete
+          </MenuItem>
+        </MenuGroup>
       </MenuPopup>
     </Menu>
   );

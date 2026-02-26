@@ -319,7 +319,7 @@ function DrawerBar({
   const defaultProps = {
     "aria-hidden": true as const,
     className: cn(
-      "absolute flex touch-none items-center justify-center before:rounded-full before:bg-border p-3",
+      "absolute flex touch-none items-center justify-center before:rounded-full before:bg-input p-3",
       horizontal
         ? "inset-y-0 before:h-12 before:w-1"
         : "inset-x-0 before:h-1 before:w-12",
@@ -341,6 +341,104 @@ function DrawerBar({
 
 const DrawerContent = DrawerPrimitive.Content;
 
+function DrawerMenu({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"nav">) {
+  const defaultProps = {
+    className: cn("flex flex-col -m-2", className),
+    "data-slot": "drawer-menu",
+  };
+
+  return useRender({
+    defaultTagName: "nav",
+    props: mergeProps<"nav">(defaultProps, props),
+    render,
+  });
+}
+
+function DrawerMenuItem({
+  className,
+  variant = "default",
+  render,
+  disabled,
+  ...props
+}: useRender.ComponentProps<"button"> & {
+  variant?: "default" | "destructive";
+}) {
+  const defaultProps = {
+    className: cn(
+      "[&>svg]:-mx-0.5 flex min-h-9 w-full cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-base text-foreground outline-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-64 sm:min-h-8 sm:text-sm [&>svg:not([class*='opacity-'])]:opacity-80 [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:pointer-events-none [&>svg]:shrink-0 data-[variant=destructive]:text-destructive-foreground",
+      className,
+    ),
+    "data-slot": "drawer-menu-item",
+    "data-variant": variant,
+    disabled,
+    type: "button" as const,
+  };
+
+  return useRender({
+    defaultTagName: "button",
+    props: mergeProps<"button">(defaultProps, props),
+    render,
+  });
+}
+
+function DrawerMenuSeparator({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("mx-2 my-1 h-px bg-border", className),
+    "data-slot": "drawer-menu-separator",
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render,
+  });
+}
+
+function DrawerMenuGroup({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("flex flex-col", className),
+    "data-slot": "drawer-menu-group",
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render,
+  });
+}
+
+function DrawerMenuGroupLabel({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn(
+      "px-2 py-1.5 font-medium text-muted-foreground text-xs",
+      className,
+    ),
+    "data-slot": "drawer-menu-group-label",
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render,
+  });
+}
+
 export {
   DrawerCreateHandle,
   Drawer,
@@ -357,4 +455,9 @@ export {
   DrawerBar,
   DrawerContent,
   DrawerViewport,
+  DrawerMenu,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
+  DrawerMenuGroup,
+  DrawerMenuGroupLabel,
 };

@@ -56,6 +56,11 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
+  DrawerMenu,
+  DrawerMenuGroup,
+  DrawerMenuGroupLabel,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
   DrawerPanel,
   DrawerPopup,
   DrawerTitle,
@@ -164,6 +169,37 @@ Content container. When `scrollable` is true (default), wraps content in a `Scro
 | `scrollable`   | `boolean` | `true`  | When true, wraps content in a `ScrollArea`. Set to false for non-scrollable content |
 | `scrollFade`   | `boolean` | `true`  | When true, shows a fade effect at scroll edges (only applies when `scrollable` is true) |
 | `preventSwipe` | `boolean` | `true`  | When true, prevents swipe-to-close when interacting with the panel content |
+
+### DrawerMenu
+
+Container for drawer menu items. Use with `DrawerMenuItem`, `DrawerMenuSeparator`, `DrawerMenuGroup`, and `DrawerMenuGroupLabel` to build menus that mirror the Menu component API. Supports the `render` prop for polymorphic composition.
+
+### DrawerMenuItem
+
+Styled menu item that matches `MenuItem` appearance. Does not close the drawer — wrap with `DrawerClose` when close-on-click is needed. Supports the `render` prop for polymorphic composition.
+
+| Prop      | Type                                | Default     | Description                                      |
+| --------- | ----------------------------------- | ----------- | ------------------------------------------------ |
+| `variant` | `"default" \| "destructive"`        | `"default"` | When `destructive`, uses destructive text color  |
+| `disabled`| `boolean`                           | —           | When true, disables the item                     |
+
+**Example:** Use with `DrawerClose` for close-on-click: `<DrawerClose render={<DrawerMenuItem />}>Edit</DrawerClose>`
+
+### DrawerMenuSeparator
+
+Horizontal separator between menu items or groups. Supports the `render` prop for polymorphic composition.
+
+### DrawerMenuGroup
+
+Container for grouping related menu items. Use with `DrawerMenuGroupLabel` for labeled sections. Supports the `render` prop for polymorphic composition.
+
+### DrawerMenuGroupLabel
+
+Label for a `DrawerMenuGroup` section. Renders muted, smaller text above a group of items. Supports the `render` prop for polymorphic composition.
+
+| Prop    | Type      | Default | Description                                      |
+| ------- | --------- | ------- | ------------------------------------------------ |
+| `inset` | `boolean` | —       | When true, adds left padding to align with inset items |
 
 ### DrawerClose
 

@@ -2210,7 +2210,6 @@ export const particles: ParticleItem[] = [
       "@coss/button",
       "@coss/drawer",
       "@coss/menu",
-      "@coss/separator",
       "@coss/use-mobile",
     ],
     type: "registry:block",
