@@ -10,7 +10,7 @@ import {
 
 export default function Particle() {
   return (
-    <Drawer side="bottom">
+    <Drawer position="bottom">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open Bottom Drawer
       </DrawerTrigger>

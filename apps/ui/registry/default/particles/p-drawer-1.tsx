@@ -16,7 +16,7 @@ import { Input } from "@/registry/default/ui/input";
 
 export default function Particle() {
   return (
-    <Drawer side="right">
+    <Drawer position="right">
       <DrawerTrigger render={<Button variant="outline" />}>
         Open Drawer
       </DrawerTrigger>

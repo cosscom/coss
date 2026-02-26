@@ -83,7 +83,7 @@ export async function ParticleCard({
               value={`${cossuiUrl}/r/${name}.json`}
               variant="outline"
             />
-            <Drawer side="right">
+            <Drawer position="right">
               <DrawerTrigger
                 render={
                   <Button className="text-sm" size="sm" variant="outline" />

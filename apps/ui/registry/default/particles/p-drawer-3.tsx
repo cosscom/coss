@@ -13,7 +13,7 @@ import {
 export default function Particle() {
   return (
     <div className="flex flex-wrap gap-2">
-      <Drawer side="right">
+      <Drawer position="right">
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Right
         </DrawerTrigger>
@@ -70,7 +70,7 @@ export default function Particle() {
           </DrawerPanel>
         </DrawerPopup>
       </Drawer>
-      <Drawer side="left">
+      <Drawer position="left">
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Left
         </DrawerTrigger>
@@ -127,7 +127,7 @@ export default function Particle() {
           </DrawerPanel>
         </DrawerPopup>
       </Drawer>
-      <Drawer side="top">
+      <Drawer position="top">
         <DrawerTrigger render={<Button variant="outline" />}>
           Open Top
         </DrawerTrigger>

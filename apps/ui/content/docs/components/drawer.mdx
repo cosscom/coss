@@ -83,11 +83,11 @@ import {
 
 ### Drawer
 
-Root component. Wraps `Drawer.Root` from Base UI with automatic `swipeDirection` mapping based on `side`.
+Root component. Wraps `Drawer.Root` from Base UI with automatic `swipeDirection` mapping based on `position`.
 
-| Prop   | Type                                     | Default   | Description                                      |
-| ------ | ---------------------------------------- | --------- | ------------------------------------------------ |
-| `side` | `"right" \| "left" \| "top" \| "bottom"` | `"bottom"` | Controls which side the drawer opens from. Sets the swipe direction automatically and flows to child components via context |
+| Prop        | Type                                     | Default   | Description                                      |
+| ----------- | ---------------------------------------- | --------- | ------------------------------------------------ |
+| `position`  | `"right" \| "left" \| "top" \| "bottom"` | `"bottom"` | Controls which edge the drawer opens from. Sets the swipe direction automatically and flows to child components via context |
 
 All other props from `Drawer.Root` are supported, including `open`, `onOpenChange`, `modal`, `snapPoints`, `snapPoint`, `onSnapPointChange`, and `snapToSequentialPoints`. Note: Snap points only work for bottom drawers.
 
@@ -101,7 +101,7 @@ Popup container that displays the drawer content. Also exported as `DrawerConten
 
 | Prop              | Type                                      | Default     | Description                                      |
 | ----------------- | ----------------------------------------- | ----------- | ------------------------------------------------ |
-| `side`            | `"right" \| "left" \| "top" \| "bottom"`  | inherited   | Overrides the side from context. Typically not needed — set `side` on `Drawer` instead |
+| `position`        | `"right" \| "left" \| "top" \| "bottom"`  | inherited   | Overrides the position from context. Typically not needed — set `position` on `Drawer` instead |
 | `variant`         | `"default" \| "rounded" \| "inset"`       | `"default"` | Controls the drawer style. `rounded` adds rounded inner corners, `inset` adds spacing around the drawer on desktop screens |
 | `showCloseButton` | `boolean`                                 | `true`      | When true, displays a close button in the top-right corner |
 | `showBar`         | `boolean`                                 | `false`     | When true, displays a drag bar indicator |
@@ -115,17 +115,17 @@ Popup container that displays the drawer content. Also exported as `DrawerConten
 </Drawer>
 
 // Right side drawer
-<Drawer side="right">
+<Drawer position="right">
   <DrawerPopup>...</DrawerPopup>
 </Drawer>
 
 // Left side drawer
-<Drawer side="left">
+<Drawer position="left">
   <DrawerPopup>...</DrawerPopup>
 </Drawer>
 
 // Drawer with inset variant
-<Drawer side="right">
+<Drawer position="right">
   <DrawerPopup variant="inset">...</DrawerPopup>
 </Drawer>
 ```
