@@ -4978,6 +4978,53 @@
     },
     {
       "categories": [
+        "drawer"
+      ],
+      "description": "Responsive edit profile: dialog on desktop, drawer on mobile",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-12",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/dialog",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input",
+        "@coss/use-mobile"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Responsive actions menu: menu on desktop, drawer on mobile",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-13",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/menu",
+        "@coss/separator",
+        "@coss/use-mobile"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "empty state"
       ],
       "dependencies": [

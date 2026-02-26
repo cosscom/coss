@@ -270,11 +270,13 @@ function DrawerDescription({
 function DrawerPanel({
   className,
   scrollFade = true,
+  scrollable = true,
   preventSwipe = true,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   scrollFade?: boolean;
+  scrollable?: boolean;
   preventSwipe?: boolean;
 }) {
   const defaultProps = {
@@ -286,15 +288,21 @@ function DrawerPanel({
     "data-slot": "drawer-panel",
   };
 
-  return (
-    <ScrollArea className="touch-auto" scrollFade={scrollFade}>
-      {useRender({
-        defaultTagName: "div",
-        props: mergeProps<"div">(defaultProps, props),
-        render: preventSwipe ? <DrawerContent render={render} /> : render,
-      })}
-    </ScrollArea>
-  );
+  const content = useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(defaultProps, props),
+    render: preventSwipe ? <DrawerContent render={render} /> : render,
+  });
+
+  if (scrollable) {
+    return (
+      <ScrollArea className="touch-auto" scrollFade={scrollFade}>
+        {content}
+      </ScrollArea>
+    );
+  }
+
+  return content;
 }
 
 function DrawerBar({

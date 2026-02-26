@@ -4525,6 +4525,42 @@ export const Index: Record<string, any> = {
     categories: ["drawer"],
     meta: undefined,
   },
+  "p-drawer-12": {
+    name: "p-drawer-12",
+    description: "Responsive edit profile: dialog on desktop, drawer on mobile",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/drawer","@coss/field","@coss/form","@coss/input","@coss/use-mobile"],
+    files: [{
+      path: "registry/default/particles/p-drawer-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-13": {
+    name: "p-drawer-13",
+    description: "Responsive actions menu: menu on desktop, drawer on mobile",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/separator","@coss/use-mobile"],
+    files: [{
+      path: "registry/default/particles/p-drawer-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
   "p-empty-1": {
     name: "p-empty-1",
     description: "Empty state with icon and actions",

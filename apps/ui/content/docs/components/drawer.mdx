@@ -157,11 +157,12 @@ Description component. Alias for `Drawer.Description` from Base UI.
 
 ### DrawerPanel
 
-Scrollable content container. Automatically wraps content in a `ScrollArea` component. Supports the `render` prop for polymorphic composition.
+Content container. When `scrollable` is true (default), wraps content in a `ScrollArea` component. Supports the `render` prop for polymorphic composition.
 
 | Prop           | Type      | Default | Description                                      |
 | -------------- | --------- | ------- | ------------------------------------------------ |
-| `scrollFade`   | `boolean` | `true`  | When true, shows a fade effect at scroll edges   |
+| `scrollable`   | `boolean` | `true`  | When true, wraps content in a `ScrollArea`. Set to false for non-scrollable content |
+| `scrollFade`   | `boolean` | `true`  | When true, shows a fade effect at scroll edges (only applies when `scrollable` is true) |
 | `preventSwipe` | `boolean` | `true`  | When true, prevents swipe-to-close when interacting with the panel content |
 
 ### DrawerClose
@@ -229,3 +230,11 @@ Primitive content wrapper used for polymorphic composition with the `render` pro
 ### Mobile menu
 
 <ComponentPreview name="p-drawer-11" />
+
+### Responsive (dialog on desktop, drawer on mobile)
+
+<ComponentPreview name="p-drawer-12" />
+
+### Responsive (menu on desktop, drawer on mobile)
+
+<ComponentPreview name="p-drawer-13" />
