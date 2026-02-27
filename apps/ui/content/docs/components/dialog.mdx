@@ -91,10 +91,11 @@ Trigger button that opens the dialog. Alias for `Dialog.Trigger` from Base UI.
 
 Popup container that displays the dialog content. Also exported as `DialogContent`.
 
-| Prop                  | Type      | Default | Description                                      |
-| --------------------- | --------- | ------- | ------------------------------------------------ |
-| `showCloseButton`     | `boolean` | `true`  | When true, displays a close button in the top-right corner |
-| `bottomStickOnMobile` | `boolean` | `true`  | When true, sticks to the bottom of the screen on mobile devices |
+| Prop                  | Type                        | Default | Description                                      |
+| --------------------- | --------------------------- | ------- | ------------------------------------------------ |
+| `showCloseButton`     | `boolean`                   | `true`  | When true, displays a close button in the top-right corner |
+| `bottomStickOnMobile` | `boolean`                   | `true`  | When true, sticks to the bottom of the screen on mobile devices |
+| `closeProps`          | `Dialog.Close.Props`        | -       | Props forwarded to the internal close button, useful for overriding `aria-label` |
 
 ### DialogHeader
 

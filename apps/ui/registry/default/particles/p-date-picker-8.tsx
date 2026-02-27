@@ -1,16 +1,15 @@
 "use client";
 
 import { format } from "date-fns";
-import { ChevronsUpDownIcon } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Popover,
   PopoverPopup,
   PopoverTrigger,
 } from "@/registry/default/ui/popover";
+import { SelectButton } from "@/registry/default/ui/select";
 
 export default function Particle() {
   const [date, setDate] = useState<Date | undefined>();
@@ -18,21 +17,9 @@ export default function Particle() {
   return (
     <Popover>
       <PopoverTrigger
-        data-empty={!date}
-        render={
-          <Button
-            className="w-full justify-between font-normal"
-            variant="outline"
-          />
-        }
+        render={<SelectButton data-placeholder={!date ? "" : undefined} />}
       >
-        <span className="in-data-[empty=true]:text-muted-foreground/70">
-          {date ? format(date, "PPP") : "Pick a date"}
-        </span>
-        <ChevronsUpDownIcon
-          aria-hidden="true"
-          className="-me-1! size-4.5 opacity-80 sm:size-4"
-        />
+        {date ? format(date, "PPP") : "Pick a date"}
       </PopoverTrigger>
       <PopoverPopup>
         <Calendar

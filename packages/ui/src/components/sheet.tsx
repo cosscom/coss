@@ -64,11 +64,13 @@ function SheetPopup({
   showCloseButton = true,
   side = "right",
   variant = "default",
+  closeProps,
   ...props
 }: SheetPrimitive.Popup.Props & {
   showCloseButton?: boolean;
   side?: "right" | "left" | "top" | "bottom";
   variant?: "default" | "inset";
+  closeProps?: SheetPrimitive.Close.Props;
 }) {
   return (
     <SheetPortal>
@@ -98,6 +100,7 @@ function SheetPopup({
               aria-label="Close"
               className="absolute end-2 top-2"
               render={<Button size="icon" variant="ghost" />}
+              {...closeProps}
             >
               <XIcon />
             </SheetPrimitive.Close>
