@@ -695,7 +695,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile","@coss/utils"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-media-query","@coss/utils"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -9025,18 +9025,18 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "use-mobile": {
-    name: "use-mobile",
+  "use-media-query": {
+    name: "use-media-query",
     description: "",
     type: "registry:hook",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/hooks/use-mobile.ts",
+      path: "registry/default/hooks/use-media-query.ts",
       type: "registry:hook",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/hooks/use-mobile.ts")
+      const mod = await import("@/registry/default/hooks/use-media-query.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

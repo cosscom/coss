@@ -651,7 +651,7 @@
         "@coss/sheet",
         "@coss/skeleton",
         "@coss/tooltip",
-        "@coss/use-mobile",
+        "@coss/use-media-query",
         "@coss/utils"
       ],
       "type": "registry:ui"
@@ -10353,11 +10353,11 @@
     {
       "files": [
         {
-          "path": "registry/default/hooks/use-mobile.ts",
+          "path": "registry/default/hooks/use-media-query.ts",
           "type": "registry:hook"
         }
       ],
-      "name": "use-mobile",
+      "name": "use-media-query",
       "type": "registry:hook"
     },
     {

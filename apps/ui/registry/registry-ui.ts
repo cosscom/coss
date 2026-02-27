@@ -561,7 +561,7 @@ export const ui: Registry["items"] = [
       "@coss/sheet",
       "@coss/skeleton",
       "@coss/tooltip",
-      "@coss/use-mobile",
+      "@coss/use-media-query",
       "@coss/utils",
     ],
     type: "registry:ui",

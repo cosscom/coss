@@ -12,9 +12,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import { cn } from "@coss/ui/lib/utils";
 import * as React from "react";
-import { useIsBetweenMdAndLg, useIsMobile } from "@/hooks/use-mobile";
 
 type SidebarTooltipHandle = ReturnType<
   typeof TooltipCreateHandle<React.ComponentType>
@@ -267,8 +267,8 @@ function SidebarMenuButton({
   isActive?: boolean;
   tooltip?: string | React.ComponentType;
 }) {
-  const isMobile = useIsMobile();
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isMobile = useMediaQuery("max-md");
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const state = isBetweenMdAndLg ? "collapsed" : "expanded";
   const showTooltip = state === "collapsed" && !isMobile;
 
