@@ -2185,7 +2185,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("drawer"),
+    categories: categories("drawer", "dialog"),
     description: "Responsive edit profile: dialog on desktop, drawer on mobile",
     files: [{ path: "particles/p-drawer-12.tsx", type: "registry:block" }],
     name: "p-drawer-12",
@@ -2201,7 +2201,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("drawer"),
+    categories: categories("drawer", "menu"),
     dependencies: ["lucide-react"],
     description: "Responsive actions menu: menu on desktop, drawer on mobile",
     files: [{ path: "particles/p-drawer-13.tsx", type: "registry:block" }],

@@ -4975,7 +4975,8 @@
     },
     {
       "categories": [
-        "drawer"
+        "drawer",
+        "dialog"
       ],
       "description": "Responsive edit profile: dialog on desktop, drawer on mobile",
       "files": [
@@ -4998,7 +4999,8 @@
     },
     {
       "categories": [
-        "drawer"
+        "drawer",
+        "menu"
       ],
       "dependencies": [
         "lucide-react"
