@@ -10382,7 +10382,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/base-ui/csp-provider.tsx",
+          "path": "registry/default/base-ui/csp-provider.ts",
           "type": "registry:lib"
         }
       ],
@@ -10395,7 +10395,7 @@
       ],
       "files": [
         {
-          "path": "registry/default/base-ui/direction-provider.tsx",
+          "path": "registry/default/base-ui/direction-provider.ts",
           "type": "registry:lib"
         }
       ],

@@ -9067,12 +9067,12 @@ export const Index: Record<string, any> = {
     type: "registry:lib",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/base-ui/csp-provider.tsx",
+      path: "registry/default/base-ui/csp-provider.ts",
       type: "registry:lib",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/base-ui/csp-provider.tsx")
+      const mod = await import("@/registry/default/base-ui/csp-provider.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -9085,12 +9085,12 @@ export const Index: Record<string, any> = {
     type: "registry:lib",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/base-ui/direction-provider.tsx",
+      path: "registry/default/base-ui/direction-provider.ts",
       type: "registry:lib",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/base-ui/direction-provider.tsx")
+      const mod = await import("@/registry/default/base-ui/direction-provider.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

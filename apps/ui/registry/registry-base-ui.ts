@@ -27,7 +27,7 @@ export const baseUi: Registry["items"] = [
     dependencies: ["@base-ui/react"],
     files: [
       {
-        path: "base-ui/csp-provider.tsx",
+        path: "base-ui/csp-provider.ts",
         type: "registry:lib",
       },
     ],
@@ -38,7 +38,7 @@ export const baseUi: Registry["items"] = [
     dependencies: ["@base-ui/react"],
     files: [
       {
-        path: "base-ui/direction-provider.tsx",
+        path: "base-ui/direction-provider.ts",
         type: "registry:lib",
       },
     ],
