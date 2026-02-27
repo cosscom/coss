@@ -58,6 +58,14 @@ We've introduced a few additional tokens to provide more granular control:
 
 **Important**: If you manually import components, you must also import these additional tokens in your CSS file (e.g., `app/globals.css`). However, if you use the CLI to import components, these tokens will be automatically imported and configured for you.
 
+## Primitive exports
+
+Components that wrap Base UI primitives re-export the underlying primitive. Use the styled component when our defaults work, or the primitive when you need different compositions or styling. In a monorepo with a shared UI package, apps import from that package—Base UI stays in one place, no need to add it to each app.
+
+```tsx
+import { Slider, SliderValue, SliderPrimitive } from "@coss/ui/components/slider";
+```
+
 ## Migration from Radix UI
 
 For developers migrating from **Radix UI**, many of our **UI primitives** include instructions and examples for translating equivalent Radix components to Base UI. This ensures a smooth transition while preserving accessibility, behaviors, and API patterns.

@@ -323,4 +323,5 @@ export {
   MenuSubTrigger as DropdownMenuSubTrigger,
   MenuSubPopup,
   MenuSubPopup as DropdownMenuSubContent,
+  MenuPrimitive,
 };

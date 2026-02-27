@@ -430,4 +430,5 @@ export {
   ComboboxChips,
   ComboboxChip,
   useComboboxFilter,
+  ComboboxPrimitive,
 };
