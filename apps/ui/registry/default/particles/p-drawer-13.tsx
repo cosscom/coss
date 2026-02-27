@@ -20,6 +20,7 @@ import {
   DrawerMenuRadioGroup,
   DrawerMenuRadioItem,
   DrawerMenuSeparator,
+  DrawerMenuTrigger,
   DrawerPanel,
   DrawerPopup,
   DrawerTrigger,
@@ -34,6 +35,9 @@ import {
   MenuRadioGroup,
   MenuRadioItem,
   MenuSeparator,
+  MenuSub,
+  MenuSubPopup,
+  MenuSubTrigger,
   MenuTrigger,
 } from "@/registry/default/ui/menu";
 
@@ -96,6 +100,67 @@ export default function Particle() {
                 Auto save
               </DrawerMenuCheckboxItem>
               <DrawerMenuSeparator />
+              <Drawer>
+                <DrawerMenuTrigger>Add to Playlist</DrawerMenuTrigger>
+                <DrawerPopup showBar>
+                  <DrawerPanel>
+                    <DrawerMenu>
+                      <DrawerMenuGroup>
+                        <DrawerMenuGroupLabel>
+                          Add to Playlist
+                        </DrawerMenuGroupLabel>
+                      </DrawerMenuGroup>
+                      <DrawerClose render={<DrawerMenuItem />}>
+                        Jazz
+                      </DrawerClose>
+                      <Drawer>
+                        <DrawerMenuTrigger>Rock</DrawerMenuTrigger>
+                        <DrawerPopup showBar>
+                          <DrawerPanel>
+                            <DrawerMenu>
+                              <DrawerMenuGroup>
+                                <DrawerMenuGroupLabel>
+                                  Rock
+                                </DrawerMenuGroupLabel>
+                              </DrawerMenuGroup>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Hard Rock
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Soft Rock
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Classic Rock
+                              </DrawerClose>
+                              <DrawerMenuSeparator />
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Metal
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Punk
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Grunge
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Alternative
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Indie
+                              </DrawerClose>
+                              <DrawerClose render={<DrawerMenuItem />}>
+                                Electronic
+                              </DrawerClose>
+                            </DrawerMenu>
+                          </DrawerPanel>
+                        </DrawerPopup>
+                      </Drawer>
+                      <DrawerClose render={<DrawerMenuItem />}>Pop</DrawerClose>
+                    </DrawerMenu>
+                  </DrawerPanel>
+                </DrawerPopup>
+              </Drawer>
+              <DrawerMenuSeparator />
               <DrawerMenuGroup>
                 <DrawerMenuGroupLabel>Danger zone</DrawerMenuGroupLabel>
                 <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
@@ -154,6 +219,29 @@ export default function Particle() {
         </MenuGroup>
         <MenuSeparator />
         <MenuCheckboxItem variant="switch">Auto save</MenuCheckboxItem>
+        <MenuSeparator />
+        <MenuSub>
+          <MenuSubTrigger>Add to Playlist</MenuSubTrigger>
+          <MenuSubPopup>
+            <MenuItem>Jazz</MenuItem>
+            <MenuSub>
+              <MenuSubTrigger>Rock</MenuSubTrigger>
+              <MenuSubPopup>
+                <MenuItem>Hard Rock</MenuItem>
+                <MenuItem>Soft Rock</MenuItem>
+                <MenuItem>Classic Rock</MenuItem>
+                <MenuSeparator />
+                <MenuItem>Metal</MenuItem>
+                <MenuItem>Punk</MenuItem>
+                <MenuItem>Grunge</MenuItem>
+                <MenuItem>Alternative</MenuItem>
+                <MenuItem>Indie</MenuItem>
+                <MenuItem>Electronic</MenuItem>
+              </MenuSubPopup>
+            </MenuSub>
+            <MenuItem>Pop</MenuItem>
+          </MenuSubPopup>
+        </MenuSub>
         <MenuSeparator />
         <MenuGroup>
           <MenuGroupLabel>Danger zone</MenuGroupLabel>

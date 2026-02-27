@@ -6,7 +6,7 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import { useRender } from "@base-ui/react/use-render";
-import { XIcon } from "lucide-react";
+import { ChevronRightIcon, XIcon } from "lucide-react";
 import { createContext, useContext } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
@@ -442,6 +442,26 @@ function DrawerMenuGroupLabel({
   });
 }
 
+function DrawerMenuTrigger({
+  className,
+  children,
+  ...props
+}: DrawerPrimitive.Trigger.Props) {
+  return (
+    <DrawerTrigger
+      className={cn(
+        "flex min-h-9 w-full cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-base text-foreground outline-none hover:bg-accent hover:text-accent-foreground sm:min-h-8 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        className,
+      )}
+      data-slot="drawer-menu-trigger"
+      {...props}
+    >
+      {children}
+      <ChevronRightIcon className="-me-0.5 ms-auto opacity-80" />
+    </DrawerTrigger>
+  );
+}
+
 function DrawerMenuCheckboxItem({
   className,
   children,
@@ -588,4 +608,5 @@ export {
   DrawerMenuSeparator,
   DrawerMenuGroup,
   DrawerMenuGroupLabel,
+  DrawerMenuTrigger,
 };

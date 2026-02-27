@@ -57,12 +57,16 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerMenu,
+  DrawerMenuCheckboxItem,
   DrawerMenuGroup,
   DrawerMenuGroupLabel,
   DrawerMenuItem,
+  DrawerMenuRadioGroup,
+  DrawerMenuRadioItem,
   DrawerMenuSeparator,
   DrawerPanel,
   DrawerPopup,
+  DrawerMenuTrigger,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
@@ -172,7 +176,7 @@ Content container. When `scrollable` is true (default), wraps content in a `Scro
 
 ### DrawerMenu
 
-Container for drawer menu items. Use with `DrawerMenuItem`, `DrawerMenuSeparator`, `DrawerMenuGroup`, and `DrawerMenuGroupLabel` to build menus that mirror the Menu component API. Supports the `render` prop for polymorphic composition.
+Container for drawer menu items. Use with `DrawerMenuItem`, `DrawerMenuSeparator`, `DrawerMenuGroup`, `DrawerMenuGroupLabel`, `DrawerMenuCheckboxItem`, `DrawerMenuRadioGroup`, `DrawerMenuRadioItem`, and `DrawerMenuTrigger` to build menus that mirror the Menu component API. Supports the `render` prop for polymorphic composition.
 
 ### DrawerMenuItem
 
@@ -195,11 +199,25 @@ Container for grouping related menu items. Use with `DrawerMenuGroupLabel` for l
 
 ### DrawerMenuGroupLabel
 
-Label for a `DrawerMenuGroup` section. Renders muted, smaller text above a group of items. Supports the `render` prop for polymorphic composition.
+Label for a `DrawerMenuGroup` section. Renders muted, smaller text above a group of items. In nested drawers, use as a section title at the top of the menu (no back button needed — swipe to go back). Supports the `render` prop for polymorphic composition.
 
-| Prop    | Type      | Default | Description                                      |
-| ------- | --------- | ------- | ------------------------------------------------ |
-| `inset` | `boolean` | —       | When true, adds left padding to align with inset items |
+### DrawerMenuTrigger
+
+Trigger that opens a nested drawer. Styled like a menu item with a trailing chevron. Use for menu items that open nested drawers (e.g. "Add to Playlist" → nested drawer with playlist options). Wraps `DrawerTrigger` internally.
+
+**Example:** `<DrawerMenuTrigger>Add to Playlist</DrawerMenuTrigger>` opens a nested drawer when tapped.
+
+### DrawerMenuCheckboxItem
+
+Checkbox menu item. Supports `variant="switch"` for toggle-style switches. Use with `DrawerMenuRadioGroup` and `DrawerMenuRadioItem` for selection groups.
+
+### DrawerMenuRadioGroup
+
+Container for radio menu items. Use with `DrawerMenuRadioItem` for mutually exclusive options (e.g. "Sort by" with Artist, Album, Title).
+
+### DrawerMenuRadioItem
+
+Radio menu item. Must be used inside `DrawerMenuRadioGroup` with a `value` prop.
 
 ### DrawerClose
 
@@ -259,6 +277,6 @@ Use `Drawer` on small screens and `Dialog` on larger ones to show the same conte
 
 ### Responsive menu
 
-Pair `Drawer` with `Menu` so actions appear in a dropdown on desktop and a swipe-up sheet on mobile.
+Pair `Drawer` with `Menu` so actions appear in a dropdown on desktop and a swipe-up sheet on mobile. Use `DrawerMenuTrigger` for items that open nested drawers on mobile. Nested drawers use `DrawerMenuGroupLabel` as section titles; swipe to go back.
 
 <ComponentPreview name="p-drawer-13" />
