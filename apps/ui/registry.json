@@ -651,9 +651,6 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [
-        "@base-ui/react"
-      ],
       "files": [
         {
           "path": "registry/default/ui/sidebar.tsx",
