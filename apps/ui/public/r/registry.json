@@ -10351,6 +10351,58 @@
       "type": "registry:lib"
     },
     {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/base-ui/use-render.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "use-render",
+      "type": "registry:lib"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/base-ui/merge-props.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "merge-props",
+      "type": "registry:lib"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/base-ui/csp-provider.tsx",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "csp-provider",
+      "type": "registry:lib"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/base-ui/direction-provider.tsx",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "direction-provider",
+      "type": "registry:lib"
+    },
+    {
       "files": [
         {
           "path": "registry/default/hooks/use-mobile.ts",

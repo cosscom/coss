@@ -1,7 +1,7 @@
 "use client";
 
-import { mergeProps } from "@base-ui-components/react/merge-props";
-import { useRender } from "@base-ui-components/react/use-render";
+import { mergeProps } from "@coss/ui/base-ui/merge-props";
+import { useRender } from "@coss/ui/base-ui/use-render";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";

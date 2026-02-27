@@ -25,6 +25,10 @@
     "typescript": "^5.9.3"
   },
   "exports": {
+    "./base-ui/csp-provider": "./src/base-ui/csp-provider.tsx",
+    "./base-ui/direction-provider": "./src/base-ui/direction-provider.tsx",
+    "./base-ui/merge-props": "./src/base-ui/merge-props.ts",
+    "./base-ui/use-render": "./src/base-ui/use-render.ts",
     "./components/*": "./src/components/*.tsx",
     "./fonts": "./src/fonts/index.ts",
     "./globals.css": "./src/styles/globals.css",

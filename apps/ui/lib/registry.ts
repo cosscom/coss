@@ -103,7 +103,9 @@ function getFileTarget(file: { path: string; type?: string; target?: string }) {
     }
 
     if (file.type === "registry:lib") {
-      target = `lib/${fileName}`;
+      target = file.path.startsWith("base-ui/")
+        ? `base-ui/${fileName}`
+        : `lib/${fileName}`;
     }
   }
 
