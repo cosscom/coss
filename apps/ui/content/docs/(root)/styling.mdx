@@ -16,17 +16,36 @@ While this color system is optional, it's designed to provide optimal visual res
 <CodeTabs>
 
 <TabsList>
-  <TabsTab value="cli">CLI</TabsTab>
+  <TabsTab value="init">Init (New Project)</TabsTab>
+  <TabsTab value="add">Add (Existing Project)</TabsTab>
   <TabsTab value="manual">Manual</TabsTab>
 </TabsList>
 
-<TabsPanel value="cli">
+<TabsPanel value="init">
+
+**Recommended for new projects.** Initialize with the full coss theme (colors, fonts, base styles):
 
 ```bash
+npx shadcn@latest init coss/style
+```
+
+This gives you everything: semantic colors, font variables (`--font-sans`, `--font-heading`, `--font-mono`), chart and code tokens, plus base layer styles. Components like Dialog and AlertDialog use `font-heading`—the preset provides system font fallbacks, and you can override with `next/font` in your layout.
+
+</TabsPanel>
+
+<TabsPanel value="add">
+
+For existing projects, add the full theme or just colors:
+
+```bash
+# Full theme (colors, fonts)
+npx shadcn@latest add @coss/style
+
+# Colors only
 npx shadcn@latest add @coss/colors-neutral
 ```
 
-This command will override your existing color variables. We're currently providing a default configuration based on neutral colors, but we plan to add more color variants in the future to give you more styling options while maintaining the same optimization principles.
+These commands will override your existing color variables. We're currently providing a default configuration based on neutral colors, but we plan to add more color variants in the future.
 
 </TabsPanel>
 
@@ -40,6 +59,9 @@ This command will override your existing color variables. We're currently provid
 
 ```css title="app/globals.css"
 @theme inline {
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -202,6 +224,30 @@ We've introduced additional color variables beyond the standard shadcn/ui palett
 - `--warning-foreground`: Foreground color for warning states
 
 These additional variables ensure consistent styling across components that need to communicate different states or levels of importance.
+
+## Font Variables
+
+Components like Dialog, AlertDialog, Sheet, and Empty use the `font-heading` class for titles. The coss style preset defines `--font-sans`, `--font-heading`, and `--font-mono` with system font fallbacks. To use custom fonts, define these variables in your layout using `next/font`:
+
+```tsx title="app/layout.tsx"
+import { Geist, Geist_Mono } from "next/font/google";
+
+const fontSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
+const fontHeading = Geist({ variable: "--font-heading", subsets: ["latin"], weight: "600" });
+const fontMono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} font-sans`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+Apply the variables to `html` or `body` so they cascade. The `font-sans` class sets the default body font.
 
 ## Base UI Setup
 
