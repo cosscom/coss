@@ -13,49 +13,7 @@ While this color system is optional, it's designed to provide optimal visual res
 
 ## Installation
 
-<CodeTabs>
-
-<TabsList>
-  <TabsTab value="init">Init (New Project)</TabsTab>
-  <TabsTab value="add">Add (Existing Project)</TabsTab>
-  <TabsTab value="manual">Manual</TabsTab>
-</TabsList>
-
-<TabsPanel value="init">
-
-**Recommended for new projects.** Initialize with the full coss theme (colors, fonts, base styles):
-
-```bash
-npx shadcn@latest init coss/style
-```
-
-This gives you everything: semantic colors, font variables (`--font-sans`, `--font-heading`, `--font-mono`), chart and code tokens, plus base layer styles. Components like Dialog and AlertDialog use `font-heading`—the preset provides system font fallbacks, and you can override with `next/font` in your layout.
-
-</TabsPanel>
-
-<TabsPanel value="add">
-
-For existing projects, add the full theme or just colors:
-
-```bash
-# Full theme (colors, fonts)
-npx shadcn@latest add @coss/style
-
-# Colors only
-npx shadcn@latest add @coss/colors-neutral
-```
-
-These commands will override your existing color variables. We're currently providing a default configuration based on neutral colors, but we plan to add more color variants in the future.
-
-</TabsPanel>
-
-<TabsPanel value="manual">
-
-<Steps>
-
-<Step>
-  Copy and paste the following CSS variables into your `globals.css` file:
-</Step>
+See [Get Started](/ui/docs/get-started) for installing with the CLI. If you prefer to add the theme manually, paste the following into your `globals.css`:
 
 ```css title="app/globals.css"
 @theme inline {
@@ -204,26 +162,6 @@ These commands will override your existing color variables. We're currently prov
   --sidebar-ring: var(--color-neutral-400);
 }
 ```
-
-</Steps>
-
-</TabsPanel>
-
-</CodeTabs>
-
-## Extended Color Variables
-
-We've introduced additional color variables beyond the standard shadcn/ui palette to provide more control for specific components like badges and alerts:
-
-- `--destructive-foreground`: Foreground color for destructive actions
-- `--info`: Information state color
-- `--info-foreground`: Foreground color for information states
-- `--success`: Success state color
-- `--success-foreground`: Foreground color for success states
-- `--warning`: Warning state color
-- `--warning-foreground`: Foreground color for warning states
-
-These additional variables ensure consistent styling across components that need to communicate different states or levels of importance.
 
 ## Font Variables
 
