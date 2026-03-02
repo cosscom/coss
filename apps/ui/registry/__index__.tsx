@@ -9115,8 +9115,8 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "use-mobile": {
-    name: "use-mobile",
+  "use-media-query": {
+    name: "use-media-query",
     description: "",
     type: "registry:hook",
     registryDependencies: undefined,
