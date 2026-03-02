@@ -7,16 +7,11 @@ import {
 } from "@coss/ui/components/avatar";
 import { Button } from "@coss/ui/components/button";
 import {
-  Card,
-  CardFrame,
-  CardFrameHeader,
-  CardPanel,
-} from "@coss/ui/components/card";
-import {
   Collapsible,
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "@coss/ui/components/collapsible";
+import { Frame, FrameHeader, FramePanel } from "@coss/ui/components/frame";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import {
@@ -436,9 +431,9 @@ interface FlagGroupProps {
 
 function FlagGroup({ type, flags, onAssignUsers, onToggle }: FlagGroupProps) {
   return (
-    <Collapsible defaultOpen>
-      <CardFrame>
-        <CardFrameHeader className="flex-row items-center justify-between px-2 py-2">
+    <Frame>
+      <Collapsible defaultOpen>
+        <FrameHeader className="flex flex-row items-center justify-between px-2 py-2">
           <CollapsibleTrigger
             className="data-panel-open:[&_svg]:rotate-180"
             render={<Button variant="ghost" />}
@@ -446,9 +441,9 @@ function FlagGroup({ type, flags, onAssignUsers, onToggle }: FlagGroupProps) {
             <ChevronDownIcon />
             {type}
           </CollapsibleTrigger>
-        </CardFrameHeader>
-        <Card render={<CollapsiblePanel />}>
-          <CardPanel className="p-0">
+        </FrameHeader>
+        <CollapsiblePanel>
+          <FramePanel className="p-0">
             {flags.map((flag) => (
               <ListItem key={flag.slug}>
                 <ListItemContent>
@@ -493,10 +488,10 @@ function FlagGroup({ type, flags, onAssignUsers, onToggle }: FlagGroupProps) {
                 </ListItemActions>
               </ListItem>
             ))}
-          </CardPanel>
-        </Card>
-      </CardFrame>
-    </Collapsible>
+          </FramePanel>
+        </CollapsiblePanel>
+      </Collapsible>
+    </Frame>
   );
 
   function handleToggle(slug: string, checked: boolean) {
