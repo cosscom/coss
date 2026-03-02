@@ -80,6 +80,17 @@ Components that wrap Base UI primitives re-export the underlying primitive. Use 
 import { Slider, SliderValue, SliderPrimitive } from "@coss/ui/components/slider";
 ```
 
+## Base UI Re-exports
+
+When you only need `useRender`, `mergeProps`, `CSPProvider`, or `DirectionProvider`, import them from `@coss/ui/base-ui/*` instead of adding `@base-ui/react` as a direct dependency:
+
+- `@coss/ui/base-ui/use-render`
+- `@coss/ui/base-ui/merge-props`
+- `@coss/ui/base-ui/csp-provider`
+- `@coss/ui/base-ui/direction-provider`
+
+This is especially useful in **monorepos**: apps and packages that already depend on `@coss/ui` can use these utilities without adding `@base-ui/react` as another dependency. You avoid duplicate installs, keep versions in sync, and simplify your dependency tree—`@base-ui/react` lives in one place (`@coss/ui`), and everything else imports through it.
+
 ## Migration from Radix UI
 
 For developers migrating from **Radix UI**, many of our **UI primitives** include instructions and examples for translating equivalent Radix components to Base UI. This ensures a smooth transition while preserving accessibility, behaviors, and API patterns.

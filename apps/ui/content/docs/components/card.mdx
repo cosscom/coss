@@ -61,6 +61,41 @@ import {
 </Card>
 ```
 
+### CardFrame with header action
+
+Use `CardFrame` when you need a framed layout with an action button in the header (e.g. "Add", "Connect"):
+
+```tsx
+import {
+  CardFrame,
+  CardFrameAction,
+  CardFrameDescription,
+  CardFrameHeader,
+  CardFrameTitle,
+  CardPanel,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { PlusIcon } from "lucide-react"
+
+<CardFrame>
+  <CardFrameHeader>
+    <CardFrameTitle>Project</CardFrameTitle>
+    <CardFrameDescription>
+      Manage your project settings and configuration
+    </CardFrameDescription>
+    <CardFrameAction>
+      <Button variant="outline">
+        <PlusIcon />
+        Add
+      </Button>
+    </CardFrameAction>
+  </CardFrameHeader>
+  <Card>
+    <CardPanel>Content</CardPanel>
+  </Card>
+</CardFrame>
+```
+
 ## API Reference
 
 This is a custom component using Base UI's `useRender` hook, not a direct Base UI wrapper.
@@ -96,3 +131,31 @@ Main content area of the card. Also exported as `CardContent`. Supports the `ren
 ### CardFooter
 
 Footer section for the card. Supports the `render` prop.
+
+## CardFrame API Reference
+
+`CardFrame` is an alternative layout for cards that groups a header, content, and footer with consistent styling and clipping. Use it when you need a framed card with optional header actions.
+
+### CardFrame
+
+Root container for the framed card layout. Supports the `render` prop.
+
+### CardFrameHeader
+
+Header section for the frame. Contains title, description, and optionally `CardFrameAction`. Supports the `render` prop.
+
+### CardFrameTitle
+
+Title text for the frame. Supports the `render` prop.
+
+### CardFrameDescription
+
+Description text for the frame. Supports the `render` prop.
+
+### CardFrameAction
+
+Container for action buttons (e.g. "Add", "Edit") in the header. Place it as a sibling of `CardFrameTitle` and `CardFrameDescription` inside `CardFrameHeader`. It is positioned in the top-right via CSS grid (`col-start-2`, `row-span-2`, `self-center`, `justify-self-end`). Use it for primary actions that apply to the entire frame. Supports the `render` prop.
+
+### CardFrameFooter
+
+Footer section for the frame. Supports the `render` prop.
