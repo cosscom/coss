@@ -240,4 +240,5 @@ export {
   SelectSeparator,
   SelectGroup,
   SelectGroupLabel,
+  SelectPrimitive,
 };

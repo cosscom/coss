@@ -166,4 +166,5 @@ export {
   AlertDialogDescription,
   AlertDialogClose,
   AlertDialogViewport,
+  AlertDialogPrimitive,
 };
