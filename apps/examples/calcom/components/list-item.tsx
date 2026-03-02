@@ -164,11 +164,6 @@ function ListItemDragHandle({ className }: ListItemDragHandleProps) {
       />
     </Button>
   );
-  return useRender({
-    defaultTagName: "button",
-    props: mergedProps,
-    render: render ?? defaultElement,
-  });
 }
 
 function ListItemContent({
@@ -265,11 +260,6 @@ function ListItemSpanningTrigger({
   }
 
   return <div {...mergedProps}>{children}</div>;
-}
-
-interface ListItemDescriptionProps {
-  children: ReactNode;
-  className?: string;
 }
 
 function ListItemDescription({
