@@ -1,5 +1,6 @@
 "use client";
 
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
@@ -9,7 +10,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 export function NavSecondary({
   items,
@@ -21,7 +21,7 @@ export function NavSecondary({
     icon: LucideIcon;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
 
   return (
     <SidebarGroup {...props}>

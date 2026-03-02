@@ -13,6 +13,7 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,7 +29,6 @@ import {
   useSidebarMenuOpen,
 } from "@/components/ui/sidebar";
 import { WorkflowBadge } from "@/components/workflows-badge";
-import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 type BaseNavItem = {
   title: string;
@@ -52,7 +52,7 @@ function hasSubItems(item: NavItem): item is NavItemWithChildren {
 }
 
 function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const { registerMenu } = useSidebarMenuOpen();
   const unregisterRef = useRef<(() => void) | null>(null);
 
@@ -163,7 +163,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
 }
 
 function NavItemSimple({ item }: { item: NavItemLeaf }) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const pathname = usePathname();
   const isActive = pathname.startsWith(item.matchPath ?? item.url);
 

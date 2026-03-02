@@ -222,4 +222,5 @@ export {
   SheetTitle,
   SheetDescription,
   SheetPanel,
+  SheetPrimitive,
 };

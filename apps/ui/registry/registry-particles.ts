@@ -1629,6 +1629,19 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("card", "frame"),
+    dependencies: ["lucide-react"],
+    description: "CardFrame with header action",
+    files: [{ path: "particles/p-card-11.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center",
+    },
+    name: "p-card-11",
+    registryDependencies: ["@coss/button", "@coss/card", "@coss/empty"],
+    type: "registry:block",
+  },
+  {
     categories: categories("checkbox"),
     description: "Basic checkbox",
     files: [{ path: "particles/p-checkbox-1.tsx", type: "registry:block" }],
