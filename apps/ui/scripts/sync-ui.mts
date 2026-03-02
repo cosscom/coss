@@ -5,6 +5,7 @@ async function resolvePaths() {
   const cwd = process.cwd();
   const sourceRoot = path.join(cwd, "registry/default");
   const sourceDirs = {
+    baseUi: path.join(sourceRoot, "base-ui"),
     hooks: path.join(sourceRoot, "hooks"),
     lib: path.join(sourceRoot, "lib"),
     ui: path.join(sourceRoot, "ui"),
@@ -12,6 +13,7 @@ async function resolvePaths() {
   // From apps/ui → ../../packages/ui/src/*
   const targetRoot = path.resolve(cwd, "../../packages/ui/src");
   const targetDirs = {
+    baseUi: path.join(targetRoot, "base-ui"),
     hooks: path.join(targetRoot, "hooks"),
     lib: path.join(targetRoot, "lib"),
     ui: path.join(targetRoot, "components"),
@@ -117,9 +119,10 @@ try {
   console.log("📦 Propagating registry primitives → packages/ui/src …");
   const { sourceDirs, targetRoot } = await resolvePaths();
   console.log("├─ Sources:");
-  console.log(`│  ├─ UI:    ${sourceDirs.ui}`);
-  console.log(`│  ├─ Hooks: ${sourceDirs.hooks}`);
-  console.log(`│  └─ Lib:   ${sourceDirs.lib}`);
+  console.log(`│  ├─ UI:      ${sourceDirs.ui}`);
+  console.log(`│  ├─ Hooks:   ${sourceDirs.hooks}`);
+  console.log(`│  ├─ Lib:    ${sourceDirs.lib}`);
+  console.log(`│  └─ Base UI: ${sourceDirs.baseUi}`);
   console.log(`└─ Target root: ${targetRoot}`);
 
   await copyRegistryTrees();
