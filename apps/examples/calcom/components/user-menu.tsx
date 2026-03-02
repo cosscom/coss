@@ -14,6 +14,7 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   GaugeIcon,
   LogOutIcon,
@@ -26,14 +27,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useIsBetweenMdAndLg } from "@/hooks/use-mobile";
 
 interface UserMenuProps {
   variant?: "sidebar" | "mobile";
 }
 
 export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
 
   return (
     <Menu>

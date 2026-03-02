@@ -1,7 +1,7 @@
 "use client";
 
-import { mergeProps } from "@base-ui-components/react/merge-props";
-import { useRender } from "@base-ui-components/react/use-render";
+import { mergeProps } from "@coss/ui/base-ui/merge-props";
+import { useRender } from "@coss/ui/base-ui/use-render";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { Separator } from "@coss/ui/components/separator";
 import { Skeleton } from "@coss/ui/components/skeleton";
@@ -12,9 +12,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import { cn } from "@coss/ui/lib/utils";
 import * as React from "react";
-import { useIsBetweenMdAndLg, useIsMobile } from "@/hooks/use-mobile";
 
 type SidebarTooltipHandle = ReturnType<
   typeof TooltipCreateHandle<React.ComponentType>
@@ -267,8 +267,8 @@ function SidebarMenuButton({
   isActive?: boolean;
   tooltip?: string | React.ComponentType;
 }) {
-  const isMobile = useIsMobile();
-  const isBetweenMdAndLg = useIsBetweenMdAndLg();
+  const isMobile = useMediaQuery("max-md");
+  const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const state = isBetweenMdAndLg ? "collapsed" : "expanded";
   const showTooltip = state === "collapsed" && !isMobile;
 

@@ -10,6 +10,7 @@ import { CodeCollapsibleWrapper } from "@/components/code-collapsible-wrapper";
 import { CodeTabs } from "@/components/code-tabs";
 import { ComponentPreview } from "@/components/component-preview";
 import { ComponentSource } from "@/components/component-source";
+import { MediaQueryDemo } from "@/components/media-query-demo";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
@@ -257,6 +258,7 @@ export const mdxComponents = {
   li: ({ className, ...props }: React.ComponentProps<"li">) => (
     <li className={cn("mt-2", className)} {...props} />
   ),
+  MediaQueryDemo,
   ol: ({ className, ...props }: React.ComponentProps<"ol">) => (
     <ol
       className={cn("my-6 ms-6 list-decimal text-muted-foreground", className)}
@@ -358,7 +360,7 @@ export const mdxComponents = {
   th: ({ className, ...props }: React.ComponentProps<"th">) => (
     <th
       className={cn(
-        "px-4 py-2 text-left font-bold [[align=center]]:text-center [[align=right]]:text-right",
+        "px-4 py-2 text-left font-medium [[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
       {...props}

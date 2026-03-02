@@ -196,4 +196,5 @@ export {
   DialogDescription,
   DialogPanel,
   DialogViewport,
+  DialogPrimitive,
 };

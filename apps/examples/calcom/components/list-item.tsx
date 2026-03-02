@@ -1,3 +1,5 @@
+import { mergeProps } from "@coss/ui/base-ui/merge-props";
+import { useRender } from "@coss/ui/base-ui/use-render";
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -12,9 +14,7 @@ import { ItemLabel } from "./item-label";
 const sortableListClasses =
   "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
 
-interface ListItemProps {
-  children: ReactNode;
-  className?: string;
+interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortable?: boolean;
   labelColorLight?: string;
   labelColorDark?: string;
@@ -30,6 +30,7 @@ interface ListItemProps {
 function ListItem({
   children,
   className,
+  render,
   sortable = false,
   labelColorLight,
   labelColorDark,
@@ -40,6 +41,7 @@ function ListItem({
   sortableDraggingAny,
   sortableListeners,
   hasDragged,
+  ...props
 }: ListItemProps) {
   const baseClasses =
     "not-last:border-b bg-clip-padding has-[[data-spanning-trigger]:hover]:z-1 has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]";
@@ -50,36 +52,48 @@ function ListItem({
   const sortableClasses =
     "after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 data-has-dragged:starting:after:rounded-2xl first:after:rounded-t-2xl last:after:rounded-b-2xl after:border after:border-border after:bg-card after:transition-[border-radius,inset] first:rounded-t-2xl last:rounded-b-2xl data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-muted/24 not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[5px] before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)] not-data-drag-overlay:before:hidden before:z-1";
 
-  return (
+  const innerContent = (
     <div
       className={cn(
-        baseClasses,
-        sortable ? sortableClasses : staticClasses,
-        className,
+        "relative flex items-center justify-between gap-4 px-6 py-4",
+        sortable && "z-1",
       )}
-      data-drag-ghost={sortable && sortableDragging ? "" : undefined}
-      data-drag-on={sortable && sortableDraggingAny ? "" : undefined}
-      data-drag-overlay={sortable && isOverlay ? "" : undefined}
-      data-draggable={sortable ? "" : undefined}
-      data-has-dragged={sortable && hasDragged ? "" : undefined}
-      data-slot="list-item"
-      ref={sortable ? sortableRef : undefined}
-      style={sortable ? sortableStyle : undefined}
-      {...(sortable ? sortableListeners : {})}
     >
-      <div
-        className={cn(
-          "relative flex items-center justify-between gap-4 px-6 py-4",
-          sortable && "z-1",
-        )}
-      >
-        {sortable && (
-          <ItemLabel colorDark={labelColorDark} colorLight={labelColorLight} />
-        )}
-        {children}
-      </div>
+      {sortable && (
+        <ItemLabel colorDark={labelColorDark} colorLight={labelColorLight} />
+      )}
+      {children}
     </div>
   );
+
+  const defaultProps = {
+    className: cn(
+      baseClasses,
+      sortable ? sortableClasses : staticClasses,
+      className,
+    ),
+    "data-drag-ghost": sortable && sortableDragging ? "" : undefined,
+    "data-drag-on": sortable && sortableDraggingAny ? "" : undefined,
+    "data-drag-overlay": sortable && isOverlay ? "" : undefined,
+    "data-draggable": sortable ? "" : undefined,
+    "data-has-dragged": sortable && hasDragged ? "" : undefined,
+    "data-slot": "list-item",
+    ref: sortable ? sortableRef : undefined,
+    style: sortable ? sortableStyle : undefined,
+    ...(sortable ? sortableListeners : {}),
+  };
+
+  const mergedProps = mergeProps<"div">(defaultProps, props);
+  const propsWithInnerContent = {
+    ...mergedProps,
+    children: innerContent,
+  };
+
+  return useRender({
+    defaultTagName: "div",
+    props: propsWithInnerContent,
+    render,
+  });
 }
 
 interface SortableListItemProps {
@@ -150,44 +164,68 @@ function ListItemDragHandle({ className }: ListItemDragHandleProps) {
       />
     </Button>
   );
+  return useRender({
+    defaultTagName: "button",
+    props: mergedProps,
+    render: render ?? defaultElement,
+  });
 }
 
-interface ListItemContentProps {
-  children: ReactNode;
-  className?: string;
+function ListItemContent({
+  children,
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("flex min-w-0 flex-1 flex-col gap-3", className),
+    "data-slot": "list-item-content",
+  };
+  const mergedProps = mergeProps<"div">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "div",
+    props: propsWithChildren,
+    render,
+  });
 }
 
-function ListItemContent({ children, className }: ListItemContentProps) {
-  return (
-    <div className={cn("flex min-w-0 flex-1 flex-col gap-3", className)}>
-      {children}
-    </div>
-  );
+function ListItemHeader({
+  children,
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("flex flex-col gap-1", className),
+    "data-slot": "list-item-header",
+  };
+  const mergedProps = mergeProps<"div">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "div",
+    props: propsWithChildren,
+    render,
+  });
 }
 
-interface ListItemHeaderProps {
-  children: ReactNode;
-  className?: string;
-}
-
-function ListItemHeader({ children, className }: ListItemHeaderProps) {
-  return <div className={cn("flex flex-col gap-1", className)}>{children}</div>;
-}
-
-interface ListItemTitleProps {
-  children: ReactNode;
-  className?: string;
-}
-
-function ListItemTitle({ children, className }: ListItemTitleProps) {
-  return (
-    <h2
-      className={cn("font-semibold sm:text-sm", className)}
-      data-slot="list-item-title"
-    >
-      {children}
-    </h2>
-  );
+function ListItemTitle({
+  children,
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"h2">) {
+  const defaultProps = {
+    className: cn("font-semibold sm:text-sm", className),
+    "data-slot": "list-item-title",
+  };
+  const mergedProps = mergeProps<"h2">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "h2",
+    props: propsWithChildren,
+    render,
+  });
 }
 
 const spanningTriggerClasses = "cursor-pointer before:absolute before:inset-0";
@@ -237,47 +275,58 @@ interface ListItemDescriptionProps {
 function ListItemDescription({
   children,
   className,
-}: ListItemDescriptionProps) {
-  return (
-    <p
-      className={cn("text-muted-foreground text-sm", className)}
-      data-slot="list-item-description"
-    >
-      {children}
-    </p>
-  );
+  render,
+  ...props
+}: useRender.ComponentProps<"p">) {
+  const defaultProps = {
+    className: cn("text-muted-foreground text-sm", className),
+    "data-slot": "list-item-description",
+  };
+  const mergedProps = mergeProps<"p">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "p",
+    props: propsWithChildren,
+    render,
+  });
 }
 
-interface ListItemBadgesProps {
-  children: ReactNode;
-  className?: string;
+function ListItemBadges({
+  children,
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("flex flex-wrap items-center gap-2", className),
+    "data-slot": "list-item-badges",
+  };
+  const mergedProps = mergeProps<"div">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "div",
+    props: propsWithChildren,
+    render,
+  });
 }
 
-function ListItemBadges({ children, className }: ListItemBadgesProps) {
-  return (
-    <div
-      className={cn("flex flex-wrap items-center gap-2", className)}
-      data-slot="list-item-badges"
-    >
-      {children}
-    </div>
-  );
-}
-
-interface ListItemActionsProps {
-  children: ReactNode;
-  className?: string;
-}
-
-function ListItemActions({ children, className }: ListItemActionsProps) {
-  return (
-    <div
-      className={cn("relative flex items-center gap-4", className)}
-      data-slot="list-item-actions"
-    >
-      {children}
-    </div>
-  );
+function ListItemActions({
+  children,
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<"div">) {
+  const defaultProps = {
+    className: cn("relative flex items-center gap-4", className),
+    "data-slot": "list-item-actions",
+  };
+  const mergedProps = mergeProps<"div">(defaultProps, props);
+  const propsWithChildren = { ...mergedProps, children };
+  return useRender({
+    defaultTagName: "div",
+    props: propsWithChildren,
+    render,
+  });
 }
 
 export {

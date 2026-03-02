@@ -695,7 +695,7 @@ export const Index: Record<string, any> = {
     name: "sidebar",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-mobile","@coss/utils"],
+    registryDependencies: ["@coss/button","@coss/input","@coss/scroll-area","@coss/separator","@coss/sheet","@coss/skeleton","@coss/tooltip","@coss/use-media-query","@coss/utils"],
     files: [{
       path: "registry/default/ui/sidebar.tsx",
       type: "registry:ui",
@@ -3641,6 +3641,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["card","form","frame"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
+  },
+  "p-card-11": {
+    name: "p-card-11",
+    description: "CardFrame with header action",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/empty"],
+    files: [{
+      path: "registry/default/particles/p-card-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-card-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["card","frame"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:flex **:data-[slot=preview]:justify-center"},
   },
   "p-checkbox-1": {
@@ -9043,18 +9061,90 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "use-mobile": {
-    name: "use-mobile",
+  "use-render": {
+    name: "use-render",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/base-ui/use-render.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/base-ui/use-render.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "merge-props": {
+    name: "merge-props",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/base-ui/merge-props.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/base-ui/merge-props.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "csp-provider": {
+    name: "csp-provider",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/base-ui/csp-provider.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/base-ui/csp-provider.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "direction-provider": {
+    name: "direction-provider",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/base-ui/direction-provider.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/base-ui/direction-provider.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "use-media-query": {
+    name: "use-media-query",
     description: "",
     type: "registry:hook",
     registryDependencies: undefined,
     files: [{
-      path: "registry/default/hooks/use-mobile.ts",
+      path: "registry/default/hooks/use-media-query.ts",
       type: "registry:hook",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/hooks/use-mobile.ts")
+      const mod = await import("@/registry/default/hooks/use-media-query.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
