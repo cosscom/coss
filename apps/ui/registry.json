@@ -5019,7 +5019,7 @@
         "@coss/field",
         "@coss/form",
         "@coss/input",
-        "@coss/use-mobile"
+        "@coss/use-media-query"
       ],
       "type": "registry:block"
     },
@@ -5043,7 +5043,7 @@
         "@coss/button",
         "@coss/drawer",
         "@coss/menu",
-        "@coss/use-mobile"
+        "@coss/use-media-query"
       ],
       "type": "registry:block"
     },

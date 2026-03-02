@@ -1,6 +1,6 @@
 "use client";
 
-import { useIsMobile } from "@/registry/default/hooks/use-mobile";
+import { useMediaQuery } from "@/registry/default/hooks/use-media-query";
 import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
@@ -49,7 +49,7 @@ const formFields = (
 );
 
 export default function Particle() {
-  const isMobile = useIsMobile();
+  const isMobile = useMediaQuery("max-md");
 
   if (isMobile) {
     return (

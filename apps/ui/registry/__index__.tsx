@@ -4547,7 +4547,7 @@ export const Index: Record<string, any> = {
     name: "p-drawer-12",
     description: "Responsive edit profile: dialog on desktop, drawer on mobile",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/dialog","@coss/drawer","@coss/field","@coss/form","@coss/input","@coss/use-mobile"],
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/drawer","@coss/field","@coss/form","@coss/input","@coss/use-media-query"],
     files: [{
       path: "registry/default/particles/p-drawer-12.tsx",
       type: "registry:block",
@@ -4565,7 +4565,7 @@ export const Index: Record<string, any> = {
     name: "p-drawer-13",
     description: "Responsive actions menu: menu on desktop, drawer on mobile",
     type: "registry:block",
-    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/use-mobile"],
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/use-media-query"],
     files: [{
       path: "registry/default/particles/p-drawer-13.tsx",
       type: "registry:block",

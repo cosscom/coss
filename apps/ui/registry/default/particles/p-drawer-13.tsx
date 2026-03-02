@@ -7,7 +7,7 @@ import {
   ShareIcon,
   TrashIcon,
 } from "lucide-react";
-import { useIsMobile } from "@/registry/default/hooks/use-mobile";
+import { useMediaQuery } from "@/registry/default/hooks/use-media-query";
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
@@ -44,7 +44,7 @@ import {
 const TRIGGER_ARIA_LABEL = "Open menu";
 
 export default function Particle() {
-  const isMobile = useIsMobile();
+  const isMobile = useMediaQuery("max-md");
 
   if (isMobile) {
     return (
