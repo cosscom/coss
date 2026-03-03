@@ -474,7 +474,7 @@ export function AnalyticsAppsContent() {
       <div className="flex flex-col gap-6 sm:flex-row">
         {isSmallScreen ? (
           <ScrollArea
-            className="-mx-4 max-sm:w-[calc(100%+--spacing(4)*2)]"
+            className="-mx-4 w-[calc(100%+--spacing(4)*2)]"
             scrollbarGutter
           >
             <div className="flex w-max gap-0.5 px-4">
@@ -488,7 +488,7 @@ export function AnalyticsAppsContent() {
         ) : (
           <nav
             aria-label="App categories"
-            className="hidden shrink-0 sm:flex sm:w-48 sm:flex-col sm:gap-0.5"
+            className="sticky top-4 flex w-48 shrink-0 flex-col gap-0.5 self-start"
           >
             {APP_CATEGORIES.map(renderCategoryButton)}
           </nav>
