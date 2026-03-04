@@ -383,13 +383,13 @@ export function AnalyticsAppsContent() {
 
     return (
       <Button
-        className="w-full justify-start gap-2"
+        className="justify-start"
         data-pressed={isActive ? true : undefined}
         key={category.id}
         onClick={() => router.push(category.href)}
         variant="ghost"
       >
-        <Icon aria-hidden="true" className="size-4 shrink-0" />
+        <Icon aria-hidden="true" className="shrink-0" />
         {category.label}
       </Button>
     );
