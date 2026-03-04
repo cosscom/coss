@@ -389,7 +389,7 @@ export function AnalyticsAppsContent() {
         onClick={() => router.push(category.href)}
         variant="ghost"
       >
-        <Icon aria-hidden="true" className="shrink-0" />
+        <Icon aria-hidden="true" />
         {category.label}
       </Button>
     );
