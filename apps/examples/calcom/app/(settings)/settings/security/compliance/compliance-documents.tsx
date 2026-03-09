@@ -93,30 +93,29 @@ export function ComplianceDocuments() {
                 const hasAccess = !doc.restricted || hasRestrictedAccess;
                 return (
                   <ListItem key={doc.id}>
-                    <ListItemContent>
-                      <ListItemHeader>
-                        <div className="flex items-start gap-4">
-                          <EmptyMedia
-                            className="m-0 max-sm:hidden"
-                            variant="icon"
-                          >
-                            <FileTextIcon />
-                          </EmptyMedia>
-                          <div>
-                            <ListItemTitle>{doc.name}</ListItemTitle>
-                            <ListItemDescription>
-                              {doc.description}
-                            </ListItemDescription>
+                    <EmptyMedia className="m-0 self-start" variant="icon">
+                      <FileTextIcon />
+                    </EmptyMedia>
+                    <div className="flex flex-1 gap-4 max-sm:flex-col">
+                      <ListItemContent>
+                        <ListItemHeader>
+                          <div className="flex items-start gap-4">
+                            <div>
+                              <ListItemTitle>{doc.name}</ListItemTitle>
+                              <ListItemDescription>
+                                {doc.description}
+                              </ListItemDescription>
+                            </div>
                           </div>
-                        </div>
-                      </ListItemHeader>
-                    </ListItemContent>
-                    <ListItemActions>
-                      <Button disabled={!hasAccess} variant="outline">
-                        {hasAccess ? <DownloadIcon /> : <LockIcon />}
-                        {hasAccess ? "Download" : "Upgrade to access"}
-                      </Button>
-                    </ListItemActions>
+                        </ListItemHeader>
+                      </ListItemContent>
+                      <ListItemActions>
+                        <Button disabled={!hasAccess} variant="outline">
+                          {hasAccess ? <DownloadIcon /> : <LockIcon />}
+                          {hasAccess ? "Download" : "Upgrade to access"}
+                        </Button>
+                      </ListItemActions>
+                    </div>
                   </ListItem>
                 );
               })}
