@@ -4,7 +4,7 @@ import { Field as FieldPrimitive } from "@base-ui/react/field";
 
 import { cn } from "@/registry/default/lib/utils";
 
-function Field({ className, ...props }: FieldPrimitive.Root.Props) {
+export function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   return (
     <FieldPrimitive.Root
       className={cn("flex flex-col items-start gap-2", className)}
@@ -14,7 +14,10 @@ function Field({ className, ...props }: FieldPrimitive.Root.Props) {
   );
 }
 
-function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
+export function FieldLabel({
+  className,
+  ...props
+}: FieldPrimitive.Label.Props) {
   return (
     <FieldPrimitive.Label
       className={cn(
@@ -27,7 +30,7 @@ function FieldLabel({ className, ...props }: FieldPrimitive.Label.Props) {
   );
 }
 
-function FieldItem({ className, ...props }: FieldPrimitive.Item.Props) {
+export function FieldItem({ className, ...props }: FieldPrimitive.Item.Props) {
   return (
     <FieldPrimitive.Item
       className={cn("flex", className)}
@@ -37,7 +40,7 @@ function FieldItem({ className, ...props }: FieldPrimitive.Item.Props) {
   );
 }
 
-function FieldDescription({
+export function FieldDescription({
   className,
   ...props
 }: FieldPrimitive.Description.Props) {
@@ -50,7 +53,10 @@ function FieldDescription({
   );
 }
 
-function FieldError({ className, ...props }: FieldPrimitive.Error.Props) {
+export function FieldError({
+  className,
+  ...props
+}: FieldPrimitive.Error.Props) {
   return (
     <FieldPrimitive.Error
       className={cn("text-destructive-foreground text-xs", className)}
@@ -60,16 +66,7 @@ function FieldError({ className, ...props }: FieldPrimitive.Error.Props) {
   );
 }
 
-const FieldControl = FieldPrimitive.Control;
-const FieldValidity = FieldPrimitive.Validity;
+export const FieldControl = FieldPrimitive.Control;
+export const FieldValidity = FieldPrimitive.Validity;
 
-export {
-  Field,
-  FieldLabel,
-  FieldDescription,
-  FieldError,
-  FieldControl,
-  FieldItem,
-  FieldValidity,
-  FieldPrimitive,
-};
+export { FieldPrimitive };

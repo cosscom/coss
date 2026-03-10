@@ -4,7 +4,7 @@ import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
 
 import { cn } from "@/registry/default/lib/utils";
 
-function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
+export function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
   return (
     <ToolbarPrimitive.Root
       className={cn(
@@ -17,7 +17,10 @@ function Toolbar({ className, ...props }: ToolbarPrimitive.Root.Props) {
   );
 }
 
-function ToolbarButton({ className, ...props }: ToolbarPrimitive.Button.Props) {
+export function ToolbarButton({
+  className,
+  ...props
+}: ToolbarPrimitive.Button.Props) {
   return (
     <ToolbarPrimitive.Button
       className={cn(className)}
@@ -27,7 +30,10 @@ function ToolbarButton({ className, ...props }: ToolbarPrimitive.Button.Props) {
   );
 }
 
-function ToolbarLink({ className, ...props }: ToolbarPrimitive.Link.Props) {
+export function ToolbarLink({
+  className,
+  ...props
+}: ToolbarPrimitive.Link.Props) {
   return (
     <ToolbarPrimitive.Link
       className={cn(className)}
@@ -37,7 +43,10 @@ function ToolbarLink({ className, ...props }: ToolbarPrimitive.Link.Props) {
   );
 }
 
-function ToolbarInput({ className, ...props }: ToolbarPrimitive.Input.Props) {
+export function ToolbarInput({
+  className,
+  ...props
+}: ToolbarPrimitive.Input.Props) {
   return (
     <ToolbarPrimitive.Input
       className={cn(className)}
@@ -47,7 +56,10 @@ function ToolbarInput({ className, ...props }: ToolbarPrimitive.Input.Props) {
   );
 }
 
-function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
+export function ToolbarGroup({
+  className,
+  ...props
+}: ToolbarPrimitive.Group.Props) {
   return (
     <ToolbarPrimitive.Group
       className={cn("flex items-center gap-1", className)}
@@ -57,7 +69,7 @@ function ToolbarGroup({ className, ...props }: ToolbarPrimitive.Group.Props) {
   );
 }
 
-function ToolbarSeparator({
+export function ToolbarSeparator({
   className,
   ...props
 }: ToolbarPrimitive.Separator.Props) {
@@ -73,12 +85,4 @@ function ToolbarSeparator({
   );
 }
 
-export {
-  Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
-  ToolbarButton,
-  ToolbarLink,
-  ToolbarInput,
-  ToolbarPrimitive,
-};
+export { ToolbarPrimitive };

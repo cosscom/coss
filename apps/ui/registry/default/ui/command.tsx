@@ -16,13 +16,15 @@ import {
   AutocompleteSeparator,
 } from "@/registry/default/ui/autocomplete";
 
-const CommandDialog = CommandDialogPrimitive.Root;
+export const CommandDialog = CommandDialogPrimitive.Root;
 
-const CommandDialogPortal = CommandDialogPrimitive.Portal;
+export const CommandDialogPortal = CommandDialogPrimitive.Portal;
 
-const CommandCreateHandle = CommandDialogPrimitive.createHandle;
+export const CommandCreateHandle = CommandDialogPrimitive.createHandle;
 
-function CommandDialogTrigger(props: CommandDialogPrimitive.Trigger.Props) {
+export function CommandDialogTrigger(
+  props: CommandDialogPrimitive.Trigger.Props,
+) {
   return (
     <CommandDialogPrimitive.Trigger
       data-slot="command-dialog-trigger"
@@ -31,7 +33,7 @@ function CommandDialogTrigger(props: CommandDialogPrimitive.Trigger.Props) {
   );
 }
 
-function CommandDialogBackdrop({
+export function CommandDialogBackdrop({
   className,
   ...props
 }: CommandDialogPrimitive.Backdrop.Props) {
@@ -63,7 +65,7 @@ function CommandDialogViewport({
   );
 }
 
-function CommandDialogPopup({
+export function CommandDialogPopup({
   className,
   children,
   ...props
@@ -87,7 +89,7 @@ function CommandDialogPopup({
   );
 }
 
-function Command({
+export function Command({
   autoHighlight = "always",
   keepHighlight = true,
   ...props
@@ -103,7 +105,7 @@ function Command({
   );
 }
 
-function CommandInput({
+export function CommandInput({
   className,
   placeholder = undefined,
   ...props
@@ -125,7 +127,7 @@ function CommandInput({
   );
 }
 
-function CommandList({
+export function CommandList({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteList>) {
@@ -138,7 +140,7 @@ function CommandList({
   );
 }
 
-function CommandEmpty({
+export function CommandEmpty({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteEmpty>) {
@@ -151,7 +153,10 @@ function CommandEmpty({
   );
 }
 
-function CommandPanel({ className, ...props }: React.ComponentProps<"div">) {
+export function CommandPanel({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className="-mx-px not-has-[+[data-slot=command-footer]]:-mb-px relative min-h-0 rounded-t-xl not-has-[+[data-slot=command-footer]]:rounded-b-2xl border border-b-0 bg-popover bg-clip-padding shadow-xs/5 [clip-path:inset(0_1px)] not-has-[+[data-slot=command-footer]]:[clip-path:inset(0_1px_1px_1px_round_0_0_calc(var(--radius-2xl)-1px)_calc(var(--radius-2xl)-1px))] before:pointer-events-none before:absolute before:inset-0 before:rounded-t-[calc(var(--radius-xl)-1px)] **:data-[slot=scroll-area-scrollbar]:mt-2"
@@ -160,7 +165,7 @@ function CommandPanel({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CommandGroup({
+export function CommandGroup({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteGroup>) {
@@ -173,7 +178,7 @@ function CommandGroup({
   );
 }
 
-function CommandGroupLabel({
+export function CommandGroupLabel({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteGroupLabel>) {
@@ -186,13 +191,13 @@ function CommandGroupLabel({
   );
 }
 
-function CommandCollection({
+export function CommandCollection({
   ...props
 }: React.ComponentProps<typeof AutocompleteCollection>) {
   return <AutocompleteCollection data-slot="command-collection" {...props} />;
 }
 
-function CommandItem({
+export function CommandItem({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteItem>) {
@@ -205,7 +210,7 @@ function CommandItem({
   );
 }
 
-function CommandSeparator({
+export function CommandSeparator({
   className,
   ...props
 }: React.ComponentProps<typeof AutocompleteSeparator>) {
@@ -218,7 +223,10 @@ function CommandSeparator({
   );
 }
 
-function CommandShortcut({ className, ...props }: React.ComponentProps<"kbd">) {
+export function CommandShortcut({
+  className,
+  ...props
+}: React.ComponentProps<"kbd">) {
   return (
     <kbd
       className={cn(
@@ -231,7 +239,10 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<"kbd">) {
   );
 }
 
-function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
+export function CommandFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -244,22 +255,4 @@ function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-export {
-  CommandCreateHandle,
-  Command,
-  CommandCollection,
-  CommandDialog,
-  CommandDialogPopup,
-  CommandDialogTrigger,
-  CommandEmpty,
-  CommandFooter,
-  CommandGroup,
-  CommandGroupLabel,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandPanel,
-  CommandSeparator,
-  CommandShortcut,
-  CommandDialogPrimitive,
-};
+export { CommandDialogPrimitive };

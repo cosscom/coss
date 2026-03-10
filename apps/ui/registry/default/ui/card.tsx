@@ -5,7 +5,7 @@ import { useRender } from "@base-ui/react/use-render";
 
 import { cn } from "@/registry/default/lib/utils";
 
-function Card({
+export function Card({
   className,
   render,
   ...props
@@ -25,7 +25,7 @@ function Card({
   });
 }
 
-function CardFrame({
+export function CardFrame({
   className,
   render,
   ...props
@@ -45,7 +45,7 @@ function CardFrame({
   });
 }
 
-function CardFrameHeader({
+export function CardFrameHeader({
   className,
   render,
   ...props
@@ -65,7 +65,7 @@ function CardFrameHeader({
   });
 }
 
-function CardFrameTitle({
+export function CardFrameTitle({
   className,
   render,
   ...props
@@ -82,7 +82,7 @@ function CardFrameTitle({
   });
 }
 
-function CardFrameDescription({
+export function CardFrameDescription({
   className,
   render,
   ...props
@@ -99,7 +99,7 @@ function CardFrameDescription({
   });
 }
 
-function CardFrameAction({
+export function CardFrameAction({
   className,
   render,
   ...props
@@ -119,7 +119,7 @@ function CardFrameAction({
   });
 }
 
-function CardFrameFooter({
+export function CardFrameFooter({
   className,
   render,
   ...props
@@ -136,7 +136,7 @@ function CardFrameFooter({
   });
 }
 
-function CardHeader({
+export function CardHeader({
   className,
   render,
   ...props
@@ -156,7 +156,7 @@ function CardHeader({
   });
 }
 
-function CardTitle({
+export function CardTitle({
   className,
   render,
   ...props
@@ -173,7 +173,7 @@ function CardTitle({
   });
 }
 
-function CardDescription({
+export function CardDescription({
   className,
   render,
   ...props
@@ -190,7 +190,7 @@ function CardDescription({
   });
 }
 
-function CardAction({
+export function CardAction({
   className,
   render,
   ...props
@@ -210,7 +210,7 @@ function CardAction({
   });
 }
 
-function CardPanel({
+export function CardPanel({
   className,
   render,
   ...props
@@ -230,7 +230,7 @@ function CardPanel({
   });
 }
 
-function CardFooter({
+export function CardFooter({
   className,
   render,
   ...props
@@ -250,19 +250,4 @@ function CardFooter({
   });
 }
 
-export {
-  Card,
-  CardFrame,
-  CardFrameHeader,
-  CardFrameTitle,
-  CardFrameDescription,
-  CardFrameAction,
-  CardFrameFooter,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardPanel,
-  CardPanel as CardContent,
-  CardTitle,
-};
+export { CardPanel as CardContent };

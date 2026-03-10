@@ -13,9 +13,9 @@ import type * as React from "react";
 
 import { cn } from "@/registry/default/lib/utils";
 
-const Select = SelectPrimitive.Root;
+export const Select = SelectPrimitive.Root;
 
-const selectTriggerVariants = cva(
+export const selectTriggerVariants = cva(
   "relative inline-flex min-h-9 w-full min-w-36 select-none items-center justify-between gap-2 rounded-lg border border-input bg-background not-dark:bg-clip-padding px-[calc(--spacing(3)-1px)] text-left text-base text-foreground shadow-xs/5 outline-none ring-ring/24 transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 focus-visible:border-ring focus-visible:ring-[3px] aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/16 data-disabled:pointer-events-none data-disabled:opacity-64 sm:min-h-8 sm:text-sm dark:bg-input/32 dark:aria-invalid:ring-destructive/24 dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)] [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 [[data-disabled],:focus-visible,[aria-invalid],[data-pressed]]:shadow-none",
   {
     defaultVariants: {
@@ -33,11 +33,11 @@ const selectTriggerVariants = cva(
 
 const selectTriggerIconClassName = "-me-1 size-4.5 opacity-80 sm:size-4";
 
-interface SelectButtonProps extends useRender.ComponentProps<"button"> {
+export interface SelectButtonProps extends useRender.ComponentProps<"button"> {
   size?: VariantProps<typeof selectTriggerVariants>["size"];
 }
 
-function SelectButton({
+export function SelectButton({
   className,
   size,
   render,
@@ -68,7 +68,7 @@ function SelectButton({
   });
 }
 
-function SelectTrigger({
+export function SelectTrigger({
   className,
   size = "default",
   children,
@@ -88,7 +88,10 @@ function SelectTrigger({
   );
 }
 
-function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+export function SelectValue({
+  className,
+  ...props
+}: SelectPrimitive.Value.Props) {
   return (
     <SelectPrimitive.Value
       className={cn(
@@ -101,7 +104,7 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   );
 }
 
-function SelectPopup({
+export function SelectPopup({
   className,
   children,
   side = "bottom",
@@ -165,7 +168,7 @@ function SelectPopup({
   );
 }
 
-function SelectItem({
+export function SelectItem({
   className,
   children,
   ...props
@@ -201,7 +204,7 @@ function SelectItem({
   );
 }
 
-function SelectSeparator({
+export function SelectSeparator({
   className,
   ...props
 }: SelectPrimitive.Separator.Props) {
@@ -214,11 +217,11 @@ function SelectSeparator({
   );
 }
 
-function SelectGroup(props: SelectPrimitive.Group.Props) {
+export function SelectGroup(props: SelectPrimitive.Group.Props) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
-function SelectGroupLabel(props: SelectPrimitive.GroupLabel.Props) {
+export function SelectGroupLabel(props: SelectPrimitive.GroupLabel.Props) {
   return (
     <SelectPrimitive.GroupLabel
       className="px-2 py-1.5 font-medium text-muted-foreground text-xs"
@@ -228,17 +231,4 @@ function SelectGroupLabel(props: SelectPrimitive.GroupLabel.Props) {
   );
 }
 
-export {
-  Select,
-  SelectTrigger,
-  SelectButton,
-  selectTriggerVariants,
-  SelectValue,
-  SelectPopup,
-  SelectPopup as SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectGroup,
-  SelectGroupLabel,
-  SelectPrimitive,
-};
+export { SelectPrimitive, SelectPopup as SelectContent };

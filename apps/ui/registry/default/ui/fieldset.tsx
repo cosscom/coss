@@ -4,7 +4,10 @@ import { Fieldset as FieldsetPrimitive } from "@base-ui/react/fieldset";
 
 import { cn } from "@/registry/default/lib/utils";
 
-function Fieldset({ className, ...props }: FieldsetPrimitive.Root.Props) {
+export function Fieldset({
+  className,
+  ...props
+}: FieldsetPrimitive.Root.Props) {
   return (
     <FieldsetPrimitive.Root
       className={cn("flex w-full max-w-64 flex-col gap-6", className)}
@@ -13,7 +16,7 @@ function Fieldset({ className, ...props }: FieldsetPrimitive.Root.Props) {
     />
   );
 }
-function FieldsetLegend({
+export function FieldsetLegend({
   className,
   ...props
 }: FieldsetPrimitive.Legend.Props) {
@@ -26,4 +29,4 @@ function FieldsetLegend({
   );
 }
 
-export { Fieldset, FieldsetLegend, FieldsetPrimitive };
+export { FieldsetPrimitive };

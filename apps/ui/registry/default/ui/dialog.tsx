@@ -6,21 +6,21 @@ import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
-const DialogCreateHandle = DialogPrimitive.createHandle;
+export const DialogCreateHandle = DialogPrimitive.createHandle;
 
-const Dialog = DialogPrimitive.Root;
+export const Dialog = DialogPrimitive.Root;
 
-const DialogPortal = DialogPrimitive.Portal;
+export const DialogPortal = DialogPrimitive.Portal;
 
-function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
+export function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogClose(props: DialogPrimitive.Close.Props) {
+export function DialogClose(props: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-function DialogBackdrop({
+export function DialogBackdrop({
   className,
   ...props
 }: DialogPrimitive.Backdrop.Props) {
@@ -36,7 +36,7 @@ function DialogBackdrop({
   );
 }
 
-function DialogViewport({
+export function DialogViewport({
   className,
   ...props
 }: DialogPrimitive.Viewport.Props) {
@@ -52,7 +52,7 @@ function DialogViewport({
   );
 }
 
-function DialogPopup({
+export function DialogPopup({
   className,
   children,
   showCloseButton = true,
@@ -100,7 +100,10 @@ function DialogPopup({
   );
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+export function DialogHeader({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -113,7 +116,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function DialogFooter({
+export function DialogFooter({
   className,
   variant = "default",
   ...props
@@ -135,7 +138,10 @@ function DialogFooter({
   );
 }
 
-function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
+export function DialogTitle({
+  className,
+  ...props
+}: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       className={cn(
@@ -148,7 +154,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   );
 }
 
-function DialogDescription({
+export function DialogDescription({
   className,
   ...props
 }: DialogPrimitive.Description.Props) {
@@ -161,7 +167,7 @@ function DialogDescription({
   );
 }
 
-function DialogPanel({
+export function DialogPanel({
   className,
   scrollFade = true,
   ...props
@@ -181,20 +187,7 @@ function DialogPanel({
 }
 
 export {
-  DialogCreateHandle,
-  Dialog,
-  DialogTrigger,
-  DialogPortal,
-  DialogClose,
-  DialogBackdrop,
-  DialogBackdrop as DialogOverlay,
-  DialogPopup,
-  DialogPopup as DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-  DialogPanel,
-  DialogViewport,
   DialogPrimitive,
+  DialogBackdrop as DialogOverlay,
+  DialogPopup as DialogContent,
 };

@@ -4,7 +4,7 @@ import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
 
 import { cn } from "@/registry/default/lib/utils";
 
-function ScrollArea({
+export function ScrollArea({
   className,
   children,
   scrollFade = false,
@@ -38,7 +38,7 @@ function ScrollArea({
   );
 }
 
-function ScrollBar({
+export function ScrollBar({
   className,
   orientation = "vertical",
   ...props
@@ -61,4 +61,4 @@ function ScrollBar({
   );
 }
 
-export { ScrollArea, ScrollBar, ScrollAreaPrimitive };
+export { ScrollAreaPrimitive };

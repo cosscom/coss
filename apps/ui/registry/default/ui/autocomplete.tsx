@@ -7,9 +7,9 @@ import { cn } from "@/registry/default/lib/utils";
 import { Input } from "@/registry/default/ui/input";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
-const Autocomplete = AutocompletePrimitive.Root;
+export const Autocomplete = AutocompletePrimitive.Root;
 
-function AutocompleteInput({
+export function AutocompleteInput({
   className,
   showTrigger = false,
   showClear = false,
@@ -81,7 +81,7 @@ function AutocompleteInput({
   );
 }
 
-function AutocompletePopup({
+export function AutocompletePopup({
   className,
   children,
   side = "bottom",
@@ -127,7 +127,7 @@ function AutocompletePopup({
   );
 }
 
-function AutocompleteItem({
+export function AutocompleteItem({
   className,
   children,
   ...props
@@ -146,7 +146,7 @@ function AutocompleteItem({
   );
 }
 
-function AutocompleteSeparator({
+export function AutocompleteSeparator({
   className,
   ...props
 }: AutocompletePrimitive.Separator.Props) {
@@ -159,7 +159,7 @@ function AutocompleteSeparator({
   );
 }
 
-function AutocompleteGroup({
+export function AutocompleteGroup({
   className,
   ...props
 }: AutocompletePrimitive.Group.Props) {
@@ -172,7 +172,7 @@ function AutocompleteGroup({
   );
 }
 
-function AutocompleteGroupLabel({
+export function AutocompleteGroupLabel({
   className,
   ...props
 }: AutocompletePrimitive.GroupLabel.Props) {
@@ -188,7 +188,7 @@ function AutocompleteGroupLabel({
   );
 }
 
-function AutocompleteEmpty({
+export function AutocompleteEmpty({
   className,
   ...props
 }: AutocompletePrimitive.Empty.Props) {
@@ -204,7 +204,7 @@ function AutocompleteEmpty({
   );
 }
 
-function AutocompleteRow({
+export function AutocompleteRow({
   className,
   ...props
 }: AutocompletePrimitive.Row.Props) {
@@ -217,13 +217,15 @@ function AutocompleteRow({
   );
 }
 
-function AutocompleteValue({ ...props }: AutocompletePrimitive.Value.Props) {
+export function AutocompleteValue({
+  ...props
+}: AutocompletePrimitive.Value.Props) {
   return (
     <AutocompletePrimitive.Value data-slot="autocomplete-value" {...props} />
   );
 }
 
-function AutocompleteList({
+export function AutocompleteList({
   className,
   ...props
 }: AutocompletePrimitive.List.Props) {
@@ -241,7 +243,7 @@ function AutocompleteList({
   );
 }
 
-function AutocompleteClear({
+export function AutocompleteClear({
   className,
   ...props
 }: AutocompletePrimitive.Clear.Props) {
@@ -259,7 +261,7 @@ function AutocompleteClear({
   );
 }
 
-function AutocompleteStatus({
+export function AutocompleteStatus({
   className,
   ...props
 }: AutocompletePrimitive.Status.Props) {
@@ -275,7 +277,7 @@ function AutocompleteStatus({
   );
 }
 
-function AutocompleteCollection({
+export function AutocompleteCollection({
   ...props
 }: AutocompletePrimitive.Collection.Props) {
   return (
@@ -286,7 +288,7 @@ function AutocompleteCollection({
   );
 }
 
-function AutocompleteTrigger({
+export function AutocompleteTrigger({
   className,
   children,
   ...props
@@ -302,24 +304,6 @@ function AutocompleteTrigger({
   );
 }
 
-const useAutocompleteFilter = AutocompletePrimitive.useFilter;
+export const useAutocompleteFilter = AutocompletePrimitive.useFilter;
 
-export {
-  Autocomplete,
-  AutocompleteInput,
-  AutocompleteTrigger,
-  AutocompletePopup,
-  AutocompleteItem,
-  AutocompleteSeparator,
-  AutocompleteGroup,
-  AutocompleteGroupLabel,
-  AutocompleteEmpty,
-  AutocompleteValue,
-  AutocompleteList,
-  AutocompleteClear,
-  AutocompleteStatus,
-  AutocompleteRow,
-  AutocompleteCollection,
-  useAutocompleteFilter,
-  AutocompletePrimitive,
-};
+export { AutocompletePrimitive };

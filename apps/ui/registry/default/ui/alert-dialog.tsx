@@ -4,19 +4,19 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 
 import { cn } from "@/registry/default/lib/utils";
 
-const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle;
+export const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle;
 
-const AlertDialog = AlertDialogPrimitive.Root;
+export const AlertDialog = AlertDialogPrimitive.Root;
 
-const AlertDialogPortal = AlertDialogPrimitive.Portal;
+export const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-function AlertDialogTrigger(props: AlertDialogPrimitive.Trigger.Props) {
+export function AlertDialogTrigger(props: AlertDialogPrimitive.Trigger.Props) {
   return (
     <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
   );
 }
 
-function AlertDialogBackdrop({
+export function AlertDialogBackdrop({
   className,
   ...props
 }: AlertDialogPrimitive.Backdrop.Props) {
@@ -32,7 +32,7 @@ function AlertDialogBackdrop({
   );
 }
 
-function AlertDialogViewport({
+export function AlertDialogViewport({
   className,
   ...props
 }: AlertDialogPrimitive.Viewport.Props) {
@@ -48,7 +48,7 @@ function AlertDialogViewport({
   );
 }
 
-function AlertDialogPopup({
+export function AlertDialogPopup({
   className,
   bottomStickOnMobile = true,
   ...props
@@ -79,7 +79,7 @@ function AlertDialogPopup({
   );
 }
 
-function AlertDialogHeader({
+export function AlertDialogHeader({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -95,7 +95,7 @@ function AlertDialogHeader({
   );
 }
 
-function AlertDialogFooter({
+export function AlertDialogFooter({
   className,
   variant = "default",
   ...props
@@ -116,7 +116,7 @@ function AlertDialogFooter({
   );
 }
 
-function AlertDialogTitle({
+export function AlertDialogTitle({
   className,
   ...props
 }: AlertDialogPrimitive.Title.Props) {
@@ -132,7 +132,7 @@ function AlertDialogTitle({
   );
 }
 
-function AlertDialogDescription({
+export function AlertDialogDescription({
   className,
   ...props
 }: AlertDialogPrimitive.Description.Props) {
@@ -145,26 +145,14 @@ function AlertDialogDescription({
   );
 }
 
-function AlertDialogClose(props: AlertDialogPrimitive.Close.Props) {
+export function AlertDialogClose(props: AlertDialogPrimitive.Close.Props) {
   return (
     <AlertDialogPrimitive.Close data-slot="alert-dialog-close" {...props} />
   );
 }
 
 export {
-  AlertDialogCreateHandle,
-  AlertDialog,
-  AlertDialogPortal,
-  AlertDialogBackdrop,
-  AlertDialogBackdrop as AlertDialogOverlay,
-  AlertDialogTrigger,
-  AlertDialogPopup,
-  AlertDialogPopup as AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogClose,
-  AlertDialogViewport,
   AlertDialogPrimitive,
+  AlertDialogBackdrop as AlertDialogOverlay,
+  AlertDialogPopup as AlertDialogContent,
 };
