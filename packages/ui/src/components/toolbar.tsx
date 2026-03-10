@@ -1,13 +1,13 @@
 "use client";
 
 import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
 export function Toolbar({
   className,
   ...props
-}: ToolbarPrimitive.Root.Props): JSX.Element {
+}: ToolbarPrimitive.Root.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Root
       className={cn(
@@ -23,7 +23,7 @@ export function Toolbar({
 export function ToolbarButton({
   className,
   ...props
-}: ToolbarPrimitive.Button.Props): JSX.Element {
+}: ToolbarPrimitive.Button.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Button
       className={cn(className)}
@@ -36,7 +36,7 @@ export function ToolbarButton({
 export function ToolbarLink({
   className,
   ...props
-}: ToolbarPrimitive.Link.Props): JSX.Element {
+}: ToolbarPrimitive.Link.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Link
       className={cn(className)}
@@ -49,7 +49,7 @@ export function ToolbarLink({
 export function ToolbarInput({
   className,
   ...props
-}: ToolbarPrimitive.Input.Props): JSX.Element {
+}: ToolbarPrimitive.Input.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Input
       className={cn(className)}
@@ -62,7 +62,7 @@ export function ToolbarInput({
 export function ToolbarGroup({
   className,
   ...props
-}: ToolbarPrimitive.Group.Props): JSX.Element {
+}: ToolbarPrimitive.Group.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Group
       className={cn("flex items-center gap-1", className)}
@@ -75,7 +75,7 @@ export function ToolbarGroup({
 export function ToolbarSeparator({
   className,
   ...props
-}: ToolbarPrimitive.Separator.Props): JSX.Element {
+}: ToolbarPrimitive.Separator.Props): React.ReactElement {
   return (
     <ToolbarPrimitive.Separator
       className={cn(

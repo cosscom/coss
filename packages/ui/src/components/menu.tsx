@@ -16,7 +16,7 @@ export function MenuTrigger({
   className,
   children,
   ...props
-}: MenuPrimitive.Trigger.Props): JSX.Element {
+}: MenuPrimitive.Trigger.Props): React.ReactElement {
   return (
     <MenuPrimitive.Trigger
       className={className}
@@ -43,7 +43,7 @@ export function MenuPopup({
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
   side?: MenuPrimitive.Positioner.Props["side"];
   anchor?: MenuPrimitive.Positioner.Props["anchor"];
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
@@ -72,7 +72,9 @@ export function MenuPopup({
   );
 }
 
-export function MenuGroup(props: MenuPrimitive.Group.Props): JSX.Element {
+export function MenuGroup(
+  props: MenuPrimitive.Group.Props,
+): React.ReactElement {
   return <MenuPrimitive.Group data-slot="menu-group" {...props} />;
 }
 
@@ -84,7 +86,7 @@ export function MenuItem({
 }: MenuPrimitive.Item.Props & {
   inset?: boolean;
   variant?: "default" | "destructive";
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MenuPrimitive.Item
       className={cn(
@@ -107,7 +109,7 @@ export function MenuCheckboxItem({
   ...props
 }: MenuPrimitive.CheckboxItem.Props & {
   variant?: "default" | "switch";
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MenuPrimitive.CheckboxItem
       checked={checked}
@@ -157,7 +159,7 @@ export function MenuCheckboxItem({
 
 export function MenuRadioGroup(
   props: MenuPrimitive.RadioGroup.Props,
-): JSX.Element {
+): React.ReactElement {
   return <MenuPrimitive.RadioGroup data-slot="menu-radio-group" {...props} />;
 }
 
@@ -165,7 +167,7 @@ export function MenuRadioItem({
   className,
   children,
   ...props
-}: MenuPrimitive.RadioItem.Props): JSX.Element {
+}: MenuPrimitive.RadioItem.Props): React.ReactElement {
   return (
     <MenuPrimitive.RadioItem
       className={cn(
@@ -201,7 +203,7 @@ export function MenuGroupLabel({
   ...props
 }: MenuPrimitive.GroupLabel.Props & {
   inset?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MenuPrimitive.GroupLabel
       className={cn(
@@ -218,7 +220,7 @@ export function MenuGroupLabel({
 export function MenuSeparator({
   className,
   ...props
-}: MenuPrimitive.Separator.Props): JSX.Element {
+}: MenuPrimitive.Separator.Props): React.ReactElement {
   return (
     <MenuPrimitive.Separator
       className={cn("mx-2 my-1 h-px bg-border", className)}
@@ -231,7 +233,7 @@ export function MenuSeparator({
 export function MenuShortcut({
   className,
   ...props
-}: React.ComponentProps<"kbd">): JSX.Element {
+}: React.ComponentProps<"kbd">): React.ReactElement {
   return (
     <kbd
       className={cn(
@@ -244,7 +246,9 @@ export function MenuShortcut({
   );
 }
 
-export function MenuSub(props: MenuPrimitive.SubmenuRoot.Props): JSX.Element {
+export function MenuSub(
+  props: MenuPrimitive.SubmenuRoot.Props,
+): React.ReactElement {
   return <MenuPrimitive.SubmenuRoot data-slot="menu-sub" {...props} />;
 }
 
@@ -255,7 +259,7 @@ export function MenuSubTrigger({
   ...props
 }: MenuPrimitive.SubmenuTrigger.Props & {
   inset?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <MenuPrimitive.SubmenuTrigger
       className={cn(
@@ -282,7 +286,7 @@ export function MenuSubPopup({
   align?: MenuPrimitive.Positioner.Props["align"];
   sideOffset?: MenuPrimitive.Positioner.Props["sideOffset"];
   alignOffset?: MenuPrimitive.Positioner.Props["alignOffset"];
-}): JSX.Element {
+}): React.ReactElement {
   const defaultAlignOffset = align !== "center" ? -5 : undefined;
 
   return (

@@ -1,14 +1,14 @@
 "use client";
 
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
 export const PreviewCard = PreviewCardPrimitive.Root;
 
 export function PreviewCardTrigger({
   ...props
-}: PreviewCardPrimitive.Trigger.Props): JSX.Element {
+}: PreviewCardPrimitive.Trigger.Props): React.ReactElement {
   return (
     <PreviewCardPrimitive.Trigger data-slot="preview-card-trigger" {...props} />
   );
@@ -25,7 +25,7 @@ export function PreviewCardPopup({
   align?: PreviewCardPrimitive.Positioner.Props["align"];
   sideOffset?: PreviewCardPrimitive.Positioner.Props["sideOffset"];
   anchor?: PreviewCardPrimitive.Positioner.Props["anchor"];
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <PreviewCardPrimitive.Portal>
       <PreviewCardPrimitive.Positioner

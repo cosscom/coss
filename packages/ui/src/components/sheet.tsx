@@ -2,6 +2,7 @@
 
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { XIcon } from "lucide-react";
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/components/button";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
@@ -10,18 +11,22 @@ export const Sheet = SheetPrimitive.Root;
 
 export const SheetPortal = SheetPrimitive.Portal;
 
-export function SheetTrigger(props: SheetPrimitive.Trigger.Props): JSX.Element {
+export function SheetTrigger(
+  props: SheetPrimitive.Trigger.Props,
+): React.ReactElement {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-export function SheetClose(props: SheetPrimitive.Close.Props): JSX.Element {
+export function SheetClose(
+  props: SheetPrimitive.Close.Props,
+): React.ReactElement {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
 export function SheetBackdrop({
   className,
   ...props
-}: SheetPrimitive.Backdrop.Props): JSX.Element {
+}: SheetPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <SheetPrimitive.Backdrop
       className={cn(
@@ -42,7 +47,7 @@ function SheetViewport({
 }: SheetPrimitive.Viewport.Props & {
   side?: "right" | "left" | "top" | "bottom";
   variant?: "default" | "inset";
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <SheetPrimitive.Viewport
       className={cn(
@@ -72,7 +77,7 @@ export function SheetPopup({
   side?: "right" | "left" | "top" | "bottom";
   variant?: "default" | "inset";
   closeProps?: SheetPrimitive.Close.Props;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <SheetPortal>
       <SheetBackdrop />
@@ -115,7 +120,7 @@ export function SheetPopup({
 export function SheetHeader({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -134,7 +139,7 @@ export function SheetFooter({
   ...props
 }: React.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <div
       className={cn(
@@ -153,7 +158,7 @@ export function SheetFooter({
 export function SheetTitle({
   className,
   ...props
-}: SheetPrimitive.Title.Props): JSX.Element {
+}: SheetPrimitive.Title.Props): React.ReactElement {
   return (
     <SheetPrimitive.Title
       className={cn(
@@ -169,7 +174,7 @@ export function SheetTitle({
 export function SheetDescription({
   className,
   ...props
-}: SheetPrimitive.Description.Props): JSX.Element {
+}: SheetPrimitive.Description.Props): React.ReactElement {
   return (
     <SheetPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -183,7 +188,7 @@ export function SheetPanel({
   className,
   scrollFade = true,
   ...props
-}: React.ComponentProps<"div"> & { scrollFade?: boolean }): JSX.Element {
+}: React.ComponentProps<"div"> & { scrollFade?: boolean }): React.ReactElement {
   return (
     <ScrollArea scrollFade={scrollFade}>
       <div

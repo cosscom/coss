@@ -43,7 +43,7 @@ export function SelectButton({
   render,
   children,
   ...props
-}: SelectButtonProps): JSX.Element {
+}: SelectButtonProps): React.ReactElement {
   const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>["type"] =
     render ? undefined : "button";
 
@@ -74,7 +74,7 @@ export function SelectTrigger({
   children,
   ...props
 }: SelectPrimitive.Trigger.Props &
-  VariantProps<typeof selectTriggerVariants>): JSX.Element {
+  VariantProps<typeof selectTriggerVariants>): React.ReactElement {
   return (
     <SelectPrimitive.Trigger
       className={cn(selectTriggerVariants({ size }), className)}
@@ -92,7 +92,7 @@ export function SelectTrigger({
 export function SelectValue({
   className,
   ...props
-}: SelectPrimitive.Value.Props): JSX.Element {
+}: SelectPrimitive.Value.Props): React.ReactElement {
   return (
     <SelectPrimitive.Value
       className={cn(
@@ -122,7 +122,7 @@ export function SelectPopup({
   alignOffset?: SelectPrimitive.Positioner.Props["alignOffset"];
   alignItemWithTrigger?: SelectPrimitive.Positioner.Props["alignItemWithTrigger"];
   anchor?: SelectPrimitive.Positioner.Props["anchor"];
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
@@ -173,7 +173,7 @@ export function SelectItem({
   className,
   children,
   ...props
-}: SelectPrimitive.Item.Props): JSX.Element {
+}: SelectPrimitive.Item.Props): React.ReactElement {
   return (
     <SelectPrimitive.Item
       className={cn(
@@ -208,7 +208,7 @@ export function SelectItem({
 export function SelectSeparator({
   className,
   ...props
-}: SelectPrimitive.Separator.Props): JSX.Element {
+}: SelectPrimitive.Separator.Props): React.ReactElement {
   return (
     <SelectPrimitive.Separator
       className={cn("mx-2 my-1 h-px bg-border", className)}
@@ -218,13 +218,15 @@ export function SelectSeparator({
   );
 }
 
-export function SelectGroup(props: SelectPrimitive.Group.Props): JSX.Element {
+export function SelectGroup(
+  props: SelectPrimitive.Group.Props,
+): React.ReactElement {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
 export function SelectGroupLabel(
   props: SelectPrimitive.GroupLabel.Props,
-): JSX.Element {
+): React.ReactElement {
   return (
     <SelectPrimitive.GroupLabel
       className="px-2 py-1.5 font-medium text-muted-foreground text-xs"

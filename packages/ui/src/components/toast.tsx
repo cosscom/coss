@@ -8,7 +8,7 @@ import {
   LoaderCircleIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { buttonVariants } from "@coss/ui/components/button";
 
@@ -39,7 +39,7 @@ export function ToastProvider({
   children,
   position = "bottom-right",
   ...props
-}: ToastProviderProps): JSX.Element {
+}: ToastProviderProps): React.ReactElement {
   return (
     <Toast.Provider toastManager={toastManager} {...props}>
       {children}
@@ -52,7 +52,7 @@ function Toasts({
   position = "bottom-right",
 }: {
   position: ToastPosition;
-}): JSX.Element {
+}): React.ReactElement {
   const { toasts } = Toast.useToastManager();
   const isTop = position.startsWith("top");
 
@@ -173,7 +173,7 @@ function Toasts({
 export function AnchoredToastProvider({
   children,
   ...props
-}: Toast.Provider.Props): JSX.Element {
+}: Toast.Provider.Props): React.ReactElement {
   return (
     <Toast.Provider toastManager={anchoredToastManager} {...props}>
       {children}
@@ -182,7 +182,7 @@ export function AnchoredToastProvider({
   );
 }
 
-function AnchoredToasts(): JSX.Element {
+function AnchoredToasts(): React.ReactElement {
   const { toasts } = Toast.useToastManager();
 
   return (

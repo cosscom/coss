@@ -13,7 +13,7 @@ export function Slider({
   min = 0,
   max = 100,
   ...props
-}: SliderPrimitive.Root.Props): JSX.Element {
+}: SliderPrimitive.Root.Props): React.ReactElement {
   const _values = React.useMemo(() => {
     if (value !== undefined) {
       return Array.isArray(value) ? value : [value];
@@ -64,7 +64,7 @@ export function Slider({
 export function SliderValue({
   className,
   ...props
-}: SliderPrimitive.Value.Props): JSX.Element {
+}: SliderPrimitive.Value.Props): React.ReactElement {
   return (
     <SliderPrimitive.Value
       className={cn("flex justify-end text-sm", className)}

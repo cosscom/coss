@@ -24,7 +24,7 @@ export const CommandCreateHandle = CommandDialogPrimitive.createHandle;
 
 export function CommandDialogTrigger(
   props: CommandDialogPrimitive.Trigger.Props,
-): JSX.Element {
+): React.ReactElement {
   return (
     <CommandDialogPrimitive.Trigger
       data-slot="command-dialog-trigger"
@@ -36,7 +36,7 @@ export function CommandDialogTrigger(
 export function CommandDialogBackdrop({
   className,
   ...props
-}: CommandDialogPrimitive.Backdrop.Props): JSX.Element {
+}: CommandDialogPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <CommandDialogPrimitive.Backdrop
       className={cn(
@@ -52,7 +52,7 @@ export function CommandDialogBackdrop({
 function CommandDialogViewport({
   className,
   ...props
-}: CommandDialogPrimitive.Viewport.Props): JSX.Element {
+}: CommandDialogPrimitive.Viewport.Props): React.ReactElement {
   return (
     <CommandDialogPrimitive.Viewport
       className={cn(
@@ -69,7 +69,7 @@ export function CommandDialogPopup({
   className,
   children,
   ...props
-}: CommandDialogPrimitive.Popup.Props): JSX.Element {
+}: CommandDialogPrimitive.Popup.Props): React.ReactElement {
   return (
     <CommandDialogPortal>
       <CommandDialogBackdrop />
@@ -93,7 +93,7 @@ export function Command({
   autoHighlight = "always",
   keepHighlight = true,
   ...props
-}: React.ComponentProps<typeof Autocomplete>): JSX.Element {
+}: React.ComponentProps<typeof Autocomplete>): React.ReactElement {
   return (
     <Autocomplete
       autoHighlight={autoHighlight}
@@ -109,7 +109,7 @@ export function CommandInput({
   className,
   placeholder = undefined,
   ...props
-}: React.ComponentProps<typeof AutocompleteInput>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteInput>): React.ReactElement {
   return (
     <div className="px-2.5 py-1.5">
       <AutocompleteInput
@@ -130,7 +130,7 @@ export function CommandInput({
 export function CommandList({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteList>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteList>): React.ReactElement {
   return (
     <AutocompleteList
       className={cn("not-empty:scroll-py-2 not-empty:p-2", className)}
@@ -143,7 +143,7 @@ export function CommandList({
 export function CommandEmpty({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteEmpty>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteEmpty>): React.ReactElement {
   return (
     <AutocompleteEmpty
       className={cn("not-empty:py-6", className)}
@@ -156,7 +156,7 @@ export function CommandEmpty({
 export function CommandPanel({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className="-mx-px not-has-[+[data-slot=command-footer]]:-mb-px relative min-h-0 rounded-t-xl not-has-[+[data-slot=command-footer]]:rounded-b-2xl border border-b-0 bg-popover bg-clip-padding shadow-xs/5 [clip-path:inset(0_1px)] not-has-[+[data-slot=command-footer]]:[clip-path:inset(0_1px_1px_1px_round_0_0_calc(var(--radius-2xl)-1px)_calc(var(--radius-2xl)-1px))] before:pointer-events-none before:absolute before:inset-0 before:rounded-t-[calc(var(--radius-xl)-1px)] **:data-[slot=scroll-area-scrollbar]:mt-2"
@@ -168,7 +168,7 @@ export function CommandPanel({
 export function CommandGroup({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteGroup>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteGroup>): React.ReactElement {
   return (
     <AutocompleteGroup
       className={className}
@@ -181,7 +181,7 @@ export function CommandGroup({
 export function CommandGroupLabel({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteGroupLabel>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteGroupLabel>): React.ReactElement {
   return (
     <AutocompleteGroupLabel
       className={className}
@@ -193,14 +193,14 @@ export function CommandGroupLabel({
 
 export function CommandCollection({
   ...props
-}: React.ComponentProps<typeof AutocompleteCollection>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteCollection>): React.ReactElement {
   return <AutocompleteCollection data-slot="command-collection" {...props} />;
 }
 
 export function CommandItem({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteItem>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteItem>): React.ReactElement {
   return (
     <AutocompleteItem
       className={cn("py-1.5", className)}
@@ -213,7 +213,7 @@ export function CommandItem({
 export function CommandSeparator({
   className,
   ...props
-}: React.ComponentProps<typeof AutocompleteSeparator>): JSX.Element {
+}: React.ComponentProps<typeof AutocompleteSeparator>): React.ReactElement {
   return (
     <AutocompleteSeparator
       className={cn("my-2", className)}
@@ -226,7 +226,7 @@ export function CommandSeparator({
 export function CommandShortcut({
   className,
   ...props
-}: React.ComponentProps<"kbd">): JSX.Element {
+}: React.ComponentProps<"kbd">): React.ReactElement {
   return (
     <kbd
       className={cn(
@@ -242,7 +242,7 @@ export function CommandShortcut({
 export function CommandFooter({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(

@@ -59,7 +59,7 @@ export function Button({
   size,
   render,
   ...props
-}: ButtonProps): JSX.Element {
+}: ButtonProps): React.ReactElement {
   const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>["type"] =
     render ? undefined : "button";
 

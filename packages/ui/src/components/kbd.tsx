@@ -5,7 +5,7 @@ import { cn } from "@coss/ui/lib/utils";
 export function Kbd({
   className,
   ...props
-}: React.ComponentProps<"kbd">): JSX.Element {
+}: React.ComponentProps<"kbd">): React.ReactElement {
   return (
     <kbd
       className={cn(
@@ -21,7 +21,7 @@ export function Kbd({
 export function KbdGroup({
   className,
   ...props
-}: React.ComponentProps<"kbd">): JSX.Element {
+}: React.ComponentProps<"kbd">): React.ReactElement {
   return (
     <kbd
       className={cn("inline-flex items-center gap-1", className)}

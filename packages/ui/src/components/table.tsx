@@ -5,7 +5,7 @@ import { cn } from "@coss/ui/lib/utils";
 export function Table({
   className,
   ...props
-}: React.ComponentProps<"table">): JSX.Element {
+}: React.ComponentProps<"table">): React.ReactElement {
   return (
     <div
       className="relative w-full overflow-x-auto"
@@ -26,7 +26,7 @@ export function Table({
 export function TableHeader({
   className,
   ...props
-}: React.ComponentProps<"thead">): JSX.Element {
+}: React.ComponentProps<"thead">): React.ReactElement {
   return (
     <thead
       className={cn(
@@ -42,7 +42,7 @@ export function TableHeader({
 export function TableBody({
   className,
   ...props
-}: React.ComponentProps<"tbody">): JSX.Element {
+}: React.ComponentProps<"tbody">): React.ReactElement {
   return (
     <tbody
       className={cn(
@@ -58,7 +58,7 @@ export function TableBody({
 export function TableFooter({
   className,
   ...props
-}: React.ComponentProps<"tfoot">): JSX.Element {
+}: React.ComponentProps<"tfoot">): React.ReactElement {
   return (
     <tfoot
       className={cn(
@@ -74,7 +74,7 @@ export function TableFooter({
 export function TableRow({
   className,
   ...props
-}: React.ComponentProps<"tr">): JSX.Element {
+}: React.ComponentProps<"tr">): React.ReactElement {
   return (
     <tr
       className={cn(
@@ -90,7 +90,7 @@ export function TableRow({
 export function TableHead({
   className,
   ...props
-}: React.ComponentProps<"th">): JSX.Element {
+}: React.ComponentProps<"th">): React.ReactElement {
   return (
     <th
       className={cn(
@@ -106,7 +106,7 @@ export function TableHead({
 export function TableCell({
   className,
   ...props
-}: React.ComponentProps<"td">): JSX.Element {
+}: React.ComponentProps<"td">): React.ReactElement {
   return (
     <td
       className={cn(
@@ -122,7 +122,7 @@ export function TableCell({
 export function TableCaption({
   className,
   ...props
-}: React.ComponentProps<"caption">): JSX.Element {
+}: React.ComponentProps<"caption">): React.ReactElement {
   return (
     <caption
       className={cn(

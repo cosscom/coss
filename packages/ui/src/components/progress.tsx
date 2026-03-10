@@ -1,14 +1,14 @@
 "use client";
 
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
 export function Progress({
   className,
   children,
   ...props
-}: ProgressPrimitive.Root.Props): JSX.Element {
+}: ProgressPrimitive.Root.Props): React.ReactElement {
   return (
     <ProgressPrimitive.Root
       className={cn("flex w-full flex-col gap-2", className)}
@@ -29,7 +29,7 @@ export function Progress({
 export function ProgressLabel({
   className,
   ...props
-}: ProgressPrimitive.Label.Props): JSX.Element {
+}: ProgressPrimitive.Label.Props): React.ReactElement {
   return (
     <ProgressPrimitive.Label
       className={cn("font-medium text-sm", className)}
@@ -42,7 +42,7 @@ export function ProgressLabel({
 export function ProgressTrack({
   className,
   ...props
-}: ProgressPrimitive.Track.Props): JSX.Element {
+}: ProgressPrimitive.Track.Props): React.ReactElement {
   return (
     <ProgressPrimitive.Track
       className={cn(
@@ -58,7 +58,7 @@ export function ProgressTrack({
 export function ProgressIndicator({
   className,
   ...props
-}: ProgressPrimitive.Indicator.Props): JSX.Element {
+}: ProgressPrimitive.Indicator.Props): React.ReactElement {
   return (
     <ProgressPrimitive.Indicator
       className={cn("bg-primary transition-all duration-500", className)}
@@ -71,7 +71,7 @@ export function ProgressIndicator({
 export function ProgressValue({
   className,
   ...props
-}: ProgressPrimitive.Value.Props): JSX.Element {
+}: ProgressPrimitive.Value.Props): React.ReactElement {
   return (
     <ProgressPrimitive.Value
       className={cn("text-sm tabular-nums", className)}

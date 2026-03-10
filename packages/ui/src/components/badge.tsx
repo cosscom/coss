@@ -3,7 +3,7 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
 export const badgeVariants = cva(
@@ -50,7 +50,7 @@ export function Badge({
   size,
   render,
   ...props
-}: BadgeProps): JSX.Element {
+}: BadgeProps): React.ReactElement {
   const defaultProps = {
     className: cn(badgeVariants({ className, size, variant })),
     "data-slot": "badge",
