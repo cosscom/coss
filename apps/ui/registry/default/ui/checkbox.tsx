@@ -7,7 +7,7 @@ import { cn } from "@/registry/default/lib/utils";
 export function Checkbox({
   className,
   ...props
-}: CheckboxPrimitive.Root.Props) {
+}: CheckboxPrimitive.Root.Props): JSX.Element {
   return (
     <CheckboxPrimitive.Root
       className={cn(

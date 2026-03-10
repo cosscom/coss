@@ -8,7 +8,7 @@ export function Progress({
   className,
   children,
   ...props
-}: ProgressPrimitive.Root.Props) {
+}: ProgressPrimitive.Root.Props): JSX.Element {
   return (
     <ProgressPrimitive.Root
       className={cn("flex w-full flex-col gap-2", className)}
@@ -29,7 +29,7 @@ export function Progress({
 export function ProgressLabel({
   className,
   ...props
-}: ProgressPrimitive.Label.Props) {
+}: ProgressPrimitive.Label.Props): JSX.Element {
   return (
     <ProgressPrimitive.Label
       className={cn("font-medium text-sm", className)}
@@ -42,7 +42,7 @@ export function ProgressLabel({
 export function ProgressTrack({
   className,
   ...props
-}: ProgressPrimitive.Track.Props) {
+}: ProgressPrimitive.Track.Props): JSX.Element {
   return (
     <ProgressPrimitive.Track
       className={cn(
@@ -58,7 +58,7 @@ export function ProgressTrack({
 export function ProgressIndicator({
   className,
   ...props
-}: ProgressPrimitive.Indicator.Props) {
+}: ProgressPrimitive.Indicator.Props): JSX.Element {
   return (
     <ProgressPrimitive.Indicator
       className={cn("bg-primary transition-all duration-500", className)}
@@ -71,7 +71,7 @@ export function ProgressIndicator({
 export function ProgressValue({
   className,
   ...props
-}: ProgressPrimitive.Value.Props) {
+}: ProgressPrimitive.Value.Props): JSX.Element {
   return (
     <ProgressPrimitive.Value
       className={cn("text-sm tabular-nums", className)}

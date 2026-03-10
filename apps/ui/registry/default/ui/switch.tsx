@@ -4,7 +4,10 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
 
 import { cn } from "@/registry/default/lib/utils";
 
-export function Switch({ className, ...props }: SwitchPrimitive.Root.Props) {
+export function Switch({
+  className,
+  ...props
+}: SwitchPrimitive.Root.Props): JSX.Element {
   return (
     <SwitchPrimitive.Root
       className={cn(

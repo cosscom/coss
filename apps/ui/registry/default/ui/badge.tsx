@@ -50,7 +50,7 @@ export function Badge({
   size,
   render,
   ...props
-}: BadgeProps) {
+}: BadgeProps): JSX.Element {
   const defaultProps = {
     className: cn(badgeVariants({ className, size, variant })),
     "data-slot": "badge",

@@ -8,7 +8,7 @@ export function Meter({
   className,
   children,
   ...props
-}: MeterPrimitive.Root.Props) {
+}: MeterPrimitive.Root.Props): JSX.Element {
   return (
     <MeterPrimitive.Root
       className={cn("flex w-full flex-col gap-2", className)}
@@ -28,7 +28,7 @@ export function Meter({
 export function MeterLabel({
   className,
   ...props
-}: MeterPrimitive.Label.Props) {
+}: MeterPrimitive.Label.Props): JSX.Element {
   return (
     <MeterPrimitive.Label
       className={cn("font-medium text-foreground text-sm", className)}
@@ -41,7 +41,7 @@ export function MeterLabel({
 export function MeterTrack({
   className,
   ...props
-}: MeterPrimitive.Track.Props) {
+}: MeterPrimitive.Track.Props): JSX.Element {
   return (
     <MeterPrimitive.Track
       className={cn("block h-2 w-full overflow-hidden bg-input", className)}
@@ -54,7 +54,7 @@ export function MeterTrack({
 export function MeterIndicator({
   className,
   ...props
-}: MeterPrimitive.Indicator.Props) {
+}: MeterPrimitive.Indicator.Props): JSX.Element {
   return (
     <MeterPrimitive.Indicator
       className={cn("bg-primary transition-all duration-500", className)}
@@ -67,7 +67,7 @@ export function MeterIndicator({
 export function MeterValue({
   className,
   ...props
-}: MeterPrimitive.Value.Props) {
+}: MeterPrimitive.Value.Props): JSX.Element {
   return (
     <MeterPrimitive.Value
       className={cn("text-foreground text-sm tabular-nums", className)}

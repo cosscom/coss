@@ -10,7 +10,9 @@ export const AlertDialog = AlertDialogPrimitive.Root;
 
 export const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-export function AlertDialogTrigger(props: AlertDialogPrimitive.Trigger.Props) {
+export function AlertDialogTrigger(
+  props: AlertDialogPrimitive.Trigger.Props,
+): JSX.Element {
   return (
     <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
   );
@@ -19,7 +21,7 @@ export function AlertDialogTrigger(props: AlertDialogPrimitive.Trigger.Props) {
 export function AlertDialogBackdrop({
   className,
   ...props
-}: AlertDialogPrimitive.Backdrop.Props) {
+}: AlertDialogPrimitive.Backdrop.Props): JSX.Element {
   return (
     <AlertDialogPrimitive.Backdrop
       className={cn(
@@ -35,7 +37,7 @@ export function AlertDialogBackdrop({
 export function AlertDialogViewport({
   className,
   ...props
-}: AlertDialogPrimitive.Viewport.Props) {
+}: AlertDialogPrimitive.Viewport.Props): JSX.Element {
   return (
     <AlertDialogPrimitive.Viewport
       className={cn(
@@ -54,7 +56,7 @@ export function AlertDialogPopup({
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   bottomStickOnMobile?: boolean;
-}) {
+}): JSX.Element {
   return (
     <AlertDialogPortal>
       <AlertDialogBackdrop />
@@ -82,7 +84,7 @@ export function AlertDialogPopup({
 export function AlertDialogHeader({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div">): JSX.Element {
   return (
     <div
       className={cn(
@@ -101,7 +103,7 @@ export function AlertDialogFooter({
   ...props
 }: React.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-}) {
+}): JSX.Element {
   return (
     <div
       className={cn(
@@ -119,7 +121,7 @@ export function AlertDialogFooter({
 export function AlertDialogTitle({
   className,
   ...props
-}: AlertDialogPrimitive.Title.Props) {
+}: AlertDialogPrimitive.Title.Props): JSX.Element {
   return (
     <AlertDialogPrimitive.Title
       className={cn(
@@ -135,7 +137,7 @@ export function AlertDialogTitle({
 export function AlertDialogDescription({
   className,
   ...props
-}: AlertDialogPrimitive.Description.Props) {
+}: AlertDialogPrimitive.Description.Props): JSX.Element {
   return (
     <AlertDialogPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -145,7 +147,9 @@ export function AlertDialogDescription({
   );
 }
 
-export function AlertDialogClose(props: AlertDialogPrimitive.Close.Props) {
+export function AlertDialogClose(
+  props: AlertDialogPrimitive.Close.Props,
+): JSX.Element {
   return (
     <AlertDialogPrimitive.Close data-slot="alert-dialog-close" {...props} />
   );

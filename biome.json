@@ -64,6 +64,7 @@
         "useValidAnchor": "off"
       },
       "nursery": {
+        "useExplicitType": "info",
         "useSortedClasses": {
           "level": "error",
           "options": {
