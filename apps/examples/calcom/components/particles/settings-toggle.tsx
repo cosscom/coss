@@ -7,6 +7,7 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { Skeleton } from "@coss/ui/components/skeleton";
 import { Switch } from "@coss/ui/components/switch";
 
 interface SettingsToggleProps {
@@ -15,6 +16,8 @@ interface SettingsToggleProps {
   defaultChecked?: boolean;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 export function SettingsToggle({
@@ -23,6 +26,8 @@ export function SettingsToggle({
   defaultChecked = false,
   checked,
   onCheckedChange,
+  disabled,
+  loading = false,
 }: SettingsToggleProps) {
   const isControlled = checked !== undefined;
   return (
@@ -33,11 +38,16 @@ export function SettingsToggle({
             <CardFrameTitle>{title}</CardFrameTitle>
             <CardFrameDescription>{description}</CardFrameDescription>
           </CardFrameHeader>
-          <Switch
-            checked={isControlled ? checked : undefined}
-            defaultChecked={isControlled ? undefined : defaultChecked}
-            onCheckedChange={onCheckedChange}
-          />
+          {loading ? (
+            <Skeleton className="h-4.5 w-7.5 rounded-full" />
+          ) : (
+            <Switch
+              checked={isControlled ? checked : undefined}
+              defaultChecked={isControlled ? undefined : defaultChecked}
+              disabled={disabled}
+              onCheckedChange={onCheckedChange}
+            />
+          )}
         </div>
       </CardPanel>
     </Card>
