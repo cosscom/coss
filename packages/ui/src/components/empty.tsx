@@ -34,7 +34,6 @@ export function EmptyHeader({
   );
 }
 
-// biome-ignore lint/nursery/useExplicitType: Type inferred for VariantProps extraction
 const emptyMediaVariants = cva(
   "flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
