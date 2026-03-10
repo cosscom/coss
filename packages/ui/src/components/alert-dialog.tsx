@@ -4,11 +4,14 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
-export const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle;
+export const AlertDialogCreateHandle: typeof AlertDialogPrimitive.createHandle =
+  AlertDialogPrimitive.createHandle;
 
-export const AlertDialog = AlertDialogPrimitive.Root;
+export const AlertDialog: typeof AlertDialogPrimitive.Root =
+  AlertDialogPrimitive.Root;
 
-export const AlertDialogPortal = AlertDialogPrimitive.Portal;
+export const AlertDialogPortal: typeof AlertDialogPrimitive.Portal =
+  AlertDialogPrimitive.Portal;
 
 export function AlertDialogTrigger(
   props: AlertDialogPrimitive.Trigger.Props,

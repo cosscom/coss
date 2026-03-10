@@ -7,7 +7,8 @@ import { cn } from "@coss/ui/lib/utils";
 import { Input } from "@coss/ui/components/input";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
-export const Autocomplete = AutocompletePrimitive.Root;
+export const Autocomplete: typeof AutocompletePrimitive.Root =
+  AutocompletePrimitive.Root;
 
 export function AutocompleteInput({
   className,
@@ -304,6 +305,7 @@ export function AutocompleteTrigger({
   );
 }
 
-export const useAutocompleteFilter = AutocompletePrimitive.useFilter;
+export const useAutocompleteFilter: typeof AutocompletePrimitive.useFilter =
+  AutocompletePrimitive.useFilter;
 
 export { AutocompletePrimitive };

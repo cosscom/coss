@@ -8,7 +8,10 @@ import { cn } from "@coss/ui/lib/utils";
 import { Input } from "@coss/ui/components/input";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
-export const ComboboxContext = React.createContext<{
+export const ComboboxContext: React.Context<{
+  chipsRef: React.RefObject<Element | null> | null;
+  multiple: boolean;
+}> = React.createContext<{
   chipsRef: React.RefObject<Element | null> | null;
   multiple: boolean;
 }>({
@@ -429,6 +432,7 @@ function ComboboxChipRemove(
   );
 }
 
-export const useComboboxFilter = ComboboxPrimitive.useFilter;
+export const useComboboxFilter: typeof ComboboxPrimitive.useFilter =
+  ComboboxPrimitive.useFilter;
 
 export { ComboboxPrimitive };

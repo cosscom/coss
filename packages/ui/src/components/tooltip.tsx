@@ -4,11 +4,13 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
-export const TooltipCreateHandle = TooltipPrimitive.createHandle;
+export const TooltipCreateHandle: typeof TooltipPrimitive.createHandle =
+  TooltipPrimitive.createHandle;
 
-export const TooltipProvider = TooltipPrimitive.Provider;
+export const TooltipProvider: typeof TooltipPrimitive.Provider =
+  TooltipPrimitive.Provider;
 
-export const Tooltip = TooltipPrimitive.Root;
+export const Tooltip: typeof TooltipPrimitive.Root = TooltipPrimitive.Root;
 
 export function TooltipTrigger(
   props: TooltipPrimitive.Trigger.Props,

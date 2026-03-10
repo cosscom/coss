@@ -12,9 +12,9 @@ import {
   type toggleVariants,
 } from "@coss/ui/components/toggle";
 
-export const ToggleGroupContext = React.createContext<
+export const ToggleGroupContext: React.Context<
   VariantProps<typeof toggleVariants>
->({
+> = React.createContext<VariantProps<typeof toggleVariants>>({
   size: "default",
   variant: "default",
 });

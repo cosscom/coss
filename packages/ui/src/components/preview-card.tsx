@@ -4,7 +4,8 @@ import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card
 import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
-export const PreviewCard = PreviewCardPrimitive.Root;
+export const PreviewCard: typeof PreviewCardPrimitive.Root =
+  PreviewCardPrimitive.Root;
 
 export function PreviewCardTrigger({
   ...props

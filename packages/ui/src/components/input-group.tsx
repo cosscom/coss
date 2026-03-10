@@ -24,6 +24,7 @@ export function InputGroup({
   );
 }
 
+// biome-ignore lint/nursery/useExplicitType: Type inferred for VariantProps extraction
 const inputGroupAddonVariants = cva(
   "[&_svg]:-mx-0.5 flex h-auto cursor-text select-none items-center justify-center gap-2 leading-none [&>kbd]:rounded-[calc(var(--radius)-5px)] in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4.5 sm:in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4 not-has-[button]:**:[svg:not([class*='opacity-'])]:opacity-80",
   {
@@ -56,7 +57,7 @@ export function InputGroupAddon({
       className={cn(inputGroupAddonVariants({ align }), className)}
       data-align={align}
       data-slot="input-group-addon"
-      onMouseDown={(e) => {
+      onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
         const isInteractive = target.closest(
           "button, a, input, select, textarea, [role='button'], [role='combobox'], [role='listbox'], [data-slot='select-trigger']",

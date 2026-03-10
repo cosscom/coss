@@ -16,11 +16,14 @@ import {
   AutocompleteSeparator,
 } from "@coss/ui/components/autocomplete";
 
-export const CommandDialog = CommandDialogPrimitive.Root;
+export const CommandDialog: typeof CommandDialogPrimitive.Root =
+  CommandDialogPrimitive.Root;
 
-export const CommandDialogPortal = CommandDialogPrimitive.Portal;
+export const CommandDialogPortal: typeof CommandDialogPrimitive.Portal =
+  CommandDialogPrimitive.Portal;
 
-export const CommandCreateHandle = CommandDialogPrimitive.createHandle;
+export const CommandCreateHandle: typeof CommandDialogPrimitive.createHandle =
+  CommandDialogPrimitive.createHandle;
 
 export function CommandDialogTrigger(
   props: CommandDialogPrimitive.Trigger.Props,

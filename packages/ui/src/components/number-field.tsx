@@ -7,7 +7,9 @@ import * as React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { Label } from "@coss/ui/components/label";
 
-export const NumberFieldContext = React.createContext<{
+export const NumberFieldContext: React.Context<{
+  fieldId: string;
+} | null> = React.createContext<{
   fieldId: string;
 } | null>(null);
 

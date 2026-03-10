@@ -6,11 +6,12 @@ import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-export const MenuCreateHandle = MenuPrimitive.createHandle;
+export const MenuCreateHandle: typeof MenuPrimitive.createHandle =
+  MenuPrimitive.createHandle;
 
-export const Menu = MenuPrimitive.Root;
+export const Menu: typeof MenuPrimitive.Root = MenuPrimitive.Root;
 
-export const MenuPortal = MenuPrimitive.Portal;
+export const MenuPortal: typeof MenuPrimitive.Portal = MenuPrimitive.Portal;
 
 export function MenuTrigger({
   className,

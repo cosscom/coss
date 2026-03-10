@@ -7,11 +7,13 @@ import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/components/button";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
-export const DialogCreateHandle = DialogPrimitive.createHandle;
+export const DialogCreateHandle: typeof DialogPrimitive.createHandle =
+  DialogPrimitive.createHandle;
 
-export const Dialog = DialogPrimitive.Root;
+export const Dialog: typeof DialogPrimitive.Root = DialogPrimitive.Root;
 
-export const DialogPortal = DialogPrimitive.Portal;
+export const DialogPortal: typeof DialogPrimitive.Portal =
+  DialogPrimitive.Portal;
 
 export function DialogTrigger(
   props: DialogPrimitive.Trigger.Props,
