@@ -6,12 +6,12 @@ import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-type TextareaProps = React.ComponentProps<"textarea"> & {
+export type TextareaProps = React.ComponentProps<"textarea"> & {
   size?: "sm" | "default" | "lg" | number;
   unstyled?: boolean;
 };
 
-function Textarea({
+export function Textarea({
   className,
   size = "default",
   unstyled = false,
@@ -48,4 +48,4 @@ function Textarea({
   );
 }
 
-export { Textarea, type TextareaProps, FieldPrimitive };
+export { FieldPrimitive };

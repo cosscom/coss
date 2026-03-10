@@ -5,7 +5,7 @@ import { useRender } from "@base-ui/react/use-render";
 
 import { cn } from "@coss/ui/lib/utils";
 
-function Label({
+export function Label({
   className,
   render,
   ...props
@@ -24,5 +24,3 @@ function Label({
     render,
   });
 }
-
-export { Label };

@@ -12,8 +12,8 @@ import {
 import { cn } from "@coss/ui/lib/utils";
 import { buttonVariants } from "@coss/ui/components/button";
 
-const toastManager = Toast.createToastManager();
-const anchoredToastManager = Toast.createToastManager();
+export const toastManager = Toast.createToastManager();
+export const anchoredToastManager = Toast.createToastManager();
 
 const TOAST_ICONS = {
   error: CircleAlertIcon,
@@ -23,7 +23,7 @@ const TOAST_ICONS = {
   warning: TriangleAlertIcon,
 } as const;
 
-type ToastPosition =
+export type ToastPosition =
   | "top-left"
   | "top-center"
   | "top-right"
@@ -31,11 +31,11 @@ type ToastPosition =
   | "bottom-center"
   | "bottom-right";
 
-interface ToastProviderProps extends Toast.Provider.Props {
+export interface ToastProviderProps extends Toast.Provider.Props {
   position?: ToastPosition;
 }
 
-function ToastProvider({
+export function ToastProvider({
   children,
   position = "bottom-right",
   ...props
@@ -166,7 +166,10 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
   );
 }
 
-function AnchoredToastProvider({ children, ...props }: Toast.Provider.Props) {
+export function AnchoredToastProvider({
+  children,
+  ...props
+}: Toast.Provider.Props) {
   return (
     <Toast.Provider toastManager={anchoredToastManager} {...props}>
       {children}
@@ -260,11 +263,4 @@ function AnchoredToasts() {
   );
 }
 
-export {
-  ToastProvider,
-  type ToastPosition,
-  toastManager,
-  AnchoredToastProvider,
-  anchoredToastManager,
-  Toast as ToastPrimitive,
-};
+export { Toast as ToastPrimitive };

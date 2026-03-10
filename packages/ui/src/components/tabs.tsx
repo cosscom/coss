@@ -4,9 +4,9 @@ import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 
 import { cn } from "@coss/ui/lib/utils";
 
-type TabsVariant = "default" | "underline";
+export type TabsVariant = "default" | "underline";
 
-function Tabs({ className, ...props }: TabsPrimitive.Root.Props) {
+export function Tabs({ className, ...props }: TabsPrimitive.Root.Props) {
   return (
     <TabsPrimitive.Root
       className={cn(
@@ -19,7 +19,7 @@ function Tabs({ className, ...props }: TabsPrimitive.Root.Props) {
   );
 }
 
-function TabsList({
+export function TabsList({
   variant = "default",
   className,
   children,
@@ -54,7 +54,7 @@ function TabsList({
   );
 }
 
-function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
+export function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
     <TabsPrimitive.Tab
       className={cn(
@@ -67,7 +67,7 @@ function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
   );
 }
 
-function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props) {
+export function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel
       className={cn("flex-1 outline-none", className)}
@@ -77,12 +77,4 @@ function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props) {
   );
 }
 
-export {
-  Tabs,
-  TabsList,
-  TabsTab,
-  TabsTab as TabsTrigger,
-  TabsPanel,
-  TabsPanel as TabsContent,
-  TabsPrimitive,
-};
+export { TabsPrimitive, TabsTab as TabsTrigger, TabsPanel as TabsContent };

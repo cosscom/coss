@@ -8,7 +8,7 @@ import type * as React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { Separator } from "@coss/ui/components/separator";
 
-const groupVariants = cva(
+export const groupVariants = cva(
   "flex w-fit *:focus-visible:z-1 has-[>[data-slot=group]]:gap-2 *:has-focus-visible:z-1 dark:*:[[data-slot=separator]:has(~button:hover):not(:has(~[data-slot=separator]~[data-slot]:hover)),[data-slot=separator]:has(~[data-slot][data-pressed]):not(:has(~[data-slot=separator]~[data-slot][data-pressed]))]:before:bg-input/64 dark:*:[button:hover~[data-slot=separator]:not([data-slot]:hover~[data-slot=separator]~[data-slot=separator]),[data-slot][data-pressed]~[data-slot=separator]:not([data-slot][data-pressed]~[data-slot=separator]~[data-slot=separator])]:before:bg-input/64",
   {
     defaultVariants: {
@@ -25,7 +25,7 @@ const groupVariants = cva(
   },
 );
 
-function Group({
+export function Group({
   className,
   orientation,
   children,
@@ -48,7 +48,7 @@ function Group({
   );
 }
 
-function GroupText({
+export function GroupText({
   className,
   render,
   ...props
@@ -67,7 +67,7 @@ function GroupText({
   });
 }
 
-function GroupSeparator({
+export function GroupSeparator({
   className,
   orientation = "vertical",
   ...props
@@ -87,11 +87,7 @@ function GroupSeparator({
 }
 
 export {
-  Group,
   Group as ButtonGroup,
-  GroupText,
   GroupText as ButtonGroupText,
-  GroupSeparator,
   GroupSeparator as ButtonGroupSeparator,
-  groupVariants,
 };

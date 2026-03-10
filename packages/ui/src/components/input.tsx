@@ -5,7 +5,7 @@ import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-type InputProps = Omit<
+export type InputProps = Omit<
   InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,
   "size"
 > & {
@@ -14,7 +14,7 @@ type InputProps = Omit<
   nativeInput?: boolean;
 };
 
-function Input({
+export function Input({
   className,
   size = "default",
   unstyled = false,
@@ -63,4 +63,4 @@ function Input({
   );
 }
 
-export { Input, type InputProps, InputPrimitive };
+export { InputPrimitive };

@@ -12,14 +12,14 @@ import {
   type toggleVariants,
 } from "@coss/ui/components/toggle";
 
-const ToggleGroupContext = React.createContext<
+export const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants>
 >({
   size: "default",
   variant: "default",
 });
 
-function ToggleGroup({
+export function ToggleGroup({
   className,
   variant = "default",
   size = "default",
@@ -54,7 +54,7 @@ function ToggleGroup({
   );
 }
 
-function Toggle({
+export function Toggle({
   className,
   children,
   variant,
@@ -80,7 +80,7 @@ function Toggle({
   );
 }
 
-function ToggleGroupSeparator({
+export function ToggleGroupSeparator({
   className,
   orientation = "vertical",
   ...props
@@ -99,10 +99,4 @@ function ToggleGroupSeparator({
   );
 }
 
-export {
-  ToggleGroup,
-  Toggle,
-  Toggle as ToggleGroupItem,
-  ToggleGroupSeparator,
-  ToggleGroupPrimitive,
-};
+export { ToggleGroupPrimitive, Toggle as ToggleGroupItem };

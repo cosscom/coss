@@ -12,7 +12,10 @@ import type * as React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { type Button, buttonVariants } from "@coss/ui/components/button";
 
-function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+export function Pagination({
+  className,
+  ...props
+}: React.ComponentProps<"nav">) {
   return (
     <nav
       aria-label="pagination"
@@ -23,7 +26,7 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   );
 }
 
-function PaginationContent({
+export function PaginationContent({
   className,
   ...props
 }: React.ComponentProps<"ul">) {
@@ -36,16 +39,16 @@ function PaginationContent({
   );
 }
 
-function PaginationItem({ ...props }: React.ComponentProps<"li">) {
+export function PaginationItem({ ...props }: React.ComponentProps<"li">) {
   return <li data-slot="pagination-item" {...props} />;
 }
 
-type PaginationLinkProps = {
+export type PaginationLinkProps = {
   isActive?: boolean;
   size?: React.ComponentProps<typeof Button>["size"];
 } & useRender.ComponentProps<"a">;
 
-function PaginationLink({
+export function PaginationLink({
   className,
   isActive,
   size = "icon",
@@ -74,7 +77,7 @@ function PaginationLink({
   });
 }
 
-function PaginationPrevious({
+export function PaginationPrevious({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
@@ -91,7 +94,7 @@ function PaginationPrevious({
   );
 }
 
-function PaginationNext({
+export function PaginationNext({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
@@ -108,7 +111,7 @@ function PaginationNext({
   );
 }
 
-function PaginationEllipsis({
+export function PaginationEllipsis({
   className,
   ...props
 }: React.ComponentProps<"span">) {
@@ -124,13 +127,3 @@ function PaginationEllipsis({
     </span>
   );
 }
-
-export {
-  Pagination,
-  PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-};

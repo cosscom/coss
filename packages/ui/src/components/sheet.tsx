@@ -6,19 +6,22 @@ import { cn } from "@coss/ui/lib/utils";
 import { Button } from "@coss/ui/components/button";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
-const Sheet = SheetPrimitive.Root;
+export const Sheet = SheetPrimitive.Root;
 
-const SheetPortal = SheetPrimitive.Portal;
+export const SheetPortal = SheetPrimitive.Portal;
 
-function SheetTrigger(props: SheetPrimitive.Trigger.Props) {
+export function SheetTrigger(props: SheetPrimitive.Trigger.Props) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-function SheetClose(props: SheetPrimitive.Close.Props) {
+export function SheetClose(props: SheetPrimitive.Close.Props) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
-function SheetBackdrop({ className, ...props }: SheetPrimitive.Backdrop.Props) {
+export function SheetBackdrop({
+  className,
+  ...props
+}: SheetPrimitive.Backdrop.Props) {
   return (
     <SheetPrimitive.Backdrop
       className={cn(
@@ -56,7 +59,7 @@ function SheetViewport({
   );
 }
 
-function SheetPopup({
+export function SheetPopup({
   className,
   children,
   showCloseButton = true,
@@ -109,7 +112,10 @@ function SheetPopup({
   );
 }
 
-function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+export function SheetHeader({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -122,7 +128,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function SheetFooter({
+export function SheetFooter({
   className,
   variant = "default",
   ...props
@@ -144,7 +150,10 @@ function SheetFooter({
   );
 }
 
-function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
+export function SheetTitle({
+  className,
+  ...props
+}: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
       className={cn(
@@ -157,7 +166,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   );
 }
 
-function SheetDescription({
+export function SheetDescription({
   className,
   ...props
 }: SheetPrimitive.Description.Props) {
@@ -170,7 +179,7 @@ function SheetDescription({
   );
 }
 
-function SheetPanel({
+export function SheetPanel({
   className,
   scrollFade = true,
   ...props
@@ -190,18 +199,7 @@ function SheetPanel({
 }
 
 export {
-  Sheet,
-  SheetTrigger,
-  SheetPortal,
-  SheetClose,
-  SheetBackdrop,
-  SheetBackdrop as SheetOverlay,
-  SheetPopup,
-  SheetPopup as SheetContent,
-  SheetHeader,
-  SheetFooter,
-  SheetTitle,
-  SheetDescription,
-  SheetPanel,
   SheetPrimitive,
+  SheetBackdrop as SheetOverlay,
+  SheetPopup as SheetContent,
 };

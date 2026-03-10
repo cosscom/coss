@@ -4,11 +4,11 @@ import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
 
 import { cn } from "@coss/ui/lib/utils";
 
-function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
+export function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
   return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />;
 }
 
-function CollapsibleTrigger({
+export function CollapsibleTrigger({
   className,
   ...props
 }: CollapsiblePrimitive.Trigger.Props) {
@@ -21,7 +21,7 @@ function CollapsibleTrigger({
   );
 }
 
-function CollapsiblePanel({
+export function CollapsiblePanel({
   className,
   ...props
 }: CollapsiblePrimitive.Panel.Props) {
@@ -37,10 +37,4 @@ function CollapsiblePanel({
   );
 }
 
-export {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsiblePanel,
-  CollapsiblePanel as CollapsibleContent,
-  CollapsiblePrimitive,
-};
+export { CollapsiblePrimitive, CollapsiblePanel as CollapsibleContent };

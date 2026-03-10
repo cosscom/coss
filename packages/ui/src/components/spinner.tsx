@@ -1,7 +1,7 @@
 import { Loader2Icon } from "lucide-react";
 import { cn } from "@coss/ui/lib/utils";
 
-function Spinner({
+export function Spinner({
   className,
   ...props
 }: React.ComponentProps<typeof Loader2Icon>) {
@@ -14,5 +14,3 @@ function Spinner({
     />
   );
 }
-
-export { Spinner };

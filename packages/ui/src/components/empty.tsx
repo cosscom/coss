@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@coss/ui/lib/utils";
 
-function Empty({ className, ...props }: React.ComponentProps<"div">) {
+export function Empty({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -15,7 +15,10 @@ function Empty({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function EmptyHeader({ className, ...props }: React.ComponentProps<"div">) {
+export function EmptyHeader({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -43,7 +46,7 @@ const emptyMediaVariants = cva(
   },
 );
 
-function EmptyMedia({
+export function EmptyMedia({
   className,
   variant = "default",
   ...props
@@ -81,7 +84,10 @@ function EmptyMedia({
   );
 }
 
-function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
+export function EmptyTitle({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("font-heading font-semibold text-xl", className)}
@@ -91,7 +97,10 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
+export function EmptyDescription({
+  className,
+  ...props
+}: React.ComponentProps<"p">) {
   return (
     <div
       className={cn(
@@ -104,7 +113,10 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
   );
 }
 
-function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
+export function EmptyContent({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -116,12 +128,3 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
-export {
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-  EmptyContent,
-  EmptyMedia,
-};
