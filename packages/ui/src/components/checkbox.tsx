@@ -20,10 +20,8 @@ export function Checkbox({
       <CheckboxPrimitive.Indicator
         className="-inset-px absolute flex items-center justify-center rounded-[.25rem] text-primary-foreground data-unchecked:hidden data-checked:bg-primary data-indeterminate:text-foreground"
         data-slot="checkbox-indicator"
-        render={(
-          props: Record<string, unknown>,
-          state: { indeterminate: boolean },
-        ) => (
+        // biome-ignore lint/nursery/useExplicitType: Types inferred by Base UI render prop
+        render={(props, state) => (
           <span {...props}>
             {state.indeterminate ? (
               <svg
