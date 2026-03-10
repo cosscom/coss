@@ -30,7 +30,6 @@ export function Textarea({
       data-slot="textarea-control"
     >
       <FieldPrimitive.Control
-        // biome-ignore lint/nursery/useExplicitType: Types inferred by Base UI render prop
         render={(defaultProps) => (
           <textarea
             className={cn(
