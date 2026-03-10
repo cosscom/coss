@@ -8,7 +8,7 @@ export const fontMono = localFont({
 
 export const fontSans = localFont({
   display: "swap",
-  src: "./CalSansUI[MODE,wght].woff2",
+  src: "./CalSansUI[wght,GEOM].woff2",
   variable: "--font-sans",
   weight: "300 700",
 });
