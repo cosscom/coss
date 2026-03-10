@@ -26,7 +26,7 @@ export function AutocompleteInput({
   ref?: React.Ref<HTMLInputElement>;
   triggerProps?: AutocompletePrimitive.Trigger.Props;
   clearProps?: AutocompletePrimitive.Clear.Props;
-}) {
+}): JSX.Element {
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
@@ -96,7 +96,7 @@ export function AutocompletePopup({
   alignOffset?: AutocompletePrimitive.Positioner.Props["alignOffset"];
   side?: AutocompletePrimitive.Positioner.Props["side"];
   anchor?: AutocompletePrimitive.Positioner.Props["anchor"];
-}) {
+}): JSX.Element {
   return (
     <AutocompletePrimitive.Portal>
       <AutocompletePrimitive.Positioner
@@ -131,7 +131,7 @@ export function AutocompleteItem({
   className,
   children,
   ...props
-}: AutocompletePrimitive.Item.Props) {
+}: AutocompletePrimitive.Item.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Item
       className={cn(
@@ -149,7 +149,7 @@ export function AutocompleteItem({
 export function AutocompleteSeparator({
   className,
   ...props
-}: AutocompletePrimitive.Separator.Props) {
+}: AutocompletePrimitive.Separator.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Separator
       className={cn("mx-2 my-1 h-px bg-border last:hidden", className)}
@@ -162,7 +162,7 @@ export function AutocompleteSeparator({
 export function AutocompleteGroup({
   className,
   ...props
-}: AutocompletePrimitive.Group.Props) {
+}: AutocompletePrimitive.Group.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Group
       className={cn("[[role=group]+&]:mt-1.5", className)}
@@ -175,7 +175,7 @@ export function AutocompleteGroup({
 export function AutocompleteGroupLabel({
   className,
   ...props
-}: AutocompletePrimitive.GroupLabel.Props) {
+}: AutocompletePrimitive.GroupLabel.Props): JSX.Element {
   return (
     <AutocompletePrimitive.GroupLabel
       className={cn(
@@ -191,7 +191,7 @@ export function AutocompleteGroupLabel({
 export function AutocompleteEmpty({
   className,
   ...props
-}: AutocompletePrimitive.Empty.Props) {
+}: AutocompletePrimitive.Empty.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Empty
       className={cn(
@@ -207,7 +207,7 @@ export function AutocompleteEmpty({
 export function AutocompleteRow({
   className,
   ...props
-}: AutocompletePrimitive.Row.Props) {
+}: AutocompletePrimitive.Row.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Row
       className={className}
@@ -219,7 +219,7 @@ export function AutocompleteRow({
 
 export function AutocompleteValue({
   ...props
-}: AutocompletePrimitive.Value.Props) {
+}: AutocompletePrimitive.Value.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Value data-slot="autocomplete-value" {...props} />
   );
@@ -228,7 +228,7 @@ export function AutocompleteValue({
 export function AutocompleteList({
   className,
   ...props
-}: AutocompletePrimitive.List.Props) {
+}: AutocompletePrimitive.List.Props): JSX.Element {
   return (
     <ScrollArea scrollbarGutter scrollFade>
       <AutocompletePrimitive.List
@@ -246,7 +246,7 @@ export function AutocompleteList({
 export function AutocompleteClear({
   className,
   ...props
-}: AutocompletePrimitive.Clear.Props) {
+}: AutocompletePrimitive.Clear.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Clear
       className={cn(
@@ -264,7 +264,7 @@ export function AutocompleteClear({
 export function AutocompleteStatus({
   className,
   ...props
-}: AutocompletePrimitive.Status.Props) {
+}: AutocompletePrimitive.Status.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Status
       className={cn(
@@ -279,7 +279,7 @@ export function AutocompleteStatus({
 
 export function AutocompleteCollection({
   ...props
-}: AutocompletePrimitive.Collection.Props) {
+}: AutocompletePrimitive.Collection.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Collection
       data-slot="autocomplete-collection"
@@ -292,7 +292,7 @@ export function AutocompleteTrigger({
   className,
   children,
   ...props
-}: AutocompletePrimitive.Trigger.Props) {
+}: AutocompletePrimitive.Trigger.Props): JSX.Element {
   return (
     <AutocompletePrimitive.Trigger
       className={className}

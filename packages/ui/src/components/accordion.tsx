@@ -5,14 +5,14 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-export function Accordion(props: AccordionPrimitive.Root.Props) {
+export function Accordion(props: AccordionPrimitive.Root.Props): JSX.Element {
   return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
 }
 
 export function AccordionItem({
   className,
   ...props
-}: AccordionPrimitive.Item.Props) {
+}: AccordionPrimitive.Item.Props): JSX.Element {
   return (
     <AccordionPrimitive.Item
       className={cn("border-b last:border-b-0", className)}
@@ -26,7 +26,7 @@ export function AccordionTrigger({
   className,
   children,
   ...props
-}: AccordionPrimitive.Trigger.Props) {
+}: AccordionPrimitive.Trigger.Props): JSX.Element {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -51,7 +51,7 @@ export function AccordionPanel({
   className,
   children,
   ...props
-}: AccordionPrimitive.Panel.Props) {
+}: AccordionPrimitive.Panel.Props): JSX.Element {
   return (
     <AccordionPrimitive.Panel
       className="h-(--accordion-panel-height) overflow-hidden text-muted-foreground text-sm transition-[height] duration-200 ease-in-out data-ending-style:h-0 data-starting-style:h-0"

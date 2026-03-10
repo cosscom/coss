@@ -13,7 +13,7 @@ export function ScrollArea({
 }: ScrollAreaPrimitive.Root.Props & {
   scrollFade?: boolean;
   scrollbarGutter?: boolean;
-}) {
+}): JSX.Element {
   return (
     <ScrollAreaPrimitive.Root
       className={cn("size-full min-h-0", className)}
@@ -42,7 +42,7 @@ export function ScrollBar({
   className,
   orientation = "vertical",
   ...props
-}: ScrollAreaPrimitive.Scrollbar.Props) {
+}: ScrollAreaPrimitive.Scrollbar.Props): JSX.Element {
   return (
     <ScrollAreaPrimitive.Scrollbar
       className={cn(

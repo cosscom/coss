@@ -18,7 +18,7 @@ export const ComboboxContext = React.createContext<{
 
 export function Combobox<Value, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<Value, Multiple>,
-) {
+): JSX.Element {
   const chipsRef = React.useRef<Element | null>(null);
   return (
     <ComboboxContext.Provider value={{ chipsRef, multiple: !!props.multiple }}>
@@ -34,7 +34,7 @@ export function ComboboxChipsInput({
 }: Omit<ComboboxPrimitive.Input.Props, "size"> & {
   size?: "sm" | "default" | "lg" | number;
   ref?: React.Ref<HTMLInputElement>;
-}) {
+}): JSX.Element {
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
@@ -69,7 +69,7 @@ export function ComboboxInput({
   ref?: React.Ref<HTMLInputElement>;
   triggerProps?: ComboboxPrimitive.Trigger.Props;
   clearProps?: ComboboxPrimitive.Clear.Props;
-}) {
+}): JSX.Element {
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
@@ -134,7 +134,7 @@ export function ComboboxTrigger({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Trigger.Props) {
+}: ComboboxPrimitive.Trigger.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Trigger
       className={className}
@@ -161,7 +161,7 @@ export function ComboboxPopup({
   alignOffset?: ComboboxPrimitive.Positioner.Props["alignOffset"];
   side?: ComboboxPrimitive.Positioner.Props["side"];
   anchor?: ComboboxPrimitive.Positioner.Props["anchor"];
-}) {
+}): JSX.Element {
   const { chipsRef } = React.useContext(ComboboxContext);
   const anchor = anchorProp ?? chipsRef;
 
@@ -199,7 +199,7 @@ export function ComboboxItem({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Item.Props) {
+}: ComboboxPrimitive.Item.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Item
       className={cn(
@@ -232,7 +232,7 @@ export function ComboboxItem({
 export function ComboboxSeparator({
   className,
   ...props
-}: ComboboxPrimitive.Separator.Props) {
+}: ComboboxPrimitive.Separator.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Separator
       className={cn("mx-2 my-1 h-px bg-border last:hidden", className)}
@@ -245,7 +245,7 @@ export function ComboboxSeparator({
 export function ComboboxGroup({
   className,
   ...props
-}: ComboboxPrimitive.Group.Props) {
+}: ComboboxPrimitive.Group.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Group
       className={cn("[[role=group]+&]:mt-1.5", className)}
@@ -258,7 +258,7 @@ export function ComboboxGroup({
 export function ComboboxGroupLabel({
   className,
   ...props
-}: ComboboxPrimitive.GroupLabel.Props) {
+}: ComboboxPrimitive.GroupLabel.Props): JSX.Element {
   return (
     <ComboboxPrimitive.GroupLabel
       className={cn(
@@ -274,7 +274,7 @@ export function ComboboxGroupLabel({
 export function ComboboxEmpty({
   className,
   ...props
-}: ComboboxPrimitive.Empty.Props) {
+}: ComboboxPrimitive.Empty.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Empty
       className={cn(
@@ -290,7 +290,7 @@ export function ComboboxEmpty({
 export function ComboboxRow({
   className,
   ...props
-}: ComboboxPrimitive.Row.Props) {
+}: ComboboxPrimitive.Row.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Row
       className={className}
@@ -300,14 +300,16 @@ export function ComboboxRow({
   );
 }
 
-export function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
+export function ComboboxValue({
+  ...props
+}: ComboboxPrimitive.Value.Props): JSX.Element {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
 }
 
 export function ComboboxList({
   className,
   ...props
-}: ComboboxPrimitive.List.Props) {
+}: ComboboxPrimitive.List.Props): JSX.Element {
   return (
     <ScrollArea scrollbarGutter scrollFade>
       <ComboboxPrimitive.List
@@ -325,7 +327,7 @@ export function ComboboxList({
 export function ComboboxClear({
   className,
   ...props
-}: ComboboxPrimitive.Clear.Props) {
+}: ComboboxPrimitive.Clear.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Clear
       className={className}
@@ -338,7 +340,7 @@ export function ComboboxClear({
 export function ComboboxStatus({
   className,
   ...props
-}: ComboboxPrimitive.Status.Props) {
+}: ComboboxPrimitive.Status.Props): JSX.Element {
   return (
     <ComboboxPrimitive.Status
       className={cn(
@@ -351,7 +353,9 @@ export function ComboboxStatus({
   );
 }
 
-export function ComboboxCollection(props: ComboboxPrimitive.Collection.Props) {
+export function ComboboxCollection(
+  props: ComboboxPrimitive.Collection.Props,
+): JSX.Element {
   return (
     <ComboboxPrimitive.Collection data-slot="combobox-collection" {...props} />
   );
@@ -364,7 +368,7 @@ export function ComboboxChips({
   ...props
 }: ComboboxPrimitive.Chips.Props & {
   startAddon?: React.ReactNode;
-}) {
+}): JSX.Element {
   const { chipsRef } = React.useContext(ComboboxContext);
 
   return (
@@ -397,7 +401,7 @@ export function ComboboxChip({
   ...props
 }: ComboboxPrimitive.Chip.Props & {
   removeProps?: ComboboxPrimitive.ChipRemove.Props;
-}) {
+}): JSX.Element {
   return (
     <ComboboxPrimitive.Chip
       className="flex items-center rounded-[calc(var(--radius-md)-1px)] bg-accent ps-2 font-medium text-accent-foreground text-sm outline-none sm:text-xs/(--text-xs--line-height) [&_svg:not([class*='size-'])]:size-4 sm:[&_svg:not([class*='size-'])]:size-3.5"
@@ -410,7 +414,9 @@ export function ComboboxChip({
   );
 }
 
-function ComboboxChipRemove(props: ComboboxPrimitive.ChipRemove.Props) {
+function ComboboxChipRemove(
+  props: ComboboxPrimitive.ChipRemove.Props,
+): JSX.Element {
   return (
     <ComboboxPrimitive.ChipRemove
       aria-label="Remove"

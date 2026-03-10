@@ -26,7 +26,8 @@ export function ToggleGroup({
   orientation = "horizontal",
   children,
   ...props
-}: ToggleGroupPrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: ToggleGroupPrimitive.Props &
+  VariantProps<typeof toggleVariants>): JSX.Element {
   return (
     <ToggleGroupPrimitive
       className={cn(
@@ -60,7 +61,7 @@ export function Toggle({
   variant,
   size,
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>): JSX.Element {
   const context = React.useContext(ToggleGroupContext);
 
   const resolvedVariant = context.variant || variant;
@@ -86,7 +87,7 @@ export function ToggleGroupSeparator({
   ...props
 }: {
   className?: string;
-} & React.ComponentProps<typeof Separator>) {
+} & React.ComponentProps<typeof Separator>): JSX.Element {
   return (
     <Separator
       className={cn(

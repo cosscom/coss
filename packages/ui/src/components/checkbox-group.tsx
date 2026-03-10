@@ -7,7 +7,7 @@ import { cn } from "@coss/ui/lib/utils";
 export function CheckboxGroup({
   className,
   ...props
-}: CheckboxGroupPrimitive.Props) {
+}: CheckboxGroupPrimitive.Props): JSX.Element {
   return (
     <CheckboxGroupPrimitive
       className={cn("flex flex-col items-start gap-3", className)}

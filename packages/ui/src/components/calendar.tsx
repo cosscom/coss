@@ -20,7 +20,7 @@ export function Calendar({
   components: userComponents,
   mode = "single",
   ...props
-}: React.ComponentProps<typeof DayPicker>) {
+}: React.ComponentProps<typeof DayPicker>): JSX.Element {
   const defaultClassNames = {
     button_next: buttonClassNames,
     button_previous: buttonClassNames,

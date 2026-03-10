@@ -7,7 +7,7 @@ import { cn } from "@coss/ui/lib/utils";
 export function Fieldset({
   className,
   ...props
-}: FieldsetPrimitive.Root.Props) {
+}: FieldsetPrimitive.Root.Props): JSX.Element {
   return (
     <FieldsetPrimitive.Root
       className={cn("flex w-full max-w-64 flex-col gap-6", className)}
@@ -19,7 +19,7 @@ export function Fieldset({
 export function FieldsetLegend({
   className,
   ...props
-}: FieldsetPrimitive.Legend.Props) {
+}: FieldsetPrimitive.Legend.Props): JSX.Element {
   return (
     <FieldsetPrimitive.Legend
       className={cn("font-semibold text-foreground", className)}

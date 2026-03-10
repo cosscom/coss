@@ -10,7 +10,9 @@ export const TooltipProvider = TooltipPrimitive.Provider;
 
 export const Tooltip = TooltipPrimitive.Root;
 
-export function TooltipTrigger(props: TooltipPrimitive.Trigger.Props) {
+export function TooltipTrigger(
+  props: TooltipPrimitive.Trigger.Props,
+): JSX.Element {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
@@ -27,7 +29,7 @@ export function TooltipPopup({
   side?: TooltipPrimitive.Positioner.Props["side"];
   sideOffset?: TooltipPrimitive.Positioner.Props["sideOffset"];
   anchor?: TooltipPrimitive.Positioner.Props["anchor"];
-}) {
+}): JSX.Element {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner

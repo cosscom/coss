@@ -39,7 +39,7 @@ export function ToastProvider({
   children,
   position = "bottom-right",
   ...props
-}: ToastProviderProps) {
+}: ToastProviderProps): JSX.Element {
   return (
     <Toast.Provider toastManager={toastManager} {...props}>
       {children}
@@ -48,7 +48,11 @@ export function ToastProvider({
   );
 }
 
-function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
+function Toasts({
+  position = "bottom-right",
+}: {
+  position: ToastPosition;
+}): JSX.Element {
   const { toasts } = Toast.useToastManager();
   const isTop = position.startsWith("top");
 
@@ -169,7 +173,7 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
 export function AnchoredToastProvider({
   children,
   ...props
-}: Toast.Provider.Props) {
+}: Toast.Provider.Props): JSX.Element {
   return (
     <Toast.Provider toastManager={anchoredToastManager} {...props}>
       {children}
@@ -178,7 +182,7 @@ export function AnchoredToastProvider({
   );
 }
 
-function AnchoredToasts() {
+function AnchoredToasts(): JSX.Element {
   const { toasts } = Toast.useToastManager();
 
   return (

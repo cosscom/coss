@@ -15,7 +15,7 @@ import { type Button, buttonVariants } from "@coss/ui/components/button";
 export function Pagination({
   className,
   ...props
-}: React.ComponentProps<"nav">) {
+}: React.ComponentProps<"nav">): JSX.Element {
   return (
     <nav
       aria-label="pagination"
@@ -29,7 +29,7 @@ export function Pagination({
 export function PaginationContent({
   className,
   ...props
-}: React.ComponentProps<"ul">) {
+}: React.ComponentProps<"ul">): JSX.Element {
   return (
     <ul
       className={cn("flex flex-row items-center gap-1", className)}
@@ -39,7 +39,9 @@ export function PaginationContent({
   );
 }
 
-export function PaginationItem({ ...props }: React.ComponentProps<"li">) {
+export function PaginationItem({
+  ...props
+}: React.ComponentProps<"li">): JSX.Element {
   return <li data-slot="pagination-item" {...props} />;
 }
 
@@ -54,7 +56,7 @@ export function PaginationLink({
   size = "icon",
   render,
   ...props
-}: PaginationLinkProps) {
+}: PaginationLinkProps): JSX.Element {
   const defaultProps = {
     "aria-current": isActive ? ("page" as const) : undefined,
     className: render
@@ -80,7 +82,7 @@ export function PaginationLink({
 export function PaginationPrevious({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
+}: React.ComponentProps<typeof PaginationLink>): JSX.Element {
   return (
     <PaginationLink
       aria-label="Go to previous page"
@@ -97,7 +99,7 @@ export function PaginationPrevious({
 export function PaginationNext({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) {
+}: React.ComponentProps<typeof PaginationLink>): JSX.Element {
   return (
     <PaginationLink
       aria-label="Go to next page"
@@ -114,7 +116,7 @@ export function PaginationNext({
 export function PaginationEllipsis({
   className,
   ...props
-}: React.ComponentProps<"span">) {
+}: React.ComponentProps<"span">): JSX.Element {
   return (
     <span
       aria-hidden

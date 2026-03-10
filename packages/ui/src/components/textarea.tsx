@@ -16,7 +16,7 @@ export function Textarea({
   size = "default",
   unstyled = false,
   ...props
-}: TextareaProps) {
+}: TextareaProps): JSX.Element {
   return (
     <span
       className={

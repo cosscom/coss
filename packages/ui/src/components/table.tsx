@@ -2,7 +2,10 @@ import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-export function Table({ className, ...props }: React.ComponentProps<"table">) {
+export function Table({
+  className,
+  ...props
+}: React.ComponentProps<"table">): JSX.Element {
   return (
     <div
       className="relative w-full overflow-x-auto"
@@ -23,7 +26,7 @@ export function Table({ className, ...props }: React.ComponentProps<"table">) {
 export function TableHeader({
   className,
   ...props
-}: React.ComponentProps<"thead">) {
+}: React.ComponentProps<"thead">): JSX.Element {
   return (
     <thead
       className={cn(
@@ -39,7 +42,7 @@ export function TableHeader({
 export function TableBody({
   className,
   ...props
-}: React.ComponentProps<"tbody">) {
+}: React.ComponentProps<"tbody">): JSX.Element {
   return (
     <tbody
       className={cn(
@@ -55,7 +58,7 @@ export function TableBody({
 export function TableFooter({
   className,
   ...props
-}: React.ComponentProps<"tfoot">) {
+}: React.ComponentProps<"tfoot">): JSX.Element {
   return (
     <tfoot
       className={cn(
@@ -68,7 +71,10 @@ export function TableFooter({
   );
 }
 
-export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+export function TableRow({
+  className,
+  ...props
+}: React.ComponentProps<"tr">): JSX.Element {
   return (
     <tr
       className={cn(
@@ -81,7 +87,10 @@ export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
-export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+export function TableHead({
+  className,
+  ...props
+}: React.ComponentProps<"th">): JSX.Element {
   return (
     <th
       className={cn(
@@ -94,7 +103,10 @@ export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   );
 }
 
-export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+export function TableCell({
+  className,
+  ...props
+}: React.ComponentProps<"td">): JSX.Element {
   return (
     <td
       className={cn(
@@ -110,7 +122,7 @@ export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
 export function TableCaption({
   className,
   ...props
-}: React.ComponentProps<"caption">) {
+}: React.ComponentProps<"caption">): JSX.Element {
   return (
     <caption
       className={cn(

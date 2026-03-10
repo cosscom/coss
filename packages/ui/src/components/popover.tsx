@@ -12,7 +12,7 @@ export function PopoverTrigger({
   className,
   children,
   ...props
-}: PopoverPrimitive.Trigger.Props) {
+}: PopoverPrimitive.Trigger.Props): JSX.Element {
   return (
     <PopoverPrimitive.Trigger
       className={className}
@@ -41,7 +41,7 @@ export function PopoverPopup({
   alignOffset?: PopoverPrimitive.Positioner.Props["alignOffset"];
   tooltipStyle?: boolean;
   anchor?: PopoverPrimitive.Positioner.Props["anchor"];
-}) {
+}): JSX.Element {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -80,14 +80,16 @@ export function PopoverPopup({
   );
 }
 
-export function PopoverClose({ ...props }: PopoverPrimitive.Close.Props) {
+export function PopoverClose({
+  ...props
+}: PopoverPrimitive.Close.Props): JSX.Element {
   return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
 }
 
 export function PopoverTitle({
   className,
   ...props
-}: PopoverPrimitive.Title.Props) {
+}: PopoverPrimitive.Title.Props): JSX.Element {
   return (
     <PopoverPrimitive.Title
       className={cn("font-semibold text-lg leading-none", className)}
@@ -100,7 +102,7 @@ export function PopoverTitle({
 export function PopoverDescription({
   className,
   ...props
-}: PopoverPrimitive.Description.Props) {
+}: PopoverPrimitive.Description.Props): JSX.Element {
   return (
     <PopoverPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}

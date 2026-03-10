@@ -12,18 +12,20 @@ export const Dialog = DialogPrimitive.Root;
 
 export const DialogPortal = DialogPrimitive.Portal;
 
-export function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
+export function DialogTrigger(
+  props: DialogPrimitive.Trigger.Props,
+): JSX.Element {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-export function DialogClose(props: DialogPrimitive.Close.Props) {
+export function DialogClose(props: DialogPrimitive.Close.Props): JSX.Element {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
 export function DialogBackdrop({
   className,
   ...props
-}: DialogPrimitive.Backdrop.Props) {
+}: DialogPrimitive.Backdrop.Props): JSX.Element {
   return (
     <DialogPrimitive.Backdrop
       className={cn(
@@ -39,7 +41,7 @@ export function DialogBackdrop({
 export function DialogViewport({
   className,
   ...props
-}: DialogPrimitive.Viewport.Props) {
+}: DialogPrimitive.Viewport.Props): JSX.Element {
   return (
     <DialogPrimitive.Viewport
       className={cn(
@@ -63,7 +65,7 @@ export function DialogPopup({
   showCloseButton?: boolean;
   bottomStickOnMobile?: boolean;
   closeProps?: DialogPrimitive.Close.Props;
-}) {
+}): JSX.Element {
   return (
     <DialogPortal>
       <DialogBackdrop />
@@ -103,7 +105,7 @@ export function DialogPopup({
 export function DialogHeader({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div">): JSX.Element {
   return (
     <div
       className={cn(
@@ -122,7 +124,7 @@ export function DialogFooter({
   ...props
 }: React.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-}) {
+}): JSX.Element {
   return (
     <div
       className={cn(
@@ -141,7 +143,7 @@ export function DialogFooter({
 export function DialogTitle({
   className,
   ...props
-}: DialogPrimitive.Title.Props) {
+}: DialogPrimitive.Title.Props): JSX.Element {
   return (
     <DialogPrimitive.Title
       className={cn(
@@ -157,7 +159,7 @@ export function DialogTitle({
 export function DialogDescription({
   className,
   ...props
-}: DialogPrimitive.Description.Props) {
+}: DialogPrimitive.Description.Props): JSX.Element {
   return (
     <DialogPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -171,7 +173,7 @@ export function DialogPanel({
   className,
   scrollFade = true,
   ...props
-}: React.ComponentProps<"div"> & { scrollFade?: boolean }) {
+}: React.ComponentProps<"div"> & { scrollFade?: boolean }): JSX.Element {
   return (
     <ScrollArea scrollFade={scrollFade}>
       <div

@@ -6,7 +6,10 @@ import { cn } from "@coss/ui/lib/utils";
 
 export type TabsVariant = "default" | "underline";
 
-export function Tabs({ className, ...props }: TabsPrimitive.Root.Props) {
+export function Tabs({
+  className,
+  ...props
+}: TabsPrimitive.Root.Props): JSX.Element {
   return (
     <TabsPrimitive.Root
       className={cn(
@@ -26,7 +29,7 @@ export function TabsList({
   ...props
 }: TabsPrimitive.List.Props & {
   variant?: TabsVariant;
-}) {
+}): JSX.Element {
   return (
     <TabsPrimitive.List
       className={cn(
@@ -54,7 +57,10 @@ export function TabsList({
   );
 }
 
-export function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
+export function TabsTab({
+  className,
+  ...props
+}: TabsPrimitive.Tab.Props): JSX.Element {
   return (
     <TabsPrimitive.Tab
       className={cn(
@@ -67,7 +73,10 @@ export function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
   );
 }
 
-export function TabsPanel({ className, ...props }: TabsPrimitive.Panel.Props) {
+export function TabsPanel({
+  className,
+  ...props
+}: TabsPrimitive.Panel.Props): JSX.Element {
   return (
     <TabsPrimitive.Panel
       className={cn("flex-1 outline-none", className)}

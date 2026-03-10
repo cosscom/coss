@@ -6,7 +6,7 @@ export function Separator({
   className,
   orientation = "horizontal",
   ...props
-}: SeparatorPrimitive.Props) {
+}: SeparatorPrimitive.Props): JSX.Element {
   return (
     <SeparatorPrimitive
       className={cn(

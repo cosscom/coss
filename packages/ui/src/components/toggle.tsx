@@ -32,7 +32,7 @@ export function Toggle({
   variant,
   size,
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>): JSX.Element {
   return (
     <TogglePrimitive
       className={cn(toggleVariants({ className, size, variant }))}

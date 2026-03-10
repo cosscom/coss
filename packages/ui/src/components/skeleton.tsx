@@ -1,6 +1,9 @@
 import { cn } from "@coss/ui/lib/utils";
 
-export function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+export function Skeleton({
+  className,
+  ...props
+}: React.ComponentProps<"div">): JSX.Element {
   return (
     <div
       className={cn(

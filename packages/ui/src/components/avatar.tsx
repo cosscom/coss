@@ -4,7 +4,10 @@ import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
 
 import { cn } from "@coss/ui/lib/utils";
 
-export function Avatar({ className, ...props }: AvatarPrimitive.Root.Props) {
+export function Avatar({
+  className,
+  ...props
+}: AvatarPrimitive.Root.Props): JSX.Element {
   return (
     <AvatarPrimitive.Root
       className={cn(
@@ -20,7 +23,7 @@ export function Avatar({ className, ...props }: AvatarPrimitive.Root.Props) {
 export function AvatarImage({
   className,
   ...props
-}: AvatarPrimitive.Image.Props) {
+}: AvatarPrimitive.Image.Props): JSX.Element {
   return (
     <AvatarPrimitive.Image
       className={cn("size-full object-cover", className)}
@@ -33,7 +36,7 @@ export function AvatarImage({
 export function AvatarFallback({
   className,
   ...props
-}: AvatarPrimitive.Fallback.Props) {
+}: AvatarPrimitive.Fallback.Props): JSX.Element {
   return (
     <AvatarPrimitive.Fallback
       className={cn(

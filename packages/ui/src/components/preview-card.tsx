@@ -8,7 +8,7 @@ export const PreviewCard = PreviewCardPrimitive.Root;
 
 export function PreviewCardTrigger({
   ...props
-}: PreviewCardPrimitive.Trigger.Props) {
+}: PreviewCardPrimitive.Trigger.Props): JSX.Element {
   return (
     <PreviewCardPrimitive.Trigger data-slot="preview-card-trigger" {...props} />
   );
@@ -25,7 +25,7 @@ export function PreviewCardPopup({
   align?: PreviewCardPrimitive.Positioner.Props["align"];
   sideOffset?: PreviewCardPrimitive.Positioner.Props["sideOffset"];
   anchor?: PreviewCardPrimitive.Positioner.Props["anchor"];
-}) {
+}): JSX.Element {
   return (
     <PreviewCardPrimitive.Portal>
       <PreviewCardPrimitive.Positioner
