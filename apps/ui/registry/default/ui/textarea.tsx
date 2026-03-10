@@ -30,7 +30,8 @@ export function Textarea({
       data-slot="textarea-control"
     >
       <FieldPrimitive.Control
-        render={(defaultProps: Record<string, unknown>) => (
+        // biome-ignore lint/nursery/useExplicitType: Types inferred by Base UI render prop
+        render={(defaultProps) => (
           <textarea
             className={cn(
               "field-sizing-content min-h-17.5 w-full rounded-[inherit] px-[calc(--spacing(3)-1px)] py-[calc(--spacing(1.5)-1px)] outline-none max-sm:min-h-20.5",
