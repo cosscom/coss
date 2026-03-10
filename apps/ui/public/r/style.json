@@ -3,7 +3,7 @@
   "extends": "none",
   "name": "style",
   "type": "registry:style",
-  "description": "Complete coss theme: colors, sidebar, fonts, and base styles. Use with `npx shadcn init coss/style` for full project setup.",
+  "description": "Complete coss theme: colors, sidebar, fonts, and base styles. Use with `npx shadcn init @coss/style` for full project setup.",
   "dependencies": [
     "@base-ui/react",
     "class-variance-authority",

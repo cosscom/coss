@@ -131,7 +131,7 @@ export const styles: Registry["items"] = [
       "lucide-react",
     ],
     description:
-      "Complete coss theme: colors, sidebar, fonts, and base styles. Use with `npx shadcn init coss/style` for full project setup.",
+      "Complete coss theme: colors, sidebar, fonts, and base styles. Use with `npx shadcn init @coss/style` for full project setup.",
     devDependencies: ["tw-animate-css"],
     extends: "none",
     name: "style",
