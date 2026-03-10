@@ -7,7 +7,8 @@ import { cn } from "@/registry/default/lib/utils";
 import { Input } from "@/registry/default/ui/input";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
-export const Autocomplete = AutocompletePrimitive.Root;
+export const Autocomplete: typeof AutocompletePrimitive.Root =
+  AutocompletePrimitive.Root;
 
 export function AutocompleteInput({
   className,
@@ -304,6 +305,7 @@ export function AutocompleteTrigger({
   );
 }
 
-export const useAutocompleteFilter = AutocompletePrimitive.useFilter;
+export const useAutocompleteFilter: typeof AutocompletePrimitive.useFilter =
+  AutocompletePrimitive.useFilter;
 
 export { AutocompletePrimitive };

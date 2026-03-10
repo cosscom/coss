@@ -4,9 +4,10 @@ import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
-export const PopoverCreateHandle = PopoverPrimitive.createHandle;
+export const PopoverCreateHandle: typeof PopoverPrimitive.createHandle =
+  PopoverPrimitive.createHandle;
 
-export const Popover = PopoverPrimitive.Root;
+export const Popover: typeof PopoverPrimitive.Root = PopoverPrimitive.Root;
 
 export function PopoverTrigger({
   className,

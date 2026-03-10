@@ -72,7 +72,9 @@ export function FieldError({
   );
 }
 
-export const FieldControl = FieldPrimitive.Control;
-export const FieldValidity = FieldPrimitive.Validity;
+export const FieldControl: typeof FieldPrimitive.Control =
+  FieldPrimitive.Control;
+export const FieldValidity: typeof FieldPrimitive.Validity =
+  FieldPrimitive.Validity;
 
 export { FieldPrimitive };

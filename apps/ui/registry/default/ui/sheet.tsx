@@ -7,9 +7,9 @@ import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
-export const Sheet = SheetPrimitive.Root;
+export const Sheet: typeof SheetPrimitive.Root = SheetPrimitive.Root;
 
-export const SheetPortal = SheetPrimitive.Portal;
+export const SheetPortal: typeof SheetPrimitive.Portal = SheetPrimitive.Portal;
 
 export function SheetTrigger(
   props: SheetPrimitive.Trigger.Props,

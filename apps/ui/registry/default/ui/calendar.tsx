@@ -79,7 +79,7 @@ export function Calendar({
     }: {
       className?: string;
       orientation?: "left" | "right" | "up" | "down";
-    }) => {
+    }): React.ReactElement => {
       if (orientation === "left") {
         return (
           <ChevronLeftIcon

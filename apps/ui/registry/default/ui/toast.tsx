@@ -12,8 +12,10 @@ import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { buttonVariants } from "@/registry/default/ui/button";
 
-export const toastManager = Toast.createToastManager();
-export const anchoredToastManager = Toast.createToastManager();
+export const toastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
+export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
 
 const TOAST_ICONS = {
   error: CircleAlertIcon,
