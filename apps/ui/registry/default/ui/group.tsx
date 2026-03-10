@@ -34,7 +34,7 @@ export function Group({
   className?: string;
   orientation?: VariantProps<typeof groupVariants>["orientation"];
   children: React.ReactNode;
-} & React.ComponentProps<"div">): JSX.Element {
+} & React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(groupVariants({ orientation }), className)}
@@ -52,7 +52,7 @@ export function GroupText({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): JSX.Element {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
       "relative inline-flex items-center whitespace-nowrap gap-2 rounded-lg border border-input bg-muted not-dark:bg-clip-padding px-[calc(--spacing(3)-1px)] text-muted-foreground text-base sm:text-sm shadow-xs/5 outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/6%)] dark:bg-input/64 dark:before:shadow-[0_-1px_--theme(--color-white/6%)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 [&_svg]:-mx-0.5",
@@ -73,7 +73,7 @@ export function GroupSeparator({
   ...props
 }: {
   className?: string;
-} & React.ComponentProps<typeof Separator>): JSX.Element {
+} & React.ComponentProps<typeof Separator>): React.ReactElement {
   return (
     <Separator
       className={cn(

@@ -15,7 +15,7 @@ import { type Button, buttonVariants } from "@/registry/default/ui/button";
 export function Pagination({
   className,
   ...props
-}: React.ComponentProps<"nav">): JSX.Element {
+}: React.ComponentProps<"nav">): React.ReactElement {
   return (
     <nav
       aria-label="pagination"
@@ -29,7 +29,7 @@ export function Pagination({
 export function PaginationContent({
   className,
   ...props
-}: React.ComponentProps<"ul">): JSX.Element {
+}: React.ComponentProps<"ul">): React.ReactElement {
   return (
     <ul
       className={cn("flex flex-row items-center gap-1", className)}
@@ -41,7 +41,7 @@ export function PaginationContent({
 
 export function PaginationItem({
   ...props
-}: React.ComponentProps<"li">): JSX.Element {
+}: React.ComponentProps<"li">): React.ReactElement {
   return <li data-slot="pagination-item" {...props} />;
 }
 
@@ -56,7 +56,7 @@ export function PaginationLink({
   size = "icon",
   render,
   ...props
-}: PaginationLinkProps): JSX.Element {
+}: PaginationLinkProps): React.ReactElement {
   const defaultProps = {
     "aria-current": isActive ? ("page" as const) : undefined,
     className: render
@@ -82,7 +82,7 @@ export function PaginationLink({
 export function PaginationPrevious({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>): JSX.Element {
+}: React.ComponentProps<typeof PaginationLink>): React.ReactElement {
   return (
     <PaginationLink
       aria-label="Go to previous page"
@@ -99,7 +99,7 @@ export function PaginationPrevious({
 export function PaginationNext({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>): JSX.Element {
+}: React.ComponentProps<typeof PaginationLink>): React.ReactElement {
   return (
     <PaginationLink
       aria-label="Go to next page"
@@ -116,7 +116,7 @@ export function PaginationNext({
 export function PaginationEllipsis({
   className,
   ...props
-}: React.ComponentProps<"span">): JSX.Element {
+}: React.ComponentProps<"span">): React.ReactElement {
   return (
     <span
       aria-hidden

@@ -1,11 +1,11 @@
 import { cva, type VariantProps } from "class-variance-authority";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export function Empty({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -21,7 +21,7 @@ export function Empty({
 export function EmptyHeader({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -54,7 +54,7 @@ export function EmptyMedia({
   variant = "default",
   ...props
 }: React.ComponentProps<"div"> &
-  VariantProps<typeof emptyMediaVariants>): JSX.Element {
+  VariantProps<typeof emptyMediaVariants>): React.ReactElement {
   return (
     <div
       className={cn("relative mb-6", className)}
@@ -91,7 +91,7 @@ export function EmptyMedia({
 export function EmptyTitle({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn("font-heading font-semibold text-xl", className)}
@@ -104,7 +104,7 @@ export function EmptyTitle({
 export function EmptyDescription({
   className,
   ...props
-}: React.ComponentProps<"p">): JSX.Element {
+}: React.ComponentProps<"p">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -120,7 +120,7 @@ export function EmptyDescription({
 export function EmptyContent({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(

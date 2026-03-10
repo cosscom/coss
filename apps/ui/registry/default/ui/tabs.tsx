@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export type TabsVariant = "default" | "underline";
@@ -9,7 +9,7 @@ export type TabsVariant = "default" | "underline";
 export function Tabs({
   className,
   ...props
-}: TabsPrimitive.Root.Props): JSX.Element {
+}: TabsPrimitive.Root.Props): React.ReactElement {
   return (
     <TabsPrimitive.Root
       className={cn(
@@ -29,7 +29,7 @@ export function TabsList({
   ...props
 }: TabsPrimitive.List.Props & {
   variant?: TabsVariant;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <TabsPrimitive.List
       className={cn(
@@ -60,7 +60,7 @@ export function TabsList({
 export function TabsTab({
   className,
   ...props
-}: TabsPrimitive.Tab.Props): JSX.Element {
+}: TabsPrimitive.Tab.Props): React.ReactElement {
   return (
     <TabsPrimitive.Tab
       className={cn(
@@ -76,7 +76,7 @@ export function TabsTab({
 export function TabsPanel({
   className,
   ...props
-}: TabsPrimitive.Panel.Props): JSX.Element {
+}: TabsPrimitive.Panel.Props): React.ReactElement {
   return (
     <TabsPrimitive.Panel
       className={cn("flex-1 outline-none", className)}

@@ -10,7 +10,7 @@ import { Textarea, type TextareaProps } from "@/registry/default/ui/textarea";
 export function InputGroup({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -50,7 +50,7 @@ export function InputGroupAddon({
   align = "inline-start",
   ...props
 }: React.ComponentProps<"div"> &
-  VariantProps<typeof inputGroupAddonVariants>): JSX.Element {
+  VariantProps<typeof inputGroupAddonVariants>): React.ReactElement {
   return (
     <div
       className={cn(inputGroupAddonVariants({ align }), className)}
@@ -79,7 +79,7 @@ export function InputGroupAddon({
 export function InputGroupText({
   className,
   ...props
-}: React.ComponentProps<"span">): JSX.Element {
+}: React.ComponentProps<"span">): React.ReactElement {
   return (
     <span
       className={cn(
@@ -94,13 +94,13 @@ export function InputGroupText({
 export function InputGroupInput({
   className,
   ...props
-}: InputProps): JSX.Element {
+}: InputProps): React.ReactElement {
   return <Input className={className} unstyled {...props} />;
 }
 
 export function InputGroupTextarea({
   className,
   ...props
-}: TextareaProps): JSX.Element {
+}: TextareaProps): React.ReactElement {
   return <Textarea className={className} unstyled {...props} />;
 }

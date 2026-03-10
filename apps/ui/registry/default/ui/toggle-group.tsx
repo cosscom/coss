@@ -27,7 +27,7 @@ export function ToggleGroup({
   children,
   ...props
 }: ToggleGroupPrimitive.Props &
-  VariantProps<typeof toggleVariants>): JSX.Element {
+  VariantProps<typeof toggleVariants>): React.ReactElement {
   return (
     <ToggleGroupPrimitive
       className={cn(
@@ -61,7 +61,8 @@ export function Toggle({
   variant,
   size,
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>): JSX.Element {
+}: TogglePrimitive.Props &
+  VariantProps<typeof toggleVariants>): React.ReactElement {
   const context = React.useContext(ToggleGroupContext);
 
   const resolvedVariant = context.variant || variant;
@@ -87,7 +88,7 @@ export function ToggleGroupSeparator({
   ...props
 }: {
   className?: string;
-} & React.ComponentProps<typeof Separator>): JSX.Element {
+} & React.ComponentProps<typeof Separator>): React.ReactElement {
   return (
     <Separator
       className={cn(

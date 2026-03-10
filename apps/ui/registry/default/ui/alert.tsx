@@ -28,7 +28,7 @@ export function Alert({
   variant,
   ...props
 }: React.ComponentProps<"div"> &
-  VariantProps<typeof alertVariants>): JSX.Element {
+  VariantProps<typeof alertVariants>): React.ReactElement {
   return (
     <div
       className={cn(alertVariants({ variant }), className)}
@@ -42,7 +42,7 @@ export function Alert({
 export function AlertTitle({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn("font-medium [svg~&]:col-start-2", className)}
@@ -55,7 +55,7 @@ export function AlertTitle({
 export function AlertDescription({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -71,7 +71,7 @@ export function AlertDescription({
 export function AlertAction({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(

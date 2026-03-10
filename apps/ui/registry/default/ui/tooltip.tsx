@@ -1,7 +1,7 @@
 "use client";
 
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export const TooltipCreateHandle = TooltipPrimitive.createHandle;
@@ -12,7 +12,7 @@ export const Tooltip = TooltipPrimitive.Root;
 
 export function TooltipTrigger(
   props: TooltipPrimitive.Trigger.Props,
-): JSX.Element {
+): React.ReactElement {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
@@ -29,7 +29,7 @@ export function TooltipPopup({
   side?: TooltipPrimitive.Positioner.Props["side"];
   sideOffset?: TooltipPrimitive.Positioner.Props["sideOffset"];
   anchor?: TooltipPrimitive.Positioner.Props["anchor"];
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner

@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle;
@@ -12,7 +12,7 @@ export const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
 export function AlertDialogTrigger(
   props: AlertDialogPrimitive.Trigger.Props,
-): JSX.Element {
+): React.ReactElement {
   return (
     <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
   );
@@ -21,7 +21,7 @@ export function AlertDialogTrigger(
 export function AlertDialogBackdrop({
   className,
   ...props
-}: AlertDialogPrimitive.Backdrop.Props): JSX.Element {
+}: AlertDialogPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <AlertDialogPrimitive.Backdrop
       className={cn(
@@ -37,7 +37,7 @@ export function AlertDialogBackdrop({
 export function AlertDialogViewport({
   className,
   ...props
-}: AlertDialogPrimitive.Viewport.Props): JSX.Element {
+}: AlertDialogPrimitive.Viewport.Props): React.ReactElement {
   return (
     <AlertDialogPrimitive.Viewport
       className={cn(
@@ -56,7 +56,7 @@ export function AlertDialogPopup({
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   bottomStickOnMobile?: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <AlertDialogPortal>
       <AlertDialogBackdrop />
@@ -84,7 +84,7 @@ export function AlertDialogPopup({
 export function AlertDialogHeader({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -103,7 +103,7 @@ export function AlertDialogFooter({
   ...props
 }: React.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <div
       className={cn(
@@ -121,7 +121,7 @@ export function AlertDialogFooter({
 export function AlertDialogTitle({
   className,
   ...props
-}: AlertDialogPrimitive.Title.Props): JSX.Element {
+}: AlertDialogPrimitive.Title.Props): React.ReactElement {
   return (
     <AlertDialogPrimitive.Title
       className={cn(
@@ -137,7 +137,7 @@ export function AlertDialogTitle({
 export function AlertDialogDescription({
   className,
   ...props
-}: AlertDialogPrimitive.Description.Props): JSX.Element {
+}: AlertDialogPrimitive.Description.Props): React.ReactElement {
   return (
     <AlertDialogPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -149,7 +149,7 @@ export function AlertDialogDescription({
 
 export function AlertDialogClose(
   props: AlertDialogPrimitive.Close.Props,
-): JSX.Element {
+): React.ReactElement {
   return (
     <AlertDialogPrimitive.Close data-slot="alert-dialog-close" {...props} />
   );

@@ -18,7 +18,7 @@ export function NumberField({
   ...props
 }: NumberFieldPrimitive.Root.Props & {
   size?: "sm" | "default" | "lg";
-}): JSX.Element {
+}): React.ReactElement {
   const generatedId = React.useId();
   const fieldId = id ?? generatedId;
 
@@ -38,7 +38,7 @@ export function NumberField({
 export function NumberFieldGroup({
   className,
   ...props
-}: NumberFieldPrimitive.Group.Props): JSX.Element {
+}: NumberFieldPrimitive.Group.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Group
       className={cn(
@@ -54,7 +54,7 @@ export function NumberFieldGroup({
 export function NumberFieldDecrement({
   className,
   ...props
-}: NumberFieldPrimitive.Decrement.Props): JSX.Element {
+}: NumberFieldPrimitive.Decrement.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Decrement
       className={cn(
@@ -72,7 +72,7 @@ export function NumberFieldDecrement({
 export function NumberFieldIncrement({
   className,
   ...props
-}: NumberFieldPrimitive.Increment.Props): JSX.Element {
+}: NumberFieldPrimitive.Increment.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Increment
       className={cn(
@@ -90,7 +90,7 @@ export function NumberFieldIncrement({
 export function NumberFieldInput({
   className,
   ...props
-}: NumberFieldPrimitive.Input.Props): JSX.Element {
+}: NumberFieldPrimitive.Input.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Input
       className={cn(
@@ -109,7 +109,7 @@ export function NumberFieldScrubArea({
   ...props
 }: NumberFieldPrimitive.ScrubArea.Props & {
   label: string;
-}): JSX.Element {
+}): React.ReactElement {
   const context = React.useContext(NumberFieldContext);
 
   if (!context) {
@@ -134,7 +134,9 @@ export function NumberFieldScrubArea({
   );
 }
 
-function CursorGrowIcon(props: React.ComponentProps<"svg">): JSX.Element {
+function CursorGrowIcon(
+  props: React.ComponentProps<"svg">,
+): React.ReactElement {
   return (
     <svg
       fill="black"

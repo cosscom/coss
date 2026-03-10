@@ -9,14 +9,14 @@ import { cn } from "@/registry/default/lib/utils";
 
 export function Breadcrumb({
   ...props
-}: React.ComponentProps<"nav">): JSX.Element {
+}: React.ComponentProps<"nav">): React.ReactElement {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
 }
 
 export function BreadcrumbList({
   className,
   ...props
-}: React.ComponentProps<"ol">): JSX.Element {
+}: React.ComponentProps<"ol">): React.ReactElement {
   return (
     <ol
       className={cn(
@@ -32,7 +32,7 @@ export function BreadcrumbList({
 export function BreadcrumbItem({
   className,
   ...props
-}: React.ComponentProps<"li">): JSX.Element {
+}: React.ComponentProps<"li">): React.ReactElement {
   return (
     <li
       className={cn("inline-flex items-center gap-1.5", className)}
@@ -46,7 +46,7 @@ export function BreadcrumbLink({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"a">): JSX.Element {
+}: useRender.ComponentProps<"a">): React.ReactElement {
   const defaultProps = {
     className: cn("transition-colors hover:text-foreground", className),
     "data-slot": "breadcrumb-link",
@@ -62,7 +62,7 @@ export function BreadcrumbLink({
 export function BreadcrumbPage({
   className,
   ...props
-}: React.ComponentProps<"span">): JSX.Element {
+}: React.ComponentProps<"span">): React.ReactElement {
   return (
     // biome-ignore lint(a11y/useFocusableInteractive): known
     <span
@@ -80,7 +80,7 @@ export function BreadcrumbSeparator({
   children,
   className,
   ...props
-}: React.ComponentProps<"li">): JSX.Element {
+}: React.ComponentProps<"li">): React.ReactElement {
   return (
     <li
       aria-hidden="true"
@@ -97,7 +97,7 @@ export function BreadcrumbSeparator({
 export function BreadcrumbEllipsis({
   className,
   ...props
-}: React.ComponentProps<"span">): JSX.Element {
+}: React.ComponentProps<"span">): React.ReactElement {
   return (
     <span
       aria-hidden="true"

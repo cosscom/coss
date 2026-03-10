@@ -1,13 +1,13 @@
 "use client";
 
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export function Avatar({
   className,
   ...props
-}: AvatarPrimitive.Root.Props): JSX.Element {
+}: AvatarPrimitive.Root.Props): React.ReactElement {
   return (
     <AvatarPrimitive.Root
       className={cn(
@@ -23,7 +23,7 @@ export function Avatar({
 export function AvatarImage({
   className,
   ...props
-}: AvatarPrimitive.Image.Props): JSX.Element {
+}: AvatarPrimitive.Image.Props): React.ReactElement {
   return (
     <AvatarPrimitive.Image
       className={cn("size-full object-cover", className)}
@@ -36,7 +36,7 @@ export function AvatarImage({
 export function AvatarFallback({
   className,
   ...props
-}: AvatarPrimitive.Fallback.Props): JSX.Element {
+}: AvatarPrimitive.Fallback.Props): React.ReactElement {
   return (
     <AvatarPrimitive.Fallback
       className={cn(

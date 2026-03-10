@@ -1,9 +1,10 @@
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export function Skeleton({
   className,
   ...props
-}: React.ComponentProps<"div">): JSX.Element {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
