@@ -20,13 +20,27 @@ const TOAST_ICONS = {
   warning: TriangleAlertIcon,
 } as const;
 
-function Toasts({
-  position = "bottom-right",
-}: {
-  position: ToastPosition;
-}): React.ReactElement {
+type SwipeDirection = "up" | "down" | "left" | "right";
+
+function getSwipeDirection(position: ToastPosition): SwipeDirection[] {
+  const verticalDirection: SwipeDirection = position.startsWith("top")
+    ? "up"
+    : "down";
+
+  if (position.includes("center")) {
+    return [verticalDirection];
+  }
+
+  if (position.includes("left")) {
+    return ["left", verticalDirection];
+  }
+
+  return ["right", verticalDirection];
+}
+
+function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
   const { toasts } = Toast.useToastManager();
-  const isTop = position.startsWith("top");
+  const swipeDirection = getSwipeDirection(position);
 
   return (
     <Toast.Portal data-slot="toast-portal">
@@ -94,13 +108,7 @@ function Toasts({
               )}
               data-position={position}
               key={toast.id}
-              swipeDirection={
-                position.includes("center")
-                  ? [isTop ? "up" : "down"]
-                  : position.includes("left")
-                    ? ["left", isTop ? "up" : "down"]
-                    : ["right", isTop ? "up" : "down"]
-              }
+              swipeDirection={swipeDirection}
               toast={toast}
             >
               <Toast.Content className="pointer-events-auto flex items-center justify-between gap-1.5 overflow-hidden px-3.5 py-3 text-sm transition-opacity duration-250 data-behind:not-data-expanded:pointer-events-none data-behind:opacity-0 data-expanded:opacity-100">
