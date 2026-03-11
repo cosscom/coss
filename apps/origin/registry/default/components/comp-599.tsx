@@ -99,7 +99,7 @@ export default function Component() {
                   }}
                 />
                 <TreeItem className="flex-1 not-last:pb-0" item={item}>
-                  <TreeItemLabel className="before:-inset-y-0.5 before:-z-10 relative before:absolute before:inset-x-0 before:bg-background">
+                  <TreeItemLabel className="relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10 before:bg-background">
                     <span className="flex items-center gap-2">
                       {item.isFolder() ? (
                         item.isExpanded() ? (

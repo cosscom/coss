@@ -27,7 +27,7 @@ export default function Component({
           >
             <ArrowLeftIcon
               aria-hidden="true"
-              className="-ms-1 group-hover:-translate-x-0.5 opacity-60 transition-transform"
+              className="-ms-1 opacity-60 transition-transform group-hover:-translate-x-0.5"
               size={16}
             />
             Previous

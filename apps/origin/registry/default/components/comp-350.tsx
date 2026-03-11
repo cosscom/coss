@@ -37,7 +37,7 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Table w/ left chevron</h2>
       <Accordion
-        className="-space-y-px w-full"
+        className="w-full -space-y-px"
         collapsible
         defaultValue="3"
         type="single"
@@ -48,7 +48,7 @@ export default function Component() {
             key={item.id}
             value={item.id}
           >
-            <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 rounded-md py-2 text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0">
+            <AccordionTrigger className="justify-start gap-3 rounded-md py-2 text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0 [&>svg]:-order-1">
               {item.title}
             </AccordionTrigger>
             <AccordionContent className="ps-7 pb-2 text-muted-foreground">

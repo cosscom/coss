@@ -66,7 +66,7 @@ export default function Component() {
                 <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-emerald-500">
+              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-emerald-500">
                 <span className="sr-only">Online</span>
               </span>
             </div>
@@ -78,7 +78,7 @@ export default function Component() {
                 />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>
@@ -87,7 +87,7 @@ export default function Component() {
                 <AvatarImage alt="Linda Green" src="/origin/avatar-80-05.jpg" />
                 <AvatarFallback>KK</AvatarFallback>
               </Avatar>
-              <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
+              <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
                 <span className="sr-only">Online</span>
               </span>
             </div>

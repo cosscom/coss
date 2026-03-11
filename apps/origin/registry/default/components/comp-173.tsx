@@ -7,7 +7,7 @@ export default function Component() {
   return (
     <div className="inline-flex items-center gap-2">
       <Switch
-        className="data-[state=checked]:[&_span]:rtl:-translate-x-3 h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3"
+        className="h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3 data-[state=checked]:[&_span]:rtl:-translate-x-3"
         id={id}
       />
       <Label className="sr-only" htmlFor={id}>

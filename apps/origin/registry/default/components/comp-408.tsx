@@ -1,6 +1,6 @@
 export default function Component() {
   return (
-    <div className="-space-x-6 flex">
+    <div className="flex -space-x-6">
       <img
         alt="Avatar 01"
         className="rounded-full ring-2 ring-background"

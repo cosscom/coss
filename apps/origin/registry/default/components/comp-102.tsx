@@ -3,7 +3,7 @@ import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
   return (
-    <div className="-space-x-px inline-flex rounded-md shadow-xs rtl:space-x-reverse">
+    <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
       <Button
         aria-label="Upvote"
         className="rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10"

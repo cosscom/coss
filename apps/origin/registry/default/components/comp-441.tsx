@@ -42,7 +42,7 @@ export default function Component() {
                 <TabsTrigger className="group py-3" value="tab-2">
                   <span className="relative">
                     <PanelsTopLeftIcon aria-hidden="true" size={16} />
-                    <Badge className="-top-2.5 -translate-x-1.5 absolute left-full min-w-4 border-background px-0.5 text-[10px]/[.875rem] transition-opacity group-data-[state=inactive]:opacity-50">
+                    <Badge className="absolute -top-2.5 left-full min-w-4 -translate-x-1.5 border-background px-0.5 text-[10px]/[.875rem] transition-opacity group-data-[state=inactive]:opacity-50">
                       3
                     </Badge>
                   </span>

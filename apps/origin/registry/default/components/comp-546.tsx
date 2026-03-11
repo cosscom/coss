@@ -110,7 +110,7 @@ export default function Component() {
                   />
                   <Button
                     aria-label="Remove image"
-                    className="-top-2 -right-2 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+                    className="absolute -top-2 -right-2 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
                     onClick={() => removeFile(file.id)}
                     size="icon"
                   >

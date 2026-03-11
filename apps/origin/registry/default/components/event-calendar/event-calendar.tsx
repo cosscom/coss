@@ -356,7 +356,7 @@ export function EventCalendar({
             >
               <PlusIcon
                 aria-hidden="true"
-                className="sm:-ms-1 opacity-60"
+                className="opacity-60 sm:-ms-1"
                 size={16}
               />
               <span className="max-sm:sr-only">New event</span>

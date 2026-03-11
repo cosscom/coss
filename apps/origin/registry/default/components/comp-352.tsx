@@ -84,7 +84,7 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Multi-level</h2>
       <Accordion
-        className="-space-y-px w-full"
+        className="w-full -space-y-px"
         collapsible
         defaultValue="3"
         type="single"

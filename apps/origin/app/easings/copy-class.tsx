@@ -55,7 +55,7 @@ const CopyClass = ({ value }: { value: string }) => {
           </div>
           <div
             className={cn(
-              "-top-0.5 absolute transition-all",
+              "absolute -top-0.5 transition-all",
               copied ? "scale-0 opacity-0" : "scale-100 opacity-80",
             )}
           >

@@ -118,7 +118,7 @@ export function SubscribeBottom() {
     <div className="dark relative overflow-hidden rounded-xl bg-zinc-900 px-4 py-14 sm:px-8">
       <Illustration
         aria-hidden="true"
-        className="-translate-x-1/2 absolute top-0 left-0"
+        className="absolute top-0 left-0 -translate-x-1/2"
       />
       <Illustration
         aria-hidden="true"

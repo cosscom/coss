@@ -62,14 +62,14 @@ export default function Component() {
     <div className="flex h-full flex-col gap-2 *:first:grow">
       <div>
         <Tree
-          className="before:-ms-1 relative before:absolute before:inset-0 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
+          className="relative before:absolute before:inset-0 before:-ms-1 before:bg-[repeating-linear-gradient(to_right,transparent_0,transparent_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)-1px),var(--border)_calc(var(--tree-indent)))]"
           indent={indent}
           tree={tree}
         >
           {tree.getItems().map((item) => {
             return (
               <TreeItem item={item} key={item.getId()}>
-                <TreeItemLabel className="before:-inset-y-0.5 before:-z-10 relative before:absolute before:inset-x-0 before:bg-background">
+                <TreeItemLabel className="relative before:absolute before:inset-x-0 before:-inset-y-0.5 before:-z-10 before:bg-background">
                   <span className="-order-1 flex flex-1 items-center gap-2">
                     {item.isFolder() ? (
                       item.isExpanded() ? (

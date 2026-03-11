@@ -9,7 +9,7 @@ export default function Component() {
         <p className="grow text-sm">
           <CircleCheckIcon
             aria-hidden="true"
-            className="-mt-0.5 me-3 inline-flex text-emerald-500"
+            className="me-3 -mt-0.5 inline-flex text-emerald-500"
             size={16}
           />
           Completed successfully!
