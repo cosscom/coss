@@ -7,7 +7,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Checkbox } from "@/registry/default/ui/checkbox";

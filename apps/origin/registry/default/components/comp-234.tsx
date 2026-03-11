@@ -1,5 +1,4 @@
 import { useId } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import MultipleSelector, {
   type Option,

@@ -10,7 +10,6 @@ import {
   ChevronUpIcon,
 } from "lucide-react";
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 export const Select: typeof SelectPrimitive.Root = SelectPrimitive.Root;
@@ -31,7 +30,7 @@ export const selectTriggerVariants = cva(
   },
 );
 
-const selectTriggerIconClassName = "-me-1 size-4.5 opacity-80 sm:size-4";
+export const selectTriggerIconClassName = "-me-1 size-4.5 opacity-80 sm:size-4";
 
 export interface SelectButtonProps extends useRender.ComponentProps<"button"> {
   size?: VariantProps<typeof selectTriggerVariants>["size"];
@@ -185,6 +184,7 @@ export function SelectItem({
     >
       <SelectPrimitive.ItemIndicator className="col-start-1">
         <svg
+          aria-hidden="true"
           fill="none"
           height="24"
           stroke="currentColor"

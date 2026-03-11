@@ -30,7 +30,6 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, GripVerticalIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useId, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Table,

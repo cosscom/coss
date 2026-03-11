@@ -8,11 +8,12 @@ import {
 import { CommandDialogTrigger } from "@coss/ui/components/command";
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import { commandHandle } from "@/components/app/app-command";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/user-menu";
 
-export function HeaderActions() {
+export function HeaderActions(): React.ReactElement {
   return (
     <div className="flex items-center gap-0.5 md:flex-col lg:flex-row">
       <CommandDialogTrigger

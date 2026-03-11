@@ -3,13 +3,6 @@
 import { CodeIcon } from "lucide-react";
 import { type JSX, useEffect, useState } from "react";
 import type { RegistryItem } from "shadcn/registry";
-
-import ComponentCli from "@/components/cli-commands";
-import CodeBlock, { highlight } from "@/components/code-block";
-import CopyButton from "@/components/copy-button";
-import CopyRegistry from "@/components/copy-registry";
-import OpenInV0 from "@/components/open-in-v0";
-import { convertRegistryPaths } from "@/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import {
   Dialog,
@@ -25,6 +18,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
+import ComponentCli from "@/components/cli-commands";
+import CodeBlock, { highlight } from "@/components/code-block";
+import CopyButton from "@/components/copy-button";
+import CopyRegistry from "@/components/copy-registry";
+import OpenInV0 from "@/components/open-in-v0";
+import { convertRegistryPaths } from "@/lib/utils";
 
 export default function ComponentDetails({
   component,

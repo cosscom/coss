@@ -8,11 +8,11 @@ import { SettingsNavSection } from "@/components/settings/settings-nav-section";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
 
-export function SettingsSheet() {
+export function SettingsSheet(): React.ReactElement {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
 
-  const handleCloseSheet = React.useCallback(() => {
+  const handleCloseSheet = React.useCallback((): void => {
     setOpen(false);
   }, []);
 

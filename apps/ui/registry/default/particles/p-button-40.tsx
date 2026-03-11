@@ -2,7 +2,6 @@
 
 import { DownloadIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Group, GroupSeparator, GroupText } from "@/registry/default/ui/group";
 import { Spinner } from "@/registry/default/ui/spinner";

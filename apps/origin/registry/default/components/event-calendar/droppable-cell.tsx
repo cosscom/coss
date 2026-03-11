@@ -1,7 +1,6 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-
 import { useCalendarDnd } from "@/registry/default/components/event-calendar";
 import { cn } from "@/registry/default/lib/utils";
 

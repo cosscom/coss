@@ -2,7 +2,6 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
-
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 import {
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from "@/registry/default/ui/select";
 import { Slider } from "@/registry/default/ui/slider";
-
 import CopyClass from "./copy-class";
 
 interface Easing {

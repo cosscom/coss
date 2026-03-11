@@ -12,7 +12,6 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CaptionLabelProps, MonthGridProps } from "react-day-picker";
-
 import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
 import {
@@ -145,7 +144,7 @@ function MonthGrid({
     <div className="relative">
       <table className={className}>{children}</table>
       {isYearView && (
-        <div className="-mx-2 -mb-2 absolute inset-0 z-20 bg-background">
+        <div className="absolute inset-0 z-20 -mx-2 -mb-2 bg-background">
           <ScrollArea className="h-full" ref={scrollAreaRef}>
             {years.map((year) => {
               const months = eachMonthOfInterval({

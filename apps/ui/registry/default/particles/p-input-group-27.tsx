@@ -2,7 +2,6 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useRef, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,

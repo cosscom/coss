@@ -2,7 +2,6 @@
 
 import { Label as LabelPrimitive } from "radix-ui";
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 function Label({

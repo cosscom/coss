@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-calendar-9.tsx",
-      "content": "\"use client\";\n\nimport { useState } from \"react\";\n\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>(new Date());\n\n  return (\n    <Calendar\n      classNames={{\n        day_button: \"rounded-full\",\n      }}\n      mode=\"single\"\n      onSelect={setDate}\n      selected={date}\n    />\n  );\n}\n",
+      "content": "\"use client\";\n\nimport { useState } from \"react\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>(new Date());\n\n  return (\n    <Calendar\n      classNames={{\n        day_button: \"rounded-full\",\n      }}\n      mode=\"single\"\n      onSelect={setDate}\n      selected={date}\n    />\n  );\n}\n",
       "type": "registry:block"
     }
   ],

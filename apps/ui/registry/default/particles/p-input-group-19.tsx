@@ -1,7 +1,6 @@
 "use client";
 
 import { BoldIcon, ItalicIcon, LinkIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,

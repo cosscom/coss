@@ -12,11 +12,6 @@ import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { buttonVariants } from "@/registry/default/ui/button";
 
-export const toastManager: ReturnType<typeof Toast.createToastManager> =
-  Toast.createToastManager();
-export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
-  Toast.createToastManager();
-
 const TOAST_ICONS = {
   error: CircleAlertIcon,
   info: InfoIcon,
@@ -25,38 +20,27 @@ const TOAST_ICONS = {
   warning: TriangleAlertIcon,
 } as const;
 
-export type ToastPosition =
-  | "top-left"
-  | "top-center"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-center"
-  | "bottom-right";
+type SwipeDirection = "up" | "down" | "left" | "right";
 
-export interface ToastProviderProps extends Toast.Provider.Props {
-  position?: ToastPosition;
+function getSwipeDirection(position: ToastPosition): SwipeDirection[] {
+  const verticalDirection: SwipeDirection = position.startsWith("top")
+    ? "up"
+    : "down";
+
+  if (position.includes("center")) {
+    return [verticalDirection];
+  }
+
+  if (position.includes("left")) {
+    return ["left", verticalDirection];
+  }
+
+  return ["right", verticalDirection];
 }
 
-export function ToastProvider({
-  children,
-  position = "bottom-right",
-  ...props
-}: ToastProviderProps): React.ReactElement {
-  return (
-    <Toast.Provider toastManager={toastManager} {...props}>
-      {children}
-      <Toasts position={position} />
-    </Toast.Provider>
-  );
-}
-
-function Toasts({
-  position = "bottom-right",
-}: {
-  position: ToastPosition;
-}): React.ReactElement {
+function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
   const { toasts } = Toast.useToastManager();
-  const isTop = position.startsWith("top");
+  const swipeDirection = getSwipeDirection(position);
 
   return (
     <Toast.Portal data-slot="toast-portal">
@@ -69,7 +53,7 @@ function Toasts({
           // Horizontal positioning
           "data-[position*=left]:left-(--toast-inset)",
           "data-[position*=right]:right-(--toast-inset)",
-          "data-[position*=center]:-translate-x-1/2 data-[position*=center]:left-1/2",
+          "data-[position*=center]:left-1/2 data-[position*=center]:-translate-x-1/2",
         )}
         data-position={position}
         data-slot="toast-viewport"
@@ -124,13 +108,7 @@ function Toasts({
               )}
               data-position={position}
               key={toast.id}
-              swipeDirection={
-                position.includes("center")
-                  ? [isTop ? "up" : "down"]
-                  : position.includes("left")
-                    ? ["left", isTop ? "up" : "down"]
-                    : ["right", isTop ? "up" : "down"]
-              }
+              swipeDirection={swipeDirection}
               toast={toast}
             >
               <Toast.Content className="pointer-events-auto flex items-center justify-between gap-1.5 overflow-hidden px-3.5 py-3 text-sm transition-opacity duration-250 data-behind:not-data-expanded:pointer-events-none data-behind:opacity-0 data-expanded:opacity-100">
@@ -169,18 +147,6 @@ function Toasts({
         })}
       </Toast.Viewport>
     </Toast.Portal>
-  );
-}
-
-export function AnchoredToastProvider({
-  children,
-  ...props
-}: Toast.Provider.Props): React.ReactElement {
-  return (
-    <Toast.Provider toastManager={anchoredToastManager} {...props}>
-      {children}
-      <AnchoredToasts />
-    </Toast.Provider>
   );
 }
 
@@ -266,6 +232,48 @@ function AnchoredToasts(): React.ReactElement {
         })}
       </Toast.Viewport>
     </Toast.Portal>
+  );
+}
+
+export const toastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
+export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
+
+export type ToastPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
+export interface ToastProviderProps extends Toast.Provider.Props {
+  position?: ToastPosition;
+}
+
+export function ToastProvider({
+  children,
+  position = "bottom-right",
+  ...props
+}: ToastProviderProps): React.ReactElement {
+  return (
+    <Toast.Provider toastManager={toastManager} {...props}>
+      {children}
+      <Toasts position={position} />
+    </Toast.Provider>
+  );
+}
+
+export function AnchoredToastProvider({
+  children,
+  ...props
+}: Toast.Provider.Props): React.ReactElement {
+  return (
+    <Toast.Provider toastManager={anchoredToastManager} {...props}>
+      {children}
+      <AnchoredToasts />
+    </Toast.Provider>
   );
 }
 

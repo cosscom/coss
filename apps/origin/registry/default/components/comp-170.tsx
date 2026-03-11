@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 export default function Component() {

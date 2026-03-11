@@ -2,7 +2,6 @@
 
 import { CheckIcon, CopyIcon, UserRoundPlusIcon } from "lucide-react";
 import { useId, useRef, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import {

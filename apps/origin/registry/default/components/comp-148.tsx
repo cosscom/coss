@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useId } from "react";
-
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { CheckboxTree } from "@/registry/default/ui/checkbox-tree";
 import { Label } from "@/registry/default/ui/label";

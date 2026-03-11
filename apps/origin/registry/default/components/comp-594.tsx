@@ -1,5 +1,4 @@
 import { SparklesIcon, UploadIcon } from "lucide-react";
-
 import AppToggle from "@/registry/default/components/navbar-components/app-toggle";
 import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
 import { Button } from "@/registry/default/ui/button";
@@ -25,7 +24,7 @@ export default function Component() {
           >
             <UploadIcon
               aria-hidden="true"
-              className="sm:-ms-1 opacity-60"
+              className="opacity-60 sm:-ms-1"
               size={16}
             />
             <span className="max-sm:sr-only">Export</span>
@@ -33,7 +32,7 @@ export default function Component() {
           <Button className="text-sm max-sm:aspect-square max-sm:p-0" size="sm">
             <SparklesIcon
               aria-hidden="true"
-              className="sm:-ms-1 opacity-60"
+              className="opacity-60 sm:-ms-1"
               size={16}
             />
             <span className="max-sm:sr-only">Upgrade</span>

@@ -2,7 +2,6 @@
 
 import { type Tag, TagInput } from "emblor";
 import { useId, useState } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 
 const tags = [

@@ -3,7 +3,6 @@
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useState } from "react";
 import type { DateValue } from "react-aria-components";
-
 import { Calendar } from "@/registry/default/ui/calendar-rac";
 
 export default function Component() {

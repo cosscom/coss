@@ -1,7 +1,6 @@
 "use client";
 
 import { useId } from "react";
-
 import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input";
 import { Button } from "@/registry/default/ui/button";
 import { Input } from "@/registry/default/ui/input";

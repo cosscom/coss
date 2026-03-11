@@ -2,7 +2,6 @@
 
 import { Volume2Icon, VolumeXIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 

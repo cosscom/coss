@@ -1,7 +1,6 @@
 import Link from "next/link";
-
-import PageHeader from "@/components/page-header";
 import { Button } from "@/registry/default/ui/button";
+import PageHeader from "@/components/page-header";
 
 export default function NotFound() {
   return (

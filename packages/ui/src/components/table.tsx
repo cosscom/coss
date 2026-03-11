@@ -1,6 +1,5 @@
-import type * as React from "react";
-
 import { cn } from "@coss/ui/lib/utils";
+import type * as React from "react";
 
 export function Table({
   className,

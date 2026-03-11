@@ -2,7 +2,6 @@
 
 import { TicketPercent, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 
 // Define the sale end date - eg: new Date('2024-12-31T23:59:59');

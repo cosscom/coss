@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Label } from "@/registry/default/ui/label";
 

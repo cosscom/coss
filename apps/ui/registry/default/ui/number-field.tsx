@@ -3,7 +3,6 @@
 import { NumberField as NumberFieldPrimitive } from "@base-ui/react/number-field";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Label } from "@/registry/default/ui/label";
 
@@ -136,11 +135,12 @@ export function NumberFieldScrubArea({
   );
 }
 
-function CursorGrowIcon(
+export function CursorGrowIcon(
   props: React.ComponentProps<"svg">,
 ): React.ReactElement {
   return (
     <svg
+      aria-hidden="true"
       fill="black"
       height="14"
       stroke="white"

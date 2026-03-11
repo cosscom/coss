@@ -8,6 +8,7 @@ import {
   CardPanel,
 } from "@coss/ui/components/card";
 import { Switch } from "@coss/ui/components/switch";
+import type * as React from "react";
 
 interface SettingsToggleProps {
   title: string;
@@ -19,7 +20,7 @@ export function SettingsToggle({
   title,
   description,
   defaultChecked = false,
-}: SettingsToggleProps) {
+}: SettingsToggleProps): React.ReactElement {
   return (
     <Card>
       <CardPanel>

@@ -16,7 +16,7 @@ export default async function Page() {
       <PageHeader>
         <PageHeaderHeading>
           the{" "}
-          <span className="before:-inset-x-1 before:-rotate-1 relative z-4 before:pointer-events-none before:absolute before:inset-y-0 before:z-4 before:bg-linear-to-r before:from-blue-500 before:via-purple-500 before:to-orange-500 before:opacity-16 before:mix-blend-hard-light">
+          <span className="relative z-4 before:pointer-events-none before:absolute before:-inset-x-1 before:inset-y-0 before:z-4 before:-rotate-1 before:bg-linear-to-r before:from-blue-500 before:via-purple-500 before:to-orange-500 before:opacity-16 before:mix-blend-hard-light">
             everything but AI
           </span>{" "}
           company.
@@ -62,7 +62,7 @@ export default async function Page() {
         </p>
         <p className="not-first:mt-6 leading-relaxed">
           for developers we are building the coss stack, a one line{" "}
-          <code className="before:-rotate-1 before:-z-10 relative z-10 inline-block px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
+          <code className="relative z-10 inline-block px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:-rotate-1 before:rounded-xs before:bg-primary">
             npm install @coss
           </code>{" "}
           package that includes everything you need to build your application,
@@ -82,11 +82,11 @@ export default async function Page() {
           to achieve that, we are partnering up with the best-in-class coss
           companies in the space to offer a unified infrastructure API, react
           package and a single{" "}
-          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-[.8125rem] outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-muted">
+          <code className="relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-[.8125rem] outline-none before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:-rotate-1 before:rounded-xs before:bg-muted">
             .env
           </code>{" "}
           environment key:{" "}
-          <code className="before:-rotate-1 before:-z-10 relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:rounded-xs before:bg-primary">
+          <code className="relative z-10 px-[0.3rem] py-[0.2rem] font-mono text-primary-foreground text-sm outline-none before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:-rotate-1 before:rounded-xs before:bg-primary">
             COSS_KEY=ITSTIMETOBUILD
           </code>
         </p>

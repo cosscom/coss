@@ -3,7 +3,6 @@
 import { getLocalTimeZone, isWeekend, today } from "@internationalized/date";
 import { useLocale } from "react-aria";
 import type { DateValue } from "react-aria-components";
-
 import { RangeCalendar } from "@/registry/default/ui/calendar-rac";
 
 export default function Component() {

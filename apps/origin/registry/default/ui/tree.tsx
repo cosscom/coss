@@ -6,7 +6,6 @@ import type { ItemInstance } from "@headless-tree/core";
 import { ChevronDownIcon } from "lucide-react";
 import { Slot } from "radix-ui";
 import * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 interface TreeContextValue<T = any> {
@@ -160,7 +159,7 @@ function TreeItemLabel<T = any>({
       {...props}
     >
       {item.isFolder() && (
-        <ChevronDownIcon className="in-aria-[expanded=false]:-rotate-90 size-4 text-muted-foreground" />
+        <ChevronDownIcon className="size-4 in-aria-[expanded=false]:-rotate-90 text-muted-foreground" />
       )}
       {children ||
         (typeof item.getItemName === "function" ? item.getItemName() : null)}
@@ -185,7 +184,7 @@ function TreeDragLine({
   return (
     <div
       className={cn(
-        "-mt-px before:-top-[3px] absolute z-30 h-0.5 w-[unset] bg-primary before:absolute before:left-0 before:size-2 before:rounded-full before:border-2 before:border-primary before:bg-background",
+        "absolute z-30 -mt-px h-0.5 w-[unset] bg-primary before:absolute before:-top-[3px] before:left-0 before:size-2 before:rounded-full before:border-2 before:border-primary before:bg-background",
         className,
       )}
       style={dragLine}

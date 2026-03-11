@@ -48,7 +48,7 @@ export default function Component() {
             key={item.id}
             value={item.id}
           >
-            <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 py-2 text-[15px] leading-6 hover:no-underline focus-visible:ring-0">
+            <AccordionTrigger className="justify-start gap-3 py-2 text-[15px] leading-6 hover:no-underline focus-visible:ring-0 [&>svg]:-order-1">
               {item.title}
             </AccordionTrigger>
             <AccordionContent className="ps-7 pb-2 text-muted-foreground">

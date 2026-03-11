@@ -2,7 +2,6 @@
 
 import { BellIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -111,7 +110,7 @@ export default function Component() {
         >
           <BellIcon aria-hidden="true" size={16} />
           {unreadCount > 0 && (
-            <Badge className="-top-2 -translate-x-1/2 absolute left-full min-w-5 px-1">
+            <Badge className="absolute -top-2 left-full min-w-5 -translate-x-1/2 px-1">
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}

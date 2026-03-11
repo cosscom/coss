@@ -1,8 +1,8 @@
 "use client";
 
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
-import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
+import type React from "react";
 
 export function Avatar({
   className,

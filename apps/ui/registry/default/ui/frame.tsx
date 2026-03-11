@@ -1,5 +1,4 @@
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 export function Frame({

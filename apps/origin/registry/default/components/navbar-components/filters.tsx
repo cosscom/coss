@@ -1,6 +1,5 @@
 import { ListFilterIcon } from "lucide-react";
 import { useId } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Label } from "@/registry/default/ui/label";

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
@@ -52,7 +51,7 @@ export default function Component() {
               id={inputId}
               role="region"
             >
-              <div className="-m-2 pointer-events-none overflow-hidden p-2">
+              <div className="pointer-events-none -m-2 overflow-hidden p-2">
                 <div className="pointer-events-auto mt-3">
                   <Input
                     aria-label="Additional Information"

@@ -8,8 +8,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
-
-import { useConfig } from "@/hooks/use-config";
 import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
@@ -18,6 +16,7 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
+import { useConfig } from "@/hooks/use-config";
 
 export function CodeBlockCommand({
   __npm__,

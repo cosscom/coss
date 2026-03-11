@@ -1,7 +1,6 @@
 "use client";
 
 import { InfoIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,

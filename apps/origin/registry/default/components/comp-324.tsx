@@ -2,7 +2,6 @@
 
 import { OTPInput, type SlotProps } from "input-otp";
 import { useEffect, useRef, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import {

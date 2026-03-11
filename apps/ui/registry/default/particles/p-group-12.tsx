@@ -1,5 +1,4 @@
 import { MicIcon, PaperclipIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Group } from "@/registry/default/ui/group";
 import {

@@ -2,10 +2,10 @@
 
 import { CalendarIcon, LayoutListIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-
+import type * as React from "react";
 import { TabbedNav } from "@/components/app/tabbed-nav";
 
-function BookingsView() {
+function BookingsView(): React.ReactElement {
   const pathname = usePathname();
 
   const viewTabs = [

@@ -9,7 +9,6 @@ import {
   VolumeXIcon,
 } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {

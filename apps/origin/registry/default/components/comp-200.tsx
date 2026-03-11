@@ -1,5 +1,4 @@
 import { useId, useMemo } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { SelectNative } from "@/registry/default/ui/select-native";
 

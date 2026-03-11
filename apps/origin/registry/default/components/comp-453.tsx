@@ -1,5 +1,4 @@
 import { DatabaseIcon } from "lucide-react";
-
 import {
   Breadcrumb,
   BreadcrumbItem,

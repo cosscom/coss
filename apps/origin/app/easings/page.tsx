@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-
-import PageHeader from "@/components/page-header";
-
 import Easings from "./easings";
+import PageHeader from "@/components/page-header";
 
 export const metadata: Metadata = {
   description:

@@ -2,15 +2,14 @@ import { Icons } from "@coss/ui/shared/icons";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cache } from "react";
+import { Index } from "@/registry/__index__";
+import { Button } from "@/registry/default/ui/button";
+import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet";
+import { ParticleCardContainer } from "./particle-card-container";
 import { CodeBlockCommand } from "@/components/code-block-command";
 import { ComponentSource } from "@/components/component-source";
 import { CopyRegistry } from "@/components/copy-registry";
 import { getRegistryItem } from "@/lib/registry";
-import { Index } from "@/registry/__index__";
-import { Button } from "@/registry/default/ui/button";
-import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet";
-
-import { ParticleCardContainer } from "./particle-card-container";
 
 const getCachedRegistryItem = cache(async (name: string) => {
   return await getRegistryItem(name);
