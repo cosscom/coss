@@ -1,10 +1,13 @@
 "use client";
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 
-function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
+export function Checkbox({
+  className,
+  ...props
+}: CheckboxPrimitive.Root.Props): React.ReactElement {
   return (
     <CheckboxPrimitive.Root
       className={cn(
@@ -17,7 +20,10 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
       <CheckboxPrimitive.Indicator
         className="-inset-px absolute flex items-center justify-center rounded-[.25rem] text-primary-foreground data-unchecked:hidden data-checked:bg-primary data-indeterminate:text-foreground"
         data-slot="checkbox-indicator"
-        render={(props, state) => (
+        render={(
+          props: React.ComponentProps<"span">,
+          state: CheckboxPrimitive.Indicator.State,
+        ) => (
           <span {...props}>
             {state.indeterminate ? (
               <svg
@@ -57,4 +63,4 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   );
 }
 
-export { Checkbox, CheckboxPrimitive };
+export { CheckboxPrimitive };

@@ -8,12 +8,14 @@ import {
   LoaderCircleIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { buttonVariants } from "@/registry/default/ui/button";
 
-const toastManager = Toast.createToastManager();
-const anchoredToastManager = Toast.createToastManager();
+export const toastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
+export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
+  Toast.createToastManager();
 
 const TOAST_ICONS = {
   error: CircleAlertIcon,
@@ -23,7 +25,7 @@ const TOAST_ICONS = {
   warning: TriangleAlertIcon,
 } as const;
 
-type ToastPosition =
+export type ToastPosition =
   | "top-left"
   | "top-center"
   | "top-right"
@@ -31,15 +33,15 @@ type ToastPosition =
   | "bottom-center"
   | "bottom-right";
 
-interface ToastProviderProps extends Toast.Provider.Props {
+export interface ToastProviderProps extends Toast.Provider.Props {
   position?: ToastPosition;
 }
 
-function ToastProvider({
+export function ToastProvider({
   children,
   position = "bottom-right",
   ...props
-}: ToastProviderProps) {
+}: ToastProviderProps): React.ReactElement {
   return (
     <Toast.Provider toastManager={toastManager} {...props}>
       {children}
@@ -48,7 +50,11 @@ function ToastProvider({
   );
 }
 
-function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
+function Toasts({
+  position = "bottom-right",
+}: {
+  position: ToastPosition;
+}): React.ReactElement {
   const { toasts } = Toast.useToastManager();
   const isTop = position.startsWith("top");
 
@@ -166,7 +172,10 @@ function Toasts({ position = "bottom-right" }: { position: ToastPosition }) {
   );
 }
 
-function AnchoredToastProvider({ children, ...props }: Toast.Provider.Props) {
+export function AnchoredToastProvider({
+  children,
+  ...props
+}: Toast.Provider.Props): React.ReactElement {
   return (
     <Toast.Provider toastManager={anchoredToastManager} {...props}>
       {children}
@@ -175,7 +184,7 @@ function AnchoredToastProvider({ children, ...props }: Toast.Provider.Props) {
   );
 }
 
-function AnchoredToasts() {
+function AnchoredToasts(): React.ReactElement {
   const { toasts } = Toast.useToastManager();
 
   return (
@@ -260,11 +269,4 @@ function AnchoredToasts() {
   );
 }
 
-export {
-  ToastProvider,
-  type ToastPosition,
-  toastManager,
-  AnchoredToastProvider,
-  anchoredToastManager,
-  Toast as ToastPrimitive,
-};
+export { Toast as ToastPrimitive };

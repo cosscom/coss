@@ -2,14 +2,15 @@
 
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import { ChevronsUpDownIcon, XIcon } from "lucide-react";
-
+import type React from "react";
 import { cn } from "@coss/ui/lib/utils";
 import { Input } from "@coss/ui/components/input";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 
-const Autocomplete = AutocompletePrimitive.Root;
+export const Autocomplete: typeof AutocompletePrimitive.Root =
+  AutocompletePrimitive.Root;
 
-function AutocompleteInput({
+export function AutocompleteInput({
   className,
   showTrigger = false,
   showClear = false,
@@ -26,7 +27,7 @@ function AutocompleteInput({
   ref?: React.Ref<HTMLInputElement>;
   triggerProps?: AutocompletePrimitive.Trigger.Props;
   clearProps?: AutocompletePrimitive.Clear.Props;
-}) {
+}): React.ReactElement {
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
@@ -81,7 +82,7 @@ function AutocompleteInput({
   );
 }
 
-function AutocompletePopup({
+export function AutocompletePopup({
   className,
   children,
   side = "bottom",
@@ -96,7 +97,7 @@ function AutocompletePopup({
   alignOffset?: AutocompletePrimitive.Positioner.Props["alignOffset"];
   side?: AutocompletePrimitive.Positioner.Props["side"];
   anchor?: AutocompletePrimitive.Positioner.Props["anchor"];
-}) {
+}): React.ReactElement {
   return (
     <AutocompletePrimitive.Portal>
       <AutocompletePrimitive.Positioner
@@ -127,11 +128,11 @@ function AutocompletePopup({
   );
 }
 
-function AutocompleteItem({
+export function AutocompleteItem({
   className,
   children,
   ...props
-}: AutocompletePrimitive.Item.Props) {
+}: AutocompletePrimitive.Item.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Item
       className={cn(
@@ -146,10 +147,10 @@ function AutocompleteItem({
   );
 }
 
-function AutocompleteSeparator({
+export function AutocompleteSeparator({
   className,
   ...props
-}: AutocompletePrimitive.Separator.Props) {
+}: AutocompletePrimitive.Separator.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Separator
       className={cn("mx-2 my-1 h-px bg-border last:hidden", className)}
@@ -159,10 +160,10 @@ function AutocompleteSeparator({
   );
 }
 
-function AutocompleteGroup({
+export function AutocompleteGroup({
   className,
   ...props
-}: AutocompletePrimitive.Group.Props) {
+}: AutocompletePrimitive.Group.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Group
       className={cn("[[role=group]+&]:mt-1.5", className)}
@@ -172,10 +173,10 @@ function AutocompleteGroup({
   );
 }
 
-function AutocompleteGroupLabel({
+export function AutocompleteGroupLabel({
   className,
   ...props
-}: AutocompletePrimitive.GroupLabel.Props) {
+}: AutocompletePrimitive.GroupLabel.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.GroupLabel
       className={cn(
@@ -188,10 +189,10 @@ function AutocompleteGroupLabel({
   );
 }
 
-function AutocompleteEmpty({
+export function AutocompleteEmpty({
   className,
   ...props
-}: AutocompletePrimitive.Empty.Props) {
+}: AutocompletePrimitive.Empty.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Empty
       className={cn(
@@ -204,10 +205,10 @@ function AutocompleteEmpty({
   );
 }
 
-function AutocompleteRow({
+export function AutocompleteRow({
   className,
   ...props
-}: AutocompletePrimitive.Row.Props) {
+}: AutocompletePrimitive.Row.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Row
       className={className}
@@ -217,16 +218,18 @@ function AutocompleteRow({
   );
 }
 
-function AutocompleteValue({ ...props }: AutocompletePrimitive.Value.Props) {
+export function AutocompleteValue({
+  ...props
+}: AutocompletePrimitive.Value.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Value data-slot="autocomplete-value" {...props} />
   );
 }
 
-function AutocompleteList({
+export function AutocompleteList({
   className,
   ...props
-}: AutocompletePrimitive.List.Props) {
+}: AutocompletePrimitive.List.Props): React.ReactElement {
   return (
     <ScrollArea scrollbarGutter scrollFade>
       <AutocompletePrimitive.List
@@ -241,10 +244,10 @@ function AutocompleteList({
   );
 }
 
-function AutocompleteClear({
+export function AutocompleteClear({
   className,
   ...props
-}: AutocompletePrimitive.Clear.Props) {
+}: AutocompletePrimitive.Clear.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Clear
       className={cn(
@@ -259,10 +262,10 @@ function AutocompleteClear({
   );
 }
 
-function AutocompleteStatus({
+export function AutocompleteStatus({
   className,
   ...props
-}: AutocompletePrimitive.Status.Props) {
+}: AutocompletePrimitive.Status.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Status
       className={cn(
@@ -275,9 +278,9 @@ function AutocompleteStatus({
   );
 }
 
-function AutocompleteCollection({
+export function AutocompleteCollection({
   ...props
-}: AutocompletePrimitive.Collection.Props) {
+}: AutocompletePrimitive.Collection.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Collection
       data-slot="autocomplete-collection"
@@ -286,11 +289,11 @@ function AutocompleteCollection({
   );
 }
 
-function AutocompleteTrigger({
+export function AutocompleteTrigger({
   className,
   children,
   ...props
-}: AutocompletePrimitive.Trigger.Props) {
+}: AutocompletePrimitive.Trigger.Props): React.ReactElement {
   return (
     <AutocompletePrimitive.Trigger
       className={className}
@@ -302,24 +305,7 @@ function AutocompleteTrigger({
   );
 }
 
-const useAutocompleteFilter = AutocompletePrimitive.useFilter;
+export const useAutocompleteFilter: typeof AutocompletePrimitive.useFilter =
+  AutocompletePrimitive.useFilter;
 
-export {
-  Autocomplete,
-  AutocompleteInput,
-  AutocompleteTrigger,
-  AutocompletePopup,
-  AutocompleteItem,
-  AutocompleteSeparator,
-  AutocompleteGroup,
-  AutocompleteGroupLabel,
-  AutocompleteEmpty,
-  AutocompleteValue,
-  AutocompleteList,
-  AutocompleteClear,
-  AutocompleteStatus,
-  AutocompleteRow,
-  AutocompleteCollection,
-  useAutocompleteFilter,
-  AutocompletePrimitive,
-};
+export { AutocompletePrimitive };

@@ -13,14 +13,14 @@ import { cn } from "@coss/ui/lib/utils";
 const buttonClassNames =
   "relative flex size-(--cell-size) text-base sm:text-sm items-center justify-center rounded-lg text-foreground not-in-data-selected:hover:bg-accent disabled:pointer-events-none disabled:opacity-64 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0";
 
-function Calendar({
+export function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   components: userComponents,
   mode = "single",
   ...props
-}: React.ComponentProps<typeof DayPicker>) {
+}: React.ComponentProps<typeof DayPicker>): React.ReactElement {
   const defaultClassNames = {
     button_next: buttonClassNames,
     button_previous: buttonClassNames,
@@ -79,7 +79,7 @@ function Calendar({
     }: {
       className?: string;
       orientation?: "left" | "right" | "up" | "down";
-    }) => {
+    }): React.ReactElement => {
       if (orientation === "left") {
         return (
           <ChevronLeftIcon
@@ -138,5 +138,3 @@ function Calendar({
     />
   );
 }
-
-export { Calendar };

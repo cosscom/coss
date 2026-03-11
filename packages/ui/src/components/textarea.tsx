@@ -6,17 +6,17 @@ import type * as React from "react";
 
 import { cn } from "@coss/ui/lib/utils";
 
-type TextareaProps = React.ComponentProps<"textarea"> & {
+export type TextareaProps = React.ComponentProps<"textarea"> & {
   size?: "sm" | "default" | "lg" | number;
   unstyled?: boolean;
 };
 
-function Textarea({
+export function Textarea({
   className,
   size = "default",
   unstyled = false,
   ...props
-}: TextareaProps) {
+}: TextareaProps): React.ReactElement {
   return (
     <span
       className={
@@ -30,7 +30,7 @@ function Textarea({
       data-slot="textarea-control"
     >
       <FieldPrimitive.Control
-        render={(defaultProps) => (
+        render={(defaultProps: React.ComponentProps<"textarea">) => (
           <textarea
             className={cn(
               "field-sizing-content min-h-17.5 w-full rounded-[inherit] px-[calc(--spacing(3)-1px)] py-[calc(--spacing(1.5)-1px)] outline-none max-sm:min-h-20.5",
@@ -48,4 +48,4 @@ function Textarea({
   );
 }
 
-export { Textarea, type TextareaProps, FieldPrimitive };
+export { FieldPrimitive };
