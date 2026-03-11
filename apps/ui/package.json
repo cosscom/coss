@@ -52,7 +52,8 @@
     "registry:validate-deps": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/validate-registry-deps.mts",
     "start": "next start --port 4000",
     "typecheck": "tsc --noEmit",
-    "ui:sync": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/sync-ui.mts"
+    "ui:sync": "tsx --tsconfig ./tsconfig.scripts.json ./scripts/sync-ui.mts && bun run ui:sync:imports",
+    "ui:sync:imports": "cd ../.. && bunx biome check --write --assist-enabled=true --linter-enabled=false --formatter-enabled=false --config-path .biome-packages-sync/packages-sync.json packages/ui/src/base-ui packages/ui/src/hooks packages/ui/src/lib packages/ui/src/components"
   },
   "type": "module",
   "version": "0.1.0"

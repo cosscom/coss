@@ -3,9 +3,17 @@
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "on",
-        "useSortedAttributes": "on",
-        "useSortedKeys": "on"
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              [":PACKAGE_WITH_PROTOCOL:", ":PACKAGE:"],
+              ["@/registry/**", "@coss/**", "@calcom/**"],
+              ["@lib/**", "@components/**", "@server/**", "@trpc/**"],
+              ":PATH:"
+            ]
+          }
+        }
       }
     },
     "enabled": true
@@ -80,6 +88,7 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "style": {
+        "useExportsLast": "warn",
         "noInferrableTypes": "error",
         "noParameterAssign": "error",
         "noUnusedTemplateLiteral": "error",
