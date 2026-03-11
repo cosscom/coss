@@ -63,13 +63,10 @@ export function BreadcrumbPage({
   ...props
 }: React.ComponentProps<"span">): React.ReactElement {
   return (
-    // biome-ignore lint(a11y/useFocusableInteractive): known
     <span
       aria-current="page"
-      aria-disabled="true"
       className={cn("font-normal text-foreground", className)}
       data-slot="breadcrumb-page"
-      role="link"
       {...props}
     />
   );
