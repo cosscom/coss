@@ -7,7 +7,6 @@ import {
   syncDataLoaderFeature,
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
-
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 

@@ -17,7 +17,6 @@ import {
   ChevronUpIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { usePagination } from "@/registry/default/hooks/use-pagination";
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";

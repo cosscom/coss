@@ -6,9 +6,6 @@ import {
 import { SiteFooter } from "@coss/ui/shared/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCategoryThumbnail } from "@/components/category-thumbnails";
-import { categories } from "@/config/categories";
-import { PAGES_NEW } from "@/lib/docs";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -20,6 +17,9 @@ import {
   CardPanel,
 } from "@/registry/default/ui/card";
 import { particles } from "@/registry/registry-particles";
+import { getCategoryThumbnail } from "@/components/category-thumbnails";
+import { categories } from "@/config/categories";
+import { PAGES_NEW } from "@/lib/docs";
 
 const description = "Built for developers and AI.";
 const particleCount = particles.length;

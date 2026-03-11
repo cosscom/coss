@@ -4,7 +4,6 @@ import {
   MessageSquareText,
   UserRoundPlus,
 } from "lucide-react";
-
 import {
   Avatar,
   AvatarFallback,

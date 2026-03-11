@@ -3,12 +3,11 @@ import "./globals.css";
 import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
-
-import { SiteHeader } from "@/components/site-header";
 import {
   AnchoredToastProvider,
   ToastProvider,
 } from "@/registry/default/ui/toast";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   description:

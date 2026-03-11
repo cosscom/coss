@@ -1,7 +1,6 @@
 "use client";
 
 import { Label } from "react-aria-components";
-
 import { DateInput, TimeField } from "@/registry/default/ui/datefield-rac";
 
 export default function Component() {

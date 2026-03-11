@@ -6,7 +6,6 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useId } from "react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";

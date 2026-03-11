@@ -1,6 +1,7 @@
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { FrameFooter } from "@coss/ui/components/frame";
 import { Skeleton } from "@coss/ui/components/skeleton";
+import { BookingActionsSkeleton } from "./past/booking-actions";
 import {
   ListItem,
   ListItemActions,
@@ -8,7 +9,6 @@ import {
   ListItemContent,
   ListItemHeader,
 } from "@/components/list-item";
-import { BookingActionsSkeleton } from "./past/booking-actions";
 
 export function BookingSkeletonItem() {
   return (

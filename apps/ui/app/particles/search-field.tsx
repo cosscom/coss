@@ -4,7 +4,6 @@ import { LabelIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-
 import { Index } from "@/registry/__index__";
 import {
   Combobox,

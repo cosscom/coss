@@ -33,7 +33,6 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import {
   AlertDialog,

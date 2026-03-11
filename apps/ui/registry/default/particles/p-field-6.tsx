@@ -1,5 +1,4 @@
 import { ArrowRightIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
 import {

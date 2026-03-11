@@ -2,7 +2,6 @@
 
 import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 import type { ComponentType } from "react";
-
 import { Toggle, ToggleGroup } from "@/registry/default/ui/toggle-group";
 import {
   Tooltip,

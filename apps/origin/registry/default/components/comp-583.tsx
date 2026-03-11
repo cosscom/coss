@@ -1,6 +1,5 @@
 import { ChevronsUpDown } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";

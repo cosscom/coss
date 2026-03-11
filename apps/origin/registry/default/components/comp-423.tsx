@@ -1,6 +1,5 @@
 import { CheckIcon } from "lucide-react";
 import { useId } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 

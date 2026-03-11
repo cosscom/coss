@@ -1,5 +1,4 @@
 import type { Registry } from "shadcn/schema";
-
 import { baseUi } from "@/registry/registry-base-ui";
 import { hooks } from "@/registry/registry-hooks";
 import { lib } from "@/registry/registry-lib";

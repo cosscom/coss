@@ -5,7 +5,6 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";

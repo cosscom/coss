@@ -22,7 +22,6 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Input } from "@/registry/default/ui/input";

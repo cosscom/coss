@@ -1,7 +1,6 @@
 "use client";
 
 import { CircleUserRoundIcon, XIcon } from "lucide-react";
-
 import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
 import { Button } from "@/registry/default/ui/button";
 

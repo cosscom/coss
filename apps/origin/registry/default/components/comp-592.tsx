@@ -2,7 +2,6 @@
 
 import { LayoutGridIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useId, useState } from "react";
-
 import InfoMenu from "@/registry/default/components/navbar-components/info-menu";
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu";

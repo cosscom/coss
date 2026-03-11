@@ -2,7 +2,6 @@
 
 import { BellIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 

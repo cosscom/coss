@@ -1,5 +1,4 @@
 import { HouseIcon, InboxIcon, SparklesIcon, ZapIcon } from "lucide-react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";
 import { Button } from "@/registry/default/ui/button";

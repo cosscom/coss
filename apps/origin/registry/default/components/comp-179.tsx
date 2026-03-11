@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { Switch } from "@/registry/default/ui/switch";
 

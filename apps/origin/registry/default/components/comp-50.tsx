@@ -4,7 +4,6 @@ import { CreditCardIcon } from "lucide-react";
 import { useId } from "react";
 import { usePaymentInputs } from "react-payment-inputs";
 import images, { type CardImages } from "react-payment-inputs/images";
-
 import { Input } from "@/registry/default/ui/input";
 
 export default function Component() {

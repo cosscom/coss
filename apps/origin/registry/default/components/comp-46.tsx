@@ -5,7 +5,6 @@ import type React from "react";
 import { useId, useState } from "react";
 import * as RPNInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";

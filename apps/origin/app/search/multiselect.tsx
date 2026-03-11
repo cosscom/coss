@@ -4,7 +4,6 @@ import { RiCloseCircleFill, RiCloseLine } from "@remixicon/react";
 import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import * as React from "react";
 import { useEffect } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import {
   Command,

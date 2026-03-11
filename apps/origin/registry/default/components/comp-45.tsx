@@ -3,7 +3,6 @@
 import { OTPInput, type SlotProps } from "input-otp";
 import { MinusIcon } from "lucide-react";
 import { useId } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Label } from "@/registry/default/ui/label";
 

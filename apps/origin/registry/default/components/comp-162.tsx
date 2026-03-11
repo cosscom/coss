@@ -1,6 +1,5 @@
 import { Brush, Eraser, Scissors, SwatchBook } from "lucide-react";
 import { useId } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 

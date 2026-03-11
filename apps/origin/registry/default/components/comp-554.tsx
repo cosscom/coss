@@ -8,7 +8,6 @@ import {
   ZoomOutIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
 import { Button } from "@/registry/default/ui/button";
 import {

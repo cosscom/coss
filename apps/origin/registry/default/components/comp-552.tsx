@@ -13,7 +13,6 @@ import {
   VideoIcon,
   XIcon,
 } from "lucide-react";
-
 import {
   formatBytes,
   useFileUpload,

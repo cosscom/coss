@@ -2,7 +2,6 @@
 
 import { RiGithubFill, RiTwitterXFill } from "@remixicon/react";
 import Link from "next/link";
-
 import HeaderLink from "@/components/header-link";
 import ThemeToggle from "@/components/theme-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";

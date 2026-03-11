@@ -6,7 +6,6 @@ import {
   UploadIcon,
   XIcon,
 } from "lucide-react";
-
 import {
   formatBytes,
   useFileUpload,

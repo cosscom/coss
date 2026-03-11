@@ -41,7 +41,6 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useRef, useState } from "react";
-
 import type { Booking } from "@/lib/mock-bookings-data";
 import {
   mockPastBookings,

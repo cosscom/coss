@@ -1,6 +1,5 @@
 import { SearchIcon } from "lucide-react";
 import { useId } from "react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import { Button } from "@/registry/default/ui/button";
 import { Input } from "@/registry/default/ui/input";

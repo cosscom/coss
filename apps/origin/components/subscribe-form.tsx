@@ -2,11 +2,9 @@
 
 import { RiLoader3Line, RiNavigationLine } from "@remixicon/react";
 import { useId, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { Input } from "@/registry/default/ui/input";
-
 import { subscribe } from "./subscribe-action";
 
 // Add type for form state

@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronsUpDownIcon, SearchIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Combobox,

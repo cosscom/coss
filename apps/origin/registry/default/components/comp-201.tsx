@@ -1,5 +1,4 @@
 import { useId } from "react";
-
 import { SelectNative } from "@/registry/default/ui/select-native";
 
 export default function Component() {

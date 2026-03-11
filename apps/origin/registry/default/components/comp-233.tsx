@@ -14,7 +14,6 @@ import {
   ServerIcon,
 } from "lucide-react";
 import { useId, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Command,

@@ -1,5 +1,4 @@
 import { ArrowRightIcon, CircleAlert, XIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {

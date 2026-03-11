@@ -2,7 +2,6 @@
 
 import { CheckIcon, ImagePlusIcon, XIcon } from "lucide-react";
 import { useId } from "react";
-
 import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit";
 import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
 import { Button } from "@/registry/default/ui/button";

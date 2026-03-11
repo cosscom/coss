@@ -6,7 +6,6 @@ import type { ItemInstance } from "@headless-tree/core";
 import { ChevronDownIcon } from "lucide-react";
 import { Slot } from "radix-ui";
 import * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 interface TreeContextValue<T = any> {

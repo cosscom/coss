@@ -2,7 +2,6 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Input, type InputProps } from "@/registry/default/ui/input";
 import { Textarea, type TextareaProps } from "@/registry/default/ui/textarea";

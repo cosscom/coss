@@ -6,7 +6,6 @@ import {
 import { RiArrowLeftLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import Link from "next/link";
-
 import { Button } from "@/registry/default/ui/button";
 
 export const metadata: Metadata = {

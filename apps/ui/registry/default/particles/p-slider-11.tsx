@@ -2,7 +2,6 @@
 
 import { Volume2Icon, VolumeXIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider, SliderValue } from "@/registry/default/ui/slider";
 

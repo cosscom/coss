@@ -18,7 +18,6 @@ import {
   RiReactjsLine,
 } from "@remixicon/react";
 import { useState } from "react";
-
 import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {

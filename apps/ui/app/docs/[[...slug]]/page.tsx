@@ -2,14 +2,14 @@ import { LinkSquare02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Button } from "@/registry/default/ui/button";
+import { Card, CardFrame, CardPanel } from "@/registry/default/ui/card";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { DocsCopyPage } from "@/components/docs-copy-page";
 import { DocsTableOfContents } from "@/components/docs-toc";
 import { SiteFooter } from "@/components/site-footer";
 import { source } from "@/lib/source";
 import { mdxComponents } from "@/mdx-components";
-import { Button } from "@/registry/default/ui/button";
-import { Card, CardFrame, CardPanel } from "@/registry/default/ui/card";
-import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export const revalidate = false;
 export const dynamic = "force-static";

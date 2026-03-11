@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Cal_Sans as FontHeading, Inter as FontSans } from "next/font/google";
-
+import { Toaster as Sonner } from "@/registry/default/ui/sonner";
+import { Toaster } from "@/registry/default/ui/toaster";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import TopBanner from "@/components/top-banner";
-import { Toaster as Sonner } from "@/registry/default/ui/sonner";
-import { Toaster } from "@/registry/default/ui/toaster";
 
 import "./globals.css";
 

@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { BookingsListSkeleton } from "../booking-skeleton";
+import { BookingActions } from "./booking-actions";
 import { ItemLabel } from "@/components/item-label";
 import {
   ListItem,
@@ -54,8 +56,6 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
-import { BookingsListSkeleton } from "../booking-skeleton";
-import { BookingActions } from "./booking-actions";
 
 const ARTIFICIAL_DELAY_MS = 800;
 

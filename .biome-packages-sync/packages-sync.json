@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.6/schema.json",
-  "root": true,
+  "root": false,
   "assist": {
     "enabled": true,
     "actions": {
@@ -13,6 +13,17 @@
     "enabled": false
   },
   "linter": {
-    "enabled": false
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "a11y": "off",
+      "complexity": "off",
+      "correctness": "off",
+      "nursery": "off",
+      "performance": "off",
+      "security": "off",
+      "style": "off",
+      "suspicious": "off"
+    }
   }
 }

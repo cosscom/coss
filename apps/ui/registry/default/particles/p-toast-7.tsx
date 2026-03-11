@@ -2,7 +2,6 @@
 
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useRef } from "react";
-
 import { useCopyToClipboard } from "@/registry/default/hooks/use-copy-to-clipboard";
 import { Button } from "@/registry/default/ui/button";
 import { anchoredToastManager } from "@/registry/default/ui/toast";

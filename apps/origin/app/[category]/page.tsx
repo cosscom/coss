@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
 import ComponentCard from "@/components/component-card";
 import ComponentDetails from "@/components/component-details";
 import ComponentLoader from "@/components/component-loader-server";

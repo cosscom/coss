@@ -13,7 +13,6 @@ import {
   ListCollapseIcon,
   ListTreeIcon,
 } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 

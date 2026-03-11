@@ -2,7 +2,6 @@
 
 import { ClockIcon, PowerIcon, PowerOffIcon, ZapIcon } from "lucide-react";
 import { useId, useState } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import { Label } from "@/registry/default/ui/label";

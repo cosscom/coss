@@ -4,14 +4,14 @@ import {
   InputGroupInput,
 } from "@coss/ui/components/input-group";
 import { PlusIcon, SearchIcon } from "lucide-react";
+import { AddEventTypeDialog } from "./add-event-type-dialog";
+import { EventTypesList } from "./event-types-list";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { AddEventTypeDialog } from "./add-event-type-dialog";
-import { EventTypesList } from "./event-types-list";
 
 export default function Page() {
   return (

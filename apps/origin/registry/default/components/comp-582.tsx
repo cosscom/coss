@@ -6,7 +6,6 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useId } from "react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";

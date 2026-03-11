@@ -1,7 +1,6 @@
 "use client";
 
 import { RotateCcwIcon } from "lucide-react";
-
 import { useSliderWithInput } from "@/registry/default/hooks/use-slider-with-input";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";

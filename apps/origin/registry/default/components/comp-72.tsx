@@ -1,5 +1,4 @@
 import { useId } from "react";
-
 import { Textarea } from "@/registry/default/ui/textarea";
 
 export default function Component() {

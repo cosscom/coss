@@ -12,7 +12,6 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CaptionLabelProps, MonthGridProps } from "react-day-picker";
-
 import { Button } from "@/registry/default/ui/button";
 import { Calendar } from "@/registry/default/ui/calendar";
 import {

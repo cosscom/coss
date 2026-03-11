@@ -15,7 +15,6 @@ import {
   Heading as HeadingRac,
   RangeCalendar as RangeCalendarRac,
 } from "react-aria-components";
-
 import { cn } from "@/registry/default/lib/utils";
 
 interface BaseCalendarProps {

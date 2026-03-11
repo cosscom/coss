@@ -1,5 +1,4 @@
 import { BookOpenIcon, InfoIcon, LifeBuoyIcon } from "lucide-react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";

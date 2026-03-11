@@ -1,5 +1,4 @@
 import { CheckIcon } from "lucide-react";
-
 import {
   Timeline,
   TimelineContent,

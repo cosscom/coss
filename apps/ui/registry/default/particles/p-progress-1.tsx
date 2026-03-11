@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { Progress } from "@/registry/default/ui/progress";
 
 export default function Particle() {

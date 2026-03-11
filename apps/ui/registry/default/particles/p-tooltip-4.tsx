@@ -2,7 +2,6 @@
 
 import { LinkIcon, MailIcon, Share2Icon } from "lucide-react";
 import type { ComponentType } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Group, GroupSeparator } from "@/registry/default/ui/group";
 import {

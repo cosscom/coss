@@ -1,6 +1,5 @@
 "use client";
 
-import { useCopy } from "@/hooks/use-copy";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -9,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
+import { useCopy } from "@/hooks/use-copy";
 
 const CopyButton = ({ url }: { url: string | null }) => {
   const { copied, copy } = useCopy();

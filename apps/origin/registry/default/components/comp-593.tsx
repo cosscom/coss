@@ -1,5 +1,4 @@
 import { BookmarkIcon, HomeIcon } from "lucide-react";
-
 import DatePicker from "@/registry/default/components/navbar-components/date-picker";
 import Filters from "@/registry/default/components/navbar-components/filters";
 import {

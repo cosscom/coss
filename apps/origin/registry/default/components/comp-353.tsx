@@ -8,7 +8,6 @@ import {
   type LucideIcon,
   ZapIcon,
 } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,

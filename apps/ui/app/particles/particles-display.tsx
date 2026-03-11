@@ -1,9 +1,7 @@
 import { cache, Suspense } from "react";
-
 import { Index } from "@/registry/__index__";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import type { RegistryCategory } from "@/registry/registry-categories";
-
 import { ParticleCard } from "./particle-card";
 import { ParticleCardContainer } from "./particle-card-container";
 

@@ -1,5 +1,4 @@
 import { CheckIcon, MonitorIcon, SmartphoneIcon, XIcon } from "lucide-react";
-
 import {
   Table,
   TableBody,

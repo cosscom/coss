@@ -1,5 +1,4 @@
 import { SparklesIcon, UploadIcon } from "lucide-react";
-
 import AppToggle from "@/registry/default/components/navbar-components/app-toggle";
 import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
 import { Button } from "@/registry/default/ui/button";
