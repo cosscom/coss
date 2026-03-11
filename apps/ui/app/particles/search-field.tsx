@@ -144,7 +144,7 @@ export default function SearchField({
         value={selectedItems}
       >
         <ComboboxChips
-          className="**:data-[slot=combobox-start-addon]:[&_svg]:-me-0.5 rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl"
+          className="rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl **:data-[slot=combobox-start-addon]:[&_svg]:-me-0.5"
           startAddon={
             <HugeiconsIcon
               className="size-5.5 sm:size-5"

@@ -32,7 +32,7 @@ export function Radio({
       {...props}
     >
       <RadioPrimitive.Indicator
-        className="-inset-px absolute flex size-4.5 items-center justify-center rounded-full before:size-2 before:rounded-full before:bg-primary-foreground data-unchecked:hidden data-checked:bg-primary sm:size-4 sm:before:size-1.5"
+        className="absolute -inset-px flex size-4.5 items-center justify-center rounded-full before:size-2 before:rounded-full before:bg-primary-foreground data-unchecked:hidden data-checked:bg-primary sm:size-4 sm:before:size-1.5"
         data-slot="radio-indicator"
       />
     </RadioPrimitive.Root>
