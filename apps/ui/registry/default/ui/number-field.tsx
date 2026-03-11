@@ -140,6 +140,7 @@ export function CursorGrowIcon(
 ): React.ReactElement {
   return (
     <svg
+      aria-hidden="true"
       fill="black"
       height="14"
       stroke="white"

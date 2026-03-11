@@ -39,7 +39,7 @@ export function SheetBackdrop({
 	);
 }
 
-function SheetViewport({
+export function SheetViewport({
 	className,
 	side,
 	variant = "default",

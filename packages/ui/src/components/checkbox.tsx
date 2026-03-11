@@ -27,6 +27,7 @@ export function Checkbox({
 					<span {...props}>
 						{state.indeterminate ? (
 							<svg
+								aria-hidden="true"
 								className="size-3.5 sm:size-3"
 								fill="none"
 								height="24"
@@ -42,6 +43,7 @@ export function Checkbox({
 							</svg>
 						) : (
 							<svg
+								aria-hidden="true"
 								className="size-3.5 sm:size-3"
 								fill="none"
 								height="24"

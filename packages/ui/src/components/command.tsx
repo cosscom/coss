@@ -52,7 +52,7 @@ export function CommandDialogBackdrop({
 	);
 }
 
-function CommandDialogViewport({
+export function CommandDialogViewport({
 	className,
 	...props
 }: CommandDialogPrimitive.Viewport.Props): React.ReactElement {
