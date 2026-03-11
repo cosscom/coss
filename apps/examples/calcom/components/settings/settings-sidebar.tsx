@@ -8,6 +8,7 @@ import {
 import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type * as React from "react";
 import { SettingsSheet } from "@/components/settings/settings-sheet";
 import {
   Sidebar,
@@ -25,7 +26,7 @@ import { settingsNavItems } from "@/lib/settings-navigation-data";
 
 export function SettingsSidebar({
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar>): React.ReactElement {
   const pathname = usePathname();
 
   return (
@@ -63,7 +64,7 @@ function SettingsNavSection({
 }: {
   section: SettingsNavItem;
   pathname: string;
-}) {
+}): React.ReactElement {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">

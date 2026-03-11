@@ -23,7 +23,10 @@ type SidebarTooltipHandle = ReturnType<
 export const sidebarTooltipHandle: SidebarTooltipHandle =
   TooltipCreateHandle<React.ComponentType>();
 
-const SidebarMenuOpenContext = React.createContext<{
+const SidebarMenuOpenContext: React.Context<{
+  openMenuCount: number;
+  registerMenu: () => () => void;
+}> = React.createContext<{
   openMenuCount: number;
   registerMenu: () => () => void;
 }>({
@@ -36,12 +39,12 @@ function SidebarProvider({
   style,
   children,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div">): React.ReactElement {
   const [openMenuCount, setOpenMenuCount] = React.useState(0);
 
-  const registerMenu = React.useCallback(() => {
+  const registerMenu = React.useCallback((): (() => void) => {
     setOpenMenuCount((prev) => prev + 1);
-    return () => {
+    return (): void => {
       setOpenMenuCount((prev) => Math.max(0, prev - 1));
     };
   }, []);
@@ -59,7 +62,11 @@ function SidebarProvider({
         >
           {children}
           <Tooltip handle={sidebarTooltipHandle}>
-            {({ payload: Payload }) => (
+            {({
+              payload: Payload,
+            }: {
+              payload: React.ComponentType | undefined;
+            }): React.ReactElement => (
               <TooltipPopup align="center" side="right">
                 {Payload !== undefined && <Payload />}
               </TooltipPopup>
@@ -71,7 +78,10 @@ function SidebarProvider({
   );
 }
 
-export function useSidebarMenuOpen() {
+export function useSidebarMenuOpen(): {
+  openMenuCount: number;
+  registerMenu: () => () => void;
+} {
   return React.useContext(SidebarMenuOpenContext);
 }
 
@@ -79,7 +89,7 @@ function Sidebar({
   className,
   children,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className="group peer hidden w-(--sidebar-width) text-sidebar-foreground md:block"
@@ -109,7 +119,7 @@ function SidebarInset({
   className,
   children,
   ...props
-}: React.ComponentProps<"main">) {
+}: React.ComponentProps<"main">): React.ReactElement {
   return (
     <main
       className={cn(
@@ -124,7 +134,10 @@ function SidebarInset({
   );
 }
 
-function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarHeader({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn("flex flex-col gap-2 px-1 py-2 lg:px-2", className)}
@@ -138,7 +151,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
 function SidebarSeparator({
   className,
   ...props
-}: React.ComponentProps<typeof Separator>) {
+}: React.ComponentProps<typeof Separator>): React.ReactElement {
   return (
     <Separator
       className={cn("mx-2 w-auto bg-sidebar-border", className)}
@@ -149,7 +162,10 @@ function SidebarSeparator({
   );
 }
 
-function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarContent({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <ScrollArea scrollFade>
       <div
@@ -162,7 +178,10 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarGroup({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn(
@@ -180,10 +199,10 @@ function SidebarGroupLabel({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex h-8 shrink-0 items-center rounded-lg px-2 gap-2 font-medium text-sidebar-foreground text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+      "flex h-8 shrink-0 items-center gap-2 rounded-lg px-2 font-medium text-sidebar-foreground text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
       "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
       className,
     ),
@@ -202,7 +221,7 @@ function SidebarGroupAction({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"button">) {
+}: useRender.ComponentProps<"button">): React.ReactElement {
   const defaultProps = {
     className: cn(
       "absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
@@ -224,7 +243,7 @@ function SidebarGroupAction({
 function SidebarGroupContent({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div">): React.ReactElement {
   return (
     <div
       className={cn("w-full text-sm", className)}
@@ -235,7 +254,10 @@ function SidebarGroupContent({
   );
 }
 
-function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
+function SidebarMenu({
+  className,
+  ...props
+}: React.ComponentProps<"ul">): React.ReactElement {
   return (
     <ul
       className={cn("flex min-w-0 flex-col gap-1 lg:w-full", className)}
@@ -246,7 +268,10 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   );
 }
 
-function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
+function SidebarMenuItem({
+  className,
+  ...props
+}: React.ComponentProps<"li">): React.ReactElement {
   return (
     <li
       className={cn("group/menu-item relative", className)}
@@ -266,7 +291,7 @@ function SidebarMenuButton({
 }: useRender.ComponentProps<"button"> & {
   isActive?: boolean;
   tooltip?: string | React.ComponentType;
-}) {
+}): React.ReactElement {
   const isMobile = useMediaQuery("max-md");
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const state = isBetweenMdAndLg ? "collapsed" : "expanded";
@@ -274,7 +299,7 @@ function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button relative cursor-pointer flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground data-pressed:bg-sidebar-accent data-pressed:text-sidebar-accent-foreground max-lg:size-10 max-lg:p-0 max-lg:justify-center h-8 [&>span:last-child]:truncate sm:[&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='size-'])]:size-4.5 [&>svg]:shrink-0 font-medium text-sidebar-foreground after:absolute after:top-full after:h-1 after:w-full",
+      "peer/menu-button relative flex h-8 w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left font-medium text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring after:absolute after:top-full after:h-1 after:w-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-pressed:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-pressed:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground max-lg:size-10 max-lg:justify-center max-lg:p-0 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
       className,
     ),
     "data-active": isActive,
@@ -295,7 +320,8 @@ function SidebarMenuButton({
   }
 
   // Convert string tooltip to a component
-  const TooltipContent = typeof tooltip === "string" ? () => tooltip : tooltip;
+  const TooltipContent: React.ComponentType =
+    typeof tooltip === "string" ? (): React.ReactNode => tooltip : tooltip;
 
   return (
     <TooltipTrigger
@@ -313,7 +339,7 @@ function SidebarMenuAction({
   ...props
 }: useRender.ComponentProps<"button"> & {
   showOnHover?: boolean;
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
@@ -340,9 +366,9 @@ function SidebarMenuSkeleton({
   ...props
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean;
-}) {
+}): React.ReactElement {
   // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
+  const width = React.useMemo((): string => {
     return `${Math.floor(Math.random() * 40) + 50}%`;
   }, []);
 
@@ -372,7 +398,10 @@ function SidebarMenuSkeleton({
   );
 }
 
-function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
+function SidebarMenuSub({
+  className,
+  ...props
+}: React.ComponentProps<"ul">): React.ReactElement {
   return (
     <ul
       className={cn(
@@ -390,7 +419,7 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
 function SidebarMenuSubItem({
   className,
   ...props
-}: React.ComponentProps<"li">) {
+}: React.ComponentProps<"li">): React.ReactElement {
   return (
     <li
       className={cn("group/menu-sub-item relative", className)}
@@ -408,10 +437,10 @@ function SidebarMenuSubButton({
   ...props
 }: useRender.ComponentProps<"a"> & {
   isActive?: boolean;
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "-translate-x-px flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "-translate-x-px flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
       "md:max-lg:hidden",
       className,

@@ -20,7 +20,7 @@ export function NavSecondary({
     url: string;
     icon: LucideIcon;
   }[];
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+} & React.ComponentPropsWithoutRef<typeof SidebarGroup>): React.ReactElement {
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
 
   return (

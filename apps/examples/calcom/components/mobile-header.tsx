@@ -10,7 +10,7 @@ export function MobileHeader({
 }: {
   children: React.ReactNode;
   className?: string;
-}) {
+}): React.ReactElement {
   const isHidden = useScrollHide();
 
   return (

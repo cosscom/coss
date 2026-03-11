@@ -7,6 +7,7 @@ import {
 } from "@coss/ui/components/avatar";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import type {
   SettingsNavChild,
   SettingsNavItem,
@@ -24,7 +25,7 @@ export function SettingsNavSection({
   pathname,
   variant,
   onItemClick,
-}: SettingsNavSectionProps) {
+}: SettingsNavSectionProps): React.ReactElement | null {
   if (variant === "sheet") {
     return (
       <div className="flex flex-col gap-2">
@@ -55,7 +56,7 @@ function SettingsNavSectionHeader({
 }: {
   section: SettingsNavItem;
   variant: "sidebar" | "sheet";
-}) {
+}): React.ReactElement {
   const baseClassName =
     variant === "sheet"
       ? "flex items-center gap-2 font-medium text-sidebar-accent-foreground text-sm"
@@ -85,7 +86,7 @@ function SettingsNavSheetItem({
   item: SettingsNavChild;
   isActive: boolean;
   onClick?: () => void;
-}) {
+}): React.ReactElement {
   return (
     <Link
       className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-muted-foreground text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"

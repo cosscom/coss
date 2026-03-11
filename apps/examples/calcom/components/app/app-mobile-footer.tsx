@@ -12,14 +12,16 @@ import {
 import { cn } from "@coss/ui/lib/utils";
 import { EllipsisIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import { WorkflowBadge } from "@/components/workflows-badge";
 import { useScrollHide } from "@/hooks/use-scroll-hide";
+import type { NavItem } from "@/lib/navigation-data";
 import { navFooterItems, navMainItems } from "@/lib/navigation-data";
 
-const primaryNavItems = navMainItems.slice(0, 3);
-const remainingMainItems = navMainItems.slice(3);
+const primaryNavItems: NavItem[] = navMainItems.slice(0, 3);
+const remainingMainItems: NavItem[] = navMainItems.slice(3);
 
-export function AppMobileFooter() {
+export function AppMobileFooter(): React.ReactElement {
   const isHidden = useScrollHide();
 
   return (

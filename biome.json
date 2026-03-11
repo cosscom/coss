@@ -65,10 +65,10 @@
       },
       "nursery": {
         "useSortedClasses": {
-          "level": "error",
+          "level": "warn",
           "options": {
-            "attributes": ["classList"],
-            "functions": ["clsx", "cva", "tw", "tw.*"]
+            "attributes": ["className", "classList"],
+            "functions": ["clsx", "cva", "cn", "tw", "tw.*"]
           }
         }
       },
@@ -99,7 +99,8 @@
         "apps/ui/registry/default/base-ui/**",
         "apps/ui/registry/default/hooks/**",
         "apps/ui/registry/default/lib/**",
-        "apps/ui/registry/default/ui/**"
+        "apps/ui/registry/default/ui/**",
+        "apps/examples/calcom/components/**"
       ],
       "linter": {
         "rules": {

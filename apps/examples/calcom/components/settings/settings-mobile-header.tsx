@@ -1,10 +1,11 @@
 import { Button } from "@coss/ui/components/button";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import { MobileHeader } from "@/components/mobile-header";
 import { SettingsSheet } from "@/components/settings/settings-sheet";
 
-export function SettingsMobileHeader() {
+export function SettingsMobileHeader(): React.ReactElement {
   return (
     <MobileHeader>
       <Button

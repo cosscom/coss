@@ -5,6 +5,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import Link, { type LinkProps } from "next/link";
+import type * as React from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { ItemLabel } from "./item-label";
 
@@ -39,7 +40,7 @@ function ListItem({
   sortableListeners,
   hasDragged,
   ...props
-}: ListItemProps) {
+}: ListItemProps): React.ReactElement {
   const baseClasses =
     "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]_a:hover]:z-1 has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]";
 
@@ -119,7 +120,7 @@ function SortableListItem({
   sortableDraggingAny,
   sortableListeners,
   hasDragged,
-}: SortableListItemProps) {
+}: SortableListItemProps): React.ReactElement {
   return (
     <ListItem
       className={className}
@@ -143,7 +144,7 @@ function ListItemDragHandle({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"button">) {
+}: useRender.ComponentProps<"button">): React.ReactElement {
   const defaultProps = {
     "aria-label": "Drag to reorder",
     className: cn(
@@ -173,7 +174,7 @@ function ListItemContent({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("flex min-w-0 flex-1 flex-col gap-3", className),
     "data-slot": "list-item-content",
@@ -192,7 +193,7 @@ function ListItemHeader({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("flex flex-col gap-1", className),
     "data-slot": "list-item-header",
@@ -211,7 +212,7 @@ function ListItemTitle({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"h2">) {
+}: useRender.ComponentProps<"h2">): React.ReactElement {
   const defaultProps = {
     className: cn("font-semibold sm:text-sm", className),
     "data-slot": "list-item-title",
@@ -231,7 +232,7 @@ function ListItemTitleLink({
   href,
   render,
   ...props
-}: LinkProps & useRender.ComponentProps<"a">) {
+}: LinkProps & useRender.ComponentProps<"a">): React.ReactElement {
   const defaultProps = {
     className: cn("before:absolute before:inset-0", className),
     "data-slot": "list-item-title-link",
@@ -252,7 +253,7 @@ function ListItemDescription({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"p">) {
+}: useRender.ComponentProps<"p">): React.ReactElement {
   const defaultProps = {
     className: cn("text-muted-foreground text-sm", className),
     "data-slot": "list-item-description",
@@ -271,7 +272,7 @@ function ListItemBadges({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("flex flex-wrap items-center gap-2", className),
     "data-slot": "list-item-badges",
@@ -290,7 +291,7 @@ function ListItemActions({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("relative flex items-center gap-4", className),
     "data-slot": "list-item-actions",
