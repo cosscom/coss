@@ -27,7 +27,7 @@ export function AppMobileFooter(): React.ReactElement {
   return (
     <footer
       className={cn(
-        "before:-bottom-1 fixed inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 pb-4 transition-transform duration-500 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:h-[200%] before:bg-linear-to-t before:from-60% before:from-background before:transition-opacity before:duration-500 before:ease-in-out md:hidden",
+        "fixed inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2 pb-4 transition-transform duration-500 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:-bottom-1 before:h-[200%] before:bg-linear-to-t before:from-60% before:from-background before:transition-opacity before:duration-500 before:ease-in-out md:hidden",
         isHidden
           ? "translate-y-full before:opacity-0"
           : "translate-y-0 before:opacity-100",

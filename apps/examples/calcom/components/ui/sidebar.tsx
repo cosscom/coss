@@ -20,9 +20,6 @@ type SidebarTooltipHandle = ReturnType<
   typeof TooltipCreateHandle<React.ComponentType>
 >;
 
-export const sidebarTooltipHandle: SidebarTooltipHandle =
-  TooltipCreateHandle<React.ComponentType>();
-
 const SidebarMenuOpenContext: React.Context<{
   openMenuCount: number;
   registerMenu: () => () => void;
@@ -34,7 +31,10 @@ const SidebarMenuOpenContext: React.Context<{
   registerMenu: () => () => {},
 });
 
-function SidebarProvider({
+export const sidebarTooltipHandle: SidebarTooltipHandle =
+  TooltipCreateHandle<React.ComponentType>();
+
+export function SidebarProvider({
   className,
   style,
   children,
@@ -85,7 +85,7 @@ export function useSidebarMenuOpen(): {
   return React.useContext(SidebarMenuOpenContext);
 }
 
-function Sidebar({
+export function Sidebar({
   className,
   children,
   ...props
@@ -115,7 +115,7 @@ function Sidebar({
   );
 }
 
-function SidebarInset({
+export function SidebarInset({
   className,
   children,
   ...props
@@ -134,7 +134,7 @@ function SidebarInset({
   );
 }
 
-function SidebarHeader({
+export function SidebarHeader({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
@@ -148,7 +148,7 @@ function SidebarHeader({
   );
 }
 
-function SidebarSeparator({
+export function SidebarSeparator({
   className,
   ...props
 }: React.ComponentProps<typeof Separator>): React.ReactElement {
@@ -162,7 +162,7 @@ function SidebarSeparator({
   );
 }
 
-function SidebarContent({
+export function SidebarContent({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
@@ -178,7 +178,7 @@ function SidebarContent({
   );
 }
 
-function SidebarGroup({
+export function SidebarGroup({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
@@ -195,7 +195,7 @@ function SidebarGroup({
   );
 }
 
-function SidebarGroupLabel({
+export function SidebarGroupLabel({
   className,
   render,
   ...props
@@ -217,7 +217,7 @@ function SidebarGroupLabel({
   });
 }
 
-function SidebarGroupAction({
+export function SidebarGroupAction({
   className,
   render,
   ...props
@@ -225,7 +225,7 @@ function SidebarGroupAction({
   const defaultProps = {
     className: cn(
       "absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
-      "after:-inset-2 after:absolute md:after:hidden",
+      "after:absolute after:-inset-2 md:after:hidden",
       "md:max-lg:hidden",
       className,
     ),
@@ -240,7 +240,7 @@ function SidebarGroupAction({
   });
 }
 
-function SidebarGroupContent({
+export function SidebarGroupContent({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
@@ -254,7 +254,7 @@ function SidebarGroupContent({
   );
 }
 
-function SidebarMenu({
+export function SidebarMenu({
   className,
   ...props
 }: React.ComponentProps<"ul">): React.ReactElement {
@@ -268,7 +268,7 @@ function SidebarMenu({
   );
 }
 
-function SidebarMenuItem({
+export function SidebarMenuItem({
   className,
   ...props
 }: React.ComponentProps<"li">): React.ReactElement {
@@ -282,7 +282,7 @@ function SidebarMenuItem({
   );
 }
 
-function SidebarMenuButton({
+export function SidebarMenuButton({
   isActive = false,
   tooltip,
   className,
@@ -332,7 +332,7 @@ function SidebarMenuButton({
   );
 }
 
-function SidebarMenuAction({
+export function SidebarMenuAction({
   className,
   showOnHover = false,
   render,
@@ -343,7 +343,7 @@ function SidebarMenuAction({
   const defaultProps = {
     className: cn(
       "absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
-      "after:-inset-2 after:absolute md:after:hidden",
+      "after:absolute after:-inset-2 md:after:hidden",
       "md:max-lg:hidden",
       showOnHover &&
         "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
@@ -360,7 +360,7 @@ function SidebarMenuAction({
   });
 }
 
-function SidebarMenuSkeleton({
+export function SidebarMenuSkeleton({
   className,
   showIcon = false,
   ...props
@@ -398,7 +398,7 @@ function SidebarMenuSkeleton({
   );
 }
 
-function SidebarMenuSub({
+export function SidebarMenuSub({
   className,
   ...props
 }: React.ComponentProps<"ul">): React.ReactElement {
@@ -416,7 +416,7 @@ function SidebarMenuSub({
   );
 }
 
-function SidebarMenuSubItem({
+export function SidebarMenuSubItem({
   className,
   ...props
 }: React.ComponentProps<"li">): React.ReactElement {
@@ -430,7 +430,7 @@ function SidebarMenuSubItem({
   );
 }
 
-function SidebarMenuSubButton({
+export function SidebarMenuSubButton({
   isActive = false,
   className,
   render,
@@ -440,7 +440,7 @@ function SidebarMenuSubButton({
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "-translate-x-px flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "flex h-7 min-w-0 -translate-x-px items-center gap-2 rounded-lg px-2 text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
       "md:max-lg:hidden",
       className,
@@ -456,24 +456,3 @@ function SidebarMenuSubButton({
     render,
   });
 }
-
-export {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarSeparator,
-};

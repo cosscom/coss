@@ -232,9 +232,6 @@ const commandGroups: Group[] = [
   },
 ];
 
-export const commandHandle: ReturnType<typeof CommandCreateHandle> =
-  CommandCreateHandle();
-
 interface AIState {
   mode: boolean;
   query: string;
@@ -254,6 +251,9 @@ const initialAIState: AIState = {
   response: "",
   submittedQuery: "",
 };
+
+export const commandHandle: ReturnType<typeof CommandCreateHandle> =
+  CommandCreateHandle();
 
 export function AppCommand(): React.ReactElement {
   const [open, setOpen] = React.useState(false);
@@ -501,7 +501,7 @@ export function AppCommand(): React.ReactElement {
               >
                 <SparklesIcon className="size-4 sm:size-3.5" />
                 Ask AI
-                <Kbd className="-me-1.5 ms-0.5">Tab</Kbd>
+                <Kbd className="ms-0.5 -me-1.5">Tab</Kbd>
               </Button>
             </div>
             <CommandPanel>
@@ -589,7 +589,7 @@ export function AppCommand(): React.ReactElement {
                 <div className="relative w-full">
                   <div
                     aria-hidden="true"
-                    className="[&_svg]:-mx-0.5 pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4"
+                    className="pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:-mx-0.5"
                     data-slot="autocomplete-start-addon"
                   >
                     <SparklesIcon />
@@ -627,7 +627,7 @@ export function AppCommand(): React.ReactElement {
               >
                 <ArrowLeftIcon className="size-4 sm:size-3.5" />
                 Back to search
-                <Kbd className="-me-1.5 ms-0.5">Esc</Kbd>
+                <Kbd className="ms-0.5 -me-1.5">Esc</Kbd>
               </Button>
             </div>
             <CommandPanel>

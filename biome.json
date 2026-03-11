@@ -35,7 +35,6 @@
       "!**/.next",
       "!**/apps/**/*/.next",
       "!**/apps/**/*/.source",
-      "!**/apps/examples/calcom",
       "!**/apps/origin/public/r",
       "!**/apps/origin/registry.json",
       "!**/apps/ui/public/r",

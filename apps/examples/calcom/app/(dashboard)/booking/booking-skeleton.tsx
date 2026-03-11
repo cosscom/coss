@@ -25,7 +25,7 @@ export function BookingSkeletonItem() {
           </ListItemBadges>
         </ListItemContent>
 
-        <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+        <div className="flex flex-col items-start gap-2 md:-order-1 md:w-36 md:shrink-0">
           <div className="flex w-full flex-col gap-1">
             <Skeleton className="h-5 w-full max-w-28" />
             <Skeleton className="my-0.5 h-4 w-full max-w-28" />

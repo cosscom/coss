@@ -206,64 +206,6 @@ function MemberAvatar({
 
 const allBookings: Booking[] = [...mockPastBookings, ...mockUpcomingBookings];
 
-export type FilterOption = {
-  id: string;
-  label: string;
-  avatar?: string | null;
-};
-
-export type FilterCategory = {
-  id: string;
-  label: string;
-  options: FilterOption[];
-};
-
-export type ActiveFilter = {
-  f: string;
-  v?: string[];
-};
-
-export const filterCategories: FilterCategory[] = [
-  {
-    id: "eventTypeId",
-    label: "Event Type",
-    options: getUniqueEventTypes(allBookings),
-  },
-  {
-    id: "userIds",
-    label: "Member",
-    options: getUniqueMembers(allBookings),
-  },
-  {
-    id: "attendeesName",
-    label: "Attendees Name",
-    options: getUniqueAttendeeNames(allBookings),
-  },
-  {
-    id: "attendeeEmail",
-    label: "Attendee Email",
-    options: getUniqueAttendeeEmails(allBookings),
-  },
-  {
-    id: "dateRange",
-    label: "Date Range",
-    options: [
-      { id: "today", label: "Today" },
-      { id: "yesterday", label: "Yesterday" },
-      { id: "this-week", label: "This Week" },
-      { id: "last-week", label: "Last Week" },
-      { id: "this-month", label: "This Month" },
-      { id: "last-month", label: "Last Month" },
-      { id: "custom", label: "Custom Range" },
-    ],
-  },
-  {
-    id: "bookingUid",
-    label: "Booking UID",
-    options: getUniqueBookingUids(allBookings),
-  },
-];
-
 function useActiveFilters(): {
   activeFilters: ActiveFilter[];
   addFilter: (columnId: string) => void;
@@ -529,77 +471,6 @@ function ActiveFilterComponent({
   );
 }
 
-function BookingsFilters(): React.ReactElement {
-  const { activeFilters, addFilter, updateFilter, removeFilter, clearAll } =
-    useActiveFilters();
-  const [newlyAddedFilter, setNewlyAddedFilter] = useState<string | null>(null);
-
-  const handleSelectFilter = (categoryId: string): void => {
-    addFilter(categoryId);
-    setNewlyAddedFilter(categoryId);
-  };
-
-  const handleUpdateFilter = (columnId: string, values: string[]): void => {
-    updateFilter(columnId, values);
-  };
-
-  const handleRemoveFilter = (columnId: string): void => {
-    removeFilter(columnId);
-    if (newlyAddedFilter === columnId) {
-      setNewlyAddedFilter(null);
-    }
-  };
-
-  const hasFilters = activeFilters.length > 0;
-  const activeFilterIds = activeFilters.map((f) => f.f);
-
-  return (
-    <div className="mt-6 grid grid-cols-[auto_1fr] items-start justify-between gap-2 sm:flex">
-      <div className="flex flex-1 flex-wrap gap-2 max-sm:contents">
-        <FilterMenu
-          activeFilterIds={activeFilterIds}
-          hasFilters={hasFilters}
-          onSelectFilter={handleSelectFilter}
-        />
-        <div className="flex flex-wrap gap-2 max-sm:order-1 max-sm:col-span-2 sm:contents">
-          {activeFilters.map((filter) => {
-            const category = filterCategories.find((c) => c.id === filter.f);
-            if (!category) return null;
-            return (
-              <ActiveFilterComponent
-                autoOpen={newlyAddedFilter === filter.f}
-                category={category}
-                filter={filter}
-                key={filter.f}
-                onRemove={(): void => handleRemoveFilter(filter.f)}
-                onUpdate={(values: string[]): void =>
-                  handleUpdateFilter(filter.f, values)
-                }
-              />
-            );
-          })}
-        </div>
-      </div>
-      <div className="flex items-center justify-end gap-2">
-        {hasFilters && (
-          <>
-            <div className="flex items-center gap-1">
-              <Button onClick={clearAll} size="sm" variant="ghost">
-                Clear
-              </Button>
-              <Button size="sm" variant="outline">
-                Save
-              </Button>
-            </div>
-            <Separator className="my-1" orientation="vertical" />
-          </>
-        )}
-        <SavedFiltersCombobox />
-      </div>
-    </div>
-  );
-}
-
 type SavedFilter = {
   id: string;
   isDefault?: boolean;
@@ -733,4 +604,131 @@ function SavedFiltersCombobox(): React.ReactElement {
   );
 }
 
-export { BookingsFilters };
+export type FilterOption = {
+  id: string;
+  label: string;
+  avatar?: string | null;
+};
+
+export type FilterCategory = {
+  id: string;
+  label: string;
+  options: FilterOption[];
+};
+
+export type ActiveFilter = {
+  f: string;
+  v?: string[];
+};
+
+export const filterCategories: FilterCategory[] = [
+  {
+    id: "eventTypeId",
+    label: "Event Type",
+    options: getUniqueEventTypes(allBookings),
+  },
+  {
+    id: "userIds",
+    label: "Member",
+    options: getUniqueMembers(allBookings),
+  },
+  {
+    id: "attendeesName",
+    label: "Attendees Name",
+    options: getUniqueAttendeeNames(allBookings),
+  },
+  {
+    id: "attendeeEmail",
+    label: "Attendee Email",
+    options: getUniqueAttendeeEmails(allBookings),
+  },
+  {
+    id: "dateRange",
+    label: "Date Range",
+    options: [
+      { id: "today", label: "Today" },
+      { id: "yesterday", label: "Yesterday" },
+      { id: "this-week", label: "This Week" },
+      { id: "last-week", label: "Last Week" },
+      { id: "this-month", label: "This Month" },
+      { id: "last-month", label: "Last Month" },
+      { id: "custom", label: "Custom Range" },
+    ],
+  },
+  {
+    id: "bookingUid",
+    label: "Booking UID",
+    options: getUniqueBookingUids(allBookings),
+  },
+];
+
+export function BookingsFilters(): React.ReactElement {
+  const { activeFilters, addFilter, updateFilter, removeFilter, clearAll } =
+    useActiveFilters();
+  const [newlyAddedFilter, setNewlyAddedFilter] = useState<string | null>(null);
+
+  const handleSelectFilter = (categoryId: string): void => {
+    addFilter(categoryId);
+    setNewlyAddedFilter(categoryId);
+  };
+
+  const handleUpdateFilter = (columnId: string, values: string[]): void => {
+    updateFilter(columnId, values);
+  };
+
+  const handleRemoveFilter = (columnId: string): void => {
+    removeFilter(columnId);
+    if (newlyAddedFilter === columnId) {
+      setNewlyAddedFilter(null);
+    }
+  };
+
+  const hasFilters = activeFilters.length > 0;
+  const activeFilterIds = activeFilters.map((f) => f.f);
+
+  return (
+    <div className="mt-6 grid grid-cols-[auto_1fr] items-start justify-between gap-2 sm:flex">
+      <div className="flex flex-1 flex-wrap gap-2 max-sm:contents">
+        <FilterMenu
+          activeFilterIds={activeFilterIds}
+          hasFilters={hasFilters}
+          onSelectFilter={handleSelectFilter}
+        />
+        <div className="flex flex-wrap gap-2 max-sm:order-1 max-sm:col-span-2 sm:contents">
+          {activeFilters.map((filter) => {
+            const category = filterCategories.find((c) => c.id === filter.f);
+            if (!category) return null;
+            return (
+              <ActiveFilterComponent
+                autoOpen={newlyAddedFilter === filter.f}
+                category={category}
+                filter={filter}
+                key={filter.f}
+                onRemove={(): void => handleRemoveFilter(filter.f)}
+                onUpdate={(values: string[]): void =>
+                  handleUpdateFilter(filter.f, values)
+                }
+              />
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        {hasFilters && (
+          <>
+            <div className="flex items-center gap-1">
+              <Button onClick={clearAll} size="sm" variant="ghost">
+                Clear
+              </Button>
+              <Button size="sm" variant="outline">
+                Save
+              </Button>
+            </div>
+            <Separator className="my-1" orientation="vertical" />
+          </>
+        )}
+        <SavedFiltersCombobox />
+      </div>
+    </div>
+  );
+}

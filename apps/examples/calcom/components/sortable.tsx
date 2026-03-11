@@ -48,6 +48,18 @@ const SortableStateContext: Context<{
   isDraggingAny: false,
 });
 
+interface SortableItemProps {
+  id: UniqueIdentifier;
+  children: (props: SortableItemRenderProps) => ReactNode;
+}
+
+interface SortableListProps<T extends { id: UniqueIdentifier }> {
+  items: T[];
+  onReorder: (items: T[]) => void;
+  children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
+}
+
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
   listeners: SyntheticListenerMap | undefined;
@@ -56,11 +68,6 @@ export interface SortableItemRenderProps {
   hasDragged: boolean;
   setNodeRef: (node: HTMLElement | null) => void;
   style: CSSProperties;
-}
-
-interface SortableItemProps {
-  id: UniqueIdentifier;
-  children: (props: SortableItemRenderProps) => ReactNode;
 }
 
 export function SortableItem({ id, children }: SortableItemProps): ReactNode {
@@ -81,13 +88,6 @@ export function SortableItem({ id, children }: SortableItemProps): ReactNode {
     setNodeRef,
     style,
   });
-}
-
-interface SortableListProps<T extends { id: UniqueIdentifier }> {
-  items: T[];
-  onReorder: (items: T[]) => void;
-  children: ReactNode;
-  renderOverlay?: (activeItem: T) => ReactNode;
 }
 
 export function SortableList<T extends { id: UniqueIdentifier }>({

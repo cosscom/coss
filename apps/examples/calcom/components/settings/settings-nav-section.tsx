@@ -20,36 +20,6 @@ interface SettingsNavSectionProps {
   onItemClick?: () => void;
 }
 
-export function SettingsNavSection({
-  section,
-  pathname,
-  variant,
-  onItemClick,
-}: SettingsNavSectionProps): React.ReactElement | null {
-  if (variant === "sheet") {
-    return (
-      <div className="flex flex-col gap-2">
-        <SettingsNavSectionHeader section={section} variant="sheet" />
-        {section.children && (
-          <div className="flex flex-col gap-0.5 ps-6">
-            {section.children.map((item) => (
-              <SettingsNavSheetItem
-                isActive={pathname === item.url}
-                item={item}
-                key={item.url}
-                onClick={onItemClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Sidebar variant - uses sidebar-specific components
-  return null; // Sidebar uses its own components, this is handled in settings-sidebar.tsx
-}
-
 function SettingsNavSectionHeader({
   section,
   variant,
@@ -98,6 +68,36 @@ function SettingsNavSheetItem({
       {item.external && <ExternalLinkIcon className="size-3 opacity-80" />}
     </Link>
   );
+}
+
+export function SettingsNavSection({
+  section,
+  pathname,
+  variant,
+  onItemClick,
+}: SettingsNavSectionProps): React.ReactElement | null {
+  if (variant === "sheet") {
+    return (
+      <div className="flex flex-col gap-2">
+        <SettingsNavSectionHeader section={section} variant="sheet" />
+        {section.children && (
+          <div className="flex flex-col gap-0.5 ps-6">
+            {section.children.map((item) => (
+              <SettingsNavSheetItem
+                isActive={pathname === item.url}
+                item={item}
+                key={item.url}
+                onClick={onItemClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Sidebar variant - uses sidebar-specific components
+  return null; // Sidebar uses its own components, this is handled in settings-sidebar.tsx
 }
 
 export { SettingsNavSectionHeader, SettingsNavSheetItem };

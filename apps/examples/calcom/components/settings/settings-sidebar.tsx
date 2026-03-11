@@ -24,40 +24,6 @@ import {
 import type { SettingsNavItem } from "@/lib/settings-navigation-data";
 import { settingsNavItems } from "@/lib/settings-navigation-data";
 
-export function SettingsSidebar({
-  ...props
-}: React.ComponentProps<typeof Sidebar>): React.ReactElement {
-  const pathname = usePathname();
-
-  return (
-    <Sidebar {...props}>
-      <SidebarHeader>
-        <div className="flex flex-col gap-1 px-2">
-          <SidebarMenuButton
-            render={<Link aria-label="Back" href="/event-types" />}
-            tooltip="Back"
-          >
-            <ArrowLeftIcon className="lg:-ms-0.5" />
-            <span className="max-lg:sr-only">Back</span>
-          </SidebarMenuButton>
-          <div className="hidden md:max-lg:block">
-            <SettingsSheet />
-          </div>
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="hidden lg:block">
-        {settingsNavItems.map((section) => (
-          <SettingsNavSection
-            key={section.url}
-            pathname={pathname}
-            section={section}
-          />
-        ))}
-      </SidebarContent>
-    </Sidebar>
-  );
-}
-
 function SettingsNavSection({
   section,
   pathname,
@@ -100,5 +66,39 @@ function SettingsNavSection({
         </SidebarMenuSub>
       )}
     </SidebarGroup>
+  );
+}
+
+export function SettingsSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>): React.ReactElement {
+  const pathname = usePathname();
+
+  return (
+    <Sidebar {...props}>
+      <SidebarHeader>
+        <div className="flex flex-col gap-1 px-2">
+          <SidebarMenuButton
+            render={<Link aria-label="Back" href="/event-types" />}
+            tooltip="Back"
+          >
+            <ArrowLeftIcon className="lg:-ms-0.5" />
+            <span className="max-lg:sr-only">Back</span>
+          </SidebarMenuButton>
+          <div className="hidden md:max-lg:block">
+            <SettingsSheet />
+          </div>
+        </div>
+      </SidebarHeader>
+      <SidebarContent className="hidden lg:block">
+        {settingsNavItems.map((section) => (
+          <SettingsNavSection
+            key={section.url}
+            pathname={pathname}
+            section={section}
+          />
+        ))}
+      </SidebarContent>
+    </Sidebar>
   );
 }
