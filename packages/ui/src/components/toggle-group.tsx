@@ -7,7 +7,6 @@ import {
 	Toggle as ToggleComponent,
 	type toggleVariants,
 } from "@coss/ui/components/toggle";
-
 import { cn } from "@coss/ui/lib/utils";
 import type { VariantProps } from "class-variance-authority";
 import * as React from "react";

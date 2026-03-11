@@ -8,22 +8,5 @@
         "organizeImports": "on"
       }
     }
-  },
-  "formatter": {
-    "enabled": false
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": false,
-      "a11y": "off",
-      "complexity": "off",
-      "correctness": "off",
-      "nursery": "off",
-      "performance": "off",
-      "security": "off",
-      "style": "off",
-      "suspicious": "off"
-    }
   }
 }
