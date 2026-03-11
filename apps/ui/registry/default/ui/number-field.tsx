@@ -135,7 +135,7 @@ export function NumberFieldScrubArea({
   );
 }
 
-function CursorGrowIcon(
+export function CursorGrowIcon(
   props: React.ComponentProps<"svg">,
 ): React.ReactElement {
   return (

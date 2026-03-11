@@ -88,7 +88,6 @@
         "noDangerouslySetInnerHtml": "off"
       },
       "style": {
-        "useExportsLast": "warn",
         "noInferrableTypes": "error",
         "noParameterAssign": "error",
         "noUnusedTemplateLiteral": "error",
@@ -115,6 +114,9 @@
         "rules": {
           "nursery": {
             "useExplicitType": "info"
+          },
+          "style": {
+            "useExportsLast": "warn"
           }
         }
       }

@@ -416,7 +416,7 @@ export function ComboboxChip({
   );
 }
 
-function ComboboxChipRemove(
+export function ComboboxChipRemove(
   props: ComboboxPrimitive.ChipRemove.Props,
 ): React.ReactElement {
   return (
