@@ -63,7 +63,12 @@ export function CopyableField({
     timeout: RESET_DELAY,
   });
 
-  const handleCopy = (): void => copyToClipboard(value);
+  const handleCopy = (): void => {
+    if (isCopied) {
+      return;
+    }
+    copyToClipboard(value);
+  };
 
   return (
     <Field>
@@ -81,13 +86,13 @@ export function CopyableField({
             <TooltipTrigger
               render={
                 <Button
-                  aria-label={`Copy ${label}`}
-                  disabled={isCopied}
-                  onClick={handleCopy}
                   ref={buttonRef}
+                  aria-label={`Copy ${label}`}
                   size="icon-xs"
                   type="button"
                   variant="ghost"
+                  onClick={handleCopy}
+                  disabled={isCopied}
                 />
               }
             >
