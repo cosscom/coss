@@ -1,7 +1,7 @@
 import { cn } from "@coss/ui/lib/utils";
 import type * as React from "react";
 
-function AppHeader({
+export function AppHeader({
   className,
   ...props
 }: React.ComponentProps<"header">): React.ReactElement {
@@ -13,7 +13,7 @@ function AppHeader({
   );
 }
 
-function AppHeaderContent({
+export function AppHeaderContent({
   children,
   className,
   title,
@@ -29,7 +29,7 @@ function AppHeaderContent({
   );
 }
 
-function AppHeaderDescription({
+export function AppHeaderDescription({
   className,
   ...props
 }: React.ComponentProps<"p">): React.ReactElement {
@@ -41,7 +41,7 @@ function AppHeaderDescription({
   );
 }
 
-function AppHeaderActions({
+export function AppHeaderActions({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
@@ -49,5 +49,3 @@ function AppHeaderActions({
     <div className={cn("flex items-center gap-2", className)} {...props} />
   );
 }
-
-export { AppHeader, AppHeaderActions, AppHeaderContent, AppHeaderDescription };
