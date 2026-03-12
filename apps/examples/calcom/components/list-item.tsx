@@ -15,8 +15,7 @@ import { ItemLabel } from "./item-label";
 
 /** Event listeners for drag-and-drop (from @dnd-kit when sortable) */
 interface SortableListeners {
-  // biome-ignore lint/complexity/noBannedTypes: dnd-kit's SyntheticListenerMap uses Function
-  [key: string]: Function | undefined;
+  [key: string]: (() => void) | undefined;
 }
 
 interface ListItemProps extends useRender.ComponentProps<"div"> {
