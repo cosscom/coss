@@ -7,6 +7,7 @@ import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
 import { useRender } from "@base-ui/react/use-render";
 import { ChevronRightIcon, XIcon } from "lucide-react";
+import type React from "react";
 import { createContext, useContext } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
@@ -18,7 +19,8 @@ const DrawerContext = createContext<{ position: DrawerPosition }>({
   position: "bottom",
 });
 
-const DrawerCreateHandle = DrawerPrimitive.createHandle;
+export const DrawerCreateHandle: typeof DrawerPrimitive.createHandle =
+  DrawerPrimitive.createHandle;
 
 const directionMap: Record<
   DrawerPosition,
@@ -30,13 +32,13 @@ const directionMap: Record<
   top: "up",
 };
 
-function Drawer({
+export function Drawer({
   swipeDirection,
   position = "bottom",
   ...props
 }: DrawerPrimitive.Root.Props & {
   position?: DrawerPosition;
-}) {
+}): React.ReactElement {
   return (
     <DrawerContext.Provider value={{ position }}>
       <DrawerPrimitive.Root
@@ -47,20 +49,25 @@ function Drawer({
   );
 }
 
-const DrawerPortal = DrawerPrimitive.Portal;
+export const DrawerPortal: typeof DrawerPrimitive.Portal =
+  DrawerPrimitive.Portal;
 
-function DrawerTrigger(props: DrawerPrimitive.Trigger.Props) {
+export function DrawerTrigger(
+  props: DrawerPrimitive.Trigger.Props,
+): React.ReactElement {
   return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
 }
 
-function DrawerClose(props: DrawerPrimitive.Close.Props) {
+export function DrawerClose(
+  props: DrawerPrimitive.Close.Props,
+): React.ReactElement {
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
 }
 
-function DrawerBackdrop({
+export function DrawerBackdrop({
   className,
   ...props
-}: DrawerPrimitive.Backdrop.Props) {
+}: DrawerPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
@@ -73,7 +80,7 @@ function DrawerBackdrop({
   );
 }
 
-function DrawerViewport({
+export function DrawerViewport({
   className,
   position,
   variant = "default",
@@ -81,7 +88,7 @@ function DrawerViewport({
 }: DrawerPrimitive.Viewport.Props & {
   position?: DrawerPosition;
   variant?: "default" | "straight" | "inset";
-}) {
+}): React.ReactElement {
   return (
     <DrawerPrimitive.Viewport
       className={cn(
@@ -101,7 +108,7 @@ function DrawerViewport({
   );
 }
 
-function DrawerPopup({
+export function DrawerPopup({
   className,
   children,
   showCloseButton = false,
@@ -114,7 +121,7 @@ function DrawerPopup({
   position?: DrawerPosition;
   variant?: "default" | "straight" | "inset";
   showBar?: boolean;
-}) {
+}): React.ReactElement {
   const { position: contextPosition } = useContext(DrawerContext);
   const position = positionProp ?? contextPosition;
 
@@ -190,14 +197,14 @@ function DrawerPopup({
   );
 }
 
-function DrawerHeader({
+export function DrawerHeader({
   className,
   preventSwipe = false,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   preventSwipe?: boolean;
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col gap-2 p-6 in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pb-3 max-sm:pb-4",
@@ -214,7 +221,7 @@ function DrawerHeader({
   });
 }
 
-function DrawerFooter({
+export function DrawerFooter({
   className,
   variant = "default",
   preventSwipe = true,
@@ -223,7 +230,7 @@ function DrawerFooter({
 }: useRender.ComponentProps<"div"> & {
   variant?: "default" | "bare";
   preventSwipe?: boolean;
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col-reverse gap-2 px-6 pb-(--safe-area-inset-bottom,0px) sm:flex-row sm:justify-end",
@@ -244,7 +251,10 @@ function DrawerFooter({
   });
 }
 
-function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
+export function DrawerTitle({
+  className,
+  ...props
+}: DrawerPrimitive.Title.Props): React.ReactElement {
   return (
     <DrawerPrimitive.Title
       className={cn(
@@ -257,10 +267,10 @@ function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
   );
 }
 
-function DrawerDescription({
+export function DrawerDescription({
   className,
   ...props
-}: DrawerPrimitive.Description.Props) {
+}: DrawerPrimitive.Description.Props): React.ReactElement {
   return (
     <DrawerPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -270,7 +280,7 @@ function DrawerDescription({
   );
 }
 
-function DrawerPanel({
+export function DrawerPanel({
   className,
   scrollFade = true,
   scrollable = true,
@@ -281,7 +291,7 @@ function DrawerPanel({
   scrollFade?: boolean;
   scrollable?: boolean;
   preventSwipe?: boolean;
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "p-6 in-[[data-slot=drawer-popup]:has([data-slot=drawer-header])]:pt-1 in-[[data-slot=drawer-popup]:has([data-slot=drawer-footer]:not(.border-t))]:pb-1",
@@ -308,14 +318,14 @@ function DrawerPanel({
   return content;
 }
 
-function DrawerBar({
+export function DrawerBar({
   className,
   position: positionProp,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   position?: DrawerPosition;
-}) {
+}): React.ReactElement {
   const { position: contextPosition } = useContext(DrawerContext);
   const position = positionProp ?? contextPosition;
   const horizontal = position === "left" || position === "right";
@@ -342,13 +352,14 @@ function DrawerBar({
   });
 }
 
-const DrawerContent = DrawerPrimitive.Content;
+export const DrawerContent: typeof DrawerPrimitive.Content =
+  DrawerPrimitive.Content;
 
-function DrawerMenu({
+export function DrawerMenu({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"nav">) {
+}: useRender.ComponentProps<"nav">): React.ReactElement {
   const defaultProps = {
     className: cn("-m-2 flex flex-col", className),
     "data-slot": "drawer-menu",
@@ -361,7 +372,7 @@ function DrawerMenu({
   });
 }
 
-function DrawerMenuItem({
+export function DrawerMenuItem({
   className,
   variant = "default",
   render,
@@ -369,7 +380,7 @@ function DrawerMenuItem({
   ...props
 }: useRender.ComponentProps<"button"> & {
   variant?: "default" | "destructive";
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex min-h-9 w-full cursor-default select-none items-center gap-2 rounded-sm px-2 py-1 text-base text-foreground outline-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-64 data-[variant=destructive]:text-destructive-foreground sm:min-h-8 sm:text-sm [&>svg:not([class*='opacity-'])]:opacity-80 [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:pointer-events-none [&>svg]:-mx-0.5 [&>svg]:shrink-0",
@@ -388,11 +399,11 @@ function DrawerMenuItem({
   });
 }
 
-function DrawerMenuSeparator({
+export function DrawerMenuSeparator({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("mx-2 my-1 h-px bg-border", className),
     "data-slot": "drawer-menu-separator",
@@ -405,11 +416,11 @@ function DrawerMenuSeparator({
   });
 }
 
-function DrawerMenuGroup({
+export function DrawerMenuGroup({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn("flex flex-col", className),
     "data-slot": "drawer-menu-group",
@@ -422,11 +433,11 @@ function DrawerMenuGroup({
   });
 }
 
-function DrawerMenuGroupLabel({
+export function DrawerMenuGroupLabel({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
       "px-2 py-1.5 font-medium text-muted-foreground text-xs",
@@ -442,11 +453,11 @@ function DrawerMenuGroupLabel({
   });
 }
 
-function DrawerMenuTrigger({
+export function DrawerMenuTrigger({
   className,
   children,
   ...props
-}: DrawerPrimitive.Trigger.Props) {
+}: DrawerPrimitive.Trigger.Props): React.ReactElement {
   return (
     <DrawerTrigger
       className={cn(
@@ -462,7 +473,7 @@ function DrawerMenuTrigger({
   );
 }
 
-function DrawerMenuCheckboxItem({
+export function DrawerMenuCheckboxItem({
   className,
   children,
   checked,
@@ -475,7 +486,7 @@ function DrawerMenuCheckboxItem({
 }: CheckboxPrimitive.Root.Props & {
   variant?: "default" | "switch";
   render?: React.ReactElement;
-}) {
+}): React.ReactElement {
   return (
     <CheckboxPrimitive.Root
       checked={checked}
@@ -527,10 +538,10 @@ function DrawerMenuCheckboxItem({
   );
 }
 
-function DrawerMenuRadioGroup({
+export function DrawerMenuRadioGroup({
   className,
   ...props
-}: RadioGroupPrimitive.Props) {
+}: RadioGroupPrimitive.Props): React.ReactElement {
   return (
     <RadioGroupPrimitive
       className={cn("flex flex-col", className)}
@@ -540,7 +551,7 @@ function DrawerMenuRadioGroup({
   );
 }
 
-function DrawerMenuRadioItem({
+export function DrawerMenuRadioItem({
   className,
   children,
   value,
@@ -550,7 +561,7 @@ function DrawerMenuRadioItem({
 }: RadioPrimitive.Root.Props & {
   value: string;
   render?: React.ReactElement;
-}) {
+}): React.ReactElement {
   return (
     <RadioPrimitive.Root
       className={cn(
@@ -584,29 +595,4 @@ function DrawerMenuRadioItem({
   );
 }
 
-export {
-  DrawerCreateHandle,
-  Drawer,
-  DrawerTrigger,
-  DrawerPortal,
-  DrawerClose,
-  DrawerBackdrop,
-  DrawerPopup,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerPanel,
-  DrawerBar,
-  DrawerContent,
-  DrawerViewport,
-  DrawerMenu,
-  DrawerMenuCheckboxItem,
-  DrawerMenuItem,
-  DrawerMenuRadioGroup,
-  DrawerMenuRadioItem,
-  DrawerMenuSeparator,
-  DrawerMenuGroup,
-  DrawerMenuGroupLabel,
-  DrawerMenuTrigger,
-};
+export { DrawerPrimitive };
