@@ -189,7 +189,9 @@ export function DialogPanel({
   scrollFade = true,
   render,
   ...props
-}: useRender.ComponentProps<"div"> & { scrollFade?: boolean }): React.ReactElement {
+}: useRender.ComponentProps<"div"> & {
+  scrollFade?: boolean;
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "p-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-header])]:pt-1 in-[[data-slot=dialog-popup]:has([data-slot=dialog-footer]:not(.border-t))]:pb-1",
