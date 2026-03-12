@@ -1,18 +1,22 @@
+"use client";
+
 import { mergeProps } from "@coss/ui/base-ui/merge-props";
 import { useRender } from "@coss/ui/base-ui/use-render";
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
-import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import { ItemLabel } from "@coss/ui/shared/item-label";
 import { GripVerticalIcon } from "lucide-react";
 import React, {
   type ComponentPropsWithoutRef,
   type CSSProperties,
+  type ReactElement,
   type ReactNode,
 } from "react";
-import { ItemLabel } from "./item-label";
 
-const sortableListClasses =
-  "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
+/** Event listeners for drag-and-drop (from @dnd-kit when sortable) */
+interface SortableListeners {
+  [key: string]: (() => void) | undefined;
+}
 
 interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortable?: boolean;
@@ -23,11 +27,37 @@ interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
-  sortableListeners?: SyntheticListenerMap;
+  sortableListeners?: SortableListeners;
   hasDragged?: boolean;
 }
 
-function ListItem({
+interface SortableListItemProps {
+  children: ReactNode;
+  className?: string;
+  labelColorLight?: string;
+  labelColorDark?: string;
+  isOverlay?: boolean;
+  sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
+  sortableDragging?: boolean;
+  sortableDraggingAny?: boolean;
+  sortableListeners?: SortableListeners;
+  hasDragged?: boolean;
+}
+
+const spanningTriggerClasses = "cursor-pointer before:absolute before:inset-0";
+
+type ListItemSpanningTriggerProps = Omit<
+  ComponentPropsWithoutRef<"div">,
+  "render"
+> & {
+  render?: React.ReactElement;
+};
+
+export const sortableListClasses =
+  "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
+
+export function ListItem({
   children,
   className,
   render,
@@ -42,7 +72,7 @@ function ListItem({
   sortableListeners,
   hasDragged,
   ...props
-}: ListItemProps): React.ReactElement {
+}: ListItemProps): ReturnType<typeof useRender> {
   const baseClasses =
     "not-last:border-b bg-clip-padding has-[[data-spanning-trigger]:hover]:z-1 has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] first:rounded-t-[calc(var(--radius-2xl)-1px)] last:rounded-b-[calc(var(--radius-2xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-header])]:first:rounded-t-[calc(var(--radius-xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-footer])]:last:rounded-b-[calc(var(--radius-xl)-1px)]";
 
@@ -50,7 +80,6 @@ function ListItem({
 
   const sortableClasses =
     "after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 data-has-dragged:starting:after:rounded-2xl first:after:rounded-t-2xl last:after:rounded-b-2xl after:border after:border-border after:bg-card after:transition-[border-radius,inset] data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-muted/24 not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[5px] before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)] not-data-drag-overlay:before:hidden before:z-1";
-  ("after:-inset-px relative translate-y-(--translate-y) data-has-dragged:starting:rounded-2xl not-data-drag-on:transition-[background-color] data-has-dragged:not-data-drag-on:transition-[background-color,border-radius] after:pointer-events-none after:invisible after:absolute data-has-dragged:starting:after:inset-y-1 data-has-dragged:starting:after:rounded-2xl first:after:rounded-t-2xl last:after:rounded-b-2xl after:border after:border-border after:bg-card after:transition-[border-radius,inset] data-drag-overlay:data-drag-release:hidden data-drag-overlay:pointer-events-none data-drag-on:not-data-drag-ghost:z-1 data-drag-on:rounded-2xl data-drag-on:transition-[translate] data-drag-on:after:visible data-drag-overlay:after:visible data-drag-on:after:inset-y-1 data-drag-overlay:after:inset-y-1 data-drag-on:after:rounded-2xl data-drag-overlay:after:rounded-2xl data-drag-ghost:after:border-dashed data-drag-ghost:after:bg-muted/24 not-dark:data-drag-overlay:after:bg-clip-padding data-drag-overlay:after:shadow-lg data-drag-ghost:*:opacity-0 before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-[5px] before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)] not-data-drag-overlay:before:hidden before:z-1");
 
   const innerContent = (
     <div
@@ -80,7 +109,7 @@ function ListItem({
     "data-slot": "list-item",
     ref: sortable ? sortableRef : undefined,
     style: sortable ? sortableStyle : undefined,
-    ...(sortable ? sortableListeners : {}),
+    ...(sortable ? (sortableListeners ?? {}) : {}),
   };
 
   const mergedProps = mergeProps<"div">(defaultProps, props);
@@ -96,21 +125,7 @@ function ListItem({
   });
 }
 
-interface SortableListItemProps {
-  children: ReactNode;
-  className?: string;
-  labelColorLight?: string;
-  labelColorDark?: string;
-  isOverlay?: boolean;
-  sortableRef?: (node: HTMLElement | null) => void;
-  sortableStyle?: CSSProperties;
-  sortableDragging?: boolean;
-  sortableDraggingAny?: boolean;
-  sortableListeners?: SyntheticListenerMap;
-  hasDragged?: boolean;
-}
-
-function SortableListItem({
+export function SortableListItem({
   children,
   className,
   labelColorLight,
@@ -122,7 +137,7 @@ function SortableListItem({
   sortableDraggingAny,
   sortableListeners,
   hasDragged,
-}: SortableListItemProps): React.ReactElement {
+}: SortableListItemProps): ReactElement {
   return (
     <ListItem
       className={className}
@@ -142,13 +157,11 @@ function SortableListItem({
   );
 }
 
-interface ListItemDragHandleProps {
-  className?: string;
-}
-
-function ListItemDragHandle({
+export function ListItemDragHandle({
   className,
-}: ListItemDragHandleProps): React.ReactElement {
+}: {
+  className?: string;
+}): ReactElement {
   return (
     <Button
       aria-label="Drag to reorder"
@@ -168,12 +181,12 @@ function ListItemDragHandle({
   );
 }
 
-function ListItemContent({
+export function ListItemContent({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex min-w-0 flex-1 flex-col gap-3", className),
     "data-slot": "list-item-content",
@@ -187,12 +200,12 @@ function ListItemContent({
   });
 }
 
-function ListItemHeader({
+export function ListItemHeader({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex flex-col gap-1", className),
     "data-slot": "list-item-header",
@@ -206,12 +219,12 @@ function ListItemHeader({
   });
 }
 
-function ListItemTitle({
+export function ListItemTitle({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"h2">): React.ReactElement {
+}: useRender.ComponentProps<"h2">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("font-semibold sm:text-sm", className),
     "data-slot": "list-item-title",
@@ -225,21 +238,12 @@ function ListItemTitle({
   });
 }
 
-const spanningTriggerClasses = "cursor-pointer before:absolute before:inset-0";
-
-type ListItemSpanningTriggerProps = Omit<
-  ComponentPropsWithoutRef<"div">,
-  "render"
-> & {
-  render?: React.ReactElement;
-};
-
-function ListItemSpanningTrigger({
+export function ListItemSpanningTrigger({
   children,
   className,
   render,
   ...props
-}: ListItemSpanningTriggerProps): React.ReactElement {
+}: ListItemSpanningTriggerProps): ReactElement {
   const mergedProps = {
     className: cn(spanningTriggerClasses, className),
     "data-spanning-trigger": "",
@@ -248,7 +252,7 @@ function ListItemSpanningTrigger({
 
   if (render) {
     const renderProps = (render.props || {}) as Record<string, unknown>;
-    const props = {
+    const merged = {
       ...renderProps,
       ...mergedProps,
       children: children ?? renderProps.children,
@@ -258,18 +262,18 @@ function ListItemSpanningTrigger({
         className,
       ),
     };
-    return React.cloneElement(render, props as React.Attributes);
+    return React.cloneElement(render, merged as React.Attributes);
   }
 
   return <div {...mergedProps}>{children}</div>;
 }
 
-function ListItemDescription({
+export function ListItemDescription({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"p">): React.ReactElement {
+}: useRender.ComponentProps<"p">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("text-muted-foreground text-sm", className),
     "data-slot": "list-item-description",
@@ -283,12 +287,12 @@ function ListItemDescription({
   });
 }
 
-function ListItemBadges({
+export function ListItemBadges({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex flex-wrap items-center gap-2", className),
     "data-slot": "list-item-badges",
@@ -302,12 +306,12 @@ function ListItemBadges({
   });
 }
 
-function ListItemActions({
+export function ListItemActions({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("relative flex items-center gap-4", className),
     "data-slot": "list-item-actions",
@@ -320,18 +324,3 @@ function ListItemActions({
     render,
   });
 }
-
-export {
-  ItemLabel,
-  ListItem,
-  ListItemActions,
-  ListItemBadges,
-  ListItemContent,
-  ListItemDescription,
-  ListItemDragHandle,
-  ListItemHeader,
-  ListItemSpanningTrigger,
-  ListItemTitle,
-  sortableListClasses,
-  SortableListItem,
-};
