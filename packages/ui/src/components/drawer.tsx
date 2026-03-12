@@ -15,12 +15,10 @@ import { createContext, useContext } from "react";
 
 type DrawerPosition = "right" | "left" | "top" | "bottom";
 
-const DrawerContext = createContext<{ position: DrawerPosition }>({
-  position: "bottom",
-});
-
-export const DrawerCreateHandle: typeof DrawerPrimitive.createHandle =
-  DrawerPrimitive.createHandle;
+const DrawerContext: React.Context<{ position: DrawerPosition }> =
+  createContext<{ position: DrawerPosition }>({
+    position: "bottom",
+  });
 
 const directionMap: Record<
   DrawerPosition,
@@ -31,6 +29,9 @@ const directionMap: Record<
   right: "right",
   top: "up",
 };
+
+export const DrawerCreateHandle: typeof DrawerPrimitive.createHandle =
+  DrawerPrimitive.createHandle;
 
 export function Drawer({
   swipeDirection,
