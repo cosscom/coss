@@ -2,7 +2,6 @@
 
 import { LayoutGridIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useId, useState } from "react";
-
 import InfoMenu from "@/registry/default/components/navbar-components/info-menu";
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import SettingsMenu from "@/registry/default/components/navbar-components/settings-menu";
@@ -40,7 +39,7 @@ export default function Component() {
             <Switch
               aria-label="Toggle switch"
               checked={checked}
-              className="data-[state=checked]:[&_span]:rtl:-translate-x-3 h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3"
+              className="h-5 w-8 [&_span]:size-4 data-[state=checked]:[&_span]:translate-x-3 data-[state=checked]:[&_span]:rtl:-translate-x-3"
               id={`switch-${id}`}
               onCheckedChange={setChecked}
             />

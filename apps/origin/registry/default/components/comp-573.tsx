@@ -9,7 +9,6 @@ import {
 import { useTree } from "@headless-tree/react";
 import { FolderIcon, FolderOpenIcon } from "lucide-react";
 import type React from "react";
-
 import { Tree, TreeItem, TreeItemLabel } from "@/registry/default/ui/tree";
 
 interface Item {

@@ -18,7 +18,6 @@ import {
 } from "date-fns";
 import type React from "react";
 import { useMemo } from "react";
-
 import {
   type CalendarEvent,
   DraggableEvent,
@@ -315,7 +314,7 @@ export function WeekView({
               key={hour.toString()}
             >
               {index > 0 && (
-                <span className="-top-3 absolute left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
+                <span className="absolute -top-3 left-0 flex h-6 w-16 max-w-full items-center justify-end bg-background pe-2 text-[10px] text-muted-foreground/70 sm:pe-4 sm:text-xs">
                   {format(hour, "h a")}
                 </span>
               )}
@@ -362,7 +361,7 @@ export function WeekView({
                 style={{ top: `${currentTimePosition}%` }}
               >
                 <div className="relative flex items-center">
-                  <div className="-left-1 absolute h-2 w-2 rounded-full bg-primary" />
+                  <div className="absolute -left-1 h-2 w-2 rounded-full bg-primary" />
                   <div className="h-[2px] w-full bg-primary" />
                 </div>
               </div>

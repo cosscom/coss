@@ -232,9 +232,6 @@ const commandGroups: Group[] = [
   },
 ];
 
-export const commandHandle: ReturnType<typeof CommandCreateHandle> =
-  CommandCreateHandle();
-
 interface AIState {
   mode: boolean;
   query: string;
@@ -255,7 +252,10 @@ const initialAIState: AIState = {
   submittedQuery: "",
 };
 
-export function AppCommand() {
+export const commandHandle: ReturnType<typeof CommandCreateHandle> =
+  CommandCreateHandle();
+
+export function AppCommand(): React.ReactElement {
   const [open, setOpen] = React.useState(false);
   const [aiState, setAIState] = React.useState<AIState>(initialAIState);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -265,8 +265,8 @@ export function AppCommand() {
   const commandResetKeyRef = React.useRef(0);
 
   // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
+  React.useEffect((): (() => void) => {
+    return (): void => {
       abortControllerRef.current?.abort();
     };
   }, []);
@@ -392,8 +392,8 @@ export function AppCommand() {
     [contains],
   );
 
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+  React.useEffect((): (() => void) => {
+    const down = (e: KeyboardEvent): void => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         if (
           (e.target instanceof HTMLElement && e.target.isContentEditable) ||
@@ -415,13 +415,13 @@ export function AppCommand() {
     };
 
     document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    return (): void => document.removeEventListener("keydown", down);
   }, []);
 
-  React.useEffect(() => {
+  React.useEffect((): (() => void) | undefined => {
     if (!open || !aiState.mode) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: KeyboardEvent): void => {
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
@@ -430,7 +430,8 @@ export function AppCommand() {
     };
 
     document.addEventListener("keydown", handleEscape, true);
-    return () => document.removeEventListener("keydown", handleEscape, true);
+    return (): void =>
+      document.removeEventListener("keydown", handleEscape, true);
   }, [open, aiState.mode, handleBackToSearch]);
 
   React.useEffect(() => {
@@ -475,8 +476,10 @@ export function AppCommand() {
           >
             <div className="relative flex items-center *:first:flex-1">
               <CommandInput
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+                  setSearchQuery(e.target.value)
+                }
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
                   if (e.key === "Tab") {
                     e.preventDefault();
                     handleAskAI();
@@ -498,7 +501,7 @@ export function AppCommand() {
               >
                 <SparklesIcon className="size-4 sm:size-3.5" />
                 Ask AI
-                <Kbd className="-me-1.5 ms-0.5">Tab</Kbd>
+                <Kbd className="ms-0.5 -me-1.5">Tab</Kbd>
               </Button>
             </div>
             <CommandPanel>
@@ -520,12 +523,12 @@ export function AppCommand() {
                 )}
               </CommandEmpty>
               <CommandList>
-                {(group: Group) => (
+                {(group: Group): React.ReactElement => (
                   <React.Fragment key={group.value}>
                     <CommandGroup items={group.items}>
                       <CommandGroupLabel>{group.value}</CommandGroupLabel>
                       <CommandCollection>
-                        {(item: Item) => (
+                        {(item: Item): React.ReactElement => (
                           <CommandItem
                             key={item.value}
                             onClick={handleItemClick}
@@ -586,7 +589,7 @@ export function AppCommand() {
                 <div className="relative w-full">
                   <div
                     aria-hidden="true"
-                    className="[&_svg]:-mx-0.5 pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4"
+                    className="pointer-events-none absolute inset-y-0 start-px z-10 flex items-center ps-[calc(--spacing(3)-1px)] opacity-80 has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)] [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:-mx-0.5"
                     data-slot="autocomplete-start-addon"
                   >
                     <SparklesIcon />
@@ -595,10 +598,12 @@ export function AppCommand() {
                     aria-label="AI query input"
                     className="border-transparent! bg-transparent! shadow-none before:hidden has-focus-visible:ring-0 *:data-[slot=input]:ps-[calc(--spacing(8.5)-1px)] sm:*:data-[slot=input]:ps-[calc(--spacing(8)-1px)]"
                     disabled={aiState.isGenerating}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
                       setAIState((prev) => ({ ...prev, query: e.target.value }))
                     }
-                    onKeyDown={(e) => {
+                    onKeyDown={(
+                      e: React.KeyboardEvent<HTMLInputElement>,
+                    ): void => {
                       if (e.key === "Enter" && !aiState.isGenerating) {
                         handleGenerateAI();
                       }
@@ -622,7 +627,7 @@ export function AppCommand() {
               >
                 <ArrowLeftIcon className="size-4 sm:size-3.5" />
                 Back to search
-                <Kbd className="-me-1.5 ms-0.5">Esc</Kbd>
+                <Kbd className="ms-0.5 -me-1.5">Esc</Kbd>
               </Button>
             </div>
             <CommandPanel>

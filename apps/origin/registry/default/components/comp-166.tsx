@@ -1,5 +1,4 @@
 import { useId } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Label } from "@/registry/default/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
@@ -20,7 +19,7 @@ export default function Component() {
         Choose plan
       </legend>
       <RadioGroup
-        className="-space-y-px gap-0 rounded-md shadow-xs"
+        className="gap-0 -space-y-px rounded-md shadow-xs"
         defaultValue="2"
       >
         {items.map((item) => (
@@ -42,7 +41,7 @@ export default function Component() {
                 >
                   {item.label}
                   {item.value === "2" && (
-                    <Badge className="-mt-1 ms-2">Popular</Badge>
+                    <Badge className="ms-2 -mt-1">Popular</Badge>
                   )}
                 </Label>
               </div>

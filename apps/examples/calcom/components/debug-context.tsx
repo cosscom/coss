@@ -1,5 +1,7 @@
 "use client";
 
+import type * as React from "react";
+import type { Context } from "react";
 import { createContext, type ReactNode, useContext, useState } from "react";
 
 interface DebugContextValue {
@@ -9,9 +11,14 @@ interface DebugContextValue {
   setIsLoadingOverride: (value: boolean | null) => void;
 }
 
-const DebugContext = createContext<DebugContextValue | null>(null);
+const DebugContext: Context<DebugContextValue | null> =
+  createContext<DebugContextValue | null>(null);
 
-export function DebugProvider({ children }: { children: ReactNode }) {
+export function DebugProvider({
+  children,
+}: {
+  children: ReactNode;
+}): React.ReactElement {
   const [isLoadingOverride, setIsLoadingOverride] = useState<boolean | null>(
     null,
   );
@@ -31,7 +38,7 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useDebug() {
+export function useDebug(): DebugContextValue {
   const context = useContext(DebugContext);
   if (!context) {
     throw new Error("useDebug must be used within a DebugProvider");

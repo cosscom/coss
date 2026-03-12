@@ -2,7 +2,6 @@
 
 import { Switch as SwitchPrimitive } from "radix-ui";
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 function Switch({
@@ -20,7 +19,7 @@ function Switch({
     >
       <SwitchPrimitive.Thumb
         className={cn(
-          "data-[state=checked]:rtl:-translate-x-4 pointer-events-none block size-5 rounded-full bg-background shadow-xs ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0",
+          "pointer-events-none block size-5 rounded-full bg-background shadow-xs ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0 data-[state=checked]:rtl:-translate-x-4",
         )}
         data-slot="switch-thumb"
       />

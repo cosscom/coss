@@ -1,6 +1,5 @@
 import { RiArrowRightUpLine } from "@remixicon/react";
 import Link from "next/link";
-
 import { cn } from "@/registry/default/lib/utils";
 
 export default function HeaderLink({

@@ -7,7 +7,6 @@ import {
   DollarSignIcon,
   PercentIcon,
 } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Select,

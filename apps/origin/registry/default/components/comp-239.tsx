@@ -7,7 +7,6 @@ import {
   ListBoxSection,
   Separator,
 } from "react-aria-components";
-
 import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {

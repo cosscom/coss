@@ -1,5 +1,4 @@
 import { TriangleAlert, XIcon } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {
@@ -10,7 +9,7 @@ export default function Component() {
         <p className="grow text-sm">
           <TriangleAlert
             aria-hidden="true"
-            className="-mt-0.5 me-3 inline-flex text-amber-500"
+            className="me-3 -mt-0.5 inline-flex text-amber-500"
             size={16}
           />
           Some information is missing!

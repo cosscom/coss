@@ -1,5 +1,4 @@
 import { BoxIcon, HouseIcon, PanelsTopLeftIcon } from "lucide-react";
-
 import {
   Tabs,
   TabsContent,

@@ -3,7 +3,6 @@
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
 import type * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import {
   Dialog,
@@ -155,7 +154,7 @@ function CommandShortcut({
   return (
     <kbd
       className={cn(
-        "-me-1 ms-auto inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70",
+        "ms-auto -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70",
         className,
       )}
       data-slot="command-shortcut"

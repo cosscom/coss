@@ -47,7 +47,7 @@ export default function HoverCardDemo() {
             Crafting web experiences with Tailwind CSS.
           </p>
           <div className="flex items-center gap-2">
-            <div className="-space-x-1.5 flex">
+            <div className="flex -space-x-1.5">
               <img
                 alt="Friend 01"
                 className="rounded-full ring-1 ring-background"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useState } from "react";
-
 import { Switch } from "@/registry/default/ui/switch";
 
 export default function Component() {

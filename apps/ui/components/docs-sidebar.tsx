@@ -2,9 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { PAGES_NEW } from "@/lib/docs";
-import type { source } from "@/lib/source";
 import { Badge } from "@/registry/default/ui/badge";
 import {
   Sidebar,
@@ -16,6 +13,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/registry/default/ui/sidebar";
+import { PAGES_NEW } from "@/lib/docs";
+import type { source } from "@/lib/source";
 
 export function DocsSidebar({
   tree,

@@ -11,7 +11,7 @@ export default function Component() {
         <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <span className="-end-1.5 -top-1.5 absolute">
+      <span className="absolute -end-1.5 -top-1.5">
         <span className="sr-only">Verified</span>
         <svg
           aria-hidden="true"

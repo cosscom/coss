@@ -2,7 +2,6 @@
 
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useId, useState } from "react";
-
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 

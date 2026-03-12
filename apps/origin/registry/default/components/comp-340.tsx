@@ -1,6 +1,5 @@
 import { ChevronDownIcon } from "lucide-react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
-
 import {
   Accordion,
   AccordionContent,

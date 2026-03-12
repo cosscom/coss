@@ -2,7 +2,6 @@
 
 import { OTPInput, type SlotProps } from "input-otp";
 import { useId } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Label } from "@/registry/default/ui/label";
 
@@ -46,7 +45,7 @@ function Slot(props: SlotProps) {
   return (
     <div
       className={cn(
-        "-ms-px relative flex size-9 items-center justify-center border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow] first:ms-0 first:rounded-s-md last:rounded-e-md",
+        "relative -ms-px flex size-9 items-center justify-center border border-input bg-background font-medium text-foreground shadow-xs transition-[color,box-shadow] first:ms-0 first:rounded-s-md last:rounded-e-md",
         { "z-10 border-ring ring-[3px] ring-ring/50": props.isActive },
       )}
     >

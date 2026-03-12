@@ -5,7 +5,6 @@ import {
   PlusIcon,
   SearchIcon,
 } from "lucide-react";
-
 import NotificationMenu from "@/registry/default/components/navbar-components/notification-menu";
 import TeamSwitcher from "@/registry/default/components/navbar-components/team-switcher";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";
@@ -59,7 +58,7 @@ export default function Component() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
+                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                     d="M4 12L20 12"
                   />
                   <path
@@ -125,7 +124,7 @@ export default function Component() {
           <Button className="text-sm max-sm:aspect-square max-sm:p-0" size="sm">
             <PlusIcon
               aria-hidden="true"
-              className="sm:-ms-1 opacity-60"
+              className="opacity-60 sm:-ms-1"
               size={16}
             />
             <span className="max-sm:sr-only">Post</span>

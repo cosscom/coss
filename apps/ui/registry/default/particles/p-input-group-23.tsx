@@ -2,7 +2,6 @@
 
 import { LoaderCircleIcon, MicIcon, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,

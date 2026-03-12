@@ -8,8 +8,8 @@ import {
   EmptyTitle,
 } from "@coss/ui/components/empty";
 import { CalendarIcon } from "lucide-react";
-import { useLoadingState } from "@/hooks/use-loading-state";
 import { BookingsListSkeleton } from "../booking-skeleton";
+import { useLoadingState } from "@/hooks/use-loading-state";
 
 const ARTIFICIAL_DELAY_MS = 400;
 

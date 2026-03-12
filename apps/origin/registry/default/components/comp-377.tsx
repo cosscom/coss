@@ -7,7 +7,6 @@ import {
   PinIcon,
   UserPenIcon,
 } from "lucide-react";
-
 import {
   Avatar,
   AvatarFallback,

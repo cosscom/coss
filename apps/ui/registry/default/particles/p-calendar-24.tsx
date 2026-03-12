@@ -3,7 +3,6 @@
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import type { DayButtonProps } from "react-day-picker";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Calendar } from "@/registry/default/ui/calendar";
 
@@ -64,7 +63,7 @@ export default function Particle() {
 }
 
 function DayButton(props: DayButtonProps & { prices: Record<string, number> }) {
-  const { day, prices, modifiers, ...buttonProps } = props;
+  const { day, prices, modifiers: _modifiers, ...buttonProps } = props;
   const price = prices[format(day.date, "yyyy-MM-dd")];
   const isGoodPrice = price !== undefined && price < GOOD_PRICE_THRESHOLD;
 

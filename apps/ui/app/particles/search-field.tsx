@@ -4,7 +4,6 @@ import { LabelIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-
 import { Index } from "@/registry/__index__";
 import {
   Combobox,
@@ -145,7 +144,7 @@ export default function SearchField({
         value={selectedItems}
       >
         <ComboboxChips
-          className="**:data-[slot=combobox-start-addon]:[&_svg]:-me-0.5 rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl"
+          className="rounded-xl p-[calc(--spacing(2)-1px)] before:rounded-xl **:data-[slot=combobox-start-addon]:[&_svg]:-me-0.5"
           startAddon={
             <HugeiconsIcon
               className="size-5.5 sm:size-5"

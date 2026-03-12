@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { Slider } from "@/registry/default/ui/slider";
 

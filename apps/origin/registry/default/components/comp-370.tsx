@@ -6,7 +6,6 @@ import {
   Layers2Icon,
   TrashIcon,
 } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,

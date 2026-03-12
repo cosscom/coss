@@ -8,7 +8,6 @@ import {
   type LucideIcon,
   ZapIcon,
 } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
@@ -112,7 +111,7 @@ export default function Component() {
             key={item.id}
             value={item.id}
           >
-            <AccordionTrigger className="[&>svg]:-order-1 justify-start gap-3 rounded-md text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0">
+            <AccordionTrigger className="justify-start gap-3 rounded-md text-[15px] leading-6 outline-none hover:no-underline focus-visible:ring-0 [&>svg]:-order-1">
               <span className="flex items-center gap-3">
                 <item.icon
                   aria-hidden="true"

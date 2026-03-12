@@ -23,7 +23,9 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import type * as React from "react";
 import {
+  type Context,
   type CSSProperties,
   createContext,
   type ReactNode,
@@ -32,7 +34,11 @@ import {
   useState,
 } from "react";
 
-const SortableStateContext = createContext<{
+const SortableStateContext: Context<{
+  isDraggingAny: boolean;
+  activeId: UniqueIdentifier | null;
+  hasDragged: boolean;
+}> = createContext<{
   isDraggingAny: boolean;
   activeId: UniqueIdentifier | null;
   hasDragged: boolean;
@@ -41,6 +47,18 @@ const SortableStateContext = createContext<{
   hasDragged: false,
   isDraggingAny: false,
 });
+
+interface SortableItemProps {
+  id: UniqueIdentifier;
+  children: (props: SortableItemRenderProps) => ReactNode;
+}
+
+interface SortableListProps<T extends { id: UniqueIdentifier }> {
+  items: T[];
+  onReorder: (items: T[]) => void;
+  children: ReactNode;
+  renderOverlay?: (activeItem: T) => ReactNode;
+}
 
 export interface SortableItemRenderProps {
   attributes: DraggableAttributes;
@@ -52,12 +70,7 @@ export interface SortableItemRenderProps {
   style: CSSProperties;
 }
 
-interface SortableItemProps {
-  id: UniqueIdentifier;
-  children: (props: SortableItemRenderProps) => ReactNode;
-}
-
-export function SortableItem({ id, children }: SortableItemProps) {
+export function SortableItem({ id, children }: SortableItemProps): ReactNode {
   const { isDraggingAny, hasDragged } = useContext(SortableStateContext);
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useSortable({ id });
@@ -77,19 +90,12 @@ export function SortableItem({ id, children }: SortableItemProps) {
   });
 }
 
-interface SortableListProps<T extends { id: UniqueIdentifier }> {
-  items: T[];
-  onReorder: (items: T[]) => void;
-  children: ReactNode;
-  renderOverlay?: (activeItem: T) => ReactNode;
-}
-
 export function SortableList<T extends { id: UniqueIdentifier }>({
   items,
   onReorder,
   children,
   renderOverlay,
-}: SortableListProps<T>) {
+}: SortableListProps<T>): React.ReactElement {
   const id = useId();
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -111,9 +117,9 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }),
   );
 
-  const ids = items.map((item) => item.id);
+  const ids: UniqueIdentifier[] = items.map((item) => item.id);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = (event: DragStartEvent): void => {
     setIsDraggingAny(true);
     setActiveId(event.active.id);
     if (!hasDragged) {
@@ -121,7 +127,7 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent): void => {
     setIsDraggingAny(false);
     setActiveId(null);
     const { active, over } = event;
@@ -133,13 +139,13 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
     }
   };
 
-  const handleDragCancel = (_event: DragCancelEvent) => {
+  const handleDragCancel = (_event: DragCancelEvent): void => {
     setIsDraggingAny(false);
     setActiveId(null);
   };
 
-  const activeItem =
-    activeId !== null ? items.find((item) => item.id === activeId) : null;
+  const activeItem: T | undefined =
+    activeId !== null ? items.find((item) => item.id === activeId) : undefined;
 
   return (
     <SortableStateContext.Provider
@@ -160,13 +166,19 @@ export function SortableList<T extends { id: UniqueIdentifier }>({
           dropAnimation={{
             duration: 150,
             easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-            sideEffects({ active, dragOverlay }) {
+            sideEffects({
+              active,
+              dragOverlay,
+            }: {
+              active: { node: Element };
+              dragOverlay: { node: Element };
+            }): () => void {
               active.node.setAttribute("data-drag-release", "");
               dragOverlay.node.firstElementChild?.setAttribute(
                 "data-drag-release",
                 "",
               );
-              return () => {
+              return (): void => {
                 requestAnimationFrame(() =>
                   requestAnimationFrame(() => {
                     active.node.removeAttribute("data-drag-release");

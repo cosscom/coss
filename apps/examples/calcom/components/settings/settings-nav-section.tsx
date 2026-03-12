@@ -7,6 +7,7 @@ import {
 } from "@coss/ui/components/avatar";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import type {
   SettingsNavChild,
   SettingsNavItem,
@@ -19,43 +20,13 @@ interface SettingsNavSectionProps {
   onItemClick?: () => void;
 }
 
-export function SettingsNavSection({
-  section,
-  pathname,
-  variant,
-  onItemClick,
-}: SettingsNavSectionProps) {
-  if (variant === "sheet") {
-    return (
-      <div className="flex flex-col gap-2">
-        <SettingsNavSectionHeader section={section} variant="sheet" />
-        {section.children && (
-          <div className="flex flex-col gap-0.5 ps-6">
-            {section.children.map((item) => (
-              <SettingsNavSheetItem
-                isActive={pathname === item.url}
-                item={item}
-                key={item.url}
-                onClick={onItemClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Sidebar variant - uses sidebar-specific components
-  return null; // Sidebar uses its own components, this is handled in settings-sidebar.tsx
-}
-
 function SettingsNavSectionHeader({
   section,
   variant,
 }: {
   section: SettingsNavItem;
   variant: "sidebar" | "sheet";
-}) {
+}): React.ReactElement {
   const baseClassName =
     variant === "sheet"
       ? "flex items-center gap-2 font-medium text-sidebar-accent-foreground text-sm"
@@ -85,7 +56,7 @@ function SettingsNavSheetItem({
   item: SettingsNavChild;
   isActive: boolean;
   onClick?: () => void;
-}) {
+}): React.ReactElement {
   return (
     <Link
       className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-muted-foreground text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
@@ -97,6 +68,36 @@ function SettingsNavSheetItem({
       {item.external && <ExternalLinkIcon className="size-3 opacity-80" />}
     </Link>
   );
+}
+
+export function SettingsNavSection({
+  section,
+  pathname,
+  variant,
+  onItemClick,
+}: SettingsNavSectionProps): React.ReactElement | null {
+  if (variant === "sheet") {
+    return (
+      <div className="flex flex-col gap-2">
+        <SettingsNavSectionHeader section={section} variant="sheet" />
+        {section.children && (
+          <div className="flex flex-col gap-0.5 ps-6">
+            {section.children.map((item) => (
+              <SettingsNavSheetItem
+                isActive={pathname === item.url}
+                item={item}
+                key={item.url}
+                onClick={onItemClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Sidebar variant - uses sidebar-specific components
+  return null; // Sidebar uses its own components, this is handled in settings-sidebar.tsx
 }
 
 export { SettingsNavSectionHeader, SettingsNavSheetItem };

@@ -1,7 +1,7 @@
+import { BookingsList } from "./bookings-list";
 import { BookingsFilters } from "@/components/app/bookings-filters";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsView } from "@/components/app/bookings-view";
-import { BookingsList } from "./bookings-list";
 
 export default function Page() {
   return (

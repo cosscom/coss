@@ -2,7 +2,6 @@
 
 import { CheckIcon, EyeIcon, EyeOffIcon, XIcon } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   InputGroup,

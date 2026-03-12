@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { RegistryItem } from "shadcn/schema";
 import { Project, ScriptKind } from "ts-morph";
-
 import { Index } from "@/registry/__index__";
 
 export function getRegistryComponent(name: string) {

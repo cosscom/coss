@@ -2,7 +2,6 @@
 
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { Fragment, useId, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Command,

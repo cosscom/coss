@@ -1,5 +1,4 @@
 import { AtSignIcon, CommandIcon, EclipseIcon, ZapIcon } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,

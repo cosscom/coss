@@ -1,6 +1,5 @@
 import { RiStarFill } from "@remixicon/react";
 import { useId } from "react";
-
 import { Label } from "@/registry/default/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 

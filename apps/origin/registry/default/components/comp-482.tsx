@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";

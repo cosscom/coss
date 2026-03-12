@@ -2,7 +2,6 @@
 
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Field, FieldLabel } from "@/registry/default/ui/field";
 import { Slider } from "@/registry/default/ui/slider";

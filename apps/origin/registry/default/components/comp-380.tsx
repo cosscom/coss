@@ -2,7 +2,6 @@
 
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   DropdownMenu,

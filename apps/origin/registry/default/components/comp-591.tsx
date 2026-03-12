@@ -1,5 +1,4 @@
 import { BotMessageSquareIcon, MessageCircleDashedIcon } from "lucide-react";
-
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";
 import { Button } from "@/registry/default/ui/button";
 import {

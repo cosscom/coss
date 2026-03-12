@@ -1,6 +1,5 @@
 import { SendIcon } from "lucide-react";
 import { useId } from "react";
-
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 

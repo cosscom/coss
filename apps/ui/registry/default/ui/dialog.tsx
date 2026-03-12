@@ -4,28 +4,35 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { XIcon } from "lucide-react";
+import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
-const DialogCreateHandle = DialogPrimitive.createHandle;
+export const DialogCreateHandle: typeof DialogPrimitive.createHandle =
+  DialogPrimitive.createHandle;
 
-const Dialog = DialogPrimitive.Root;
+export const Dialog: typeof DialogPrimitive.Root = DialogPrimitive.Root;
 
-const DialogPortal = DialogPrimitive.Portal;
+export const DialogPortal: typeof DialogPrimitive.Portal =
+  DialogPrimitive.Portal;
 
-function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
+export function DialogTrigger(
+  props: DialogPrimitive.Trigger.Props,
+): React.ReactElement {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogClose(props: DialogPrimitive.Close.Props) {
+export function DialogClose(
+  props: DialogPrimitive.Close.Props,
+): React.ReactElement {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-function DialogBackdrop({
+export function DialogBackdrop({
   className,
   ...props
-}: DialogPrimitive.Backdrop.Props) {
+}: DialogPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <DialogPrimitive.Backdrop
       className={cn(
@@ -38,10 +45,10 @@ function DialogBackdrop({
   );
 }
 
-function DialogViewport({
+export function DialogViewport({
   className,
   ...props
-}: DialogPrimitive.Viewport.Props) {
+}: DialogPrimitive.Viewport.Props): React.ReactElement {
   return (
     <DialogPrimitive.Viewport
       className={cn(
@@ -54,7 +61,7 @@ function DialogViewport({
   );
 }
 
-function DialogPopup({
+export function DialogPopup({
   className,
   children,
   showCloseButton = true,
@@ -65,7 +72,7 @@ function DialogPopup({
   showCloseButton?: boolean;
   bottomStickOnMobile?: boolean;
   closeProps?: DialogPrimitive.Close.Props;
-}) {
+}): React.ReactElement {
   return (
     <DialogPortal>
       <DialogBackdrop />
@@ -102,11 +109,11 @@ function DialogPopup({
   );
 }
 
-function DialogHeader({
+export function DialogHeader({
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">) {
+}: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col gap-2 p-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pb-3 max-sm:pb-4",
@@ -122,14 +129,14 @@ function DialogHeader({
   });
 }
 
-function DialogFooter({
+export function DialogFooter({
   className,
   variant = "default",
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-}) {
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col-reverse gap-2 px-6 sm:flex-row sm:justify-end sm:rounded-b-[calc(var(--radius-2xl)-1px)]",
@@ -148,7 +155,10 @@ function DialogFooter({
   });
 }
 
-function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
+export function DialogTitle({
+  className,
+  ...props
+}: DialogPrimitive.Title.Props): React.ReactElement {
   return (
     <DialogPrimitive.Title
       className={cn(
@@ -161,10 +171,10 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   );
 }
 
-function DialogDescription({
+export function DialogDescription({
   className,
   ...props
-}: DialogPrimitive.Description.Props) {
+}: DialogPrimitive.Description.Props): React.ReactElement {
   return (
     <DialogPrimitive.Description
       className={cn("text-muted-foreground text-sm", className)}
@@ -174,12 +184,14 @@ function DialogDescription({
   );
 }
 
-function DialogPanel({
+export function DialogPanel({
   className,
   scrollFade = true,
   render,
   ...props
-}: useRender.ComponentProps<"div"> & { scrollFade?: boolean }) {
+}: useRender.ComponentProps<"div"> & {
+  scrollFade?: boolean;
+}): React.ReactElement {
   const defaultProps = {
     className: cn(
       "p-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-header])]:pt-1 in-[[data-slot=dialog-popup]:has([data-slot=dialog-footer]:not(.border-t))]:pb-1",
@@ -200,20 +212,7 @@ function DialogPanel({
 }
 
 export {
-  DialogCreateHandle,
-  Dialog,
-  DialogTrigger,
-  DialogPortal,
-  DialogClose,
-  DialogBackdrop,
-  DialogBackdrop as DialogOverlay,
-  DialogPopup,
-  DialogPopup as DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-  DialogPanel,
-  DialogViewport,
   DialogPrimitive,
+  DialogBackdrop as DialogOverlay,
+  DialogPopup as DialogContent,
 };

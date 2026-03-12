@@ -5,10 +5,8 @@ import {
 } from "@coss/ui/shared/page-header";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-
 import { isValidRegistryCategory } from "@/registry/registry-categories";
 import { particles } from "@/registry/registry-particles";
-
 import { ParticlesDisplay } from "./particles-display";
 import SearchContainer from "./search-container";
 

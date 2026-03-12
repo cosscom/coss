@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-
 import { categories } from "@/config/components";
 
 export default function sitemap(): MetadataRoute.Sitemap {

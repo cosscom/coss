@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-
 import SearchButton from "@/components/search-button";
 import { SubscribeBottom } from "@/components/subscribe-form";
 import { categories } from "@/config/components";

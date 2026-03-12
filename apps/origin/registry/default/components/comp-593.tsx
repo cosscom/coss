@@ -1,5 +1,4 @@
 import { BookmarkIcon, HomeIcon } from "lucide-react";
-
 import DatePicker from "@/registry/default/components/navbar-components/date-picker";
 import Filters from "@/registry/default/components/navbar-components/filters";
 import {
@@ -45,7 +44,7 @@ export default function Component() {
           >
             <BookmarkIcon
               aria-hidden="true"
-              className="sm:-ms-1 text-muted-foreground/80"
+              className="text-muted-foreground/80 sm:-ms-1"
               size={16}
             />
             <span className="max-sm:sr-only">Saved</span>

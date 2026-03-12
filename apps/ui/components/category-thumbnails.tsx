@@ -880,10 +880,10 @@ export const textareaThumbnail = (
 // Toast
 export const toastThumbnail = (
   <div className="relative flex flex-1 justify-center">
-    <Card className="-top-6 absolute scale-80">
+    <Card className="absolute -top-6 scale-80">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
-    <Card className="-top-3 absolute scale-90">
+    <Card className="absolute -top-3 scale-90">
       <CardPanel className="flex items-center gap-2 p-3" />
     </Card>
     <Card>

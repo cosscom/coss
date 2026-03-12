@@ -38,7 +38,7 @@ export default function Component() {
           >
             <StepperTrigger className="gap-4 rounded max-md:flex-col">
               <StepperIndicator />
-              <div className="md:-order-1 text-center md:text-left">
+              <div className="text-center md:-order-1 md:text-left">
                 <StepperTitle>{title}</StepperTitle>
                 <StepperDescription className="max-sm:hidden">
                   {description}

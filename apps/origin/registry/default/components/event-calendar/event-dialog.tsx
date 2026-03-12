@@ -3,7 +3,6 @@
 import { RiCalendarLine, RiDeleteBinLine } from "@remixicon/react";
 import { format, isBefore } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import type {
   CalendarEvent,
   EventColor,

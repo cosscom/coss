@@ -6,7 +6,6 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useId } from "react";
-
 import Logo from "@/registry/default/components/navbar-components/logo";
 import ThemeToggle from "@/registry/default/components/navbar-components/theme-toggle";
 import UserMenu from "@/registry/default/components/navbar-components/user-menu";
@@ -82,7 +81,7 @@ export default function Component() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    className="-translate-y-[7px] origin-center transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
+                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                     d="M4 12L20 12"
                   />
                   <path

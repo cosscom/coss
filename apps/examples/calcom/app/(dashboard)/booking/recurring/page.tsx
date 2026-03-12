@@ -1,6 +1,6 @@
+import { BookingsEmpty } from "./bookings-empty";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsView } from "@/components/app/bookings-view";
-import { BookingsEmpty } from "./bookings-empty";
 
 export default function Page() {
   return (

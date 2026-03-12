@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/registry/default/ui/button";
+import { cn } from "@/lib/utils";
 
 export function MainNav({
   items,

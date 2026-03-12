@@ -6,7 +6,7 @@ export default function Component() {
       <p className="text-sm">
         <CircleAlert
           aria-hidden="true"
-          className="-mt-0.5 me-3 inline-flex opacity-60"
+          className="me-3 -mt-0.5 inline-flex opacity-60"
           size={16}
         />
         An error occurred!

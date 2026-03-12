@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-calendar-8.tsx",
-      "content": "\"use client\";\n\nimport { addDays, subDays } from \"date-fns\";\nimport { useState } from \"react\";\n\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const today = new Date();\n  const [date, setDate] = useState<Date[] | undefined>([\n    subDays(today, 17),\n    addDays(today, 2),\n    addDays(today, 6),\n    addDays(today, 8),\n  ]);\n\n  return <Calendar mode=\"multiple\" onSelect={setDate} selected={date} />;\n}\n",
+      "content": "\"use client\";\n\nimport { addDays, subDays } from \"date-fns\";\nimport { useState } from \"react\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const today = new Date();\n  const [date, setDate] = useState<Date[] | undefined>([\n    subDays(today, 17),\n    addDays(today, 2),\n    addDays(today, 6),\n    addDays(today, 8),\n  ]);\n\n  return <Calendar mode=\"multiple\" onSelect={setDate} selected={date} />;\n}\n",
       "type": "registry:block"
     }
   ],

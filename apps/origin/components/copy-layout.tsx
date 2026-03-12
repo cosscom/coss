@@ -1,14 +1,13 @@
 "use client";
 
 import { CheckIcon, TerminalIcon } from "lucide-react";
-
-import { useCopy } from "@/hooks/use-copy";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/registry/default/ui/tooltip";
+import { useCopy } from "@/hooks/use-copy";
 
 const CopyLayout = ({ command }: { command: string | undefined }) => {
   const { copied, copy } = useCopy();

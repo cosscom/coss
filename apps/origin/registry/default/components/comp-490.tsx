@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {
