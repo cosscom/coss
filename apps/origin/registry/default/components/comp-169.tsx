@@ -1,6 +1,5 @@
 import { CheckIcon, MinusIcon } from "lucide-react";
 import { useId } from "react";
-
 import { RadioGroup, RadioGroupItem } from "@/registry/default/ui/radio-group";
 
 const items = [

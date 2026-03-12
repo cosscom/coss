@@ -2,7 +2,6 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";

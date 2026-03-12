@@ -3,7 +3,6 @@
 import { CreditCardIcon } from "lucide-react";
 import { useId } from "react";
 import { usePaymentInputs } from "react-payment-inputs";
-
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";
 

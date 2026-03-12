@@ -10,7 +10,6 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import {
   Table,

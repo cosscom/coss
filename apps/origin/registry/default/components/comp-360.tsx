@@ -5,7 +5,6 @@ import {
   ChevronUpIcon,
   CircleIcon,
 } from "lucide-react";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Tooltip,
@@ -31,7 +30,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent className="px-2 py-1 text-xs" side="top">
             Pan top
-            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
+            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘T
             </kbd>
           </TooltipContent>
@@ -51,7 +50,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent className="px-2 py-1 text-xs" side="left">
             Pan left
-            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
+            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘L
             </kbd>
           </TooltipContent>
@@ -69,7 +68,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent className="px-2 py-1 text-xs" side="right">
             Pan right
-            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
+            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘R
             </kbd>
           </TooltipContent>
@@ -89,7 +88,7 @@ export default function Component() {
           </TooltipTrigger>
           <TooltipContent className="px-2 py-1 text-xs" side="bottom">
             Pan bottom
-            <kbd className="-me-1 ms-2 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
+            <kbd className="ms-2 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
               ⌘B
             </kbd>
           </TooltipContent>

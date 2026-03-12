@@ -1,6 +1,5 @@
 import { Brush, Eraser, Scissors, SwatchBook } from "lucide-react";
 import { useId } from "react";
-
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Label } from "@/registry/default/ui/label";
 

@@ -11,7 +11,7 @@ export default function Component() {
         <AvatarImage alt="Kelly King" src="/origin/avatar-80-07.jpg" />
         <AvatarFallback>KK</AvatarFallback>
       </Avatar>
-      <span className="-end-0.5 -bottom-0.5 absolute size-3 rounded-full border-2 border-background bg-muted-foreground">
+      <span className="absolute -end-0.5 -bottom-0.5 size-3 rounded-full border-2 border-background bg-muted-foreground">
         <span className="sr-only">Offline</span>
       </span>
     </div>

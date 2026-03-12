@@ -5,7 +5,6 @@ import {
   PencilIcon,
   PlusIcon,
 } from "lucide-react";
-
 import {
   Timeline,
   TimelineContent,

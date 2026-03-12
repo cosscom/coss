@@ -1,7 +1,6 @@
 "use client";
 
 import { ListBox, ListBoxItem } from "react-aria-components";
-
 import { Label } from "@/registry/default/ui/label";
 
 export default function Component() {

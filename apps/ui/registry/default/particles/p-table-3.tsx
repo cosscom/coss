@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-table";
 import type React from "react";
 import { useMemo, useState } from "react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Frame } from "@/registry/default/ui/frame";

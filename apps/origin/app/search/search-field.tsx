@@ -2,12 +2,10 @@
 
 import { RiSearch2Line } from "@remixicon/react";
 import { useState } from "react";
-
-import { getAvailableTags } from "@/lib/utils";
 import type { RegistryTag } from "@/registry/registry-tags";
 import { registryTags } from "@/registry/registry-tags";
-
 import MultipleSelector, { type Option } from "./multiselect";
+import { getAvailableTags } from "@/lib/utils";
 
 interface SearchFieldProps {
   selectedTags: string[];

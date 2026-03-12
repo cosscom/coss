@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
-
 import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Particle() {

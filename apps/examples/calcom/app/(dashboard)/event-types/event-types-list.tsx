@@ -23,6 +23,10 @@ import {
 import Link from "next/link";
 import { useRef, useState } from "react";
 import {
+  EventTypeActions,
+  EventTypeActionsSkeleton,
+} from "./event-type-actions";
+import {
   ListItem,
   ListItemBadges,
   ListItemContent,
@@ -46,10 +50,6 @@ import {
   mockEventTypeGroups,
   mockEventTypes,
 } from "@/lib/mock-event-types-data";
-import {
-  EventTypeActions,
-  EventTypeActionsSkeleton,
-} from "./event-type-actions";
 
 const tooltipHandle = TooltipCreateHandle<React.ComponentType>();
 

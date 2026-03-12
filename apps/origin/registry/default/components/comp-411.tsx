@@ -3,7 +3,7 @@ import { Button } from "@/registry/default/ui/button";
 export default function Component() {
   return (
     <div className="flex items-center rounded-full border bg-background p-1 shadow-sm">
-      <div className="-space-x-3 flex">
+      <div className="flex -space-x-3">
         <img
           alt="Avatar 01"
           className="rounded-full ring-2 ring-background"

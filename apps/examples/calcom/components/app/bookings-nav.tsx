@@ -1,7 +1,9 @@
 import { ScrollArea } from "@coss/ui/components/scroll-area";
+import type * as React from "react";
+import type { Tab } from "@/components/app/tabbed-nav";
 import { TabbedNav } from "@/components/app/tabbed-nav";
 
-const bookingTabs = [
+const bookingTabs: Tab[] = [
   { title: "Upcoming", url: "/booking/upcoming" },
   { title: "Unconfirmed", url: "/booking/unconfirmed" },
   { title: "Recurring", url: "/booking/recurring" },
@@ -9,7 +11,7 @@ const bookingTabs = [
   { title: "Canceled", url: "/booking/canceled" },
 ];
 
-function BookingsNav() {
+function BookingsNav(): React.ReactElement {
   return (
     <div className="max-sm:-mx-4 max-sm:-my-0.5">
       <ScrollArea scrollbarGutter scrollFade>

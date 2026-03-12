@@ -3,7 +3,6 @@
 import { addDays } from "date-fns";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-
 import { Calendar } from "@/registry/default/ui/calendar";
 
 export default function Component() {

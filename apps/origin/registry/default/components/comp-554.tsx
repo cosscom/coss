@@ -8,7 +8,6 @@ import {
   ZoomOutIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import { useFileUpload } from "@/registry/default/hooks/use-file-upload";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -227,7 +226,7 @@ export default function Component() {
         {finalImageUrl && (
           <Button
             aria-label="Remove image"
-            className="-top-1 -right-1 absolute size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
+            className="absolute -top-1 -right-1 size-6 rounded-full border-2 border-background shadow-none focus-visible:border-background"
             onClick={handleRemoveFinalImage}
             size="icon"
           >

@@ -1,5 +1,4 @@
 import { HouseIcon, InboxIcon, SettingsIcon } from "lucide-react";
-
 import { Badge } from "@/registry/default/ui/badge";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 

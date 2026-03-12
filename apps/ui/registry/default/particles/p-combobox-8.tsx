@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment } from "react";
-
 import {
   Combobox,
   ComboboxCollection,
@@ -73,8 +72,7 @@ function groupTags(tags: Tag[]): TagGroup[] {
     if (!groups[tag.group]) {
       groups[tag.group] = [];
     }
-    // biome-ignore lint/style/noNonNullAssertion: will never be null
-    groups[tag.group]!.push(tag);
+    groups[tag.group]?.push(tag);
   }
 
   const order: Array<TagGroup["value"]> = ["Status", "Priority", "Team"];

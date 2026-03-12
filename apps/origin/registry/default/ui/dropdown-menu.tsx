@@ -3,7 +3,6 @@
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 
 type PointerDownEvent = Parameters<
@@ -232,7 +231,7 @@ function DropdownMenuShortcut({
   return (
     <kbd
       className={cn(
-        "-me-1 ms-auto inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70",
+        "ms-auto -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70",
         className,
       )}
       data-slot="dropdown-menu-shortcut"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useId } from "react";
-
 import { useCharacterLimit } from "@/registry/default/hooks/use-character-limit";
 import { Input } from "@/registry/default/ui/input";
 import { Label } from "@/registry/default/ui/label";

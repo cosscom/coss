@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { Button } from "@/registry/default/ui/button";
 import {
   Menu,

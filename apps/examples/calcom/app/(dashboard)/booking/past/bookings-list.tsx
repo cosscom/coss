@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { BookingsListSkeleton } from "../booking-skeleton";
+import { BookingActions } from "./booking-actions";
 import { ItemLabel } from "@/components/item-label";
 import {
   ListItem,
@@ -54,8 +56,6 @@ import {
   getLocationLabel,
   mockPastBookings,
 } from "@/lib/mock-bookings-data";
-import { BookingsListSkeleton } from "../booking-skeleton";
-import { BookingActions } from "./booking-actions";
 
 const ARTIFICIAL_DELAY_MS = 800;
 
@@ -190,7 +190,7 @@ export function BookingsList() {
                       </ListItemBadges>
                     </ListItemContent>
 
-                    <div className="md:-order-1 flex flex-col items-start gap-2 md:w-36 md:shrink-0">
+                    <div className="flex flex-col items-start gap-2 md:-order-1 md:w-36 md:shrink-0">
                       <div className="flex flex-col gap-1">
                         <p className="text-sm">{dateStr}</p>
                         <p className="text-muted-foreground text-sm">

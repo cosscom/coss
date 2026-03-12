@@ -1,13 +1,13 @@
 "use client";
 
-import CopyButton from "@/components/copy-button";
-import { useConfig } from "@/hooks/use-config";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/registry/default/ui/tabs";
+import CopyButton from "@/components/copy-button";
+import { useConfig } from "@/hooks/use-config";
 
 export default function CliCommands({ name }: { name: string }) {
   const originUrl =

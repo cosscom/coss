@@ -1,6 +1,5 @@
 import { PlusIcon } from "lucide-react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
-
 import {
   Accordion,
   AccordionContent,
@@ -39,7 +38,7 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Table w/ plus-minus</h2>
       <Accordion
-        className="-space-y-px w-full"
+        className="w-full -space-y-px"
         collapsible
         defaultValue="3"
         type="single"

@@ -17,6 +17,7 @@ import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   SidebarGroup,
@@ -51,13 +52,17 @@ function hasSubItems(item: NavItem): item is NavItemWithChildren {
   return Array.isArray(item.items) && item.items.length > 0;
 }
 
-function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
+function NavItemWithSubmenu({
+  item,
+}: {
+  item: NavItemWithChildren;
+}): React.ReactElement {
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const { registerMenu } = useSidebarMenuOpen();
   const unregisterRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    return () => {
+    return (): void => {
       if (unregisterRef.current) {
         unregisterRef.current();
       }
@@ -86,7 +91,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
     <SidebarMenuItem>
       {/* Menu version for collapsed sidebar (md-lg breakpoint) */}
       <Menu
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean): void => {
           if (open) {
             unregisterRef.current = registerMenu();
           } else {
@@ -158,7 +163,7 @@ function NavItemWithSubmenu({ item }: { item: NavItemWithChildren }) {
   );
 }
 
-function NavItemSimple({ item }: { item: NavItemLeaf }) {
+function NavItemSimple({ item }: { item: NavItemLeaf }): React.ReactElement {
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
   const pathname = usePathname();
   const isActive = pathname.startsWith(item.matchPath ?? item.url);
@@ -178,7 +183,7 @@ function NavItemSimple({ item }: { item: NavItemLeaf }) {
   );
 }
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavMain({ items }: { items: NavItem[] }): React.ReactElement {
   return (
     <SidebarGroup>
       <SidebarMenu className="gap-0.5">

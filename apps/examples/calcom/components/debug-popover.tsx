@@ -7,9 +7,10 @@ import {
   PopoverTrigger,
 } from "@coss/ui/components/popover";
 import { Switch } from "@coss/ui/components/switch";
+import type * as React from "react";
 import { useDebug } from "./debug-context";
 
-export function DebugPopover() {
+export function DebugPopover(): React.ReactElement {
   const {
     enableArtificialDelay,
     isLoadingOverride,
@@ -37,7 +38,7 @@ export function DebugPopover() {
             <Switch
               checked={isLoadingOverride === true}
               id="loading-switch"
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked: boolean): void =>
                 setIsLoadingOverride(checked ? true : null)
               }
             />

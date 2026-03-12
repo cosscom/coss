@@ -6,10 +6,10 @@ import * as React from "react";
 import { SettingsNavContent } from "@/components/settings/settings-nav-section";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 
-export function SettingsSheet() {
+export function SettingsSheet(): React.ReactElement {
   const [open, setOpen] = React.useState(false);
 
-  const handleCloseSheet = React.useCallback(() => {
+  const handleCloseSheet = React.useCallback((): void => {
     setOpen(false);
   }, []);
 

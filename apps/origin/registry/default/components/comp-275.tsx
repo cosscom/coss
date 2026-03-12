@@ -15,7 +15,7 @@ export default function Component() {
             Link
             <ArrowRightIcon
               aria-hidden="true"
-              className="-mt-0.5 ms-1 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
+              className="ms-1 -mt-0.5 inline-flex opacity-60 transition-transform group-hover:translate-x-0.5"
               size={16}
             />
           </a>

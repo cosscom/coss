@@ -2,7 +2,6 @@
 
 import { CircleCheckIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/registry/default/ui/button";
 
 export default function Component() {

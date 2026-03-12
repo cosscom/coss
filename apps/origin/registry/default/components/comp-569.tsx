@@ -11,7 +11,6 @@ import {
 import { AssistiveTreeDescription, useTree } from "@headless-tree/react";
 import { FolderIcon, FolderOpenIcon } from "lucide-react";
 import { useState } from "react";
-
 import {
   Tree,
   TreeDragLine,

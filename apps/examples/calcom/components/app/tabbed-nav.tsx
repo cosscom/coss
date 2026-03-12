@@ -3,6 +3,7 @@
 import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import type * as React from "react";
 
 type Tab = {
   icon?: React.ReactNode;
@@ -17,7 +18,12 @@ type TabbedNavProps = {
   tabs: Tab[];
 };
 
-function TabbedNav({ ariaLabel, className, dataSlot, tabs }: TabbedNavProps) {
+function TabbedNav({
+  ariaLabel,
+  className,
+  dataSlot,
+  tabs,
+}: TabbedNavProps): React.ReactElement {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const anyTabHasQuery = tabs.some((t) => t.url.includes("?"));

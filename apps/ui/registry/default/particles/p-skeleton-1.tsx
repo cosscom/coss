@@ -2,7 +2,6 @@
 
 import { UserRoundPlusIcon, UsersRoundIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import {
   Avatar,
   AvatarFallback,

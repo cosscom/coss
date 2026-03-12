@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-
-import PageHeader from "@/components/page-header";
-
 import ComponentsContainer from "./components-container";
+import PageHeader from "@/components/page-header";
 
 export const metadata: Metadata = {
   description: "Search for components in the UI library.",

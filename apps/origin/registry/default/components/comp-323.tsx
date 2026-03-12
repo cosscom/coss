@@ -30,7 +30,7 @@ export default function Component() {
                   <legend className="font-semibold text-foreground text-lg leading-none">
                     How hard was it to set up your account?
                   </legend>
-                  <RadioGroup className="-space-x-px flex gap-0 rounded-md shadow-xs">
+                  <RadioGroup className="flex gap-0 -space-x-px rounded-md shadow-xs">
                     {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((number) => (
                       <label
                         className="relative flex size-9 flex-1 cursor-pointer flex-col items-center justify-center gap-3 border border-input text-center text-sm outline-none transition-[color,box-shadow] first:rounded-s-md last:rounded-e-md has-data-[state=checked]:z-10 has-data-disabled:cursor-not-allowed has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-data-disabled:opacity-50 has-focus-visible:ring-[3px] has-focus-visible:ring-ring/50"

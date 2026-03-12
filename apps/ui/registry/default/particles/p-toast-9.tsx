@@ -2,7 +2,6 @@
 
 import { DownloadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
 import { Button } from "@/registry/default/ui/button";
 import { toastManager } from "@/registry/default/ui/toast";
 

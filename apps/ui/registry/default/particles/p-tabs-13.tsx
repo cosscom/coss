@@ -1,5 +1,4 @@
 import { HouseIcon, PanelsTopLeftIcon, SettingsIcon } from "lucide-react";
-
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/registry/default/ui/tabs";
 import {
   Tooltip,

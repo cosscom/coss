@@ -1,7 +1,6 @@
 "use client";
 
 import { Cropper as CropperPrimitive } from "@origin-space/image-cropper";
-
 import { cn } from "@/registry/default/lib/utils";
 
 function Cropper({

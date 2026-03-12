@@ -2,10 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
-
 import { Index } from "@/registry/__index__";
 import { getCategorySortOrder } from "@/registry/registry-categories";
-
 import SearchField from "./search-field";
 
 const particles = Object.values(Index).filter(

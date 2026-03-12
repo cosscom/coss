@@ -1,5 +1,4 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-
 import { usePagination } from "@/registry/default/hooks/use-pagination";
 import { cn } from "@/registry/default/lib/utils";
 import { buttonVariants } from "@/registry/default/ui/button";
@@ -30,7 +29,7 @@ export default function Component({
 
   return (
     <Pagination>
-      <PaginationContent className="-space-x-px inline-flex gap-0 rounded-md shadow-xs rtl:space-x-reverse">
+      <PaginationContent className="inline-flex gap-0 -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
         {/* Previous page button */}
         <PaginationItem className="[&:first-child>a]:rounded-s-md [&:last-child>a]:rounded-e-md">
           <PaginationLink

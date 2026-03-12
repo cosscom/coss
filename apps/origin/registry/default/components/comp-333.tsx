@@ -8,7 +8,6 @@ import {
   SearchIcon,
 } from "lucide-react";
 import * as React from "react";
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -50,7 +49,7 @@ export default function Component() {
           />
           <span className="font-normal text-muted-foreground/70">Search</span>
         </span>
-        <kbd className="-me-1 ms-12 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
+        <kbd className="ms-12 -me-1 inline-flex h-5 max-h-full items-center rounded border bg-background px-1 font-[inherit] font-medium text-[0.625rem] text-muted-foreground/70">
           ⌘K
         </kbd>
       </button>

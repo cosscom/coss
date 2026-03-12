@@ -2,7 +2,6 @@
 
 import { Slider as SliderPrimitive } from "radix-ui";
 import * as React from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import {
   Tooltip,

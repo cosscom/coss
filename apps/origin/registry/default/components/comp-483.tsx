@@ -19,7 +19,6 @@ import {
   ChevronUpIcon,
 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";

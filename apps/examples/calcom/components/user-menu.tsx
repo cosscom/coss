@@ -26,13 +26,16 @@ import {
   UserRoundIcon,
 } from "lucide-react";
 import Link from "next/link";
+import type * as React from "react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 interface UserMenuProps {
   variant?: "sidebar" | "mobile";
 }
 
-export function UserMenu({ variant = "sidebar" }: UserMenuProps) {
+export function UserMenu({
+  variant = "sidebar",
+}: UserMenuProps): React.ReactElement {
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
 
   return (

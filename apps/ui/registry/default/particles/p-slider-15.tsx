@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 import { Slider } from "@/registry/default/ui/slider";
 

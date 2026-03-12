@@ -5,13 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import Link, { type LinkProps } from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-
-import { PAGES_NEW } from "@/lib/docs";
-import type { source } from "@/lib/source";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
 import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet";
+import { PAGES_NEW } from "@/lib/docs";
+import type { source } from "@/lib/source";
+import { cn } from "@/lib/utils";
 
 export function MobileNav({
   tree,
@@ -29,7 +28,7 @@ export function MobileNav({
       <SheetTrigger
         render={
           <Button
-            className={cn("-ms-1.5 relative size-8", className)}
+            className={cn("relative -ms-1.5 size-8", className)}
             size="icon"
             variant="ghost"
           >

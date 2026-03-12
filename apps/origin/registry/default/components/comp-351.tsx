@@ -1,6 +1,5 @@
 import { PlusIcon } from "lucide-react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
-
 import {
   Accordion,
   AccordionContent,
@@ -39,7 +38,7 @@ export default function Component() {
     <div className="space-y-4">
       <h2 className="font-bold text-xl">Table w/ left plus-minus</h2>
       <Accordion
-        className="-space-y-px w-full"
+        className="w-full -space-y-px"
         collapsible
         defaultValue="3"
         type="single"
@@ -51,7 +50,7 @@ export default function Component() {
             value={item.id}
           >
             <AccordionPrimitive.Header className="flex">
-              <AccordionPrimitive.Trigger className="[&>svg]:-order-1 flex flex-1 items-center gap-4 rounded-md py-2 text-left font-semibold text-[15px] text-sm leading-6 outline-none transition-all focus-visible:ring-0 [&>svg>path:last-child]:origin-center [&>svg>path:last-child]:transition-all [&>svg>path:last-child]:duration-200 [&[data-state=open]>svg>path:last-child]:rotate-90 [&[data-state=open]>svg>path:last-child]:opacity-0 [&[data-state=open]>svg]:rotate-180">
+              <AccordionPrimitive.Trigger className="flex flex-1 items-center gap-4 rounded-md py-2 text-left font-semibold text-[15px] text-sm leading-6 outline-none transition-all focus-visible:ring-0 [&>svg>path:last-child]:origin-center [&>svg>path:last-child]:transition-all [&>svg>path:last-child]:duration-200 [&>svg]:-order-1 [&[data-state=open]>svg>path:last-child]:rotate-90 [&[data-state=open]>svg>path:last-child]:opacity-0 [&[data-state=open]>svg]:rotate-180">
                 {item.title}
                 <PlusIcon
                   aria-hidden="true"
