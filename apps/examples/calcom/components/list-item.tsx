@@ -4,6 +4,7 @@ import { mergeProps } from "@coss/ui/base-ui/merge-props";
 import { useRender } from "@coss/ui/base-ui/use-render";
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import React, {
   type ComponentPropsWithoutRef,
@@ -12,11 +13,6 @@ import React, {
   type ReactNode,
 } from "react";
 import { ItemLabel } from "./item-label";
-
-/** Event listeners for drag-and-drop (from @dnd-kit when sortable) */
-interface SortableListeners {
-  [key: string]: (() => void) | undefined;
-}
 
 interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortable?: boolean;
@@ -27,7 +23,7 @@ interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
-  sortableListeners?: SortableListeners;
+  sortableListeners?: SyntheticListenerMap;
   hasDragged?: boolean;
 }
 
@@ -41,7 +37,7 @@ interface SortableListItemProps {
   sortableStyle?: CSSProperties;
   sortableDragging?: boolean;
   sortableDraggingAny?: boolean;
-  sortableListeners?: SortableListeners;
+  sortableListeners?: SyntheticListenerMap;
   hasDragged?: boolean;
 }
 
