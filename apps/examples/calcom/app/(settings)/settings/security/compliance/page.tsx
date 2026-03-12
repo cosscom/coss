@@ -1,10 +1,9 @@
+import { ComplianceDocuments } from "./compliance-documents";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { ComplianceDocuments } from "./compliance-documents";
 
 export default function ComplianceSettingsPage() {
   return (

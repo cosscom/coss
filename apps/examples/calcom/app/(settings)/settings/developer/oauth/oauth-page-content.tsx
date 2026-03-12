@@ -13,17 +13,17 @@ import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { EditOAuthClientDialog } from "./edit-oauth-client-dialog";
+import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
+import type { OAuthClientItem } from "./oauth-clients-list";
+import { OAuthClientsList } from "./oauth-clients-list";
+import { OAuthEmpty } from "./oauth-empty";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { EditOAuthClientDialog } from "./edit-oauth-client-dialog";
-import { NewOAuthClientDialogRoot } from "./new-oauth-client-dialog";
-import type { OAuthClientItem } from "./oauth-clients-list";
-import { OAuthClientsList } from "./oauth-clients-list";
-import { OAuthEmpty } from "./oauth-empty";
 
 const initialMockClients: OAuthClientItem[] = [
   {

@@ -1,10 +1,9 @@
+import { FlagAdminList } from "./flag-admin-list";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { FlagAdminList } from "./flag-admin-list";
 
 export default function AdminFlagsPage() {
   return (

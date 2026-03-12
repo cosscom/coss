@@ -5,14 +5,13 @@ import {
   CardFrameFooter,
   CardPanel,
 } from "@coss/ui/components/card";
+import { GeneralSettingsFields } from "./general-settings-form";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { SettingsToggle } from "@/components/particles";
-
-import { GeneralSettingsFields } from "./general-settings-form";
 
 export default function GeneralSettingsPage() {
   return (

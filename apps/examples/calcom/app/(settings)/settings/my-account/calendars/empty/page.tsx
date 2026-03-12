@@ -1,14 +1,13 @@
 import { Button } from "@coss/ui/components/button";
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
+import { CalendarsEmpty } from "../calendars-empty";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { CalendarsEmpty } from "../calendars-empty";
 
 export default function CalendarsEmptyPage() {
   return (

@@ -3,14 +3,14 @@
 import { Button } from "@coss/ui/components/button";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
+import type { WebhookItem } from "./webhooks-list-content";
+import { WebhooksListContent } from "./webhooks-list-content";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import type { WebhookItem } from "./webhooks-list-content";
-import { WebhooksListContent } from "./webhooks-list-content";
 
 interface WebhooksPageContentProps {
   webhooks: WebhookItem[];

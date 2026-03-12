@@ -1,11 +1,10 @@
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
+import { CopyLink } from "./copy-link";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { CopyLink } from "./copy-link";
 
 export default function TeamProfileNoPermissionsPage() {
   return (

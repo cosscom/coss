@@ -8,16 +8,15 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
+import { BookingLayoutSection } from "./booking-layout-section";
+import { CustomBrandColorsSection } from "./custom-brand-colors-section";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { SettingsToggle } from "@/components/particles";
-
-import { BookingThemeSection, DashboardThemeSection } from "./appearance-form";
-import { BookingLayoutSection } from "./booking-layout-section";
-import { CustomBrandColorsSection } from "./custom-brand-colors-section";
 
 export default function AppearanceSettingsPage() {
   return (

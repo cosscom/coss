@@ -10,7 +10,6 @@ import {
 } from "@coss/ui/components/card";
 import { EmptyMedia } from "@coss/ui/components/empty";
 import { DownloadIcon, FileTextIcon, LockIcon } from "lucide-react";
-
 import {
   ListItem,
   ListItemActions,

@@ -5,16 +5,16 @@ import { Card, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import {
+  type ConferencingApp,
+  ConferencingEmpty,
+  initialConferencingApps,
+} from "./conferencing-empty";
+import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import {
-  type ConferencingApp,
-  ConferencingEmpty,
-  initialConferencingApps,
-} from "./conferencing-empty";
 
 export function ConferencingPageClient() {
   const [apps, setApps] = useState<ConferencingApp[]>(initialConferencingApps);

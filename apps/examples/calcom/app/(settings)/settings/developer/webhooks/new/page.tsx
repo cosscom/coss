@@ -10,13 +10,13 @@ import {
 } from "@coss/ui/components/card";
 import { ActivityIcon } from "lucide-react";
 import Link from "next/link";
+import { NewWebhookFormFields } from "./new-webhook-form-fields";
+import { WebhookTestSection } from "./webhook-test-section";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { NewWebhookFormFields } from "./new-webhook-form-fields";
-import { WebhookTestSection } from "./webhook-test-section";
 
 export default function NewWebhookPage() {
   return (

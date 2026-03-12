@@ -13,17 +13,17 @@ import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { ApiKeysEmpty } from "./api-keys-empty";
+import type { ApiKeyItem } from "./api-keys-list";
+import { ApiKeysList } from "./api-keys-list";
+import { EditApiKeyDialog } from "./edit-api-key-dialog";
+import { NewApiKeyDialog } from "./new-api-key-dialog";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-import { ApiKeysEmpty } from "./api-keys-empty";
-import type { ApiKeyItem } from "./api-keys-list";
-import { ApiKeysList } from "./api-keys-list";
-import { EditApiKeyDialog } from "./edit-api-key-dialog";
-import { NewApiKeyDialog } from "./new-api-key-dialog";
 
 const initialMockApiKeys: ApiKeyItem[] = [
   {

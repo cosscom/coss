@@ -146,7 +146,9 @@ interface ListItemDragHandleProps {
   className?: string;
 }
 
-function ListItemDragHandle({ className }: ListItemDragHandleProps) {
+function ListItemDragHandle({
+  className,
+}: ListItemDragHandleProps): React.ReactElement {
   return (
     <Button
       aria-label="Drag to reorder"
@@ -237,7 +239,7 @@ function ListItemSpanningTrigger({
   className,
   render,
   ...props
-}: ListItemSpanningTriggerProps) {
+}: ListItemSpanningTriggerProps): React.ReactElement {
   const mergedProps = {
     className: cn(spanningTriggerClasses, className),
     "data-spanning-trigger": "",

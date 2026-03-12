@@ -1,11 +1,10 @@
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
+import { AutoOptInToggle, FeaturesList } from "./features-list";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { AutoOptInToggle, FeaturesList } from "./features-list";
 
 export default function FeaturesPage() {
   return (

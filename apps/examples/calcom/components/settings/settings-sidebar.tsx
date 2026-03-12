@@ -13,7 +13,7 @@ import {
 
 export function SettingsSidebar({
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar>): React.ReactElement {
   return (
     <Sidebar {...props}>
       <SidebarHeader>

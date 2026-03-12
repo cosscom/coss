@@ -10,7 +10,6 @@ import {
   CardPanel,
 } from "@coss/ui/components/card";
 import { useState } from "react";
-
 import { Disable2FADialog } from "./disable-2fa-dialog";
 import { Enable2FADialog } from "./enable-2fa-dialog";
 

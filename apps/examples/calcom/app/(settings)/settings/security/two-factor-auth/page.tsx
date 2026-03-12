@@ -1,10 +1,9 @@
+import { TwoFactorAuthSection } from "./two-factor-auth-section";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { TwoFactorAuthSection } from "./two-factor-auth-section";
 
 export default function TwoFactorAuthSettingsPage() {
   return (

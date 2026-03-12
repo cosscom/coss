@@ -5,14 +5,13 @@ import {
   CardFrameFooter,
   CardPanel,
 } from "@coss/ui/components/card";
+import { ProfileFields } from "./profile-form";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { DangerZone } from "@/components/particles/danger-zone";
-
-import { ProfileFields } from "./profile-form";
 
 export default function ProfileSettingsPage() {
   return (

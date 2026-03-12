@@ -8,15 +8,14 @@ import {
   CardPanel,
 } from "@coss/ui/components/card";
 import { PlusIcon } from "lucide-react";
+import { CalendarsDemoForm } from "./calendars-demo-form";
+import { CheckForConflictsCard } from "./check-for-conflicts-card";
 import {
   AppHeader,
   AppHeaderActions,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
-
-import { CalendarsDemoForm } from "./calendars-demo-form";
-import { CheckForConflictsCard } from "./check-for-conflicts-card";
 
 export default function CalendarsSettingsPage() {
   return (

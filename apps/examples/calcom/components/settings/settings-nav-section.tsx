@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -34,44 +34,6 @@ import {
   userSettingsItems,
 } from "@/lib/settings-navigation-data";
 
-export function SettingsNavContent({
-  onItemClick,
-}: {
-  onItemClick?: () => void;
-}) {
-  const pathname = usePathname();
-
-  return (
-    <>
-      {userSettingsItems.map((section) => (
-        <SettingsNavSection
-          key={section.url}
-          onItemClick={onItemClick}
-          pathname={pathname}
-          section={section}
-        />
-      ))}
-      <TeamsSection onItemClick={onItemClick} pathname={pathname} />
-      {orgSettingsItems.map((section) => (
-        <SettingsNavSection
-          key={section.url}
-          onItemClick={onItemClick}
-          pathname={pathname}
-          section={section}
-        />
-      ))}
-      {adminSettingsItems.map((section) => (
-        <SettingsNavSection
-          key={section.url}
-          onItemClick={onItemClick}
-          pathname={pathname}
-          section={section}
-        />
-      ))}
-    </>
-  );
-}
-
 function SettingsNavSection({
   section,
   pathname,
@@ -80,7 +42,7 @@ function SettingsNavSection({
   section: SettingsNavItem;
   pathname: string;
   onItemClick?: () => void;
-}) {
+}): ReactElement {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
@@ -125,7 +87,7 @@ function TeamsSection({
 }: {
   pathname: string;
   onItemClick?: () => void;
-}) {
+}): ReactElement {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
@@ -163,7 +125,7 @@ function TeamCollapsible({
   team: SettingsNavItem;
   pathname: string;
   onItemClick?: () => void;
-}) {
+}): ReactElement {
   const isActive = team.children?.some((c) => pathname === c.url);
   const [open, setOpen] = useState(isActive);
 
@@ -207,5 +169,43 @@ function TeamCollapsible({
         </SidebarMenuSub>
       </CollapsiblePanel>
     </Collapsible>
+  );
+}
+
+export function SettingsNavContent({
+  onItemClick,
+}: {
+  onItemClick?: () => void;
+}): ReactElement {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {userSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+      <TeamsSection onItemClick={onItemClick} pathname={pathname} />
+      {orgSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+      {adminSettingsItems.map((section) => (
+        <SettingsNavSection
+          key={section.url}
+          onItemClick={onItemClick}
+          pathname={pathname}
+          section={section}
+        />
+      ))}
+    </>
   );
 }

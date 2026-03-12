@@ -5,14 +5,13 @@ import {
   CardFrameFooter,
   CardPanel,
 } from "@coss/ui/components/card";
+import { PasswordFormFields } from "./password-form";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { SettingsToggle } from "@/components/particles";
-
-import { PasswordFormFields } from "./password-form";
 
 export default function PasswordSettingsPage() {
   return (

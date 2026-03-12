@@ -5,14 +5,13 @@ import {
   CardFrameFooter,
   CardPanel,
 } from "@coss/ui/components/card";
+import { TeamProfileFields } from "./team-profile-form";
 import {
   AppHeader,
   AppHeaderContent,
   AppHeaderDescription,
 } from "@/components/app/app-header";
 import { DangerZone } from "@/components/particles/danger-zone";
-
-import { TeamProfileFields } from "./team-profile-form";
 
 export default function TeamProfilePage() {
   return (

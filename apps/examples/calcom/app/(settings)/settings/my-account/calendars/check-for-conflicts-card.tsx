@@ -30,7 +30,6 @@ import { Switch } from "@coss/ui/components/switch";
 import { EllipsisIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-
 import {
   ListItem,
   ListItemActions,

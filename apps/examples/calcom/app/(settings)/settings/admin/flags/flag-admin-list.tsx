@@ -33,7 +33,6 @@ import {
 } from "@coss/ui/components/tooltip";
 import { ChevronDownIcon, UsersIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-
 import {
   ListItem,
   ListItemActions,
