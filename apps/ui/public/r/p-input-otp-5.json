@@ -3,9 +3,6 @@
   "name": "p-input-otp-5",
   "type": "registry:block",
   "description": "Digits-only OTP input",
-  "dependencies": [
-    "input-otp"
-  ],
   "registryDependencies": [
     "@coss/input-otp"
   ],

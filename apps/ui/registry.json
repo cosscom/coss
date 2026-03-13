@@ -451,6 +451,9 @@
         }
       ],
       "name": "input-otp",
+      "registryDependencies": [
+        "@coss/separator"
+      ],
       "type": "registry:ui"
     },
     {
@@ -662,9 +665,6 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [
-        "@base-ui/react"
-      ],
       "files": [
         {
           "path": "registry/default/ui/sidebar.tsx",
@@ -3695,7 +3695,7 @@
       "registryDependencies": [
         "@coss/calendar",
         "@coss/popover",
-        "@coss/button"
+        "@coss/select"
       ],
       "type": "registry:block"
     },
@@ -6353,9 +6353,6 @@
         "input otp",
         "input"
       ],
-      "dependencies": [
-        "input-otp"
-      ],
       "description": "Digits-only OTP input",
       "files": [
         {
@@ -6385,8 +6382,7 @@
       ],
       "name": "p-input-otp-6",
       "registryDependencies": [
-        "@coss/input-otp",
-        "@coss/label"
+        "@coss/input-otp"
       ],
       "type": "registry:block"
     },
@@ -6405,7 +6401,8 @@
       ],
       "name": "p-input-otp-7",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/input-otp",
+        "@coss/label"
       ],
       "type": "registry:block"
     },

@@ -5,6 +5,9 @@
   "dependencies": [
     "input-otp"
   ],
+  "registryDependencies": [
+    "@coss/separator"
+  ],
   "files": [
     {
       "path": "registry/default/ui/input-otp.tsx",

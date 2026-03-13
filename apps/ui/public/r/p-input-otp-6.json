@@ -4,8 +4,7 @@
   "type": "registry:block",
   "description": "Invalid OTP input",
   "registryDependencies": [
-    "@coss/input-otp",
-    "@coss/label"
+    "@coss/input-otp"
   ],
   "files": [
     {

@@ -4,7 +4,8 @@
   "type": "registry:block",
   "description": "OTP input with auto validation",
   "registryDependencies": [
-    "@coss/input-otp"
+    "@coss/input-otp",
+    "@coss/label"
   ],
   "files": [
     {

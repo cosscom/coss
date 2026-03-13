@@ -425,7 +425,7 @@ export const Index: Record<string, any> = {
     name: "input-otp",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/separator"],
     files: [{
       path: "registry/default/ui/input-otp.tsx",
       type: "registry:ui",
@@ -3467,7 +3467,7 @@ export const Index: Record<string, any> = {
     name: "p-date-picker-8",
     description: "Date picker with select-like trigger",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/select"],
     files: [{
       path: "registry/default/particles/p-date-picker-8.tsx",
       type: "registry:block",
@@ -5627,7 +5627,7 @@ export const Index: Record<string, any> = {
     name: "p-input-otp-6",
     description: "Invalid OTP input",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp","@coss/label"],
+    registryDependencies: ["@coss/input-otp"],
     files: [{
       path: "registry/default/particles/p-input-otp-6.tsx",
       type: "registry:block",
@@ -5645,7 +5645,7 @@ export const Index: Record<string, any> = {
     name: "p-input-otp-7",
     description: "OTP input with auto validation",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/input-otp","@coss/label"],
     files: [{
       path: "registry/default/particles/p-input-otp-7.tsx",
       type: "registry:block",
