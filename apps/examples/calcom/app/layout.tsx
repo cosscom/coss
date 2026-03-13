@@ -4,7 +4,7 @@ import {
   AnchoredToastProvider,
   ToastProvider,
 } from "@coss/ui/components/toast";
-import { fontHeading, fontSans } from "@coss/ui/fonts";
+import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import { AppCommand } from "@/components/app/app-command";
@@ -24,10 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontHeading.variable} ${fontSans.variable} relative bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontHeading.variable} ${fontSans.variable} ${fontMono.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
-          <ToastProvider>
+          <ToastProvider position="bottom-center">
             <AnchoredToastProvider>
               <DebugProvider>
                 <AppCommand />

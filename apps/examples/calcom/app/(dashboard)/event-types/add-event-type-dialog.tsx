@@ -40,7 +40,7 @@ export function AddEventTypeDialog({
       <DialogTrigger render={<Button className={className} />}>
         {children}
       </DialogTrigger>
-      <DialogPopup className="sm:max-w-xl">
+      <DialogPopup className="max-w-xl">
         <Form className="contents">
           <DialogHeader>
             <DialogTitle>Add a new event type</DialogTitle>
@@ -48,7 +48,7 @@ export function AddEventTypeDialog({
               Set up event types to offer different types of meetings.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel className="grid gap-5">
+          <DialogPanel className="grid gap-6">
             <Field>
               <FieldLabel>Title</FieldLabel>
               <Input defaultValue="Quick Chat" type="text" />

@@ -1,6 +1,7 @@
 import {
   CreditCardIcon,
   KeyIcon,
+  LockIcon,
   type LucideIcon,
   TerminalIcon,
 } from "lucide-react";
@@ -39,6 +40,7 @@ export const userSettingsItems: SettingsNavItem[] = [
         title: "Push notifications",
         url: "/settings/my-account/push-notifications",
       },
+      { title: "Features", url: "/settings/my-account/features" },
     ],
     title: "Luke Tracy",
     url: "/settings/my-account",
@@ -66,11 +68,58 @@ export const userSettingsItems: SettingsNavItem[] = [
   {
     children: [
       { title: "Webhooks", url: "/settings/developer/webhooks" },
+      { title: "OAuth", url: "/settings/developer/oauth" },
       { title: "API keys", url: "/settings/developer/api-keys" },
     ],
     icon: TerminalIcon,
     title: "Developer",
     url: "/settings/developer",
+  },
+];
+
+export const adminSettingsItems: SettingsNavItem[] = [
+  {
+    children: [
+      { title: "Flags", url: "/settings/admin/flags" },
+      { title: "License", url: "/settings/admin/license" },
+      { title: "Billing", url: "/settings/admin/billing" },
+      { title: "Impersonation", url: "/settings/admin/impersonation" },
+      { title: "Apps", url: "/settings/admin/apps" },
+      { title: "Users", url: "/settings/admin/users" },
+      { title: "Organizations", url: "/settings/admin/organizations" },
+      { title: "Locked SMS", url: "/settings/admin/locked-sms" },
+      { title: "Blocklist", url: "/settings/admin/blocklist" },
+      { title: "OAuth", url: "/settings/admin/oauth" },
+      {
+        title: "Workspace Platforms",
+        url: "/settings/admin/workspace-platforms",
+      },
+      { title: "Playground", url: "/settings/admin/playground" },
+    ],
+    icon: LockIcon,
+    title: "Admin",
+    url: "/settings/admin",
+  },
+];
+
+const teamNavChildren: SettingsNavChild[] = [
+  { title: "Profile", url: "/settings/teams/47/profile" },
+  { title: "Members", url: "/settings/teams/47/members" },
+  { title: "Appearance", url: "/settings/teams/47/appearance" },
+  { title: "Features", url: "/settings/teams/47/features" },
+  { title: "Billing", url: "/settings/teams/47/billing" },
+  { title: "Settings", url: "/settings/teams/47/settings" },
+];
+
+export const teamSettingsItems: SettingsNavItem[] = [
+  {
+    avatar: {
+      fallback: "AI",
+      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
+    },
+    children: teamNavChildren,
+    title: "Acme Inc.",
+    url: "/settings/teams/47",
   },
 ];
 
@@ -115,4 +164,5 @@ export const orgSettingsItems: SettingsNavItem[] = [
 export const settingsNavItems: SettingsNavItem[] = [
   ...userSettingsItems,
   ...orgSettingsItems,
+  ...adminSettingsItems,
 ];
