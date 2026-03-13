@@ -7477,6 +7477,24 @@ export const Index: Record<string, any> = {
     categories: ["select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-select-23": {
+    name: "p-select-23",
+    description: "Select with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-select-11": {
     name: "p-select-11",
     description: "Select in form",

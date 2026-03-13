@@ -135,7 +135,7 @@ export function SelectPopup({
         sideOffset={sideOffset}
       >
         <SelectPrimitive.Popup
-          className="origin-(--transform-origin) text-foreground"
+          className="origin-(--transform-origin) text-foreground outline-none"
           data-slot="select-popup"
           {...props}
         >
@@ -222,6 +222,22 @@ export function SelectGroup(
   props: SelectPrimitive.Group.Props,
 ): React.ReactElement {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
+}
+
+export function SelectLabel({
+  className,
+  ...props
+}: SelectPrimitive.Label.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.Label
+      className={cn(
+        "not-in-data-[slot=field]:mb-2 inline-flex cursor-default items-center gap-2 font-medium text-base/4.5 text-foreground sm:text-sm/4",
+        className,
+      )}
+      data-slot="select-label"
+      {...props}
+    />
+  );
 }
 
 export function SelectGroupLabel(
