@@ -4026,6 +4026,18 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("select"),
+    description: "Select with label",
+    files: [{ path: "particles/p-select-23.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-23",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
     description: "Select in form",
     files: [{ path: "particles/p-select-11.tsx", type: "registry:block" }],
     meta: {
