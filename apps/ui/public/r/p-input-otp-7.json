@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-input-otp-7",
+  "type": "registry:block",
+  "description": "OTP input with auto validation",
+  "registryDependencies": [
+    "@coss/input-otp"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-input-otp-7.tsx",
+      "content": "\"use client\";\n\nimport { useId, useState } from \"react\";\nimport {\n  InputOTP,\n  InputOTPGroup,\n  InputOTPSlot,\n} from \"@/registry/default/ui/input-otp\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  const [value, setValue] = useState(\"\");\n  const [invalid, setInvalid] = useState(false);\n  const valid = value.length === 6 && value === \"123456\";\n\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      <Label htmlFor={id}>Verification code</Label>\n      <InputOTP\n        aria-label=\"Verification code\"\n        id={id}\n        maxLength={6}\n        onChange={(nextValue) => {\n          setValue(nextValue);\n          setInvalid(nextValue.length === 6 ? nextValue !== \"123456\" : false);\n        }}\n        value={value}\n      >\n        <InputOTPGroup>\n          <InputOTPSlot aria-invalid={invalid || undefined} index={0} />\n          <InputOTPSlot aria-invalid={invalid || undefined} index={1} />\n          <InputOTPSlot aria-invalid={invalid || undefined} index={2} />\n          <InputOTPSlot aria-invalid={invalid || undefined} index={3} />\n          <InputOTPSlot aria-invalid={invalid || undefined} index={4} />\n          <InputOTPSlot aria-invalid={invalid || undefined} index={5} />\n        </InputOTPGroup>\n      </InputOTP>\n      {!valid && !invalid && (\n        <p className=\"text-muted-foreground text-xs\">\n          Enter `123456` to pass validation.\n        </p>\n      )}\n      {invalid && (\n        <p className=\"text-destructive-foreground text-xs\">\n          Code must be 123456.\n        </p>\n      )}\n      {valid && (\n        <p className=\"text-success-foreground text-xs\">Code verified.</p>\n      )}\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input otp",
+    "input",
+    "validation"
+  ]
+}

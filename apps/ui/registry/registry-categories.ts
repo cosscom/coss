@@ -34,6 +34,7 @@ export const registryCategories = [
   "group",
   "input",
   "input group",
+  "input otp",
   "kbd",
   "label",
   "menu",
