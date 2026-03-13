@@ -50,6 +50,7 @@ npm install @base-ui/react
 
 ```tsx
 import {
+  SelectLabel,
   Select,
   SelectItem,
   SelectPopup,
@@ -71,6 +72,7 @@ const items = [
     <SelectValue />
   </SelectTrigger>
   <SelectPopup>
+    <SelectLabel>Frameworks</SelectLabel>
     {items.map((item) => (
       <SelectItem key={item.value} value={item}>
         {item.label}
@@ -114,6 +116,10 @@ Individual select option. Styled wrapper for `Select.Item` from Base UI with bui
 ### SelectGroup
 
 Groups related select items. Alias for `Select.Group` from Base UI.
+
+### SelectLabel
+
+Label for all options in the popup. Styled wrapper for `Select.Label` from Base UI. Clicking it focuses the select trigger without opening the popup.
 
 ### SelectGroupLabel
 
@@ -164,6 +170,10 @@ For accessible labelling and validation, prefer using the `Field` component to w
 ### With Groups
 
 <ComponentPreview name="p-select-6" />
+
+### With Label
+
+<ComponentPreview name="p-select-23" />
 
 ### Multiple Selection
 
