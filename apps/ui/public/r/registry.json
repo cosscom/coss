@@ -209,6 +209,9 @@
         }
       ],
       "name": "button",
+      "registryDependencies": [
+        "@coss/spinner"
+      ],
       "type": "registry:ui"
     },
     {

@@ -42,7 +42,6 @@ export default function Particle() {
         <FieldLabel>Framework</FieldLabel>
         <Select
           aria-label="Select framework"
-          disabled={loading}
           items={items}
           name="framework"
           required
@@ -62,7 +61,7 @@ export default function Particle() {
         <FieldError>Please select a value.</FieldError>
       </Field>
 
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

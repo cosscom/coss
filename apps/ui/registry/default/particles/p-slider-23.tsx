@@ -26,12 +26,7 @@ export default function Particle() {
     <Form onSubmit={onSubmit}>
       <Fieldset className="flex max-w-none flex-col items-stretch gap-3">
         <Field>
-          <Slider
-            disabled={loading}
-            name="volume"
-            onValueChange={setValue}
-            value={value}
-          >
+          <Slider name="volume" onValueChange={setValue} value={value}>
             <div className="mb-2 flex items-center justify-between gap-1">
               <FieldsetLegend>Volume</FieldsetLegend>
               <SliderValue />
@@ -40,7 +35,7 @@ export default function Particle() {
           <FieldDescription>Choose a value between 0 and 100</FieldDescription>
         </Field>
       </Fieldset>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>
