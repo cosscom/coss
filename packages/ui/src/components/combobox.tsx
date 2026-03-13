@@ -75,7 +75,10 @@ export function ComboboxInput({
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
-    <div className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64">
+    <ComboboxPrimitive.InputGroup
+      className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64"
+      data-slot="combobox-input-group"
+    >
       {startAddon && (
         <div
           aria-hidden="true"
@@ -128,7 +131,7 @@ export function ComboboxInput({
           <XIcon />
         </ComboboxClear>
       )}
-    </div>
+    </ComboboxPrimitive.InputGroup>
   );
 }
 
