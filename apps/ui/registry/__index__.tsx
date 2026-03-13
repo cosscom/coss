@@ -137,7 +137,7 @@ export const Index: Record<string, any> = {
     name: "button",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/spinner"],
     files: [{
       path: "registry/default/ui/button.tsx",
       type: "registry:ui",
@@ -2473,9 +2473,27 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "p-button-41": {
+    name: "p-button-41",
+    description: "Button using the built-in loading prop",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-41.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-41.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button"],
+    meta: undefined,
+  },
   "p-button-18": {
     name: "p-button-18",
-    description: "Loading button",
+    description: "Custom loading button with manual Spinner",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/spinner"],
     files: [{

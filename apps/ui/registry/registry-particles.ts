@@ -834,8 +834,16 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("button"),
+    description: "Button using the built-in loading prop",
+    files: [{ path: "particles/p-button-41.tsx", type: "registry:block" }],
+    name: "p-button-41",
+    registryDependencies: ["@coss/button"],
+    type: "registry:block",
+  },
+  {
     categories: categories("button", "loading"),
-    description: "Loading button",
+    description: "Custom loading button with manual Spinner",
     files: [{ path: "particles/p-button-18.tsx", type: "registry:block" }],
     name: "p-button-18",
     registryDependencies: ["@coss/button", "@coss/spinner"],

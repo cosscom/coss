@@ -46,7 +46,7 @@ export default function Particle() {
         <FieldLabel>
           Full Name <span className="text-destructive">*</span>
         </FieldLabel>
-        <Input disabled={loading} placeholder="John Doe" required type="text" />
+        <Input placeholder="John Doe" required type="text" />
         <FieldError>Please enter a valid name.</FieldError>
       </Field>
 
@@ -54,19 +54,13 @@ export default function Particle() {
         <FieldLabel>
           Email <span className="text-destructive">*</span>
         </FieldLabel>
-        <Input
-          disabled={loading}
-          placeholder="john@example.com"
-          required
-          type="email"
-        />
+        <Input placeholder="john@example.com" required type="email" />
         <FieldError>Please enter a valid email.</FieldError>
       </Field>
 
       <Field name="role">
         <FieldLabel>Role</FieldLabel>
         <Select
-          disabled={loading}
           items={[
             { label: "Select your role", value: null },
             { label: "Developer", value: "developer" },
@@ -90,14 +84,14 @@ export default function Particle() {
 
       <Field name="newsletter">
         <div className="flex items-center gap-2">
-          <Checkbox disabled={loading} />
+          <Checkbox />
           <FieldLabel className="cursor-pointer">
             Subscribe to newsletter
           </FieldLabel>
         </div>
       </Field>
 
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>
