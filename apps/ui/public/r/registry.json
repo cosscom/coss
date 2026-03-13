@@ -5049,6 +5049,27 @@
     },
     {
       "categories": [
+        "drawer"
+      ],
+      "description": "Right drawer with swipe area",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-md"
+      },
+      "name": "p-drawer-14",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "empty state"
       ],
       "dependencies": [

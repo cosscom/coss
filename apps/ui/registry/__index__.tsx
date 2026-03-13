@@ -4579,6 +4579,24 @@ export const Index: Record<string, any> = {
     categories: ["drawer","menu"],
     meta: undefined,
   },
+  "p-drawer-14": {
+    name: "p-drawer-14",
+    description: "Right drawer with swipe area",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-md"},
+  },
   "p-empty-1": {
     name: "p-empty-1",
     description: "Empty state with icon and actions",
