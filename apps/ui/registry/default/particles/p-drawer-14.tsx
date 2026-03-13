@@ -15,10 +15,7 @@ export default function Particle() {
   return (
     <div className="relative min-h-80 w-full overflow-hidden rounded-xl border">
       <Drawer modal={false} position="left">
-        <DrawerSwipeArea
-          position="left"
-          className="absolute border-input border-e border-dashed bg-muted"
-        >
+        <DrawerSwipeArea className="absolute border-input border-e border-dashed bg-muted">
           <span className="pointer-events-none absolute top-1/2 left-0 ms-2 -translate-y-1/2 rotate-90 whitespace-nowrap font-medium text-muted-foreground text-xs uppercase">
             Swipe area
           </span>
