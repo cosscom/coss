@@ -421,6 +421,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "input-otp": {
+    name: "input-otp",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/separator"],
+    files: [{
+      path: "registry/default/ui/input-otp.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/input-otp.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "input-group": {
     name: "input-group",
     description: "",
@@ -3449,7 +3467,7 @@ export const Index: Record<string, any> = {
     name: "p-date-picker-8",
     description: "Date picker with select-like trigger",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/select"],
     files: [{
       path: "registry/default/particles/p-date-picker-8.tsx",
       type: "registry:block",
@@ -5514,6 +5532,132 @@ export const Index: Record<string, any> = {
     }),
     categories: ["input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-otp-1": {
+    name: "p-input-otp-1",
+    description: "Basic OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-2": {
+    name: "p-input-otp-2",
+    description: "Large OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-3": {
+    name: "p-input-otp-3",
+    description: "OTP input with separator",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-4": {
+    name: "p-input-otp-4",
+    description: "OTP input with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","label"],
+    meta: undefined,
+  },
+  "p-input-otp-5": {
+    name: "p-input-otp-5",
+    description: "Digits-only OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-6": {
+    name: "p-input-otp-6",
+    description: "Invalid OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","label","validation"],
+    meta: undefined,
+  },
+  "p-input-otp-7": {
+    name: "p-input-otp-7",
+    description: "OTP input with auto validation",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","validation"],
+    meta: undefined,
   },
   "p-input-group-1": {
     name: "p-input-group-1",
