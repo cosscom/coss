@@ -2,5 +2,12 @@
 
 @theme inline {
   --font-sans: var(--font-cal-sans-ui), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-cal-sans-text), ui-sans-serif, system-ui, sans-serif;
+  --font-heading:
+    var(--font-cal-sans-text), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  .font-heading {
+    font-variation-settings: "GEOM" 50;
+  }
 }
