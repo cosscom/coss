@@ -14,6 +14,26 @@
         "typescript": "^5.9.3",
       },
     },
+    "apps/examples/cal-site": {
+      "name": "@examples/cal-site",
+      "version": "0.1.0",
+      "dependencies": {
+        "@calcom/cal-sans-ui": "^1.2.0",
+        "@coss/ui": "workspace:*",
+        "next": "16.0.9",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+      },
+      "devDependencies": {
+        "@coss/typescript-config": "workspace:*",
+        "@tailwindcss/postcss": "^4.1.17",
+        "@types/node": "^24.10.1",
+        "@types/react": "19.2.6",
+        "@types/react-dom": "19.2.3",
+        "tailwindcss": "^4.1.17",
+        "typescript": "^5.9.3",
+      },
+    },
     "apps/examples/calcom": {
       "name": "@examples/calcom",
       "version": "0.1.0",
@@ -295,6 +315,8 @@
 
     "@bundled-es-modules/statuses": ["@bundled-es-modules/statuses@1.0.1", "", { "dependencies": { "statuses": "2.0.2" } }, "sha512-yn7BklA5acgcBr+7w064fGV+SGIFySjCKpqjcWgBAIfrAkY+4GQTJJHQMeT3V/sgz23VTEVV8TtOmkvJAhFVfg=="],
 
+    "@calcom/cal-sans-ui": ["@calcom/cal-sans-ui@1.2.0", "", { "peerDependencies": { "next": ">=13.2.0" }, "optionalPeers": ["next"] }, "sha512-P1P3eb4MY6Bx6+JaShV2tkE8X+baCqOUl+hFf8viwoyBubSV0fkL8sKMLePZs4AqLmOXxzYtYEZuI+heUE8R0A=="],
+
     "@coss/typescript-config": ["@coss/typescript-config@workspace:packages/typescript-config"],
 
     "@coss/ui": ["@coss/ui@workspace:packages/ui"],
@@ -376,6 +398,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
+
+    "@examples/cal-site": ["@examples/cal-site@workspace:apps/examples/cal-site"],
 
     "@examples/calcom": ["@examples/calcom@workspace:apps/examples/calcom"],
 

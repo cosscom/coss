@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "@calcom/cal-sans-ui": "^1.2.0",
+    "@coss/ui": "workspace:*",
+    "next": "16.0.9",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@coss/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/node": "^24.10.1",
+    "@types/react": "19.2.6",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3"
+  },
+  "license": "AGPL-3.0-or-later",
+  "name": "@examples/cal-site",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf .next",
+    "dev": "next dev --port 4003",
+    "lint": "biome lint .",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "version": "0.1.0"
+}
