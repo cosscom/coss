@@ -171,7 +171,7 @@ function MobileNavigation() {
 function MarketingHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64">
-      <div className="container relative mx-auto flex h-(--header-height) w-full items-center justify-between gap-2 px-4 sm:px-6">
+      <div className="max-w-6xl relative mx-auto flex h-(--header-height) w-full items-center justify-between gap-2 px-4 sm:px-6">
         <BrandLockup />
 
         <nav className="ml-8 hidden flex-1 items-center gap-1 md:flex">
@@ -220,8 +220,8 @@ function HeroReviewStrip() {
 function SchedulingPreview() {
   return (
     <div>
-      <div className="rounded-xl border bg-popover text-card-foreground">
-        <div className="grid w-max grid-cols-[356px_max-content]">
+      <div className="rounded-xl border bg-popover text-card-foreground relative z-10">
+        <div className="grid w-max grid-cols-[300px_max-content]">
           <div className="border-r p-5">
             <div className="flex items-center gap-3">
               <img
@@ -356,11 +356,11 @@ export default function Home() {
     <div className="relative z-10 flex flex-1 flex-col">
       <MarketingHeader />
 
-      <main className="container relative mx-auto flex w-full flex-1 flex-col px-4 pt-12 pb-24 sm:px-6">
+      <main className="max-w-6xl relative mx-auto flex w-full flex-1 flex-col px-4 pt-12 pb-24 sm:px-6">
         <Card className="border-sidebar-border shadow-lg/5">
           <CardPanel className="p-0">
             <div className="flex flex-col gap-10 overflow-hidden px-10 py-20 lg:flex-row">
-              <div className="px-1 py-4 sm:px-4 lg:w-[540px] lg:flex-none">
+              <div className="lg:w-[540px] lg:flex-none">
                 <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 font-medium text-muted-foreground text-xs shadow-xs">
                   <span>Cal.com launches v6.2</span>
                   <ChevronRightIcon className="size-4" />
