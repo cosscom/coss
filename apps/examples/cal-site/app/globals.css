@@ -4,6 +4,16 @@
   --font-sans: var(--font-cal-sans-ui), ui-sans-serif, system-ui, sans-serif;
   --font-heading:
     var(--font-cal-sans-text), ui-sans-serif, system-ui, sans-serif;
+  --animate-logo-carousel-scroll: logo-carousel-scroll 24s linear infinite;
+  @keyframes logo-carousel-scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }    
 }
 
 @layer base {
@@ -11,3 +21,4 @@
     font-variation-settings: "GEOM" 50;
   }
 }
+
