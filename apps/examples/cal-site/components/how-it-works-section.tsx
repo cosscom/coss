@@ -82,7 +82,7 @@ export function HowItWorksSection(): ReactElement {
 function MinimalPlaceholderPreview(): ReactElement {
   return (
     <div className="flex h-52 items-center justify-center bg-background">
-      <div className="flex h-full w-full items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
+      <div className="flex h-full w-full items-center justify-center rounded-lg border border-border border-dashed bg-muted/30">
         <div className="space-y-3 text-center">
           <div className="mx-auto h-3 w-20 rounded-full bg-border/70" />
           <div className="mx-auto h-3 w-28 rounded-full bg-border/50" />

@@ -67,7 +67,7 @@ function LogoSet({
         <li className="flex h-6 shrink-0 items-center" key={logo.name}>
           <span
             aria-label={ariaHidden ? undefined : `${logo.name} logo`}
-            className="[&_svg]:block [&_svg]:h-full [&_svg]:w-full [&_svg]:overflow-visible block shrink-0"
+            className="block shrink-0 [&_svg]:block [&_svg]:h-full [&_svg]:w-full [&_svg]:overflow-visible"
             role={ariaHidden ? undefined : "img"}
             style={{
               height: `${logo.displayHeight ?? 24}px`,
@@ -88,7 +88,7 @@ export function LogoCarousel(): ReactElement {
         Trusted by fast-growing companies around the world
       </p>
       <div className="mask-[linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)] min-w-0 flex-1 overflow-hidden">
-        <div className="motion-reduce:animate-none flex w-max animate-logo-carousel-scroll">
+        <div className="flex w-max animate-logo-carousel-scroll motion-reduce:animate-none">
           <LogoSet />
           <LogoSet ariaHidden={true} />
         </div>
