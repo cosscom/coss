@@ -50,9 +50,9 @@ const reviewItems = [
           <div
             key={id}
             className={[
-              "flex size-6 items-center justify-center leading-none",
+              "flex size-4 items-center justify-center leading-none text-sm",
               index === 4
-                ? "bg-linear-to-r from-50% from-emerald-500 to-50% to-zinc-200 text-white"
+                ? "bg-linear-to-r from-50% from-emerald-500 to-50% to-input text-white"
                 : "bg-emerald-500 text-white",
             ].join(" ")}
           >
@@ -62,24 +62,24 @@ const reviewItems = [
       </div>
     ),
     label: (
-      <div className="mt-1.5 flex items-center gap-1 font-medium text-[14px]">
-        <span className="text-lg">★</span>
-        <span>Trustpilot</span>
+      <div className="flex items-center gap-1">
+        <span className="text-lg leading-none">★</span>
+        <span className="font-medium text-sm">Trustpilot</span>
       </div>
     ),
   },
   {
     brand: "Product Hunt",
     icon: (
-      <div className="flex items-center gap-1 text-[#f5a623] text-[24px] leading-none">
+      <div className="flex items-center gap-0.5 text-amber-500 leading-none">
         {["ph-1", "ph-2", "ph-3", "ph-4", "ph-5"].map((id) => (
-          <StarIcon key={id} className="size-4.5 fill-current stroke-current" />
+          <StarIcon key={id} className="size-3.5 fill-current stroke-current" />
         ))}
       </div>
     ),
     label: (
-      <div className="mt-2 flex items-center">
-        <div className="flex size-7 items-center justify-center rounded-full bg-[#ff6154] font-semibold text-base text-white">
+      <div className="flex items-center">
+        <div className="flex size-5 items-center justify-center rounded-full bg-[#ff6154] font-semibold text-sm text-white">
           P
         </div>
       </div>
@@ -88,22 +88,22 @@ const reviewItems = [
   {
     brand: "G2",
     icon: (
-      <div className="flex items-center gap-1 text-[#ff4a3d] text-[24px] leading-none">
+      <div className="flex items-center gap-0.5 text-[#ff4a3d] leading-none">
         {["g2-1", "g2-2", "g2-3", "g2-4", "g2-5"].map((id, index) => (
           <StarIcon
             key={id}
             className={
               index === 4
-                ? "size-4.5 bg-linear-to-r from-50% from-[#ff4a3d] to-50% to-white bg-clip-text fill-current stroke-current text-transparent"
-                : "size-4.5 fill-current stroke-current"
+                ? "size-3.5 bg-linear-to-r from-50% from-[#ff4a3d] to-50% to-white bg-clip-text fill-current stroke-current text-transparent"
+                : "size-3.5 fill-current stroke-current"
             }
           />
         ))}
       </div>
     ),
     label: (
-      <div className="mt-2 flex items-center">
-        <div className="flex size-7 items-center justify-center rounded-full bg-[#ff5a3c] font-bold text-white text-xs">
+      <div className="flex items-center">
+        <div className="flex size-5 items-center justify-center rounded-full bg-[#ff6154] font-semibold text-xs text-white">
           G2
         </div>
       </div>
@@ -170,7 +170,7 @@ function MobileNavigation() {
 
 function MarketingHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64">
+    <header>
       <div className="relative mx-auto flex h-(--header-height) w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <BrandLockup />
 
@@ -206,11 +206,11 @@ function MarketingHeader() {
 
 function HeroReviewStrip() {
   return (
-    <div className="flex gap-12 px-0 mt-8">
+    <div className="mt-8 flex gap-10 px-0">
       {reviewItems.map((item) => (
-        <div key={item.brand}>
-          {item.icon}
+        <div key={item.brand} className="flex items-center gap-2">
           {item.label}
+          {item.icon}
         </div>
       ))}
     </div>
@@ -220,7 +220,7 @@ function HeroReviewStrip() {
 function SchedulingPreview() {
   return (
     <div>
-      <Card className="border-sidebar-border shadow-lg/5 w-fit">
+      <Card className="w-fit border-sidebar-border shadow-lg/5">
         <CardPanel className="p-0">
           <div className="grid w-max grid-cols-[300px_max-content]">
             <div className="border-r p-5">
@@ -289,7 +289,7 @@ function SchedulingPreview() {
                 </div>
               </div>
 
-              <div className="mt-5 grid w-max grid-cols-7 gap-1 gap-y-5 text-center font-medium text-xs text-muted-foreground uppercase tracking-wide">
+              <div className="mt-5 grid w-max grid-cols-7 gap-1 gap-y-5 text-center font-medium text-muted-foreground text-xs uppercase tracking-wide">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                   (day) => (
                     <div key={day} className="w-13">
@@ -364,70 +364,76 @@ function SchedulingPreview() {
 
 export default function Home() {
   return (
-    <div className="relative z-10 flex flex-1 flex-col">
+    <div className="relative z-50 flex flex-1 flex-col">
       <MarketingHeader />
 
-      <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pt-12 pb-24 sm:px-6">
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
-          <div className="lg:w-[500px] lg:flex-none">
-            <Button variant="outline" size="xs" className="rounded-full">
-              Cal.com launches v6.2
-              <ChevronRightIcon aria-hidden="true" />
-            </Button>
+      <main className="relative">
+        <section className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-45 mx-auto max-w-6xl before:absolute before:top-[-4.5px] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-4.5px] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
+          />
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
+            <div className="lg:w-[500px] lg:flex-none">
+              <Button variant="outline" size="xs" className="rounded-full">
+                Cal.com launches v6.2
+                <ChevronRightIcon aria-hidden="true" />
+              </Button>
 
-            <h1 className="mt-6 max-w-xl text-balance font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-              The better way to schedule your meetings
-            </h1>
+              <h1 className="mt-6 max-w-xl text-balance font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
+                The better way to schedule your meetings
+              </h1>
 
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              A fully customizable scheduling software for individuals,
-              businesses taking calls and developers building scheduling
-              platforms where users meet users.
-            </p>
+              <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+                A fully customizable scheduling software for individuals,
+                businesses taking calls and developers building scheduling
+                platforms where users meet users.
+              </p>
 
-            <div className="mt-8 flex max-w-md flex-col gap-3">
-              <Button size="lg" render={<Link href="#signup-google" />}>
-                <svg
-                  aria-hidden="true"
-                  className="size-5 opacity-100"
-                  viewBox="0 0 20 20"
+              <div className="mt-8 flex max-w-md flex-col gap-3">
+                <Button size="lg" render={<Link href="#signup-google" />}>
+                  <svg
+                    aria-hidden="true"
+                    className="size-5 opacity-100"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      d="M18.171 10.214c0-.639-.057-1.251-.163-1.837H10v3.476h4.582a3.918 3.918 0 0 1-1.7 2.571v2.134h2.752c1.61-1.483 2.537-3.669 2.537-6.344Z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M10 18.5c2.295 0 4.22-.761 5.627-2.062l-2.752-2.134c-.761.511-1.736.813-2.875.813-2.209 0-4.08-1.492-4.749-3.497H2.406v2.204A8.498 8.498 0 0 0 10 18.5Z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.251 11.62A5.112 5.112 0 0 1 4.986 10c0-.563.097-1.109.265-1.62V6.176H2.406A8.498 8.498 0 0 0 1.5 10c0 1.373.328 2.673.906 3.824l2.845-2.204Z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M10 4.883c1.248 0 2.367.429 3.249 1.271l2.438-2.438C14.212 2.343 12.287 1.5 10 1.5a8.498 8.498 0 0 0-7.594 4.676L5.25 8.38C5.92 6.375 7.791 4.883 10 4.883Z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Sign up with Google
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  render={<Link href="#signup-email" />}
                 >
-                  <path
-                    d="M18.171 10.214c0-.639-.057-1.251-.163-1.837H10v3.476h4.582a3.918 3.918 0 0 1-1.7 2.571v2.134h2.752c1.61-1.483 2.537-3.669 2.537-6.344Z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M10 18.5c2.295 0 4.22-.761 5.627-2.062l-2.752-2.134c-.761.511-1.736.813-2.875.813-2.209 0-4.08-1.492-4.749-3.497H2.406v2.204A8.498 8.498 0 0 0 10 18.5Z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.251 11.62A5.112 5.112 0 0 1 4.986 10c0-.563.097-1.109.265-1.62V6.176H2.406A8.498 8.498 0 0 0 1.5 10c0 1.373.328 2.673.906 3.824l2.845-2.204Z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M10 4.883c1.248 0 2.367.429 3.249 1.271l2.438-2.438C14.212 2.343 12.287 1.5 10 1.5a8.498 8.498 0 0 0-7.594 4.676L5.25 8.38C5.92 6.375 7.791 4.883 10 4.883Z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Sign up with Google
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                render={<Link href="#signup-email" />}
-              >
-                Sign up with email
-                <ArrowRightIcon />
-              </Button>
+                  Sign up with email
+                  <ArrowRightIcon />
+                </Button>
+              </div>
+
+              <p className="mt-4 text-muted-foreground text-sm">
+                No credit card required
+              </p>
             </div>
 
-            <p className="mt-4 text-muted-foreground text-sm">
-              No credit card required
-            </p>
+            <SchedulingPreview />
           </div>
-
-          <SchedulingPreview />
-        </div>
+        </section>
       </main>
     </div>
   );
