@@ -2,6 +2,7 @@ import { Button } from "@coss/ui/components/button";
 import { ArrowRightIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import { GoogleLogo } from "@/components/google-logo";
+import { HowItWorksSection } from "@/components/how-it-works-section";
 import { LogoCarousel } from "@/components/logo-carousel";
 import { SchedulingPreview } from "@/components/scheduling-preview";
 import { MarketingHeader } from "@/components/site-header";
@@ -66,6 +67,15 @@ export default function Home() {
               className="pointer-events-none absolute inset-0 z-45 mx-auto max-w-6xl before:absolute before:top-[-4.5px] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-4.5px] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
             />
             <LogoCarousel />
+          </div>
+        </section>
+        <section className="relative">
+          <div className="mx-auto w-full max-w-6xl px-4 py-16 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64 sm:px-6">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-45 mx-auto max-w-6xl before:absolute before:top-[-4.5px] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-4.5px] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
+            />
+            <HowItWorksSection />
           </div>
         </section>
       </main>

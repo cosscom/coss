@@ -13,7 +13,7 @@
     to {
       transform: translateX(-50%);
     }
-  }    
+  }
 }
 
 @layer base {
@@ -21,4 +21,3 @@
     font-variation-settings: "GEOM" 50;
   }
 }
-
