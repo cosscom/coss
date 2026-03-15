@@ -220,7 +220,7 @@ function HeroReviewStrip() {
 function SchedulingPreview() {
   return (
     <div>
-      <div className="rounded-xl border bg-popover text-card-foreground relative z-10">
+      <div className="rounded-xl border bg-popover text-card-foreground">
         <div className="grid w-max grid-cols-[300px_max-content]">
           <div className="border-r p-5">
             <div className="flex items-center gap-3">
