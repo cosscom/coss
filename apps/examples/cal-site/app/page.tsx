@@ -171,7 +171,7 @@ function MobileNavigation() {
 function MarketingHeader() {
   return (
     <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64">
-      <div className="max-w-6xl relative mx-auto flex h-(--header-height) w-full items-center justify-between gap-2 px-4 sm:px-6">
+      <div className="relative mx-auto flex h-(--header-height) w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <BrandLockup />
 
         <nav className="ml-8 hidden flex-1 items-center gap-1 md:flex">
@@ -206,7 +206,7 @@ function MarketingHeader() {
 
 function HeroReviewStrip() {
   return (
-    <div className="flex gap-12 px-0 py-7">
+    <div className="flex gap-12 px-0 mt-8">
       {reviewItems.map((item) => (
         <div key={item.brand}>
           {item.icon}
@@ -220,131 +220,142 @@ function HeroReviewStrip() {
 function SchedulingPreview() {
   return (
     <div>
-      <div className="rounded-xl border bg-popover text-card-foreground">
-        <div className="grid w-max grid-cols-[300px_max-content]">
-          <div className="border-r p-5">
-            <div className="flex items-center gap-3">
-              <img
-                alt="Cédric van Ravesteijn"
-                className="size-8 rounded-full object-cover"
-                src="https://framerusercontent.com/images/1bvk9THj74PqBkpBJDHFbQS9om4.png"
-              />
-              <p className="font-medium text-muted-foreground text-sm">
-                Cédric van Ravesteijn
-              </p>
-            </div>
-
-            <div className="mt-3">
-              <h3 className="font-semibold text-foreground text-xl">
-                Partnerships Meeting
-              </h3>
-              <p className="mt-1 text-muted-foreground text-sm">
-                Are you an agency, influencer, SaaS founder, or business looking
-                to collaborate with Cal.com? Let&apos;s chat!
-              </p>
-            </div>
-
-            <div className="mt-5 flex items-center gap-2">
-              <Clock3Icon className="size-4 opacity-80" />
-              <Tabs className="gap-0" defaultValue="15m">
-                <TabsList className="rounded-xl bg-muted p-1 *:data-[slot=tab-indicator]:rounded-lg *:data-[slot=tab-indicator]:bg-background *:data-[slot=tab-indicator]:shadow-xs">
-                  {timeSlots.map((slot) => (
-                    <TabsTab
-                      className="h-auto min-w-[54px] rounded-lg px-3 py-1.5 font-medium text-[15px] text-muted-foreground shadow-none data-active:text-foreground"
-                      key={slot}
-                      value={slot}
-                    >
-                      {slot}
-                    </TabsTab>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-4 text-foreground text-sm">
-              <div className="flex items-center gap-2">
-                <MapPinIcon className="size-4 opacity-80" />
-                <span className="font-medium">Cal Video</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <GlobeIcon className="size-4 opacity-80" />
-                <span className="font-medium">Europe/Amsterdam</span>
-                <ChevronDownIcon className="size-4 opacity-80" />
-              </div>
-            </div>
-          </div>
-
-          <div className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-foreground">
-                May{" "}
-                <span className="font-normal text-muted-foreground">2025</span>
-              </p>
+      <Card className="border-sidebar-border shadow-lg/5 w-fit">
+        <CardPanel className="p-0">
+          <div className="grid w-max grid-cols-[300px_max-content]">
+            <div className="border-r p-5">
               <div className="flex items-center gap-3">
-                <ChevronLeftIcon className="size-4 opacity-80" />
-                <ChevronRightIcon className="size-4 opacity-80" />
+                <img
+                  alt="Cédric van Ravesteijn"
+                  className="size-6 rounded-full object-cover"
+                  src="https://framerusercontent.com/images/1bvk9THj74PqBkpBJDHFbQS9om4.png"
+                />
+                <p className="font-medium text-muted-foreground text-sm">
+                  Cédric van Ravesteijn
+                </p>
+              </div>
+
+              <div className="mt-3">
+                <h3 className="font-semibold text-foreground text-xl">
+                  Partnerships Meeting
+                </h3>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Are you an agency, influencer, SaaS founder, or business
+                  looking to collaborate with Cal.com? Let&apos;s chat!
+                </p>
+              </div>
+
+              <div className="mt-8 flex items-center gap-2">
+                <Clock3Icon className="size-4 opacity-80" />
+                <Tabs className="gap-0" defaultValue="15m">
+                  <TabsList className="rounded-xl bg-muted p-1 *:data-[slot=tab-indicator]:rounded-lg *:data-[slot=tab-indicator]:bg-background *:data-[slot=tab-indicator]:shadow-xs">
+                    {timeSlots.map((slot) => (
+                      <TabsTab
+                        className="h-auto min-w-[54px] rounded-lg px-3 py-1.5 font-medium text-[15px] text-muted-foreground shadow-none data-active:text-foreground"
+                        key={slot}
+                        value={slot}
+                      >
+                        {slot}
+                      </TabsTab>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4 text-foreground text-sm">
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="size-4 opacity-80" />
+                  <span className="font-medium">Cal Video</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GlobeIcon className="size-4 opacity-80" />
+                  <span className="font-medium">Europe/Amsterdam</span>
+                  <ChevronDownIcon className="size-4 opacity-80" />
+                </div>
               </div>
             </div>
 
-            <div className="mt-8 grid w-max grid-cols-[repeat(7,3.25rem)] gap-y-5 text-center font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day}>{day}</div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex flex-col gap-1">
-              {calendarDays.map((week) => (
-                <div
-                  key={week.join("-")}
-                  className="grid w-max grid-cols-[repeat(7,3.25rem)] gap-1"
-                >
-                  {week.map((day, dayIndex) => {
-                    const isEmpty = day === "";
-                    const isSelected = day === "24";
-                    const isSoftSelected = [
-                      "15",
-                      "16",
-                      "17",
-                      "20",
-                      "21",
-                      "22",
-                      "23",
-                      "27",
-                      "28",
-                      "29",
-                      "30",
-                    ].includes(day);
-                    const hasDot = day === "15" || day === "31";
-
-                    return (
-                      <div
-                        key={day || `empty-${week.join("-")}-${dayIndex}`}
-                        className={[
-                          "relative flex size-13 items-center justify-center rounded-sm font-medium",
-                          isEmpty && "opacity-0",
-                          isSelected && "bg-foreground text-background",
-                          isSoftSelected && "bg-muted text-foreground",
-                          !isSelected &&
-                            !isSoftSelected &&
-                            !isEmpty &&
-                            "text-muted-foreground",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {day || "0"}
-                        {hasDot ? (
-                          <span className="absolute bottom-[9px] left-1/2 size-[4px] -translate-x-1/2 rounded-full bg-foreground" />
-                        ) : null}
-                      </div>
-                    );
-                  })}
+            <div className="p-5">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-foreground">
+                  May{" "}
+                  <span className="font-normal text-muted-foreground">
+                    2025
+                  </span>
+                </p>
+                <div className="flex items-center gap-3">
+                  <ChevronLeftIcon className="size-4 opacity-80" />
+                  <ChevronRightIcon className="size-4 opacity-80" />
                 </div>
-              ))}
+              </div>
+
+              <div className="mt-5 grid w-max grid-cols-7 gap-1 gap-y-5 text-center font-medium text-xs text-muted-foreground uppercase tracking-wide">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                  (day) => (
+                    <div key={day} className="w-13">
+                      {day}
+                    </div>
+                  ),
+                )}
+              </div>
+
+              <div className="mt-5 flex flex-col gap-1">
+                {calendarDays.map((week) => (
+                  <div
+                    key={week.join("-")}
+                    className="grid w-max grid-cols-7 gap-1"
+                  >
+                    {week.map((day, dayIndex) => {
+                      const isEmpty = day === "";
+                      const isSelected = day === "7";
+                      const isSoftSelected = [
+                        "1",
+                        "2",
+                        "3",
+                        "6",
+                        "8",
+                        "9",
+                        "16",
+                        "17",
+                        "21",
+                        "22",
+                        "24",
+                        "27",
+                        "28",
+                        "29",
+                      ].includes(day);
+                      const hasDot = day === "15" || day === "31";
+
+                      return (
+                        <div
+                          key={day || `empty-${week.join("-")}-${dayIndex}`}
+                          className={[
+                            "relative flex size-13 items-center justify-center rounded-sm font-medium text-sm",
+                            isEmpty && "opacity-0",
+                            isSelected && "bg-foreground text-background",
+                            isSoftSelected && "bg-input text-foreground",
+                            !isSelected &&
+                              !isSoftSelected &&
+                              !isEmpty &&
+                              "text-muted-foreground",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          {day || "0"}
+                          {hasDot ? (
+                            <span className="absolute bottom-2 left-1/2 size-1 -translate-x-1/2 rounded-full bg-foreground" />
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardPanel>
+      </Card>
 
       <HeroReviewStrip />
     </div>
@@ -356,71 +367,67 @@ export default function Home() {
     <div className="relative z-10 flex flex-1 flex-col">
       <MarketingHeader />
 
-      <main className="max-w-6xl relative mx-auto flex w-full flex-1 flex-col px-4 pt-12 pb-24 sm:px-6">
-        <Card className="border-sidebar-border shadow-lg/5">
-          <CardPanel className="p-0">
-            <div className="flex flex-col gap-10 overflow-hidden px-10 py-20 lg:flex-row">
-              <div className="lg:w-[540px] lg:flex-none">
-                <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 font-medium text-muted-foreground text-xs shadow-xs">
-                  <span>Cal.com launches v6.2</span>
-                  <ChevronRightIcon className="size-4" />
-                </div>
+      <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pt-12 pb-24 sm:px-6">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
+          <div className="lg:w-[500px] lg:flex-none">
+            <Button variant="outline" size="xs" className="rounded-full">
+              Cal.com launches v6.2
+              <ChevronRightIcon aria-hidden="true" />
+            </Button>
 
-                <h1 className="mt-6 max-w-xl text-balance font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-                  The better way to schedule your meetings
-                </h1>
+            <h1 className="mt-6 max-w-xl text-balance font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
+              The better way to schedule your meetings
+            </h1>
 
-                <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-                  A fully customizable scheduling software for individuals,
-                  businesses taking calls and developers building scheduling
-                  platforms where users meet users.
-                </p>
+            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+              A fully customizable scheduling software for individuals,
+              businesses taking calls and developers building scheduling
+              platforms where users meet users.
+            </p>
 
-                <div className="mt-8 flex max-w-md flex-col gap-3">
-                  <Button size="lg" render={<Link href="#signup-google" />}>
-                    <svg
-                      aria-hidden="true"
-                      className="size-5 opacity-100"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        d="M18.171 10.214c0-.639-.057-1.251-.163-1.837H10v3.476h4.582a3.918 3.918 0 0 1-1.7 2.571v2.134h2.752c1.61-1.483 2.537-3.669 2.537-6.344Z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M10 18.5c2.295 0 4.22-.761 5.627-2.062l-2.752-2.134c-.761.511-1.736.813-2.875.813-2.209 0-4.08-1.492-4.749-3.497H2.406v2.204A8.498 8.498 0 0 0 10 18.5Z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M5.251 11.62A5.112 5.112 0 0 1 4.986 10c0-.563.097-1.109.265-1.62V6.176H2.406A8.498 8.498 0 0 0 1.5 10c0 1.373.328 2.673.906 3.824l2.845-2.204Z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M10 4.883c1.248 0 2.367.429 3.249 1.271l2.438-2.438C14.212 2.343 12.287 1.5 10 1.5a8.498 8.498 0 0 0-7.594 4.676L5.25 8.38C5.92 6.375 7.791 4.883 10 4.883Z"
-                        fill="#EA4335"
-                      />
-                    </svg>
-                    Sign up with Google
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    render={<Link href="#signup-email" />}
-                  >
-                    Sign up with email
-                    <ArrowRightIcon />
-                  </Button>
-                </div>
-
-                <p className="mt-4 text-muted-foreground text-sm">
-                  No credit card required
-                </p>
-              </div>
-
-              <SchedulingPreview />
+            <div className="mt-8 flex max-w-md flex-col gap-3">
+              <Button size="lg" render={<Link href="#signup-google" />}>
+                <svg
+                  aria-hidden="true"
+                  className="size-5 opacity-100"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M18.171 10.214c0-.639-.057-1.251-.163-1.837H10v3.476h4.582a3.918 3.918 0 0 1-1.7 2.571v2.134h2.752c1.61-1.483 2.537-3.669 2.537-6.344Z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M10 18.5c2.295 0 4.22-.761 5.627-2.062l-2.752-2.134c-.761.511-1.736.813-2.875.813-2.209 0-4.08-1.492-4.749-3.497H2.406v2.204A8.498 8.498 0 0 0 10 18.5Z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.251 11.62A5.112 5.112 0 0 1 4.986 10c0-.563.097-1.109.265-1.62V6.176H2.406A8.498 8.498 0 0 0 1.5 10c0 1.373.328 2.673.906 3.824l2.845-2.204Z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M10 4.883c1.248 0 2.367.429 3.249 1.271l2.438-2.438C14.212 2.343 12.287 1.5 10 1.5a8.498 8.498 0 0 0-7.594 4.676L5.25 8.38C5.92 6.375 7.791 4.883 10 4.883Z"
+                    fill="#EA4335"
+                  />
+                </svg>
+                Sign up with Google
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                render={<Link href="#signup-email" />}
+              >
+                Sign up with email
+                <ArrowRightIcon />
+              </Button>
             </div>
-          </CardPanel>
-        </Card>
+
+            <p className="mt-4 text-muted-foreground text-sm">
+              No credit card required
+            </p>
+          </div>
+
+          <SchedulingPreview />
+        </div>
       </main>
     </div>
   );
