@@ -192,6 +192,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button",
+    registryDependencies: ["@coss/spinner"],
     type: "registry:ui",
   },
   {

@@ -57,7 +57,7 @@ export default function Particle() {
   return (
     <Form className="max-w-64" onSubmit={onSubmit}>
       <Field name="quantity">
-        <NumberField defaultValue={1} disabled={loading} max={100} min={1}>
+        <NumberField defaultValue={1} max={100} min={1}>
           <NumberFieldScrubArea label="Quantity" />
           <NumberFieldGroup>
             <NumberFieldDecrement />
@@ -67,7 +67,7 @@ export default function Particle() {
         </NumberField>
       </Field>
 
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

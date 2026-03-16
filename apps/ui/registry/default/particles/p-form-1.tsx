@@ -22,15 +22,10 @@ export default function Particle() {
     <Form className="max-w-64" onSubmit={onSubmit}>
       <Field name="email">
         <FieldLabel>Email</FieldLabel>
-        <Input
-          disabled={loading}
-          placeholder="you@example.com"
-          required
-          type="email"
-        />
+        <Input placeholder="you@example.com" required type="email" />
         <FieldError>Please enter a valid email.</FieldError>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>
