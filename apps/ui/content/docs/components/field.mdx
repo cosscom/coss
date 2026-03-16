@@ -116,7 +116,9 @@ Error message for the field. Styled wrapper for `Field.Error` from Base UI with 
 
 ### FieldControl
 
-Alias for `Field.Control` from Base UI.
+Alias for `Field.Control` from Base UI. Use this to register a custom or third-party control with the field context so it participates in labelling, validation, and error state.
+
+Note that `Textarea` does not require `FieldControl` — it wraps `Field.Control` internally and integrates with `Field` the same way `Input` and other built-in controls do.
 
 ### FieldValidity
 
