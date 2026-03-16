@@ -834,7 +834,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("button"),
+    categories: categories("button", "loading"),
     description: "Button using the built-in loading prop",
     files: [{ path: "particles/p-button-41.tsx", type: "registry:block" }],
     name: "p-button-41",

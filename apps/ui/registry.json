@@ -2477,7 +2477,8 @@
     },
     {
       "categories": [
-        "button"
+        "button",
+        "loading"
       ],
       "description": "Button using the built-in loading prop",
       "files": [
