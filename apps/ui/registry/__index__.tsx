@@ -4581,7 +4581,7 @@ export const Index: Record<string, any> = {
   },
   "p-drawer-14": {
     name: "p-drawer-14",
-    description: "Right drawer with swipe area",
+    description: "Left drawer with swipe area",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/drawer"],
     files: [{

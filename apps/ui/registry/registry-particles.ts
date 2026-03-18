@@ -2228,7 +2228,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("drawer"),
-    description: "Right drawer with swipe area",
+    description: "Left drawer with swipe area",
     files: [{ path: "particles/p-drawer-14.tsx", type: "registry:block" }],
     meta: {
       className:

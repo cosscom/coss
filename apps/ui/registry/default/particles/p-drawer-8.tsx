@@ -55,7 +55,7 @@ export default function Particle() {
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
-                  <Input defaultValue="bora@example.com" type="text" />
+                  <Input defaultValue="bora@example.com" type="email" />
                 </Field>
               </DrawerPanel>
               <DrawerFooter>

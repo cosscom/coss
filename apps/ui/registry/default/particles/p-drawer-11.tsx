@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/registry/default/ui/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerHeader,
   DrawerPanel,
   DrawerPopup,
@@ -21,34 +22,54 @@ export default function Particle() {
         </DrawerHeader>
         <DrawerPanel>
           <nav className="-mx-[calc(--spacing(3)-1px)] flex flex-col gap-0.5">
-            <Button
-              className="justify-start"
-              render={<Link href="#" />}
-              variant="ghost"
+            <DrawerClose
+              nativeButton={false}
+              render={
+                <Button
+                  className="justify-start"
+                  render={<Link href="#" />}
+                  variant="ghost"
+                />
+              }
             >
               Home
-            </Button>
-            <Button
-              className="justify-start"
-              render={<Link href="#" />}
-              variant="ghost"
+            </DrawerClose>
+            <DrawerClose
+              nativeButton={false}
+              render={
+                <Button
+                  className="justify-start"
+                  render={<Link href="#" />}
+                  variant="ghost"
+                />
+              }
             >
               Profile
-            </Button>
-            <Button
-              className="justify-start"
-              render={<Link href="#" />}
-              variant="ghost"
+            </DrawerClose>
+            <DrawerClose
+              nativeButton={false}
+              render={
+                <Button
+                  className="justify-start"
+                  render={<Link href="#" />}
+                  variant="ghost"
+                />
+              }
             >
               Settings
-            </Button>
-            <Button
-              className="justify-start"
-              render={<Link href="#" />}
-              variant="ghost"
+            </DrawerClose>
+            <DrawerClose
+              nativeButton={false}
+              render={
+                <Button
+                  className="justify-start"
+                  render={<Link href="#" />}
+                  variant="ghost"
+                />
+              }
             >
               Sign out
-            </Button>
+            </DrawerClose>
           </nav>
         </DrawerPanel>
       </DrawerPopup>

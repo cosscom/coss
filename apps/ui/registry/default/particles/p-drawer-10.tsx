@@ -44,7 +44,7 @@ export default function Particle() {
               <DrawerClose render={<Button variant="ghost" />}>
                 Cancel
               </DrawerClose>
-              <Button type="submit">Save</Button>
+              <Button>Save</Button>
             </DrawerFooter>
           </Form>
         </DrawerPopup>
@@ -76,7 +76,7 @@ export default function Particle() {
               <DrawerClose render={<Button variant="ghost" />}>
                 Cancel
               </DrawerClose>
-              <Button type="submit">Save</Button>
+              <Button>Save</Button>
             </DrawerFooter>
           </Form>
         </DrawerPopup>

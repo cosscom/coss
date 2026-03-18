@@ -5051,7 +5051,7 @@
       "categories": [
         "drawer"
       ],
-      "description": "Right drawer with swipe area",
+      "description": "Left drawer with swipe area",
       "files": [
         {
           "path": "registry/default/particles/p-drawer-14.tsx",
