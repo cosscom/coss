@@ -6,7 +6,7 @@ import {
 
 export default function Particle() {
   return (
-    <InputOTP aria-label="One-time password" maxLength={6}>
+    <InputOTP aria-label="One-time password" maxLength={4}>
       <InputOTPGroup size="lg">
         <InputOTPSlot index={0} />
         <InputOTPSlot index={1} />

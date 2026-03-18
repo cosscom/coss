@@ -2922,7 +2922,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("input otp", "input", "label", "validation"),
+    categories: categories("input otp", "input", "validation"),
     description: "Invalid OTP input",
     files: [{ path: "particles/p-input-otp-6.tsx", type: "registry:block" }],
     name: "p-input-otp-6",

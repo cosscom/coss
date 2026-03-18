@@ -6370,7 +6370,6 @@
       "categories": [
         "input otp",
         "input",
-        "label",
         "validation"
       ],
       "description": "Invalid OTP input",
