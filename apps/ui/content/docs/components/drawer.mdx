@@ -145,7 +145,7 @@ Container for the drawer title and description. Supports the `render` prop for p
 
 | Prop           | Type      | Default | Description                                      |
 | -------------- | --------- | ------- | ------------------------------------------------ |
-| `preventSwipe` | `boolean` | `false` | When true, prevents swipe-to-close when interacting with the header area |
+| `allowSelection` | `boolean` | `false` | When true, wraps the header in `DrawerContent` to reduce swipe interference during mouse text selection |
 
 ### DrawerFooter
 
@@ -154,7 +154,7 @@ Footer section for action buttons. Supports the `render` prop for polymorphic co
 | Prop           | Type                     | Default     | Description                                      |
 | -------------- | ------------------------ | ----------- | ------------------------------------------------ |
 | `variant`      | `"default" \| "bare"`    | `"default"` | Controls the footer styling. `default` includes border and background, `bare` removes them |
-| `preventSwipe` | `boolean`                | `true`      | When true, prevents swipe-to-close when interacting with the footer area |
+| `allowSelection` | `boolean`              | `true`      | When true, wraps the footer in `DrawerContent` to reduce swipe interference during mouse text selection |
 
 ### DrawerTitle
 
@@ -172,7 +172,7 @@ Content container. When `scrollable` is true (default), wraps content in a `Scro
 | -------------- | --------- | ------- | ------------------------------------------------ |
 | `scrollable`   | `boolean` | `true`  | When true, wraps content in a `ScrollArea`. Set to false for non-scrollable content |
 | `scrollFade`   | `boolean` | `true`  | When true, shows a fade effect at scroll edges (only applies when `scrollable` is true) |
-| `preventSwipe` | `boolean` | `true`  | When true, prevents swipe-to-close when interacting with the panel content |
+| `allowSelection` | `boolean` | `true` | When true, wraps the panel in `DrawerContent` to reduce swipe interference during mouse text selection |
 
 ### DrawerMenu
 

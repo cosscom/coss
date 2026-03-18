@@ -226,16 +226,16 @@ export function DrawerPopup({
 
 export function DrawerHeader({
   className,
-  preventSwipe = false,
+  allowSelection = false,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
-  preventSwipe?: boolean;
+  allowSelection?: boolean;
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col gap-2 p-6 in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pb-3 max-sm:pb-4",
-      !preventSwipe && "cursor-default",
+      !allowSelection && "cursor-default",
       className,
     ),
     "data-slot": "drawer-header",
@@ -244,24 +244,24 @@ export function DrawerHeader({
   return useRender({
     defaultTagName: "div",
     props: mergeProps<"div">(defaultProps, props),
-    render: preventSwipe ? <DrawerContent render={render} /> : render,
+    render: allowSelection ? <DrawerContent render={render} /> : render,
   });
 }
 
 export function DrawerFooter({
   className,
   variant = "default",
-  preventSwipe = true,
+  allowSelection = true,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   variant?: "default" | "bare";
-  preventSwipe?: boolean;
+  allowSelection?: boolean;
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
       "flex flex-col-reverse gap-2 px-6 pb-(--safe-area-inset-bottom,0px) sm:flex-row sm:justify-end",
-      !preventSwipe && "cursor-default",
+      !allowSelection && "cursor-default",
       variant === "default" &&
         "border-t bg-muted/72 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+--spacing(4))]",
       variant === "bare" &&
@@ -274,7 +274,7 @@ export function DrawerFooter({
   return useRender({
     defaultTagName: "div",
     props: mergeProps<"div">(defaultProps, props),
-    render: preventSwipe ? <DrawerContent render={render} /> : render,
+    render: allowSelection ? <DrawerContent render={render} /> : render,
   });
 }
 
@@ -311,18 +311,18 @@ export function DrawerPanel({
   className,
   scrollFade = true,
   scrollable = true,
-  preventSwipe = true,
+  allowSelection = true,
   render,
   ...props
 }: useRender.ComponentProps<"div"> & {
   scrollFade?: boolean;
   scrollable?: boolean;
-  preventSwipe?: boolean;
+  allowSelection?: boolean;
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
       "p-6 in-[[data-slot=drawer-popup]:has([data-slot=drawer-header])]:pt-1 in-[[data-slot=drawer-popup]:has([data-slot=drawer-footer]:not(.border-t))]:pb-1",
-      !preventSwipe && "cursor-default",
+      !allowSelection && "cursor-default",
       className,
     ),
     "data-slot": "drawer-panel",
@@ -331,7 +331,7 @@ export function DrawerPanel({
   const content = useRender({
     defaultTagName: "div",
     props: mergeProps<"div">(defaultProps, props),
-    render: preventSwipe ? <DrawerContent render={render} /> : render,
+    render: allowSelection ? <DrawerContent render={render} /> : render,
   });
 
   if (scrollable) {
