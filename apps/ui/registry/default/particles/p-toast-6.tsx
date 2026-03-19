@@ -19,7 +19,6 @@ export default function Particle() {
     const description = TEXTS[Math.floor(Math.random() * TEXTS.length)];
     toastManager.add({
       description,
-      timeout: 2000,
       title: `Toast ${count + 1} created`,
     });
   }

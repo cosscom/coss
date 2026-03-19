@@ -99,11 +99,11 @@ Popup container that displays the dialog content. Also exported as `DialogConten
 
 ### DialogHeader
 
-Container for the dialog title and description.
+Container for the dialog title and description. Supports the `render` prop for polymorphic composition (e.g. `render={<Link href="/" />}`).
 
 ### DialogFooter
 
-Footer section for action buttons.
+Footer section for action buttons. Supports the `render` prop for polymorphic composition.
 
 | Prop        | Type                     | Default     | Description                                      |
 | ----------- | ------------------------ | ----------- | ------------------------------------------------ |
@@ -135,7 +135,7 @@ Description component. Alias for `Dialog.Description` from Base UI.
 
 ### DialogPanel
 
-Scrollable content container. Automatically wraps content in a `ScrollArea` component.
+Scrollable content container. Automatically wraps content in a `ScrollArea` component. Supports the `render` prop for polymorphic composition.
 
 | Prop         | Type      | Default | Description                                      |
 | ------------ | --------- | ------- | ------------------------------------------------ |

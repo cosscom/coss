@@ -20,6 +20,7 @@ export const ui: Registry["items"] = [
       "@coss/combobox",
       "@coss/command",
       "@coss/dialog",
+      "@coss/drawer",
       "@coss/empty",
       "@coss/field",
       "@coss/fieldset",
@@ -288,6 +289,18 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
+    files: [
+      {
+        path: "ui/drawer.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "drawer",
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
+    type: "registry:ui",
+  },
+  {
     files: [
       {
         path: "ui/empty.tsx",
@@ -546,7 +559,6 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/sidebar.tsx",
