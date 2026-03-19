@@ -51,7 +51,7 @@ export default function Particle() {
     <Form className="max-w-64" onSubmit={onSubmit}>
       <Field name="items">
         <FieldLabel>Favorite items</FieldLabel>
-        <Combobox disabled={loading} items={items} multiple required>
+        <Combobox items={items} multiple required>
           <ComboboxChips>
             <ComboboxValue>
               {(value: { value: string; label: string }[]) => (
@@ -81,7 +81,7 @@ export default function Particle() {
         </Combobox>
         <FieldError>Please select at least one item.</FieldError>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

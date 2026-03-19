@@ -23,14 +23,13 @@ export default function Particle() {
       <Field>
         <FieldLabel>Message</FieldLabel>
         <Textarea
-          disabled={loading}
           name="message"
           placeholder="Type your message here"
           required
         />
         <FieldError>This field is required.</FieldError>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

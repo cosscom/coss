@@ -17,6 +17,7 @@
     "command",
     "date-picker",
     "dialog",
+    "drawer",
     "empty",
     "field",
     "fieldset",

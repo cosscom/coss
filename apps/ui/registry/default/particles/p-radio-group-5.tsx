@@ -33,22 +33,22 @@ export default function Particle() {
         <RadioGroup defaultValue="next">
           <FieldItem>
             <FieldLabel>
-              <Radio disabled={loading} value="next" /> Next.js
+              <Radio value="next" /> Next.js
             </FieldLabel>
           </FieldItem>
           <FieldItem>
             <FieldLabel>
-              <Radio disabled={loading} value="vite" /> Vite
+              <Radio value="vite" /> Vite
             </FieldLabel>
           </FieldItem>
           <FieldItem>
             <FieldLabel>
-              <Radio disabled={loading} value="astro" /> Astro
+              <Radio value="astro" /> Astro
             </FieldLabel>
           </FieldItem>
         </RadioGroup>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>
