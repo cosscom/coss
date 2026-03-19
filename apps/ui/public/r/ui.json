@@ -27,6 +27,7 @@
     "@coss/frame",
     "@coss/group",
     "@coss/input",
+    "@coss/input-otp",
     "@coss/input-group",
     "@coss/kbd",
     "@coss/label",

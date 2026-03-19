@@ -21,7 +21,7 @@ export default function Particle() {
           >
             <span
               className={cn(
-                "h-1 w-px bg-muted-foreground/70",
+                "h-1 w-px bg-muted-foreground/72",
                 i % skipInterval !== 0 && "h-0.5",
               )}
             />

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-input-otp-3",
+  "type": "registry:block",
+  "description": "OTP input with separator",
+  "registryDependencies": [
+    "@coss/input-otp"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-input-otp-3.tsx",
+      "content": "import {\n  InputOTP,\n  InputOTPGroup,\n  InputOTPSeparator,\n  InputOTPSlot,\n} from \"@/registry/default/ui/input-otp\";\n\nexport default function Particle() {\n  return (\n    <InputOTP aria-label=\"Verification code\" maxLength={6}>\n      <InputOTPGroup>\n        <InputOTPSlot index={0} />\n        <InputOTPSlot index={1} />\n        <InputOTPSlot index={2} />\n      </InputOTPGroup>\n      <InputOTPSeparator />\n      <InputOTPGroup>\n        <InputOTPSlot index={3} />\n        <InputOTPSlot index={4} />\n        <InputOTPSlot index={5} />\n      </InputOTPGroup>\n    </InputOTP>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input otp",
+    "input"
+  ]
+}

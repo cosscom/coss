@@ -10,7 +10,7 @@
   "registryDependencies": [
     "@coss/calendar",
     "@coss/popover",
-    "@coss/button"
+    "@coss/select"
   ],
   "files": [
     {

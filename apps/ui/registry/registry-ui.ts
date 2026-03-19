@@ -28,6 +28,7 @@ export const ui: Registry["items"] = [
       "@coss/frame",
       "@coss/group",
       "@coss/input",
+      "@coss/input-otp",
       "@coss/input-group",
       "@coss/kbd",
       "@coss/label",
@@ -382,6 +383,33 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "input",
+    type: "registry:ui",
+  },
+  {
+    css: {
+      "@keyframes caret-blink": {
+        "0%, 70%, to": {
+          opacity: "1",
+        },
+        "20%, 50%": {
+          opacity: "0",
+        },
+      },
+    },
+    cssVars: {
+      theme: {
+        "--animate-caret-blink": "1s ease-out infinite caret-blink",
+      },
+    },
+    dependencies: ["input-otp"],
+    files: [
+      {
+        path: "ui/input-otp.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "input-otp",
+    registryDependencies: ["@coss/separator"],
     type: "registry:ui",
   },
   {

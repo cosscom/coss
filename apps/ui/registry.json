@@ -28,6 +28,7 @@
         "@coss/frame",
         "@coss/group",
         "@coss/input",
+        "@coss/input-otp",
         "@coss/input-group",
         "@coss/kbd",
         "@coss/label",
@@ -443,6 +444,37 @@
         }
       ],
       "name": "input",
+      "type": "registry:ui"
+    },
+    {
+      "css": {
+        "@keyframes caret-blink": {
+          "0%, 70%, to": {
+            "opacity": "1"
+          },
+          "20%, 50%": {
+            "opacity": "0"
+          }
+        }
+      },
+      "cssVars": {
+        "theme": {
+          "--animate-caret-blink": "1s ease-out infinite caret-blink"
+        }
+      },
+      "dependencies": [
+        "input-otp"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/input-otp.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "input-otp",
+      "registryDependencies": [
+        "@coss/separator"
+      ],
       "type": "registry:ui"
     },
     {
@@ -3702,7 +3734,7 @@
       "registryDependencies": [
         "@coss/calendar",
         "@coss/popover",
-        "@coss/button"
+        "@coss/select"
       ],
       "type": "registry:block"
     },
@@ -6550,6 +6582,137 @@
       "name": "p-input-17",
       "registryDependencies": [
         "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Basic OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-1",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Large OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-2",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "OTP input with separator",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-3",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "label"
+      ],
+      "description": "OTP input with label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-4",
+      "registryDependencies": [
+        "@coss/input-otp",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Digits-only OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-5",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "validation"
+      ],
+      "description": "Invalid OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-6",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "validation"
+      ],
+      "description": "OTP input with auto validation",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-7",
+      "registryDependencies": [
+        "@coss/input-otp",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
