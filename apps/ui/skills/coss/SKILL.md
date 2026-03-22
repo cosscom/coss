@@ -56,10 +56,10 @@ Always apply before returning coss code:
 
 Rule references (each is a discoverable skill with its own SKILL.md):
 
-- `./rules/coss-styling/SKILL.md` — Tailwind tokens, icon conventions, data-slot selectors
-- `./rules/coss-forms/SKILL.md` — Field composition, validation, input patterns
-- `./rules/coss-composition/SKILL.md` — Trigger/popup hierarchies, grouped controls
-- `./rules/coss-migration/SKILL.md` — shadcn/Radix to coss/Base UI migration patterns
+- `./rules/styling/SKILL.md` — Tailwind tokens, icon conventions, data-slot selectors
+- `./rules/forms/SKILL.md` — Field composition, validation, input patterns
+- `./rules/composition/SKILL.md` — Trigger/popup hierarchies, grouped controls
+- `./rules/migration/SKILL.md` — shadcn/Radix to coss/Base UI migration patterns
 
 ## Component discovery
 
@@ -102,12 +102,12 @@ Use dedicated guides when requests involve these flows:
 
 High-risk primitive guides:
 
-- `./primitives/coss-dialog/SKILL.md`
-- `./primitives/coss-menu/SKILL.md`
-- `./primitives/coss-select/SKILL.md`
-- `./primitives/coss-form/SKILL.md`
-- `./primitives/coss-input-group/SKILL.md`
-- `./primitives/coss-toast/SKILL.md`
+- `./primitives/dialog/SKILL.md`
+- `./primitives/menu/SKILL.md`
+- `./primitives/select/SKILL.md`
+- `./primitives/form/SKILL.md`
+- `./primitives/input-group/SKILL.md`
+- `./primitives/toast/SKILL.md`
 
 ## Output Checklist
 
