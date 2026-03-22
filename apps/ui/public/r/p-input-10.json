@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-10",
-  "type": "registry:block",
   "description": "Input group mimicking a URL bar",
   "registryDependencies": [
     "@coss/button",
@@ -23,5 +22,6 @@
     "input",
     "input group",
     "popover"
-  ]
+  ],
+  "type": "registry:block"
 }

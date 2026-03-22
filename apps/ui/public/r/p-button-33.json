@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-33",
-  "type": "registry:block",
   "description": "Paired buttons (Cancel/Save)",
   "registryDependencies": [
     "@coss/button"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-20",
-  "type": "registry:block",
   "description": "Equalizer with vertical sliders",
   "registryDependencies": [
     "@coss/slider"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

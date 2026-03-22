@@ -15,7 +15,7 @@ Use this guide when installing, previewing, or discovering coss components via t
 ### Recommended bootstrap paths
 
 ```bash
-# New projects (recommended)
+# New projects (recommended — includes Inter + Geist Mono fonts + full theme)
 npx shadcn@latest init @coss/style
 
 # Existing projects - all primitives
@@ -27,6 +27,8 @@ npx shadcn@latest add @coss/style
 # Existing projects - primitives + color tokens
 npx shadcn@latest add @coss/ui @coss/colors-neutral
 ```
+
+`@coss/style` automatically installs `@coss/fonts` (Inter for `--font-sans` and `--font-heading`, Geist Mono for `--font-mono`), which configures all three font variables in `layout.tsx`. No manual font wiring needed.
 
 ### `add` (primary)
 

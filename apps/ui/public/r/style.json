@@ -2,7 +2,6 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "extends": "none",
   "name": "style",
-  "type": "registry:style",
   "description": "Complete coss theme: colors, sidebar, fonts, and base styles. Use with `npx shadcn init @coss/style` for full project setup.",
   "dependencies": [
     "@base-ui/react",
@@ -14,7 +13,8 @@
   ],
   "registryDependencies": [
     "utils",
-    "@coss/ui"
+    "@coss/ui",
+    "@coss/fonts"
   ],
   "cssVars": {
     "theme": {
@@ -122,5 +122,6 @@
         "font-family": "var(--font-mono)"
       }
     }
-  }
+  },
+  "type": "registry:style"
 }

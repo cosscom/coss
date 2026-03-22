@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "merge-props",
-  "type": "registry:lib",
   "dependencies": [
     "@base-ui/react"
   ],
@@ -11,5 +10,6 @@
       "content": "export { mergeProps } from \"@base-ui/react/merge-props\";\n",
       "type": "registry:lib"
     }
-  ]
+  ],
+  "type": "registry:lib"
 }

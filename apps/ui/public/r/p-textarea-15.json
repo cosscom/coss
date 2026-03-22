@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-15",
-  "type": "registry:block",
   "description": "Textarea with button aligned left",
   "registryDependencies": [
     "@coss/button",
@@ -20,5 +19,6 @@
   "categories": [
     "button",
     "textarea"
-  ]
+  ],
+  "type": "registry:block"
 }

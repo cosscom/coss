@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-avatar-6",
-  "type": "registry:block",
   "description": "Avatar with user icon fallback",
   "dependencies": [
     "lucide-react"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "avatar"
-  ]
+  ],
+  "type": "registry:block"
 }

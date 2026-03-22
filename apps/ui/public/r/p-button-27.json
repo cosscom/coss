@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-27",
-  "type": "registry:block",
   "description": "Button group with QR code icon and sign in",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "button",
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

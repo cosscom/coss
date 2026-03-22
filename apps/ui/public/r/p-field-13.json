@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-field-13",
-  "type": "registry:block",
   "description": "Field with checkbox group",
   "registryDependencies": [
     "@coss/checkbox",
@@ -25,5 +24,6 @@
     "field",
     "fieldset",
     "label"
-  ]
+  ],
+  "type": "registry:block"
 }

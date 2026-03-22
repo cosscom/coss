@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-drawer-2",
-  "type": "registry:block",
   "description": "Bottom drawer without drag bar",
   "registryDependencies": [
     "@coss/button",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "drawer"
-  ]
+  ],
+  "type": "registry:block"
 }

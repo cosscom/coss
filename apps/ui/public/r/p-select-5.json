@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-select-5",
-  "type": "registry:block",
   "description": "Select without item alignment",
   "registryDependencies": [
     "@coss/select"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "select"
-  ]
+  ],
+  "type": "registry:block"
 }

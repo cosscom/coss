@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-12",
-  "type": "registry:block",
   "description": "Calendar with week numbers",
   "registryDependencies": [
     "@coss/calendar"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "calendar"
-  ]
+  ],
+  "type": "registry:block"
 }

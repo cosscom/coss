@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-date-picker-2",
-  "type": "registry:block",
   "description": "Date range picker",
   "dependencies": [
     "date-fns",
@@ -27,5 +26,6 @@
     "calendar",
     "popover",
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

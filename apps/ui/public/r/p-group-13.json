@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-13",
-  "type": "registry:block",
   "description": "Group with menu",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
     "dropdown",
     "group",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

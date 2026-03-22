@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-badge-4",
-  "type": "registry:block",
   "description": "Destructive badge",
   "registryDependencies": [
     "@coss/badge"
@@ -16,5 +15,6 @@
   "categories": [
     "badge",
     "error"
-  ]
+  ],
+  "type": "registry:block"
 }

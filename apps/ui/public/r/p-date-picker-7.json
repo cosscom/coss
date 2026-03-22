@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-date-picker-7",
-  "type": "registry:block",
   "description": "Multiple dates picker",
   "dependencies": [
     "date-fns",
@@ -29,5 +28,6 @@
     "popover",
     "button",
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

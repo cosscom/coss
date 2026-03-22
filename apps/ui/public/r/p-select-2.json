@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-select-2",
-  "type": "registry:block",
   "description": "Small select",
   "registryDependencies": [
     "@coss/select"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "select"
-  ]
+  ],
+  "type": "registry:block"
 }

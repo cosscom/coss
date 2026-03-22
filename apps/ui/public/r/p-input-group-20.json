@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-20",
-  "type": "registry:block",
   "description": "Input group with search icon",
   "dependencies": [
     "lucide-react"
@@ -23,5 +22,6 @@
     "input",
     "input group",
     "search"
-  ]
+  ],
+  "type": "registry:block"
 }

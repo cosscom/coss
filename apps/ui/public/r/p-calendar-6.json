@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-6",
-  "type": "registry:block",
   "description": "Calendar with Combobox dropdown for month/year",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "calendar",
     "combobox"
-  ]
+  ],
+  "type": "registry:block"
 }

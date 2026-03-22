@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-otp-4",
-  "type": "registry:block",
   "description": "OTP input with label",
   "registryDependencies": [
     "@coss/input-otp",
@@ -18,5 +17,6 @@
     "input otp",
     "input",
     "label"
-  ]
+  ],
+  "type": "registry:block"
 }

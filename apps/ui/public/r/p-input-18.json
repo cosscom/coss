@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-18",
-  "type": "registry:block",
   "description": "Input with characters remaining counter",
   "registryDependencies": [
     "@coss/field",
@@ -20,5 +19,6 @@
   "categories": [
     "field",
     "input"
-  ]
+  ],
+  "type": "registry:block"
 }

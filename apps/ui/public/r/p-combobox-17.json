@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-combobox-17",
-  "type": "registry:block",
   "description": "Timezone combobox with search input",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
     "combobox",
     "input",
     "timezone"
-  ]
+  ],
+  "type": "registry:block"
 }

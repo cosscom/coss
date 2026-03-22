@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-4",
-  "type": "registry:block",
   "description": "Large group",
   "registryDependencies": [
     "@coss/button",
@@ -17,5 +16,6 @@
   ],
   "categories": [
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-28",
-  "type": "registry:block",
   "description": "Message composer with attachment buttons",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
     "input group",
     "textarea",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

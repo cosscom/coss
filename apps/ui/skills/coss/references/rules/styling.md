@@ -12,6 +12,7 @@ Use this guide when writing or updating coss primitives, particles, and docs exa
 - Avoid redundant classes that defaults already cover (for example `border-border` when border color is already inherited).
 - Before adding layout classes, check whether the target part already provides that layout.
 - Use Tailwind v4 syntax and conventions in coss examples and snippets.
+- **Do not replace `--alpha()` with `color-mix()` or `rgba()`.** `--alpha()` is a valid Tailwind v4 theme function used throughout coss token definitions (e.g. `--alpha(var(--color-black) / 8%)`). It is processed by Tailwind at build time — it is not invalid CSS.
 
 ## coss-specific Expectations
 
@@ -27,9 +28,30 @@ Apply this section only when the task touches global theme/layout setup (not nor
 
 - Preserve coss token architecture. Do not replace coss semantic variables with ad-hoc color classes/tokens.
 - When providing manual theme setup, include complete token blocks and variable mappings; avoid partial copy/paste snippets that break variable chains.
-- Keep font variables aligned with coss expectations (`--font-sans`, `--font-heading`, `--font-mono`) when changing typography setup.
 - For Base UI portal layering, keep an isolated application root wrapper (for example `isolate` on the root container).
 - For iOS Safari compatibility, ensure `body` has `position: relative` when configuring global layout for portaled backdrops.
+
+### Font variable contract
+
+coss components use three CSS custom properties for typography:
+
+| Variable | Used by | Default fallback |
+|---|---|---|
+| `--font-sans` | Body text, buttons, labels, most UI | `ui-sans-serif, system-ui, sans-serif` |
+| `--font-mono` | `<code>`, `<kbd>`, `<pre>`, code blocks | `ui-monospace, monospace` |
+| `--font-heading` | Dialog/AlertDialog titles, headings | Defaults to Inter (same as `--font-sans`) |
+
+**CLI setup (recommended):** `npx shadcn@latest init @coss/style` automatically installs `@coss/fonts` — Inter for `--font-sans` and `--font-heading`, Geist Mono for `--font-mono` — via `registry:font` items and configures them in `layout.tsx`.
+
+**Manual / custom font setup:** When using `next/font`, the `variable` option must match coss expectations exactly:
+
+```tsx
+const inter = Inter({ variable: "--font-sans", subsets: ["latin"] });
+const interHeading = Inter({ variable: "--font-heading", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
+```
+
+**Common pitfall:** Next.js starters default to `--font-geist-sans` and `--font-geist-mono`, which do not match coss's `--font-sans` / `--font-mono`. Fonts will silently fall back to system UI. Always rename the variables or remap them.
 
 ## Do / Don't
 
@@ -58,6 +80,12 @@ Apply this section only when the task touches global theme/layout setup (not nor
   Save
   <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5" />
 </Button>
+
+// Do — --alpha() is valid Tailwind v4 syntax, leave it as-is
+border: "--alpha(var(--color-black) / 8%)"
+
+// Don't — do not "fix" --alpha() into color-mix or rgba
+border: "color-mix(in srgb, var(--color-black) 8%, transparent)"
 ```
 
 ## Check Before Finalizing

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-card-3",
-  "type": "registry:block",
   "description": "Authentication card with separators",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
   "categories": [
     "card",
     "form"
-  ]
+  ],
+  "type": "registry:block"
 }

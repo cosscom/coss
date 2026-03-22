@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-2",
-  "type": "registry:block",
   "description": "Calendar with custom cell size",
   "registryDependencies": [
     "@coss/calendar"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "calendar"
-  ]
+  ],
+  "type": "registry:block"
 }

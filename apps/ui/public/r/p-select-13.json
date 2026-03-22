@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-select-13",
-  "type": "registry:block",
   "description": "Timezone select",
   "registryDependencies": [
     "@coss/select"
@@ -20,5 +19,6 @@
     "select",
     "time",
     "timezone"
-  ]
+  ],
+  "type": "registry:block"
 }

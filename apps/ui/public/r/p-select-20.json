@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-select-20",
-  "type": "registry:block",
   "description": "Rich select with avatars and usernames",
   "registryDependencies": [
     "@coss/avatar",
@@ -20,5 +19,6 @@
   "categories": [
     "select",
     "avatar"
-  ]
+  ],
+  "type": "registry:block"
 }

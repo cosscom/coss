@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-card-11",
-  "type": "registry:block",
   "description": "CardFrame with header action",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
   "categories": [
     "card",
     "frame"
-  ]
+  ],
+  "type": "registry:block"
 }

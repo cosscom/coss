@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-31",
-  "type": "registry:block",
   "description": "Button with keyboard shortcut indicator",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "button",
     "kbd"
-  ]
+  ],
+  "type": "registry:block"
 }

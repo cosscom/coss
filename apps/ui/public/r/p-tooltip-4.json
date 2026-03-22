@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tooltip-4",
-  "type": "registry:block",
   "description": "Vertical group with animated tooltip",
   "registryDependencies": [
     "@coss/button",
@@ -17,5 +16,6 @@
   ],
   "categories": [
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

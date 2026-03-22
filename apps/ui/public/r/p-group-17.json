@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-17",
-  "type": "registry:block",
   "description": "Group with input and currency text",
   "registryDependencies": [
     "@coss/group",
@@ -18,5 +17,6 @@
   "categories": [
     "group",
     "input"
-  ]
+  ],
+  "type": "registry:block"
 }

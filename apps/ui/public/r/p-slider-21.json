@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-21",
-  "type": "registry:block",
   "description": "Object position sliders with reset",
   "dependencies": [
     "lucide-react"
@@ -27,5 +26,6 @@
     "slider",
     "number field",
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

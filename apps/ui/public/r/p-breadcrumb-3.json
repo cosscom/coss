@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-breadcrumb-3",
-  "type": "registry:block",
   "description": "Breadcrumb with home icon for home link only",
   "dependencies": [
     "lucide-react"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "breadcrumb"
-  ]
+  ],
+  "type": "registry:block"
 }

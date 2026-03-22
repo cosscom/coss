@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-drawer-13",
-  "type": "registry:block",
   "description": "Responsive actions menu: menu on desktop, drawer on mobile",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
   "categories": [
     "drawer",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }

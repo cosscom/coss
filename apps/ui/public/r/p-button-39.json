@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-39",
-  "type": "registry:block",
   "description": "Hamburger menu button with animated icon",
   "registryDependencies": [
     "@coss/button"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

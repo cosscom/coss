@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-pagination-2",
-  "type": "registry:block",
   "description": "Pagination with previous and next buttons only",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "pagination"
-  ]
+  ],
+  "type": "registry:block"
 }

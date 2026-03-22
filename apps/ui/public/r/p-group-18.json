@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-18",
-  "type": "registry:block",
   "description": "Group with select and input",
   "registryDependencies": [
     "@coss/group",
@@ -19,5 +18,6 @@
     "group",
     "input",
     "select"
-  ]
+  ],
+  "type": "registry:block"
 }

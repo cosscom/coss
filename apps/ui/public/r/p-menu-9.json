@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-menu-9",
-  "type": "registry:block",
   "description": "Menu with checkbox items as switches",
   "registryDependencies": [
     "@coss/button",
@@ -18,5 +17,6 @@
     "dropdown",
     "menu",
     "switch"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-scroll-area-1",
-  "type": "registry:block",
   "description": "Basic scroll area",
   "registryDependencies": [
     "@coss/scroll-area"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "scroll area"
-  ]
+  ],
+  "type": "registry:block"
 }

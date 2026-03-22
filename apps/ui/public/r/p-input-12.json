@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-12",
-  "type": "registry:block",
   "description": "Input group with start loading spinner",
   "registryDependencies": [
     "@coss/input-group",
@@ -22,5 +21,6 @@
     "input group",
     "spinner",
     "loading"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-drawer-10",
-  "type": "registry:block",
   "description": "Edit profile form with default and bare footer variants",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
   ],
   "categories": [
     "drawer"
-  ]
+  ],
+  "type": "registry:block"
 }
