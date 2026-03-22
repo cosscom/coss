@@ -1,6 +1,6 @@
 ---
 name: coss
-description: Helps implement coss ui primitives correctly in app code. Use when choosing, composing, or troubleshooting coss components (especially when migrating shadcn-style patterns to coss/Base UI).
+description: Helps implement coss UI components correctly. Use when building UIs with coss primitives (buttons, dialogs, selects, forms, menus, tabs, inputs, toasts, etc.), migrating from shadcn/Radix to coss/Base UI, composing trigger-based overlays, or troubleshooting coss component behavior. Covers imports, accessibility, Tailwind styling, and common pitfalls.
 compatibility: Requires React 19+, Tailwind CSS v4, and @base-ui-components/react. Designed for Next.js projects using the coss component registry.
 metadata:
   author: cosscom
@@ -54,12 +54,12 @@ Always apply before returning coss code:
 - For manual install guidance, include all required dependencies and local component files referenced by imports.
 - Prefer styled coss exports first; use `*Primitive` exports only when custom composition/styling requires it.
 
-Rule references (each is a discoverable skill with its own SKILL.md):
+Rule references (read on demand when the task touches these areas):
 
-- `./rules/styling/SKILL.md` — Tailwind tokens, icon conventions, data-slot selectors
-- `./rules/forms/SKILL.md` — Field composition, validation, input patterns
-- `./rules/composition/SKILL.md` — Trigger/popup hierarchies, grouped controls
-- `./rules/migration/SKILL.md` — shadcn/Radix to coss/Base UI migration patterns
+- `./references/rules/styling.md` — Tailwind tokens, icon conventions, data-slot selectors
+- `./references/rules/forms.md` — Field composition, validation, input patterns
+- `./references/rules/composition.md` — Trigger/popup hierarchies, grouped controls
+- `./references/rules/migration.md` — shadcn/Radix to coss/Base UI migration patterns
 
 ## Component discovery
 
@@ -100,14 +100,14 @@ Use dedicated guides when requests involve these flows:
 - **Form-heavy flows**: form/input-group
 - **Feedback flows**: toast
 
-High-risk primitive guides:
+High-risk primitive guides (read when the request involves these):
 
-- `./primitives/dialog/SKILL.md`
-- `./primitives/menu/SKILL.md`
-- `./primitives/select/SKILL.md`
-- `./primitives/form/SKILL.md`
-- `./primitives/input-group/SKILL.md`
-- `./primitives/toast/SKILL.md`
+- `./references/primitives/dialog.md`
+- `./references/primitives/menu.md`
+- `./references/primitives/select.md`
+- `./references/primitives/form.md`
+- `./references/primitives/input-group.md`
+- `./references/primitives/toast.md`
 
 ## Output Checklist
 
