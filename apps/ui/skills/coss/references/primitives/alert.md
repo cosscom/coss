@@ -26,7 +26,7 @@ Manual deps from docs:
 ## Canonical imports
 
 ```tsx
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert"
 ```
 
 ## Minimal pattern
@@ -56,18 +56,17 @@ Alert with semantic icon (do NOT use `aria-hidden` — icon conveys status):
 
 Variants: `default`, `info`, `success`, `warning`, `error`.
 
-Alert with action buttons:
+Alert with action buttons (use `AlertAction`):
 
 ```tsx
 <Alert>
-  <AlertTitle>New update available</AlertTitle>
-  <AlertDescription>
-    Version 2.0 has been released.
-    <div className="mt-3 flex gap-2">
-      <Button size="xs">Update now</Button>
-      <Button size="xs" variant="outline">Later</Button>
-    </div>
-  </AlertDescription>
+  <InfoIcon />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>Describe what can be done about it here.</AlertDescription>
+  <AlertAction>
+    <Button size="xs" variant="ghost">Dismiss</Button>
+    <Button size="xs">Ok</Button>
+  </AlertAction>
 </Alert>
 ```
 

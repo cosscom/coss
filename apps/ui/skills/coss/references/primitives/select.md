@@ -28,9 +28,12 @@ npm install @base-ui/react
 ```tsx
 import {
   Select,
+  SelectGroup,
+  SelectGroupLabel,
   SelectItem,
   SelectLabel,
   SelectPopup,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"

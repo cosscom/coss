@@ -28,11 +28,18 @@ npm install @base-ui/react
 ```tsx
 import {
   Combobox,
+  ComboboxClear,
+  ComboboxCollection,
   ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxGroupLabel,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
+  ComboboxSeparator,
+  ComboboxValue,
+  useComboboxFilter,
 } from "@/components/ui/combobox"
 ```
 

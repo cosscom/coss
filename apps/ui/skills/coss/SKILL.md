@@ -63,7 +63,7 @@ Rule references (read on demand when the task touches these areas):
 
 ## Component discovery
 
-To quickly find the right primitive for a task, consult the component registry index:
+All 53 primitives have dedicated reference guides at `./references/primitives/<name>.md`. To find the right one for a task, consult the component registry index:
 
 - `./references/component-registry.md`
 
@@ -72,7 +72,7 @@ To quickly find the right primitive for a task, consult the component registry i
 1. Identify user intent (single primitive, composed flow, form flow, overlay flow, feedback flow).
 2. Consult `references/component-registry.md` to identify candidate primitives.
 3. Select primitives from coss docs first; avoid custom fallback unless needed.
-4. Check at least one particle example for practical composition patterns.
+4. Check at least one particle example for practical composition patterns. Particle files live at `apps/ui/registry/default/particles/p-<name>-<N>.tsx` (e.g. `p-dialog-1.tsx`).
 5. Write minimal code using documented imports/props.
 6. Self-check accessibility and composition invariants.
 
@@ -94,20 +94,16 @@ Quick manual pattern:
 
 ## Primitive Guidance
 
-Use dedicated guides when requests involve these flows:
+Every primitive has a reference guide at `./references/primitives/<name>.md` with imports, minimal patterns, inline code examples, pitfalls, and particle references. Use the component registry to find the right file.
 
-- **Overlay flows**: dialog/menu/select
-- **Form-heavy flows**: form/input-group
-- **Feedback flows**: toast
+High-risk primitives (read these guides first -- they have the most composition gotchas):
 
-High-risk primitive guides (read when the request involves these):
-
-- `./references/primitives/dialog.md`
-- `./references/primitives/menu.md`
-- `./references/primitives/select.md`
-- `./references/primitives/form.md`
-- `./references/primitives/input-group.md`
-- `./references/primitives/toast.md`
+- `./references/primitives/dialog.md` — modal overlays, form-in-dialog, responsive dialog/drawer
+- `./references/primitives/menu.md` — dropdown actions, checkbox/radio items, submenus
+- `./references/primitives/select.md` — items-first pattern, multiple, object values, groups
+- `./references/primitives/form.md` — Field composition, validation, submission
+- `./references/primitives/input-group.md` — addons, DOM order invariant, textarea layouts
+- `./references/primitives/toast.md` — toastManager (not Sonner), anchored toasts, providers
 
 ## Output Checklist
 
