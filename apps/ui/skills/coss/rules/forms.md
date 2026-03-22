@@ -4,7 +4,7 @@ Use this when implementing fields, input groups, validation states, and form exa
 
 ## Core Rules
 
-- Prefer coss field composition components when available (`Field`, `FieldLabel`, `FieldError`).
+- For form-bound controls, default to `Field` composition (`Field`, `FieldLabel`, `FieldDescription`, `FieldError`) instead of standalone inputs.
 - Always specify `type` on input-like controls where relevant (`type="text"`, `type="email"`, etc.).
 - Always specify `type` on buttons (`button`, `submit`, or `reset`) instead of relying on browser defaults.
 - Preserve accessible labelling:
@@ -19,6 +19,10 @@ Use this when implementing fields, input groups, validation states, and form exa
 ## Input OTP Rule
 
 - Keep `maxLength` synchronized with rendered `InputOTPSlot` count.
+
+## Textarea Rule
+
+- coss `Textarea` already uses Base UI field control semantics internally; in normal form flows, use `Textarea` directly inside `Field` and avoid manual `FieldControl` render wiring unless a custom control implementation is truly needed.
 
 ## Do / Don't
 
@@ -42,4 +46,8 @@ Use this when implementing fields, input groups, validation states, and form exa
   <InputGroupInput type="text" />
 </InputGroup>
 ```
+
+## Further reading
+
+- Base UI Forms handbook: `https://base-ui.com/react/handbook/forms.md`
 

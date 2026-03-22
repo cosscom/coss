@@ -49,6 +49,12 @@ import {
 
 `InputGroupAddon` must be after `InputGroupInput`/`InputGroupTextarea` in DOM order for proper focus behavior.
 
+## Patterns from coss particles
+
+- **Icon/text addons**: use `InputGroupAddon` + `InputGroupText` for static prefixes/suffixes (search, URL, currency, domains).
+- **Interactive addons**: compose buttons, menu triggers, clear actions, and shortcut hints inside addon slots when actions belong to the input context.
+- **Textarea/editor layouts**: use `InputGroupTextarea` with block-start/block-end addons while keeping input/textarea first in DOM order.
+
 ## Common pitfalls
 
 - Using `Input`/`Textarea` directly instead of `InputGroupInput`/`InputGroupTextarea`.

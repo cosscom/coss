@@ -45,6 +45,32 @@ Wrap app content with both:
 </ToastProvider>
 ```
 
+## Canonical imports
+
+```tsx
+import {
+  AnchoredToastProvider,
+  ToastProvider,
+  anchoredToastManager,
+  toastManager,
+} from "@/components/ui/toast"
+```
+
+## Minimal pattern
+
+```tsx
+toastManager.add({
+  title: "Saved",
+  description: "Your changes have been updated.",
+})
+```
+
+## Patterns from coss particles
+
+- **Stacked notifications**: use `toastManager.add(...)` for global app feedback with typed variants and optional actions.
+- **Anchored notifications**: use `anchoredToastManager.add(...)` with `positionerProps.anchor` for contextual, element-tied toasts.
+- **Lifecycle-driven flows**: use loading/promise patterns and explicit close/update handling for async operations.
+
 ## Stacked usage
 
 ```tsx

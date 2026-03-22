@@ -61,8 +61,12 @@ const items = [
 
 Prefer this `items`-first pattern for migration work to keep options known before hydration and avoid SSR mismatch edge cases.
 
+For form-bound selects, prefer wrapping with `Field` + `FieldLabel` + `FieldError` so value, label, and validation stay semantically linked.
+
 ## Patterns from coss particles
 
+- **Field composition**: in forms, place `Select` inside `Field` wrappers (see `p-select-23`, `p-form-1`, `p-form-2`).
+- **Trigger composition**: keep `SelectTrigger` as the interaction entry point and avoid Radix `asChild` assumptions from other primitives; where composition is needed, prefer documented coss/Base UI `render` patterns for supported parts.
 - **Multiple selection**: use `multiple` with array values (for example `defaultValue={["javascript", "typescript"]}`) and a custom `SelectValue` render function for compact summaries.
 - **Object values**: use full objects in `SelectItem value={item}` with `itemToStringValue` for stable form value serialization.
 - **Grouped options**: use `SelectGroup` + `SelectGroupLabel`; combine with `SelectSeparator` between groups when needed.
