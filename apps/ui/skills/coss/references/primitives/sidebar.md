@@ -82,13 +82,13 @@ Sidebar with grouped navigation and footer:
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/dashboard">Dashboard</a>
+              <SidebarMenuButton render={<a href="/dashboard" />}>
+                Dashboard
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="/projects">Projects</a>
+              <SidebarMenuButton render={<a href="/projects" />}>
+                Projects
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -112,6 +112,7 @@ Key composition rules:
 - Wrap app with `SidebarProvider` at the layout level.
 - Use `SidebarContent` (not "SidebarPanel") as the scrollable body between header/footer.
 - Navigation items use `SidebarMenu` > `SidebarMenuItem` > `SidebarMenuButton`.
+- For link items, use `render` composition: `<SidebarMenuButton render={<a href="..." />}>`. Do not use `asChild` -- sidebar follows the same `render` pattern as all other coss primitives.
 - Use `SidebarTrigger` for the collapse/expand toggle.
 - Use `SidebarInset` for the main content area next to the sidebar.
 - `SidebarRail` adds a slim hover-to-expand rail in collapsed state.
