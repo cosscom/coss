@@ -1,3 +1,8 @@
+---
+name: coss-cli
+description: Install, preview, and discover coss components via the shadcn CLI. Use when adding coss primitives to a project, running dry-run previews, or troubleshooting CLI install commands.
+---
+
 # coss CLI Reference (Focused)
 
 Use this guide when installing, previewing, or discovering coss components via the shadcn CLI.
