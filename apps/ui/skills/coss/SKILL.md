@@ -1,7 +1,7 @@
 ---
 name: coss
 description: Helps implement coss UI components correctly. Use when building UIs with coss primitives (buttons, dialogs, selects, forms, menus, tabs, inputs, toasts, etc.), migrating from shadcn/Radix to coss/Base UI, composing trigger-based overlays, or troubleshooting coss component behavior. Covers imports, accessibility, Tailwind styling, and common pitfalls.
-compatibility: Requires React 19+, Tailwind CSS v4, and @base-ui-components/react. Designed for Next.js projects using the coss component registry.
+compatibility: Requires Tailwind CSS v4, and @base-ui-components/react. Designed for React projects using the coss component registry.
 metadata:
   author: cosscom
   version: "1.0"
