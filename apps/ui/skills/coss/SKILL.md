@@ -1,7 +1,10 @@
 ---
 name: coss
 description: Helps implement coss ui primitives correctly in app code. Use when choosing, composing, or troubleshooting coss components (especially when migrating shadcn-style patterns to coss/Base UI).
-user-invocable: false
+compatibility: Requires React 19+, Tailwind CSS v4, and @base-ui-components/react. Designed for Next.js projects using the coss component registry.
+metadata:
+  author: cosscom
+  version: "1.0"
 ---
 
 # coss ui
@@ -51,24 +54,31 @@ Always apply before returning coss code:
 - For manual install guidance, include all required dependencies and local component files referenced by imports.
 - Prefer styled coss exports first; use `*Primitive` exports only when custom composition/styling requires it.
 
-Rule references:
+Rule references (each is a discoverable skill with its own SKILL.md):
 
-- `./rules/styling.md`
-- `./rules/forms.md`
-- `./rules/composition.md`
-- `./rules/base-vs-radix.md`
+- `./rules/coss-styling/SKILL.md` — Tailwind tokens, icon conventions, data-slot selectors
+- `./rules/coss-forms/SKILL.md` — Field composition, validation, input patterns
+- `./rules/coss-composition/SKILL.md` — Trigger/popup hierarchies, grouped controls
+- `./rules/coss-migration/SKILL.md` — shadcn/Radix to coss/Base UI migration patterns
+
+## Component discovery
+
+To quickly find the right primitive for a task, consult the component registry index:
+
+- `./references/component-registry.md`
 
 ## Usage workflow
 
 1. Identify user intent (single primitive, composed flow, form flow, overlay flow, feedback flow).
-2. Select primitives from coss docs first; avoid custom fallback unless needed.
-3. Check at least one particle example for practical composition patterns.
-4. Write minimal code using documented imports/props.
-5. Self-check accessibility and composition invariants.
+2. Consult `references/component-registry.md` to identify candidate primitives.
+3. Select primitives from coss docs first; avoid custom fallback unless needed.
+4. Check at least one particle example for practical composition patterns.
+5. Write minimal code using documented imports/props.
+6. Self-check accessibility and composition invariants.
 
 ## Installation reference
 
-See `./cli.md` for full install/discovery workflow.
+See `./references/cli.md` for full install/discovery workflow.
 
 Quick CLI pattern:
 
@@ -92,12 +102,12 @@ Use dedicated guides when requests involve these flows:
 
 High-risk primitive guides:
 
-- `./primitives/dialog/SKILL.md`
-- `./primitives/menu/SKILL.md`
-- `./primitives/select/SKILL.md`
-- `./primitives/form/SKILL.md`
-- `./primitives/input-group/SKILL.md`
-- `./primitives/toast/SKILL.md`
+- `./primitives/coss-dialog/SKILL.md`
+- `./primitives/coss-menu/SKILL.md`
+- `./primitives/coss-select/SKILL.md`
+- `./primitives/coss-form/SKILL.md`
+- `./primitives/coss-input-group/SKILL.md`
+- `./primitives/coss-toast/SKILL.md`
 
 ## Output Checklist
 
