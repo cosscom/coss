@@ -65,6 +65,25 @@ Button with icon and text (no opacity on the icon):
 
 Sizes: `xs`, `sm`, `default`, `lg`, `icon-xs`, `icon-sm`, `icon`, `icon-lg`.
 
+### Loading state
+
+Built-in `loading` prop (disables and shows spinner automatically):
+
+```tsx
+<Button loading={isLoading} onClick={handleClick}>Submit</Button>
+```
+
+Composite approach (manual `Spinner` + `disabled`):
+
+```tsx
+<Button disabled>
+  <Spinner />
+  Loading...
+</Button>
+```
+
+Prefer the `loading` prop for typical async actions. Use the composite approach when you need custom spinner placement or label.
+
 ### More examples
 
 - default: `p-button-1`
@@ -85,4 +104,6 @@ Sizes: `xs`, `sm`, `default`, `lg`, `icon-xs`, `icon-sm`, `icon`, `icon-lg`.
 
 ## Useful particle references
 
-See particles `p-button-1` through `p-button-8` for all variant/size combinations.
+- variants/sizes: `p-button-1` through `p-button-8`
+- composite loading (Spinner + disabled): `p-button-18`
+- built-in loading prop: `p-button-41`
