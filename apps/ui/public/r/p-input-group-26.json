@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-26",
-  "type": "registry:block",
   "description": "Password input with strength indicator",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
     "input",
     "input group",
     "label"
-  ]
+  ],
+  "type": "registry:block"
 }

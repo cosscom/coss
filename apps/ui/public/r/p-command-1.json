@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-command-1",
-  "type": "registry:block",
   "description": "Command palette with dialog",
   "dependencies": [
     "lucide-react"
@@ -21,5 +20,6 @@
   "categories": [
     "command",
     "dialog"
-  ]
+  ],
+  "type": "registry:block"
 }

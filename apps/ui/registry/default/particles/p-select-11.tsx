@@ -19,7 +19,6 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Select a framework", value: null },
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
@@ -47,7 +46,7 @@ export default function Particle() {
           required
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Select a framework" />
           </SelectTrigger>
           <SelectPopup>
             {items.map(({ label, value }) => (

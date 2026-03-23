@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-accordion-4",
-  "type": "registry:block",
   "description": "Controlled accordion",
   "registryDependencies": [
     "@coss/accordion",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "accordion"
-  ]
+  ],
+  "type": "registry:block"
 }

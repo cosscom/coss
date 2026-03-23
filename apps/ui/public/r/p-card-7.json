@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-card-7",
-  "type": "registry:block",
   "description": "Framed card with no rounded bottom",
   "dependencies": [
     "lucide-react"
@@ -27,5 +26,6 @@
   "categories": [
     "card",
     "form"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,9 +1,15 @@
 import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { RegistryItem } from "shadcn/schema";
 import { Project, ScriptKind } from "ts-morph";
 import { Index } from "@/registry/__index__";
+
+type RegistryFile = {
+  path: string;
+  type?: string;
+  target?: string;
+  content?: string;
+};
 
 export function getRegistryComponent(name: string) {
   return Index[name]?.component;
@@ -18,15 +24,14 @@ export async function getRegistryItem(name: string) {
 
   // Convert all file paths to object.
   // TODO: remove when we migrate to new registry.
-  item.files = item.files.map((file: unknown) =>
-    typeof file === "string" ? { path: file } : file,
-  );
+  if (Array.isArray(item.files)) {
+    item.files = item.files.map((file: unknown) =>
+      typeof file === "string" ? { path: file } : file,
+    );
+  }
 
-  // Type assertion for now - TODO: implement proper validation
-  const typedItem = item as RegistryItem;
-
-  const files = typedItem.files || [];
-  const processedFiles = [];
+  const files: RegistryFile[] = Array.isArray(item.files) ? item.files : [];
+  const processedFiles: RegistryFile[] = [];
 
   for (const file of files) {
     const content = await getFileContent(file);
@@ -43,12 +48,12 @@ export async function getRegistryItem(name: string) {
   const finalFiles = fixFilePaths(processedFiles);
 
   return {
-    ...typedItem,
+    ...item,
     files: finalFiles,
   };
 }
 
-async function getFileContent(file: { path: string; type?: string }) {
+async function getFileContent(file: RegistryFile) {
   const raw = await fs.readFile(file.path, "utf-8");
 
   const project = new Project({
@@ -80,7 +85,7 @@ async function getFileContent(file: { path: string; type?: string }) {
   return code;
 }
 
-function getFileTarget(file: { path: string; type?: string; target?: string }) {
+function getFileTarget(file: RegistryFile) {
   let target = file.target;
 
   if (!target || target === "") {
@@ -116,14 +121,7 @@ async function createTempSourceFile(filename: string) {
   return path.join(dir, filename);
 }
 
-function fixFilePaths(
-  files: Array<{
-    path: string;
-    type?: string;
-    target?: string;
-    content?: string;
-  }>,
-) {
+function fixFilePaths(files: RegistryFile[]) {
   if (!files) {
     return [];
   }

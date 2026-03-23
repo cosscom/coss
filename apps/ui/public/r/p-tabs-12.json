@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tabs-12",
-  "type": "registry:block",
   "description": "Tabs with icon only and count badge",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "tabs",
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

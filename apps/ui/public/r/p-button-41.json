@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-41",
-  "type": "registry:block",
   "description": "Button using the built-in loading prop",
   "registryDependencies": [
     "@coss/button"
@@ -16,5 +15,6 @@
   "categories": [
     "button",
     "loading"
-  ]
+  ],
+  "type": "registry:block"
 }

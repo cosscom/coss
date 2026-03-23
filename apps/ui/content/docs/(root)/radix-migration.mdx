@@ -1,7 +1,7 @@
 ---
 title: Migrating from Radix
 slug: radix-migration
-description: A comprehensive guide for migrating from Radix-based libraries to coss ui components.
+description: A practical guide for migrating from Radix-based libraries to coss ui components.
 ---
 
 This guide is for developers who already have applications built on Radix-based libraries — frameworks that wrap Radix primitives — and **want to adopt coss ui**.
@@ -22,7 +22,7 @@ This guide is for developers who already have applications built on Radix-based 
 
 ### The asChild to render Pattern
 
-The most common change across all components is replacing Radix UI's `asChild` prop with Base UI's `render` prop:
+One of the most common migration changes is replacing Radix UI's `asChild` prop with Base UI's `render` prop (especially on trigger/close/composed parts):
 
 <span data-lib="radix-ui">
 ```tsx title="Radix"
@@ -32,6 +32,8 @@ The most common change across all components is replacing Radix UI's `asChild` p
 </DropdownMenuTrigger>
 ```
 </span>
+
+Not every component uses this pattern. Apply it where the coss component supports `render`.
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
@@ -608,15 +610,15 @@ Base UI introduces separate parts — `ProgressLabel`, `ProgressValue`, `Progres
 
 **Prop Mapping:**
 
-| Component     | Radix UI Prop          | Base UI Prop    |
-| ------------- | ---------------------- | --------------- |
-| `Select`      | `items`                | `items`         |
-| `SelectValue` | `placeholder`          | _removed_       |
-| `SelectPopup` | `alignItemWithTrigger` | _no equivalent_ |
+| Component     | Radix UI Prop                                  | coss ui / Base UI Prop                      |
+| ------------- | ---------------------------------------------- | ------------------------------------------- |
+| `Select`      | options inferred from `SelectItem` children    | `items` prop (recommended for SSR/hydration) |
+| `SelectValue` | `placeholder`                                  | `placeholder` (supported on `SelectValue`)         |
+| `SelectPopup` | _no equivalent_                                | `alignItemWithTrigger`                      |
 
 **Quick Checklist:**
 - Set `items` prop on `Select`
-- Remove `placeholder` from `Select`
+- Keep placeholder on `SelectValue` when needed
 - Prefer `SelectPopup` instead of `SelectContent`
 - If you used `asChild` on parts, switch to the `render` prop
 
@@ -634,7 +636,9 @@ So, for example, if you were using the `default` size in shadcn/ui and you want 
 
 **Additional Notes:**
 
-Base UI introduces the `alignItemWithTrigger` prop to control whether the `SelectContent` overlaps the `SelectTrigger` so the selected item's text is aligned with the trigger's value text.
+`alignItemWithTrigger` controls whether the popup aligns the selected item with the trigger text. In coss ui this prop is available on `SelectPopup` (legacy alias: `SelectContent`).
+
+`SelectValue` supports a `placeholder` prop. If you need in-popup clearing, prefer adding a `null` option item instead of relying on placeholder alone.
 
 **Comparison Example:**
 
@@ -658,13 +662,15 @@ Base UI introduces the `alignItemWithTrigger` prop to control whether the `Selec
 ```tsx title="coss ui"
 // [!code word:alignItemWithTrigger={false}]
 // [!code word:items:2]
+const items = [
+  { label: "Select a framework", value: null },
+  { label: "Next.js", value: "next" },
+  { label: "Vite", value: "vite" },
+  { label: "Astro", value: "astro" },
+]
+
 <Select
-  items={[
-    { label: "Select a framework", value: null },
-    { label: "Next.js", value: "next" },
-    { label: "Vite", value: "vite" },
-    { label: "Astro", value: "astro" },
-  ]}
+  items={items}
 >
   <SelectTrigger>
     <SelectValue />
@@ -954,6 +960,16 @@ So, for example, if you were using the `default` size in shadcn/ui and you want 
 </Tooltip>
 ```
 </span>
+
+## Verify After Migration
+
+After converting components, run a quick verification pass:
+
+- Typecheck and lint for prop/name mismatches (`*Content` vs `*Popup` / `*Panel`, `onSelect` vs `onClick`).
+- Keyboard test overlays (open/close, focus trap, escape handling).
+- Confirm accessible names (`aria-label` for icon-only controls, proper label associations in forms).
+- For `Select`/`Command`, verify SSR/hydration behavior and selected label rendering.
+- Compare visual density and adjust size variants when parity with previous UI is required.
 
 ## Additional Resources
 

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-16",
-  "type": "registry:block",
   "description": "Group with add button and input",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
     "button",
     "group",
     "input"
-  ]
+  ],
+  "type": "registry:block"
 }

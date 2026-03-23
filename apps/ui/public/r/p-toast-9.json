@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-9",
-  "type": "registry:block",
   "description": "Promise toast with cancel action",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "toast",
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

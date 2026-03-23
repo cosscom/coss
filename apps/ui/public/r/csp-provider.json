@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "csp-provider",
-  "type": "registry:lib",
   "dependencies": [
     "@base-ui/react"
   ],
@@ -11,5 +10,6 @@
       "content": "export { CSPProvider } from \"@base-ui/react/csp-provider\";\n",
       "type": "registry:lib"
     }
-  ]
+  ],
+  "type": "registry:lib"
 }

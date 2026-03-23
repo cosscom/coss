@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-15",
-  "type": "registry:block",
   "description": "Calendar with current month button",
   "dependencies": [
     "date-fns"
@@ -20,5 +19,6 @@
   "categories": [
     "calendar",
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

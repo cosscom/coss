@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "input-otp",
-  "type": "registry:ui",
   "dependencies": [
     "input-otp"
   ],
@@ -29,5 +28,6 @@
         "opacity": "0"
       }
     }
-  }
+  },
+  "type": "registry:ui"
 }

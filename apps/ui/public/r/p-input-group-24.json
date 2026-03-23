@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-24",
-  "type": "registry:block",
   "description": "Input group with character counter",
   "registryDependencies": [
     "@coss/input-group"
@@ -19,5 +18,6 @@
   "categories": [
     "input",
     "input group"
-  ]
+  ],
+  "type": "registry:block"
 }

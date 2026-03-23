@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-15",
-  "type": "registry:block",
   "description": "Price range slider",
   "registryDependencies": [
     "@coss/fieldset",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

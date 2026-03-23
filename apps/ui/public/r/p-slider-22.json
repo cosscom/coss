@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-22",
-  "type": "registry:block",
   "description": "Price slider with histogram",
   "registryDependencies": [
     "@coss/button",
@@ -25,5 +24,6 @@
     "input group",
     "button",
     "filter"
-  ]
+  ],
+  "type": "registry:block"
 }

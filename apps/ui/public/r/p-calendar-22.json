@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-22",
-  "type": "registry:block",
   "description": "Two months calendar",
   "dependencies": [
     "date-fns"
@@ -21,5 +20,6 @@
   },
   "categories": [
     "calendar"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-19",
-  "type": "registry:block",
   "description": "Mini editor built with input group and toggle",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
     "input group",
     "textarea",
     "toggle"
-  ]
+  ],
+  "type": "registry:block"
 }

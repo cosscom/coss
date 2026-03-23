@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-32",
-  "type": "registry:block",
   "description": "Button with notification badge",
   "registryDependencies": [
     "@coss/badge",
@@ -17,5 +16,6 @@
   "categories": [
     "button",
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

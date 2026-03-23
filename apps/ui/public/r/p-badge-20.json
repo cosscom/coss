@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-badge-20",
-  "type": "registry:block",
   "description": "Removable badge",
   "dependencies": [
     "lucide-react"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

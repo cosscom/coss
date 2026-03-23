@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-combobox-16",
-  "type": "registry:block",
   "description": "Timezone combobox",
   "registryDependencies": [
     "@coss/combobox"
@@ -20,5 +19,6 @@
     "combobox",
     "input",
     "timezone"
-  ]
+  ],
+  "type": "registry:block"
 }

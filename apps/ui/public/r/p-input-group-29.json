@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-29",
-  "type": "registry:block",
   "description": "Chat input with voice and send buttons",
   "dependencies": [
     "lucide-react"
@@ -26,5 +25,6 @@
     "input group",
     "textarea",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

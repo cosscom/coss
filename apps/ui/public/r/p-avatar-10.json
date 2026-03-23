@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-avatar-10",
-  "type": "registry:block",
   "description": "Avatar with notification badge",
   "registryDependencies": [
     "@coss/avatar",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "avatar"
-  ]
+  ],
+  "type": "registry:block"
 }

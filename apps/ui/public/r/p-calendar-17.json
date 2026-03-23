@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-17",
-  "type": "registry:block",
   "description": "Calendar with date input",
   "dependencies": [
     "date-fns",
@@ -23,5 +22,6 @@
     "calendar",
     "input",
     "field"
-  ]
+  ],
+  "type": "registry:block"
 }

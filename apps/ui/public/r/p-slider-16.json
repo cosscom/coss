@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-16",
-  "type": "registry:block",
   "description": "Emoji rating slider",
   "registryDependencies": [
     "@coss/field",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

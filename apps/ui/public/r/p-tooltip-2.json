@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tooltip-2",
-  "type": "registry:block",
   "description": "Grouped tooltips",
   "registryDependencies": [
     "@coss/toggle-group",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

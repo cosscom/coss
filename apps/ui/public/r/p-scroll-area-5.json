@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-scroll-area-5",
-  "type": "registry:block",
   "description": "Horizontal scroll area with scrollbar gutter",
   "registryDependencies": [
     "@coss/scroll-area"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "scroll area"
-  ]
+  ],
+  "type": "registry:block"
 }

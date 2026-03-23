@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-card-8",
-  "type": "registry:block",
   "description": "Card within a frame and footer",
   "registryDependencies": [
     "@coss/button",
@@ -26,5 +25,6 @@
     "card",
     "form",
     "frame"
-  ]
+  ],
+  "type": "registry:block"
 }

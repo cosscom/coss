@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-drawer-8",
-  "type": "registry:block",
   "description": "Nested right drawers with inset variant",
   "registryDependencies": [
     "@coss/button",
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "drawer"
-  ]
+  ],
+  "type": "registry:block"
 }

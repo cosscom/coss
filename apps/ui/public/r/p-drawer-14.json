@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-drawer-14",
-  "type": "registry:block",
   "description": "Left drawer with swipe area",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "drawer"
-  ]
+  ],
+  "type": "registry:block"
 }

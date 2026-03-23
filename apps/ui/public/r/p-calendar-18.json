@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-18",
-  "type": "registry:block",
   "description": "Calendar with time input",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
     "calendar",
     "input",
     "field"
-  ]
+  ],
+  "type": "registry:block"
 }

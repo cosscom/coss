@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-alert-2",
-  "type": "registry:block",
   "description": "Alert with icon",
   "dependencies": [
     "lucide-react"
@@ -21,5 +20,6 @@
   },
   "categories": [
     "alert"
-  ]
+  ],
+  "type": "registry:block"
 }

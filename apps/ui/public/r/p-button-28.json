@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-28",
-  "type": "registry:block",
   "description": "Button with avatar",
   "registryDependencies": [
     "@coss/avatar",
@@ -17,5 +16,6 @@
   "categories": [
     "button",
     "avatar"
-  ]
+  ],
+  "type": "registry:block"
 }

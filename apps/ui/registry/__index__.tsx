@@ -9475,6 +9475,16 @@ export const Index: Record<string, any> = {
     categories: ["tooltip"],
     meta: undefined,
   },
+  "fonts": {
+    name: "fonts",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/font-sans","@coss/font-heading","@coss/font-mono"],
+    files: [],
+    component: null,
+    categories: undefined,
+    meta: undefined,
+  },
   "utils": {
     name: "utils",
     description: "",

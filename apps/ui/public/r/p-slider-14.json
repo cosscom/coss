@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-14",
-  "type": "registry:block",
   "description": "Slider with increment and decrement buttons",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
   "categories": [
     "slider",
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

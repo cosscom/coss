@@ -51,6 +51,7 @@ npm install @base-ui/react
 ```tsx
 import {
   Dialog,
+  DialogClose,
   DialogDescription,
   DialogPanel,
   DialogFooter,
@@ -86,6 +87,10 @@ Root component. Alias for `Dialog.Root` from Base UI.
 ### DialogTrigger
 
 Trigger button that opens the dialog. Alias for `Dialog.Trigger` from Base UI.
+
+### DialogCreateHandle
+
+Creates a handle for detached dialog triggers. Use it when the trigger and popup need to be coordinated across different parts of the tree.
 
 ### DialogPopup
 

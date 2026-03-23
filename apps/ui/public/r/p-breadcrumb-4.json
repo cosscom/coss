@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-breadcrumb-4",
-  "type": "registry:block",
   "description": "Breadcrumb with folders icon menu",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
     "breadcrumb",
     "dropdown",
     "menu"
-  ]
+  ],
+  "type": "registry:block"
 }
