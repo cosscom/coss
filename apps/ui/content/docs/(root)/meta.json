@@ -1,4 +1,11 @@
 {
-  "pages": ["index", "get-started", "styling", "radix-migration", "roadmap"],
+  "pages": [
+    "index",
+    "get-started",
+    "styling",
+    "radix-migration",
+    "skills",
+    "roadmap"
+  ],
   "title": "Overview"
 }
