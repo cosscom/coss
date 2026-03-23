@@ -6,7 +6,7 @@ import { cn } from "@coss/ui/lib/utils";
 import type * as React from "react";
 
 export type TextareaProps = React.ComponentPropsWithoutRef<"textarea"> &
-  React.RefAttributes<HTMLElement> & {
+  React.RefAttributes<HTMLTextAreaElement> & {
     size?: "sm" | "default" | "lg" | number;
     unstyled?: boolean;
   };

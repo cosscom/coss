@@ -6,7 +6,7 @@ import type * as React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
 export type TextareaProps = React.ComponentPropsWithoutRef<"textarea"> &
-  React.RefAttributes<HTMLElement> & {
+  React.RefAttributes<HTMLTextAreaElement> & {
     size?: "sm" | "default" | "lg" | number;
     unstyled?: boolean;
   };
