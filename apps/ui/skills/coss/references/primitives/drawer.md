@@ -88,7 +88,7 @@ Drawer with handle:
     </DrawerPanel>
     <DrawerFooter>
       <Button>Save</Button>
-      <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+      <DrawerClose render={<Button variant="ghost" />}>Cancel</DrawerClose>
     </DrawerFooter>
   </DrawerPopup>
 </Drawer>

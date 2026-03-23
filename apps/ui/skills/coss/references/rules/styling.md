@@ -21,6 +21,7 @@ Use this guide when writing or updating coss primitives, particles, and docs exa
 - Many primitives already define inner SVG sizing. Check existing component styles before adding icon `size-*` classes.
 - Many primitives already define inner SVG opacity (commonly around `opacity-80`). Check existing component styles before adding manual icon opacity classes.
 - Prefer data-slot-aware selectors and `in-*` patterns over `group` where available.
+- Cancel/close buttons in Dialog, AlertDialog, Sheet, and Drawer footers use `variant="ghost"`. Reserve `variant="outline"` for triggers that open overlays, not for dismissing them.
 
 ## Global Styling Setup (when relevant)
 

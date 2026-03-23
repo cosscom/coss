@@ -81,7 +81,7 @@ Sheet from the right side with form:
       </Field>
     </SheetPanel>
     <SheetFooter>
-      <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+      <SheetClose render={<Button variant="ghost" />}>Cancel</SheetClose>
       <Button>Save</Button>
     </SheetFooter>
   </SheetPopup>
