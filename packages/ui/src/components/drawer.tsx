@@ -128,6 +128,7 @@ export function DrawerViewport({
         variant === "inset" && "px-(--inset) sm:[--inset:--spacing(4)]",
         variant === "inset" && position !== "bottom" && "pt-(--inset)",
         variant === "inset" && position !== "top" && "pb-(--inset)",
+        className
       )}
       data-slot="drawer-viewport"
       {...props}
