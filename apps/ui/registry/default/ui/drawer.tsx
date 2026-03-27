@@ -33,11 +33,11 @@ const directionMap: Record<
 export const DrawerCreateHandle: typeof DrawerPrimitive.createHandle =
   DrawerPrimitive.createHandle;
 
-export function Drawer({
+export function Drawer<Payload = unknown>({
   swipeDirection,
   position = "bottom",
   ...props
-}: DrawerPrimitive.Root.Props & {
+}: DrawerPrimitive.Root.Props<Payload> & {
   position?: DrawerPosition;
 }): React.ReactElement {
   return (
