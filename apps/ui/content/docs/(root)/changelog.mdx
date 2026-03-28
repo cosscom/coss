@@ -1,0 +1,30 @@
+---
+title: Changelog
+description: Breaking changes, migration guides, and notable updates.
+---
+
+## Mar 20, 2026
+
+### Toggle Group
+
+`Toggle` was renamed to `ToggleGroupItem` in `toggle-group.tsx` to avoid a naming conflict with the standalone `Toggle` export.
+
+**Migration:**
+
+```diff
+- import { Toggle, ToggleGroup } from "@/components/ui/toggle-group"
++ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+```
+
+```diff
+  <ToggleGroup>
+-   <Toggle value="bold">Bold</Toggle>
++   <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
+  </ToggleGroup>
+```
+
+**Agent migration prompt:**
+
+```text
+In my codebase, rename all usages of `Toggle` imported from `toggle-group` to `ToggleGroupItem`. Update both the import statements and JSX usage. Do not change `Toggle` imports from `toggle.tsx` (standalone toggle). Only change files that import `Toggle` from the `toggle-group` module.
+```
