@@ -15,7 +15,7 @@ export const fontSans = localFont({
 
 export const fontHeading = localFont({
   display: "swap",
-  src: "./CalSans-SemiBold.woff2",
+  src: "./CalSans-Regular.woff2",
   variable: "--font-heading",
-  weight: "600",
+  weight: "400 600",
 });
