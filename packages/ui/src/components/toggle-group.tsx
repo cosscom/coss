@@ -54,7 +54,7 @@ export function ToggleGroup({
   );
 }
 
-export function Toggle({
+function Toggle({
   className,
   children,
   variant,
