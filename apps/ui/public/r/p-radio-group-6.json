@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-radio-group-6",
-  "type": "registry:block",
   "description": "Theme selector with image cards",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
   "categories": [
     "radio group",
     "form"
-  ]
+  ],
+  "type": "registry:block"
 }
