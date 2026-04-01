@@ -48,7 +48,7 @@ export function TableBody({
   return (
     <tbody
       className={cn(
-        "relative in-data-[variant=boxed]:rounded-xl in-data-[variant=boxed]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[variant=boxed]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[variant=boxed]:*:[tr]:border-0 in-data-[variant=boxed]:*:[tr]:*:[td]:border-b in-data-[variant=boxed]:*:[tr]:bg-card in-data-[variant=boxed]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=boxed]:*:[tr]:*:[td]:first:border-s in-data-[variant=boxed]:*:[tr]:first:*:[td]:border-t in-data-[variant=boxed]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=boxed]:*:[tr]:*:[td]:last:border-e in-data-[variant=boxed]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=boxed]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=boxed]:*:[tr]:hover:*:[td]:bg-muted/32 in-data-[variant=boxed]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/50",
+        "relative in-data-[variant=boxed]:rounded-xl in-data-[variant=boxed]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[variant=boxed]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[variant=boxed]:*:[tr]:border-0 in-data-[variant=boxed]:*:[tr]:bg-card in-data-[variant=boxed]:*:[tr]:*:[td]:border-b in-data-[variant=boxed]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=boxed]:*:[tr]:*:[td]:first:border-s in-data-[variant=boxed]:*:[tr]:first:*:[td]:border-t in-data-[variant=boxed]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=boxed]:*:[tr]:*:[td]:last:border-e in-data-[variant=boxed]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=boxed]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=boxed]:*:[tr]:hover:*:[td]:bg-muted/32 in-data-[variant=boxed]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/50",
         className,
       )}
       data-slot="table-body"
@@ -112,7 +112,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        "whitespace-nowrap p-2.5 align-middle leading-none in-data-[variant=boxed]:first:p-[calc(--spacing(2.5)-1px)] in-data-[variant=boxed]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0 bg-clip-padding",
+        "whitespace-nowrap bg-clip-padding p-2.5 align-middle leading-none in-data-[variant=boxed]:first:p-[calc(--spacing(2.5)-1px)] in-data-[variant=boxed]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0",
         className,
       )}
       data-slot="table-cell"
