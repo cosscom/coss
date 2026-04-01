@@ -1,16 +1,18 @@
+"use client";
+
 import { mergeProps } from "@coss/ui/base-ui/merge-props";
 import { useRender } from "@coss/ui/base-ui/use-render";
 import { Button } from "@coss/ui/components/button";
 import { cn } from "@coss/ui/lib/utils";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVerticalIcon } from "lucide-react";
-import Link, { type LinkProps } from "next/link";
-import type * as React from "react";
-import type { CSSProperties, ReactNode } from "react";
+import React, {
+  type ComponentPropsWithoutRef,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { ItemLabel } from "./item-label";
-
-const sortableListClasses =
-  "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
 
 interface ListItemProps extends useRender.ComponentProps<"div"> {
   sortable?: boolean;
@@ -25,7 +27,33 @@ interface ListItemProps extends useRender.ComponentProps<"div"> {
   hasDragged?: boolean;
 }
 
-function ListItem({
+interface SortableListItemProps {
+  children: ReactNode;
+  className?: string;
+  labelColorLight?: string;
+  labelColorDark?: string;
+  isOverlay?: boolean;
+  sortableRef?: (node: HTMLElement | null) => void;
+  sortableStyle?: CSSProperties;
+  sortableDragging?: boolean;
+  sortableDraggingAny?: boolean;
+  sortableListeners?: SyntheticListenerMap;
+  hasDragged?: boolean;
+}
+
+const spanningTriggerClasses = "cursor-pointer before:absolute before:inset-0";
+
+type ListItemSpanningTriggerProps = Omit<
+  ComponentPropsWithoutRef<"div">,
+  "render"
+> & {
+  render?: React.ReactElement;
+};
+
+export const sortableListClasses =
+  "has-[[data-drag-ghost],[data-drag-release]]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:bg-transparent has-[[data-drag-ghost],[data-drag-release]]:shadow-none has-[[data-drag-ghost],[data-drag-release]]:before:hidden has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:border-transparent has-[[data-drag-ghost],[data-drag-release]]:**:data-[slot=list-item]:after:visible";
+
+export function ListItem({
   children,
   className,
   render,
@@ -40,9 +68,9 @@ function ListItem({
   sortableListeners,
   hasDragged,
   ...props
-}: ListItemProps): React.ReactElement {
+}: ListItemProps): ReturnType<typeof useRender> {
   const baseClasses =
-    "not-last:border-b bg-clip-padding has-[[data-slot=list-item-title]_a:hover]:z-1 has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-slot=list-item-title]_a:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] first:rounded-t-[calc(var(--radius-2xl)-1px)] last:rounded-b-[calc(var(--radius-2xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-header])]:first:rounded-t-[calc(var(--radius-xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-footer])]:last:rounded-b-[calc(var(--radius-xl)-1px)]";
+    "not-last:border-b bg-clip-padding has-[[data-spanning-trigger]:hover]:z-1 has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:has-[[data-spanning-trigger]:hover]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] first:rounded-t-[calc(var(--radius-2xl)-1px)] last:rounded-b-[calc(var(--radius-2xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-header])]:first:rounded-t-[calc(var(--radius-xl)-1px)] in-[[data-slot=card-frame]:has([data-slot=card-frame-footer])]:last:rounded-b-[calc(var(--radius-xl)-1px)]";
 
   const staticClasses = "transition-[background-color]";
 
@@ -77,7 +105,7 @@ function ListItem({
     "data-slot": "list-item",
     ref: sortable ? sortableRef : undefined,
     style: sortable ? sortableStyle : undefined,
-    ...(sortable ? sortableListeners : {}),
+    ...(sortable ? (sortableListeners ?? {}) : {}),
   };
 
   const mergedProps = mergeProps<"div">(defaultProps, props);
@@ -93,21 +121,7 @@ function ListItem({
   });
 }
 
-interface SortableListItemProps {
-  children: ReactNode;
-  className?: string;
-  labelColorLight?: string;
-  labelColorDark?: string;
-  isOverlay?: boolean;
-  sortableRef?: (node: HTMLElement | null) => void;
-  sortableStyle?: CSSProperties;
-  sortableDragging?: boolean;
-  sortableDraggingAny?: boolean;
-  sortableListeners?: SyntheticListenerMap;
-  hasDragged?: boolean;
-}
-
-function SortableListItem({
+export function SortableListItem({
   children,
   className,
   labelColorLight,
@@ -119,7 +133,7 @@ function SortableListItem({
   sortableDraggingAny,
   sortableListeners,
   hasDragged,
-}: SortableListItemProps): React.ReactElement {
+}: SortableListItemProps): ReactElement {
   return (
     <ListItem
       className={className}
@@ -139,41 +153,36 @@ function SortableListItem({
   );
 }
 
-function ListItemDragHandle({
+export function ListItemDragHandle({
   className,
-  render,
-  ...props
-}: useRender.ComponentProps<"button">): React.ReactElement {
-  const defaultProps = {
-    "aria-label": "Drag to reorder",
-    className: cn(
-      "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]_a:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
-      className,
-    ),
-    "data-slot": "list-item-drag-handle",
-  };
-  const mergedProps = mergeProps<"button">(defaultProps, props);
-  const defaultElement = (
-    <Button size="icon-xs" variant="ghost">
+}: {
+  className?: string;
+}): ReactElement {
+  return (
+    <Button
+      aria-label="Drag to reorder"
+      className={cn(
+        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]_[data-spanning-trigger]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity focus:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        className,
+      )}
+      data-slot="list-item-drag-handle"
+      size="icon-xs"
+      variant="ghost"
+    >
       <GripVerticalIcon
         aria-hidden="true"
         className="in-[[data-slot=list-item-drag-handle]:hover,[data-slot=list-item-drag-handle]:focus-visible]:opacity-100 opacity-40"
       />
     </Button>
   );
-  return useRender({
-    defaultTagName: "button",
-    props: mergedProps,
-    render: render ?? defaultElement,
-  });
 }
 
-function ListItemContent({
+export function ListItemContent({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex min-w-0 flex-1 flex-col gap-3", className),
     "data-slot": "list-item-content",
@@ -187,12 +196,12 @@ function ListItemContent({
   });
 }
 
-function ListItemHeader({
+export function ListItemHeader({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex flex-col gap-1", className),
     "data-slot": "list-item-header",
@@ -206,12 +215,12 @@ function ListItemHeader({
   });
 }
 
-function ListItemTitle({
+export function ListItemTitle({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"h2">): React.ReactElement {
+}: useRender.ComponentProps<"h2">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("font-semibold sm:text-sm", className),
     "data-slot": "list-item-title",
@@ -225,34 +234,42 @@ function ListItemTitle({
   });
 }
 
-function ListItemTitleLink({
+export function ListItemSpanningTrigger({
   children,
   className,
-  href,
   render,
   ...props
-}: LinkProps & useRender.ComponentProps<"a">): React.ReactElement {
-  const defaultProps = {
-    className: cn("before:absolute before:inset-0", className),
-    "data-slot": "list-item-title-link",
-    href,
+}: ListItemSpanningTriggerProps): ReactElement {
+  const mergedProps = {
+    className: cn(spanningTriggerClasses, className),
+    "data-spanning-trigger": "",
+    ...props,
   };
-  const mergedProps = mergeProps<"a">(defaultProps, props);
-  const propsWithChildren = { ...mergedProps, children };
-  const defaultElement = <Link href={href} />;
-  return useRender({
-    defaultTagName: "a",
-    props: propsWithChildren,
-    render: render ?? defaultElement,
-  });
+
+  if (render) {
+    const renderProps = (render.props || {}) as Record<string, unknown>;
+    const merged = {
+      ...renderProps,
+      ...mergedProps,
+      children: children ?? renderProps.children,
+      className: cn(
+        renderProps.className as string,
+        spanningTriggerClasses,
+        className,
+      ),
+    };
+    return React.cloneElement(render, merged as React.Attributes);
+  }
+
+  return <div {...mergedProps}>{children}</div>;
 }
 
-function ListItemDescription({
+export function ListItemDescription({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"p">): React.ReactElement {
+}: useRender.ComponentProps<"p">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("text-muted-foreground text-sm", className),
     "data-slot": "list-item-description",
@@ -266,12 +283,12 @@ function ListItemDescription({
   });
 }
 
-function ListItemBadges({
+export function ListItemBadges({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("flex flex-wrap items-center gap-2", className),
     "data-slot": "list-item-badges",
@@ -285,12 +302,12 @@ function ListItemBadges({
   });
 }
 
-function ListItemActions({
+export function ListItemActions({
   children,
   className,
   render,
   ...props
-}: useRender.ComponentProps<"div">): React.ReactElement {
+}: useRender.ComponentProps<"div">): ReturnType<typeof useRender> {
   const defaultProps = {
     className: cn("relative flex items-center gap-4", className),
     "data-slot": "list-item-actions",
@@ -303,18 +320,3 @@ function ListItemActions({
     render,
   });
 }
-
-export {
-  ItemLabel,
-  ListItem,
-  ListItemActions,
-  ListItemBadges,
-  ListItemContent,
-  ListItemDescription,
-  ListItemDragHandle,
-  ListItemHeader,
-  ListItemTitle,
-  ListItemTitleLink,
-  sortableListClasses,
-  SortableListItem,
-};

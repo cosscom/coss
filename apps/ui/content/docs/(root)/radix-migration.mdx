@@ -890,7 +890,7 @@ onClick={() => {
 - Replace `type="multiple"` → `multiple` on `ToggleGroup`
 - Remove `type="single"` from `ToggleGroup`
 - Always use arrays for `defaultValue`
-- Use `Toggle` going forward; `ToggleGroupItem` remains for legacy
+- Use `ToggleGroupItem` for each option inside `ToggleGroup`. The standalone `Toggle` from `toggle.tsx` is only for toggles outside a group (see [Toggle](#toggle) above).
 - Replace `asChild` → `render` on parts if used
 
 **Size Comparison:**
@@ -922,9 +922,9 @@ So, for example, if you were using the `default` size in shadcn/ui and you want 
 ```tsx title="coss ui"
 // [!code word:multiple]
 <ToggleGroup multiple defaultValue={["bold"]}>
-  <Toggle value="bold">B</Toggle>
-  <Toggle value="italic">I</Toggle>
-  <Toggle value="underline">U</Toggle>
+  <ToggleGroupItem value="bold">B</ToggleGroupItem>
+  <ToggleGroupItem value="italic">I</ToggleGroupItem>
+  <ToggleGroupItem value="underline">U</ToggleGroupItem>
 </ToggleGroup>
 ```
 </span>

@@ -36,7 +36,7 @@ export function BookingActions() {
           render={
             <TooltipTrigger
               render={
-                <Button aria-label="Pptions" size="icon" variant="outline">
+                <Button aria-label="Options" size="icon" variant="outline">
                   <EllipsisIcon />
                 </Button>
               }

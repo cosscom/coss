@@ -128,13 +128,9 @@ function NavItemWithSubmenu({
       </Menu>
 
       {/* Collapsible version for expanded sidebar */}
-      <Collapsible
-        className="md:max-lg:hidden"
-        onOpenChange={setIsExpanded}
-        open={isExpanded}
-      >
+      <Collapsible onOpenChange={setIsExpanded} open={isExpanded}>
         <CollapsibleTrigger
-          className="justify-between"
+          className="justify-between max-lg:hidden"
           render={
             <SidebarMenuButton
               tooltip={isBetweenMdAndLg ? item.title : undefined}

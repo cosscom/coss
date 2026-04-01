@@ -17,7 +17,8 @@
   ],
   "categories": [
     "group",
-    "select"
+    "select",
+    "number field"
   ],
   "type": "registry:block"
 }
