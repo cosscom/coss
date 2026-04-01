@@ -64,7 +64,7 @@ export function TableFooter({
   return (
     <tfoot
       className={cn(
-        "border-t in-data-[variant=boxed]:border-none bg-muted/32 in-data-[variant=boxed]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=boxed]:**:[td]:h-10",
+        "border-t in-data-[variant=boxed]:border-none bg-muted/32 in-data-[variant=boxed]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=boxed]:**:[td]:min-h-10",
         className,
       )}
       data-slot="table-footer"
