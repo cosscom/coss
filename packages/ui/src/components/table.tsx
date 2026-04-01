@@ -1,18 +1,24 @@
 import { cn } from "@coss/ui/lib/utils";
 import type * as React from "react";
 
+export type TableVariant = "default" | "boxed";
+
 export function Table({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<"table">): React.ReactElement {
+}: React.ComponentProps<"table"> & {
+  variant?: TableVariant;
+}): React.ReactElement {
   return (
     <div
       className="relative w-full overflow-x-auto"
       data-slot="table-container"
+      data-variant={variant}
     >
       <table
         className={cn(
-          "w-full caption-bottom in-data-[slot=frame]:border-separate in-data-[slot=frame]:border-spacing-0 text-sm",
+          "w-full caption-bottom in-data-[variant=boxed]:border-separate in-data-[variant=boxed]:border-spacing-0 text-sm",
           className,
         )}
         data-slot="table"
@@ -29,7 +35,7 @@ export function TableHeader({
   return (
     <thead
       className={cn(
-        "[&_tr]:border-b in-data-[slot=frame]:**:[th]:h-9 in-data-[slot=frame]:*:[tr]:border-none in-data-[slot=frame]:*:[tr]:hover:bg-transparent",
+        "[&_tr]:border-b in-data-[variant=boxed]:**:[th]:h-9 in-data-[variant=boxed]:*:[tr]:border-none in-data-[variant=boxed]:*:[tr]:hover:bg-transparent",
         className,
       )}
       data-slot="table-header"
@@ -45,7 +51,7 @@ export function TableBody({
   return (
     <tbody
       className={cn(
-        "relative in-data-[slot=frame]:rounded-xl in-data-[slot=frame]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[slot=frame]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[slot=frame]:*:[tr]:border-0 in-data-[slot=frame]:*:[tr]:*:[td]:border-b in-data-[slot=frame]:*:[tr]:*:[td]:bg-background in-data-[slot=frame]:*:[tr]:*:[td]:bg-clip-padding in-data-[slot=frame]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[slot=frame]:*:[tr]:*:[td]:first:border-s in-data-[slot=frame]:*:[tr]:first:*:[td]:border-t in-data-[slot=frame]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[slot=frame]:*:[tr]:*:[td]:last:border-e in-data-[slot=frame]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[slot=frame]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[slot=frame]:*:[tr]:hover:*:[td]:bg-transparent in-data-[slot=frame]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/72",
+        "relative in-data-[variant=boxed]:rounded-xl in-data-[variant=boxed]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[variant=boxed]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[variant=boxed]:*:[tr]:border-0 in-data-[variant=boxed]:*:[tr]:*:[td]:border-b in-data-[variant=boxed]:*:[tr]:*:[td]:bg-background in-data-[variant=boxed]:*:[tr]:*:[td]:bg-clip-padding in-data-[variant=boxed]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=boxed]:*:[tr]:*:[td]:first:border-s in-data-[variant=boxed]:*:[tr]:first:*:[td]:border-t in-data-[variant=boxed]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=boxed]:*:[tr]:*:[td]:last:border-e in-data-[variant=boxed]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=boxed]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=boxed]:*:[tr]:hover:*:[td]:bg-transparent in-data-[variant=boxed]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/72",
         className,
       )}
       data-slot="table-body"
@@ -61,7 +67,7 @@ export function TableFooter({
   return (
     <tfoot
       className={cn(
-        "border-t in-data-[slot=frame]:border-none bg-muted/72 in-data-[slot=frame]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[slot=frame]:*:[tr]:hover:bg-transparent",
+        "border-t in-data-[variant=boxed]:border-none bg-muted/72 in-data-[variant=boxed]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=boxed]:*:[tr]:hover:bg-transparent",
         className,
       )}
       data-slot="table-footer"
@@ -77,7 +83,7 @@ export function TableRow({
   return (
     <tr
       className={cn(
-        "border-b transition-colors hover:bg-muted/72 in-data-[slot=frame]:hover:bg-transparent data-[state=selected]:bg-muted/72 in-data-[slot=frame]:data-[state=selected]:bg-transparent",
+        "border-b transition-colors hover:bg-muted/72 in-data-[variant=boxed]:hover:bg-transparent data-[state=selected]:bg-muted/72 in-data-[variant=boxed]:data-[state=selected]:bg-transparent",
         className,
       )}
       data-slot="table-row"
@@ -109,7 +115,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        "whitespace-nowrap p-2.5 align-middle leading-none in-data-[slot=frame]:first:p-[calc(--spacing(2.5)-1px)] in-data-[slot=frame]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0",
+        "whitespace-nowrap p-2.5 align-middle leading-none in-data-[variant=boxed]:first:p-[calc(--spacing(2.5)-1px)] in-data-[variant=boxed]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0",
         className,
       )}
       data-slot="table-cell"
@@ -125,7 +131,7 @@ export function TableCaption({
   return (
     <caption
       className={cn(
-        "in-data-[slot=frame]:my-4 mt-4 text-muted-foreground text-sm",
+        "in-data-[variant=boxed]:my-4 mt-4 text-muted-foreground text-sm",
         className,
       )}
       data-slot="table-caption"

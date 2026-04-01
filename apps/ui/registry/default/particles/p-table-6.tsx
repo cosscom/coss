@@ -9,8 +9,8 @@ import {
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/registry/default/ui/badge";
+import { CardFrame } from "@/registry/default/ui/card";
 import { Checkbox } from "@/registry/default/ui/checkbox";
-import { Frame } from "@/registry/default/ui/frame";
 import {
   Table,
   TableBody,
@@ -202,7 +202,7 @@ export default function Particle() {
   }).format(totalBudget);
 
   return (
-    <Frame className="w-full">
+    <CardFrame className="w-full">
       <Table variant="boxed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -251,6 +251,6 @@ export default function Particle() {
           </TableRow>
         </TableFooter>
       </Table>
-    </Frame>
+    </CardFrame>
   );
 }

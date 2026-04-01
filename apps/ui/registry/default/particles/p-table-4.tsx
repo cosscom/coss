@@ -215,7 +215,7 @@ export default function Particle() {
 
   return (
     <Frame className="w-full">
-      <Table className="table-fixed">
+      <Table variant="boxed" className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="hover:bg-transparent" key={headerGroup.id}>
