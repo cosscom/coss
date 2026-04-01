@@ -3,8 +3,8 @@
 import { Field } from "@coss/ui/components/field";
 import { Fieldset } from "@coss/ui/components/fieldset";
 import {
-  Toggle,
   ToggleGroup,
+  ToggleGroupItem,
   ToggleGroupSeparator,
 } from "@coss/ui/components/toggle-group";
 import { useCallback, useState } from "react";
@@ -66,29 +66,29 @@ export function BookingLayoutSection() {
           value={[defaultView]}
           variant="outline"
         >
-          <Toggle
+          <ToggleGroupItem
             aria-label="Month"
             disabled={!enabledLayouts.includes("month")}
             value="month"
           >
             Month
-          </Toggle>
+          </ToggleGroupItem>
           <ToggleGroupSeparator />
-          <Toggle
+          <ToggleGroupItem
             aria-label="Weekly"
             disabled={!enabledLayouts.includes("weekly")}
             value="weekly"
           >
             Weekly
-          </Toggle>
+          </ToggleGroupItem>
           <ToggleGroupSeparator />
-          <Toggle
+          <ToggleGroupItem
             aria-label="Column"
             disabled={!enabledLayouts.includes("column")}
             value="column"
           >
             Column
-          </Toggle>
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
     </div>
