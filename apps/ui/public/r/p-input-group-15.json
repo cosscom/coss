@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-15",
-  "type": "registry:block",
   "description": "Disabled input group",
   "registryDependencies": [
     "@coss/button",
@@ -19,5 +18,6 @@
   },
   "categories": [
     "input group"
-  ]
+  ],
+  "type": "registry:block"
 }

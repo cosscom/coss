@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-19",
-  "type": "registry:block",
   "description": "Vertical slider with input",
   "registryDependencies": [
     "@coss/number-field",
@@ -17,5 +16,6 @@
   "categories": [
     "slider",
     "number field"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-separator-1",
-  "type": "registry:block",
   "description": "Separator with horizontal and vertical orientations",
   "registryDependencies": [
     "@coss/separator"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "separator"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-slider-11",
-  "type": "registry:block",
   "description": "Slider with icons",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
   },
   "categories": [
     "slider"
-  ]
+  ],
+  "type": "registry:block"
 }

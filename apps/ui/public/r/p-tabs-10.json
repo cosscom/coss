@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tabs-10",
-  "type": "registry:block",
   "description": "Tabs with count badge",
   "registryDependencies": [
     "@coss/badge",
@@ -17,5 +16,6 @@
   "categories": [
     "tabs",
     "badge"
-  ]
+  ],
+  "type": "registry:block"
 }

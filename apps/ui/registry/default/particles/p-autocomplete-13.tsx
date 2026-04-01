@@ -46,7 +46,7 @@ export default function Particle() {
     <Form className="max-w-64" onSubmit={onSubmit}>
       <Field name="item">
         <FieldLabel>Favorite item</FieldLabel>
-        <Autocomplete disabled={loading} items={items} required>
+        <Autocomplete items={items} required>
           <AutocompleteInput placeholder="Search items…" />
           <AutocompletePopup>
             <AutocompleteEmpty>No items found.</AutocompleteEmpty>
@@ -61,7 +61,7 @@ export default function Particle() {
         </Autocomplete>
         <FieldError>Please select a item.</FieldError>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

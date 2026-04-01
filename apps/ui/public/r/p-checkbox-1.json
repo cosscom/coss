@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-checkbox-1",
-  "type": "registry:block",
   "description": "Basic checkbox",
   "registryDependencies": [
     "@coss/checkbox",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "checkbox"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-autocomplete-12",
-  "type": "registry:block",
   "description": "Autocomplete with async items loading",
   "registryDependencies": [
     "@coss/autocomplete",
@@ -21,5 +20,6 @@
     "autocomplete",
     "input",
     "async"
-  ]
+  ],
+  "type": "registry:block"
 }

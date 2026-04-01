@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-input-otp-4",
+  "description": "OTP input with label",
+  "registryDependencies": [
+    "@coss/input-otp",
+    "@coss/label"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-input-otp-4.tsx",
+      "content": "import { useId } from \"react\";\nimport {\n  InputOTP,\n  InputOTPGroup,\n  InputOTPSlot,\n} from \"@/registry/default/ui/input-otp\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      <Label htmlFor={id}>Verification code</Label>\n      <InputOTP aria-label=\"Verification code\" id={id} maxLength={4}>\n        <InputOTPGroup>\n          <InputOTPSlot index={0} />\n          <InputOTPSlot index={1} />\n          <InputOTPSlot index={2} />\n          <InputOTPSlot index={3} />\n        </InputOTPGroup>\n      </InputOTP>\n      <p className=\"text-muted-foreground text-xs\">\n        Enter the 4-digit code sent to your email.\n      </p>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input otp",
+    "input",
+    "label"
+  ],
+  "type": "registry:block"
+}

@@ -89,13 +89,22 @@ This is a custom component using Base UI's `useRender` hook, not a direct Base U
 
 ### Button
 
-A button component with variant and size options.
+A button component with variant, size, and loading states.
 
-| Prop      | Type                                                                                          | Default     | Description                                      |
-| --------- | --------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------ |
-| `variant` | `"default" \| "destructive" \| "destructive-outline" \| "ghost" \| "link" \| "outline" \| "secondary"` | `"default"` | Controls the button styling                      |
-| `size`    | `"default" \| "icon" \| "icon-lg" \| "icon-sm" \| "icon-xl" \| "icon-xs" \| "lg" \| "sm" \| "xl" \| "xs"` | `"default"` | Controls the button size                         |
-| `render`  | `React.ReactElement`                                                                          | -           | Render as a different element (e.g., Link)       |
+| Prop      | Type                                                                                                              | Default     | Description                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------- |
+| `variant` | `"default" \| "destructive" \| "destructive-outline" \| "ghost" \| "link" \| "outline" \| "secondary"`         | `"default"` | Controls the button styling                                                 |
+| `size`    | `"default" \| "icon" \| "icon-lg" \| "icon-sm" \| "icon-xl" \| "icon-xs" \| "lg" \| "sm" \| "xl" \| "xs"`     | `"default"` | Controls the button size                                                    |
+| `loading` | `boolean`                                                                                                         | `false`     | Shows a spinner and forces disabled button behavior while loading           |
+| `render`  | `React.ReactElement`                                                                                              | -           | Render as a different element (e.g., Link)                                  |
+
+When `loading` is `true`, the component:
+
+- Renders a spinner (`data-slot="button-loading-indicator"`)
+- Adds `data-loading` on the button root
+- Forces the native `disabled` attribute
+- Sets `aria-disabled="true"`
+- Preserves button width by hiding content visually instead of unmounting it
 
 ## Examples
 
@@ -167,6 +176,10 @@ A button component with variant and size options.
 
 <ComponentPreview name="p-button-17" />
 
-### Loading
+### Loading (Built-in Prop)
+
+<ComponentPreview name="p-button-41" />
+
+### Loading (Custom Composition)
 
 <ComponentPreview name="p-button-18" />

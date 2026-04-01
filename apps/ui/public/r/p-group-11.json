@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-11",
-  "type": "registry:block",
   "description": "Group with popup",
   "registryDependencies": [
     "@coss/badge",
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

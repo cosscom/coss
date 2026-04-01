@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-14",
-  "type": "registry:block",
   "description": "Calendar without arrow navigation (dropdown only)",
   "registryDependencies": [
     "@coss/calendar",
@@ -17,5 +16,6 @@
   "categories": [
     "calendar",
     "select"
-  ]
+  ],
+  "type": "registry:block"
 }

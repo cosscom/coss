@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-20",
-  "type": "registry:block",
   "description": "Back link button with chevron",
   "dependencies": [
     "lucide-react"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "button"
-  ]
+  ],
+  "type": "registry:block"
 }

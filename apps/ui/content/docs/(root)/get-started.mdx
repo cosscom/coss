@@ -25,7 +25,7 @@ For new projects, use the **coss style** preset to initialize everything in one 
 npx shadcn@latest init @coss/style
 ```
 
-This installs all UI components, the neutral color system, sidebar variables, font variables, and base styles. Components like Dialog and AlertDialog use `font-heading` for titles—the style preset provides sensible fallbacks, and you can customize fonts via `next/font` in your layout.
+This installs all UI components, the neutral color system, sidebar variables, and base styles. It also installs **Inter** (`--font-sans`, `--font-heading`) and **Geist Mono** (`--font-mono`) as default fonts, automatically configured in your `layout.tsx`.
 
 ### Existing Projects
 
@@ -72,6 +72,31 @@ We've introduced a few additional tokens to provide more granular control:
 
 **Important**: If you manually import components, you must also import these additional tokens in your CSS file (e.g., `app/globals.css`). However, if you use the CLI to import components, these tokens will be automatically imported and configured for you.
 
+## Fonts
+
+coss components use three CSS custom properties for typography:
+
+- `--font-sans` — Body text, buttons, labels, and most UI elements
+- `--font-mono` — Code blocks, `<kbd>`, monospace text
+- `--font-heading` — Dialog and AlertDialog titles (defaults to Inter, same as `--font-sans`)
+
+When you use `@coss/style`, `@coss/fonts` is installed automatically — Inter for `--font-sans` and `--font-heading`, Geist Mono for `--font-mono` — all wired in your `layout.tsx`.
+
+### Custom fonts
+
+To use different fonts, ensure the `variable` option in your `next/font` configuration matches the expected CSS variables:
+
+```tsx
+import { Inter } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
+
+const inter = Inter({ variable: "--font-sans", subsets: ["latin"] });
+const interHeading = Inter({ variable: "--font-heading", subsets: ["latin"] });
+const jetbrainsMono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"] });
+```
+
+**Note:** Next.js starters default to variable names like `--font-geist-sans`, which don't match coss's expected `--font-sans`. If fonts appear broken after setup, check that the variable names match.
+
 ## Primitive exports
 
 Components that wrap Base UI primitives re-export the underlying primitive. Use the styled component when our defaults work, or the primitive when you need different compositions or styling. In a monorepo with a shared UI package, apps import from that package—Base UI stays in one place, no need to add it to each app.
@@ -99,5 +124,6 @@ For developers migrating from **Radix UI**, many of our **UI primitives** includ
 
 We structure the documentation to make the components **AI-friendly**, so language models can understand, reason about, and modify them. To support this, we include:
 
+- **[Agent Skills](/ui/docs/skills)** — Install coss knowledge directly into your AI assistant with `npx skills add cosscom/coss`. Covers all 53 primitives, styling conventions, migration patterns, and particle examples.
 - A [llms.txt](/ui/llms.txt) file that provides a map of the documentation and component structure for your AI agent.
 - A **Copy Markdown** button on every page, so you can easily share content or feed it to your AI workflows.

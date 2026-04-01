@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-kbd-1",
-  "type": "registry:block",
   "description": "Keyboard shortcuts display",
   "registryDependencies": [
     "@coss/kbd"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "kbd"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -9,8 +9,6 @@ import {
   SelectValue,
 } from "@/registry/default/ui/select";
 
-const placeholder = [{ label: "Select framework", value: null }];
-
 const frontend = [
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
@@ -28,12 +26,9 @@ const backend = [
 
 export default function Particle() {
   return (
-    <Select
-      aria-label="Select framework"
-      items={[...placeholder, ...frontend, ...backend]}
-    >
+    <Select aria-label="Select framework" items={[...frontend, ...backend]}>
       <SelectTrigger>
-        <SelectValue />
+        <SelectValue placeholder="Select framework" />
       </SelectTrigger>
       <SelectPopup>
         <SelectGroup>

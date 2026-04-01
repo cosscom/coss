@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-7",
-  "type": "registry:block",
   "description": "Textarea with label and required indicator",
   "registryDependencies": [
     "@coss/label",
@@ -20,5 +19,6 @@
   "categories": [
     "label",
     "textarea"
-  ]
+  ],
+  "type": "registry:block"
 }

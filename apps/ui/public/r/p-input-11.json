@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-11",
-  "type": "registry:block",
   "description": "Input group with keyboard shortcut",
   "registryDependencies": [
     "@coss/input-group",
@@ -22,5 +21,6 @@
     "input group",
     "kbd",
     "search"
-  ]
+  ],
+  "type": "registry:block"
 }

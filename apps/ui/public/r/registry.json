@@ -1,5 +1,5 @@
 {
-  "homepage": "https://ui.shadcn.com",
+  "homepage": "https://coss.com",
   "items": [
     {
       "name": "ui",
@@ -20,6 +20,7 @@
         "@coss/combobox",
         "@coss/command",
         "@coss/dialog",
+        "@coss/drawer",
         "@coss/empty",
         "@coss/field",
         "@coss/fieldset",
@@ -27,6 +28,7 @@
         "@coss/frame",
         "@coss/group",
         "@coss/input",
+        "@coss/input-otp",
         "@coss/input-group",
         "@coss/kbd",
         "@coss/label",
@@ -209,6 +211,9 @@
         }
       ],
       "name": "button",
+      "registryDependencies": [
+        "@coss/spinner"
+      ],
       "type": "registry:ui"
     },
     {
@@ -329,6 +334,23 @@
       "type": "registry:ui"
     },
     {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/drawer.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "drawer",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/scroll-area"
+      ],
+      "type": "registry:ui"
+    },
+    {
       "files": [
         {
           "path": "registry/default/ui/empty.tsx",
@@ -422,6 +444,37 @@
         }
       ],
       "name": "input",
+      "type": "registry:ui"
+    },
+    {
+      "css": {
+        "@keyframes caret-blink": {
+          "0%, 70%, to": {
+            "opacity": "1"
+          },
+          "20%, 50%": {
+            "opacity": "0"
+          }
+        }
+      },
+      "cssVars": {
+        "theme": {
+          "--animate-caret-blink": "1s ease-out infinite caret-blink"
+        }
+      },
+      "dependencies": [
+        "input-otp"
+      ],
+      "files": [
+        {
+          "path": "registry/default/ui/input-otp.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "input-otp",
+      "registryDependencies": [
+        "@coss/separator"
+      ],
       "type": "registry:ui"
     },
     {
@@ -633,9 +686,6 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [
-        "@base-ui/react"
-      ],
       "files": [
         {
           "path": "registry/default/ui/sidebar.tsx",
@@ -2477,7 +2527,25 @@
         "button",
         "loading"
       ],
-      "description": "Loading button",
+      "description": "Button using the built-in loading prop",
+      "files": [
+        {
+          "path": "registry/default/particles/p-button-41.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-button-41",
+      "registryDependencies": [
+        "@coss/button"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "loading"
+      ],
+      "description": "Custom loading button with manual Spinner",
       "files": [
         {
           "path": "registry/default/particles/p-button-18.tsx",
@@ -3666,7 +3734,7 @@
       "registryDependencies": [
         "@coss/calendar",
         "@coss/popover",
-        "@coss/button"
+        "@coss/select"
       ],
       "type": "registry:block"
     },
@@ -4778,6 +4846,278 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/dialog"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Simple bottom drawer with close button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-1",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Bottom drawer without drag bar",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-2",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Drawer with close button",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-3",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Inset variant drawers for all four positions",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-4",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Straight variant drawers for all four positions",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-5",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Scrollable content with terms and conditions",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-6",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Nested bottom drawers with centered content",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-7",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Nested right drawers with inset variant",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-8",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Bottom drawer with snap points",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-9",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Edit profile form with default and bare footer variants",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-10",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Mobile menu drawer from the left",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-11",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer",
+        "dialog"
+      ],
+      "description": "Responsive edit profile: dialog on desktop, drawer on mobile",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-12",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/dialog",
+        "@coss/drawer",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input",
+        "@coss/use-media-query"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer",
+        "menu"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Responsive actions menu: menu on desktop, drawer on mobile",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-drawer-13",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer",
+        "@coss/menu",
+        "@coss/use-media-query"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "drawer"
+      ],
+      "description": "Left drawer with swipe area",
+      "files": [
+        {
+          "path": "registry/default/particles/p-drawer-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-md"
+      },
+      "name": "p-drawer-14",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/drawer"
       ],
       "type": "registry:block"
     },
@@ -6243,6 +6583,137 @@
       "name": "p-input-17",
       "registryDependencies": [
         "@coss/input"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Basic OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-1",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Large OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-2",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "OTP input with separator",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-3",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "label"
+      ],
+      "description": "OTP input with label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-4",
+      "registryDependencies": [
+        "@coss/input-otp",
+        "@coss/label"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input"
+      ],
+      "description": "Digits-only OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-5.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-5",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "validation"
+      ],
+      "description": "Invalid OTP input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-6",
+      "registryDependencies": [
+        "@coss/input-otp"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "input otp",
+        "input",
+        "validation"
+      ],
+      "description": "OTP input with auto validation",
+      "files": [
+        {
+          "path": "registry/default/particles/p-input-otp-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-input-otp-7",
+      "registryDependencies": [
+        "@coss/input-otp",
+        "@coss/label"
       ],
       "type": "registry:block"
     },
@@ -8305,6 +8776,26 @@
         "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
       },
       "name": "p-select-22",
+      "registryDependencies": [
+        "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "select"
+      ],
+      "description": "Select with label",
+      "files": [
+        {
+          "path": "registry/default/particles/p-select-23.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-select-23",
       "registryDependencies": [
         "@coss/select"
       ],
@@ -10450,7 +10941,8 @@
       "name": "style",
       "registryDependencies": [
         "utils",
-        "@coss/ui"
+        "@coss/ui",
+        "@coss/fonts"
       ],
       "type": "registry:style"
     },
@@ -10513,6 +11005,58 @@
       },
       "name": "colors-neutral",
       "type": "registry:style"
+    },
+    {
+      "name": "fonts",
+      "type": "registry:ui",
+      "registryDependencies": [
+        "@coss/font-sans",
+        "@coss/font-heading",
+        "@coss/font-mono"
+      ],
+      "files": []
+    },
+    {
+      "name": "font-sans",
+      "type": "registry:font",
+      "font": {
+        "family": "'Inter', sans-serif",
+        "import": "Inter",
+        "provider": "google",
+        "subsets": [
+          "latin"
+        ],
+        "variable": "--font-sans",
+        "dependency": "@fontsource-variable/inter"
+      }
+    },
+    {
+      "name": "font-heading",
+      "type": "registry:font",
+      "font": {
+        "family": "'Inter', sans-serif",
+        "import": "Inter",
+        "provider": "google",
+        "subsets": [
+          "latin"
+        ],
+        "variable": "--font-heading",
+        "dependency": "@fontsource-variable/inter"
+      }
+    },
+    {
+      "name": "font-mono",
+      "type": "registry:font",
+      "font": {
+        "family": "'Geist Mono', monospace",
+        "import": "Geist_Mono",
+        "provider": "google",
+        "subsets": [
+          "latin"
+        ],
+        "variable": "--font-mono",
+        "dependency": "geist"
+      }
     },
     {
       "dependencies": [
@@ -10601,5 +11145,5 @@
       "type": "registry:hook"
     }
   ],
-  "name": "shadcn/ui"
+  "name": "coss ui"
 }

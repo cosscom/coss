@@ -58,15 +58,15 @@ export default function Particle() {
     <Form className="max-w-64" errors={errors} onSubmit={onSubmit}>
       <Field name="name">
         <FieldLabel>Name</FieldLabel>
-        <Input disabled={loading} placeholder="Enter name" />
+        <Input placeholder="Enter name" />
         <FieldError />
       </Field>
       <Field name="age">
         <FieldLabel>Age</FieldLabel>
-        <Input disabled={loading} placeholder="Enter age" />
+        <Input placeholder="Enter age" />
         <FieldError />
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

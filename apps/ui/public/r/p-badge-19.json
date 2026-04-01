@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-badge-19",
-  "type": "registry:block",
   "description": "Selectable badge with checkbox",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "badge",
     "checkbox"
-  ]
+  ],
+  "type": "registry:block"
 }

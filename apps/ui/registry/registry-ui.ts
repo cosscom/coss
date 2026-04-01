@@ -20,6 +20,7 @@ export const ui: Registry["items"] = [
       "@coss/combobox",
       "@coss/command",
       "@coss/dialog",
+      "@coss/drawer",
       "@coss/empty",
       "@coss/field",
       "@coss/fieldset",
@@ -27,6 +28,7 @@ export const ui: Registry["items"] = [
       "@coss/frame",
       "@coss/group",
       "@coss/input",
+      "@coss/input-otp",
       "@coss/input-group",
       "@coss/kbd",
       "@coss/label",
@@ -192,6 +194,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "button",
+    registryDependencies: ["@coss/spinner"],
     type: "registry:ui",
   },
   {
@@ -287,6 +290,18 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
+    files: [
+      {
+        path: "ui/drawer.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "drawer",
+    registryDependencies: ["@coss/button", "@coss/scroll-area"],
+    type: "registry:ui",
+  },
+  {
     files: [
       {
         path: "ui/empty.tsx",
@@ -368,6 +383,33 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "input",
+    type: "registry:ui",
+  },
+  {
+    css: {
+      "@keyframes caret-blink": {
+        "0%, 70%, to": {
+          opacity: "1",
+        },
+        "20%, 50%": {
+          opacity: "0",
+        },
+      },
+    },
+    cssVars: {
+      theme: {
+        "--animate-caret-blink": "1s ease-out infinite caret-blink",
+      },
+    },
+    dependencies: ["input-otp"],
+    files: [
+      {
+        path: "ui/input-otp.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "input-otp",
+    registryDependencies: ["@coss/separator"],
     type: "registry:ui",
   },
   {
@@ -545,7 +587,6 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/sidebar.tsx",

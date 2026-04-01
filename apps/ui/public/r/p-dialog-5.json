@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-dialog-5",
-  "type": "registry:block",
   "description": "Dialog with long content",
   "registryDependencies": [
     "@coss/button",
@@ -16,5 +15,6 @@
   ],
   "categories": [
     "dialog"
-  ]
+  ],
+  "type": "registry:block"
 }

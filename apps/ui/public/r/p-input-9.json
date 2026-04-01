@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-9",
-  "type": "registry:block",
   "description": "Password input with toggle visibility",
   "registryDependencies": [
     "@coss/button",
@@ -23,5 +22,6 @@
     "input",
     "input group",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

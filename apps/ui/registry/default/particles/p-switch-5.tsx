@@ -26,11 +26,11 @@ export default function Particle() {
     <Form className="w-auto" onSubmit={onSubmit}>
       <Field name="marketing">
         <FieldLabel>
-          <Switch defaultChecked disabled={loading} name="marketing" />
+          <Switch defaultChecked name="marketing" />
           Enable marketing emails
         </FieldLabel>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

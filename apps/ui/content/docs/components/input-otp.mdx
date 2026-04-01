@@ -1,0 +1,135 @@
+---
+title: Input OTP
+description: A segmented input for one-time passwords and verification codes.
+
+links:
+  doc: https://github.com/guilhermerodz/input-otp
+---
+
+<ComponentPreview name="p-input-otp-1" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTab value="cli">CLI</TabsTab>
+  <TabsTab value="manual">Manual</TabsTab>
+</TabsList>
+<TabsPanel value="cli">
+
+```bash
+npx shadcn@latest add @coss/input-otp
+```
+
+</TabsPanel>
+
+<TabsPanel value="manual">
+
+<Steps>
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @base-ui/react input-otp lucide-react
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="input-otp" title="components/ui/input-otp.tsx" />
+<ComponentSource name="separator" title="components/ui/separator.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsPanel>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
+```
+
+```tsx
+<InputOTP aria-label="Verification code" maxLength={6}>
+  <InputOTPGroup>
+    <InputOTPSlot index={0} />
+    <InputOTPSlot index={1} />
+    <InputOTPSlot index={2} />
+  </InputOTPGroup>
+  <InputOTPSeparator />
+  <InputOTPGroup>
+    <InputOTPSlot index={3} />
+    <InputOTPSlot index={4} />
+    <InputOTPSlot index={5} />
+  </InputOTPGroup>
+</InputOTP>
+```
+
+## API Reference
+
+This component is built on top of [input-otp](https://github.com/guilhermerodz/input-otp).
+
+### InputOTP
+
+Root component for the OTP input. Accepts all props from `OTPInput` plus the following:
+
+| Prop                 | Type       | Default | Description                                      |
+| -------------------- | ---------- | ------- | ------------------------------------------------ |
+| `containerClassName` | `string`   | -       | Class name applied to the outer OTP container    |
+
+For the full list of props, see the [`input-otp` documentation](https://github.com/guilhermerodz/input-otp).
+
+### InputOTPGroup
+
+Container for one or more OTP slots.
+
+| Prop   | Type                  | Default   | Description                      |
+| ------ | --------------------- | --------- | -------------------------------- |
+| `size` | `"default" \| "lg"` | `"default"` | Size applied to the group's slots |
+
+### InputOTPSlot
+
+Renders a single OTP slot for the provided `index`.
+
+| Prop    | Type     | Default | Description                                      |
+| ------- | -------- | ------- | ------------------------------------------------ |
+| `index` | `number` | -       | Zero-based slot index within the parent `InputOTP` |
+
+### InputOTPSeparator
+
+Visual separator between slot groups.
+
+## Examples
+
+### Large
+
+<ComponentPreview name="p-input-otp-2" />
+
+### With Separator
+
+<ComponentPreview name="p-input-otp-3" />
+
+### With Label
+
+<ComponentPreview name="p-input-otp-4" />
+
+### Digits Only
+
+<ComponentPreview name="p-input-otp-5" />
+
+### Invalid
+
+<ComponentPreview name="p-input-otp-6" />
+
+### Auto Validation
+
+<ComponentPreview name="p-input-otp-7" />

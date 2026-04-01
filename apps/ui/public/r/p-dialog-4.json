@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-dialog-4",
-  "type": "registry:block",
   "description": "Dialog with close confirmation",
   "registryDependencies": [
     "@coss/alert-dialog",
@@ -21,5 +20,6 @@
   "categories": [
     "alert dialog",
     "dialog"
-  ]
+  ],
+  "type": "registry:block"
 }

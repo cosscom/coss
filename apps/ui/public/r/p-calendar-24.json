@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-24",
-  "type": "registry:block",
   "description": "Pricing calendar with custom day buttons",
   "dependencies": [
     "date-fns"
@@ -21,5 +20,6 @@
   },
   "categories": [
     "calendar"
-  ]
+  ],
+  "type": "registry:block"
 }

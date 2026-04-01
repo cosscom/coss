@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-27",
-  "type": "registry:block",
   "description": "Code snippet input with language selector",
   "dependencies": [
     "lucide-react"
@@ -28,5 +27,6 @@
     "select",
     "textarea",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

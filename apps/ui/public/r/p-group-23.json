@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-23",
-  "type": "registry:block",
   "description": "Group with filter label, combobox multi-select, and remove button",
   "registryDependencies": [
     "@coss/avatar",
@@ -23,5 +22,6 @@
     "button",
     "combobox",
     "group"
-  ]
+  ],
+  "type": "registry:block"
 }

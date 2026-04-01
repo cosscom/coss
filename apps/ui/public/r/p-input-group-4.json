@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-4",
-  "type": "registry:block",
   "description": "Input group with end text",
   "registryDependencies": [
     "@coss/input-group"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "input group"
-  ]
+  ],
+  "type": "registry:block"
 }

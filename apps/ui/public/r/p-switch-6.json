@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-switch-6",
-  "type": "registry:block",
   "description": "Custom size switch",
   "registryDependencies": [
     "@coss/switch"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "switch"
-  ]
+  ],
+  "type": "registry:block"
 }

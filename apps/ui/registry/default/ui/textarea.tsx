@@ -5,15 +5,17 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import type * as React from "react";
 import { cn } from "@/registry/default/lib/utils";
 
-export type TextareaProps = React.ComponentProps<"textarea"> & {
-  size?: "sm" | "default" | "lg" | number;
-  unstyled?: boolean;
-};
+export type TextareaProps = React.ComponentPropsWithoutRef<"textarea"> &
+  React.RefAttributes<HTMLTextAreaElement> & {
+    size?: "sm" | "default" | "lg" | number;
+    unstyled?: boolean;
+  };
 
 export function Textarea({
   className,
   size = "default",
   unstyled = false,
+  ref,
   ...props
 }: TextareaProps): React.ReactElement {
   return (
@@ -29,6 +31,12 @@ export function Textarea({
       data-slot="textarea-control"
     >
       <FieldPrimitive.Control
+        ref={ref}
+        value={props.value}
+        defaultValue={props.defaultValue}
+        disabled={props.disabled}
+        id={props.id}
+        name={props.name}
         render={(defaultProps: React.ComponentProps<"textarea">) => (
           <textarea
             className={cn(

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-input-otp-6",
+  "description": "Invalid OTP input",
+  "registryDependencies": [
+    "@coss/input-otp"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-input-otp-6.tsx",
+      "content": "import {\n  InputOTP,\n  InputOTPGroup,\n  InputOTPSlot,\n} from \"@/registry/default/ui/input-otp\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col items-center gap-2\">\n      <InputOTP aria-invalid aria-label=\"Verification code\" maxLength={6}>\n        <InputOTPGroup>\n          <InputOTPSlot index={0} aria-invalid />\n          <InputOTPSlot index={1} aria-invalid />\n          <InputOTPSlot index={2} aria-invalid />\n          <InputOTPSlot index={3} aria-invalid />\n          <InputOTPSlot index={4} aria-invalid />\n          <InputOTPSlot index={5} aria-invalid />\n        </InputOTPGroup>\n      </InputOTP>\n    </div>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "input otp",
+    "input",
+    "validation"
+  ],
+  "type": "registry:block"
+}

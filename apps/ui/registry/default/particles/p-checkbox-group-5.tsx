@@ -29,7 +29,7 @@ export default function Particle() {
         render={(props) => <Fieldset {...props} />}
       >
         <FieldsetLegend>Frameworks</FieldsetLegend>
-        <CheckboxGroup defaultValue={["next"]} disabled={loading}>
+        <CheckboxGroup defaultValue={["next"]}>
           <FieldItem>
             <FieldLabel>
               <Checkbox value="next" />
@@ -50,7 +50,7 @@ export default function Particle() {
           </FieldItem>
         </CheckboxGroup>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

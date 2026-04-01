@@ -7,7 +7,12 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
-import { Sheet, SheetPopup, SheetTrigger } from "@/registry/default/ui/sheet";
+import {
+  Drawer,
+  DrawerPanel,
+  DrawerPopup,
+  DrawerTrigger,
+} from "@/registry/default/ui/drawer";
 import { PAGES_NEW } from "@/lib/docs";
 import type { source } from "@/lib/source";
 import { cn } from "@/lib/utils";
@@ -24,8 +29,8 @@ export function MobileNav({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Sheet onOpenChange={setOpen} open={open}>
-      <SheetTrigger
+    <Drawer onOpenChange={setOpen} open={open} position="left">
+      <DrawerTrigger
         render={
           <Button
             className={cn("relative -ms-1.5 size-8", className)}
@@ -41,8 +46,11 @@ export function MobileNav({
           </Button>
         }
       />
-      <SheetPopup side="left">
-        <div className="flex flex-col gap-12 overflow-auto p-6 pt-8">
+      <DrawerPopup showCloseButton variant="straight">
+        <DrawerPanel
+          className="flex flex-col gap-12 p-6 pt-8"
+          scrollFade={false}
+        >
           <div className="flex flex-col gap-3">
             <div className="font-medium text-sm">Menu</div>
             <div className="flex flex-col gap-1">
@@ -92,9 +100,9 @@ export function MobileNav({
               return null;
             })}
           </div>
-        </div>
-      </SheetPopup>
-    </Sheet>
+        </DrawerPanel>
+      </DrawerPopup>
+    </Drawer>
   );
 }
 

@@ -51,6 +51,7 @@ npm install @base-ui/react
 ```tsx
 import {
   Dialog,
+  DialogClose,
   DialogDescription,
   DialogPanel,
   DialogFooter,
@@ -87,6 +88,10 @@ Root component. Alias for `Dialog.Root` from Base UI.
 
 Trigger button that opens the dialog. Alias for `Dialog.Trigger` from Base UI.
 
+### DialogCreateHandle
+
+Creates a handle for detached dialog triggers. Use it when the trigger and popup need to be coordinated across different parts of the tree.
+
 ### DialogPopup
 
 Popup container that displays the dialog content. Also exported as `DialogContent`.
@@ -99,11 +104,11 @@ Popup container that displays the dialog content. Also exported as `DialogConten
 
 ### DialogHeader
 
-Container for the dialog title and description.
+Container for the dialog title and description. Supports the `render` prop for polymorphic composition (e.g. `render={<Link href="/" />}`).
 
 ### DialogFooter
 
-Footer section for action buttons.
+Footer section for action buttons. Supports the `render` prop for polymorphic composition.
 
 | Prop        | Type                     | Default     | Description                                      |
 | ----------- | ------------------------ | ----------- | ------------------------------------------------ |
@@ -135,7 +140,7 @@ Description component. Alias for `Dialog.Description` from Base UI.
 
 ### DialogPanel
 
-Scrollable content container. Automatically wraps content in a `ScrollArea` component.
+Scrollable content container. Automatically wraps content in a `ScrollArea` component. Supports the `render` prop for polymorphic composition.
 
 | Prop         | Type      | Default | Description                                      |
 | ------------ | --------- | ------- | ------------------------------------------------ |

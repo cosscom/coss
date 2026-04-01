@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-textarea-9",
-  "type": "registry:block",
   "description": "Textarea with custom border and background",
   "registryDependencies": [
     "@coss/textarea"
@@ -18,5 +17,6 @@
   },
   "categories": [
     "textarea"
-  ]
+  ],
+  "type": "registry:block"
 }

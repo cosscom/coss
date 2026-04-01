@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-7",
-  "type": "registry:block",
   "description": "Calendar with disabled dates",
   "dependencies": [
     "date-fns"
@@ -18,5 +17,6 @@
   ],
   "categories": [
     "calendar"
-  ]
+  ],
+  "type": "registry:block"
 }

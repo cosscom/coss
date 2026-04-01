@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tabs-5",
-  "type": "registry:block",
   "description": "Tabs with full rounded triggers",
   "registryDependencies": [
     "@coss/tabs"
@@ -15,5 +14,6 @@
   ],
   "categories": [
     "tabs"
-  ]
+  ],
+  "type": "registry:block"
 }

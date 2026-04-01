@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-calendar-19",
-  "type": "registry:block",
   "description": "Calendar with time slots (appointment picker)",
   "dependencies": [
     "date-fns"
@@ -24,5 +23,6 @@
     "toggle",
     "toggle group",
     "scroll area"
-  ]
+  ],
+  "type": "registry:block"
 }

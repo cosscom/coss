@@ -19,7 +19,6 @@ import {
 } from "@/registry/default/ui/select";
 
 const items = [
-  { label: "Select a framework", value: null },
   { label: "Next.js", value: "next" },
   { label: "Vite", value: "vite" },
   { label: "Astro", value: "astro" },
@@ -42,13 +41,12 @@ export default function Particle() {
         <FieldLabel>Framework</FieldLabel>
         <Select
           aria-label="Select framework"
-          disabled={loading}
           items={items}
           name="framework"
           required
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Select a framework" />
           </SelectTrigger>
           <SelectPopup>
             {items.map(({ label, value }) => (
@@ -62,7 +60,7 @@ export default function Particle() {
         <FieldError>Please select a value.</FieldError>
       </Field>
 
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>

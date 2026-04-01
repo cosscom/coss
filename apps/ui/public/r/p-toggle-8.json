@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toggle-8",
-  "type": "registry:block",
   "description": "Bookmark toggle with tooltip and success toast",
   "dependencies": [
     "lucide-react"
@@ -22,5 +21,6 @@
     "toggle",
     "tooltip",
     "toast"
-  ]
+  ],
+  "type": "registry:block"
 }

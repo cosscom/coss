@@ -450,6 +450,20 @@ export const datePickerThumbnail = (
   </Card>
 );
 
+// Drawer
+export const drawerThumbnail = (
+  <div className="flex h-full w-full flex-1 flex-col justify-end gap-2">
+    <div className="flex-1 rounded-xl border border-input border-dashed" />
+    <Card className="max-w-none shrink-0 [--radius-2xl:14px]">
+      <CardPanel className="pt-1 pb-12">
+        <div className="flex justify-center py-2">
+          <div className="h-1 w-12 rounded-full bg-muted-foreground/30" />
+        </div>
+      </CardPanel>
+    </Card>
+  </div>
+);
+
 // Dialog
 export const dialogThumbnail = (
   <Card className="max-w-36 [--radius-2xl:14px]">
@@ -561,6 +575,32 @@ export const inputGroupThumbnail = (
   </Card>
 );
 
+// Input OTP
+export const inputOtpThumbnail = (
+  <div className="flex max-w-50 flex-1 items-center gap-2">
+    <Card className="size-10 [--radius-2xl:12px]" withGradient={false}>
+      <CardPanel className="flex items-center justify-center p-0">
+        <Text className="size-1.5" />
+      </CardPanel>
+    </Card>
+    <Card className="size-10 [--radius-2xl:12px]" withGradient={false}>
+      <CardPanel className="flex items-center justify-center p-0">
+        <Text className="size-1.5" />
+      </CardPanel>
+    </Card>
+    <Card className="size-10 [--radius-2xl:12px]" withGradient={false}>
+      <CardPanel className="flex items-center justify-center p-0">
+        <Text className="size-1.5" />
+      </CardPanel>
+    </Card>
+    <Card className="size-10 [--radius-2xl:12px]" withGradient={false}>
+      <CardPanel className="flex items-center justify-center p-0">
+        <Icon icon={TextCursorIcon} />
+      </CardPanel>
+    </Card>
+  </div>
+);
+
 // Kbd
 export const kbdThumbnail = (
   <div className="flex items-center justify-center gap-2">
@@ -581,7 +621,7 @@ export const kbdThumbnail = (
 export const labelThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col gap-3">
     <Text className="w-16 bg-primary" />
-    <Card className="[--radius-2xl:10px]">
+    <Card className="[--radius-2xl:10px]" withGradient={false}>
       <CardPanel className="py-3.5" />
     </Card>
   </div>
@@ -974,6 +1014,7 @@ export const categoryThumbnails: Record<string, ReactNode> = {
   command: commandThumbnail,
   "date-picker": datePickerThumbnail,
   dialog: dialogThumbnail,
+  drawer: drawerThumbnail,
   empty: emptyThumbnail,
   field: fieldThumbnail,
   fieldset: fieldsetThumbnail,
@@ -981,6 +1022,7 @@ export const categoryThumbnails: Record<string, ReactNode> = {
   frame: frameThumbnail,
   group: groupThumbnail,
   input: inputThumbnail,
+  "input-otp": inputOtpThumbnail,
   "input-group": inputGroupThumbnail,
   kbd: kbdThumbnail,
   label: labelThumbnail,

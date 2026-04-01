@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-group-22",
-  "type": "registry:block",
   "description": "Group with two number inputs for range",
   "registryDependencies": [
     "@coss/group",
@@ -19,5 +18,6 @@
     "group",
     "label",
     "number field"
-  ]
+  ],
+  "type": "registry:block"
 }

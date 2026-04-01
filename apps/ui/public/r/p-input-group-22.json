@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-input-group-22",
-  "type": "registry:block",
   "description": "Input group with clear button",
   "dependencies": [
     "lucide-react"
@@ -24,5 +23,6 @@
     "button",
     "input",
     "input group"
-  ]
+  ],
+  "type": "registry:block"
 }

@@ -1,7 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-tabs-13",
-  "type": "registry:block",
   "description": "Tabs with icon only and grouped tooltips",
   "dependencies": [
     "lucide-react"
@@ -20,5 +19,6 @@
   "categories": [
     "tabs",
     "tooltip"
-  ]
+  ],
+  "type": "registry:block"
 }

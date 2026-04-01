@@ -137,7 +137,7 @@ export const Index: Record<string, any> = {
     name: "button",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/spinner"],
     files: [{
       path: "registry/default/ui/button.tsx",
       type: "registry:ui",
@@ -295,6 +295,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "drawer": {
+    name: "drawer",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/button","@coss/scroll-area"],
+    files: [{
+      path: "registry/default/ui/drawer.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/drawer.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "empty": {
     name: "empty",
     description: "",
@@ -415,6 +433,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/ui/input.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "input-otp": {
+    name: "input-otp",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/separator"],
+    files: [{
+      path: "registry/default/ui/input-otp.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/input-otp.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2473,9 +2509,27 @@ export const Index: Record<string, any> = {
     categories: ["button"],
     meta: undefined,
   },
+  "p-button-41": {
+    name: "p-button-41",
+    description: "Button using the built-in loading prop",
+    type: "registry:block",
+    registryDependencies: ["@coss/button"],
+    files: [{
+      path: "registry/default/particles/p-button-41.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-button-41.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","loading"],
+    meta: undefined,
+  },
   "p-button-18": {
     name: "p-button-18",
-    description: "Loading button",
+    description: "Custom loading button with manual Spinner",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/spinner"],
     files: [{
@@ -3449,7 +3503,7 @@ export const Index: Record<string, any> = {
     name: "p-date-picker-8",
     description: "Date picker with select-like trigger",
     type: "registry:block",
-    registryDependencies: ["@coss/calendar","@coss/popover","@coss/button"],
+    registryDependencies: ["@coss/calendar","@coss/popover","@coss/select"],
     files: [{
       path: "registry/default/particles/p-date-picker-8.tsx",
       type: "registry:block",
@@ -4326,6 +4380,258 @@ export const Index: Record<string, any> = {
     }),
     categories: ["dialog"],
     meta: undefined,
+  },
+  "p-drawer-1": {
+    name: "p-drawer-1",
+    description: "Simple bottom drawer with close button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-2": {
+    name: "p-drawer-2",
+    description: "Bottom drawer without drag bar",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-3": {
+    name: "p-drawer-3",
+    description: "Drawer with close button",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-4": {
+    name: "p-drawer-4",
+    description: "Inset variant drawers for all four positions",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-5": {
+    name: "p-drawer-5",
+    description: "Straight variant drawers for all four positions",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-6": {
+    name: "p-drawer-6",
+    description: "Scrollable content with terms and conditions",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-7": {
+    name: "p-drawer-7",
+    description: "Nested bottom drawers with centered content",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-8": {
+    name: "p-drawer-8",
+    description: "Nested right drawers with inset variant",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-9": {
+    name: "p-drawer-9",
+    description: "Bottom drawer with snap points",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-10": {
+    name: "p-drawer-10",
+    description: "Edit profile form with default and bare footer variants",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/field","@coss/form","@coss/input"],
+    files: [{
+      path: "registry/default/particles/p-drawer-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-11": {
+    name: "p-drawer-11",
+    description: "Mobile menu drawer from the left",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: undefined,
+  },
+  "p-drawer-12": {
+    name: "p-drawer-12",
+    description: "Responsive edit profile: dialog on desktop, drawer on mobile",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/dialog","@coss/drawer","@coss/field","@coss/form","@coss/input","@coss/use-media-query"],
+    files: [{
+      path: "registry/default/particles/p-drawer-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer","dialog"],
+    meta: undefined,
+  },
+  "p-drawer-13": {
+    name: "p-drawer-13",
+    description: "Responsive actions menu: menu on desktop, drawer on mobile",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer","@coss/menu","@coss/use-media-query"],
+    files: [{
+      path: "registry/default/particles/p-drawer-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer","menu"],
+    meta: undefined,
+  },
+  "p-drawer-14": {
+    name: "p-drawer-14",
+    description: "Left drawer with swipe area",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/drawer"],
+    files: [{
+      path: "registry/default/particles/p-drawer-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-drawer-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["drawer"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-md"},
   },
   "p-empty-1": {
     name: "p-empty-1",
@@ -5514,6 +5820,132 @@ export const Index: Record<string, any> = {
     }),
     categories: ["input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-input-otp-1": {
+    name: "p-input-otp-1",
+    description: "Basic OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-2": {
+    name: "p-input-otp-2",
+    description: "Large OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-3": {
+    name: "p-input-otp-3",
+    description: "OTP input with separator",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-4": {
+    name: "p-input-otp-4",
+    description: "OTP input with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","label"],
+    meta: undefined,
+  },
+  "p-input-otp-5": {
+    name: "p-input-otp-5",
+    description: "Digits-only OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input"],
+    meta: undefined,
+  },
+  "p-input-otp-6": {
+    name: "p-input-otp-6",
+    description: "Invalid OTP input",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","validation"],
+    meta: undefined,
+  },
+  "p-input-otp-7": {
+    name: "p-input-otp-7",
+    description: "OTP input with auto validation",
+    type: "registry:block",
+    registryDependencies: ["@coss/input-otp","@coss/label"],
+    files: [{
+      path: "registry/default/particles/p-input-otp-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-input-otp-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["input otp","input","validation"],
+    meta: undefined,
   },
   "p-input-group-1": {
     name: "p-input-group-1",
@@ -7237,6 +7669,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-select-22.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-23": {
+    name: "p-select-23",
+    description: "Select with label",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-23.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-23.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -9041,6 +9491,16 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["tooltip"],
+    meta: undefined,
+  },
+  "fonts": {
+    name: "fonts",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: ["@coss/font-sans","@coss/font-heading","@coss/font-mono"],
+    files: [],
+    component: null,
+    categories: undefined,
     meta: undefined,
   },
   "utils": {

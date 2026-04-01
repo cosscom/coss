@@ -31,7 +31,10 @@ export function AutocompleteInput({
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
 
   return (
-    <div className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64">
+    <AutocompletePrimitive.InputGroup
+      className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64"
+      data-slot="autocomplete-input-group"
+    >
       {startAddon && (
         <div
           aria-hidden="true"
@@ -78,7 +81,7 @@ export function AutocompleteInput({
           <XIcon />
         </AutocompleteClear>
       )}
-    </div>
+    </AutocompletePrimitive.InputGroup>
   );
 }
 

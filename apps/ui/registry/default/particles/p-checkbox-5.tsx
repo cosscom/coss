@@ -22,11 +22,11 @@ export default function Particle() {
     <Form className="w-auto" onSubmit={onSubmit}>
       <Field name="terms">
         <FieldLabel>
-          <Checkbox defaultChecked disabled={loading} value="yes" />
+          <Checkbox defaultChecked value="yes" />
           Accept terms and conditions
         </FieldLabel>
       </Field>
-      <Button disabled={loading} type="submit">
+      <Button loading={loading} type="submit">
         Submit
       </Button>
     </Form>
