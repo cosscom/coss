@@ -3,8 +3,8 @@
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { toastManager } from "@coss/ui/components/toast";
 import {
-  Toggle,
   ToggleGroup,
+  ToggleGroupItem,
   ToggleGroupSeparator,
 } from "@coss/ui/components/toggle-group";
 import { useState } from "react";
@@ -66,17 +66,20 @@ export function TeamFeaturesPageClient() {
                   value={[enhancedBookings]}
                   variant="outline"
                 >
-                  <Toggle aria-label="Disable" value="disabled">
+                  <ToggleGroupItem aria-label="Disable" value="disabled">
                     Disable
-                  </Toggle>
+                  </ToggleGroupItem>
                   <ToggleGroupSeparator />
-                  <Toggle aria-label="Enable" value="enabled">
+                  <ToggleGroupItem aria-label="Enable" value="enabled">
                     Enable
-                  </Toggle>
+                  </ToggleGroupItem>
                   <ToggleGroupSeparator />
-                  <Toggle aria-label="Let users decide" value="inherit">
+                  <ToggleGroupItem
+                    aria-label="Let users decide"
+                    value="inherit"
+                  >
                     Let users decide
-                  </Toggle>
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </CardPanel>

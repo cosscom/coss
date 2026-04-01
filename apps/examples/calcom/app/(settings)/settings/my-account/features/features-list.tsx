@@ -2,8 +2,8 @@
 
 import { toastManager } from "@coss/ui/components/toast";
 import {
-  Toggle,
   ToggleGroup,
+  ToggleGroupItem,
   ToggleGroupSeparator,
 } from "@coss/ui/components/toggle-group";
 import { useState } from "react";
@@ -65,17 +65,17 @@ export function FeaturesList() {
             value={[featureStates[feature.slug] ?? "inherit"]}
             variant="outline"
           >
-            <Toggle aria-label="Off" value="disabled">
+            <ToggleGroupItem aria-label="Off" value="disabled">
               Off
-            </Toggle>
+            </ToggleGroupItem>
             <ToggleGroupSeparator />
-            <Toggle aria-label="On" value="enabled">
+            <ToggleGroupItem aria-label="On" value="enabled">
               On
-            </Toggle>
+            </ToggleGroupItem>
             <ToggleGroupSeparator />
-            <Toggle aria-label="Default" value="inherit">
+            <ToggleGroupItem aria-label="Default" value="inherit">
               Default
-            </Toggle>
+            </ToggleGroupItem>
           </ToggleGroup>
         </div>
       ))}
