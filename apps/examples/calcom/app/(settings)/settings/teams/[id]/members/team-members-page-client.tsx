@@ -494,7 +494,7 @@ export function TeamMembersPageClient() {
               value={roleFilterItem}
             >
               <ComboboxTrigger
-                render={<SelectButton className="min-w-0 w-fit" size="sm" />}
+                render={<SelectButton className="w-fit min-w-0" size="sm" />}
               >
                 <span className="flex min-w-0 items-center gap-2">
                   <FunnelIcon aria-hidden="true" className="size-4 shrink-0" />
