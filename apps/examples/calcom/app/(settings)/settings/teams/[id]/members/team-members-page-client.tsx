@@ -37,7 +37,6 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { SelectButton } from "@coss/ui/components/select";
 import {
   Table,
   TableBody,
@@ -46,6 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   type ColumnDef,
   flexRender,
@@ -224,10 +224,23 @@ function MemberActions({
   );
 }
 
+type MemberColumnMeta = { memberColumnWidth?: "auto" };
+
+function columnUsesAutoMemberWidth(column: {
+  columnDef: ColumnDef<TeamMember, unknown>;
+}): boolean {
+  return (
+    (column.columnDef.meta as MemberColumnMeta | undefined)
+      ?.memberColumnWidth === "auto"
+  );
+}
+
 function getColumns({
+  memberColumnWidthAuto,
   showRoleColumn,
   showLastActiveColumn,
 }: {
+  memberColumnWidthAuto: boolean;
   showRoleColumn: boolean;
   showLastActiveColumn: boolean;
 }): ColumnDef<TeamMember>[] {
@@ -252,8 +265,7 @@ function getColumns({
         />
       ),
       id: "select",
-      maxSize: 32,
-      size: 32,
+      size: 26,
     },
     {
       accessorKey: "name",
@@ -279,7 +291,13 @@ function getColumns({
         </div>
       ),
       header: "Member",
-      size: 280,
+      ...(memberColumnWidthAuto
+        ? {
+            meta: {
+              memberColumnWidth: "auto" as const,
+            } satisfies MemberColumnMeta,
+          }
+        : { size: 240 }),
     },
   ];
 
@@ -288,7 +306,7 @@ function getColumns({
       accessorKey: "role",
       cell: ({ row }) => <RoleBadge role={row.original.role} />,
       header: "Role",
-      size: 160,
+      size: 80,
     });
   }
 
@@ -301,7 +319,7 @@ function getColumns({
         </span>
       ),
       header: "Last Active",
-      size: 160,
+      size: 100,
     });
   }
 
@@ -317,13 +335,14 @@ function getColumns({
     enableSorting: false,
     header: () => <span className="sr-only">Actions</span>,
     id: "actions",
-    size: 120,
+    size: 80,
   });
 
   return cols;
 }
 
 export function TeamMembersPageClient() {
+  const isMin480Up = useMediaQuery({ min: 480 });
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [searchValue, setSearchValue] = useState("");
   const [showRoleColumn, setShowRoleColumn] = useState(true);
@@ -350,10 +369,11 @@ export function TeamMembersPageClient() {
   const columns = useMemo(
     () =>
       getColumns({
+        memberColumnWidthAuto: isMin480Up,
         showLastActiveColumn,
         showRoleColumn,
       }),
-    [showLastActiveColumn, showRoleColumn],
+    [isMin480Up, showLastActiveColumn, showRoleColumn],
   );
 
   const roleFilterItem =
@@ -513,23 +533,32 @@ export function TeamMembersPageClient() {
         </div>
 
         <CardFrame className="w-full">
-          <Table className="table-fixed" variant="boxed">
+          <Table variant="boxed" className="table-fixed">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow className="hover:bg-transparent" key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const columnSize = header.column.getSize();
+                    const memberWidthAuto = columnUsesAutoMemberWidth(
+                      header.column,
+                    );
 
                     return (
                       <TableHead
                         className={
                           header.column.id === "select"
                             ? "w-px pe-0"
-                            : undefined
+                            : memberWidthAuto
+                              ? "min-w-0 w-auto"
+                              : undefined
                         }
                         key={header.id}
                         style={
-                          columnSize ? { width: `${columnSize}px` } : undefined
+                          memberWidthAuto
+                            ? { minWidth: 0, width: "auto" }
+                            : columnSize
+                              ? { width: `${columnSize}px` }
+                              : undefined
                         }
                       >
                         {header.isPlaceholder ? null : header.column.getCanSort() ? (
@@ -585,19 +614,19 @@ export function TeamMembersPageClient() {
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     key={row.id}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        className={
-                          cell.column.id === "select" ? "w-px pe-0" : undefined
-                        }
-                        key={cell.id}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      const memberWidthAuto = columnUsesAutoMemberWidth(
+                        cell.column,
+                      );
+                      return (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))
               ) : (
