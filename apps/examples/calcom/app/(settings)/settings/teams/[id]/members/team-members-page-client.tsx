@@ -28,6 +28,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@coss/ui/components/input-group";
+import { Label } from "@coss/ui/components/label";
 import {
   Menu,
   MenuGroup,
@@ -247,11 +248,14 @@ function getColumns({
   const cols: ColumnDef<TeamMember>[] = [
     {
       cell: ({ row }) => (
-        <Checkbox
-          aria-label={`Select ${row.original.name}`}
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-        />
+        <Label className="before:absolute before:inset-0">
+          <Checkbox
+            aria-label={`Select ${row.original.name}`}
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+          />
+          <span className="sr-only">{`Select ${row.original.name}`}</span>
+        </Label>
       ),
       enableSorting: false,
       header: ({ table }) => (
@@ -265,7 +269,7 @@ function getColumns({
         />
       ),
       id: "select",
-      size: 26,
+      size: 28,
     },
     {
       accessorKey: "name",
@@ -536,7 +540,7 @@ export function TeamMembersPageClient() {
           <Table variant="boxed" className="table-fixed">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow className="hover:bg-transparent" key={headerGroup.id}>
+                <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const columnSize = header.column.getSize();
                     const memberWidthAuto = columnUsesAutoMemberWidth(
@@ -611,6 +615,7 @@ export function TeamMembersPageClient() {
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
+                    className="relative"
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     key={row.id}
                   >
