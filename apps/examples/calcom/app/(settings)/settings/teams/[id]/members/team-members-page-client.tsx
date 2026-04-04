@@ -441,11 +441,7 @@ export function TeamMembersPageClient() {
                 <SlidersHorizontalIcon aria-hidden="true" />
                 Display
               </ComboboxTrigger>
-              <ComboboxPopup
-                align="start"
-                aria-label="Toggle columns"
-                className="min-w-56"
-              >
+              <ComboboxPopup align="start" aria-label="Toggle columns">
                 <div className="border-b p-2">
                   <ComboboxInput
                     placeholder="Search"
