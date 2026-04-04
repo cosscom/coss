@@ -346,7 +346,7 @@ function getColumns({
 }
 
 export function TeamMembersPageClient() {
-  const isMin480Up = useMediaQuery({ min: 480 });
+  const isSmUp = useMediaQuery("sm");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [searchValue, setSearchValue] = useState("");
   const [showRoleColumn, setShowRoleColumn] = useState(true);
@@ -373,11 +373,11 @@ export function TeamMembersPageClient() {
   const columns = useMemo(
     () =>
       getColumns({
-        memberColumnWidthAuto: isMin480Up,
+        memberColumnWidthAuto: isSmUp,
         showLastActiveColumn,
         showRoleColumn,
       }),
-    [isMin480Up, showLastActiveColumn, showRoleColumn],
+    [isSmUp, showLastActiveColumn, showRoleColumn],
   );
 
   const roleFilterItem =
