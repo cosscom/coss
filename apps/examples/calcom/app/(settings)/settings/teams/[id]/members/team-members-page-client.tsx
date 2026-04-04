@@ -46,7 +46,6 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
-import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   type ColumnDef,
   flexRender,
@@ -225,23 +224,10 @@ function MemberActions({
   );
 }
 
-type MemberColumnMeta = { memberColumnWidth?: "auto" };
-
-function columnUsesAutoMemberWidth(column: {
-  columnDef: ColumnDef<TeamMember, unknown>;
-}): boolean {
-  return (
-    (column.columnDef.meta as MemberColumnMeta | undefined)
-      ?.memberColumnWidth === "auto"
-  );
-}
-
 function getColumns({
-  memberColumnWidthAuto,
   showRoleColumn,
   showLastActiveColumn,
 }: {
-  memberColumnWidthAuto: boolean;
   showRoleColumn: boolean;
   showLastActiveColumn: boolean;
 }): ColumnDef<TeamMember>[] {
@@ -295,13 +281,7 @@ function getColumns({
         </div>
       ),
       header: "Member",
-      ...(memberColumnWidthAuto
-        ? {
-            meta: {
-              memberColumnWidth: "auto" as const,
-            } satisfies MemberColumnMeta,
-          }
-        : { size: 240 }),
+      size: 240,
     },
   ];
 
@@ -346,7 +326,6 @@ function getColumns({
 }
 
 export function TeamMembersPageClient() {
-  const isSmUp = useMediaQuery("sm");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [searchValue, setSearchValue] = useState("");
   const [showRoleColumn, setShowRoleColumn] = useState(true);
@@ -373,11 +352,10 @@ export function TeamMembersPageClient() {
   const columns = useMemo(
     () =>
       getColumns({
-        memberColumnWidthAuto: isSmUp,
         showLastActiveColumn,
         showRoleColumn,
       }),
-    [isSmUp, showLastActiveColumn, showRoleColumn],
+    [showLastActiveColumn, showRoleColumn],
   );
 
   const roleFilterItem =
@@ -543,26 +521,15 @@ export function TeamMembersPageClient() {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const columnSize = header.column.getSize();
-                    const memberWidthAuto = columnUsesAutoMemberWidth(
-                      header.column,
-                    );
 
                     return (
                       <TableHead
                         className={
-                          header.column.id === "select"
-                            ? "w-px pe-0"
-                            : memberWidthAuto
-                              ? "min-w-0 w-auto"
-                              : undefined
+                          header.column.id === "name" ? "sm:w-auto!" : undefined
                         }
                         key={header.id}
                         style={
-                          memberWidthAuto
-                            ? { minWidth: 0, width: "auto" }
-                            : columnSize
-                              ? { width: `${columnSize}px` }
-                              : undefined
+                          columnSize ? { width: `${columnSize}px` } : undefined
                         }
                       >
                         {header.isPlaceholder ? null : header.column.getCanSort() ? (
@@ -619,19 +586,14 @@ export function TeamMembersPageClient() {
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     key={row.id}
                   >
-                    {row.getVisibleCells().map((cell) => {
-                      const memberWidthAuto = columnUsesAutoMemberWidth(
-                        cell.column,
-                      );
-                      return (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      );
-                    })}
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))
               ) : (
