@@ -409,7 +409,7 @@ export function TeamMembersPageClient() {
       <div className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2">
-            <InputGroup className="w-full sm:max-w-64">
+            <InputGroup className="w-full sm:max-w-52">
               <InputGroupInput
                 aria-label="Search members"
                 onChange={(event) => setSearchValue(event.target.value)}
@@ -436,12 +436,10 @@ export function TeamMembersPageClient() {
               value={columnToggleValue}
             >
               <ComboboxTrigger
-                render={<SelectButton aria-label="Display" className="w-fit" />}
+                render={<Button aria-label="Display" variant="outline" />}
               >
-                <span className="flex min-w-0 items-center gap-2">
-                  <SlidersHorizontalIcon aria-hidden="true" />
-                  Display
-                </span>
+                <SlidersHorizontalIcon aria-hidden="true" />
+                Display
               </ComboboxTrigger>
               <ComboboxPopup
                 align="start"
@@ -490,13 +488,9 @@ export function TeamMembersPageClient() {
               onValueChange={(item) => item && setRoleFilter(item.value)}
               value={roleFilterItem}
             >
-              <ComboboxTrigger
-                render={<SelectButton className="w-fit min-w-0" size="sm" />}
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <FunnelIcon aria-hidden="true" className="size-4 shrink-0" />
-                  <ComboboxValue />
-                </span>
+              <ComboboxTrigger render={<Button variant="outline" />}>
+                <FunnelIcon aria-hidden="true" />
+                <ComboboxValue />
               </ComboboxTrigger>
               <ComboboxPopup align="start" aria-label="Filter by role">
                 <ComboboxEmpty>No roles found.</ComboboxEmpty>
