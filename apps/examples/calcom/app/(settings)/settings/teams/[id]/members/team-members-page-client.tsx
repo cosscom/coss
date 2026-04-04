@@ -448,7 +448,6 @@ export function TeamMembersPageClient() {
               >
                 <div className="border-b p-2">
                   <ComboboxInput
-                    className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
                     placeholder="Search"
                     showTrigger={false}
                     size="sm"
@@ -472,6 +471,7 @@ export function TeamMembersPageClient() {
                   <Button
                     className="w-full"
                     variant="outline"
+                    size="sm"
                     onClick={() => {
                       setShowRoleColumn(true);
                       setShowLastActiveColumn(true);
