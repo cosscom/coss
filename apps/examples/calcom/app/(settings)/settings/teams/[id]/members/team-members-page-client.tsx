@@ -161,10 +161,7 @@ const ROLE_LABEL: Record<TeamRole, string> = {
 
 function RoleBadge({ role }: { role: TeamRole }) {
   return (
-    <Badge
-      className="border-transparent shadow-none"
-      variant={role === "OWNER" ? "info" : "secondary"}
-    >
+    <Badge variant={role === "OWNER" ? "info" : "secondary"}>
       {ROLE_LABEL[role]}
     </Badge>
   );
@@ -282,7 +279,7 @@ function getColumns({
         </div>
       ),
       header: "Member",
-      size: 420,
+      size: 280,
     },
   ];
 
