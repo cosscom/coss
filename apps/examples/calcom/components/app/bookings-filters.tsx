@@ -44,6 +44,7 @@ import {
   EllipsisIcon,
   ListFilterIcon,
   PencilIcon,
+  PlusIcon,
   SearchIcon,
   TrashIcon,
   XIcon,
@@ -409,7 +410,6 @@ function ActiveFilterComponent({
       );
       setSortedItems([...selected, ...unselected]);
     }
-    // Remove filter if combobox closes with no selection
     if (!isOpen && selectedValues.length === 0) {
       onRemove();
     }
@@ -482,6 +482,18 @@ function ActiveFilterComponent({
               </ComboboxItem>
             )}
           </ComboboxList>
+          {selectedOptions.length > 0 && (
+            <div className="border-t p-2">
+              <Button
+                className="w-full"
+                onClick={(): void => onUpdate([])}
+                size="sm"
+                variant="outline"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </ComboboxPopup>
       </Combobox>
       <GroupSeparator />
@@ -721,7 +733,7 @@ export function BookingsFilters(): React.ReactElement {
   return (
     <div className="mt-6 flex flex-col gap-2">
       {/* Search + Filter menu */}
-      <div className="gap-2 flex flex-col sm:flex-row">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <div className="flex-1">
           <InputGroup className="sm:max-w-[200px]">
             <InputGroupAddon>
@@ -735,7 +747,7 @@ export function BookingsFilters(): React.ReactElement {
             />
           </InputGroup>
         </div>
-        <div className="flex items-center gap-2 justify-between">
+        <div className="flex items-center justify-between gap-2">
           <FilterMenu
             activeFilterIds={activeFilterIds}
             hasFilters={hasFilters}
@@ -745,7 +757,7 @@ export function BookingsFilters(): React.ReactElement {
         </div>
       </div>
       {hasFilters && (
-        <div className="p-2 bg-muted rounded-xl flex items-start justify-between gap-2 flex-wrap">
+        <div className="flex flex-wrap items-start justify-between gap-2 rounded-xl bg-muted p-2">
           {/* Active filters */}
           <div className="flex flex-wrap gap-2">
             {activeFilters.map((filter) => {
@@ -764,6 +776,39 @@ export function BookingsFilters(): React.ReactElement {
                 />
               );
             })}
+            {activeFilters.every((f) => f.v && f.v.length > 0) &&
+              filterCategories.some((c) => !activeFilterIds.includes(c.id)) && (
+                <Menu>
+                  <MenuTrigger
+                    render={
+                      <Button
+                        aria-label="Add filter"
+                        size="icon-xs"
+                        variant="ghost"
+                      />
+                    }
+                  >
+                    <PlusIcon />
+                  </MenuTrigger>
+                  <MenuPopup align="start">
+                    <MenuGroup>
+                      <MenuGroupLabel>Filter by</MenuGroupLabel>
+                      {filterCategories
+                        .filter((c) => !activeFilterIds.includes(c.id))
+                        .map((category) => (
+                          <MenuItem
+                            key={category.id}
+                            onClick={(): void =>
+                              handleSelectFilter(category.id)
+                            }
+                          >
+                            {category.label}
+                          </MenuItem>
+                        ))}
+                    </MenuGroup>
+                  </MenuPopup>
+                </Menu>
+              )}
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
