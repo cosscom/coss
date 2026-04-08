@@ -18,6 +18,11 @@ import {
 } from "@coss/ui/components/combobox";
 import { Group, GroupSeparator, GroupText } from "@coss/ui/components/group";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@coss/ui/components/input-group";
+import {
   Menu,
   MenuGroup,
   MenuGroupLabel,
@@ -26,13 +31,17 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import { Separator } from "@coss/ui/components/separator";
+import { SelectButton } from "@coss/ui/components/select";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronsUpDownIcon,
   CopyIcon,
   EllipsisIcon,
-  FunnelIcon,
   ListFilterIcon,
   PencilIcon,
   SearchIcon,
@@ -195,7 +204,7 @@ function MemberAvatar({
   className?: string;
 }): React.ReactElement {
   return (
-    <Avatar className={cn("size-5", className)}>
+    <Avatar className={cn("size-4", className)}>
       {avatarUrl ? <AvatarImage alt={name} src={avatarUrl} /> : null}
       <AvatarFallback className="text-[0.5rem]">
         {getInitials(name)}
@@ -269,10 +278,26 @@ function FilterMenu({
 
   return (
     <Menu>
-      <MenuTrigger render={<Button size="sm" variant="outline" />}>
-        <ListFilterIcon />
-        <span className="max-sm:sr-only">Add Filter</span>
-      </MenuTrigger>
+      <Tooltip>
+        <MenuTrigger
+          render={
+            <TooltipTrigger
+              render={
+                <Button aria-label="Add Filter" size="sm" variant="outline">
+                  <ListFilterIcon />
+                  Filter
+                  {activeFilterIds.length > 0 && (
+                    <Badge variant="secondary" className="-me-1">
+                      {activeFilterIds.length}
+                    </Badge>
+                  )}
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipPopup>Add Filter</TooltipPopup>
+      </Tooltip>
       <MenuPopup align="start">
         <MenuGroup>
           <MenuGroupLabel>Filter by</MenuGroupLabel>
@@ -395,13 +420,12 @@ function ActiveFilterComponent({
       <GroupText
         className={cn(
           buttonVariants({
-            size: "sm",
+            size: "xs",
             variant: "outline",
           }),
           "pointer-events-none",
         )}
       >
-        <FunnelIcon />
         {category.label}
       </GroupText>
       <GroupSeparator />
@@ -420,7 +444,7 @@ function ActiveFilterComponent({
               className={
                 selectedOptions.length === 0 ? "justify-between" : undefined
               }
-              size="sm"
+              size="xs"
               variant="outline"
             />
           }
@@ -433,6 +457,8 @@ function ActiveFilterComponent({
         <ComboboxPopup aria-label={`Select ${category.label}`}>
           <div className="border-b p-2">
             <ComboboxInput
+              size="sm"
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
               placeholder={`Search ${category.label.toLowerCase()}…`}
               showTrigger={false}
               startAddon={<SearchIcon />}
@@ -462,7 +488,7 @@ function ActiveFilterComponent({
       <Button
         aria-label="Remove filter"
         onClick={onRemove}
-        size="icon-sm"
+        size="icon-xs"
         variant="outline"
       >
         <XIcon />
@@ -481,16 +507,21 @@ const savedFilters: SavedFilter[] = [
   { id: "my-bookings", isDefault: true, label: "My bookings" },
   { id: "team-meetings", label: "Team meetings" },
   { id: "client-calls", label: "Client calls" },
+  { id: "one-on-ones", label: "1:1 meetings" },
+  { id: "demo-calls", label: "Demo calls" },
+  { id: "interviews", label: "Interviews" },
+  { id: "external-meetings", label: "External meetings" },
+  { id: "cancelled", label: "Cancelled bookings" },
+  { id: "no-show", label: "No-shows" },
+  { id: "recurring", label: "Recurring events" },
+  { id: "pending-confirmation", label: "Pending confirmation" },
+  { id: "this-week", label: "This week" },
 ];
 
 function SavedFiltersCombobox(): React.ReactElement {
   const [selectedFilter, setSelectedFilter] = useState<SavedFilter | null>(
     null,
   );
-
-  const handleClearSelection = (): void => {
-    setSelectedFilter(null);
-  };
 
   // When no filter is selected, show just the combobox trigger
   if (!selectedFilter) {
@@ -500,13 +531,14 @@ function SavedFiltersCombobox(): React.ReactElement {
         onValueChange={setSelectedFilter}
         value={selectedFilter}
       >
-        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
+        <ComboboxTrigger render={<SelectButton size="sm" className="w-fit" />}>
           Saved Filters
-          <ChevronsUpDownIcon />
         </ComboboxTrigger>
         <ComboboxPopup align="end" aria-label="Select saved filter">
           <div className="border-b p-2">
             <ComboboxInput
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              size="sm"
               placeholder="Search saved filters…"
               showTrigger={false}
               startAddon={<SearchIcon />}
@@ -554,52 +586,52 @@ function SavedFiltersCombobox(): React.ReactElement {
                 </ComboboxItem>
               )}
             </ComboboxList>
+            <div className="border-t p-2">
+              <Button
+                className="w-full rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                onClick={(): void => setSelectedFilter(null)}
+                size="sm"
+                variant="outline"
+              >
+                Clear selection
+              </Button>
+            </div>
           </ComboboxPopup>
         </Combobox>
         <GroupSeparator />
-        <Button
-          aria-label="Clear saved filter"
-          onClick={handleClearSelection}
-          size="icon-sm"
-          variant="outline"
-        >
-          <XIcon />
-        </Button>
-      </Group>
-      <Menu>
-        <MenuTrigger
-          render={
-            <Button
-              aria-label="Edit saved filter"
-              size="icon-sm"
-              variant="outline"
-            />
-          }
-        >
-          <EllipsisIcon />
-        </MenuTrigger>
-        <MenuPopup align="end">
-          {!selectedFilter.isDefault && (
+        <Menu>
+          <MenuTrigger
+            render={
+              <Button
+                aria-label="Edit saved filter"
+                size="icon-sm"
+                variant="outline"
+              />
+            }
+          >
+            <EllipsisIcon />
+          </MenuTrigger>
+          <MenuPopup align="end">
+            {!selectedFilter.isDefault && (
+              <MenuItem>
+                <PencilIcon />
+                Rename
+              </MenuItem>
+            )}
             <MenuItem>
-              <PencilIcon />
-              Rename
+              <CopyIcon />
+              Duplicate
             </MenuItem>
-          )}
-          <MenuItem>
-            <CopyIcon />
-            Duplicate
-          </MenuItem>
-          {!selectedFilter.isDefault && (
-            <>
-              <MenuSeparator />
+            {!selectedFilter.isDefault && <MenuSeparator />}
+            {!selectedFilter.isDefault && (
               <MenuItem variant="destructive">
                 <TrashIcon />
                 Delete
               </MenuItem>
-            </>
-          )}
-        </MenuPopup>
-      </Menu>
+            )}
+          </MenuPopup>
+        </Menu>
+      </Group>
     </div>
   );
 }
@@ -687,48 +719,64 @@ export function BookingsFilters(): React.ReactElement {
   const activeFilterIds = activeFilters.map((f) => f.f);
 
   return (
-    <div className="mt-6 grid grid-cols-[auto_1fr] items-start justify-between gap-2 sm:flex">
-      <div className="flex flex-1 flex-wrap gap-2 max-sm:contents">
-        <FilterMenu
-          activeFilterIds={activeFilterIds}
-          hasFilters={hasFilters}
-          onSelectFilter={handleSelectFilter}
-        />
-        <div className="flex flex-wrap gap-2 max-sm:order-1 max-sm:col-span-2 sm:contents">
-          {activeFilters.map((filter) => {
-            const category = filterCategories.find((c) => c.id === filter.f);
-            if (!category) return null;
-            return (
-              <ActiveFilterComponent
-                autoOpen={newlyAddedFilter === filter.f}
-                category={category}
-                filter={filter}
-                key={filter.f}
-                onRemove={(): void => handleRemoveFilter(filter.f)}
-                onUpdate={(values: string[]): void =>
-                  handleUpdateFilter(filter.f, values)
-                }
-              />
-            );
-          })}
+    <div className="mt-6 flex flex-col gap-2">
+      {/* Search + Filter menu */}
+      <div className="gap-2 flex flex-col sm:flex-row">
+        <div className="flex-1">
+          <InputGroup className="sm:max-w-[200px]">
+            <InputGroupAddon>
+              <SearchIcon aria-hidden="true" />
+            </InputGroupAddon>
+            <InputGroupInput
+              size="sm"
+              aria-label="Search"
+              placeholder="Search"
+              type="search"
+            />
+          </InputGroup>
+        </div>
+        <div className="flex items-center gap-2 justify-between">
+          <FilterMenu
+            activeFilterIds={activeFilterIds}
+            hasFilters={hasFilters}
+            onSelectFilter={handleSelectFilter}
+          />
+          <SavedFiltersCombobox />
         </div>
       </div>
-      <div className="flex items-center justify-end gap-2">
-        {hasFilters && (
-          <>
+      {hasFilters && (
+        <div className="p-2 bg-muted rounded-xl flex items-start justify-between gap-2 flex-wrap">
+          {/* Active filters */}
+          <div className="flex flex-wrap gap-2">
+            {activeFilters.map((filter) => {
+              const category = filterCategories.find((c) => c.id === filter.f);
+              if (!category) return null;
+              return (
+                <ActiveFilterComponent
+                  autoOpen={newlyAddedFilter === filter.f}
+                  category={category}
+                  filter={filter}
+                  key={filter.f}
+                  onRemove={(): void => handleRemoveFilter(filter.f)}
+                  onUpdate={(values: string[]): void =>
+                    handleUpdateFilter(filter.f, values)
+                  }
+                />
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Button onClick={clearAll} size="sm" variant="ghost">
+              <Button onClick={clearAll} size="xs" variant="ghost">
                 Clear
               </Button>
-              <Button size="sm" variant="outline">
+              <Button size="xs" variant="outline">
                 Save
               </Button>
             </div>
-            <Separator className="my-1" orientation="vertical" />
-          </>
-        )}
-        <SavedFiltersCombobox />
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
