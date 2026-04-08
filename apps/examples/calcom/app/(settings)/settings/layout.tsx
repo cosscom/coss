@@ -14,7 +14,7 @@ export default function SettingsLayout({
       <SettingsMobileHeader />
       <SettingsSidebar />
       <SidebarInset className="max-md:pt-14">
-        <div className="mx-auto max-w-3xl">{children}</div>
+        <div className="mx-auto max-w-6xl">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
