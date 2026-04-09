@@ -130,9 +130,7 @@ function main() {
   lines.push("");
   lines.push("Run the generator script from the coss repo root:");
   lines.push("```bash");
-  lines.push(
-    "node apps/ui/scripts/generate-particle-index.cjs",
-  );
+  lines.push("node apps/ui/scripts/generate-particle-index.cjs");
   lines.push("```");
   lines.push("");
   lines.push(
