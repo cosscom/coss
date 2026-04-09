@@ -136,10 +136,11 @@ The trigger button that opens the command dialog. Renders as a button by default
 
 The popup content container that displays the command palette inside a dialog.
 
-| Prop        | Type                         | Description                                      |
-| ----------- | ---------------------------- | ------------------------------------------------ |
-| `className` | `string`                     | Additional CSS classes to apply to the component |
-| `...props`  | Base UI Dialog Popup props   | All standard dialog popup attributes are supported |
+| Prop           | Type                         | Description                                      |
+| -------------- | ---------------------------- | ------------------------------------------------ |
+| `className`    | `string`                     | Additional CSS classes to apply to the component |
+| `portalProps`  | `Dialog.Portal.Props`        | Props forwarded to the internal portal (`keepMounted`, `container`, etc.); see Base UI Dialog portal API |
+| `...props`     | Base UI Dialog Popup props   | All standard dialog popup attributes are supported |
 
 ### CommandInput
 

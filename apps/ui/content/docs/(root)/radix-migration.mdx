@@ -375,6 +375,7 @@ The API is significantly different from shadcn/ui (cmdk). Please review both doc
 - Prefer `DialogPopup`; `DialogContent` remains for legacy
 - Use `DialogPanel` to wrap main content between `DialogHeader` and `DialogFooter`
 - If you used `asChild` on any other parts, switch to the `render` prop
+- Optional `portalProps` on `DialogPopup` forwards to Base UI `Dialog.Portal` (for example `keepMounted` or a custom `container`)
 
 **Comparison Example:**
 
@@ -458,6 +459,7 @@ So, if you want to preserve the original shadcn/ui input height (36px), you shou
 - Prefer `MenuPopup` instead of `DropdownMenuContent`
 - Prefer `MenuSubPopup` instead of `DropdownMenuSubContent`
 - If you used `asChild` on any other parts, switch to the `render` prop
+- Optional `portalProps` on `MenuPopup` forwards to Base UI `Menu.Portal` (for example `keepMounted` or a custom `container`)
 
 **Comparison Example:**
 
@@ -507,6 +509,7 @@ So, if you want to preserve the original shadcn/ui input height (36px), you shou
 - Replace `asChild` → `render` on `PopoverTrigger` and closing buttons
 - Prefer `PopoverPopup`; `PopoverContent` remains for legacy
 - If you used `asChild` on any other parts, switch to the `render` prop
+- Optional `portalProps` on `PopoverPopup` forwards to Base UI `Popover.Portal` (for example `keepMounted` or a custom `container`)
 
 **Additional Notes:**
 
