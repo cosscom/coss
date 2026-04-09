@@ -1296,7 +1296,7 @@ function BookingsFilters(): React.ReactElement {
       </div>
       {hasFilters && (
         <div className="rounded-xl bg-muted">
-          <div className="flex flex-wrap items-start justify-between gap-2 p-2 overflow-x-auto">
+          <div className="flex flex-wrap items-start justify-between gap-2 overflow-x-auto p-2">
             {/* Active filters */}
             <div className="flex flex-wrap gap-2">
               {activeFilters.map((filter) => {
@@ -1388,7 +1388,7 @@ function BookingsFilters(): React.ReactElement {
                   </Menu>
                 )}
             </div>
-            <div className="flex items-center gap-1 ms-auto">
+            <div className="ms-auto flex items-center gap-1">
               <Button onClick={clearAll} size="xs" variant="ghost">
                 Clear
               </Button>
