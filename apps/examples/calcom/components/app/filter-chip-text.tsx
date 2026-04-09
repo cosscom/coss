@@ -149,6 +149,7 @@ export function TextFilterChip({
         </PopoverTrigger>
         <PopoverPopup
           align="start"
+          className="transition-none min-w-64"
           portalProps={{
             className: "*:data-[slot=popover-positioner]:transition-none",
           }}
@@ -192,6 +193,7 @@ export function TextFilterChip({
               />
             ) : null}
             <Button
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
               disabled={applyDisabled}
               onClick={handleApply}
               size="sm"
