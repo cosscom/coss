@@ -149,7 +149,7 @@ export function TextFilterChip({
         </PopoverTrigger>
         <PopoverPopup
           align="start"
-          className="transition-none min-w-64"
+          className="min-w-64 transition-none"
           portalProps={{
             className: "*:data-[slot=popover-positioner]:transition-none",
           }}
