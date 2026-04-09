@@ -74,15 +74,17 @@ export function SheetPopup({
   side = "right",
   variant = "default",
   closeProps,
+  portalProps,
   ...props
 }: SheetPrimitive.Popup.Props & {
   showCloseButton?: boolean;
   side?: "right" | "left" | "top" | "bottom";
   variant?: "default" | "inset";
   closeProps?: SheetPrimitive.Close.Props;
+  portalProps?: SheetPrimitive.Portal.Props;
 }): React.ReactElement {
   return (
-    <SheetPortal>
+    <SheetPortal {...portalProps}>
       <SheetBackdrop />
       <SheetViewport side={side} variant={variant}>
         <SheetPrimitive.Popup

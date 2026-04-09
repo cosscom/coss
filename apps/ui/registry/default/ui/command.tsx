@@ -71,10 +71,13 @@ export function CommandDialogViewport({
 export function CommandDialogPopup({
   className,
   children,
+  portalProps,
   ...props
-}: CommandDialogPrimitive.Popup.Props): React.ReactElement {
+}: CommandDialogPrimitive.Popup.Props & {
+  portalProps?: CommandDialogPrimitive.Portal.Props;
+}): React.ReactElement {
   return (
-    <CommandDialogPortal>
+    <CommandDialogPortal {...portalProps}>
       <CommandDialogBackdrop />
       <CommandDialogViewport>
         <CommandDialogPrimitive.Popup

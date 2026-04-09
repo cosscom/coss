@@ -752,6 +752,12 @@ export default function Particle() {
 
 **Important:** Always use `render` prop instead of `asChild` (Base UI pattern, not Radix).
 
+### Portal props on composed popups (`portalProps`)
+
+Many registry `*Popup` components wrap Base UI **`Portal`** internally. When a wrapper exposes **`portalProps`**, pass Base UI portal options there (for example **`keepMounted`** or **`container`**) instead of duplicating the whole portal + positioner tree.
+
+**Where it exists:** only the wrappers listed in `apps/ui/skills/coss/references/portal-props.md`. Do not add `portalProps` to registry helpers that are not on that list (their portal stays internal).
+
 ### Group Components
 
 **Use Group for connected button groups:**
