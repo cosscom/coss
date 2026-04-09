@@ -143,18 +143,20 @@ export function DrawerPopup({
   position: positionProp,
   variant = "default",
   showBar = false,
+  portalProps,
   ...props
 }: DrawerPrimitive.Popup.Props & {
   showCloseButton?: boolean;
   position?: DrawerPosition;
   variant?: "default" | "straight" | "inset";
   showBar?: boolean;
+  portalProps?: DrawerPrimitive.Portal.Props;
 }): React.ReactElement {
   const { position: contextPosition } = useContext(DrawerContext);
   const position = positionProp ?? contextPosition;
 
   return (
-    <DrawerPortal>
+    <DrawerPortal {...portalProps}>
       <DrawerBackdrop />
       <DrawerViewport position={position} variant={variant}>
         <DrawerPrimitive.Popup
