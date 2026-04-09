@@ -34,7 +34,7 @@ Particle source files live in this repo at `apps/ui/registry/default/particles/`
 
 Run the generator script from the coss repo root:
 ```bash
-node apps/ui/skills/coss-particles/scripts/generate-particle-index.cjs
+node apps/ui/scripts/generate-particle-index.cjs
 ```
 
 Total: **474 particles** across **52 component types**

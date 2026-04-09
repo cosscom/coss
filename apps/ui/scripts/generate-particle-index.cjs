@@ -5,11 +5,11 @@
  * from the same repository.
  *
  * Usage (from the coss repo root):
- *   node apps/ui/skills/coss-particles/scripts/generate-particle-index.cjs
+ *   node apps/ui/scripts/generate-particle-index.cjs
  *
  * The script reads apps/ui/registry/registry-particles.ts, extracts all
  * particle names and descriptions, groups them by component type, and writes
- * the SKILL.md file next to this script's parent directory.
+ * the SKILL.md file to apps/ui/skills/coss-particles/SKILL.md.
  */
 
 const fs = require("node:fs");
@@ -22,7 +22,7 @@ const COSS_REPO_PARTICLES_PATH = "apps/ui/registry/default/particles";
 function main() {
   // Resolve coss repo root relative to this script
   const scriptDir = __dirname;
-  const repoRoot = path.resolve(scriptDir, "../../../../..");
+  const repoRoot = path.resolve(scriptDir, "../../..");
   const registryFile = path.join(
     repoRoot,
     "apps/ui/registry/registry-particles.ts",
@@ -131,7 +131,7 @@ function main() {
   lines.push("Run the generator script from the coss repo root:");
   lines.push("```bash");
   lines.push(
-    "node apps/ui/skills/coss-particles/scripts/generate-particle-index.cjs",
+    "node apps/ui/scripts/generate-particle-index.cjs",
   );
   lines.push("```");
   lines.push("");
@@ -167,9 +167,11 @@ function main() {
 
   const skillContent = lines.join("\n");
 
-  // Write to SKILL.md in parent directory
-  const skillDir = path.resolve(scriptDir, "..");
-  const skillFile = path.join(skillDir, "SKILL.md");
+  // Write to SKILL.md in the coss-particles skill directory
+  const skillFile = path.join(
+    repoRoot,
+    "apps/ui/skills/coss-particles/SKILL.md",
+  );
   fs.writeFileSync(skillFile, skillContent, "utf8");
 
   console.log(`Generated ${skillFile}`);
