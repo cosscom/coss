@@ -358,14 +358,21 @@ export function TeamMembersPageClient() {
     [showLastActiveColumn, showRoleColumn],
   );
 
+  const firstRoleFilterItem = ROLE_FILTER_ITEMS[0];
   const roleFilterItem =
     ROLE_FILTER_ITEMS.find((item) => item.value === roleFilter) ??
-    ROLE_FILTER_ITEMS[0]!;
+    (firstRoleFilterItem !== undefined
+      ? firstRoleFilterItem
+      : { label: "All members", value: "all" as const });
 
   const columnToggleValue = useMemo((): ColumnToggleItem[] => {
     const selected: ColumnToggleItem[] = [];
-    if (showRoleColumn) selected.push(COLUMN_TOGGLE_ITEMS[0]!);
-    if (showLastActiveColumn) selected.push(COLUMN_TOGGLE_ITEMS[1]!);
+    const roleColumn = COLUMN_TOGGLE_ITEMS[0];
+    const lastActiveColumn = COLUMN_TOGGLE_ITEMS[1];
+    if (showRoleColumn && roleColumn !== undefined) selected.push(roleColumn);
+    if (showLastActiveColumn && lastActiveColumn !== undefined) {
+      selected.push(lastActiveColumn);
+    }
     return selected;
   }, [showLastActiveColumn, showRoleColumn]);
 
