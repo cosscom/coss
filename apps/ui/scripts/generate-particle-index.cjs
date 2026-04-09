@@ -157,7 +157,7 @@ function main() {
     lines.push("");
     for (const p of particles) {
       lines.push(
-        `- **${p.name}** - ${p.desc} | [JSON](${COSS_JSON_BASE_URL}/${p.name}.json)`,
+        `- ${p.desc} | [JSON](${COSS_JSON_BASE_URL}/${p.name}.json)`,
       );
     }
     lines.push("");
