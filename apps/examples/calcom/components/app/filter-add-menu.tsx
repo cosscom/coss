@@ -10,11 +10,6 @@ import {
   MenuPopup,
   MenuTrigger,
 } from "@coss/ui/components/menu";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@coss/ui/components/tooltip";
 import { ListFilterIcon, PlusIcon } from "lucide-react";
 import type * as React from "react";
 import type { FilterField } from "./filter-chip-types";
@@ -73,26 +68,19 @@ export function FilterAddMenu({
 
   return (
     <Menu>
-      <Tooltip>
-        <MenuTrigger
-          render={
-            <TooltipTrigger
-              render={
-                <Button aria-label="Add Filter" size="sm" variant="outline">
-                  <ListFilterIcon />
-                  Filter
-                  {activeFilterIds.length > 0 && (
-                    <Badge variant="secondary" className="-me-1">
-                      {activeFilterIds.length}
-                    </Badge>
-                  )}
-                </Button>
-              }
-            />
-          }
-        />
-        <TooltipPopup>Add Filter</TooltipPopup>
-      </Tooltip>
+      <MenuTrigger
+        render={
+          <Button aria-label="Add Filter" size="sm" variant="outline">
+            <ListFilterIcon />
+            Filter
+            {activeFilterIds.length > 0 && (
+              <Badge variant="secondary" className="-me-1">
+                {activeFilterIds.length}
+              </Badge>
+            )}
+          </Button>
+        }
+      />
       {menuPopup}
     </Menu>
   );
