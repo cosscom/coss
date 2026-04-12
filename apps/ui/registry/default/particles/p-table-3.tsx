@@ -203,7 +203,7 @@ export default function Particle() {
 
   return (
     <Frame className="w-full">
-      <Table variant="boxed">
+      <Table variant="card">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

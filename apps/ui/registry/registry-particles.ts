@@ -4705,7 +4705,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("frame", "table"),
-    description: "Frame with boxed table",
+    description: "Frame with card-style table",
     files: [{ path: "particles/p-table-2.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -4765,7 +4765,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("table"),
-    description: "Boxed table variant",
+    description: "Card-style table variant",
     files: [{ path: "particles/p-table-5.tsx", type: "registry:block" }],
     meta: {
       className:

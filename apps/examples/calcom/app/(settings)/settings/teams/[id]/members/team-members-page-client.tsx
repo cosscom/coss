@@ -522,7 +522,7 @@ export function TeamMembersPageClient() {
         </div>
 
         <CardFrame className="w-full">
-          <Table variant="boxed" className="table-fixed">
+          <Table variant="card" className="table-fixed">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>

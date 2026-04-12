@@ -11,7 +11,7 @@ import {
 
 export default function Particle() {
   return (
-    <Table className="w-full" variant="boxed">
+    <Table className="w-full" variant="card">
       <TableHeader>
         <TableRow>
           <TableHead>Project</TableHead>

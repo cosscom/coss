@@ -8379,7 +8379,7 @@ export const Index: Record<string, any> = {
   },
   "p-table-2": {
     name: "p-table-2",
-    description: "Frame with boxed table",
+    description: "Frame with card-style table",
     type: "registry:block",
     registryDependencies: ["@coss/badge","@coss/frame","@coss/table"],
     files: [{
@@ -8433,7 +8433,7 @@ export const Index: Record<string, any> = {
   },
   "p-table-5": {
     name: "p-table-5",
-    description: "Boxed table variant",
+    description: "Card-style table variant",
     type: "registry:block",
     registryDependencies: ["@coss/badge","@coss/table"],
     files: [{

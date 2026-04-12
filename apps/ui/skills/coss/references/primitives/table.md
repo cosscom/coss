@@ -54,7 +54,7 @@ import {
 ## Patterns from coss particles
 
 - **Semantic baseline**: start with `TableHeader`/`TableBody`/`TableRow`/`TableHead`/`TableCell`, then add `TableCaption` and `TableFooter` as needed.
-- **Framed surfaces**: wrap table in `Frame` for bordered app-surface presentation (`p-table-2` and advanced variants).
+- **Card-style grid**: set `variant="card"` on `Table` for rounded, card-like rows and separated borders (`p-table-5`). Combine with `Frame` for page-level framing (`p-table-2`) or with `CardFrame` when the table is the main content of a card shell (`p-table-6`).
 - **Status-rich rows**: combine `Badge` and decorative dots/icons for state columns while keeping text primary.
 - **Interactive data grids**: pair coss table parts with TanStack Table (`flexRender`, row models, selection state) for sorting/pagination/selection.
 - **No-results state**: always render an explicit empty-state row with `colSpan` matching visible columns.

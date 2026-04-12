@@ -74,14 +74,22 @@ import {
 
 ### Table
 
-The main table container component.
+The main table container component. Set `variant="card"` for a card-style table: separated borders, rounded corners, and row surfaces that read as cards. That pairs well with a [Frame](/ui/docs/components/frame) (page chrome) or [CardFrame](/ui/docs/components/card) (card shell with optional header actions). The default variant is a simpler row layout with standard borders.
 
-| Prop        | Type     | Default |
-| ----------- | -------- | ------- |
-| `className` | `string` |         |
+| Prop        | Type                         | Default     |
+| ----------- | ---------------------------- | ----------- |
+| `className` | `string`                     |             |
+| `variant`   | `"default"` \| `"card"`      | `"default"` |
 
 ```tsx
 <Table>
+  <TableHeader>...</TableHeader>
+  <TableBody>...</TableBody>
+</Table>
+```
+
+```tsx
+<Table variant="card">
   <TableHeader>...</TableHeader>
   <TableBody>...</TableBody>
 </Table>
@@ -187,8 +195,20 @@ A caption for the table.
 
 ## Examples
 
-### Framed Table
+### Card-style table
 
-To achieve this framed look, simply wrap the table in a [Frame](/ui/docs/components/frame) component.
+Use `variant="card"` when the grid itself should look like a set of cards (for example dashboards or standalone tables without an outer frame).
+
+<ComponentPreview name="p-table-5" />
+
+### Framed card-style table
+
+Wrap a card-style table in a [Frame](/ui/docs/components/frame) for bordered app-surface framing. The table still uses `variant="card"` so rows keep the card-style treatment inside the frame.
 
 <ComponentPreview name="p-table-2" />
+
+### CardFrame with a data table
+
+Put the table inside [CardFrame](/ui/docs/components/card) when you want that component’s outer shell (border, radius, clipping) around the grid. Use `variant="card"` on `Table` so row surfaces match the frame. You can add `CardFrameHeader` and actions when you need a title row above the table. The preview below uses TanStack Table with row selection.
+
+<ComponentPreview name="p-table-6" />

@@ -13,7 +13,7 @@ import {
 export default function Particle() {
   return (
     <Frame className="w-full">
-      <Table variant="boxed">
+      <Table variant="card">
         <TableHeader>
           <TableRow>
             <TableHead>Project</TableHead>

@@ -1,7 +1,7 @@
 import { cn } from "@coss/ui/lib/utils";
 import type * as React from "react";
 
-export type TableVariant = "default" | "boxed";
+export type TableVariant = "default" | "card";
 
 export function Table({
   className,
@@ -18,7 +18,7 @@ export function Table({
     >
       <table
         className={cn(
-          "w-full caption-bottom in-data-[variant=boxed]:border-separate in-data-[variant=boxed]:border-spacing-0 text-sm",
+          "w-full caption-bottom in-data-[variant=card]:border-separate in-data-[variant=card]:border-spacing-0 text-sm",
           className,
         )}
         data-slot="table"
@@ -48,7 +48,7 @@ export function TableBody({
   return (
     <tbody
       className={cn(
-        "relative in-data-[variant=boxed]:rounded-xl in-data-[variant=boxed]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[variant=boxed]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[variant=boxed]:*:[tr]:border-0 in-data-[variant=boxed]:*:[tr]:bg-card in-data-[variant=boxed]:*:[tr]:*:[td]:border-b in-data-[variant=boxed]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=boxed]:*:[tr]:*:[td]:first:border-s in-data-[variant=boxed]:*:[tr]:first:*:[td]:border-t in-data-[variant=boxed]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=boxed]:*:[tr]:*:[td]:last:border-e in-data-[variant=boxed]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=boxed]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=boxed]:*:[tr]:hover:*:[td]:bg-muted/32 in-data-[variant=boxed]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/50",
+        "relative in-data-[variant=card]:rounded-xl in-data-[variant=card]:shadow-xs/5 before:pointer-events-none before:absolute before:inset-px not-in-data-[variant=card]:before:hidden before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/8%)] [&_tr:last-child]:border-0 in-data-[variant=card]:*:[tr]:border-0 in-data-[variant=card]:*:[tr]:bg-card in-data-[variant=card]:*:[tr]:*:[td]:border-b in-data-[variant=card]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=card]:*:[tr]:*:[td]:first:border-s in-data-[variant=card]:*:[tr]:first:*:[td]:border-t in-data-[variant=card]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=card]:*:[tr]:*:[td]:last:border-e in-data-[variant=card]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=card]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=card]:*:[tr]:hover:*:[td]:bg-muted/32 in-data-[variant=card]:*:[tr]:data-[state=selected]:*:[td]:bg-muted/50",
         className,
       )}
       data-slot="table-body"
@@ -64,7 +64,7 @@ export function TableFooter({
   return (
     <tfoot
       className={cn(
-        "border-t in-data-[variant=boxed]:border-none bg-muted/32 in-data-[variant=boxed]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=boxed]:**:[td]:min-h-10",
+        "border-t in-data-[variant=card]:border-none bg-muted/32 in-data-[variant=card]:bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=card]:**:[td]:min-h-10",
         className,
       )}
       data-slot="table-footer"
@@ -80,7 +80,7 @@ export function TableRow({
   return (
     <tr
       className={cn(
-        "border-b not-in-data-[variant=boxed]:hover:bg-muted/32 not-in-data-[variant=boxed]:data-[state=selected]:bg-muted/50",
+        "border-b not-in-data-[variant=card]:hover:bg-muted/32 not-in-data-[variant=card]:data-[state=selected]:bg-muted/50",
         className,
       )}
       data-slot="table-row"
@@ -112,7 +112,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        "whitespace-nowrap bg-clip-padding p-2.5 align-middle leading-none in-data-[variant=boxed]:first:p-[calc(--spacing(2.5)-1px)] in-data-[variant=boxed]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0",
+        "whitespace-nowrap bg-clip-padding p-2.5 align-middle leading-none in-data-[variant=card]:first:p-[calc(--spacing(2.5)-1px)] in-data-[variant=card]:last:p-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:pe-0",
         className,
       )}
       data-slot="table-cell"
@@ -128,7 +128,7 @@ export function TableCaption({
   return (
     <caption
       className={cn(
-        "in-data-[variant=boxed]:my-4 mt-4 text-muted-foreground text-sm",
+        "in-data-[variant=card]:my-4 mt-4 text-muted-foreground text-sm",
         className,
       )}
       data-slot="table-caption"
