@@ -64,7 +64,7 @@ export function TableFooter({
   return (
     <tfoot
       className={cn(
-        "border-t in-data-[variant=card]:border-none in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--background),var(--color-black)_4%)] font-medium dark:in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_4%)] dark:not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--background),var(--color-white)_4%)] [&>tr]:last:border-b-0 in-data-[variant=card]:**:[td]:min-h-10",
+        "border-t in-data-[variant=card]:border-none not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] dark:not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] bg-transparent font-medium [&>tr]:last:border-b-0 in-data-[variant=card]:**:[td]:min-h-10",
         className,
       )}
       data-slot="table-footer"
