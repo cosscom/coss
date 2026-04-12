@@ -201,15 +201,21 @@ Use `variant="card"` when the grid itself should look like a set of cards (for e
 
 <ComponentPreview name="p-table-5" />
 
-### Framed card-style table
+### Table in CardFrame
 
-Wrap a card-style table in a [Frame](/ui/docs/components/frame) for bordered app-surface framing. The table still uses `variant="card"` so rows keep the card-style treatment inside the frame.
+Put the table in [CardFrame](/ui/docs/components/card) so the grid sits inside the card shell (border, radius, clipping). Use `variant="card"` on `Table`. The example below is static markup—no row selection or TanStack.
+
+<ComponentPreview name="p-table-7" />
+
+### Table in Frame
+
+Wrap the table in a [Frame](/ui/docs/components/frame) for bordered app-surface framing. Use `variant="card"` on `Table` so rows keep the card-style treatment inside the frame.
 
 <ComponentPreview name="p-table-2" />
 
-### CardFrame with a data table
+### Data table with TanStack
 
-Put the table inside [CardFrame](/ui/docs/components/card) when you want that component’s outer shell (border, radius, clipping) around the grid. Use `variant="card"` on `Table` so row surfaces match the frame. You can add `CardFrameHeader` and actions when you need a title row above the table. The preview below uses TanStack Table with row selection.
+Use [TanStack Table](https://tanstack.com/table) with `variant="card"` when you need column definitions, row selection, and `flexRender` over the same table primitives. Add `@tanstack/react-table` to your project for headless state (sorting, pagination, selection) beyond static markup.
 
 <ComponentPreview name="p-table-6" />
 
