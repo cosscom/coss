@@ -3,6 +3,26 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## Apr 12, 2026
+
+### Table
+
+`Table` now supports an optional **`variant`** prop: **`"default"`** (the default) or **`"card"`**. Omitting it keeps the same appearance as before. Use **`variant="card"`** for the card-style grid (separated rows, rounded cells, updated hover/footer treatment)—including tables inside a [Frame](/ui/docs/components/frame) or [CardFrame](/ui/docs/components/card) as shown in the [Table docs](/ui/docs/components/table).
+
+**Migration:**
+
+No change required for existing tables. Opt in where you want the card-style table:
+
+```tsx
+<Table variant="card">
+```
+
+**Agent migration prompt:**
+
+```text
+After upgrading @coss/table, Table supports an optional variant prop: "default" (default) or "card". Existing Table components require no edits. Add variant="card" to Table where you want the card-style table (e.g. inside Frame or CardFrame). Do not add variant to every table—only where the design calls for the card-style grid.
+```
+
 ## Mar 20, 2026
 
 ### Toggle Group
