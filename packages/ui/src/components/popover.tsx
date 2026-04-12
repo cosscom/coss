@@ -37,13 +37,13 @@ export function PopoverPopup({
   portalProps,
   ...props
 }: PopoverPrimitive.Popup.Props & {
+  portalProps?: PopoverPrimitive.Portal.Props;
   side?: PopoverPrimitive.Positioner.Props["side"];
   align?: PopoverPrimitive.Positioner.Props["align"];
   sideOffset?: PopoverPrimitive.Positioner.Props["sideOffset"];
   alignOffset?: PopoverPrimitive.Positioner.Props["alignOffset"];
   tooltipStyle?: boolean;
   anchor?: PopoverPrimitive.Positioner.Props["anchor"];
-  portalProps?: PopoverPrimitive.Portal.Props;
 }): React.ReactElement {
   return (
     <PopoverPrimitive.Portal {...portalProps}>
