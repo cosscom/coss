@@ -589,7 +589,6 @@ export function TeamMembersPageClient() {
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
-                    className="relative"
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     key={row.id}
                   >
