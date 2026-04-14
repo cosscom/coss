@@ -168,7 +168,7 @@
       .animate-toast-shake-odd,
       .animate-toast-shake-even
     ) {
-    animation: none !important;
+    animation: none;
   }
 }
 

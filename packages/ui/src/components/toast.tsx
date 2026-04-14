@@ -250,16 +250,9 @@ function AnchoredToasts(): React.ReactElement {
   );
 }
 
-/**
- * Stacked toasts. Pass the same `id` on repeated `add` calls to update a toast in place (dedupe) and replay the re-notify animation via `updateKey`.
- * @see https://base-ui.com/react/components/toast
- */
 export const toastManager: ReturnType<typeof Toast.createToastManager> =
   Toast.createToastManager();
 
-/**
- * Anchored toasts. Same `id` + `add` semantics as `toastManager`.
- */
 export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
   Toast.createToastManager();
 
