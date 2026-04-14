@@ -63,8 +63,8 @@
     cubic-bezier(0.5, 1, 0.89, 1) both;
   --animate-toast-success-even: toast-success-even 0.32s
     cubic-bezier(0.5, 1, 0.89, 1) both;
-  --animate-toast-error-odd: toast-error-odd 0.28s
-    cubic-bezier(0.5, 1, 0.89, 1) both;
+  --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1)
+    both;
   --animate-toast-error-even: toast-error-even 0.28s
     cubic-bezier(0.5, 1, 0.89, 1) both;
   --tw-shadow-color: #000;
