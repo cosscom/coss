@@ -125,6 +125,20 @@ Allowed values: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-ce
 <ToastProvider position="top-center">{children}</ToastProvider>
 ```
 
+### Deduplicated toasts (upsert)
+
+Pass a stable `id` when calling `toastManager.add`. If a toast with that `id` already exists, Base UI updates it in place, refreshes the auto-dismiss timer, and increments `updateKey`. The styled toast replays a short re-notify animation on each update.
+
+```tsx
+toastManager.add({
+  id: "save-status",
+  title: "Saved",
+  description: "Your draft was updated.",
+})
+```
+
+<ComponentPreview name="p-toast-10" />
+
 ### Anchored Toasts
 
 For toasts positioned relative to a specific element, use `anchoredToastManager`. The `AnchoredToastProvider` is typically added to your app layout (alongside `ToastProvider`), so you can use `anchoredToastManager` directly in your components:
@@ -152,6 +166,8 @@ anchoredToastManager.add({
 })
 ```
 
+<ComponentPreview name="p-toast-12" />
+
 ## API Reference
 
 ### ToastProvider
@@ -168,11 +184,11 @@ Provider component for toasts anchored to specific elements. Use with `anchoredT
 
 ### toastManager
 
-Manager object for creating stacked toasts. Use `toastManager.add()` to show a toast.
+Manager object for creating stacked toasts. Use `toastManager.add()` to show a toast. Pass the same `id` on a later `add` to update that toast in place (dedupe) instead of stacking a duplicate.
 
 ### anchoredToastManager
 
-Manager object for creating anchored toasts. Use `anchoredToastManager.add()` with `positionerProps.anchor` to show a toast anchored to an element.
+Manager object for creating anchored toasts. Use `anchoredToastManager.add()` with `positionerProps.anchor` to show a toast anchored to an element. Repeated `add` calls with the same `id` update in place, same as stacked toasts.
 
 ### ToastViewport
 

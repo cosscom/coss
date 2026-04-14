@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-1",
-  "description": "Basic toast",
+  "description": "Default stacked toast with title and description",
   "registryDependencies": [
     "@coss/button",
     "@coss/toast"

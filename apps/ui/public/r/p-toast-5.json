@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-5",
-  "description": "Promise toast",
+  "description": "Promise-based stacked toast",
   "registryDependencies": [
     "@coss/button",
     "@coss/toast"
