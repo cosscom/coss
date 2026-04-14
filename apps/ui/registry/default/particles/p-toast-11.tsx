@@ -11,7 +11,7 @@ export default function Particle() {
       onClick={() => {
         toastManager.add({
           description:
-            "Repeated taps update the same toast; error type uses the shake motion.",
+            "Repeated clicks update this toast; errors use a shake animation.",
           id: ERROR_TOAST_ID,
           title: "Something went wrong",
           type: "error",
@@ -19,7 +19,7 @@ export default function Particle() {
       }}
       variant="outline"
     >
-      Error toast (upsert)
+      One Error Toast
     </Button>
   );
 }

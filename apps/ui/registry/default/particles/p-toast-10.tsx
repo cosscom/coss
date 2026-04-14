@@ -11,7 +11,7 @@ export default function Particle() {
       onClick={() => {
         toastManager.add({
           description:
-            "Only one toast stays visible; repeated clicks update it.",
+            "Repeated clicks update this toast instead of stacking another.",
           id: DEDUP_ID,
           title: "Saved",
           type: "success",
@@ -19,7 +19,7 @@ export default function Particle() {
       }}
       variant="outline"
     >
-      Upsert same toast
+      One Success Toast
     </Button>
   );
 }
