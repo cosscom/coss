@@ -163,11 +163,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   :where(
-    .animate-toast-bounce-odd,
-    .animate-toast-bounce-even,
-    .animate-toast-shake-odd,
-    .animate-toast-shake-even
-  ) {
+      .animate-toast-bounce-odd,
+      .animate-toast-bounce-even,
+      .animate-toast-shake-odd,
+      .animate-toast-shake-even
+    ) {
     animation: none !important;
   }
 }
