@@ -9718,7 +9718,6 @@
       "categories": [
         "card",
         "checkbox",
-        "frame",
         "table",
         "tanstack"
       ],

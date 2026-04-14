@@ -8482,7 +8482,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["card","checkbox","frame","table","tanstack"],
+    categories: ["card","checkbox","table","tanstack"],
     meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
   },
   "p-table-8": {
