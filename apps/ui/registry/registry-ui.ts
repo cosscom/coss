@@ -699,59 +699,75 @@ export const ui: Registry["items"] = [
         "0%": {
           scale: "1",
         },
-        "50%": {
-          scale: "1.03",
+        "30%": {
+          scale: "1.025",
+        },
+        "60%": {
+          scale: "0.99",
         },
         "100%": {
           scale: "1",
         },
       },
       "@keyframes toast-shake-odd": {
-        "20%": {
-          translate: "-3px 0",
+        "0%": {
+          translate: "0 0",
         },
-        "40%": {
-          translate: "3px 0",
+        "25%": {
+          translate: "-2px 0",
         },
-        "60%": {
-          translate: "-3px 0",
+        "50%": {
+          translate: "2px 0",
         },
-        "80%": {
-          translate: "3px 0",
+        "75%": {
+          translate: "-1px 0",
+        },
+        "100%": {
+          translate: "0 0",
         },
       },
       "@keyframes toast-bounce-even": {
         "0%": {
           scale: "1",
         },
-        "50%": {
-          scale: "1.03",
+        "30%": {
+          scale: "1.025",
+        },
+        "60%": {
+          scale: "0.99",
         },
         "100%": {
           scale: "1",
         },
       },
       "@keyframes toast-shake-even": {
-        "20%": {
-          translate: "-3px 0",
+        "0%": {
+          translate: "0 0",
         },
-        "40%": {
-          translate: "3px 0",
+        "25%": {
+          translate: "-2px 0",
         },
-        "60%": {
-          translate: "-3px 0",
+        "50%": {
+          translate: "2px 0",
         },
-        "80%": {
-          translate: "3px 0",
+        "75%": {
+          translate: "-1px 0",
+        },
+        "100%": {
+          translate: "0 0",
         },
       },
     },
     cssVars: {
       theme: {
-        "--animate-toast-bounce-odd": "toast-bounce-odd 0.28s ease-out both",
-        "--animate-toast-bounce-even": "toast-bounce-even 0.28s ease-out both",
-        "--animate-toast-shake-odd": "toast-shake-odd 0.36s both",
-        "--animate-toast-shake-even": "toast-shake-even 0.36s both",
+        "--animate-toast-bounce-odd":
+          "toast-bounce-odd 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-bounce-even":
+          "toast-bounce-even 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-shake-odd":
+          "toast-shake-odd 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-shake-even":
+          "toast-shake-even 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
     dependencies: ["@base-ui/react"],
