@@ -9,7 +9,7 @@ This guide provides comprehensive instructions for creating new particle compone
 **Location:** `apps/ui/registry/default/particles/`
 
 **Naming Convention:** `p-{component}-{N}.tsx`
-- `{component}`: The primary component name (e.g., `button`, `input`, `alert-dialog`, `input-group`)
+- `{component}`: The primary component name (e.g., `button`, `input`, `alert-dialog`, `input-group`, `otp-field`)
 - `{N}`: Sequential number within the category (e.g., `1`, `2`, `3`)
 - Use hyphens for multi-word components (e.g., `alert-dialog`, `input-group`, `number-field`)
 

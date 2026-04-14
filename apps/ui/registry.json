@@ -28,7 +28,7 @@
         "@coss/frame",
         "@coss/group",
         "@coss/input",
-        "@coss/input-otp",
+        "@coss/otp-field",
         "@coss/input-group",
         "@coss/kbd",
         "@coss/label",
@@ -463,15 +463,15 @@
         }
       },
       "dependencies": [
-        "input-otp"
+        "@base-ui/react"
       ],
       "files": [
         {
-          "path": "registry/default/ui/input-otp.tsx",
+          "path": "registry/default/ui/otp-field.tsx",
           "type": "registry:ui"
         }
       ],
-      "name": "input-otp",
+      "name": "otp-field",
       "registryDependencies": [
         "@coss/separator"
       ],
@@ -6588,132 +6588,194 @@
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input"
       ],
-      "description": "Basic OTP input",
+      "description": "Basic OTP field",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-1.tsx",
+          "path": "registry/default/particles/p-otp-field-1.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-1",
+      "name": "p-otp-field-1",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/otp-field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input"
       ],
-      "description": "Large OTP input",
+      "description": "Large OTP field",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-2.tsx",
+          "path": "registry/default/particles/p-otp-field-2.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-2",
+      "name": "p-otp-field-2",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/otp-field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input"
       ],
-      "description": "OTP input with separator",
+      "description": "OTP field with separator",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-3.tsx",
+          "path": "registry/default/particles/p-otp-field-3.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-3",
+      "name": "p-otp-field-3",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/otp-field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input",
-        "label"
+        "field"
       ],
-      "description": "OTP input with label",
+      "description": "OTP field with label",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-4.tsx",
+          "path": "registry/default/particles/p-otp-field-4.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-4",
+      "name": "p-otp-field-4",
       "registryDependencies": [
-        "@coss/input-otp",
-        "@coss/label"
+        "@coss/otp-field",
+        "@coss/field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input"
       ],
-      "description": "Digits-only OTP input",
+      "description": "Digits-only OTP field",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-5.tsx",
+          "path": "registry/default/particles/p-otp-field-5.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-5",
+      "name": "p-otp-field-5",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/otp-field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
+        "input",
+        "field",
+        "validation"
+      ],
+      "description": "OTP field with custom sanitization",
+      "files": [
+        {
+          "path": "registry/default/particles/p-otp-field-6.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-otp-field-6",
+      "registryDependencies": [
+        "@coss/otp-field",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "otp field",
         "input",
         "validation"
       ],
-      "description": "Invalid OTP input",
+      "description": "OTP field with auto validation",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-6.tsx",
+          "path": "registry/default/particles/p-otp-field-7.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-6",
+      "name": "p-otp-field-7",
       "registryDependencies": [
-        "@coss/input-otp"
+        "@coss/otp-field",
+        "@coss/field"
       ],
       "type": "registry:block"
     },
     {
       "categories": [
-        "input otp",
+        "otp field",
         "input",
-        "validation"
+        "field"
       ],
-      "description": "OTP input with auto validation",
+      "description": "Alphanumeric OTP field",
       "files": [
         {
-          "path": "registry/default/particles/p-input-otp-7.tsx",
+          "path": "registry/default/particles/p-otp-field-8.tsx",
           "type": "registry:block"
         }
       ],
-      "name": "p-input-otp-7",
+      "name": "p-otp-field-8",
       "registryDependencies": [
-        "@coss/input-otp",
-        "@coss/label"
+        "@coss/otp-field",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "otp field",
+        "input",
+        "field"
+      ],
+      "description": "OTP field with placeholder hints",
+      "files": [
+        {
+          "path": "registry/default/particles/p-otp-field-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-otp-field-9",
+      "registryDependencies": [
+        "@coss/otp-field",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "otp field",
+        "input",
+        "field"
+      ],
+      "description": "Masked OTP field",
+      "files": [
+        {
+          "path": "registry/default/particles/p-otp-field-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-otp-field-10",
+      "registryDependencies": [
+        "@coss/otp-field",
+        "@coss/field"
       ],
       "type": "registry:block"
     },

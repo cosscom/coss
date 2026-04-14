@@ -3,5 +3,5 @@ export const PAGES_NEW = [
   "/docs/skills",
   "/docs/changelog",
   "/docs/components/drawer",
-  "/docs/components/input-otp",
+  "/docs/components/otp-field",
 ];

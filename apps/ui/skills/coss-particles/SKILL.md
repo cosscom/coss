@@ -67,7 +67,7 @@ Total: **474 particles** across **52 component types**
 - [group](#group) (22)
 - [input](#input) (19)
 - [input-group](#input-group) (28)
-- [input-otp](#input-otp) (7)
+- [otp-field](#otp-field) (10)
 - [kbd](#kbd) (1)
 - [menu](#menu) (9)
 - [meter](#meter) (4)
@@ -473,15 +473,18 @@ Total: **474 particles** across **52 component types**
 - Message composer with attachment buttons | [JSON](https://coss.com/ui/r/p-input-group-28.json)
 - Chat input with voice and send buttons | [JSON](https://coss.com/ui/r/p-input-group-29.json)
 
-### input-otp
+### otp-field
 
-- Basic OTP input | [JSON](https://coss.com/ui/r/p-input-otp-1.json)
-- Large OTP input | [JSON](https://coss.com/ui/r/p-input-otp-2.json)
-- OTP input with separator | [JSON](https://coss.com/ui/r/p-input-otp-3.json)
-- OTP input with label | [JSON](https://coss.com/ui/r/p-input-otp-4.json)
-- Digits-only OTP input | [JSON](https://coss.com/ui/r/p-input-otp-5.json)
-- Invalid OTP input | [JSON](https://coss.com/ui/r/p-input-otp-6.json)
-- OTP input with auto validation | [JSON](https://coss.com/ui/r/p-input-otp-7.json)
+- Basic OTP field | [JSON](https://coss.com/ui/r/p-otp-field-1.json)
+- Large OTP field | [JSON](https://coss.com/ui/r/p-otp-field-2.json)
+- OTP field with separator | [JSON](https://coss.com/ui/r/p-otp-field-3.json)
+- OTP field with label | [JSON](https://coss.com/ui/r/p-otp-field-4.json)
+- Digits-only OTP field | [JSON](https://coss.com/ui/r/p-otp-field-5.json)
+- Custom sanitization | [JSON](https://coss.com/ui/r/p-otp-field-6.json)
+- OTP field with auto validation | [JSON](https://coss.com/ui/r/p-otp-field-7.json)
+- Alphanumeric OTP field | [JSON](https://coss.com/ui/r/p-otp-field-8.json)
+- OTP field with placeholder hints | [JSON](https://coss.com/ui/r/p-otp-field-9.json)
+- Masked OTP field | [JSON](https://coss.com/ui/r/p-otp-field-10.json)
 
 ### kbd
 
