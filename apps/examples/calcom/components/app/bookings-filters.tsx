@@ -154,9 +154,11 @@ function useActiveFilters(): {
     columnId: string,
     initial?: Partial<Pick<ActiveFilter, "op" | "v">>,
   ): void => {
-    if (!activeFilters.some((filter) => filter.f === columnId)) {
-      setActiveFilters([...activeFilters, { f: columnId, ...initial }]);
-    }
+    setActiveFilters((prev) =>
+      prev.some((filter) => filter.f === columnId)
+        ? prev
+        : [...prev, { f: columnId, ...initial }],
+    );
   };
 
   const updateFilter = (
