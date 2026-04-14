@@ -232,15 +232,15 @@ function BookingsFilters(): React.ReactElement {
       <div className="flex flex-col gap-2 sm:flex-row">
         <div className="flex-1">
           <InputGroup className="sm:max-w-[200px]">
-            <InputGroupAddon>
-              <SearchIcon aria-hidden="true" />
-            </InputGroupAddon>
             <InputGroupInput
               aria-label="Search"
               placeholder="Search"
               size="sm"
               type="search"
             />
+            <InputGroupAddon>
+              <SearchIcon aria-hidden="true" />
+            </InputGroupAddon>
           </InputGroup>
         </div>
         <div className="flex items-center justify-between gap-2">
