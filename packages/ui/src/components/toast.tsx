@@ -48,7 +48,9 @@ function upsertReplayClassName(toast: {
   if (toast.type === "error") {
     return isEven ? "animate-toast-shake-even" : "animate-toast-shake-odd";
   }
-  return isEven ? "animate-toast-bounce-even" : "animate-toast-bounce-odd";
+  return isEven
+    ? "animate-toast-bounce-even origin-center!"
+    : "animate-toast-bounce-odd origin-center!";
 }
 
 function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
