@@ -45,7 +45,7 @@ export default function Particle() {
           />
         }
       >
-        <SaveIcon className="size-4" />
+        <SaveIcon aria-hidden="true" />
       </TooltipTrigger>
       <TooltipPopup>
         <p>Save</p>
