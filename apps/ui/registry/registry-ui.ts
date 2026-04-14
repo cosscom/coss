@@ -714,13 +714,13 @@ export const ui: Registry["items"] = [
           translate: "0 0",
         },
         "25%": {
-          translate: "-2px 0",
+          translate: "-3px 0",
         },
         "50%": {
-          translate: "2px 0",
+          translate: "3px 0",
         },
         "75%": {
-          translate: "-1px 0",
+          translate: "-3px 0",
         },
         "100%": {
           translate: "0 0",
@@ -745,13 +745,13 @@ export const ui: Registry["items"] = [
           translate: "0 0",
         },
         "25%": {
-          translate: "-2px 0",
+          translate: "-3px 0",
         },
         "50%": {
-          translate: "2px 0",
+          translate: "3px 0",
         },
         "75%": {
-          translate: "-1px 0",
+          translate: "-3px 0",
         },
         "100%": {
           translate: "0 0",
@@ -761,13 +761,13 @@ export const ui: Registry["items"] = [
     cssVars: {
       theme: {
         "--animate-toast-success-odd":
-          "toast-success-odd 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+          "toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1) both",
         "--animate-toast-success-even":
-          "toast-success-even 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+          "toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1) both",
         "--animate-toast-error-odd":
-          "toast-error-odd 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+          "toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1) both",
         "--animate-toast-error-even":
-          "toast-error-even 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+          "toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1) both",
       },
     },
     dependencies: ["@base-ui/react"],
