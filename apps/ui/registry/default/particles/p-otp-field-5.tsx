@@ -1,5 +1,3 @@
-"use client";
-
 import { OTPField, OTPFieldInput } from "@/registry/default/ui/otp-field";
 
 const OTP_LENGTH = 6;
