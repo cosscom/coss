@@ -4790,7 +4790,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("card", "checkbox", "frame", "table", "tanstack"),
+    categories: categories("card", "checkbox", "table", "tanstack"),
     dependencies: ["@tanstack/react-table"],
     description: "CardFrame with TanStack Table and checkboxes",
     files: [{ path: "particles/p-table-6.tsx", type: "registry:block" }],
