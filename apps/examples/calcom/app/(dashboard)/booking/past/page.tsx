@@ -8,7 +8,7 @@ export default function Page() {
     <>
       <div className="mb-6 flex justify-between gap-2 max-sm:flex-col sm:flex-wrap sm:items-center">
         <BookingsNav />
-        <BookingsView />
+        <BookingsView className="max-md:hidden" />
       </div>
       <BookingsFilters />
       <div className="mt-4">

@@ -4705,7 +4705,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("frame", "table"),
-    description: "Framed table",
+    description: "Frame with card-style table",
     files: [{ path: "particles/p-table-2.tsx", type: "registry:block" }],
     meta: {
       className:
@@ -4757,6 +4757,80 @@ export const particles: ParticleItem[] = [
       "@coss/button",
       "@coss/checkbox",
       "@coss/frame",
+      "@coss/pagination",
+      "@coss/select",
+      "@coss/table",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories("table"),
+    description: "Card-style table variant",
+    files: [{ path: "particles/p-table-5.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
+    },
+    name: "p-table-5",
+    registryDependencies: ["@coss/badge", "@coss/table"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "table"),
+    description: "CardFrame with card-style table",
+    files: [{ path: "particles/p-table-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
+    },
+    name: "p-table-7",
+    registryDependencies: ["@coss/badge", "@coss/card", "@coss/table"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("card", "checkbox", "table", "tanstack"),
+    dependencies: ["@tanstack/react-table"],
+    description: "CardFrame with TanStack Table and checkboxes",
+    files: [{ path: "particles/p-table-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
+    },
+    name: "p-table-6",
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/card",
+      "@coss/checkbox",
+      "@coss/table",
+    ],
+    type: "registry:block",
+  },
+  {
+    categories: categories(
+      "card",
+      "checkbox",
+      "pagination",
+      "select",
+      "table",
+      "tanstack",
+    ),
+    dependencies: ["@tanstack/react-table", "lucide-react"],
+    description: "CardFrame with TanStack Table, sorting, and pagination",
+    files: [{ path: "particles/p-table-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+      colSpan: 2,
+    },
+    name: "p-table-8",
+    registryDependencies: [
+      "@coss/badge",
+      "@coss/button",
+      "@coss/card",
+      "@coss/checkbox",
       "@coss/pagination",
       "@coss/select",
       "@coss/table",

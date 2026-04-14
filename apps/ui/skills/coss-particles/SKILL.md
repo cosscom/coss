@@ -642,9 +642,13 @@ Total: **474 particles** across **52 component types**
 ### table
 
 - Basic table | [JSON](https://coss.com/ui/r/p-table-1.json)
-- Framed table | [JSON](https://coss.com/ui/r/p-table-2.json)
+- Frame with card-style table | [JSON](https://coss.com/ui/r/p-table-2.json)
 - Table with TanStack Table and checkboxes | [JSON](https://coss.com/ui/r/p-table-3.json)
 - Table with TanStack Table, sorting, and pagination | [JSON](https://coss.com/ui/r/p-table-4.json)
+- Card-style table variant | [JSON](https://coss.com/ui/r/p-table-5.json)
+- CardFrame with card-style table | [JSON](https://coss.com/ui/r/p-table-7.json)
+- CardFrame with TanStack Table and checkboxes | [JSON](https://coss.com/ui/r/p-table-6.json)
+- CardFrame with TanStack Table, sorting, and pagination | [JSON](https://coss.com/ui/r/p-table-8.json)
 
 ### tabs
 

@@ -15,8 +15,8 @@ import { useState } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
+import { CardFrame, CardFrameFooter } from "@/registry/default/ui/card";
 import { Checkbox } from "@/registry/default/ui/checkbox";
-import { Frame, FrameFooter } from "@/registry/default/ui/frame";
 import {
   Pagination,
   PaginationContent,
@@ -214,7 +214,7 @@ export default function Particle() {
   });
 
   return (
-    <Frame className="w-full">
+    <CardFrame className="w-full">
       <Table variant="card" className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -295,7 +295,7 @@ export default function Particle() {
           )}
         </TableBody>
       </Table>
-      <FrameFooter className="p-2">
+      <CardFrameFooter className="p-2">
         <div className="flex items-center justify-between gap-2">
           {/* Results range selector */}
           <div className="flex items-center gap-2 whitespace-nowrap">
@@ -379,8 +379,8 @@ export default function Particle() {
             </PaginationContent>
           </Pagination>
         </div>
-      </FrameFooter>
-    </Frame>
+      </CardFrameFooter>
+    </CardFrame>
   );
 }
 

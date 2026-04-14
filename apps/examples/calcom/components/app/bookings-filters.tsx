@@ -1,46 +1,28 @@
 "use client";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@coss/ui/components/avatar";
-import { Badge } from "@coss/ui/components/badge";
-import { Button, buttonVariants } from "@coss/ui/components/button";
-import {
-  Combobox,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxPopup,
-  ComboboxTrigger,
-} from "@coss/ui/components/combobox";
-import { Group, GroupSeparator, GroupText } from "@coss/ui/components/group";
-import {
-  Menu,
-  MenuGroup,
-  MenuGroupLabel,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger,
-} from "@coss/ui/components/menu";
-import { Separator } from "@coss/ui/components/separator";
-import { cn } from "@coss/ui/lib/utils";
-import {
-  ChevronsUpDownIcon,
-  CopyIcon,
-  EllipsisIcon,
-  FunnelIcon,
-  ListFilterIcon,
-  PencilIcon,
-  SearchIcon,
-  TrashIcon,
-  XIcon,
-} from "lucide-react";
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@coss/ui/components/input-group";
+import { SearchIcon } from "lucide-react";
 import type * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { FilterAddMenu } from "./filter-add-menu";
+import { FilterBarActions } from "./filter-bar-actions";
+import { DateRangeFilterChip } from "./filter-chip-date-range";
+import { OptionsFilterChip } from "./filter-chip-options";
+import { TextFilterChip } from "./filter-chip-text";
+import {
+  type ActiveFilter,
+  type FilterField,
+  isActiveFilterComplete,
+  type TextFilterOperator,
+} from "./filter-chip-types";
+import {
+  type SavedFilter,
+  SavedFiltersCombobox,
+} from "./filter-saved-combobox";
 import type { Booking } from "@/lib/mock-bookings-data";
 import {
   mockPastBookings,
@@ -98,138 +80,106 @@ function getUniqueMembers(
   );
 }
 
-function getUniqueAttendeeNames(
-  bookings: Booking[],
-): { id: string; label: string }[] {
-  const attendeeMap = new Map<string, { id: string; label: string }>();
-  for (const booking of bookings) {
-    for (const attendee of booking.attendees) {
-      const id = toKebabCase(attendee.name);
-      if (!attendeeMap.has(id)) {
-        attendeeMap.set(id, {
-          id,
-          label: attendee.name,
-        });
-      }
-    }
-  }
-  return Array.from(attendeeMap.values()).sort((a, b) =>
-    a.label.localeCompare(b.label),
-  );
-}
-
-function getUniqueAttendeeEmails(
-  bookings: Booking[],
-): { id: string; label: string }[] {
-  const emailMap = new Map<string, { id: string; label: string }>();
-  for (const booking of bookings) {
-    for (const attendee of booking.attendees) {
-      const id = toKebabCase(attendee.email.split("@")[0] ?? attendee.email);
-      if (!emailMap.has(attendee.email)) {
-        emailMap.set(attendee.email, {
-          id,
-          label: attendee.email,
-        });
-      }
-    }
-  }
-  return Array.from(emailMap.values()).sort((a, b) =>
-    a.label.localeCompare(b.label),
-  );
-}
-
-function getUniqueBookingUids(
-  bookings: Booking[],
-): { id: string; label: string }[] {
-  return bookings
-    .map((booking) => ({
-      id: toKebabCase(booking.uid),
-      label: booking.uid,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0]?.charAt(0).toUpperCase() ?? "";
-  }
-  const first = parts[0]?.charAt(0) ?? "";
-  const last = parts[parts.length - 1]?.charAt(0) ?? "";
-  return (first + last).toUpperCase();
-}
-
-function CountBadge({ count }: { count: number }): React.ReactElement {
-  return (
-    <Badge className="tabular-nums" variant="secondary">
-      +{count}
-    </Badge>
-  );
-}
-
-function SelectionDisplay({
-  children,
-  label,
-  remainingCount,
-}: {
-  children?: React.ReactNode;
-  label: string;
-  remainingCount: number;
-}): React.ReactElement {
-  return (
-    <div className="flex items-center gap-2">
-      {children}
-      <span className="truncate">{label}</span>
-      {remainingCount > 0 && <CountBadge count={remainingCount} />}
-    </div>
-  );
-}
-
-function MemberAvatar({
-  name,
-  avatarUrl,
-  className,
-}: {
-  name: string;
-  avatarUrl?: string | null;
-  className?: string;
-}): React.ReactElement {
-  return (
-    <Avatar className={cn("size-5", className)}>
-      {avatarUrl ? <AvatarImage alt={name} src={avatarUrl} /> : null}
-      <AvatarFallback className="text-[0.5rem]">
-        {getInitials(name)}
-      </AvatarFallback>
-    </Avatar>
-  );
-}
-
 const allBookings: Booking[] = [...mockPastBookings, ...mockUpcomingBookings];
+
+/** Example saved views — replace with API data in a real screen. */
+const bookingsSavedFilters: SavedFilter[] = [
+  { id: "my-bookings", isDefault: true, label: "My bookings" },
+  { id: "team-meetings", label: "Team meetings" },
+  { id: "client-calls", label: "Client calls" },
+  { id: "one-on-ones", label: "1:1 meetings" },
+  { id: "demo-calls", label: "Demo calls" },
+  { id: "interviews", label: "Interviews" },
+  { id: "external-meetings", label: "External meetings" },
+  { id: "cancelled", label: "Cancelled bookings" },
+  { id: "no-show", label: "No-shows" },
+  { id: "recurring", label: "Recurring events" },
+  { id: "pending-confirmation", label: "Pending confirmation" },
+  { id: "this-week", label: "This week" },
+];
+
+const filterCategories: FilterField[] = [
+  {
+    id: "eventTypeId",
+    kind: "options",
+    label: "Event Type",
+    options: getUniqueEventTypes(allBookings),
+  },
+  {
+    id: "userIds",
+    kind: "options",
+    label: "Member",
+    options: getUniqueMembers(allBookings),
+    showAvatar: true,
+  },
+  {
+    id: "attendeesName",
+    kind: "text",
+    label: "Attendees Name",
+  },
+  {
+    id: "attendeeEmail",
+    kind: "text",
+    label: "Attendee Email",
+  },
+  {
+    id: "dateRange",
+    kind: "dateRange",
+    label: "Date Range",
+  },
+  {
+    id: "bookingUid",
+    kind: "text",
+    label: "Booking UID",
+  },
+];
 
 function useActiveFilters(): {
   activeFilters: ActiveFilter[];
-  addFilter: (columnId: string) => void;
+  addFilter: (
+    columnId: string,
+    initial?: Partial<Pick<ActiveFilter, "op" | "v">>,
+  ) => void;
   clearAll: () => void;
   removeFilter: (columnId: string) => void;
-  updateFilter: (columnId: string, values: string[]) => void;
+  updateFilter: (
+    columnId: string,
+    values: string[],
+    op?: TextFilterOperator,
+  ) => void;
 } {
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
 
-  const addFilter = (columnId: string): void => {
-    if (!activeFilters.some((filter) => filter.f === columnId)) {
-      setActiveFilters([...activeFilters, { f: columnId }]);
-    }
+  const addFilter = (
+    columnId: string,
+    initial?: Partial<Pick<ActiveFilter, "op" | "v">>,
+  ): void => {
+    setActiveFilters((prev) =>
+      prev.some((filter) => filter.f === columnId)
+        ? prev
+        : [...prev, { f: columnId, ...initial }],
+    );
   };
 
-  const updateFilter = (columnId: string, values: string[]): void => {
+  const updateFilter = (
+    columnId: string,
+    values: string[],
+    op?: TextFilterOperator,
+  ): void => {
     setActiveFilters((prev) => {
       const exists = prev.some((filter) => filter.f === columnId);
       if (exists) {
         return prev.map((filter) =>
-          filter.f === columnId ? { ...filter, v: values } : filter,
+          filter.f === columnId
+            ? {
+                ...filter,
+                v: values,
+                ...(op !== undefined ? { op } : {}),
+              }
+            : filter,
         );
       }
-      return [...prev, { f: columnId, v: values }];
+      return [...prev, { f: columnId, v: values, ...(op ? { op } : {}) }];
     });
   };
 
@@ -250,430 +200,23 @@ function useActiveFilters(): {
   };
 }
 
-function FilterMenu({
-  hasFilters = false,
-  onSelectFilter,
-  activeFilterIds,
-}: {
-  hasFilters?: boolean;
-  onSelectFilter: (categoryId: string) => void;
-  activeFilterIds: string[];
-}): React.ReactElement | null {
-  const availableCategories = filterCategories.filter(
-    (category) => !activeFilterIds.includes(category.id),
-  );
-
-  if (availableCategories.length === 0 && hasFilters) {
-    return null;
-  }
-
-  return (
-    <Menu>
-      <MenuTrigger render={<Button size="sm" variant="outline" />}>
-        <ListFilterIcon />
-        <span className="max-sm:sr-only">Add Filter</span>
-      </MenuTrigger>
-      <MenuPopup align="start">
-        <MenuGroup>
-          <MenuGroupLabel>Filter by</MenuGroupLabel>
-          {availableCategories.map((category) => (
-            <MenuItem
-              key={category.id}
-              onClick={(): void => onSelectFilter(category.id)}
-            >
-              {category.label}
-            </MenuItem>
-          ))}
-        </MenuGroup>
-      </MenuPopup>
-    </Menu>
-  );
-}
-
-function ActiveFilterComponent({
-  filter,
-  category,
-  onUpdate,
-  onRemove,
-  autoOpen = false,
-}: {
-  filter: ActiveFilter;
-  category: FilterCategory;
-  onUpdate: (values: string[]) => void;
-  onRemove: () => void;
-  autoOpen?: boolean;
-}): React.ReactElement {
-  const [open, setOpen] = useState(autoOpen);
-  const hasAutoOpened = useRef(false);
-  // Snapshot of sorted items when combobox opens (selected first)
-  const [sortedItems, setSortedItems] = useState<FilterOption[]>(
-    category.options,
-  );
-
-  useEffect(() => {
-    if (autoOpen && !hasAutoOpened.current) {
-      setOpen(true);
-      hasAutoOpened.current = true;
-    }
-  }, [autoOpen]);
-
-  const selectedValues = filter.v ?? [];
-  // Get selected options in the order they were selected (based on filter.v order)
-  const selectedOptions = selectedValues
-    .map((id) => category.options.find((opt) => opt.id === id))
-    .filter((opt): opt is FilterOption => opt !== undefined);
-
-  const renderTriggerContent = (): string | React.ReactElement => {
-    if (selectedOptions.length === 0) return "Select";
-    const firstOption = selectedOptions[0];
-    const remainingCount = selectedOptions.length - 1;
-
-    // For members, show avatar + name + badge
-    if (category.id === "userIds") {
-      return (
-        <SelectionDisplay
-          label={firstOption?.label ?? ""}
-          remainingCount={remainingCount}
-        >
-          <MemberAvatar
-            avatarUrl={firstOption?.avatar}
-            name={firstOption?.label ?? ""}
-          />
-        </SelectionDisplay>
-      );
-    }
-
-    // For other filters, show text + badge
-    if (remainingCount > 0) {
-      return (
-        <SelectionDisplay
-          label={firstOption?.label ?? ""}
-          remainingCount={remainingCount}
-        />
-      );
-    }
-
-    return firstOption?.label ?? "Select";
-  };
-
-  const handleValueChange = (
-    newValue: FilterOption | FilterOption[] | null,
-  ): void => {
-    if (Array.isArray(newValue)) {
-      // Maintain selection order: keep existing selections in order, append new ones
-      const newIds = newValue.map((v) => v.id);
-      const existingIds = selectedValues.filter((id) => newIds.includes(id));
-      const addedIds = newIds.filter((id) => !selectedValues.includes(id));
-      onUpdate([...existingIds, ...addedIds]);
-    } else if (newValue) {
-      onUpdate([newValue.id]);
-    } else {
-      onUpdate([]);
-    }
-  };
-
-  const handleOpenChange = (isOpen: boolean): void => {
-    setOpen(isOpen);
-    if (isOpen) {
-      // When opening, sort items: selected first, then unselected
-      const selected = category.options.filter((opt) =>
-        selectedValues.includes(opt.id),
-      );
-      const unselected = category.options.filter(
-        (opt) => !selectedValues.includes(opt.id),
-      );
-      setSortedItems([...selected, ...unselected]);
-    }
-    // Remove filter if combobox closes with no selection
-    if (!isOpen && selectedValues.length === 0) {
-      onRemove();
-    }
-  };
-
-  return (
-    <Group>
-      <GroupText
-        className={cn(
-          buttonVariants({
-            size: "sm",
-            variant: "outline",
-          }),
-          "pointer-events-none",
-        )}
-      >
-        <FunnelIcon />
-        {category.label}
-      </GroupText>
-      <GroupSeparator />
-      <Combobox
-        autoHighlight
-        items={sortedItems}
-        multiple
-        onOpenChange={handleOpenChange}
-        onValueChange={handleValueChange}
-        open={open}
-        value={selectedOptions}
-      >
-        <ComboboxTrigger
-          render={
-            <Button
-              className={
-                selectedOptions.length === 0 ? "justify-between" : undefined
-              }
-              size="sm"
-              variant="outline"
-            />
-          }
-        >
-          {renderTriggerContent()}
-          {selectedOptions.length === 0 && (
-            <ChevronsUpDownIcon className="-me-1!" />
-          )}
-        </ComboboxTrigger>
-        <ComboboxPopup aria-label={`Select ${category.label}`}>
-          <div className="border-b p-2">
-            <ComboboxInput
-              placeholder={`Search ${category.label.toLowerCase()}…`}
-              showTrigger={false}
-              startAddon={<SearchIcon />}
-            />
-          </div>
-          <ComboboxEmpty>No items found.</ComboboxEmpty>
-          <ComboboxList>
-            {(option: FilterOption): React.ReactElement => (
-              <ComboboxItem key={option.id} value={option}>
-                {category.id === "userIds" ? (
-                  <div className="flex items-center gap-2">
-                    <MemberAvatar
-                      avatarUrl={option.avatar}
-                      name={option.label}
-                    />
-                    <span>{option.label}</span>
-                  </div>
-                ) : (
-                  option.label
-                )}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxPopup>
-      </Combobox>
-      <GroupSeparator />
-      <Button
-        aria-label="Remove filter"
-        onClick={onRemove}
-        size="icon-sm"
-        variant="outline"
-      >
-        <XIcon />
-      </Button>
-    </Group>
-  );
-}
-
-type SavedFilter = {
-  id: string;
-  isDefault?: boolean;
-  label: string;
-};
-
-const savedFilters: SavedFilter[] = [
-  { id: "my-bookings", isDefault: true, label: "My bookings" },
-  { id: "team-meetings", label: "Team meetings" },
-  { id: "client-calls", label: "Client calls" },
-];
-
-function SavedFiltersCombobox(): React.ReactElement {
-  const [selectedFilter, setSelectedFilter] = useState<SavedFilter | null>(
-    null,
-  );
-
-  const handleClearSelection = (): void => {
-    setSelectedFilter(null);
-  };
-
-  // When no filter is selected, show just the combobox trigger
-  if (!selectedFilter) {
-    return (
-      <Combobox
-        items={savedFilters}
-        onValueChange={setSelectedFilter}
-        value={selectedFilter}
-      >
-        <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-          Saved Filters
-          <ChevronsUpDownIcon />
-        </ComboboxTrigger>
-        <ComboboxPopup align="end" aria-label="Select saved filter">
-          <div className="border-b p-2">
-            <ComboboxInput
-              placeholder="Search saved filters…"
-              showTrigger={false}
-              startAddon={<SearchIcon />}
-            />
-          </div>
-          <ComboboxEmpty>No saved filters.</ComboboxEmpty>
-          <ComboboxList>
-            {(filter: SavedFilter): React.ReactElement => (
-              <ComboboxItem key={filter.id} value={filter}>
-                {filter.label}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxPopup>
-      </Combobox>
-    );
-  }
-
-  // When a filter is selected, show Group with combobox and X button, plus edit menu outside
-  return (
-    <div className="flex items-center gap-2">
-      <Group>
-        <Combobox
-          items={savedFilters}
-          onValueChange={setSelectedFilter}
-          value={selectedFilter}
-        >
-          <ComboboxTrigger render={<Button size="sm" variant="outline" />}>
-            {selectedFilter.label}
-            <ChevronsUpDownIcon />
-          </ComboboxTrigger>
-          <ComboboxPopup align="end" aria-label="Select saved filter">
-            <div className="border-b p-2">
-              <ComboboxInput
-                placeholder="Search saved filters…"
-                showTrigger={false}
-                startAddon={<SearchIcon />}
-              />
-            </div>
-            <ComboboxEmpty>No saved filters.</ComboboxEmpty>
-            <ComboboxList>
-              {(filter: SavedFilter): React.ReactElement => (
-                <ComboboxItem key={filter.id} value={filter}>
-                  {filter.label}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-          </ComboboxPopup>
-        </Combobox>
-        <GroupSeparator />
-        <Button
-          aria-label="Clear saved filter"
-          onClick={handleClearSelection}
-          size="icon-sm"
-          variant="outline"
-        >
-          <XIcon />
-        </Button>
-      </Group>
-      <Menu>
-        <MenuTrigger
-          render={
-            <Button
-              aria-label="Edit saved filter"
-              size="icon-sm"
-              variant="outline"
-            />
-          }
-        >
-          <EllipsisIcon />
-        </MenuTrigger>
-        <MenuPopup align="end">
-          {!selectedFilter.isDefault && (
-            <MenuItem>
-              <PencilIcon />
-              Rename
-            </MenuItem>
-          )}
-          <MenuItem>
-            <CopyIcon />
-            Duplicate
-          </MenuItem>
-          {!selectedFilter.isDefault && (
-            <>
-              <MenuSeparator />
-              <MenuItem variant="destructive">
-                <TrashIcon />
-                Delete
-              </MenuItem>
-            </>
-          )}
-        </MenuPopup>
-      </Menu>
-    </div>
-  );
-}
-
-export type FilterOption = {
-  id: string;
-  label: string;
-  avatar?: string | null;
-};
-
-export type FilterCategory = {
-  id: string;
-  label: string;
-  options: FilterOption[];
-};
-
-export type ActiveFilter = {
-  f: string;
-  v?: string[];
-};
-
-export const filterCategories: FilterCategory[] = [
-  {
-    id: "eventTypeId",
-    label: "Event Type",
-    options: getUniqueEventTypes(allBookings),
-  },
-  {
-    id: "userIds",
-    label: "Member",
-    options: getUniqueMembers(allBookings),
-  },
-  {
-    id: "attendeesName",
-    label: "Attendees Name",
-    options: getUniqueAttendeeNames(allBookings),
-  },
-  {
-    id: "attendeeEmail",
-    label: "Attendee Email",
-    options: getUniqueAttendeeEmails(allBookings),
-  },
-  {
-    id: "dateRange",
-    label: "Date Range",
-    options: [
-      { id: "today", label: "Today" },
-      { id: "yesterday", label: "Yesterday" },
-      { id: "this-week", label: "This Week" },
-      { id: "last-week", label: "Last Week" },
-      { id: "this-month", label: "This Month" },
-      { id: "last-month", label: "Last Month" },
-      { id: "custom", label: "Custom Range" },
-    ],
-  },
-  {
-    id: "bookingUid",
-    label: "Booking UID",
-    options: getUniqueBookingUids(allBookings),
-  },
-];
-
-export function BookingsFilters(): React.ReactElement {
+function BookingsFilters(): React.ReactElement {
   const { activeFilters, addFilter, updateFilter, removeFilter, clearAll } =
     useActiveFilters();
   const [newlyAddedFilter, setNewlyAddedFilter] = useState<string | null>(null);
 
-  const handleSelectFilter = (categoryId: string): void => {
-    addFilter(categoryId);
-    setNewlyAddedFilter(categoryId);
+  const handleSelectFilter = (fieldId: string): void => {
+    const field = filterCategories.find((c) => c.id === fieldId);
+    addFilter(fieldId, field?.kind === "text" ? { op: "is" } : undefined);
+    setNewlyAddedFilter(fieldId);
   };
 
-  const handleUpdateFilter = (columnId: string, values: string[]): void => {
-    updateFilter(columnId, values);
+  const handleUpdateFilter = (
+    columnId: string,
+    values: string[],
+    op?: TextFilterOperator,
+  ): void => {
+    updateFilter(columnId, values, op);
   };
 
   const handleRemoveFilter = (columnId: string): void => {
@@ -687,48 +230,106 @@ export function BookingsFilters(): React.ReactElement {
   const activeFilterIds = activeFilters.map((f) => f.f);
 
   return (
-    <div className="mt-6 grid grid-cols-[auto_1fr] items-start justify-between gap-2 sm:flex">
-      <div className="flex flex-1 flex-wrap gap-2 max-sm:contents">
-        <FilterMenu
-          activeFilterIds={activeFilterIds}
-          hasFilters={hasFilters}
-          onSelectFilter={handleSelectFilter}
-        />
-        <div className="flex flex-wrap gap-2 max-sm:order-1 max-sm:col-span-2 sm:contents">
-          {activeFilters.map((filter) => {
-            const category = filterCategories.find((c) => c.id === filter.f);
-            if (!category) return null;
-            return (
-              <ActiveFilterComponent
-                autoOpen={newlyAddedFilter === filter.f}
-                category={category}
-                filter={filter}
-                key={filter.f}
-                onRemove={(): void => handleRemoveFilter(filter.f)}
-                onUpdate={(values: string[]): void =>
-                  handleUpdateFilter(filter.f, values)
-                }
-              />
-            );
-          })}
+    <div className="mt-6 flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex-1">
+          <InputGroup className="sm:max-w-[200px]">
+            <InputGroupInput
+              aria-label="Search"
+              placeholder="Search"
+              size="sm"
+              type="search"
+            />
+            <InputGroupAddon>
+              <SearchIcon aria-hidden="true" />
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <FilterAddMenu
+            activeFilterIds={activeFilterIds}
+            fields={filterCategories}
+            hasFilters={hasFilters}
+            onSelectField={handleSelectFilter}
+          />
+          <SavedFiltersCombobox filters={bookingsSavedFilters} />
         </div>
       </div>
-      <div className="flex items-center justify-end gap-2">
-        {hasFilters && (
-          <>
-            <div className="flex items-center gap-1">
-              <Button onClick={clearAll} size="sm" variant="ghost">
-                Clear
-              </Button>
-              <Button size="sm" variant="outline">
-                Save
-              </Button>
+      {hasFilters && (
+        <div className="rounded-xl bg-muted">
+          <div className="flex flex-wrap items-start justify-between gap-2 overflow-x-auto p-2">
+            <div className="flex flex-wrap gap-2">
+              {activeFilters.map((filter) => {
+                const field = filterCategories.find((c) => c.id === filter.f);
+                if (!field) return null;
+                switch (field.kind) {
+                  case "text":
+                    return (
+                      <TextFilterChip
+                        autoOpen={newlyAddedFilter === filter.f}
+                        field={field}
+                        filter={filter}
+                        key={filter.f}
+                        onRemove={(): void => handleRemoveFilter(filter.f)}
+                        onUpdate={(
+                          values: string[],
+                          op: TextFilterOperator,
+                        ): void => handleUpdateFilter(filter.f, values, op)}
+                      />
+                    );
+                  case "dateRange":
+                    return (
+                      <DateRangeFilterChip
+                        autoOpen={newlyAddedFilter === filter.f}
+                        field={field}
+                        filter={filter}
+                        key={filter.f}
+                        onRemove={(): void => handleRemoveFilter(filter.f)}
+                        onUpdate={(values: string[]): void =>
+                          handleUpdateFilter(filter.f, values)
+                        }
+                      />
+                    );
+                  case "options":
+                    return (
+                      <OptionsFilterChip
+                        autoOpen={newlyAddedFilter === filter.f}
+                        field={field}
+                        filter={filter}
+                        key={filter.f}
+                        onRemove={(): void => handleRemoveFilter(filter.f)}
+                        onUpdate={(values: string[]): void =>
+                          handleUpdateFilter(filter.f, values)
+                        }
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              })}
+              {activeFilters.every((f) => {
+                const field = filterCategories.find((c) => c.id === f.f);
+                if (!field) return false;
+                return isActiveFilterComplete(field, f);
+              }) &&
+                filterCategories.some(
+                  (c) => !activeFilterIds.includes(c.id),
+                ) && (
+                  <FilterAddMenu
+                    activeFilterIds={activeFilterIds}
+                    fields={filterCategories}
+                    hasFilters={hasFilters}
+                    onSelectField={handleSelectFilter}
+                    variant="icon"
+                  />
+                )}
             </div>
-            <Separator className="my-1" orientation="vertical" />
-          </>
-        )}
-        <SavedFiltersCombobox />
-      </div>
+            <FilterBarActions onClear={clearAll} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export { BookingsFilters, filterCategories };

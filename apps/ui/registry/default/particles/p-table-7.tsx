@@ -1,5 +1,5 @@
 import { Badge } from "@/registry/default/ui/badge";
-import { Frame } from "@/registry/default/ui/frame";
+import { CardFrame } from "@/registry/default/ui/card";
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
 
 export default function Particle() {
   return (
-    <Frame className="w-full">
+    <CardFrame className="w-full">
       <Table variant="card">
         <TableHeader>
           <TableRow>
@@ -115,6 +115,6 @@ export default function Particle() {
           </TableRow>
         </TableFooter>
       </Table>
-    </Frame>
+    </CardFrame>
   );
 }

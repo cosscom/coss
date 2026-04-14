@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import type * as React from "react";
 import { TabbedNav } from "@/components/app/tabbed-nav";
 
-function BookingsView(): React.ReactElement {
+function BookingsView({
+  className,
+}: {
+  className?: string;
+}): React.ReactElement {
   const pathname = usePathname();
 
   const viewTabs = [
@@ -21,7 +25,9 @@ function BookingsView(): React.ReactElement {
     },
   ];
 
-  return <TabbedNav ariaLabel="View type" tabs={viewTabs} />;
+  return (
+    <TabbedNav ariaLabel="View type" className={className} tabs={viewTabs} />
+  );
 }
 
 export { BookingsView };
