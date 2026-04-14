@@ -59,10 +59,14 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-skeleton: skeleton 2s -1s infinite linear;
   --animate-caret-blink: 1s ease-out infinite caret-blink;
-  --animate-toast-bounce-odd: toast-bounce-odd 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-bounce-even: toast-bounce-even 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-shake-odd: toast-shake-odd 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-shake-even: toast-shake-even 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-toast-bounce-odd: toast-bounce-odd 0.32s
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-toast-bounce-even: toast-bounce-even 0.32s
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-toast-shake-odd: toast-shake-odd 0.28s
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-toast-shake-even: toast-shake-even 0.28s
+    cubic-bezier(0.22, 1, 0.36, 1) both;
   --tw-shadow-color: #000;
   @keyframes skeleton {
     to {
