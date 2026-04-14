@@ -68,13 +68,13 @@ const [value, setValue] = useState("")
 </div>
 ```
 
-Digits only: add `inputMode="numeric"` and `validationType="numeric"` on the root.
+Digit-only SMS-style codes use Base UI’s default `validationType` (`numeric`) and matching `inputMode`; set those props explicitly only when you need different behavior.
 
 Ensure slot count matches `length`.
 
 ### More examples
 
-See `p-otp-field-1` through `p-otp-field-10` for sizes, separators, label, digits-only, custom sanitization, auto-validation, alphanumeric codes, placeholder hints, and masked entry.
+See `p-otp-field-1` through `p-otp-field-4` and `p-otp-field-6` through `p-otp-field-10` for sizes, separators, label, custom sanitization, auto-validation, alphanumeric codes, placeholder hints, and masked entry.
 
 ## Common pitfalls
 
@@ -87,7 +87,6 @@ See `p-otp-field-1` through `p-otp-field-10` for sizes, separators, label, digit
 - large: `p-otp-field-2`
 - with separator: `p-otp-field-3`
 - with label: `p-otp-field-4`
-- digits only: `p-otp-field-5`
 - custom sanitization: `p-otp-field-6`
 - auto validation: `p-otp-field-7`
 - alphanumeric: `p-otp-field-8`

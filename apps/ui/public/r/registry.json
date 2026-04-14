@@ -6663,24 +6663,6 @@
     {
       "categories": [
         "otp field",
-        "input"
-      ],
-      "description": "Digits-only OTP field",
-      "files": [
-        {
-          "path": "registry/default/particles/p-otp-field-5.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-otp-field-5",
-      "registryDependencies": [
-        "@coss/otp-field"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "otp field",
         "input",
         "field",
         "validation"

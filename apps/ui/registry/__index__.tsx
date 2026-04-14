@@ -5893,24 +5893,6 @@ export const Index: Record<string, any> = {
     categories: ["otp field","input","field"],
     meta: undefined,
   },
-  "p-otp-field-5": {
-    name: "p-otp-field-5",
-    description: "Digits-only OTP field",
-    type: "registry:block",
-    registryDependencies: ["@coss/otp-field"],
-    files: [{
-      path: "registry/default/particles/p-otp-field-5.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-otp-field-5.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["otp field","input"],
-    meta: undefined,
-  },
   "p-otp-field-6": {
     name: "p-otp-field-6",
     description: "OTP field with custom sanitization",

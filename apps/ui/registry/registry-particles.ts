@@ -3063,14 +3063,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("otp field", "input"),
-    description: "Digits-only OTP field",
-    files: [{ path: "particles/p-otp-field-5.tsx", type: "registry:block" }],
-    name: "p-otp-field-5",
-    registryDependencies: ["@coss/otp-field"],
-    type: "registry:block",
-  },
-  {
     categories: categories("otp field", "input", "field", "validation"),
     description: "OTP field with custom sanitization",
     files: [{ path: "particles/p-otp-field-6.tsx", type: "registry:block" }],
