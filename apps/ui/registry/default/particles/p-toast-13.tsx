@@ -36,6 +36,7 @@ export default function Particle() {
   return (
     <Tooltip>
       <TooltipTrigger
+        delay={0}
         render={
           <Button
             aria-label="Save"
