@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-otp-field-5.tsx",
-      "content": "\"use client\";\n\nimport { OTPField, OTPFieldInput } from \"@/registry/default/ui/otp-field\";\n\nconst OTP_LENGTH = 6;\n\nconst OTP_SLOT_KEYS = Array.from(\n  { length: OTP_LENGTH },\n  (_, i) => `otp-slot-${i}`,\n);\n\nexport default function Particle() {\n  return (\n    <OTPField\n      aria-label=\"Verification code\"\n      inputMode=\"numeric\"\n      length={OTP_LENGTH}\n      validationType=\"numeric\"\n    >\n      {OTP_SLOT_KEYS.map((slotKey, index) => (\n        <OTPFieldInput\n          key={slotKey}\n          aria-label={`Character ${index + 1} of ${OTP_LENGTH}`}\n        />\n      ))}\n    </OTPField>\n  );\n}\n",
+      "content": "import { OTPField, OTPFieldInput } from \"@/registry/default/ui/otp-field\";\n\nconst OTP_LENGTH = 6;\n\nconst OTP_SLOT_KEYS = Array.from(\n  { length: OTP_LENGTH },\n  (_, i) => `otp-slot-${i}`,\n);\n\nexport default function Particle() {\n  return (\n    <OTPField\n      aria-label=\"Verification code\"\n      inputMode=\"numeric\"\n      length={OTP_LENGTH}\n      validationType=\"numeric\"\n    >\n      {OTP_SLOT_KEYS.map((slotKey, index) => (\n        <OTPFieldInput\n          key={slotKey}\n          aria-label={`Character ${index + 1} of ${OTP_LENGTH}`}\n        />\n      ))}\n    </OTPField>\n  );\n}\n",
       "type": "registry:block"
     }
   ],
