@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-9",
-  "description": "Promise toast with cancel action",
+  "description": "Long-running promise toast with cancel",
   "dependencies": [
     "lucide-react"
   ],

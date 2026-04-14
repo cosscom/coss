@@ -9009,7 +9009,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-1": {
     name: "p-toast-1",
-    description: "Basic toast",
+    description: "Default stacked toast with title and description",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9027,7 +9027,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-2": {
     name: "p-toast-2",
-    description: "Toast with status",
+    description: "Stacked toasts by semantic type (success, error, info, warning)",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9045,7 +9045,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-3": {
     name: "p-toast-3",
-    description: "Loading toast",
+    description: "Loading-state stacked toast",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9063,7 +9063,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-4": {
     name: "p-toast-4",
-    description: "Toast with action",
+    description: "Stacked toast with primary action (undo)",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9081,7 +9081,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-5": {
     name: "p-toast-5",
-    description: "Promise toast",
+    description: "Promise-based stacked toast",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9099,7 +9099,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-6": {
     name: "p-toast-6",
-    description: "Toast with varying heights",
+    description: "Stacked toasts with varying content height",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9117,7 +9117,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-7": {
     name: "p-toast-7",
-    description: "Anchored toast with tooltip style",
+    description: "Anchored tooltip-style toast after copy",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip","@coss/use-copy-to-clipboard"],
     files: [{
@@ -9135,7 +9135,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-8": {
     name: "p-toast-8",
-    description: "Anchored toast",
+    description: "Anchored error toast after async failure",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/spinner","@coss/toast"],
     files: [{
@@ -9153,7 +9153,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-9": {
     name: "p-toast-9",
-    description: "Promise toast with cancel action",
+    description: "Long-running promise toast with cancel",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast"],
     files: [{
@@ -9167,6 +9167,78 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["toast","button"],
+    meta: undefined,
+  },
+  "p-toast-10": {
+    name: "p-toast-10",
+    description: "Deduplicated success toast",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/toast"],
+    files: [{
+      path: "registry/default/particles/p-toast-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toast","button"],
+    meta: undefined,
+  },
+  "p-toast-11": {
+    name: "p-toast-11",
+    description: "Deduplicated error toast",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/toast"],
+    files: [{
+      path: "registry/default/particles/p-toast-11.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-11.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toast","button","error"],
+    meta: undefined,
+  },
+  "p-toast-12": {
+    name: "p-toast-12",
+    description: "Deduplicated anchored tooltip success toast",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-toast-12.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-12.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toast","button"],
+    meta: undefined,
+  },
+  "p-toast-13": {
+    name: "p-toast-13",
+    description: "Deduplicated anchored tooltip error toast",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-toast-13.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-toast-13.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["toast","button","error"],
     meta: undefined,
   },
   "p-toggle-group-1": {

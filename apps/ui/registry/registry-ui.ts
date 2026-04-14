@@ -694,6 +694,94 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    css: {
+      "@keyframes toast-bounce-odd": {
+        "0%": {
+          translate: "0 0",
+          animationTimingFunction: "ease-out",
+        },
+        "28%": {
+          translate: "0 -8px",
+          animationTimingFunction: "ease-in",
+        },
+        "48%": {
+          translate: "0 2px",
+          animationTimingFunction: "ease-out",
+        },
+        "62%": {
+          translate: "0 -2px",
+          animationTimingFunction: "ease-in",
+        },
+        "78%": {
+          translate: "0 0.5px",
+          animationTimingFunction: "ease-out",
+        },
+        "100%": {
+          translate: "0 0",
+        },
+      },
+      "@keyframes toast-shake-odd": {
+        "20%": {
+          translate: "-4px 0",
+        },
+        "40%": {
+          translate: "4px 0",
+        },
+        "60%": {
+          translate: "-4px 0",
+        },
+        "80%": {
+          translate: "4px 0",
+        },
+      },
+      "@keyframes toast-bounce-even": {
+        "0%": {
+          translate: "0 0",
+          animationTimingFunction: "ease-out",
+        },
+        "28%": {
+          translate: "0 -8px",
+          animationTimingFunction: "ease-in",
+        },
+        "48%": {
+          translate: "0 2px",
+          animationTimingFunction: "ease-out",
+        },
+        "62%": {
+          translate: "0 -2px",
+          animationTimingFunction: "ease-in",
+        },
+        "78%": {
+          translate: "0 0.5px",
+          animationTimingFunction: "ease-out",
+        },
+        "100%": {
+          translate: "0 0",
+        },
+      },
+      "@keyframes toast-shake-even": {
+        "20%": {
+          translate: "-4px 0",
+        },
+        "40%": {
+          translate: "4px 0",
+        },
+        "60%": {
+          translate: "-4px 0",
+        },
+        "80%": {
+          translate: "4px 0",
+        },
+      },
+    },
+    cssVars: {
+      theme: {
+        "--animate-toast-bounce-odd": "toast-bounce-odd 0.5s both",
+        "--animate-toast-bounce-even": "toast-bounce-even 0.5s both",
+        "--animate-toast-shake-odd": "toast-shake-odd 0.5s both",
+        "--animate-toast-shake-even": "toast-shake-even 0.5s both",
+      },
+    },
     dependencies: ["@base-ui/react"],
     files: [
       {

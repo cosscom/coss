@@ -801,6 +801,94 @@
       "type": "registry:ui"
     },
     {
+      "css": {
+        "@keyframes toast-bounce-odd": {
+          "0%": {
+            "translate": "0 0",
+            "animationTimingFunction": "ease-out"
+          },
+          "28%": {
+            "translate": "0 -8px",
+            "animationTimingFunction": "ease-in"
+          },
+          "48%": {
+            "translate": "0 2px",
+            "animationTimingFunction": "ease-out"
+          },
+          "62%": {
+            "translate": "0 -2px",
+            "animationTimingFunction": "ease-in"
+          },
+          "78%": {
+            "translate": "0 0.5px",
+            "animationTimingFunction": "ease-out"
+          },
+          "100%": {
+            "translate": "0 0"
+          }
+        },
+        "@keyframes toast-shake-odd": {
+          "20%": {
+            "translate": "-4px 0"
+          },
+          "40%": {
+            "translate": "4px 0"
+          },
+          "60%": {
+            "translate": "-4px 0"
+          },
+          "80%": {
+            "translate": "4px 0"
+          }
+        },
+        "@keyframes toast-bounce-even": {
+          "0%": {
+            "translate": "0 0",
+            "animationTimingFunction": "ease-out"
+          },
+          "28%": {
+            "translate": "0 -8px",
+            "animationTimingFunction": "ease-in"
+          },
+          "48%": {
+            "translate": "0 2px",
+            "animationTimingFunction": "ease-out"
+          },
+          "62%": {
+            "translate": "0 -2px",
+            "animationTimingFunction": "ease-in"
+          },
+          "78%": {
+            "translate": "0 0.5px",
+            "animationTimingFunction": "ease-out"
+          },
+          "100%": {
+            "translate": "0 0"
+          }
+        },
+        "@keyframes toast-shake-even": {
+          "20%": {
+            "translate": "-4px 0"
+          },
+          "40%": {
+            "translate": "4px 0"
+          },
+          "60%": {
+            "translate": "-4px 0"
+          },
+          "80%": {
+            "translate": "4px 0"
+          }
+        }
+      },
+      "cssVars": {
+        "theme": {
+          "--animate-toast-bounce-odd": "toast-bounce-odd 0.5s both",
+          "--animate-toast-bounce-even": "toast-bounce-even 0.5s both",
+          "--animate-toast-shake-odd": "toast-shake-odd 0.5s both",
+          "--animate-toast-shake-even": "toast-shake-even 0.5s both"
+        }
+      },
       "dependencies": [
         "@base-ui/react"
       ],
@@ -10358,7 +10446,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Basic toast",
+      "description": "Default stacked toast with title and description",
       "files": [
         {
           "path": "registry/default/particles/p-toast-1.tsx",
@@ -10376,7 +10464,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Toast with status",
+      "description": "Stacked toasts by semantic type (success, error, info, warning)",
       "files": [
         {
           "path": "registry/default/particles/p-toast-2.tsx",
@@ -10394,7 +10482,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Loading toast",
+      "description": "Loading-state stacked toast",
       "files": [
         {
           "path": "registry/default/particles/p-toast-3.tsx",
@@ -10412,7 +10500,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Toast with action",
+      "description": "Stacked toast with primary action (undo)",
       "files": [
         {
           "path": "registry/default/particles/p-toast-4.tsx",
@@ -10430,7 +10518,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Promise toast",
+      "description": "Promise-based stacked toast",
       "files": [
         {
           "path": "registry/default/particles/p-toast-5.tsx",
@@ -10448,7 +10536,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Toast with varying heights",
+      "description": "Stacked toasts with varying content height",
       "files": [
         {
           "path": "registry/default/particles/p-toast-6.tsx",
@@ -10466,7 +10554,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Anchored toast with tooltip style",
+      "description": "Anchored tooltip-style toast after copy",
       "files": [
         {
           "path": "registry/default/particles/p-toast-7.tsx",
@@ -10486,7 +10574,7 @@
       "categories": [
         "toast"
       ],
-      "description": "Anchored toast",
+      "description": "Anchored error toast after async failure",
       "files": [
         {
           "path": "registry/default/particles/p-toast-8.tsx",
@@ -10509,7 +10597,7 @@
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Promise toast with cancel action",
+      "description": "Long-running promise toast with cancel",
       "files": [
         {
           "path": "registry/default/particles/p-toast-9.tsx",
@@ -10520,6 +10608,92 @@
       "registryDependencies": [
         "@coss/button",
         "@coss/toast"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toast",
+        "button"
+      ],
+      "description": "Deduplicated success toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-10.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-10",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/toast"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toast",
+        "button",
+        "error"
+      ],
+      "description": "Deduplicated error toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-11.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-11",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/toast"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toast",
+        "button"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Deduplicated anchored tooltip success toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-12.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-12",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/toast",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "toast",
+        "button",
+        "error"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Deduplicated anchored tooltip error toast",
+      "files": [
+        {
+          "path": "registry/default/particles/p-toast-13.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-toast-13",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/toast",
+        "@coss/tooltip"
       ],
       "type": "registry:block"
     },

@@ -5147,7 +5147,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Basic toast",
+    description: "Default stacked toast with title and description",
     files: [{ path: "particles/p-toast-1.tsx", type: "registry:block" }],
     name: "p-toast-1",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5155,7 +5155,8 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Toast with status",
+    description:
+      "Stacked toasts by semantic type (success, error, info, warning)",
     files: [{ path: "particles/p-toast-2.tsx", type: "registry:block" }],
     name: "p-toast-2",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5163,7 +5164,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Loading toast",
+    description: "Loading-state stacked toast",
     files: [{ path: "particles/p-toast-3.tsx", type: "registry:block" }],
     name: "p-toast-3",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5171,7 +5172,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Toast with action",
+    description: "Stacked toast with primary action (undo)",
     files: [{ path: "particles/p-toast-4.tsx", type: "registry:block" }],
     name: "p-toast-4",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5179,7 +5180,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Promise toast",
+    description: "Promise-based stacked toast",
     files: [{ path: "particles/p-toast-5.tsx", type: "registry:block" }],
     name: "p-toast-5",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5187,7 +5188,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Toast with varying heights",
+    description: "Stacked toasts with varying content height",
     files: [{ path: "particles/p-toast-6.tsx", type: "registry:block" }],
     name: "p-toast-6",
     registryDependencies: ["@coss/button", "@coss/toast"],
@@ -5195,7 +5196,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Anchored toast with tooltip style",
+    description: "Anchored tooltip-style toast after copy",
     files: [{ path: "particles/p-toast-7.tsx", type: "registry:block" }],
     name: "p-toast-7",
     registryDependencies: [
@@ -5208,7 +5209,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("toast"),
-    description: "Anchored toast",
+    description: "Anchored error toast after async failure",
     files: [{ path: "particles/p-toast-8.tsx", type: "registry:block" }],
     name: "p-toast-8",
     registryDependencies: ["@coss/button", "@coss/spinner", "@coss/toast"],
@@ -5217,10 +5218,44 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("toast", "button"),
     dependencies: ["lucide-react"],
-    description: "Promise toast with cancel action",
+    description: "Long-running promise toast with cancel",
     files: [{ path: "particles/p-toast-9.tsx", type: "registry:block" }],
     name: "p-toast-9",
     registryDependencies: ["@coss/button", "@coss/toast"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toast", "button"),
+    description: "Deduplicated success toast",
+    files: [{ path: "particles/p-toast-10.tsx", type: "registry:block" }],
+    name: "p-toast-10",
+    registryDependencies: ["@coss/button", "@coss/toast"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toast", "button", "error"),
+    description: "Deduplicated error toast",
+    files: [{ path: "particles/p-toast-11.tsx", type: "registry:block" }],
+    name: "p-toast-11",
+    registryDependencies: ["@coss/button", "@coss/toast"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toast", "button"),
+    dependencies: ["lucide-react"],
+    description: "Deduplicated anchored tooltip success toast",
+    files: [{ path: "particles/p-toast-12.tsx", type: "registry:block" }],
+    name: "p-toast-12",
+    registryDependencies: ["@coss/button", "@coss/toast", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("toast", "button", "error"),
+    dependencies: ["lucide-react"],
+    description: "Deduplicated anchored tooltip error toast",
+    files: [{ path: "particles/p-toast-13.tsx", type: "registry:block" }],
+    name: "p-toast-13",
+    registryDependencies: ["@coss/button", "@coss/toast", "@coss/tooltip"],
     type: "registry:block",
   },
   {

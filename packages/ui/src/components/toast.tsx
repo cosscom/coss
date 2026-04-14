@@ -38,6 +38,19 @@ function getSwipeDirection(position: ToastPosition): SwipeDirection[] {
   return ["right", verticalDirection];
 }
 
+function upsertReplayClassName(toast: {
+  type?: string;
+  updateKey?: number;
+}): string | undefined {
+  const k = toast.updateKey ?? 0;
+  if (k <= 0) return undefined;
+  const isEven = k % 2 === 0;
+  if (toast.type === "error") {
+    return isEven ? "animate-toast-shake-even" : "animate-toast-shake-odd";
+  }
+  return isEven ? "animate-toast-bounce-even" : "animate-toast-bounce-odd";
+}
+
 function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
   const { toasts } = Toast.useToastManager();
   const swipeDirection = getSwipeDirection(position);
@@ -65,6 +78,7 @@ function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
 
           return (
             <Toast.Root
+              key={toast.id}
               className={cn(
                 "absolute z-[calc(9999-var(--toast-index))] h-(--toast-calc-height) w-full select-none rounded-lg border bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(1%*max(0,var(--toast-index,0))))] not-dark:bg-clip-padding text-popover-foreground shadow-lg/5 [transition:transform_.5s_cubic-bezier(.22,1,.36,1),opacity_.5s,height_.15s,background-color_.5s] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-expanded:bg-popover dark:bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(6%*max(0,var(--toast-index,0))))] dark:data-expanded:bg-popover dark:before:shadow-[0_-1px_--theme(--color-white/6%)]",
                 // Base positioning using data-position
@@ -105,9 +119,9 @@ function Toasts({ position }: { position: ToastPosition }): React.ReactElement {
                 "data-expanded:data-ending-style:data-[swipe-direction=right]:transform-[translateX(calc(var(--toast-swipe-movement-x)+100%+var(--toast-inset)))_translateY(var(--toast-calc-offset-y))]",
                 "data-expanded:data-ending-style:data-[swipe-direction=up]:transform-[translateY(calc(var(--toast-swipe-movement-y)-100%-var(--toast-inset)))]",
                 "data-expanded:data-ending-style:data-[swipe-direction=down]:transform-[translateY(calc(var(--toast-swipe-movement-y)+100%+var(--toast-inset)))]",
+                upsertReplayClassName(toast),
               )}
               data-position={position}
-              key={toast.id}
               swipeDirection={swipeDirection}
               toast={toast}
             >
@@ -173,9 +187,9 @@ function AnchoredToasts(): React.ReactElement {
 
           return (
             <Toast.Positioner
+              key={toast.id}
               className="z-50 max-w-[min(--spacing(64),var(--available-width))]"
               data-slot="toast-positioner"
-              key={toast.id}
               sideOffset={positionerProps.sideOffset ?? 4}
               toast={toast}
             >
@@ -185,6 +199,7 @@ function AnchoredToasts(): React.ReactElement {
                   tooltipStyle
                     ? "rounded-md shadow-md/5 before:rounded-[calc(var(--radius-md)-1px)]"
                     : "rounded-lg shadow-lg/5 before:rounded-[calc(var(--radius-lg)-1px)]",
+                  upsertReplayClassName(toast),
                 )}
                 data-slot="toast-popup"
                 toast={toast}
@@ -235,8 +250,16 @@ function AnchoredToasts(): React.ReactElement {
   );
 }
 
+/**
+ * Stacked toasts. Pass the same `id` on repeated `add` calls to update a toast in place (dedupe) and replay the re-notify animation via `updateKey`.
+ * @see https://base-ui.com/react/components/toast
+ */
 export const toastManager: ReturnType<typeof Toast.createToastManager> =
   Toast.createToastManager();
+
+/**
+ * Anchored toasts. Same `id` + `add` semantics as `toastManager`.
+ */
 export const anchoredToastManager: ReturnType<typeof Toast.createToastManager> =
   Toast.createToastManager();
 

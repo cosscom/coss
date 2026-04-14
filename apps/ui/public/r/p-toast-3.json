@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-3",
-  "description": "Loading toast",
+  "description": "Loading-state stacked toast",
   "registryDependencies": [
     "@coss/button",
     "@coss/toast"

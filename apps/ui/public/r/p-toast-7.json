@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-7",
-  "description": "Anchored toast with tooltip style",
+  "description": "Anchored tooltip-style toast after copy",
   "registryDependencies": [
     "@coss/button",
     "@coss/toast",
