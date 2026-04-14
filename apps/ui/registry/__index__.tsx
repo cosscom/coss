@@ -9207,7 +9207,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-12": {
     name: "p-toast-12",
-    description: "Deduplicated anchored tooltip success toast",
+    description: "Anchored deduplicated success toast",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip"],
     files: [{
@@ -9225,7 +9225,7 @@ export const Index: Record<string, any> = {
   },
   "p-toast-13": {
     name: "p-toast-13",
-    description: "Deduplicated anchored tooltip error toast",
+    description: "Anchored deduplicated error toast",
     type: "registry:block",
     registryDependencies: ["@coss/button","@coss/toast","@coss/tooltip"],
     files: [{

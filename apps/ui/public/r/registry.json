@@ -10642,7 +10642,7 @@
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Deduplicated anchored tooltip success toast",
+      "description": "Anchored deduplicated success toast",
       "files": [
         {
           "path": "registry/default/particles/p-toast-12.tsx",
@@ -10666,7 +10666,7 @@
       "dependencies": [
         "lucide-react"
       ],
-      "description": "Deduplicated anchored tooltip error toast",
+      "description": "Anchored deduplicated error toast",
       "files": [
         {
           "path": "registry/default/particles/p-toast-13.tsx",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toast-12",
-  "description": "Deduplicated anchored tooltip success toast",
+  "description": "Anchored deduplicated success toast",
   "dependencies": [
     "lucide-react"
   ],

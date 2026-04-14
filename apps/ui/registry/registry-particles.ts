@@ -5243,7 +5243,7 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("toast", "button"),
     dependencies: ["lucide-react"],
-    description: "Deduplicated anchored tooltip success toast",
+    description: "Anchored deduplicated success toast",
     files: [{ path: "particles/p-toast-12.tsx", type: "registry:block" }],
     name: "p-toast-12",
     registryDependencies: ["@coss/button", "@coss/toast", "@coss/tooltip"],
@@ -5252,7 +5252,7 @@ export const particles: ParticleItem[] = [
   {
     categories: categories("toast", "button", "error"),
     dependencies: ["lucide-react"],
-    description: "Deduplicated anchored tooltip error toast",
+    description: "Anchored deduplicated error toast",
     files: [{ path: "particles/p-toast-13.tsx", type: "registry:block" }],
     name: "p-toast-13",
     registryDependencies: ["@coss/button", "@coss/toast", "@coss/tooltip"],
