@@ -761,13 +761,13 @@ export const ui: Registry["items"] = [
     cssVars: {
       theme: {
         "--animate-toast-success-odd":
-          "toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1) both",
+          "toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1)",
         "--animate-toast-success-even":
-          "toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1) both",
+          "toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1)",
         "--animate-toast-error-odd":
-          "toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1) both",
+          "toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1)",
         "--animate-toast-error-even":
-          "toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1) both",
+          "toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1)",
       },
     },
     dependencies: ["@base-ui/react"],
