@@ -59,13 +59,13 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-skeleton: skeleton 2s -1s infinite linear;
   --animate-caret-blink: 1s ease-out infinite caret-blink;
-  --animate-toast-bounce-odd: toast-bounce-odd 0.32s
+  --animate-toast-success-odd: toast-success-odd 0.32s
     cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-bounce-even: toast-bounce-even 0.32s
+  --animate-toast-success-even: toast-success-even 0.32s
     cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-shake-odd: toast-shake-odd 0.28s
+  --animate-toast-error-odd: toast-error-odd 0.28s
     cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-toast-shake-even: toast-shake-even 0.28s
+  --animate-toast-error-even: toast-error-even 0.28s
     cubic-bezier(0.22, 1, 0.36, 1) both;
   --tw-shadow-color: #000;
   @keyframes skeleton {
@@ -84,7 +84,7 @@
       opacity: 0;
     }
   }
-  @keyframes toast-bounce-odd {
+  @keyframes toast-success-odd {
     0% {
       scale: 1;
     }
@@ -98,7 +98,7 @@
       scale: 1;
     }
   }
-  @keyframes toast-shake-odd {
+  @keyframes toast-error-odd {
     0% {
       translate: 0 0;
     }
@@ -115,7 +115,7 @@
       translate: 0 0;
     }
   }
-  @keyframes toast-bounce-even {
+  @keyframes toast-success-even {
     0% {
       scale: 1;
     }
@@ -129,7 +129,7 @@
       scale: 1;
     }
   }
-  @keyframes toast-shake-even {
+  @keyframes toast-error-even {
     0% {
       translate: 0 0;
     }
@@ -150,10 +150,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   :where(
-      .animate-toast-bounce-odd,
-      .animate-toast-bounce-even,
-      .animate-toast-shake-odd,
-      .animate-toast-shake-even
+      .animate-toast-success-odd,
+      .animate-toast-success-even,
+      .animate-toast-error-odd,
+      .animate-toast-error-even
     ) {
     animation: none;
   }

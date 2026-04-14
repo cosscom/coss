@@ -695,7 +695,7 @@ export const ui: Registry["items"] = [
   },
   {
     css: {
-      "@keyframes toast-bounce-odd": {
+      "@keyframes toast-success-odd": {
         "0%": {
           scale: "1",
         },
@@ -709,7 +709,7 @@ export const ui: Registry["items"] = [
           scale: "1",
         },
       },
-      "@keyframes toast-shake-odd": {
+      "@keyframes toast-error-odd": {
         "0%": {
           translate: "0 0",
         },
@@ -726,7 +726,7 @@ export const ui: Registry["items"] = [
           translate: "0 0",
         },
       },
-      "@keyframes toast-bounce-even": {
+      "@keyframes toast-success-even": {
         "0%": {
           scale: "1",
         },
@@ -740,7 +740,7 @@ export const ui: Registry["items"] = [
           scale: "1",
         },
       },
-      "@keyframes toast-shake-even": {
+      "@keyframes toast-error-even": {
         "0%": {
           translate: "0 0",
         },
@@ -760,14 +760,14 @@ export const ui: Registry["items"] = [
     },
     cssVars: {
       theme: {
-        "--animate-toast-bounce-odd":
-          "toast-bounce-odd 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "--animate-toast-bounce-even":
-          "toast-bounce-even 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "--animate-toast-shake-odd":
-          "toast-shake-odd 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "--animate-toast-shake-even":
-          "toast-shake-even 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-success-odd":
+          "toast-success-odd 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-success-even":
+          "toast-success-even 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-error-odd":
+          "toast-error-odd 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "--animate-toast-error-even":
+          "toast-error-even 0.28s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
     dependencies: ["@base-ui/react"],
