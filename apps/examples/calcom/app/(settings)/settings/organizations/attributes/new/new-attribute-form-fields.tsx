@@ -17,6 +17,11 @@ import { Group } from "@coss/ui/components/group";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import {
+  Popover,
+  PopoverPopup,
+  PopoverTrigger,
+} from "@coss/ui/components/popover";
+import {
   Select,
   SelectButton,
   SelectItem,
@@ -178,10 +183,27 @@ export function NewAttributeFormFields() {
             <Fieldset className="max-w-none gap-2">
               <div className="flex items-center gap-1.5">
                 <Label render={<FieldsetLegend />}>Group options</Label>
-                <InfoIcon
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-muted-foreground"
-                />
+                <Popover>
+                  <PopoverTrigger
+                    aria-label="About group options"
+                    className="inline-flex shrink-0"
+                    delay={0}
+                    openOnHover
+                    closeDelay={100}
+                  >
+                    <InfoIcon className="size-3.5 text-muted-foreground" />
+                  </PopoverTrigger>
+                  <PopoverPopup
+                    side="top"
+                    tooltipStyle
+                    className="text-center max-w-64"
+                  >
+                    <p>
+                      When a group option is assigned to a user, they behave as
+                      if all options within that group are assigned to them.
+                    </p>
+                  </PopoverPopup>
+                </Popover>
               </div>
               {groupOptions.length > 0 ? (
                 <div className="flex flex-col gap-2">
