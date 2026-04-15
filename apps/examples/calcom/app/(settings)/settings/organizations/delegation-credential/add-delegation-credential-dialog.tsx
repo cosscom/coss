@@ -121,7 +121,7 @@ export function AddDelegationCredentialDialog({
             <Field>
               <FieldLabel>Service account key JSON</FieldLabel>
               <Textarea
-                className="font-mono text-sm *:field-sizing-fixed *:min-h-0"
+                className="*:field-sizing-fixed font-mono text-sm *:min-h-0"
                 rows={8}
                 name="serviceAccountKeyJson"
                 placeholder="{...}"
