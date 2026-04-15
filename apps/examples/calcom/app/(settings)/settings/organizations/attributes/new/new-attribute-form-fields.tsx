@@ -186,7 +186,6 @@ export function NewAttributeFormFields() {
                 <Popover>
                   <PopoverTrigger
                     aria-label="About group options"
-                    className="inline-flex shrink-0"
                     delay={0}
                     openOnHover
                     closeDelay={100}
@@ -196,7 +195,7 @@ export function NewAttributeFormFields() {
                   <PopoverPopup
                     side="top"
                     tooltipStyle
-                    className="text-center max-w-64"
+                    className="max-w-64 text-center"
                   >
                     <p>
                       When a group option is assigned to a user, they behave as
