@@ -439,18 +439,18 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "input-otp": {
-    name: "input-otp",
+  "otp-field": {
+    name: "otp-field",
     description: "",
     type: "registry:ui",
     registryDependencies: ["@coss/separator"],
     files: [{
-      path: "registry/default/ui/input-otp.tsx",
+      path: "registry/default/ui/otp-field.tsx",
       type: "registry:ui",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/ui/input-otp.tsx")
+      const mod = await import("@/registry/default/ui/otp-field.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -5821,130 +5821,166 @@ export const Index: Record<string, any> = {
     categories: ["input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
-  "p-input-otp-1": {
-    name: "p-input-otp-1",
-    description: "Basic OTP input",
+  "p-otp-field-1": {
+    name: "p-otp-field-1",
+    description: "Basic OTP field",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/otp-field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-1.tsx",
+      path: "registry/default/particles/p-otp-field-1.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-1.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-1.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input"],
+    categories: ["otp field","input"],
     meta: undefined,
   },
-  "p-input-otp-2": {
-    name: "p-input-otp-2",
-    description: "Large OTP input",
+  "p-otp-field-2": {
+    name: "p-otp-field-2",
+    description: "Large OTP field",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/otp-field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-2.tsx",
+      path: "registry/default/particles/p-otp-field-2.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-2.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-2.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input"],
+    categories: ["otp field","input"],
     meta: undefined,
   },
-  "p-input-otp-3": {
-    name: "p-input-otp-3",
-    description: "OTP input with separator",
+  "p-otp-field-3": {
+    name: "p-otp-field-3",
+    description: "OTP field with separator",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/otp-field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-3.tsx",
+      path: "registry/default/particles/p-otp-field-3.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-3.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-3.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input"],
+    categories: ["otp field","input"],
     meta: undefined,
   },
-  "p-input-otp-4": {
-    name: "p-input-otp-4",
-    description: "OTP input with label",
+  "p-otp-field-4": {
+    name: "p-otp-field-4",
+    description: "OTP field with label",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp","@coss/label"],
+    registryDependencies: ["@coss/otp-field","@coss/field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-4.tsx",
+      path: "registry/default/particles/p-otp-field-4.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-4.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-4.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input","label"],
+    categories: ["otp field","input","field"],
     meta: undefined,
   },
-  "p-input-otp-5": {
-    name: "p-input-otp-5",
-    description: "Digits-only OTP input",
+  "p-otp-field-6": {
+    name: "p-otp-field-6",
+    description: "OTP field with custom sanitization",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/otp-field","@coss/field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-5.tsx",
+      path: "registry/default/particles/p-otp-field-6.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-5.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-6.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input"],
+    categories: ["otp field","input","field","validation"],
     meta: undefined,
   },
-  "p-input-otp-6": {
-    name: "p-input-otp-6",
-    description: "Invalid OTP input",
+  "p-otp-field-7": {
+    name: "p-otp-field-7",
+    description: "OTP field with auto validation",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp"],
+    registryDependencies: ["@coss/otp-field","@coss/field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-6.tsx",
+      path: "registry/default/particles/p-otp-field-7.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-6.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-7.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input","validation"],
+    categories: ["otp field","input","validation"],
     meta: undefined,
   },
-  "p-input-otp-7": {
-    name: "p-input-otp-7",
-    description: "OTP input with auto validation",
+  "p-otp-field-8": {
+    name: "p-otp-field-8",
+    description: "Alphanumeric OTP field",
     type: "registry:block",
-    registryDependencies: ["@coss/input-otp","@coss/label"],
+    registryDependencies: ["@coss/otp-field","@coss/field"],
     files: [{
-      path: "registry/default/particles/p-input-otp-7.tsx",
+      path: "registry/default/particles/p-otp-field-8.tsx",
       type: "registry:block",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-input-otp-7.tsx")
+      const mod = await import("@/registry/default/particles/p-otp-field-8.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["input otp","input","validation"],
+    categories: ["otp field","input","field"],
+    meta: undefined,
+  },
+  "p-otp-field-9": {
+    name: "p-otp-field-9",
+    description: "OTP field with placeholder hints",
+    type: "registry:block",
+    registryDependencies: ["@coss/otp-field","@coss/field"],
+    files: [{
+      path: "registry/default/particles/p-otp-field-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-otp-field-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["otp field","input","field"],
+    meta: undefined,
+  },
+  "p-otp-field-10": {
+    name: "p-otp-field-10",
+    description: "Masked OTP field",
+    type: "registry:block",
+    registryDependencies: ["@coss/otp-field","@coss/field"],
+    files: [{
+      path: "registry/default/particles/p-otp-field-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-otp-field-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["otp field","input","field"],
     meta: undefined,
   },
   "p-input-group-1": {

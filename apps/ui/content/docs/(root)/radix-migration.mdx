@@ -442,6 +442,53 @@ So, if you want to preserve the original shadcn/ui input height (36px), you shou
 - No `InputGroupButton` component - use the regular `Button` component directly inside `InputGroupAddon` instead
 - To disable an input group, disable the `InputGroupInput` or `InputGroupTextarea` directly (and any Button inside it) - no need to add a `data-disabled` attribute on `InputGroup`.
 
+### OTP Field
+
+coss does **not** use the community [`input-otp`](https://github.com/guilhermerodz/input-otp) package. OTP entry is implemented with [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPFieldPreview`) via the `@coss/otp-field` registry item (`components/ui/otp-field.tsx`).
+
+**Quick Checklist:**
+- Remove the `input-otp` dependency from your app; rely on `@base-ui/react` through coss
+- Replace `InputOTP` → `OTPField`, `InputOTPSlot` → `OTPFieldInput`, `InputOTPSeparator` → `OTPFieldSeparator`
+- Remove `InputOTPGroup`; use `size` on `OTPField` when you need the large slot variant (`size="lg"`)
+- Replace `maxLength` → `length` on the root
+- For controlled values, use `onValueChange` (and `value`) as documented for Base UI — not the old package’s `onChange` alone
+- Render one `OTPFieldInput` per character in **DOM order**; do not pass a slot `index`
+- Add an `aria-label` on each `OTPFieldInput` when there is no visible label associated with the control
+
+**Comparison Example:**
+
+<span data-lib="radix-ui">
+```tsx title="shadcn/ui + input-otp"
+<InputOTP maxLength={6} value={value} onChange={setValue}>
+  <InputOTPGroup>
+    <InputOTPSlot index={0} />
+    <InputOTPSlot index={1} />
+    <InputOTPSlot index={2} />
+  </InputOTPGroup>
+  <InputOTPSeparator />
+  <InputOTPGroup>
+    <InputOTPSlot index={3} />
+    <InputOTPSlot index={4} />
+    <InputOTPSlot index={5} />
+  </InputOTPGroup>
+</InputOTP>
+```
+</span>
+
+<span data-lib="base-ui">
+```tsx title="coss ui"
+<OTPField length={6} value={value} onValueChange={setValue}>
+  <OTPFieldInput aria-label="Character 1 of 6" />
+  <OTPFieldInput aria-label="Character 2 of 6" />
+  <OTPFieldInput aria-label="Character 3 of 6" />
+  <OTPFieldSeparator />
+  <OTPFieldInput aria-label="Character 4 of 6" />
+  <OTPFieldInput aria-label="Character 5 of 6" />
+  <OTPFieldInput aria-label="Character 6 of 6" />
+</OTPField>
+```
+</span>
+
 ### Menu
 
 **Prop Mapping:**
@@ -972,6 +1019,7 @@ After converting components, run a quick verification pass:
 - Keyboard test overlays (open/close, focus trap, escape handling).
 - Confirm accessible names (`aria-label` for icon-only controls, proper label associations in forms).
 - For `Select`/`Command`, verify SSR/hydration behavior and selected label rendering.
+- For OTP fields, confirm the number of `OTPFieldInput` slots matches `length` and that focus moves correctly between inputs.
 - Compare visual density and adjust size variants when parity with previous UI is required.
 
 ## Additional Resources

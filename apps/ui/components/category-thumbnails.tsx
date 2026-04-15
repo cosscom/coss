@@ -1022,7 +1022,7 @@ export const categoryThumbnails: Record<string, ReactNode> = {
   frame: frameThumbnail,
   group: groupThumbnail,
   input: inputThumbnail,
-  "input-otp": inputOtpThumbnail,
+  "otp-field": inputOtpThumbnail,
   "input-group": inputGroupThumbnail,
   kbd: kbdThumbnail,
   label: labelThumbnail,

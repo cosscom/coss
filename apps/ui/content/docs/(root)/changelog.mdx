@@ -3,6 +3,30 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## Apr 14, 2026
+
+### OTP Field
+
+The **`input-otp.tsx`** registry component has been removed in favor of **`otp-field.tsx`** (`@coss/otp-field`), which wraps Base UI OTP Field. See the [OTP Field](/ui/docs/components/otp-field) docs and [migration guide](/ui/docs/radix-migration#otp-field) for API details.
+
+**Migration:**
+
+```diff
+- npx shadcn@latest add @coss/input-otp
++ npx shadcn@latest add @coss/otp-field
+```
+
+```diff
+- import { ... } from "@/components/ui/input-otp"
++ import { ... } from "@/components/ui/otp-field"
+```
+
+**Agent migration prompt:**
+
+```text
+Replace the removed @coss/input-otp / components/ui/input-otp.tsx with @coss/otp-field / components/ui/otp-field.tsx. Follow the OTP Field docs: use OTPField, OTPFieldInput, and OTPFieldSeparator; use length on the root; remove the old input-otp npm package if present.
+```
+
 ## Apr 12, 2026
 
 ### Table

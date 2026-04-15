@@ -37,7 +37,7 @@ Run the generator script from the coss repo root:
 node apps/ui/scripts/generate-particle-index.cjs
 ```
 
-Total: **474 particles** across **52 component types**
+Total: **480 particles** across **52 component types**
 
 ## Component types
 
@@ -67,11 +67,11 @@ Total: **474 particles** across **52 component types**
 - [group](#group) (22)
 - [input](#input) (19)
 - [input-group](#input-group) (28)
-- [input-otp](#input-otp) (7)
 - [kbd](#kbd) (1)
 - [menu](#menu) (9)
 - [meter](#meter) (4)
 - [number-field](#number-field) (11)
+- [otp-field](#otp-field) (9)
 - [pagination](#pagination) (3)
 - [popover](#popover) (3)
 - [preview-card](#preview-card) (1)
@@ -85,7 +85,7 @@ Total: **474 particles** across **52 component types**
 - [slider](#slider) (23)
 - [spinner](#spinner) (1)
 - [switch](#switch) (6)
-- [table](#table) (4)
+- [table](#table) (8)
 - [tabs](#tabs) (13)
 - [textarea](#textarea) (15)
 - [toast](#toast) (9)
@@ -473,16 +473,6 @@ Total: **474 particles** across **52 component types**
 - Message composer with attachment buttons | [JSON](https://coss.com/ui/r/p-input-group-28.json)
 - Chat input with voice and send buttons | [JSON](https://coss.com/ui/r/p-input-group-29.json)
 
-### input-otp
-
-- Basic OTP input | [JSON](https://coss.com/ui/r/p-input-otp-1.json)
-- Large OTP input | [JSON](https://coss.com/ui/r/p-input-otp-2.json)
-- OTP input with separator | [JSON](https://coss.com/ui/r/p-input-otp-3.json)
-- OTP input with label | [JSON](https://coss.com/ui/r/p-input-otp-4.json)
-- Digits-only OTP input | [JSON](https://coss.com/ui/r/p-input-otp-5.json)
-- Invalid OTP input | [JSON](https://coss.com/ui/r/p-input-otp-6.json)
-- OTP input with auto validation | [JSON](https://coss.com/ui/r/p-input-otp-7.json)
-
 ### kbd
 
 - Keyboard shortcuts display | [JSON](https://coss.com/ui/r/p-kbd-1.json)
@@ -519,6 +509,18 @@ Total: **474 particles** across **52 component types**
 - Number field with step | [JSON](https://coss.com/ui/r/p-number-field-9.json)
 - Number field in form | [JSON](https://coss.com/ui/r/p-number-field-10.json)
 - Pill-shaped number field | [JSON](https://coss.com/ui/r/p-number-field-11.json)
+
+### otp-field
+
+- Basic OTP field | [JSON](https://coss.com/ui/r/p-otp-field-1.json)
+- Large OTP field | [JSON](https://coss.com/ui/r/p-otp-field-2.json)
+- OTP field with separator | [JSON](https://coss.com/ui/r/p-otp-field-3.json)
+- OTP field with label | [JSON](https://coss.com/ui/r/p-otp-field-4.json)
+- OTP field with custom sanitization | [JSON](https://coss.com/ui/r/p-otp-field-6.json)
+- OTP field with auto validation | [JSON](https://coss.com/ui/r/p-otp-field-7.json)
+- Alphanumeric OTP field | [JSON](https://coss.com/ui/r/p-otp-field-8.json)
+- OTP field with placeholder hints | [JSON](https://coss.com/ui/r/p-otp-field-9.json)
+- Masked OTP field | [JSON](https://coss.com/ui/r/p-otp-field-10.json)
 
 ### pagination
 
