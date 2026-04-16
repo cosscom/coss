@@ -13,7 +13,7 @@ const items = [
 export default function Particle() {
   return (
     <Field
-      className="gap-4"
+      className="w-full gap-4"
       name="theme"
       render={(props) => <Fieldset {...props} />}
     >

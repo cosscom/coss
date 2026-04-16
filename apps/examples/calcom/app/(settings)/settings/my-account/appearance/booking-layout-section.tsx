@@ -47,7 +47,7 @@ export function BookingLayoutSection() {
   return (
     <div className="flex flex-col gap-6">
       <Field
-        className="max-w-none gap-4"
+        className="w-full gap-4"
         name="layout"
         render={(props) => <Fieldset {...props} />}
       >

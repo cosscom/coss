@@ -25,7 +25,7 @@ const themeItems = [
 export function DashboardThemeSection() {
   return (
     <Field
-      className="max-w-none gap-4"
+      className="w-full gap-4"
       name="dashboardTheme"
       render={(props) => <Fieldset {...props} />}
     >
@@ -37,7 +37,7 @@ export function DashboardThemeSection() {
 export function BookingThemeSection() {
   return (
     <Field
-      className="max-w-none gap-4"
+      className="w-full gap-4"
       name="theme"
       render={(props) => <Fieldset {...props} />}
     >

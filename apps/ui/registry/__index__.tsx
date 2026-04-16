@@ -4883,7 +4883,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["checkbox","checkbox group","field","fieldset","label"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+    meta: undefined,
   },
   "p-field-14": {
     name: "p-field-14",

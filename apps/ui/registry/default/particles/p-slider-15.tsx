@@ -16,7 +16,7 @@ export default function Particle() {
       : `$${price.toLocaleString()}`;
 
   return (
-    <Fieldset className="flex max-w-none flex-col gap-3">
+    <Fieldset className="flex w-full flex-col gap-3">
       <FieldsetLegend className="tabular-nums">
         From {formatPrice(values[0] ?? min)} to {formatPrice(values[1] ?? max)}
       </FieldsetLegend>

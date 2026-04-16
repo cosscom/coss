@@ -27,11 +27,13 @@ export default function Particle() {
       onSubmit={onSubmit}
     >
       <Field
-        className="gap-4"
+        className="w-full gap-4"
         name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >
-        <FieldsetLegend>Frameworks</FieldsetLegend>
+        <FieldsetLegend className="font-medium text-sm">
+          Frameworks
+        </FieldsetLegend>
         <CheckboxGroup defaultValue={["next"]}>
           <FieldItem>
             <FieldLabel>

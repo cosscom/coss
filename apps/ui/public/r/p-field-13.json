@@ -15,9 +15,6 @@
       "type": "registry:block"
     }
   ],
-  "meta": {
-    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
-  },
   "categories": [
     "checkbox",
     "checkbox group",

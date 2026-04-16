@@ -171,7 +171,7 @@ export function ProfileFields() {
       </FieldGridRow>
 
       <FieldGridRow>
-        <Fieldset className="max-w-none gap-2">
+        <Fieldset className="flex w-full flex-col gap-2">
           <Label render={<FieldsetLegend />}>Email</Label>
           <FieldGrid className="w-full gap-2 md:gap-4">
             {emails.map((item) => (

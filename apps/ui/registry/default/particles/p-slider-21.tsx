@@ -25,7 +25,7 @@ export default function Particle() {
   };
 
   return (
-    <Fieldset className="flex max-w-none flex-col gap-4">
+    <Fieldset className="flex w-full flex-col gap-4">
       <FieldsetLegend>Object position</FieldsetLegend>
       <div className="flex flex-col gap-2">
         {(["x", "y", "z"] as const).map((axis) => (
