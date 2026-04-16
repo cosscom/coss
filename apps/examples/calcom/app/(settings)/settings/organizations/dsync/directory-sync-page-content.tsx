@@ -29,8 +29,8 @@ const MOCK_SCIM_BASE_URL =
 const MOCK_SCIM_BEARER_TOKEN = "lsM4BTx47bqaL70530CSJg";
 
 const INITIAL_TEAM_ROWS: TeamDirectoryRow[] = [
-  { groupNames: ["fdg"], id: "1", teamName: "Team 1" },
-  { groupNames: [], id: "2", teamName: "one more" },
+  { groupNames: [], id: "1", teamName: "Dream Team" },
+  { groupNames: [], id: "2", teamName: "Another Team" },
 ];
 
 export function DirectorySyncPageContent() {
@@ -99,9 +99,11 @@ export function DirectorySyncPageContent() {
                   </Button>
                 </CardFrameAction>
               </CardFrameHeader>
-              <CardFrame className="w-full">
-                <DirectorySyncTeamMapping initialRows={INITIAL_TEAM_ROWS} />
-              </CardFrame>
+              <Card className="w-full rounded-b-none!">
+                <CardPanel className="p-0">
+                  <DirectorySyncTeamMapping initialRows={INITIAL_TEAM_ROWS} />
+                </CardPanel>
+              </Card>
             </CardFrame>
           </>
         )}

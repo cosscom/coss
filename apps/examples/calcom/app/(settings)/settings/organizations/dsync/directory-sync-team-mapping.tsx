@@ -1,16 +1,17 @@
 "use client";
 
-import { Button } from "@coss/ui/components/button";
+import { Button, buttonVariants } from "@coss/ui/components/button";
+import { Group, GroupSeparator, GroupText } from "@coss/ui/components/group";
+import { Input } from "@coss/ui/components/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+  Popover,
+  PopoverPopup,
+  PopoverTrigger,
+} from "@coss/ui/components/popover";
+import { cn } from "@coss/ui/lib/utils";
 import { PlusIcon, XIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ListItem, ListItemContent } from "@/components/list-item";
 
 export interface TeamDirectoryRow {
   id: string;
@@ -20,6 +21,116 @@ export interface TeamDirectoryRow {
 
 interface DirectorySyncTeamMappingProps {
   initialRows: TeamDirectoryRow[];
+}
+
+function TeamRowGroups({
+  groupNames,
+  onAddGroup,
+  onRemoveGroup,
+  teamId,
+}: {
+  teamId: string;
+  groupNames: string[];
+  onAddGroup: (teamId: string, name: string) => void;
+  onRemoveGroup: (teamId: string, name: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+
+  const addDisabled = draft.trim().length === 0;
+
+  function handleAdd(): void {
+    if (addDisabled) {
+      return;
+    }
+    const trimmed = draft.trim();
+    onAddGroup(teamId, trimmed);
+    setDraft("");
+    setOpen(false);
+  }
+
+  function handleOpenChange(next: boolean): void {
+    setOpen(next);
+    if (!next) {
+      setDraft("");
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {groupNames.map((name) => (
+        <Group aria-label={`Directory group ${name}`} key={`${teamId}-${name}`}>
+          <GroupText
+            className={cn(
+              buttonVariants({ size: "sm", variant: "outline" }),
+              "pointer-events-none",
+            )}
+          >
+            {name}
+          </GroupText>
+          <GroupSeparator />
+          <Button
+            aria-label={`Remove group ${name}`}
+            onClick={() => onRemoveGroup(teamId, name)}
+            size="icon-sm"
+            type="button"
+            variant="outline"
+          >
+            <XIcon aria-hidden="true" />
+          </Button>
+        </Group>
+      ))}
+      <Popover onOpenChange={handleOpenChange} open={open}>
+        <PopoverTrigger
+          render={<Button size="sm" type="button" variant="outline" />}
+        >
+          <PlusIcon aria-hidden="true" />
+          Group name
+        </PopoverTrigger>
+        <PopoverPopup
+          align="start"
+          className="min-w-64 transition-none"
+          portalProps={{
+            className: "*:data-[slot=popover-positioner]:transition-none",
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <Input
+              aria-label="Group name"
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Enter group name"
+              ref={inputRef}
+              size="sm"
+              type="text"
+              value={draft}
+            />
+            <Button
+              className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+              disabled={addDisabled}
+              onClick={handleAdd}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              Add
+            </Button>
+          </div>
+        </PopoverPopup>
+      </Popover>
+    </div>
+  );
 }
 
 export function DirectorySyncTeamMapping({
@@ -40,71 +151,41 @@ export function DirectorySyncTeamMapping({
     );
   }, []);
 
-  const addGroup = useCallback((teamId: string) => {
+  const addGroup = useCallback((teamId: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return;
+    }
     setRows((prev) =>
-      prev.map((row) => {
-        if (row.id !== teamId) {
-          return row;
-        }
-        const nextIndex = row.groupNames.length + 1;
-        const label = `Group ${nextIndex}`;
-        if (row.groupNames.includes(label)) {
-          return row;
-        }
-        return { ...row, groupNames: [...row.groupNames, label] };
-      }),
+      prev.map((row) =>
+        row.id === teamId && !row.groupNames.includes(trimmed)
+          ? { ...row, groupNames: [...row.groupNames, trimmed] }
+          : row,
+      ),
     );
   }, []);
 
   return (
-    <Table className="w-full" variant="card">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[min(12rem,36%)]">Team</TableHead>
-          <TableHead>Group name</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id}>
-            <TableCell className="align-top font-medium text-foreground">
-              {row.teamName}
-            </TableCell>
-            <TableCell className="align-top">
-              <div className="flex flex-wrap items-center gap-2 py-0.5">
-                {row.groupNames.map((name) => (
-                  <span
-                    className="inline-flex max-w-full items-center gap-0.5 rounded-md border bg-muted/40 ps-2 text-foreground text-sm"
-                    key={`${row.id}-${name}`}
-                  >
-                    <span className="truncate py-1 pe-0.5">{name}</span>
-                    <Button
-                      aria-label={`Remove group ${name}`}
-                      className="shrink-0 rounded-s-none"
-                      onClick={() => removeGroup(row.id, name)}
-                      size="icon-xs"
-                      type="button"
-                      variant="ghost"
-                    >
-                      <XIcon aria-hidden="true" />
-                    </Button>
-                  </span>
-                ))}
-                <Button
-                  className="rounded-full"
-                  onClick={() => addGroup(row.id)}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <PlusIcon aria-hidden="true" />
-                  Add group name
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      {rows.map((row) => (
+        <ListItem key={row.id}>
+          <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row">
+            <div className="flex items-center md:w-36 md:shrink-0 md:min-h-7">
+              <p className="text-sm font-medium text-foreground">
+                {row.teamName}
+              </p>
+            </div>
+            <ListItemContent>
+              <TeamRowGroups
+                groupNames={row.groupNames}
+                onAddGroup={addGroup}
+                onRemoveGroup={removeGroup}
+                teamId={row.id}
+              />
+            </ListItemContent>
+          </div>
+        </ListItem>
+      ))}
+    </>
   );
 }
