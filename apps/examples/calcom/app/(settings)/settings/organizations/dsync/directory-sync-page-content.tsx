@@ -4,11 +4,13 @@ import { Button } from "@coss/ui/components/button";
 import {
   Card,
   CardFrame,
+  CardFrameAction,
   CardFrameDescription,
   CardFrameHeader,
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
+import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { CopyableField } from "../../developer/oauth/copyable-field";
 import { ConfigureDirectorySyncDialog } from "./configure-directory-sync-dialog";
@@ -89,11 +91,13 @@ export function DirectorySyncPageContent() {
 
             <CardFrame>
               <CardFrameHeader>
-                <CardFrameTitle>Create team</CardFrameTitle>
-                <CardFrameDescription>
-                  Map each team to one or more directory groups so members are
-                  provisioned correctly.
-                </CardFrameDescription>
+                <CardFrameTitle>Teams</CardFrameTitle>
+                <CardFrameAction>
+                  <Button type="button" variant="outline">
+                    <PlusIcon aria-hidden="true" />
+                    Create team
+                  </Button>
+                </CardFrameAction>
               </CardFrameHeader>
               <CardFrame className="w-full">
                 <DirectorySyncTeamMapping initialRows={INITIAL_TEAM_ROWS} />
