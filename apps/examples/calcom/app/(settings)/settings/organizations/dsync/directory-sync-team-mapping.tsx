@@ -170,8 +170,8 @@ export function DirectorySyncTeamMapping({
       {rows.map((row) => (
         <ListItem key={row.id}>
           <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row">
-            <div className="flex items-center md:w-36 md:shrink-0 md:min-h-7">
-              <p className="text-sm font-medium text-foreground">
+            <div className="flex items-center md:min-h-7 md:w-36 md:shrink-0">
+              <p className="font-medium text-foreground text-sm">
                 {row.teamName}
               </p>
             </div>
