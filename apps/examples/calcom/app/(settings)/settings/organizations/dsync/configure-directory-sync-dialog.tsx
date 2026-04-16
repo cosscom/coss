@@ -23,8 +23,7 @@ import {
   DialogPopup,
   DialogTitle,
 } from "@coss/ui/components/dialog";
-import { Field, FieldError, FieldLabel } from "@coss/ui/components/field";
-import { Form } from "@coss/ui/components/form";
+import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { SelectButton } from "@coss/ui/components/select";
 import type { FormEvent } from "react";
@@ -64,10 +63,6 @@ export function ConfigureDirectorySyncDialog({
   const [provider, setProvider] = useState<DirectoryProviderItem>(
     initialDirectoryProvider,
   );
-  const [errors, setErrors] = useState<{
-    directoryName?: string;
-    directoryProvider?: string;
-  }>({});
 
   useEffect(() => {
     if (!open) {
@@ -75,23 +70,10 @@ export function ConfigureDirectorySyncDialog({
     }
     setDirectoryName("");
     setProvider(initialDirectoryProvider);
-    setErrors({});
   }, [open]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmedName = directoryName.trim();
-    const next: { directoryName?: string; directoryProvider?: string } = {};
-    if (!trimmedName) {
-      next.directoryName = "Directory name is required.";
-    }
-    if (!provider?.value) {
-      next.directoryProvider = "Directory provider is required.";
-    }
-    setErrors(next);
-    if (Object.keys(next).length > 0) {
-      return;
-    }
     onConfigured?.();
     onOpenChange(false);
   }
@@ -99,7 +81,7 @@ export function ConfigureDirectorySyncDialog({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
-        <Form className="contents" onSubmit={handleSubmit}>
+        <form className="contents" onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Configure directory sync</DialogTitle>
             <DialogDescription>
@@ -108,19 +90,17 @@ export function ConfigureDirectorySyncDialog({
           </DialogHeader>
           <DialogPanel>
             <div className="flex flex-col gap-4">
-              <Field invalid={Boolean(errors.directoryName)}>
+              <Field>
                 <FieldLabel>Directory name</FieldLabel>
                 <Input
-                  aria-invalid={errors.directoryName ? true : undefined}
+                  name="directoryName"
                   onChange={(e) => setDirectoryName(e.target.value)}
+                  required
                   type="text"
                   value={directoryName}
                 />
-                {errors.directoryName ? (
-                  <FieldError match>{errors.directoryName}</FieldError>
-                ) : null}
               </Field>
-              <Field invalid={Boolean(errors.directoryProvider)}>
+              <Field>
                 <FieldLabel>Directory provider</FieldLabel>
                 <Combobox
                   isItemEqualToValue={(item, value) =>
@@ -155,9 +135,6 @@ export function ConfigureDirectorySyncDialog({
                     </ComboboxList>
                   </ComboboxPopup>
                 </Combobox>
-                {errors.directoryProvider ? (
-                  <FieldError match>{errors.directoryProvider}</FieldError>
-                ) : null}
               </Field>
             </div>
           </DialogPanel>
@@ -167,7 +144,7 @@ export function ConfigureDirectorySyncDialog({
             </DialogClose>
             <Button type="submit">Save</Button>
           </DialogFooter>
-        </Form>
+        </form>
       </DialogPopup>
     </Dialog>
   );
