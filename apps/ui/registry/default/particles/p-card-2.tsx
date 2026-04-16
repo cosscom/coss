@@ -26,7 +26,7 @@ export default function Particle() {
         </CardAction>
       </CardHeader>
       <CardPanel>
-        <Form>
+        <Form className="flex w-full flex-col gap-4">
           <Field>
             <FieldLabel>Email</FieldLabel>
             <Input placeholder="Enter your email" type="email" />

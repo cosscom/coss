@@ -60,6 +60,7 @@ import { Input } from "@/components/ui/input"
 
 ```tsx
 <Form
+  className="flex w-full flex-col gap-4"
   onSubmit={(e) => {
     /* handle submit */
   }}
@@ -76,7 +77,7 @@ import { Input } from "@/components/ui/input"
 
 ### Form
 
-Styled wrapper for `Form` from Base UI with flex column layout and gap between fields.
+Thin wrapper around Base UI `Form` with no default layout. Pass **`className`** for spacing and structure (for example `flex w-full flex-col gap-4` for a vertical field stack).
 
 ## Examples
 

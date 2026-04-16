@@ -22,7 +22,7 @@ export default function Particle() {
           Default footer
         </DrawerTrigger>
         <DrawerPopup variant="inset">
-          <Form className="contents">
+          <Form>
             <DrawerHeader>
               <DrawerTitle>Edit profile</DrawerTitle>
               <DrawerDescription>
@@ -54,7 +54,7 @@ export default function Particle() {
           Bare footer
         </DrawerTrigger>
         <DrawerPopup variant="inset">
-          <Form className="contents">
+          <Form>
             <DrawerHeader>
               <DrawerTitle>Edit profile</DrawerTitle>
               <DrawerDescription>

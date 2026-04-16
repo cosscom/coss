@@ -31,7 +31,6 @@ export function EditApiKeyDialog({
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {apiKey && (
           <Form
-            className="contents"
             onSubmit={(e) => {
               e.preventDefault();
               onOpenChange(false);

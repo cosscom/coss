@@ -38,7 +38,7 @@ export default function Particle() {
           </CardDescription>
         </CardHeader>
         <CardPanel>
-          <Form>
+          <Form className="flex w-full flex-col gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>
               <Input placeholder="Name of your project" type="text" />

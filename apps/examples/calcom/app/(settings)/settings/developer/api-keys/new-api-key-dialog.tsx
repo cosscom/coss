@@ -65,7 +65,7 @@ export function NewApiKeyDialog({ open, onOpenChange }: NewApiKeyDialogProps) {
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {isFormStep ? (
-          <Form className="contents" onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>Create an API key</DialogTitle>
               <DialogDescription>

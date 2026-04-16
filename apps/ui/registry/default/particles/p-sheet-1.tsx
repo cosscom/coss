@@ -21,7 +21,7 @@ export default function Particle() {
         Open Sheet
       </SheetTrigger>
       <SheetPopup>
-        <Form className="contents">
+        <Form>
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>

@@ -76,7 +76,7 @@ export function AddDelegationCredentialDialog({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
-        <Form className="contents" onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add delegation credential</DialogTitle>
           </DialogHeader>

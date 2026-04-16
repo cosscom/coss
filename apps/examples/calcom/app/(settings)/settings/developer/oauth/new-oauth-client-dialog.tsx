@@ -69,7 +69,7 @@ function NewOAuthClientDialogRoot({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {isFormStep ? (
-          <Form className="contents" onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>Create OAuth client</DialogTitle>
               <DialogDescription>

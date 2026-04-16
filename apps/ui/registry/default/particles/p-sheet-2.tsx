@@ -21,7 +21,7 @@ export default function Particle() {
         Open Sheet
       </SheetTrigger>
       <SheetPopup variant="inset">
-        <Form className="h-full gap-0">
+        <Form className="flex h-full w-full flex-col gap-0">
           <SheetHeader>
             <SheetTitle>Edit profile</SheetTitle>
             <SheetDescription>

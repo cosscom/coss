@@ -58,7 +58,7 @@ export default function Particle() {
           {TRIGGER_LABEL}
         </DrawerTrigger>
         <DrawerPopup showBar>
-          <Form className="contents">
+          <Form>
             <DrawerHeader>
               <DrawerTitle>{FORM_TITLE}</DrawerTitle>
               <DrawerDescription>{FORM_DESCRIPTION}</DrawerDescription>
@@ -84,7 +84,7 @@ export default function Particle() {
         {TRIGGER_LABEL}
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
-        <Form className="contents">
+        <Form>
           <DialogHeader>
             <DialogTitle>{FORM_TITLE}</DialogTitle>
             <DialogDescription>{FORM_DESCRIPTION}</DialogDescription>

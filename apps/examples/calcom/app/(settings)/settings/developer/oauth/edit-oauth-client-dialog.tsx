@@ -47,7 +47,6 @@ export function EditOAuthClientDialog({
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {client && (
           <Form
-            className="contents"
             onSubmit={(e) => {
               e.preventDefault();
               onOpenChange(false);

@@ -21,7 +21,7 @@ export default function Particle() {
         Open Dialog
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
-        <Form className="contents">
+        <Form>
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>

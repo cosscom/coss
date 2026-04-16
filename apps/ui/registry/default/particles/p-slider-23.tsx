@@ -23,7 +23,7 @@ export default function Particle() {
   };
 
   return (
-    <Form onSubmit={onSubmit}>
+    <Form className="flex w-full flex-col gap-4" onSubmit={onSubmit}>
       <Fieldset className="flex max-w-none flex-col items-stretch gap-3">
         <Field>
           <Slider name="volume" onValueChange={setValue} value={value}>

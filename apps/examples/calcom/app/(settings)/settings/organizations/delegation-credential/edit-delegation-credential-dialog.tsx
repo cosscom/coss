@@ -83,11 +83,7 @@ export function EditDelegationCredentialDialog({
     <Dialog onOpenChange={onOpenChange} open={open && !!credential}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {credential ? (
-          <Form
-            className="contents"
-            key={credential.id}
-            onSubmit={handleSubmit}
-          >
+          <Form key={credential.id} onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>Edit delegation credential</DialogTitle>
             </DialogHeader>
