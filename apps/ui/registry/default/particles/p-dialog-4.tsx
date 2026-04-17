@@ -51,6 +51,7 @@ export default function Particle() {
           <DialogDescription>Type something and try closing.</DialogDescription>
         </DialogHeader>
         <Form
+          className="contents"
           onSubmit={(event) => {
             event.preventDefault();
             // Close the dialog when submitting

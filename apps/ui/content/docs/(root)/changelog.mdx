@@ -18,12 +18,12 @@ For a typical stacked-field form, restore the previous default explicitly:
 + <Form className="flex w-full flex-col gap-4" onSubmit={…}>
 ```
 
-For dialogs, sheets, or drawers that used **`className="contents"`** on **`Form`**, drop that prop and use a **bare** `<Form>` (no `className`) so the wrapper stays layout-transparent like `display: contents`; add `className` only if you need extra layout. You can also use **`DialogPopup` `render={<Form … />}`** so the popup root is the `<form>`. See the [Form](/ui/docs/components/form) and [Dialog](/ui/docs/components/dialog) docs.
+For **dialogs, sheets, and drawers**, keep **`DialogHeader`** (or **`SheetHeader`**, **`DrawerHeader`**) **outside** the form. Wrap **`DialogPanel`** and **`DialogFooter`** (or sheet/drawer equivalents) in **`<Form className="contents">`** or a native **`<form className="contents">`**. **`display: contents`** keeps **header, panel, and footer** as the **direct flex children** of the popup’s column layout so **`DialogPanel`** scroll and height constraints work correctly.
 
 **Agent migration prompt:**
 
 ```text
-The coss Form component no longer adds default Tailwind layout. Add className="flex w-full flex-col gap-4" to Form where you relied on the old stacked-field layout. Remove Form className="contents" and use <Form> with no className in dialogs/sheets/drawers unless you need explicit layout. Merge any existing non-contents Form className with flex utilities where needed (e.g. max-w-64 becomes flex w-full max-w-64 flex-col gap-4).
+The coss Form component no longer adds default Tailwind layout. Add className="flex w-full flex-col gap-4" to Form where you relied on the old stacked-field layout. For dialog/sheet/drawer: put header outside the form; wrap only panel+footer in Form (or native form) with className="contents". Merge any existing Form className with flex utilities where needed (e.g. max-w-64 becomes flex w-full max-w-64 flex-col gap-4).
 ```
 
 ## Apr 14, 2026

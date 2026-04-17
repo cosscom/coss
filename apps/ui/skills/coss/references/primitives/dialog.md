@@ -61,7 +61,7 @@ import {
 
 - **Portal forwarding**: optional `portalProps` on `DialogPopup` → Base UI `Dialog.Portal` (`keepMounted`, `container`, …). See [portal-props.md](../portal-props.md).
 - **Section structure invariant**: keep `DialogHeader`, `DialogPanel`, and `DialogFooter` as direct sections in `DialogPopup` to preserve built-in layout/styling behavior.
-- **Form in dialog**: wrap header, panel, and footer in a **bare** `<Form>` (no default layout; omit `className` unless you need extra spacing). Alternatively use `DialogPopup` **`render={<Form … />}`** so the popup root is the `<form>`.
+- **Form in dialog**: keep **`DialogHeader`** outside the form; wrap **`DialogPanel`** + **`DialogFooter`** in **`<Form className="contents">`** (or native `<form className="contents">`) so the popup’s flex column treats header, panel, and footer as direct layout sections.
 - **Action buttons**: use `DialogClose` with `render={<Button ... />}` for cancel/close actions and set explicit `type` on submit/action buttons.
 - **Scrollable content**: keep long content inside `DialogPanel` to preserve dialog scroll behavior.
 - **Footer variants**: use `DialogFooter variant="bare"` when border/background framing should be removed.
@@ -75,7 +75,7 @@ import {
 
 - Omitting `render={<Button ... />}` composition on trigger/close actions.
 - Forgetting title/description structure in real dialogs.
-- Wrapping dialog sections with extra containers that break `DialogHeader`/`DialogPanel`/`DialogFooter` layout; prefer a single bare `<Form>` around all three sections, or `DialogPopup render={<Form … />}`.
+- Wrapping dialog sections with extra containers that break `DialogHeader`/`DialogPanel`/`DialogFooter` layout; prefer **header outside**, **`Form className="contents"`** around **panel + footer** only.
 - Putting large body content outside `DialogPanel` when scrolling is needed.
 - Missing explicit button `type` inside dialog forms/actions.
 - Using uncontrolled dialog patterns when the flow requires cross-component state coordination.

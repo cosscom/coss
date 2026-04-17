@@ -36,7 +36,7 @@ export default function Particle() {
         </CardFrameDescription>
       </CardFrameHeader>
       <Card>
-        <Form>
+        <Form className="contents">
           <CardPanel>
             <div className="flex flex-col gap-4">
               <Field>
