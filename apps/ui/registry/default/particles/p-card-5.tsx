@@ -1,7 +1,6 @@
 import { Button } from "@/registry/default/ui/button";
 import {
   Card,
-  CardFooter,
   CardFrame,
   CardFrameDescription,
   CardFrameHeader,
@@ -36,36 +35,32 @@ export default function Particle() {
         </CardFrameDescription>
       </CardFrameHeader>
       <Card>
-        <Form className="contents">
-          <CardPanel>
-            <div className="flex flex-col gap-4">
-              <Field>
-                <FieldLabel>Name</FieldLabel>
-                <Input placeholder="Name of your project" type="text" />
-              </Field>
-              <Field>
-                <FieldLabel>Framework</FieldLabel>
-                <Select defaultValue="next" items={frameworkOptions}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopup>
-                    {frameworkOptions.map(({ label, value }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectPopup>
-                </Select>
-              </Field>
-            </div>
-          </CardPanel>
-          <CardFooter>
+        <CardPanel>
+          <Form className="flex w-full flex-col gap-4">
+            <Field>
+              <FieldLabel>Name</FieldLabel>
+              <Input placeholder="Name of your project" type="text" />
+            </Field>
+            <Field>
+              <FieldLabel>Framework</FieldLabel>
+              <Select defaultValue="next" items={frameworkOptions}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectPopup>
+                  {frameworkOptions.map(({ label, value }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectPopup>
+              </Select>
+            </Field>
             <Button className="w-full" type="submit">
               Deploy
             </Button>
-          </CardFooter>
-        </Form>
+          </Form>
+        </CardPanel>
       </Card>
     </CardFrame>
   );

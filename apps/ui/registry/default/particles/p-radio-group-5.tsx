@@ -26,7 +26,7 @@ export default function Particle() {
       onSubmit={onSubmit}
     >
       <Field
-        className="gap-4"
+        className="gap-2"
         name="frameworks"
         render={(props) => <Fieldset {...props} />}
       >

@@ -13,11 +13,11 @@ const items = [
 export default function Particle() {
   return (
     <Field
-      className="w-full gap-4"
+      className="gap-4"
       name="theme"
       render={(props) => <Fieldset {...props} />}
     >
-      <FieldsetLegend className="font-medium text-foreground text-sm leading-none">
+      <FieldsetLegend className="font-medium text-sm">
         Choose a theme
       </FieldsetLegend>
       <RadioGroup className="flex-row gap-4" defaultValue="system">

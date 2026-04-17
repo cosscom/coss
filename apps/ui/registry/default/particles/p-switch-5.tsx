@@ -23,7 +23,7 @@ export default function Particle() {
   };
 
   return (
-    <Form className="flex w-auto flex-col gap-4" onSubmit={onSubmit}>
+    <Form className="flex flex-col gap-4" onSubmit={onSubmit}>
       <Field name="marketing">
         <FieldLabel>
           <Switch defaultChecked name="marketing" />
