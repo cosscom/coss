@@ -30,34 +30,36 @@ export function EditApiKeyDialog({
     <Dialog onOpenChange={onOpenChange} open={open && !!apiKey}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {apiKey && (
-          <Form
-            className="contents"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onOpenChange(false);
-            }}
-          >
+          <>
             <DialogHeader>
               <DialogTitle>Edit API key</DialogTitle>
             </DialogHeader>
-            <DialogPanel className="grid gap-6">
-              <Field>
-                <FieldLabel>Name this key</FieldLabel>
-                <Input
-                  defaultValue={apiKey.note}
-                  name="note"
-                  placeholder="E.g. Development"
-                  type="text"
-                />
-              </Field>
-            </DialogPanel>
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </Form>
+            <Form
+              className="contents"
+              onSubmit={(e) => {
+                e.preventDefault();
+                onOpenChange(false);
+              }}
+            >
+              <DialogPanel className="grid gap-6">
+                <Field>
+                  <FieldLabel>Name this key</FieldLabel>
+                  <Input
+                    defaultValue={apiKey.note}
+                    name="note"
+                    placeholder="E.g. Development"
+                    type="text"
+                  />
+                </Field>
+              </DialogPanel>
+              <DialogFooter>
+                <DialogClose render={<Button variant="ghost" />}>
+                  Cancel
+                </DialogClose>
+                <Button type="submit">Save</Button>
+              </DialogFooter>
+            </Form>
+          </>
         )}
       </DialogPopup>
     </Dialog>

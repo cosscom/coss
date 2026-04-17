@@ -83,65 +83,67 @@ export function EditDelegationCredentialDialog({
     <Dialog onOpenChange={onOpenChange} open={open && !!credential}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {credential ? (
-          <Form
-            className="contents"
-            key={credential.id}
-            onSubmit={handleSubmit}
-          >
+          <>
             <DialogHeader>
               <DialogTitle>Edit delegation credential</DialogTitle>
             </DialogHeader>
-            <DialogPanel className="grid gap-4">
-              <Field>
-                <FieldLabel>Domain</FieldLabel>
-                <Input
-                  defaultValue={credential.domain}
-                  key={`${credential.id}-domain`}
-                  name="domain"
-                  type="text"
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Workspace platform</FieldLabel>
-                <Combobox
-                  aria-label="Workspace platform"
-                  items={WORKSPACE_PLATFORM_ITEMS}
-                  onValueChange={(item) => setPlatform(item)}
-                  value={platform}
-                >
-                  <ComboboxTrigger
-                    render={<SelectButton className="w-full min-w-0" />}
+            <Form
+              className="contents"
+              key={credential.id}
+              onSubmit={handleSubmit}
+            >
+              <DialogPanel className="grid gap-4">
+                <Field>
+                  <FieldLabel>Domain</FieldLabel>
+                  <Input
+                    defaultValue={credential.domain}
+                    key={`${credential.id}-domain`}
+                    name="domain"
+                    type="text"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Workspace platform</FieldLabel>
+                  <Combobox
+                    aria-label="Workspace platform"
+                    items={WORKSPACE_PLATFORM_ITEMS}
+                    onValueChange={(item) => setPlatform(item)}
+                    value={platform}
                   >
-                    <ComboboxValue placeholder="Select..." />
-                  </ComboboxTrigger>
-                  <ComboboxPopup aria-label="Workspace platform">
-                    <div className="border-b p-2">
-                      <ComboboxInput
-                        className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
-                        placeholder="Search…"
-                        showTrigger={false}
-                        startAddon={<SearchIcon />}
-                      />
-                    </div>
-                    <ComboboxEmpty>No platforms found.</ComboboxEmpty>
-                    <ComboboxList>
-                      {(item: WorkspacePlatformItem) => (
-                        <ComboboxItem key={item.value} value={item}>
-                          {item.label}
-                        </ComboboxItem>
-                      )}
-                    </ComboboxList>
-                  </ComboboxPopup>
-                </Combobox>
-              </Field>
-            </DialogPanel>
-            <DialogFooter>
-              <DialogClose render={<Button type="button" variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </Form>
+                    <ComboboxTrigger
+                      render={<SelectButton className="w-full min-w-0" />}
+                    >
+                      <ComboboxValue placeholder="Select..." />
+                    </ComboboxTrigger>
+                    <ComboboxPopup aria-label="Workspace platform">
+                      <div className="border-b p-2">
+                        <ComboboxInput
+                          className="rounded-md before:rounded-[calc(var(--radius-md)-1px)]"
+                          placeholder="Search…"
+                          showTrigger={false}
+                          startAddon={<SearchIcon />}
+                        />
+                      </div>
+                      <ComboboxEmpty>No platforms found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: WorkspacePlatformItem) => (
+                          <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxPopup>
+                  </Combobox>
+                </Field>
+              </DialogPanel>
+              <DialogFooter>
+                <DialogClose render={<Button type="button" variant="ghost" />}>
+                  Cancel
+                </DialogClose>
+                <Button type="submit">Save</Button>
+              </DialogFooter>
+            </Form>
+          </>
         ) : null}
       </DialogPopup>
     </Dialog>

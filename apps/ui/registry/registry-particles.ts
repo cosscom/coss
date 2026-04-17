@@ -2409,10 +2409,6 @@ export const particles: ParticleItem[] = [
     ),
     description: "Field with checkbox group",
     files: [{ path: "particles/p-field-13.tsx", type: "registry:block" }],
-    meta: {
-      className:
-        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
-    },
     name: "p-field-13",
     registryDependencies: [
       "@coss/checkbox",

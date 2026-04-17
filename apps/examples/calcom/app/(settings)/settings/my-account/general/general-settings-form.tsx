@@ -102,7 +102,7 @@ export function GeneralSettingsFields() {
       </Field>
 
       <FieldGridRow>
-        <Fieldset className="max-w-none gap-2">
+        <Fieldset className="flex w-full flex-col gap-2">
           <Label render={<FieldsetLegend />}>Timezone</Label>
           <FieldGrid className="gap-4">
             <Field className="contents">

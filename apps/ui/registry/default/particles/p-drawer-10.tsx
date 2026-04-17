@@ -22,14 +22,14 @@ export default function Particle() {
           Default footer
         </DrawerTrigger>
         <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Edit profile</DrawerTitle>
+            <DrawerDescription>
+              Make changes to your profile here. Click save when you&apos;re
+              done.
+            </DrawerDescription>
+          </DrawerHeader>
           <Form className="contents">
-            <DrawerHeader>
-              <DrawerTitle>Edit profile</DrawerTitle>
-              <DrawerDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
-              </DrawerDescription>
-            </DrawerHeader>
             <DrawerPanel className="grid gap-4">
               <Field>
                 <FieldLabel>Name</FieldLabel>
@@ -54,14 +54,14 @@ export default function Particle() {
           Bare footer
         </DrawerTrigger>
         <DrawerPopup variant="inset">
+          <DrawerHeader>
+            <DrawerTitle>Edit profile</DrawerTitle>
+            <DrawerDescription>
+              Make changes to your profile here. Click save when you&apos;re
+              done.
+            </DrawerDescription>
+          </DrawerHeader>
           <Form className="contents">
-            <DrawerHeader>
-              <DrawerTitle>Edit profile</DrawerTitle>
-              <DrawerDescription>
-                Make changes to your profile here. Click save when you&apos;re
-                done.
-              </DrawerDescription>
-            </DrawerHeader>
             <DrawerPanel className="grid gap-4">
               <Field>
                 <FieldLabel>Name</FieldLabel>

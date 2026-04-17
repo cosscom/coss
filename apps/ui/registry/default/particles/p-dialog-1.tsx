@@ -21,14 +21,13 @@ export default function Particle() {
         Open Dialog
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Edit profile</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you&apos;re done.
+          </DialogDescription>
+        </DialogHeader>
         <Form className="contents">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you&apos;re
-              done.
-            </DialogDescription>
-          </DialogHeader>
           <DialogPanel className="grid gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>

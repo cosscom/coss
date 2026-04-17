@@ -141,7 +141,7 @@ export function NewAttributeFormFields() {
       {showWeightsSwitch ? (
         <div className="rounded-xl bg-muted p-4">
           <div className="flex flex-col gap-4">
-            <Fieldset className="max-w-none gap-2">
+            <Fieldset className="flex w-full flex-col gap-2">
               <Label render={<FieldsetLegend />}>Options</Label>
               {options.length > 0 ? (
                 <div className="flex flex-col gap-2">
@@ -180,7 +180,7 @@ export function NewAttributeFormFields() {
               </div>
             </Fieldset>
 
-            <Fieldset className="max-w-none gap-2">
+            <Fieldset className="flex w-full flex-col gap-2">
               <div className="flex items-center gap-1.5">
                 <Label render={<FieldsetLegend />}>Group options</Label>
                 <Popover>

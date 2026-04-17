@@ -3,6 +3,29 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## Apr 17, 2026
+
+### Form
+
+The **`Form`** component (`form.tsx`) no longer applies default layout classes (`flex`, `flex-col`, `gap-4`, `w-full`). It is a thin wrapper around Base UI only; pass **`className`** wherever you need a vertical field stack, width constraints, or dialog/sheet layout.
+
+**Migration:**
+
+For a typical stacked-field form, restore the previous default explicitly:
+
+```diff
+- <Form onSubmit={…}>
++ <Form className="flex w-full flex-col gap-4" onSubmit={…}>
+```
+
+For **dialogs, sheets, and drawers**, keep **`DialogHeader`** (or **`SheetHeader`**, **`DrawerHeader`**) **outside** the form. Wrap **`DialogPanel`** and **`DialogFooter`** (or sheet/drawer equivalents) in **`<Form className="contents">`** or a native **`<form className="contents">`**. **`display: contents`** keeps **header, panel, and footer** as the **direct flex children** of the popup’s column layout so **`DialogPanel`** scroll and height constraints work correctly.
+
+**Agent migration prompt:**
+
+```text
+The coss Form component no longer adds default Tailwind layout. Add className="flex w-full flex-col gap-4" to Form where you relied on the old stacked-field layout. For dialog/sheet/drawer: put header outside the form; wrap only panel+footer in Form (or native form) with className="contents". Merge any existing Form className with flex utilities where needed (e.g. max-w-64 becomes flex w-full max-w-64 flex-col gap-4).
+```
+
 ## Apr 14, 2026
 
 ### OTP Field

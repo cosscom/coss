@@ -69,7 +69,7 @@ function NewOAuthClientDialogRoot({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {isFormStep ? (
-          <Form className="contents" onSubmit={handleSubmit}>
+          <>
             <DialogHeader>
               <DialogTitle>Create OAuth client</DialogTitle>
               <DialogDescription>
@@ -77,16 +77,18 @@ function NewOAuthClientDialogRoot({
                 access Cal.com on behalf of your users.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-6">
-              <OAuthClientFormFields />
-            </DialogPanel>
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button type="submit">Create</Button>
-            </DialogFooter>
-          </Form>
+            <Form className="contents" onSubmit={handleSubmit}>
+              <DialogPanel className="grid gap-6">
+                <OAuthClientFormFields />
+              </DialogPanel>
+              <DialogFooter>
+                <DialogClose render={<Button variant="ghost" />}>
+                  Cancel
+                </DialogClose>
+                <Button type="submit">Create</Button>
+              </DialogFooter>
+            </Form>
+          </>
         ) : (
           submittedData && (
             <>

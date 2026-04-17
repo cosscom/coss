@@ -21,14 +21,13 @@ export default function Particle() {
         Open Sheet
       </SheetTrigger>
       <SheetPopup>
+        <SheetHeader>
+          <SheetTitle>Edit profile</SheetTitle>
+          <SheetDescription>
+            Make changes to your profile here. Click save when you&apos;re done.
+          </SheetDescription>
+        </SheetHeader>
         <Form className="contents">
-          <SheetHeader>
-            <SheetTitle>Edit profile</SheetTitle>
-            <SheetDescription>
-              Make changes to your profile here. Click save when you&apos;re
-              done.
-            </SheetDescription>
-          </SheetHeader>
           <SheetPanel className="grid gap-4">
             <Field>
               <FieldLabel>Name</FieldLabel>

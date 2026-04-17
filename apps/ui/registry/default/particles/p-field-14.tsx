@@ -12,7 +12,7 @@ import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
 export default function Particle() {
   return (
     <Field
-      className="gap-4"
+      className="gap-2"
       name="plan"
       render={(props) => <Fieldset {...props} />}
     >

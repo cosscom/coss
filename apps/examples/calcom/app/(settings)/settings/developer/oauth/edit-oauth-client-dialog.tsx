@@ -46,58 +46,60 @@ export function EditOAuthClientDialog({
     <Dialog onOpenChange={onOpenChange} open={open && !!client}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {client && (
-          <Form
-            className="contents"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onOpenChange(false);
-            }}
-          >
+          <>
             <DialogHeader>
               <DialogTitle>Edit OAuth client</DialogTitle>
               <DialogDescription>
                 View and manage your OAuth client settings.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-6">
-              <div>
-                <Badge variant={statusVariantMap[client.status]}>
-                  {statusLabelMap[client.status]}
-                </Badge>
-              </div>
+            <Form
+              className="contents"
+              onSubmit={(e) => {
+                e.preventDefault();
+                onOpenChange(false);
+              }}
+            >
+              <DialogPanel className="grid gap-6">
+                <div>
+                  <Badge variant={statusVariantMap[client.status]}>
+                    {statusLabelMap[client.status]}
+                  </Badge>
+                </div>
 
-              <CopyableField
-                aria-label="Client ID"
-                label="Client ID"
-                value={client.clientId}
-              />
-
-              <Field>
-                <FieldLabel>Client name</FieldLabel>
-                <Input
-                  defaultValue={client.name}
-                  name="clientName"
-                  type="text"
+                <CopyableField
+                  aria-label="Client ID"
+                  label="Client ID"
+                  value={client.clientId}
                 />
-              </Field>
 
-              <OAuthClientFormFields
-                defaultValues={{
-                  purpose: client.purpose,
-                  redirectUri: client.redirectUri,
-                  usePkce: client.usePkce,
-                  websiteUrl: client.websiteUrl,
-                }}
-                includeClientName={false}
-              />
-            </DialogPanel>
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </Form>
+                <Field>
+                  <FieldLabel>Client name</FieldLabel>
+                  <Input
+                    defaultValue={client.name}
+                    name="clientName"
+                    type="text"
+                  />
+                </Field>
+
+                <OAuthClientFormFields
+                  defaultValues={{
+                    purpose: client.purpose,
+                    redirectUri: client.redirectUri,
+                    usePkce: client.usePkce,
+                    websiteUrl: client.websiteUrl,
+                  }}
+                  includeClientName={false}
+                />
+              </DialogPanel>
+              <DialogFooter>
+                <DialogClose render={<Button variant="ghost" />}>
+                  Cancel
+                </DialogClose>
+                <Button type="submit">Save</Button>
+              </DialogFooter>
+            </Form>
+          </>
         )}
       </DialogPopup>
     </Dialog>

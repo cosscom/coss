@@ -8,7 +8,7 @@ import { Fieldset, FieldsetLegend } from "@/registry/default/ui/fieldset";
 export default function Particle() {
   return (
     <Field
-      className="gap-4"
+      className="gap-2"
       name="frameworks"
       render={(props) => <Fieldset {...props} />}
     >

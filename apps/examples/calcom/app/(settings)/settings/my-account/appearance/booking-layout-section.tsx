@@ -46,11 +46,7 @@ export function BookingLayoutSection() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Field
-        className="max-w-none gap-4"
-        name="layout"
-        render={(props) => <Fieldset {...props} />}
-      >
+      <Field name="layout" render={(props) => <Fieldset {...props} />}>
         <ImageCheckboxOption
           defaultItem={defaultView}
           items={layoutItems}

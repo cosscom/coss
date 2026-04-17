@@ -65,83 +65,90 @@ export function NewApiKeyDialog({ open, onOpenChange }: NewApiKeyDialogProps) {
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
         {isFormStep ? (
-          <Form className="contents" onSubmit={handleSubmit}>
+          <>
             <DialogHeader>
               <DialogTitle>Create an API key</DialogTitle>
               <DialogDescription>
                 API keys allow you to make API calls for your own account.
               </DialogDescription>
             </DialogHeader>
-            <DialogPanel className="grid gap-6">
-              <Alert variant="info">
-                <InfoIcon />
-                <AlertDescription>
-                  Here we can say something about OAuth with a link to the docs.
-                </AlertDescription>
-              </Alert>
-              <Field>
-                <FieldLabel>Name this key</FieldLabel>
-                <Input name="note" placeholder="E.g. Development" type="text" />
-              </Field>
-
-              <Collapsible
-                onOpenChange={(open) => setNeverExpires(!open)}
-                open={!neverExpires}
-              >
+            <Form className="contents" onSubmit={handleSubmit}>
+              <DialogPanel className="grid gap-6">
+                <Alert variant="info">
+                  <InfoIcon />
+                  <AlertDescription>
+                    Here we can say something about OAuth with a link to the
+                    docs.
+                  </AlertDescription>
+                </Alert>
                 <Field>
-                  <FieldLabel>
-                    <CollapsibleTrigger
-                      nativeButton={false}
-                      render={
-                        <Switch
-                          checked={neverExpires}
-                          onCheckedChange={(checked) =>
-                            setNeverExpires(checked === true)
-                          }
-                        />
-                      }
-                    />
-                    Never expires
-                  </FieldLabel>
+                  <FieldLabel>Name this key</FieldLabel>
+                  <Input
+                    name="note"
+                    placeholder="E.g. Development"
+                    type="text"
+                  />
                 </Field>
-                <CollapsiblePanel>
-                  <Field className="mt-4">
-                    <FieldLabel>Expiration</FieldLabel>
-                    <Select
-                      aria-label="Expiration"
-                      defaultValue="30d"
-                      items={[
-                        { label: "7 days", value: "7d" },
-                        { label: "30 days", value: "30d" },
-                        { label: "3 months", value: "3m" },
-                        { label: "1 year", value: "1y" },
-                      ]}
-                      name="expiresAt"
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectPopup>
-                        <SelectItem value="7d">7 days</SelectItem>
-                        <SelectItem value="30d">30 days</SelectItem>
-                        <SelectItem value="3m">3 months</SelectItem>
-                        <SelectItem value="1y">1 year</SelectItem>
-                      </SelectPopup>
-                    </Select>
-                    <FieldDescription>
-                      The API key will expire on 21-03-2026
-                    </FieldDescription>
+
+                <Collapsible
+                  onOpenChange={(open) => setNeverExpires(!open)}
+                  open={!neverExpires}
+                >
+                  <Field>
+                    <FieldLabel>
+                      <CollapsibleTrigger
+                        nativeButton={false}
+                        render={
+                          <Switch
+                            checked={neverExpires}
+                            onCheckedChange={(checked) =>
+                              setNeverExpires(checked === true)
+                            }
+                          />
+                        }
+                      />
+                      Never expires
+                    </FieldLabel>
                   </Field>
-                </CollapsiblePanel>
-              </Collapsible>
-            </DialogPanel>
-            <DialogFooter>
-              <DialogClose render={<Button variant="ghost" />}>
-                Cancel
-              </DialogClose>
-              <Button type="submit">Create</Button>
-            </DialogFooter>
-          </Form>
+                  <CollapsiblePanel>
+                    <Field className="mt-4">
+                      <FieldLabel>Expiration</FieldLabel>
+                      <Select
+                        aria-label="Expiration"
+                        defaultValue="30d"
+                        items={[
+                          { label: "7 days", value: "7d" },
+                          { label: "30 days", value: "30d" },
+                          { label: "3 months", value: "3m" },
+                          { label: "1 year", value: "1y" },
+                        ]}
+                        name="expiresAt"
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectPopup>
+                          <SelectItem value="7d">7 days</SelectItem>
+                          <SelectItem value="30d">30 days</SelectItem>
+                          <SelectItem value="3m">3 months</SelectItem>
+                          <SelectItem value="1y">1 year</SelectItem>
+                        </SelectPopup>
+                      </Select>
+                      <FieldDescription>
+                        The API key will expire on 21-03-2026
+                      </FieldDescription>
+                    </Field>
+                  </CollapsiblePanel>
+                </Collapsible>
+              </DialogPanel>
+              <DialogFooter>
+                <DialogClose render={<Button variant="ghost" />}>
+                  Cancel
+                </DialogClose>
+                <Button type="submit">Create</Button>
+              </DialogFooter>
+            </Form>
+          </>
         ) : (
           <>
             <DialogHeader>

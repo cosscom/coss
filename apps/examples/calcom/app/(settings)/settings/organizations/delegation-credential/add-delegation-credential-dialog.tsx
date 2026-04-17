@@ -76,10 +76,10 @@ export function AddDelegationCredentialDialog({
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPopup className="max-w-xl" showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Add delegation credential</DialogTitle>
+        </DialogHeader>
         <Form className="contents" onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Add delegation credential</DialogTitle>
-          </DialogHeader>
           <DialogPanel className="grid gap-4">
             <Field>
               <FieldLabel>Domain</FieldLabel>

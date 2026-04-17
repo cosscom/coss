@@ -24,11 +24,7 @@ const themeItems = [
 
 export function DashboardThemeSection() {
   return (
-    <Field
-      className="max-w-none gap-4"
-      name="dashboardTheme"
-      render={(props) => <Fieldset {...props} />}
-    >
+    <Field name="dashboardTheme" render={(props) => <Fieldset {...props} />}>
       <ImageRadioOption defaultValue="light" items={themeItems} />
     </Field>
   );
@@ -36,11 +32,7 @@ export function DashboardThemeSection() {
 
 export function BookingThemeSection() {
   return (
-    <Field
-      className="max-w-none gap-4"
-      name="theme"
-      render={(props) => <Fieldset {...props} />}
-    >
+    <Field name="theme" render={(props) => <Fieldset {...props} />}>
       <ImageRadioOption defaultValue="light" items={themeItems} />
     </Field>
   );

@@ -41,13 +41,13 @@ export function AddEventTypeDialog({
         {children}
       </DialogTrigger>
       <DialogPopup className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Add a new event type</DialogTitle>
+          <DialogDescription>
+            Set up event types to offer different types of meetings.
+          </DialogDescription>
+        </DialogHeader>
         <Form className="contents">
-          <DialogHeader>
-            <DialogTitle>Add a new event type</DialogTitle>
-            <DialogDescription>
-              Set up event types to offer different types of meetings.
-            </DialogDescription>
-          </DialogHeader>
           <DialogPanel className="grid gap-6">
             <Field>
               <FieldLabel>Title</FieldLabel>

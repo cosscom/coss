@@ -58,11 +58,11 @@ export default function Particle() {
           {TRIGGER_LABEL}
         </DrawerTrigger>
         <DrawerPopup showBar>
+          <DrawerHeader>
+            <DrawerTitle>{FORM_TITLE}</DrawerTitle>
+            <DrawerDescription>{FORM_DESCRIPTION}</DrawerDescription>
+          </DrawerHeader>
           <Form className="contents">
-            <DrawerHeader>
-              <DrawerTitle>{FORM_TITLE}</DrawerTitle>
-              <DrawerDescription>{FORM_DESCRIPTION}</DrawerDescription>
-            </DrawerHeader>
             <DrawerPanel className="grid gap-4" scrollable={false}>
               {formFields}
             </DrawerPanel>
@@ -84,11 +84,11 @@ export default function Particle() {
         {TRIGGER_LABEL}
       </DialogTrigger>
       <DialogPopup className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{FORM_TITLE}</DialogTitle>
+          <DialogDescription>{FORM_DESCRIPTION}</DialogDescription>
+        </DialogHeader>
         <Form className="contents">
-          <DialogHeader>
-            <DialogTitle>{FORM_TITLE}</DialogTitle>
-            <DialogDescription>{FORM_DESCRIPTION}</DialogDescription>
-          </DialogHeader>
           <DialogPanel className="grid gap-4">{formFields}</DialogPanel>
           <DialogFooter>
             <DialogClose render={<Button variant="ghost" />}>

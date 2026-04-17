@@ -17,7 +17,7 @@ export default function Particle() {
       name="theme"
       render={(props) => <Fieldset {...props} />}
     >
-      <FieldsetLegend className="font-medium text-foreground text-sm leading-none">
+      <FieldsetLegend className="font-medium text-sm">
         Choose a theme
       </FieldsetLegend>
       <RadioGroup className="flex-row gap-4" defaultValue="system">
