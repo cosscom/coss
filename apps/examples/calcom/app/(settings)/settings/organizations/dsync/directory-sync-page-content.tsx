@@ -10,10 +10,10 @@ import {
   CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
-import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { CopyableField } from "../../developer/oauth/copyable-field";
 import { ConfigureDirectorySyncDialog } from "./configure-directory-sync-dialog";
+import { CreateTeamDialog } from "./create-team-dialog";
 import {
   DirectorySyncTeamMapping,
   type TeamDirectoryRow,
@@ -93,10 +93,7 @@ export function DirectorySyncPageContent() {
               <CardFrameHeader>
                 <CardFrameTitle>Teams</CardFrameTitle>
                 <CardFrameAction>
-                  <Button type="button" variant="outline">
-                    <PlusIcon aria-hidden="true" />
-                    Create team
-                  </Button>
+                  <CreateTeamDialog />
                 </CardFrameAction>
               </CardFrameHeader>
               <Card className="w-full rounded-b-none!">
