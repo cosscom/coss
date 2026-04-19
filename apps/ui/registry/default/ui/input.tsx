@@ -57,6 +57,7 @@ export function Input({
           className={inputClassName}
           data-slot="input"
           size={typeof size === "number" ? size : undefined}
+          style={style}
           {...props}
         />
       )}
