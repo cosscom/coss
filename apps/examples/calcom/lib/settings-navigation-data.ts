@@ -105,6 +105,7 @@ export const adminSettingsItems: SettingsNavItem[] = [
 const teamNavChildren: SettingsNavChild[] = [
   { title: "Profile", url: "/settings/teams/47/profile" },
   { title: "Members", url: "/settings/teams/47/members" },
+  { title: "Roles", url: "/settings/teams/47/roles" },
   { title: "Appearance", url: "/settings/teams/47/appearance" },
   { title: "Features", url: "/settings/teams/47/features" },
   { title: "Billing", url: "/settings/teams/47/billing" },
