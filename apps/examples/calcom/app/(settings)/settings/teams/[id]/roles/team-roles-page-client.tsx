@@ -381,8 +381,8 @@ export function TeamRolesPageClient() {
               <Card>
                 <CardPanel className="p-0">
                   {PERMISSION_ROWS.map((row) => (
-                    <ListItem key={row.id} className="*:pb-0 *:px-4 *:pt-3">
-                      <ListItemContent className="min-w-0 w-full">
+                    <ListItem key={row.id} className="*:px-4 *:pt-3 *:pb-0">
+                      <ListItemContent className="w-full min-w-0">
                         <Collapsible
                           onOpenChange={(open) =>
                             setRowExpanded((p) => ({ ...p, [row.id]: open }))
@@ -390,11 +390,11 @@ export function TeamRolesPageClient() {
                           open={rowExpanded[row.id] ?? false}
                         >
                           <div className="flex w-full flex-col">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-3">
+                            <div className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
                               <CollapsibleTrigger className="flex items-center gap-1.5 font-medium text-sm">
                                 <ChevronDownIcon
                                   aria-hidden="true"
-                                  className="size-4 shrink-0 opacity-80 transition-transform in-data-panel-open:rotate-180"
+                                  className="size-4 shrink-0 in-data-panel-open:rotate-180 opacity-80 transition-transform"
                                 />
                                 {row.label}
                               </CollapsibleTrigger>
@@ -407,28 +407,28 @@ export function TeamRolesPageClient() {
                               >
                                 <ToggleGroupItem
                                   aria-label="None"
-                                  className="text-muted-foreground font-normal"
+                                  className="font-normal text-muted-foreground"
                                   value="none"
                                 >
                                   None
                                 </ToggleGroupItem>
                                 <ToggleGroupItem
                                   aria-label="Read"
-                                  className="text-muted-foreground font-normal"
+                                  className="font-normal text-muted-foreground"
                                   value="read"
                                 >
                                   Read
                                 </ToggleGroupItem>
                                 <ToggleGroupItem
                                   aria-label="All"
-                                  className="text-muted-foreground font-normal"
+                                  className="font-normal text-muted-foreground"
                                   value="all"
                                 >
                                   All
                                 </ToggleGroupItem>
                                 <ToggleGroupItem
                                   aria-label="Custom"
-                                  className="text-muted-foreground font-normal"
+                                  className="font-normal text-muted-foreground"
                                   value="custom"
                                 >
                                   Custom
@@ -436,7 +436,7 @@ export function TeamRolesPageClient() {
                               </ToggleGroup>
                             </div>
                             <CollapsiblePanel>
-                              <div className="bg-muted/72 rounded-lg p-3 mb-4">
+                              <div className="mb-4 rounded-lg bg-muted/72 p-3">
                                 <PermissionGrantList
                                   disabled={levels[row.id] !== "custom"}
                                   grantIds={grantSelection[row.id] ?? []}
