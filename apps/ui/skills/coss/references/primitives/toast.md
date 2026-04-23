@@ -45,6 +45,10 @@ Wrap app content with both:
 </ToastProvider>
 ```
 
+## Portal forwarding
+
+- **Portal forwarding**: optional `portalProps` on `ToastProvider` and `AnchoredToastProvider` → Base UI `Toast.Portal` (for example `container`). See [portal-props.md](../portal-props.md).
+
 ## Canonical imports
 
 ```tsx

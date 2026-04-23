@@ -756,9 +756,9 @@ export default function Particle() {
 
 ### Portal props on composed popups (`portalProps`)
 
-Many registry `*Popup` components wrap Base UI **`Portal`** internally. When a wrapper exposes **`portalProps`**, pass Base UI portal options there (for example **`keepMounted`** or **`container`**) instead of duplicating the whole portal + positioner tree.
+Many registry `*Popup` components (and **toast** `ToastProvider` / `AnchoredToastProvider`) wrap Base UI **`Portal`** internally. When a surface exposes **`portalProps`**, pass Base UI portal options there (for example **`keepMounted`** or **`container`**) instead of duplicating the whole portal + positioner tree.
 
-**Where it exists:** only the wrappers listed in `apps/ui/skills/coss/references/portal-props.md`. Do not add `portalProps` to registry helpers that are not on that list (their portal stays internal).
+**Where it exists:** only the surfaces listed in `apps/ui/skills/coss/references/portal-props.md`. Do not add `portalProps` to registry helpers that are not on that list (their portal stays internal).
 
 ### Group Components
 

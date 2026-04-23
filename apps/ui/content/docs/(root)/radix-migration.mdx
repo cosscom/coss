@@ -690,6 +690,8 @@ So, for example, if you were using the `default` size in shadcn/ui and you want 
 
 `SelectValue` supports a `placeholder` prop. If you need in-popup clearing, prefer adding a `null` option item instead of relying on placeholder alone.
 
+- Optional `portalProps` on `SelectPopup` forwards to Base UI `Select.Portal` (for example `keepMounted` or a custom `container`).
+
 **Comparison Example:**
 
 <span data-lib="radix-ui">
@@ -860,6 +862,7 @@ The API is significantly different from shadcn/ui (Sonner). Please review both d
 - Replace `<Toaster />` component in layout → `<ToastProvider>` wrapper
 - Toast API calls differ significantly - see comparison below
 - Toast actions use different patterns
+- Optional `portalProps` on `ToastProvider` / `AnchoredToastProvider` forwards to Base UI `Toast.Portal` (for example a custom `container`)
 
 **Comparison Examples:**
 

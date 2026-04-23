@@ -174,13 +174,18 @@ anchoredToastManager.add({
 
 Provider component for stacked toasts. Wraps `Toast.Provider` from Base UI.
 
-| Prop       | Type                                                                                     | Default        | Description                                      |
-| ---------- | ---------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
-| `position` | `"top-left" \| "top-center" \| "top-right" \| "bottom-left" \| "bottom-center" \| "bottom-right"` | `"bottom-right"` | Position of the toast viewport                   |
+| Prop          | Type                                                                                     | Default          | Description                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| `position`    | `"top-left" \| "top-center" \| "top-right" \| "bottom-left" \| "bottom-center" \| "bottom-right"` | `"bottom-right"` | Position of the toast viewport                                                                         |
+| `portalProps` | `Toast.Portal.Props`                                                                    | -                | Props forwarded to the internal portal (`container`, etc.); see Base UI Toast portal API                |
 
 ### AnchoredToastProvider
 
 Provider component for toasts anchored to specific elements. Use with `anchoredToastManager`.
+
+| Prop          | Type                 | Default | Description                                                                             |
+| ------------- | -------------------- | ------- | --------------------------------------------------------------------------------------- |
+| `portalProps` | `Toast.Portal.Props` | -       | Props forwarded to the internal portal (`container`, etc.); see Base UI Toast portal API |
 
 ### toastManager
 
