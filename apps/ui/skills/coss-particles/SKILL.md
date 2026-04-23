@@ -37,7 +37,7 @@ Run the generator script from the coss repo root:
 node apps/ui/scripts/generate-particle-index.cjs
 ```
 
-Total: **480 particles** across **52 component types**
+Total: **484 particles** across **52 component types**
 
 ## Component types
 
@@ -88,7 +88,7 @@ Total: **480 particles** across **52 component types**
 - [table](#table) (8)
 - [tabs](#tabs) (13)
 - [textarea](#textarea) (15)
-- [toast](#toast) (9)
+- [toast](#toast) (13)
 - [toggle](#toggle) (8)
 - [toggle-group](#toggle-group) (9)
 - [toolbar](#toolbar) (1)
@@ -688,15 +688,19 @@ Total: **480 particles** across **52 component types**
 
 ### toast
 
-- Basic toast | [JSON](https://coss.com/ui/r/p-toast-1.json)
-- Toast with status | [JSON](https://coss.com/ui/r/p-toast-2.json)
-- Loading toast | [JSON](https://coss.com/ui/r/p-toast-3.json)
-- Toast with action | [JSON](https://coss.com/ui/r/p-toast-4.json)
-- Promise toast | [JSON](https://coss.com/ui/r/p-toast-5.json)
-- Toast with varying heights | [JSON](https://coss.com/ui/r/p-toast-6.json)
-- Anchored toast with tooltip style | [JSON](https://coss.com/ui/r/p-toast-7.json)
-- Anchored toast | [JSON](https://coss.com/ui/r/p-toast-8.json)
-- Promise toast with cancel action | [JSON](https://coss.com/ui/r/p-toast-9.json)
+- Default stacked toast with title and description | [JSON](https://coss.com/ui/r/p-toast-1.json)
+- Stacked toasts by semantic type (success, error, info, warning) | [JSON](https://coss.com/ui/r/p-toast-2.json)
+- Loading-state stacked toast | [JSON](https://coss.com/ui/r/p-toast-3.json)
+- Stacked toast with primary action (undo) | [JSON](https://coss.com/ui/r/p-toast-4.json)
+- Promise-based stacked toast | [JSON](https://coss.com/ui/r/p-toast-5.json)
+- Stacked toasts with varying content height | [JSON](https://coss.com/ui/r/p-toast-6.json)
+- Anchored tooltip-style toast after copy | [JSON](https://coss.com/ui/r/p-toast-7.json)
+- Anchored error toast after async failure | [JSON](https://coss.com/ui/r/p-toast-8.json)
+- Long-running promise toast with cancel | [JSON](https://coss.com/ui/r/p-toast-9.json)
+- Deduplicated success toast | [JSON](https://coss.com/ui/r/p-toast-10.json)
+- Deduplicated error toast | [JSON](https://coss.com/ui/r/p-toast-11.json)
+- Anchored deduplicated success toast | [JSON](https://coss.com/ui/r/p-toast-12.json)
+- Anchored deduplicated error toast | [JSON](https://coss.com/ui/r/p-toast-13.json)
 
 ### toggle
 
