@@ -45,9 +45,9 @@ function SettingsNavSection({
 }): ReactElement {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
+      <SidebarGroupLabel className="text-sidebar-accent-foreground">
         {section.avatar && (
-          <Avatar className="size-4">
+          <Avatar className="size-4.5 sm:size-4">
             <AvatarImage alt={section.title} src={section.avatar.src} />
             <AvatarFallback className="text-[.625rem]">
               {section.avatar.fallback}
@@ -62,7 +62,7 @@ function SettingsNavSection({
           {section.children.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className="ps-8 md:max-lg:flex"
+                className="ps-8.5 sm:ps-8 md:max-lg:flex"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
@@ -90,7 +90,7 @@ function TeamsSection({
 }): ReactElement {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="h-7 text-sidebar-accent-foreground">
+      <SidebarGroupLabel className="text-sidebar-accent-foreground">
         <UsersIcon className="opacity-80" />
         <span className={onItemClick ? undefined : "max-lg:sr-only"}>
           My teams
@@ -150,7 +150,7 @@ function TeamCollapsible({
           {team.children?.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className="ps-8"
+                className="ps-8.5 sm:ps-8"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >

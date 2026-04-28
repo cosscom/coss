@@ -2,8 +2,8 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
+import { SettingsDrawer } from "@/components/settings/settings-drawer";
 import { SettingsNavContent } from "@/components/settings/settings-nav-section";
-import { SettingsSheet } from "@/components/settings/settings-sheet";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +26,7 @@ export function SettingsSidebar({
             <span className="max-lg:sr-only">Back</span>
           </SidebarMenuButton>
           <div className="max-md:hidden lg:hidden">
-            <SettingsSheet />
+            <SettingsDrawer />
           </div>
         </div>
       </SidebarHeader>

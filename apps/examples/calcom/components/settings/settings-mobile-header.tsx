@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
 import { MobileHeader } from "@/components/mobile-header";
-import { SettingsSheet } from "@/components/settings/settings-sheet";
+import { SettingsDrawer } from "@/components/settings/settings-drawer";
 
 export function SettingsMobileHeader(): React.ReactElement {
   return (
@@ -16,7 +16,7 @@ export function SettingsMobileHeader(): React.ReactElement {
         <ArrowLeftIcon className="-ms-0.5" />
         <span>Back</span>
       </Button>
-      <SettingsSheet />
+      <SettingsDrawer />
     </MobileHeader>
   );
 }
