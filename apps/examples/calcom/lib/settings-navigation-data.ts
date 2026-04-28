@@ -114,10 +114,6 @@ const teamNavChildren: SettingsNavChild[] = [
 
 export const teamSettingsItems: SettingsNavItem[] = [
   {
-    avatar: {
-      fallback: "AI",
-      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
-    },
     children: teamNavChildren,
     title: "Acme Inc.",
     url: "/settings/teams/47",
