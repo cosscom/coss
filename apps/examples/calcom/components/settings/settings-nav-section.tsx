@@ -10,6 +10,7 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "@coss/ui/components/collapsible";
+import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
@@ -46,7 +47,7 @@ function SettingsNavSection({
 }): ReactElement {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sidebar-accent-foreground">
+      <SidebarGroupLabel>
         {section.avatar && (
           <Avatar className="size-4.5 sm:size-4">
             <AvatarImage alt={section.title} src={section.avatar.src} />
@@ -89,13 +90,17 @@ function TeamsSection({
   pathname: string;
   onItemClick?: () => void;
 }): ReactElement {
+  const isTeamsListActive =
+    pathname === "/teams" || pathname.startsWith("/teams/");
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sidebar-accent-foreground">
+      <SidebarGroupLabel
+        className="transition-colors hover:bg-sidebar-accent/50"
+        render={<Link href="/teams" />}
+      >
         <UsersIcon className="opacity-80" />
-        <span className={onItemClick ? undefined : "max-lg:sr-only"}>
-          My teams
-        </span>
+        My teams
       </SidebarGroupLabel>
       <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
         {teamSettingsItems.map((team) => (

@@ -185,7 +185,7 @@ export function SidebarGroup({
   return (
     <div
       className={cn(
-        "relative flex w-full min-w-0 flex-col px-1 py-2",
+        "relative flex w-full min-w-0 flex-col px-1 py-2.5",
         className,
       )}
       data-sidebar="group"
@@ -202,7 +202,7 @@ export function SidebarGroupLabel({
 }: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 font-medium text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 sm:h-8 sm:text-xs [&>svg]:size-4.5 [&>svg]:shrink-0 sm:[&>svg]:size-4",
+      "flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 font-medium text-sidebar-accent-foreground text-base outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 lg:h-7 sm:text-sm [&>svg]:size-4.5 [&>svg]:shrink-0 sm:[&>svg]:size-4",
       "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
       className,
     ),
