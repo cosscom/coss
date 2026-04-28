@@ -62,7 +62,7 @@ function SettingsNavSection({
           {section.children.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent md:max-lg:flex"
+                className="ps-8 md:max-lg:flex"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
@@ -106,7 +106,6 @@ function TeamsSection({
           />
         ))}
         <SidebarMenuSubButton
-          className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
           render={<Link href="/settings/teams/new" onClick={onItemClick} />}
         >
           <PlusIcon className="opacity-80" />
@@ -133,9 +132,7 @@ function TeamCollapsible({
     <Collapsible onOpenChange={setOpen} open={open}>
       <CollapsibleTrigger
         nativeButton={false}
-        render={
-          <SidebarMenuSubButton className="hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent" />
-        }
+        render={<SidebarMenuSubButton />}
       >
         <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         {team.avatar && (
@@ -153,7 +150,7 @@ function TeamCollapsible({
           {team.children?.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className="ps-8 hover:bg-transparent active:bg-transparent data-[active=true]:bg-sidebar-accent"
+                className="ps-8"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
