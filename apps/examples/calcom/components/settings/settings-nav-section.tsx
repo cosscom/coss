@@ -5,6 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
+import { Badge } from "@coss/ui/components/badge";
 import {
   Collapsible,
   CollapsiblePanel,
@@ -67,11 +68,16 @@ function SettingsNavSection({
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex min-w-0 flex-1 items-center gap-1">
                   {item.title}
                   {item.external && (
                     <ExternalLinkIcon className="size-3 opacity-80" />
                   )}
+                  {item.badge ? (
+                    <Badge className="pointer-events-none ms-1" variant="info">
+                      {item.badge.label}
+                    </Badge>
+                  ) : null}
                 </span>
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
@@ -152,15 +158,20 @@ function TeamCollapsible({
           {team.children?.map((item) => (
             <SidebarMenuSubItem key={item.url}>
               <SidebarMenuSubButton
-                className="ps-8.5 sm:ps-8"
+                className="ps-8.5 sm:ps-8 md:max-lg:flex"
                 isActive={pathname === item.url}
                 render={<Link href={item.url} onClick={onItemClick} />}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex min-w-0 flex-1 items-center gap-1">
                   {item.title}
                   {item.external && (
                     <ExternalLinkIcon className="size-3 opacity-80" />
                   )}
+                  {item.badge ? (
+                    <Badge className="pointer-events-none ms-1" variant="info">
+                      {item.badge.label}
+                    </Badge>
+                  ) : null}
                 </span>
               </SidebarMenuSubButton>
             </SidebarMenuSubItem>
