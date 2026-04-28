@@ -17,12 +17,12 @@ export function SettingsSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex flex-col gap-1 px-2">
+        <div className="flex flex-col gap-1 px-1">
           <SidebarMenuButton
             render={<Link aria-label="Back" href="/event-types" />}
             tooltip="Back"
           >
-            <ArrowLeftIcon className="lg:-ms-0.5" />
+            <ArrowLeftIcon />
             <span className="max-lg:sr-only">Back</span>
           </SidebarMenuButton>
           <div className="max-md:hidden lg:hidden">
