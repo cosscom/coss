@@ -134,7 +134,7 @@ function TeamCollapsible({
         nativeButton={false}
         render={<SidebarMenuSubButton />}
       >
-        <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
+        <ChevronRightIcon className="in-[[data-slot=collapsible][data-open]]:rotate-90 opacity-80 transition-transform" />
         {team.avatar && (
           <Avatar className="size-4 shrink-0">
             <AvatarImage alt={team.title} src={team.avatar.src} />

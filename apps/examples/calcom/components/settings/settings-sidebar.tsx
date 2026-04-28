@@ -17,7 +17,7 @@ export function SettingsSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="flex flex-col gap-1 px-1">
+        <div className="flex flex-col gap-1 px-2 lg:px-1">
           <SidebarMenuButton
             render={<Link aria-label="Back" href="/event-types" />}
             tooltip="Back"
