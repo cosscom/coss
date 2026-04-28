@@ -13,6 +13,7 @@ import {
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
+  LayoutDashboardIcon,
   PlusIcon,
   UsersIcon,
 } from "lucide-react";
@@ -178,6 +179,30 @@ export function SettingsNavContent({
 
   return (
     <>
+      <SidebarGroup>
+        <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0 md:max-lg:flex">
+          <SidebarMenuSubItem>
+            <SidebarMenuSubButton
+              className="md:max-lg:flex"
+              isActive={
+                pathname === "/settings" ||
+                pathname === "/settings/my-account/general"
+              }
+              render={
+                <Link
+                  href="/settings/my-account/general"
+                  onClick={onItemClick}
+                />
+              }
+            >
+              <LayoutDashboardIcon className="opacity-80" />
+              <span className={onItemClick ? undefined : "max-lg:sr-only"}>
+                Overview
+              </span>
+            </SidebarMenuSubButton>
+          </SidebarMenuSubItem>
+        </SidebarMenuSub>
+      </SidebarGroup>
       {userSettingsItems.map((section) => (
         <SettingsNavSection
           key={section.url}

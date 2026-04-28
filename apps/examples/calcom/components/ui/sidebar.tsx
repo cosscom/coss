@@ -298,7 +298,7 @@ export function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button relative flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left font-medium text-base text-sidebar-foreground outline-hidden ring-sidebar-ring after:absolute after:top-full after:h-1 after:w-full hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-pressed:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-pressed:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground max-lg:size-10 max-lg:justify-center max-lg:p-0 lg:h-7 sm:text-sm [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
+      "peer/menu-button relative flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left font-medium text-base text-sidebar-foreground outline-hidden ring-sidebar-ring after:absolute after:top-full after:h-1 after:w-full hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-pressed:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-pressed:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground max-lg:size-10 max-lg:justify-center max-lg:p-0 sm:text-sm lg:h-7 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
       className,
     ),
     "data-active": isActive,
@@ -440,7 +440,7 @@ export function SidebarMenuSubButton({
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex h-9 min-w-0 -translate-x-px cursor-pointer items-center gap-2 rounded-lg px-2 text-base text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 lg:h-7 sm:text-sm [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "flex h-9 min-w-0 -translate-x-px cursor-pointer items-center gap-2 rounded-lg px-2 text-base text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:text-sm lg:h-7 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
       className,
     ),
