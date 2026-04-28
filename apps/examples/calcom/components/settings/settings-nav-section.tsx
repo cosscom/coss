@@ -10,7 +10,6 @@ import {
   CollapsiblePanel,
   CollapsibleTrigger,
 } from "@coss/ui/components/collapsible";
-import { cn } from "@coss/ui/lib/utils";
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
@@ -90,9 +89,6 @@ function TeamsSection({
   pathname: string;
   onItemClick?: () => void;
 }): ReactElement {
-  const isTeamsListActive =
-    pathname === "/teams" || pathname.startsWith("/teams/");
-
   return (
     <SidebarGroup>
       <SidebarGroupLabel
@@ -175,6 +171,42 @@ function TeamCollapsible({
   );
 }
 
+function OtherTeamsNavGroup({
+  pathname,
+  onItemClick,
+}: {
+  pathname: string;
+  onItemClick?: () => void;
+}): ReactElement {
+  const href = "/teams/other";
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <SidebarGroup>
+      <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0 md:max-lg:flex">
+        <SidebarMenuSubItem>
+          <SidebarMenuSubButton
+            className="md:max-lg:flex"
+            isActive={isActive}
+            render={
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                href={href}
+                onClick={onItemClick}
+              />
+            }
+          >
+            <UsersIcon className="opacity-80" />
+            <span className={onItemClick ? undefined : "max-lg:sr-only"}>
+              Other teams
+            </span>
+          </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+      </SidebarMenuSub>
+    </SidebarGroup>
+  );
+}
+
 export function SettingsNavContent({
   onItemClick,
 }: {
@@ -183,7 +215,7 @@ export function SettingsNavContent({
   const pathname = usePathname();
 
   return (
-    <>
+    <div className="pb-2">
       <SidebarGroup>
         <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0 md:max-lg:flex">
           <SidebarMenuSubItem>
@@ -230,6 +262,7 @@ export function SettingsNavContent({
           section={section}
         />
       ))}
-    </>
+      <OtherTeamsNavGroup onItemClick={onItemClick} pathname={pathname} />
+    </div>
   );
 }
