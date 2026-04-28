@@ -184,10 +184,7 @@ export function SettingsNavContent({
           <SidebarMenuSubItem>
             <SidebarMenuSubButton
               className="md:max-lg:flex"
-              isActive={
-                pathname === "/settings" ||
-                pathname === "/settings/my-account/general"
-              }
+              isActive={pathname === "/settings"}
               render={
                 <Link
                   href="/settings/my-account/general"
