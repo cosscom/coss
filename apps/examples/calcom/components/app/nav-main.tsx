@@ -143,7 +143,7 @@ function NavItemWithSubmenu({
           </span>
           <ChevronRightIcon className="in-data-open:rotate-90 opacity-80 transition-transform" />
         </CollapsibleTrigger>
-        <CollapsibleContent>
+        <CollapsibleContent className="max-lg:hidden">
           <SidebarMenuSub className="mx-0 gap-0.5 border-none px-0">
             {item.items.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
