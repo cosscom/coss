@@ -54,7 +54,7 @@ export function SidebarProvider({
       <TooltipProvider delay={150} timeout={0}>
         <div
           className={cn(
-            "group/sidebar-wrapper isolate flex min-h-svh w-full bg-sidebar [--sidebar-width:4rem] lg:[--sidebar-width:16rem]",
+            "group/sidebar-wrapper isolate flex min-h-svh w-full bg-sidebar [--sidebar-width:4rem] lg:[--sidebar-width:16rem] xl:[--sidebar-width:18rem]",
             className,
           )}
           data-slot="sidebar-wrapper"
@@ -202,7 +202,7 @@ export function SidebarGroupLabel({
 }: useRender.ComponentProps<"div">): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex h-8 shrink-0 items-center gap-2 rounded-lg px-2 font-medium text-sidebar-foreground text-xs outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+      "flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 font-medium text-base text-sidebar-accent-foreground outline-hidden ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 sm:text-sm lg:h-7 [&>svg]:size-4.5 [&>svg]:shrink-0 sm:[&>svg]:size-4",
       "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
       className,
     ),
@@ -224,9 +224,8 @@ export function SidebarGroupAction({
 }: useRender.ComponentProps<"button">): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
+      "absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
       "after:absolute after:-inset-2 md:after:hidden",
-      "md:max-lg:hidden",
       className,
     ),
     "data-sidebar": "group-action",
@@ -299,7 +298,7 @@ export function SidebarMenuButton({
 
   const defaultProps = {
     className: cn(
-      "peer/menu-button relative flex h-8 w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left font-medium text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring after:absolute after:top-full after:h-1 after:w-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-pressed:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-pressed:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground max-lg:size-10 max-lg:justify-center max-lg:p-0 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
+      "peer/menu-button relative flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg p-2 text-left font-medium text-base text-sidebar-foreground outline-hidden ring-sidebar-ring after:absolute after:top-full after:h-1 after:w-full hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pe-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-pressed:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-pressed:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground max-lg:size-10 max-lg:justify-center max-lg:p-0 sm:text-sm lg:h-8 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
       className,
     ),
     "data-active": isActive,
@@ -342,9 +341,8 @@ export function SidebarMenuAction({
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
+      "absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
       "after:absolute after:-inset-2 md:after:hidden",
-      "md:max-lg:hidden",
       showOnHover &&
         "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
       className,
@@ -374,7 +372,10 @@ export function SidebarMenuSkeleton({
 
   return (
     <div
-      className={cn("flex h-8 items-center gap-2 rounded-lg px-2", className)}
+      className={cn(
+        "flex h-9 items-center gap-2 rounded-lg px-2 lg:h-7",
+        className,
+      )}
       data-sidebar="menu-skeleton"
       data-slot="sidebar-menu-skeleton"
       {...props}
@@ -406,7 +407,6 @@ export function SidebarMenuSub({
     <ul
       className={cn(
         "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-sidebar-border border-l px-2.5 py-0.5",
-        "md:max-lg:hidden",
         className,
       )}
       data-sidebar="menu-sub"
@@ -440,9 +440,8 @@ export function SidebarMenuSubButton({
 }): React.ReactElement {
   const defaultProps = {
     className: cn(
-      "flex h-8 min-w-0 -translate-x-px items-center gap-2 rounded-lg px-2 text-sidebar-foreground text-sm outline-hidden ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:h-7 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+      "flex h-9 min-w-0 -translate-x-px cursor-pointer items-center gap-2 rounded-lg px-2 text-base text-sidebar-foreground outline-hidden ring-sidebar-ring hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 sm:text-sm lg:h-7 [&>span:last-child]:truncate [&>svg:not([class*='size-'])]:size-4.5 sm:[&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
       "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-      "md:max-lg:hidden",
       className,
     ),
     "data-active": isActive,

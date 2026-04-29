@@ -10,6 +10,9 @@ export interface SettingsNavChild {
   title: string;
   url: string;
   external?: boolean;
+  badge?: {
+    label: string;
+  };
 }
 
 export interface SettingsNavItem {
@@ -105,7 +108,11 @@ export const adminSettingsItems: SettingsNavItem[] = [
 const teamNavChildren: SettingsNavChild[] = [
   { title: "Profile", url: "/settings/teams/47/profile" },
   { title: "Members", url: "/settings/teams/47/members" },
-  { title: "Roles", url: "/settings/teams/47/roles" },
+  {
+    badge: { label: "New" },
+    title: "Roles",
+    url: "/settings/teams/47/roles",
+  },
   { title: "Appearance", url: "/settings/teams/47/appearance" },
   { title: "Features", url: "/settings/teams/47/features" },
   { title: "Billing", url: "/settings/teams/47/billing" },
@@ -114,10 +121,6 @@ const teamNavChildren: SettingsNavChild[] = [
 
 export const teamSettingsItems: SettingsNavItem[] = [
   {
-    avatar: {
-      fallback: "AI",
-      src: "https://pbs.twimg.com/profile_images/1994776674391457792/7utKOMi6_400x400.jpg",
-    },
     children: teamNavChildren,
     title: "Acme Inc.",
     url: "/settings/teams/47",
