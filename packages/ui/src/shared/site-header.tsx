@@ -2,7 +2,6 @@ import { siteConfig } from "@coss/ui/lib/config";
 import { GitHubLink } from "@coss/ui/shared/github-link";
 import { ModeSwitcher } from "@coss/ui/shared/mode-switcher";
 import { ProductLabel } from "@coss/ui/shared/product-label";
-import { ProductsDropdown } from "@coss/ui/shared/products-dropdown";
 import Link from "next/link";
 
 export function SiteHeader({
@@ -39,7 +38,6 @@ export function SiteHeader({
         </div>
         <div className="ms-auto flex items-center gap-2 md:flex-1 md:justify-end">
           {children}
-          <ProductsDropdown items={siteConfig.products} />
           <GitHubLink />
           <ModeSwitcher />
         </div>
