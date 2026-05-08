@@ -352,7 +352,7 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": ["sonner", "@teispace/next-themes"],
+      "dependencies": ["sonner", "next-themes"],
       "files": [
         {
           "path": "registry/default/ui/sonner.tsx",
