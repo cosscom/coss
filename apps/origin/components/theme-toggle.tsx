@@ -1,7 +1,7 @@
 "use client";
 
 import { RiMoonClearLine, RiSunLine } from "@remixicon/react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@teispace/next-themes";
 import { useId, useState } from "react";
 
 export default function ThemeToggle() {
