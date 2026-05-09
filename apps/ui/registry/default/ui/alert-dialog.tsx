@@ -164,4 +164,5 @@ export {
   AlertDialogPrimitive,
   AlertDialogBackdrop as AlertDialogOverlay,
   AlertDialogPopup as AlertDialogContent,
+  AlertDialogPopup as AlertDialogPanel,
 };
