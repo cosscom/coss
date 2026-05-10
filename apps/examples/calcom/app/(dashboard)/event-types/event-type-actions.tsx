@@ -28,7 +28,6 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
-import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   CodeIcon,
   CopyIcon,
@@ -51,8 +50,6 @@ export function EventTypeActions({
   onHiddenChange,
   tooltipHandle,
 }: EventTypeActionsProps) {
-  const isMobile = useMediaQuery("max-md");
-
   return (
     <>
       <div className="flex items-center gap-4 max-md:hidden">
@@ -134,7 +131,7 @@ export function EventTypeActions({
         </Group>
       </div>
 
-      {isMobile ? (
+      <div className="md:hidden">
         <Drawer>
           <DrawerTrigger
             render={
@@ -189,7 +186,7 @@ export function EventTypeActions({
             </DrawerPanel>
           </DrawerPopup>
         </Drawer>
-      ) : null}
+      </div>
     </>
   );
 }
