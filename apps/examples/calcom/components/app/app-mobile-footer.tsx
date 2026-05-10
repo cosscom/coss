@@ -1,21 +1,18 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerMenu,
-  DrawerMenuGroup,
-  DrawerMenuItem,
-  DrawerMenuSeparator,
-  DrawerPanel,
-  DrawerPopup,
-  DrawerTrigger,
-} from "@coss/ui/components/drawer";
 import { cn } from "@coss/ui/lib/utils";
 import { EllipsisIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
+import {
+  AdaptiveMenu,
+  AdaptiveMenuGroup,
+  AdaptiveMenuItem,
+  AdaptiveMenuPopup,
+  AdaptiveMenuSeparator,
+  AdaptiveMenuTrigger,
+} from "@/components/shared/adaptive-menu";
 import { WorkflowBadge } from "@/components/workflows-badge";
 import { useScrollHide } from "@/hooks/use-scroll-hide";
 import type { NavItem } from "@/lib/navigation-data";
@@ -47,54 +44,44 @@ export function AppMobileFooter(): React.ReactElement {
             <item.icon className="size-5" />
           </Link>
         ))}
-        <Drawer>
-          <DrawerTrigger
+        <AdaptiveMenu>
+          <AdaptiveMenuTrigger
             aria-label="More options"
             render={
               <Button className="size-11! rounded-full" variant="ghost" />
             }
           >
             <EllipsisIcon className="size-5" aria-hidden />
-          </DrawerTrigger>
-          <DrawerPopup showBar>
-            <DrawerPanel>
-              <DrawerMenu>
-                <DrawerMenuGroup>
-                  {remainingMainItems.map((item) => (
-                    <DrawerClose
-                      key={item.title}
-                      render={
-                        <DrawerMenuItem render={<Link href={item.url} />} />
-                      }
-                      nativeButton={false}
-                    >
-                      <item.icon aria-hidden />
-                      <span>{item.title}</span>
-                      {item.title === "Workflows" && (
-                        <WorkflowBadge className="ms-2" />
-                      )}
-                    </DrawerClose>
-                  ))}
-                </DrawerMenuGroup>
-                <DrawerMenuSeparator />
-                <DrawerMenuGroup>
-                  {navFooterItems.map((item) => (
-                    <DrawerClose
-                      key={item.title}
-                      nativeButton={false}
-                      render={
-                        <DrawerMenuItem render={<Link href={item.url} />} />
-                      }
-                    >
-                      <item.icon aria-hidden />
-                      <span>{item.title}</span>
-                    </DrawerClose>
-                  ))}
-                </DrawerMenuGroup>
-              </DrawerMenu>
-            </DrawerPanel>
-          </DrawerPopup>
-        </Drawer>
+          </AdaptiveMenuTrigger>
+          <AdaptiveMenuPopup>
+            <AdaptiveMenuGroup>
+              {remainingMainItems.map((item) => (
+                <AdaptiveMenuItem
+                  key={item.title}
+                  render={<Link href={item.url} />}
+                >
+                  <item.icon aria-hidden />
+                  <span>{item.title}</span>
+                  {item.title === "Workflows" && (
+                    <WorkflowBadge className="ms-2" />
+                  )}
+                </AdaptiveMenuItem>
+              ))}
+            </AdaptiveMenuGroup>
+            <AdaptiveMenuSeparator />
+            <AdaptiveMenuGroup>
+              {navFooterItems.map((item) => (
+                <AdaptiveMenuItem
+                  key={item.title}
+                  render={<Link href={item.url} />}
+                >
+                  <item.icon aria-hidden />
+                  <span>{item.title}</span>
+                </AdaptiveMenuItem>
+              ))}
+            </AdaptiveMenuGroup>
+          </AdaptiveMenuPopup>
+        </AdaptiveMenu>
       </div>
       <Button className="size-12 rounded-full sm:size-12">
         <PlusIcon className="size-5" />
