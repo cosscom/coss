@@ -1,11 +1,21 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerMenu,
+  DrawerMenuCheckboxItem,
+  DrawerMenuGroup,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
+  DrawerPanel,
+  DrawerPopup,
+  DrawerTrigger,
+} from "@coss/ui/components/drawer";
 import { Group, GroupSeparator } from "@coss/ui/components/group";
 import {
   Menu,
-  MenuCheckboxItem,
-  MenuGroup,
   MenuItem,
   MenuPopup,
   MenuSeparator,
@@ -18,6 +28,7 @@ import {
   TooltipPopup,
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
+import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   CodeIcon,
   CopyIcon,
@@ -40,6 +51,8 @@ export function EventTypeActions({
   onHiddenChange,
   tooltipHandle,
 }: EventTypeActionsProps) {
+  const isMobile = useMediaQuery("max-md");
+
   return (
     <>
       <div className="flex items-center gap-4 max-md:hidden">
@@ -121,53 +134,62 @@ export function EventTypeActions({
         </Group>
       </div>
 
-      <Menu>
-        <MenuTrigger
-          className="md:hidden"
-          render={
-            <Button aria-label="More options" size="icon" variant="outline">
-              <EllipsisIcon />
-            </Button>
-          }
-        />
-        <MenuPopup align="end">
-          <MenuItem>
-            <EyeIcon />
-            Preview
-          </MenuItem>
-          <MenuItem>
-            <Link2Icon />
-            Copy link to event
-          </MenuItem>
-          <MenuItem>
-            <Share2Icon />
-            Share
-          </MenuItem>
-          <MenuItem>
-            <PencilIcon />
-            Edit
-          </MenuItem>
-          <MenuItem>
-            <CopyIcon />
-            Duplicate
-          </MenuItem>
-          <MenuSeparator />
-          <MenuGroup>
-            <MenuCheckboxItem
-              checked={!isHidden}
-              onCheckedChange={(checked) => onHiddenChange(!checked)}
-              variant="switch"
-            >
-              Show on profile
-            </MenuCheckboxItem>
-          </MenuGroup>
-          <MenuSeparator />
-          <MenuItem variant="destructive">
-            <TrashIcon />
-            Delete
-          </MenuItem>
-        </MenuPopup>
-      </Menu>
+      {isMobile ? (
+        <Drawer>
+          <DrawerTrigger
+            render={
+              <Button aria-label="More options" size="icon" variant="outline" />
+            }
+          >
+            <EllipsisIcon aria-hidden />
+          </DrawerTrigger>
+          <DrawerPopup showBar>
+            <DrawerPanel>
+              <DrawerMenu>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <EyeIcon aria-hidden />
+                  Preview
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <Link2Icon aria-hidden />
+                  Copy link to event
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <Share2Icon aria-hidden />
+                  Share
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <PencilIcon aria-hidden />
+                  Edit
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <CopyIcon aria-hidden />
+                  Duplicate
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <CodeIcon aria-hidden />
+                  Embed
+                </DrawerClose>
+                <DrawerMenuSeparator />
+                <DrawerMenuGroup>
+                  <DrawerMenuCheckboxItem
+                    checked={!isHidden}
+                    onCheckedChange={(checked) => onHiddenChange(!checked)}
+                    variant="switch"
+                  >
+                    Show on profile
+                  </DrawerMenuCheckboxItem>
+                </DrawerMenuGroup>
+                <DrawerMenuSeparator />
+                <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+                  <TrashIcon aria-hidden />
+                  Delete
+                </DrawerClose>
+              </DrawerMenu>
+            </DrawerPanel>
+          </DrawerPopup>
+        </Drawer>
+      ) : null}
     </>
   );
 }
