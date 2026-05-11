@@ -1,11 +1,21 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerMenu,
+  DrawerMenuCheckboxItem,
+  DrawerMenuGroup,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
+  DrawerPanel,
+  DrawerPopup,
+  DrawerTrigger,
+} from "@coss/ui/components/drawer";
 import { Group, GroupSeparator } from "@coss/ui/components/group";
 import {
   Menu,
-  MenuCheckboxItem,
-  MenuGroup,
   MenuItem,
   MenuPopup,
   MenuSeparator,
@@ -121,53 +131,62 @@ export function EventTypeActions({
         </Group>
       </div>
 
-      <Menu>
-        <MenuTrigger
-          className="md:hidden"
-          render={
-            <Button aria-label="More options" size="icon" variant="outline">
-              <EllipsisIcon />
-            </Button>
-          }
-        />
-        <MenuPopup align="end">
-          <MenuItem>
-            <EyeIcon />
-            Preview
-          </MenuItem>
-          <MenuItem>
-            <Link2Icon />
-            Copy link to event
-          </MenuItem>
-          <MenuItem>
-            <Share2Icon />
-            Share
-          </MenuItem>
-          <MenuItem>
-            <PencilIcon />
-            Edit
-          </MenuItem>
-          <MenuItem>
-            <CopyIcon />
-            Duplicate
-          </MenuItem>
-          <MenuSeparator />
-          <MenuGroup>
-            <MenuCheckboxItem
-              checked={!isHidden}
-              onCheckedChange={(checked) => onHiddenChange(!checked)}
-              variant="switch"
-            >
-              Show on profile
-            </MenuCheckboxItem>
-          </MenuGroup>
-          <MenuSeparator />
-          <MenuItem variant="destructive">
-            <TrashIcon />
-            Delete
-          </MenuItem>
-        </MenuPopup>
-      </Menu>
+      <div className="md:hidden">
+        <Drawer>
+          <DrawerTrigger
+            render={
+              <Button aria-label="More options" size="icon" variant="outline" />
+            }
+          >
+            <EllipsisIcon aria-hidden />
+          </DrawerTrigger>
+          <DrawerPopup showBar>
+            <DrawerPanel>
+              <DrawerMenu>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <EyeIcon aria-hidden />
+                  Preview
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <Link2Icon aria-hidden />
+                  Copy link to event
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <Share2Icon aria-hidden />
+                  Share
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <PencilIcon aria-hidden />
+                  Edit
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <CopyIcon aria-hidden />
+                  Duplicate
+                </DrawerClose>
+                <DrawerClose render={<DrawerMenuItem />}>
+                  <CodeIcon aria-hidden />
+                  Embed
+                </DrawerClose>
+                <DrawerMenuSeparator />
+                <DrawerMenuGroup>
+                  <DrawerMenuCheckboxItem
+                    checked={!isHidden}
+                    onCheckedChange={(checked) => onHiddenChange(!checked)}
+                    variant="switch"
+                  >
+                    Show on profile
+                  </DrawerMenuCheckboxItem>
+                </DrawerMenuGroup>
+                <DrawerMenuSeparator />
+                <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+                  <TrashIcon aria-hidden />
+                  Delete
+                </DrawerClose>
+              </DrawerMenu>
+            </DrawerPanel>
+          </DrawerPopup>
+        </Drawer>
+      </div>
     </>
   );
 }

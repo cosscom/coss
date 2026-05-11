@@ -1,18 +1,18 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import {
-  Menu,
-  MenuGroup,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger,
-} from "@coss/ui/components/menu";
 import { cn } from "@coss/ui/lib/utils";
 import { EllipsisIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
+import {
+  AdaptiveMenu,
+  AdaptiveMenuGroup,
+  AdaptiveMenuItem,
+  AdaptiveMenuPopup,
+  AdaptiveMenuSeparator,
+  AdaptiveMenuTrigger,
+} from "@/components/shared/adaptive-menu";
 import { WorkflowBadge } from "@/components/workflows-badge";
 import { useScrollHide } from "@/hooks/use-scroll-hide";
 import type { NavItem } from "@/lib/navigation-data";
@@ -44,34 +44,44 @@ export function AppMobileFooter(): React.ReactElement {
             <item.icon className="size-5" />
           </Link>
         ))}
-        <Menu>
-          <MenuTrigger
+        <AdaptiveMenu>
+          <AdaptiveMenuTrigger
             aria-label="More options"
-            render={<Button className="size-11 rounded-full" variant="ghost" />}
+            render={
+              <Button className="size-11! rounded-full" variant="ghost" />
+            }
           >
-            <EllipsisIcon className="size-5" />
-          </MenuTrigger>
-          <MenuPopup side="top" sideOffset={8}>
-            <MenuGroup>
+            <EllipsisIcon className="size-5" aria-hidden />
+          </AdaptiveMenuTrigger>
+          <AdaptiveMenuPopup>
+            <AdaptiveMenuGroup>
               {remainingMainItems.map((item) => (
-                <MenuItem key={item.title} render={<Link href={item.url} />}>
-                  <item.icon />
+                <AdaptiveMenuItem
+                  key={item.title}
+                  render={<Link href={item.url} />}
+                >
+                  <item.icon aria-hidden />
                   <span>{item.title}</span>
-                  {item.title === "Workflows" && <WorkflowBadge />}
-                </MenuItem>
+                  {item.title === "Workflows" && (
+                    <WorkflowBadge className="ms-2" />
+                  )}
+                </AdaptiveMenuItem>
               ))}
-            </MenuGroup>
-            <MenuSeparator />
-            <MenuGroup>
+            </AdaptiveMenuGroup>
+            <AdaptiveMenuSeparator />
+            <AdaptiveMenuGroup>
               {navFooterItems.map((item) => (
-                <MenuItem key={item.title} render={<Link href={item.url} />}>
-                  <item.icon />
+                <AdaptiveMenuItem
+                  key={item.title}
+                  render={<Link href={item.url} />}
+                >
+                  <item.icon aria-hidden />
                   <span>{item.title}</span>
-                </MenuItem>
+                </AdaptiveMenuItem>
               ))}
-            </MenuGroup>
-          </MenuPopup>
-        </Menu>
+            </AdaptiveMenuGroup>
+          </AdaptiveMenuPopup>
+        </AdaptiveMenu>
       </div>
       <Button className="size-12 rounded-full sm:size-12">
         <PlusIcon className="size-5" />

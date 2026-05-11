@@ -5,15 +5,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@coss/ui/components/avatar";
-import {
-  Menu,
-  MenuGroup,
-  MenuGroupLabel,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger,
-} from "@coss/ui/components/menu";
 import { useMediaQuery } from "@coss/ui/hooks/use-media-query";
 import {
   GaugeIcon,
@@ -27,10 +18,37 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
+import {
+  AdaptiveMenu,
+  AdaptiveMenuGroup,
+  AdaptiveMenuGroupLabel,
+  AdaptiveMenuItem,
+  AdaptiveMenuPopup,
+  AdaptiveMenuSeparator,
+  AdaptiveMenuTrigger,
+} from "@/components/shared/adaptive-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 interface UserMenuProps {
   variant?: "sidebar" | "mobile";
+}
+
+const triggerButtonClassName = "relative shrink-0 justify-center p-0 lg:size-8";
+
+function UserMenuTriggerContent(): React.ReactElement {
+  return (
+    <>
+      <Avatar className="lg:size-6">
+        <AvatarImage
+          alt="Luke Tracy"
+          src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80"
+        />
+        <AvatarFallback>LT</AvatarFallback>
+      </Avatar>
+      <span className="absolute right-[3px] bottom-[3px] size-2.5 rounded-full border-2 border-sidebar bg-emerald-500 lg:right-0.5 lg:bottom-0.5" />
+      <span className="sr-only">User menu</span>
+    </>
+  );
 }
 
 export function UserMenu({
@@ -39,23 +57,13 @@ export function UserMenu({
   const isBetweenMdAndLg = useMediaQuery("md:max-lg");
 
   return (
-    <Menu>
-      <MenuTrigger
-        render={
-          <SidebarMenuButton className="relative shrink-0 justify-center p-0 lg:size-8" />
-        }
+    <AdaptiveMenu>
+      <AdaptiveMenuTrigger
+        render={<SidebarMenuButton className={triggerButtonClassName} />}
       >
-        <Avatar className="lg:size-6">
-          <AvatarImage
-            alt="Luke Tracy"
-            src="https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=128&h=128&dpr=2&q=80"
-          />
-          <AvatarFallback>LT</AvatarFallback>
-        </Avatar>
-        <span className="absolute right-[3px] bottom-[3px] size-2.5 rounded-full border-2 border-sidebar bg-emerald-500 lg:right-0.5 lg:bottom-0.5" />
-        <span className="sr-only">User menu</span>
-      </MenuTrigger>
-      <MenuPopup
+        <UserMenuTriggerContent />
+      </AdaptiveMenuTrigger>
+      <AdaptiveMenuPopup
         align={variant === "mobile" ? "end" : "start"}
         alignOffset={variant === "sidebar" && isBetweenMdAndLg ? -3 : undefined}
         side={
@@ -66,46 +74,48 @@ export function UserMenu({
               : "bottom"
         }
       >
-        <MenuGroup>
-          <MenuGroupLabel>Luke Tracy</MenuGroupLabel>
-          <MenuItem>
-            <UserRoundIcon />
+        <AdaptiveMenuGroup>
+          <AdaptiveMenuGroupLabel>Luke Tracy</AdaptiveMenuGroupLabel>
+          <AdaptiveMenuItem>
+            <UserRoundIcon aria-hidden />
             My profile
-          </MenuItem>
-          <MenuItem render={<Link href="/settings/my-account/general" />}>
-            <SettingsIcon />
+          </AdaptiveMenuItem>
+          <AdaptiveMenuItem
+            render={<Link href="/settings/my-account/general" />}
+          >
+            <SettingsIcon aria-hidden />
             My settings
-          </MenuItem>
-          <MenuItem>
-            <MoonStarIcon />
+          </AdaptiveMenuItem>
+          <AdaptiveMenuItem>
+            <MoonStarIcon aria-hidden />
             Out of office
-          </MenuItem>
-        </MenuGroup>
-        <MenuSeparator />
-        <MenuGroup>
-          <MenuItem>
-            <MilestoneIcon />
+          </AdaptiveMenuItem>
+        </AdaptiveMenuGroup>
+        <AdaptiveMenuSeparator />
+        <AdaptiveMenuGroup>
+          <AdaptiveMenuItem>
+            <MilestoneIcon aria-hidden />
             Roadmap
-          </MenuItem>
-          <MenuItem>
-            <MessageCircleQuestionMarkIcon />
+          </AdaptiveMenuItem>
+          <AdaptiveMenuItem>
+            <MessageCircleQuestionMarkIcon aria-hidden />
             Help
-          </MenuItem>
-          <MenuItem>
-            <MonitorDownIcon />
+          </AdaptiveMenuItem>
+          <AdaptiveMenuItem>
+            <MonitorDownIcon aria-hidden />
             Download desktop app
-          </MenuItem>
-          <MenuItem>
-            <GaugeIcon />
+          </AdaptiveMenuItem>
+          <AdaptiveMenuItem>
+            <GaugeIcon aria-hidden />
             Platform
-          </MenuItem>
-        </MenuGroup>
-        <MenuSeparator />
-        <MenuItem>
-          <LogOutIcon />
+          </AdaptiveMenuItem>
+        </AdaptiveMenuGroup>
+        <AdaptiveMenuSeparator />
+        <AdaptiveMenuItem>
+          <LogOutIcon aria-hidden />
           Sign out
-        </MenuItem>
-      </MenuPopup>
-    </Menu>
+        </AdaptiveMenuItem>
+      </AdaptiveMenuPopup>
+    </AdaptiveMenu>
   );
 }
