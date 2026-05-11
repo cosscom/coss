@@ -54,7 +54,6 @@ import {
   AlertDialog,
   AlertDialogClose,
   AlertDialogDescription,
-  AlertDialogPanel,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogPopup,
@@ -74,7 +73,6 @@ import {
         and remove your data from our servers.
       </AlertDialogDescription>
     </AlertDialogHeader>
-    <AlertDialogPanel>Content</AlertDialogPanel>
     <AlertDialogFooter>
       <AlertDialogClose>Cancel</AlertDialogClose>
       <AlertDialogClose>Delete Account</AlertDialogClose>
@@ -109,6 +107,8 @@ Container for the alert dialog title and description.
 ### AlertDialogFooter
 
 Footer section for action buttons.
+
+Unlike [Dialog](/docs/components/dialog), alert dialog has no `AlertDialogPanel`. Put title and description in `AlertDialogHeader`, actions in `AlertDialogFooter`, and use a plain element with `className` if you need extra body content between them.
 
 | Prop        | Type                     | Default     | Description                                      |
 | ----------- | ------------------------ | ----------- | ------------------------------------------------ |
