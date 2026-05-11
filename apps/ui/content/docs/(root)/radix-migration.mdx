@@ -126,7 +126,7 @@ Ensure you have the following variables imported in your CSS file:
 - Replace `asChild` → `render` on `AlertDialogTrigger` and closing buttons
 - Replace `AlertDialogAction` and `AlertDialogCancel` → `AlertDialogClose`
 - Prefer `AlertDialogPopup`; `AlertDialogContent` remains for legacy
-- Use `AlertDialogPanel` to wrap main content between `AlertDialogHeader` and `AlertDialogFooter`
+- Compose `AlertDialogHeader` → `AlertDialogFooter` directly inside `AlertDialogPopup` (no `AlertDialogPanel`; unlike Dialog, the registry alert dialog does not ship a body wrapper part)
 - If you used `asChild` on any other parts, switch to the `render` prop
 
 **Comparison Example:**
@@ -162,7 +162,6 @@ Ensure you have the following variables imported in your CSS file:
 ```tsx title="coss ui"
 // [!code word:render]
 // [!code word:AlertDialogClose]
-// [!code word:<AlertDialogPanel>Content</AlertDialogPanel>]
 <AlertDialog>
   <AlertDialogTrigger render={<Button variant="outline" />}>
     Show Alert Dialog
@@ -174,7 +173,6 @@ Ensure you have the following variables imported in your CSS file:
         This action cannot be undone.
       </AlertDialogDescription>
     </AlertDialogHeader>
-    <AlertDialogPanel>Content</AlertDialogPanel>
     <AlertDialogFooter>
       <AlertDialogClose render={<Button variant="ghost" />}>
         Cancel
