@@ -36,8 +36,10 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { cn } from "@coss/ui/lib/utils";
 import {
   type ColumnDef,
+  type ColumnSizingState,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
@@ -53,7 +55,7 @@ import {
   SearchIcon,
   SlidersHorizontalIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AppHeader,
   AppHeaderContent,
@@ -319,6 +321,42 @@ function OptionalBadge({ value }: { value?: string }) {
   return <Badge variant="secondary">{value}</Badge>;
 }
 
+const FILLER_EXCLUDED_COLUMN_IDS = new Set(["select", "actions"]);
+
+function getFillerColumnId(headers: { column: { id: string } }[]): string {
+  for (let i = headers.length - 1; i >= 0; i--) {
+    const id = headers[i]?.column.id;
+    if (id && !FILLER_EXCLUDED_COLUMN_IDS.has(id)) return id;
+  }
+  return "name";
+}
+
+function getColumnDisplayWidth({
+  columnId,
+  columnsTotalSize,
+  fillerColumnId,
+  headers,
+  size,
+  tableWidth,
+}: {
+  columnId: string;
+  columnsTotalSize: number;
+  fillerColumnId: string;
+  headers: { column: { id: string }; getSize: () => number }[];
+  size: number;
+  tableWidth: number;
+}): number {
+  if (tableWidth <= columnsTotalSize || columnId !== fillerColumnId) {
+    return size;
+  }
+
+  const otherSum = headers
+    .filter((header) => header.column.id !== fillerColumnId)
+    .reduce((sum, header) => sum + header.getSize(), 0);
+
+  return Math.max(size, tableWidth - otherSum);
+}
+
 function getColumns(
   columnVisibility: Record<ColumnKey, boolean>,
 ): ColumnDef<Member>[] {
@@ -345,11 +383,13 @@ function getColumns(
           onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
         />
       ),
+      enableResizing: false,
       id: "select",
       size: 28,
     },
     {
       accessorKey: "name",
+      minSize: 160,
       cell: ({ row }) => (
         <div className="flex min-w-52 items-center gap-3">
           <Avatar className="size-8 shrink-0">
@@ -381,6 +421,7 @@ function getColumns(
       accessorKey: "role",
       cell: ({ row }) => <RoleBadge role={row.original.role} />,
       header: "Role",
+      minSize: 80,
       size: 100,
     });
   }
@@ -391,6 +432,7 @@ function getColumns(
       cell: ({ row }) => <BadgeList items={row.original.teams} />,
       enableSorting: false,
       header: "Teams",
+      minSize: 120,
       size: 180,
     });
   }
@@ -400,6 +442,7 @@ function getColumns(
       accessorKey: "seniority",
       cell: ({ row }) => <OptionalBadge value={row.original.seniority} />,
       header: "Seniority",
+      minSize: 80,
       size: 100,
     });
   }
@@ -411,6 +454,7 @@ function getColumns(
         <OptionalBadge value={row.original.preferredLanguage} />
       ),
       header: "Preferred Language",
+      minSize: 100,
       size: 140,
     });
   }
@@ -421,6 +465,7 @@ function getColumns(
       cell: ({ row }) => <BadgeList items={row.original.products} />,
       enableSorting: false,
       header: "Products",
+      minSize: 120,
       size: 180,
     });
   }
@@ -431,6 +476,7 @@ function getColumns(
       cell: ({ row }) => <BadgeList items={row.original.userCount ?? []} />,
       enableSorting: false,
       header: "User Count",
+      minSize: 100,
       size: 140,
     });
   }
@@ -440,6 +486,7 @@ function getColumns(
       accessorKey: "region",
       cell: ({ row }) => <OptionalBadge value={row.original.region} />,
       header: "Region",
+      minSize: 80,
       size: 110,
     });
   }
@@ -452,7 +499,9 @@ function getColumns(
           {row.original.lastActive}
         </span>
       ),
+      enableResizing: false,
       header: "Last active",
+      minSize: 90,
       size: 100,
     });
   }
@@ -469,6 +518,7 @@ function getColumns(
         </Button>
       </div>
     ),
+    enableResizing: false,
     enableSorting: false,
     header: () => <span className="sr-only">Actions</span>,
     id: "actions",
@@ -484,6 +534,9 @@ export function MembersPageClient() {
   const [columnVisibility, setColumnVisibility] = useState(
     DEFAULT_COLUMN_VISIBILITY,
   );
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([
     { desc: false, id: "name" },
@@ -535,7 +588,22 @@ export function MembersPageClient() {
     });
   }, [columnVisibility]);
 
+  useEffect(() => {
+    const node = tableContainerRef.current;
+    if (!node) return;
+
+    const updateWidth = (): void => {
+      setContainerWidth(node.clientWidth);
+    };
+
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   const table = useReactTable({
+    columnResizeMode: "onChange",
     columns,
     data: filteredMembers,
     enableRowSelection: true,
@@ -543,13 +611,23 @@ export function MembersPageClient() {
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
     getSortedRowModel: getSortedRowModel(),
+    onColumnSizingChange: setColumnSizing,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     state: {
+      columnSizing,
       rowSelection,
       sorting,
     },
   });
+
+  const headers = table.getHeaderGroups()[0]?.headers ?? [];
+  const columnsTotalSize = table.getCenterTotalSize();
+  const tableWidth =
+    containerWidth > 0
+      ? Math.max(containerWidth + 2, columnsTotalSize)
+      : columnsTotalSize;
+  const fillerColumnId = getFillerColumnId(headers);
 
   return (
     <>
@@ -672,64 +750,98 @@ export function MembersPageClient() {
           </Button>
         </div>
 
-        <CardFrame className="w-full overflow-x-auto">
-          <Table variant="card" className="min-w-6xl">
+        <CardFrame className="w-full overflow-x-auto" ref={tableContainerRef}>
+          <Table
+            className="table-fixed"
+            style={{
+              width:
+                containerWidth > 0 ? tableWidth : Math.max(columnsTotalSize, 0),
+            }}
+            variant="card"
+          >
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const columnSize = header.column.getSize();
-
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={
-                          columnSize ? { width: `${columnSize}px` } : undefined
-                        }
-                      >
-                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                          <div
-                            className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
-                            onClick={header.column.getToggleSortingHandler()}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                header.column.getToggleSortingHandler()?.(
-                                  event,
-                                );
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
-                          >
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      aria-sort={
+                        header.column.getIsSorted() === "asc"
+                          ? "ascending"
+                          : header.column.getIsSorted() === "desc"
+                            ? "descending"
+                            : "none"
+                      }
+                      className="relative select-none last:[&>.cursor-col-resize]:opacity-0"
+                      colSpan={header.colSpan}
+                      key={header.id}
+                      style={{
+                        width: getColumnDisplayWidth({
+                          columnId: header.column.id,
+                          columnsTotalSize,
+                          fillerColumnId,
+                          headers,
+                          size: header.getSize(),
+                          tableWidth,
+                        }),
+                      }}
+                    >
+                      {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                        <div
+                          className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
+                          onClick={header.column.getToggleSortingHandler()}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              header.column.getToggleSortingHandler()?.(event);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                        >
+                          <span className="truncate">
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext(),
                             )}
-                            {{
-                              asc: (
-                                <ChevronUpIcon
-                                  aria-hidden="true"
-                                  className="size-4 shrink-0 opacity-80"
-                                />
-                              ),
-                              desc: (
-                                <ChevronDownIcon
-                                  aria-hidden="true"
-                                  className="size-4 shrink-0 opacity-80"
-                                />
-                              ),
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        ) : (
-                          flexRender(
+                          </span>
+                          {{
+                            asc: (
+                              <ChevronUpIcon
+                                aria-hidden="true"
+                                className="size-4 shrink-0 opacity-80"
+                              />
+                            ),
+                            desc: (
+                              <ChevronDownIcon
+                                aria-hidden="true"
+                                className="size-4 shrink-0 opacity-80"
+                              />
+                            ),
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      ) : (
+                        <span className="truncate">
+                          {flexRender(
                             header.column.columnDef.header,
                             header.getContext(),
-                          )
-                        )}
-                      </TableHead>
-                    );
-                  })}
+                          )}
+                        </span>
+                      )}
+                      {header.column.getCanResize() ? (
+                        <div
+                          aria-hidden="true"
+                          className={cn(
+                            "absolute top-0 -right-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-0 before:w-px before:translate-x-px before:bg-border",
+                            header.column.getIsResizing() &&
+                              "before:bg-foreground",
+                          )}
+                          onDoubleClick={() => header.column.resetSize()}
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                        />
+                      ) : null}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
@@ -741,7 +853,20 @@ export function MembersPageClient() {
                     key={row.id}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        className="truncate"
+                        key={cell.id}
+                        style={{
+                          width: getColumnDisplayWidth({
+                            columnId: cell.column.id,
+                            columnsTotalSize,
+                            fillerColumnId,
+                            headers,
+                            size: cell.column.getSize(),
+                            tableWidth,
+                          }),
+                        }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
