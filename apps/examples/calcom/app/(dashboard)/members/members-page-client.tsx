@@ -339,7 +339,8 @@ function getPinningStyles(column: Column<Member>): CSSProperties {
     left: undefined,
     position: isPinned === "right" ? "sticky" : undefined,
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
-    zIndex: isPinned ? 1 : 0,
+    zIndex:
+      isPinned === "right" ? 3 : column.id === "select" ? 2 : isPinned ? 1 : 0,
   } as CSSProperties;
 }
 
