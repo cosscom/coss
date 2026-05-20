@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { cn } from "@coss/ui/lib/utils";
 import {
   type Column,
   type ColumnDef,
@@ -56,7 +57,7 @@ import {
   SearchIcon,
   SlidersHorizontalIcon,
 } from "lucide-react";
-import type { CSSProperties } from "react";
+import type { ComponentProps, CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AppHeader,
@@ -282,11 +283,28 @@ function getInitials(name: string): string {
   return `${parts[0]?.charAt(0) ?? ""}${parts.at(-1)?.charAt(0) ?? ""}`.toUpperCase();
 }
 
+function TruncatedBadge({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof Badge>) {
+  return (
+    <Badge
+      className={cn("min-w-0 max-w-full shrink overflow-hidden", className)}
+      {...props}
+    >
+      <span className="min-w-0 truncate">{children}</span>
+    </Badge>
+  );
+}
+
 function RoleBadge({ role }: { role: MemberRole }) {
   return (
-    <Badge variant={PRIVILEGED_ROLES.includes(role) ? "info" : "secondary"}>
+    <TruncatedBadge
+      variant={PRIVILEGED_ROLES.includes(role) ? "info" : "secondary"}
+    >
       {role}
-    </Badge>
+    </TruncatedBadge>
   );
 }
 
@@ -305,14 +323,14 @@ function BadgeList({
   const remaining = items.length - visible.length;
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex w-full min-w-0 flex-wrap gap-1">
       {visible.map((item) => (
-        <Badge key={item} variant="secondary">
+        <TruncatedBadge key={item} variant="secondary">
           {item}
-        </Badge>
+        </TruncatedBadge>
       ))}
       {remaining > 0 ? (
-        <Badge
+        <TruncatedBadge
           aria-label={`Show ${remaining} more ${remaining === 1 ? "badge" : "badges"}`}
           className="tabular-nums"
           onClick={() => setIsExpanded(true)}
@@ -320,7 +338,7 @@ function BadgeList({
           variant="secondary"
         >
           +{remaining}
-        </Badge>
+        </TruncatedBadge>
       ) : null}
     </div>
   );
@@ -328,7 +346,7 @@ function BadgeList({
 
 function OptionalBadge({ value }: { value?: string }) {
   if (!value) return null;
-  return <Badge variant="secondary">{value}</Badge>;
+  return <TruncatedBadge variant="secondary">{value}</TruncatedBadge>;
 }
 
 const FILLER_EXCLUDED_COLUMN_IDS = new Set(["select", "actions"]);
