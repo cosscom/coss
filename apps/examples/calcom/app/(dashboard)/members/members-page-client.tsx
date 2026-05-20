@@ -851,7 +851,7 @@ export function MembersPageClient() {
                           role="button"
                           tabIndex={0}
                         >
-                          <span className="truncate">
+                          <span className="truncate text-sm">
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext(),
