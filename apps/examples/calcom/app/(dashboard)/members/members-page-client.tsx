@@ -348,6 +348,12 @@ function getPinnedDataAttribute(column: Column<Member>): {
   return isPinned ? { "data-pinned": isPinned } : {};
 }
 
+function syncScrollAreaOverflowState(root: HTMLElement | null): void {
+  root
+    ?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')
+    ?.dispatchEvent(new Event("scroll"));
+}
+
 function getFillerColumnId(headers: { column: { id: string } }[]): string {
   for (let i = headers.length - 1; i >= 0; i--) {
     const id = headers[i]?.column.id;
@@ -641,6 +647,9 @@ export function MembersPageClient() {
     },
     onColumnSizingChange: (updater) => {
       setColumnSizing(updater);
+      requestAnimationFrame(() => {
+        syncScrollAreaOverflowState(tableContainerRef.current);
+      });
     },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
