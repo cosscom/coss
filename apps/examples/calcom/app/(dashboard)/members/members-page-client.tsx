@@ -883,7 +883,7 @@ export function MembersPageClient() {
                       {header.column.getCanResize() ? (
                         <div
                           aria-hidden="true"
-                          className="absolute top-0 -end-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input opacity-0 in-[[data-slot=table-header]:hover]:opacity-100"
+                          className="absolute top-0 -end-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
                           onDoubleClick={() => header.column.resetSize()}
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
