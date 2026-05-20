@@ -822,7 +822,7 @@ export function MembersPageClient() {
                             ? "descending"
                             : "none"
                       }
-                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) last:[&>.cursor-col-resize]:opacity-0 before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] before:to-transparent before:z-1 before:pointer-events-none data-[pinned=left]:max-md:before:hidden not-data-pinned:before:hidden"
+                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) last:*:data-[slot=column-resize-handle]:opacity-0 before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] before:to-transparent before:z-1 before:pointer-events-none data-[pinned=left]:max-md:before:hidden not-data-pinned:before:hidden"
                       colSpan={header.colSpan}
                       key={header.id}
                       {...getPinnedDataAttribute(header.column)}
@@ -883,9 +883,11 @@ export function MembersPageClient() {
                       {header.column.getCanResize() ? (
                         <div
                           aria-hidden="true"
-                          className="absolute top-0 -end-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
+                          className="absolute top-0 -end-2 z-10 flex h-full w-4 touch-none items-center justify-center user-select-none before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
+                          data-slot="column-resize-handle"
                           onDoubleClick={() => header.column.resetSize()}
                           onMouseDown={header.getResizeHandler()}
+                          style={{ cursor: "col-resize" }}
                           onTouchStart={header.getResizeHandler()}
                         />
                       ) : null}
