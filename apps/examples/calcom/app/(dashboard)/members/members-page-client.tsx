@@ -339,8 +339,7 @@ function getPinningStyles(column: Column<Member>): CSSProperties {
     left: undefined,
     position: isPinned === "right" ? "sticky" : undefined,
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
-    zIndex:
-      isPinned === "right" ? 3 : column.id === "select" ? 2 : isPinned ? 1 : 0,
+    zIndex: isPinned ? 1 : 0,
   } as CSSProperties;
 }
 
@@ -355,6 +354,15 @@ function syncScrollAreaOverflowState(root: HTMLElement | null): void {
   root
     ?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')
     ?.dispatchEvent(new Event("scroll"));
+}
+
+function shouldIgnoreRowSelectionClick(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element &&
+    target.closest(
+      'a, button, input, select, textarea, [role="button"], [role="checkbox"], [data-slot="checkbox"], [data-slot="label"]',
+    ) !== null
+  );
 }
 
 function getFillerColumnId(headers: { column: { id: string } }[]): string {
@@ -397,13 +405,12 @@ function getColumns(
   const cols: ColumnDef<Member>[] = [
     {
       cell: ({ row }) => (
-        <Label className="before:absolute before:inset-y-0 before:start-0 before:w-screen">
+        <Label>
           <Checkbox
             aria-label={`Select ${row.original.name}`}
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
           />
-          <span className="sr-only">{`Select ${row.original.name}`}</span>
         </Label>
       ),
       enableSorting: false,
@@ -893,6 +900,10 @@ export function MembersPageClient() {
                   <TableRow
                     data-state={row.getIsSelected() ? "selected" : undefined}
                     key={row.id}
+                    onClick={(event) => {
+                      if (shouldIgnoreRowSelectionClick(event.target)) return;
+                      row.toggleSelected();
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
