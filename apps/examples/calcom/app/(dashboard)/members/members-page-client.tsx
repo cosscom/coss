@@ -805,7 +805,7 @@ export function MembersPageClient() {
         >
           <Table
             render={
-              <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:z-10" />
+              <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:z-10 **:data-[slot=scroll-area-scrollbar]:translate-y-3" />
             }
             className="table-fixed [--border:color-mix(in_srgb,var(--color-black)_8%,color-mix(in_srgb,var(--color-black)_3%,var(--background)))] dark:[--border:color-mix(in_srgb,var(--color-white)_6%,color-mix(in_srgb,var(--color-white)_4.6%,var(--background)))]"
             variant="card"
