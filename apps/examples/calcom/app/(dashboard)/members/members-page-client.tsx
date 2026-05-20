@@ -394,7 +394,7 @@ function getColumns(
   const cols: ColumnDef<Member>[] = [
     {
       cell: ({ row }) => (
-        <Label className="before:absolute before:inset-0">
+        <Label className="before:absolute before:inset-y-0 before:start-0 before:w-screen">
           <Checkbox
             aria-label={`Select ${row.original.name}`}
             checked={row.getIsSelected()}
