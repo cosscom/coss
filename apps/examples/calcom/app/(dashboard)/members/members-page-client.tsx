@@ -297,10 +297,12 @@ function BadgeList({
   items: string[];
   visibleCount?: number;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (items.length === 0) return null;
 
-  const visible = items.slice(0, visibleCount);
-  const remaining = items.length - visibleCount;
+  const visible = isExpanded ? items : items.slice(0, visibleCount);
+  const remaining = items.length - visible.length;
 
   return (
     <div className="flex flex-wrap gap-1">
@@ -310,7 +312,13 @@ function BadgeList({
         </Badge>
       ))}
       {remaining > 0 ? (
-        <Badge className="tabular-nums" variant="secondary">
+        <Badge
+          aria-label={`Show ${remaining} more ${remaining === 1 ? "badge" : "badges"}`}
+          className="tabular-nums"
+          onClick={() => setIsExpanded(true)}
+          render={<button type="button" />}
+          variant="secondary"
+        >
           +{remaining}
         </Badge>
       ) : null}
