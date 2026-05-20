@@ -1,14 +1,15 @@
 "use client";
 
+import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cn } from "@coss/ui/lib/utils";
-import type * as React from "react";
+import type React from "react";
 
 export type TableVariant = "default" | "card";
 
 export type TableProps = React.ComponentProps<"table"> & {
   variant?: TableVariant;
-  render: useRender.ComponentProps<"div">["render"];
+  render?: useRender.ComponentProps<"div">["render"];
 };
 
 export function Table({
@@ -35,7 +36,7 @@ export function Table({
 
   return useRender({
     defaultTagName: "div",
-    props: defaultProps,
+    props: mergeProps<"div">(defaultProps, {}),
     render,
   });
 }
