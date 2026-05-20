@@ -766,16 +766,11 @@ export function MembersPageClient() {
                 </div>
                 <ComboboxEmpty>No columns found.</ComboboxEmpty>
                 <ComboboxList>
-                  <ComboboxGroup items={COLUMN_TOGGLE_ITEMS}>
-                    <ComboboxGroupLabel>Toggle columns</ComboboxGroupLabel>
-                    <ComboboxCollection>
-                      {(item: ColumnToggleItem) => (
-                        <ComboboxItem key={item.value} value={item}>
-                          {item.label}
-                        </ComboboxItem>
-                      )}
-                    </ComboboxCollection>
-                  </ComboboxGroup>
+                  {(item: ColumnToggleItem) => (
+                    <ComboboxItem key={item.value} value={item}>
+                      {item.label}
+                    </ComboboxItem>
+                  )}
                 </ComboboxList>
                 <div className="border-t p-2">
                   <Button
