@@ -7,7 +7,7 @@ import {
 } from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { CardFrame } from "@coss/ui/components/card";
+import { CardFrame, CardFrameFooter } from "@coss/ui/components/card";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Combobox,
@@ -28,6 +28,7 @@ import {
   InputGroupInput,
 } from "@coss/ui/components/input-group";
 import { Label } from "@coss/ui/components/label";
+import { ScrollArea } from "@coss/ui/components/scroll-area";
 import {
   Table,
   TableBody,
@@ -38,6 +39,7 @@ import {
 } from "@coss/ui/components/table";
 import { cn } from "@coss/ui/lib/utils";
 import {
+  type Column,
   type ColumnDef,
   type ColumnSizingState,
   flexRender,
@@ -55,6 +57,7 @@ import {
   SearchIcon,
   SlidersHorizontalIcon,
 } from "lucide-react";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AppHeader,
@@ -322,6 +325,29 @@ function OptionalBadge({ value }: { value?: string }) {
 }
 
 const FILLER_EXCLUDED_COLUMN_IDS = new Set(["select", "actions"]);
+
+const INITIAL_COLUMN_PINNING = {
+  left: ["select", "name"],
+  right: ["actions"],
+};
+
+function getPinningStyles(column: Column<Member>): CSSProperties {
+  const isPinned = column.getIsPinned();
+
+  return {
+    left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
+    position: isPinned ? "sticky" : "relative",
+    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
+    zIndex: isPinned ? 1 : 0,
+  };
+}
+
+function getPinnedDataAttribute(column: Column<Member>): {
+  "data-pinned"?: "left" | "right";
+} {
+  const isPinned = column.getIsPinned();
+  return isPinned ? { "data-pinned": isPinned } : {};
+}
 
 function getFillerColumnId(headers: { column: { id: string } }[]): string {
   for (let i = headers.length - 1; i >= 0; i--) {
@@ -611,7 +637,12 @@ export function MembersPageClient() {
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
     getSortedRowModel: getSortedRowModel(),
-    onColumnSizingChange: setColumnSizing,
+    initialState: {
+      columnPinning: INITIAL_COLUMN_PINNING,
+    },
+    onColumnSizingChange: (updater) => {
+      setColumnSizing(updater);
+    },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     state: {
@@ -750,13 +781,15 @@ export function MembersPageClient() {
           </Button>
         </div>
 
-        <CardFrame className="w-full overflow-x-auto" ref={tableContainerRef}>
+        <CardFrame
+          className="w-full before:bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+          ref={tableContainerRef}
+        >
           <Table
-            className="table-fixed"
-            style={{
-              width:
-                containerWidth > 0 ? tableWidth : Math.max(columnsTotalSize, 0),
-            }}
+            render={
+              <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:z-10" />
+            }
+            className="table-fixed [--border:color-mix(in_srgb,var(--color-black)_8%,color-mix(in_srgb,var(--color-black)_3%,var(--background)))] dark:[--border:color-mix(in_srgb,var(--color-white)_6%,color-mix(in_srgb,var(--color-white)_4.6%,var(--background)))]"
             variant="card"
           >
             <TableHeader>
@@ -771,10 +804,12 @@ export function MembersPageClient() {
                             ? "descending"
                             : "none"
                       }
-                      className="relative select-none last:[&>.cursor-col-resize]:opacity-0"
+                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] last:[&>.cursor-col-resize]:opacity-0 before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
                       colSpan={header.colSpan}
                       key={header.id}
+                      {...getPinnedDataAttribute(header.column)}
                       style={{
+                        ...getPinningStyles(header.column),
                         width: getColumnDisplayWidth({
                           columnId: header.column.id,
                           columnsTotalSize,
@@ -830,11 +865,7 @@ export function MembersPageClient() {
                       {header.column.getCanResize() ? (
                         <div
                           aria-hidden="true"
-                          className={cn(
-                            "absolute top-0 -right-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-0 before:w-px before:translate-x-px before:bg-border",
-                            header.column.getIsResizing() &&
-                              "before:bg-foreground",
-                          )}
+                          className="absolute top-0 -end-2 z-10 flex h-full w-4 cursor-col-resize touch-none items-center justify-center user-select-none before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input opacity-0 in-[[data-slot=table-header]:hover]:opacity-100"
                           onDoubleClick={() => header.column.resetSize()}
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
@@ -845,7 +876,7 @@ export function MembersPageClient() {
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
+            <TableBody className="in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:first:*:[td]:first:rounded-ss-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:first:*:[td]:last:rounded-se-none in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:last:*:[td]:first:rounded-es-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:last:*:[td]:last:rounded-ee-none in-data-overflow-x-start:before:rounded-ss-none in-data-overflow-x-end:before:rounded-se-none">
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
@@ -854,9 +885,11 @@ export function MembersPageClient() {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        className="truncate"
+                        className="before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
                         key={cell.id}
+                        {...getPinnedDataAttribute(cell.column)}
                         style={{
+                          ...getPinningStyles(cell.column),
                           width: getColumnDisplayWidth({
                             columnId: cell.column.id,
                             columnsTotalSize,
@@ -887,6 +920,29 @@ export function MembersPageClient() {
               )}
             </TableBody>
           </Table>
+          <CardFrameFooter className="flex items-center justify-between gap-2 border-t">
+            <p className="text-muted-foreground text-sm">
+              {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+                <>
+                  <strong className="font-medium text-foreground">
+                    {table.getFilteredSelectedRowModel().rows.length}
+                  </strong>{" "}
+                  of{" "}
+                  <strong className="font-medium text-foreground">
+                    {table.getFilteredRowModel().rows.length}
+                  </strong>{" "}
+                  selected
+                </>
+              ) : (
+                <>
+                  <strong className="font-medium text-foreground">
+                    {table.getFilteredRowModel().rows.length}
+                  </strong>{" "}
+                  members
+                </>
+              )}
+            </p>
+          </CardFrameFooter>
         </CardFrame>
       </div>
     </>
