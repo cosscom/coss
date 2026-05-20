@@ -893,7 +893,7 @@ export function MembersPageClient() {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        className="before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
+                        className="before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
                         key={cell.id}
                         {...getPinnedDataAttribute(cell.column)}
                         style={{
