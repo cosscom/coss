@@ -37,7 +37,6 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
-import { cn } from "@coss/ui/lib/utils";
 import {
   type Column,
   type ColumnDef,
