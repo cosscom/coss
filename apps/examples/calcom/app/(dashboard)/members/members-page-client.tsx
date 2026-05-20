@@ -440,7 +440,7 @@ function getColumns(
       accessorKey: "name",
       minSize: 160,
       cell: ({ row }) => (
-        <div className="flex min-w-52 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <Avatar className="size-8 shrink-0">
             {row.original.avatarUrl ? (
               <AvatarImage
@@ -450,7 +450,7 @@ function getColumns(
             ) : null}
             <AvatarFallback>{getInitials(row.original.name)}</AvatarFallback>
           </Avatar>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="truncate font-medium text-sm">
               {row.original.name}
             </div>
