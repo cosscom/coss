@@ -334,11 +334,13 @@ function getPinningStyles(column: Column<Member>): CSSProperties {
   const isPinned = column.getIsPinned();
 
   return {
-    left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
-    position: isPinned ? "sticky" : "relative",
+    "--pinned-left-offset":
+      isPinned === "left" ? `${column.getStart("left")}px` : undefined,
+    left: undefined,
+    position: isPinned === "right" ? "sticky" : undefined,
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
     zIndex: isPinned ? 1 : 0,
-  };
+  } as CSSProperties;
 }
 
 function getPinnedDataAttribute(column: Column<Member>): {
@@ -812,7 +814,7 @@ export function MembersPageClient() {
                             ? "descending"
                             : "none"
                       }
-                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] last:[&>.cursor-col-resize]:opacity-0 before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
+                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) last:[&>.cursor-col-resize]:opacity-0 before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] before:to-transparent before:z-1 before:pointer-events-none data-[pinned=left]:max-md:before:hidden not-data-pinned:before:hidden"
                       colSpan={header.colSpan}
                       key={header.id}
                       {...getPinnedDataAttribute(header.column)}
@@ -893,7 +895,7 @@ export function MembersPageClient() {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        className="before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)] before:to-transparent before:z-1 before:pointer-events-none not-data-pinned:before:hidden"
+                        className="data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) before:absolute before:inset-y-0 data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full before:w-4 in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)] before:to-transparent before:z-1 before:pointer-events-none data-[pinned=left]:max-md:before:hidden not-data-pinned:before:hidden"
                         key={cell.id}
                         {...getPinnedDataAttribute(cell.column)}
                         style={{
