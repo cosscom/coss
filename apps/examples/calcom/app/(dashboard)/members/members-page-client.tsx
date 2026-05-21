@@ -821,7 +821,7 @@ export function MembersPageClient() {
         </div>
 
         <CardFrame
-          className="w-full before:bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+          className="w-full before:bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] dark:before:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] **:data-[slot=table-container]:overflow-x-visible"
           ref={tableContainerRef}
         >
           <Table
