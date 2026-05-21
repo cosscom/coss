@@ -1095,9 +1095,485 @@ export const mockUpcomingBookings: Booking[] = [
   },
 ];
 
-export const mockCancelledBookings: Booking[] = mockPastBookings.filter(
-  (b) => b.status === "CANCELLED",
+function getMockBooking(bookings: Booking[], index: number): Booking {
+  const booking = bookings[index];
+
+  if (!booking) {
+    throw new Error(`Missing mock booking at index ${index}`);
+  }
+
+  return booking;
+}
+
+function getMockEventType(booking: Booking): BookingEventType {
+  if (!booking.eventType) {
+    throw new Error(`Missing event type for mock booking ${booking.id}`);
+  }
+
+  return booking.eventType;
+}
+
+const baseUpcomingPlanning = getMockBooking(mockUpcomingBookings, 0);
+const baseUpcomingPending = getMockBooking(mockUpcomingBookings, 1);
+const baseUpcomingEngineering = getMockBooking(mockUpcomingBookings, 2);
+const baseCancelledDesignReview = getMockBooking(mockPastBookings, 7);
+const basePastRecurring = getMockBooking(mockPastBookings, 8);
+const basePastStressTest = getMockBooking(mockPastBookings, 12);
+
+const upcomingPaidConsultation: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 104,
+      email: "founder@example.com",
+      id: 107,
+      locale: "en",
+      name: "Maya Founder",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+  ],
+  description: "Paid strategy session that still needs payment collection.",
+  endTime: new Date("2026-02-03T17:45:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 16,
+    length: 45,
+    price: 14900,
+    slug: "paid-strategy",
+    title: "Paid Strategy Session",
+  },
+  id: 104,
+  location: "integrations:zoom",
+  payment: [],
+  startTime: new Date("2026-02-03T17:00:00"),
+  title: "Paid Strategy Session with Maya Founder",
+  uid: "upcoming-booking-5",
+};
+
+const upcomingRescheduledRecurring: Booking = {
+  ...baseUpcomingEngineering,
+  description: "Weekly check-in that was moved by the attendee.",
+  endTime: new Date("2026-02-06T10:30:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#8b5cf6",
+      lightEventTypeColor: "#8b5cf6",
+    },
+    id: 17,
+    length: 30,
+    recurringEvent: {
+      count: 8,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "customer-check-in",
+    title: "Customer Check-in",
+  },
+  fromReschedule: "previous-booking-uid",
+  id: 105,
+  metadata: {
+    recurringEventsRemaining: 6,
+    recurringPattern: "Every week for 8 occurrences",
+  },
+  recurringEventId: "recurring-upcoming-check-in",
+  rescheduled: true,
+  rescheduledBy: "Maya Founder",
+  startTime: new Date("2026-02-06T10:00:00"),
+  title: "Customer Check-in (Recurring)",
+  uid: "upcoming-booking-6",
+};
+
+const unconfirmedTeamBooking: Booking = {
+  ...baseUpcomingPending,
+  attendees: [
+    {
+      bookingId: 106,
+      email: "enterprise@example.com",
+      id: 108,
+      locale: "en",
+      name: "Enterprise Buyer",
+      noShow: null,
+      timeZone: "America/Chicago",
+    },
+  ],
+  description: "Round robin demo request awaiting manual host approval.",
+  endTime: new Date("2026-02-10T16:30:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    hosts: [
+      {
+        user: { email: "pasquale@cal.com", id: 1 },
+        userId: 1,
+      },
+      {
+        user: { email: "keith@cal.com", id: 2 },
+        userId: 2,
+      },
+    ],
+    id: 18,
+    schedulingType: "ROUND_ROBIN",
+    slug: "enterprise-demo",
+    team: {
+      id: 2,
+      name: "Sales Team",
+      slug: "sales",
+    },
+    teamId: 2,
+    title: "Enterprise Demo",
+  },
+  id: 106,
+  location: "integrations:teams",
+  startTime: new Date("2026-02-10T16:00:00"),
+  title: "Unconfirmed Enterprise Demo",
+  uid: "unconfirmed-booking-2",
+};
+
+const unconfirmedTeamEventType = getMockEventType(unconfirmedTeamBooking);
+
+const unconfirmedPaidRecurring: Booking = {
+  ...unconfirmedTeamBooking,
+  description: "Paid recurring onboarding series awaiting confirmation.",
+  endTime: new Date("2026-02-12T15:00:00"),
+  eventType: {
+    ...unconfirmedTeamEventType,
+    price: 29900,
+    recurringEvent: {
+      count: 4,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "paid-onboarding-series",
+    title: "Paid Onboarding Series",
+  },
+  id: 107,
+  metadata: {
+    recurringEventsRemaining: 4,
+    recurringPattern: "Every week for 4 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-unconfirmed-onboarding",
+  startTime: new Date("2026-02-12T14:00:00"),
+  title: "Unconfirmed Paid Onboarding Series",
+  uid: "unconfirmed-booking-3",
+};
+
+const cancelledTeamBooking: Booking = {
+  ...baseCancelledDesignReview,
+  cancellationReason: "Customer asked to move the project review.",
+  description: "Cancelled team review with a team badge and color.",
+  endTime: new Date("2025-10-15T13:00:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#3b82f6",
+      lightEventTypeColor: "#3b82f6",
+    },
+    id: 19,
+    schedulingType: "COLLECTIVE",
+    slug: "team-design-review",
+    team: {
+      id: 1,
+      name: "Cal.com",
+      slug: "cal",
+    },
+    teamId: 1,
+    title: "Team Design Review",
+  },
+  id: 14,
+  startTime: new Date("2025-10-15T12:30:00"),
+  title: "Cancelled Team Design Review",
+  uid: "cancelled-booking-2",
+};
+
+const cancelledPaidRecurring: Booking = {
+  ...baseCancelledDesignReview,
+  cancellationReason: "Payment was not completed before the deadline.",
+  description: "Cancelled recurring paid consultation with pending payment.",
+  endTime: new Date("2025-10-18T11:45:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 21,
+    length: 45,
+    price: 19900,
+    recurringEvent: {
+      count: 6,
+      freq: 2,
+      interval: 2,
+    },
+    slug: "paid-advisory",
+    title: "Paid Advisory",
+  },
+  id: 15,
+  metadata: {
+    recurringEventsRemaining: 3,
+    recurringPattern: "Every 2 weeks for 6 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-cancelled-paid",
+  startTime: new Date("2025-10-18T11:00:00"),
+  title: "Cancelled Paid Advisory Series",
+  uid: "cancelled-booking-3",
+};
+
+const recurringYogaClass: Booking = {
+  ...defaultBookingFields,
+  attendees: [
+    {
+      bookingId: 200,
+      email: "pro@example.com",
+      id: 200,
+      locale: "en",
+      name: "Pro Example",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  createdAt: new Date("2026-05-01T09:00:00"),
+  description: null,
+  endTime: new Date("2026-05-22T17:31:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#8b5cf6",
+      lightEventTypeColor: "#8b5cf6",
+    },
+    id: 200,
+    length: 30,
+    recurringEvent: {
+      count: 6,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "yoga-class",
+    title: "Yoga class",
+  },
+  id: 200,
+  location: "integrations:daily",
+  metadata: {
+    recurringEventsRemaining: 4,
+    recurringPattern: "Every week for 6 occurrences",
+  },
+  recurringEventId: "recurring-yoga-class",
+  rescheduled: false,
+  startTime: new Date("2026-05-22T17:01:00"),
+  status: "ACCEPTED",
+  title: "Yoga class",
+  uid: "recurring-booking-1",
+  updatedAt: new Date("2026-05-01T09:00:00"),
+  user: userPasquale,
+  userPrimaryEmail: "pasquale@cal.com",
+};
+
+const recurringYogaEventType = getMockEventType(recurringYogaClass);
+
+const recurringUnconfirmedTennisClass: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 201,
+      email: "pro@example.com",
+      id: 201,
+      locale: "en",
+      name: "Pro Example",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  endTime: new Date("2026-05-23T18:01:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    id: 201,
+    recurringEvent: {
+      count: 5,
+      freq: 2,
+      interval: 2,
+    },
+    slug: "tennis-class",
+    title: "Tennis class",
+  },
+  id: 201,
+  metadata: {
+    recurringEventsRemaining: 5,
+    recurringPattern: "Every 2 weeks for 5 occurrences",
+  },
+  recurringEventId: "recurring-tennis-class",
+  startTime: new Date("2026-05-23T17:01:00"),
+  status: "PENDING",
+  title: "Tennis class",
+  uid: "recurring-booking-2",
+};
+
+const recurringSeededYogaClass: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 202,
+      email: "pro@example.com",
+      id: 202,
+      locale: "en",
+      name: "Pro Example",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  description: '"seeded"',
+  endTime: new Date("2026-05-24T17:31:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    id: 202,
+    slug: "seeded-yoga-class",
+    title: "Seeded Yoga class",
+  },
+  id: 202,
+  metadata: {
+    recurringEventsRemaining: 1,
+    recurringPattern: "Every week for 3 occurrences",
+  },
+  recurringEventId: "recurring-seeded-yoga-class",
+  startTime: new Date("2026-05-24T17:01:00"),
+  title: "Seeded Yoga class",
+  uid: "recurring-booking-3",
+};
+
+const recurringPaidTeamWorkshop: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 203,
+      email: "ops@example.com",
+      id: 203,
+      locale: "en",
+      name: "Operations Lead",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+    {
+      bookingId: 203,
+      email: "product@example.com",
+      id: 204,
+      locale: "en",
+      name: "Product Lead",
+      noShow: null,
+      timeZone: "Europe/London",
+    },
+  ],
+  description: "Recurring team workshop with pending payment.",
+  endTime: new Date("2026-05-26T16:00:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 203,
+    length: 60,
+    price: 49900,
+    recurringEvent: {
+      count: 10,
+      freq: 2,
+      interval: 1,
+    },
+    schedulingType: "COLLECTIVE",
+    slug: "paid-team-workshop",
+    team: {
+      id: 1,
+      name: "Cal.com",
+      slug: "cal",
+    },
+    teamId: 1,
+    title: "Paid Team Workshop",
+  },
+  id: 203,
+  metadata: {
+    recurringEventsRemaining: 8,
+    recurringPattern: "Every week for 10 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-paid-team-workshop",
+  startTime: new Date("2026-05-26T15:00:00"),
+  title: "Paid Team Workshop",
+  uid: "recurring-booking-4",
+};
+
+const recurringRescheduledClass: Booking = {
+  ...recurringYogaClass,
+  description: "Recurring class moved by the attendee.",
+  endTime: new Date("2026-05-27T09:45:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#3b82f6",
+      lightEventTypeColor: "#3b82f6",
+    },
+    id: 204,
+    slug: "pilates-class",
+    title: "Pilates class",
+  },
+  fromReschedule: "previous-pilates-booking",
+  id: 204,
+  metadata: {
+    recurringEventsRemaining: 2,
+    recurringPattern: "Every month for 4 occurrences",
+  },
+  recurringEventId: "recurring-pilates-class",
+  rescheduled: true,
+  rescheduledBy: "Pro Example",
+  startTime: new Date("2026-05-27T09:15:00"),
+  title: "Pilates class",
+  uid: "recurring-booking-5",
+};
+
+export const mockPastBookingsForTab: Booking[] = mockPastBookings.filter(
+  (booking) => booking.status !== "CANCELLED" && booking.status !== "PENDING",
 );
+
+export const mockUpcomingBookingsForTab: Booking[] = [
+  ...mockUpcomingBookings,
+  upcomingPaidConsultation,
+  upcomingRescheduledRecurring,
+];
+
+export const mockUnconfirmedBookings: Booking[] = [
+  baseUpcomingPending,
+  unconfirmedTeamBooking,
+  unconfirmedPaidRecurring,
+];
+
+export const mockRecurringBookings: Booking[] = [
+  recurringYogaClass,
+  recurringUnconfirmedTennisClass,
+  recurringSeededYogaClass,
+  recurringPaidTeamWorkshop,
+  recurringRescheduledClass,
+  upcomingRescheduledRecurring,
+  unconfirmedPaidRecurring,
+  basePastRecurring,
+  basePastStressTest,
+];
+
+export const mockCancelledBookings: Booking[] = [
+  ...mockPastBookings.filter((booking) => booking.status === "CANCELLED"),
+  cancelledTeamBooking,
+  cancelledPaidRecurring,
+];
 
 // =============================================================================
 // HELPER FUNCTIONS
