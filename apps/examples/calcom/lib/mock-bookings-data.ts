@@ -37,6 +37,8 @@ export interface BookingAttendee {
   noShow: boolean | null;
 }
 
+export type DisableScope = "HOST_AND_ATTENDEE" | "ATTENDEE_ONLY";
+
 export interface BookingEventType {
   id: number;
   slug: string;
@@ -63,7 +65,9 @@ export interface BookingEventType {
   allowReschedulingPastBookings: boolean;
   hideOrganizerEmail: boolean;
   disableCancelling: boolean;
+  disableCancellingScope: DisableScope;
   disableRescheduling: boolean;
+  disableReschedulingScope: DisableScope;
   minimumRescheduleNotice: number;
   teamId: number | null;
   parentId: number | null;
@@ -241,8 +245,10 @@ const defaultEventType: BookingEventType = {
   currency: "usd",
   customReplyToEmail: null,
   disableCancelling: false,
+  disableCancellingScope: "HOST_AND_ATTENDEE",
   disableGuests: false,
   disableRescheduling: false,
+  disableReschedulingScope: "HOST_AND_ATTENDEE",
   eventName: null,
   eventTypeColor: null,
   hideOrganizerEmail: false,
@@ -279,6 +285,7 @@ const defaultBookingFields = {
   references: [],
   rejectionReason: null,
   report: null,
+  rescheduled: false,
   rescheduledBy: null,
   responses: null,
   routedFromRoutingFormReponse: null,
@@ -1196,6 +1203,76 @@ const upcomingTodayMeeting: Booking = {
   updatedAt: createTodayDate(9, 0),
 };
 
+function createRelativeDate(minutesFromNow: number): Date {
+  return new Date(Date.now() + minutesFromNow * 60 * 1000);
+}
+
+const upcomingMinimumNoticeBooking: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 107,
+      email: "guest@example.com",
+      id: 109,
+      locale: "en",
+      name: "Guest Attendee",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+  ],
+  description:
+    "Attendee rescheduling is disabled inside the 2-hour minimum notice window.",
+  endTime: createRelativeDate(75),
+  eventType: {
+    ...defaultEventType,
+    id: 23,
+    length: 30,
+    minimumRescheduleNotice: 120,
+    slug: "notice-demo",
+    title: "Minimum Notice Demo",
+  },
+  id: 107,
+  location: "integrations:zoom",
+  startTime: createRelativeDate(45),
+  title: "Minimum Notice Demo with Guest Attendee",
+  uid: "upcoming-booking-notice",
+  updatedAt: new Date(),
+};
+
+const upcomingAttendeeOnlyRestrictions: Booking = {
+  ...baseUpcomingEngineering,
+  attendees: [
+    {
+      bookingId: 108,
+      email: "client@example.com",
+      id: 110,
+      locale: "en",
+      name: "Client User",
+      noShow: null,
+      timeZone: "Europe/London",
+    },
+  ],
+  description:
+    "Cancellation and rescheduling are disabled for attendees only; hosts can still act.",
+  endTime: new Date("2026-03-12T11:30:00"),
+  eventType: {
+    ...defaultEventType,
+    disableCancelling: true,
+    disableCancellingScope: "ATTENDEE_ONLY",
+    disableRescheduling: true,
+    disableReschedulingScope: "ATTENDEE_ONLY",
+    id: 24,
+    slug: "host-only-actions",
+    title: "Host-only Actions Demo",
+  },
+  id: 108,
+  location: "integrations:google_meet",
+  startTime: new Date("2026-03-12T11:00:00"),
+  title: "Host-only Restrictions Demo",
+  uid: "upcoming-booking-scope",
+  updatedAt: new Date("2026-03-01T09:00:00"),
+};
+
 const upcomingRescheduledRecurring: Booking = {
   ...baseUpcomingEngineering,
   description: "Weekly check-in that was moved by the attendee.",
@@ -1632,6 +1709,8 @@ export const mockPastBookingsForTab: Booking[] = [
 
 export const mockUpcomingBookingsForTab: Booking[] = [
   upcomingTodayMeeting,
+  upcomingMinimumNoticeBooking,
+  upcomingAttendeeOnlyRestrictions,
   ...mockUpcomingBookings,
   upcomingPaidConsultation,
   upcomingRescheduledRecurring,

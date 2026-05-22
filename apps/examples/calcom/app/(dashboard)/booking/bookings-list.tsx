@@ -285,6 +285,7 @@ function BookingListItem({
     !isRejected &&
     locationLabel;
   const showRescheduleRequestSentBadge = isCancelled && booking.rescheduled;
+  const [attendees, setAttendees] = useState(booking.attendees);
 
   return (
     <ListItem>
@@ -415,7 +416,11 @@ function BookingListItem({
 
       <ListItemActions>
         <BookingActions
+          attendees={attendees}
+          booking={booking}
           isRecurring={isTabRecurring}
+          listingStatus={listingStatus}
+          onAttendeesChange={setAttendees}
           showPendingActions={isPending}
         />
       </ListItemActions>
