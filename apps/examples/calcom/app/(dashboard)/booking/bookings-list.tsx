@@ -36,7 +36,7 @@ import {
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
-import { RepeatIcon, VideoIcon } from "lucide-react";
+import { BanknoteIcon, RepeatIcon, SendIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookingActions } from "./booking-actions";
@@ -284,6 +284,7 @@ function BookingListItem({
     !isCancelled &&
     !isRejected &&
     locationLabel;
+  const showRescheduleRequestSentBadge = isCancelled && booking.rescheduled;
 
   return (
     <ListItem>
@@ -292,21 +293,30 @@ function BookingListItem({
         colorLight={eventTypeColorLight ?? undefined}
       />
       <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
-        <ListItemContent className={cn(isRejected && "line-through")}>
+        <ListItemContent>
           <ListItemHeader>
-            <ListItemTitle className={cn(isCancelled && "line-through")}>
+            <ListItemTitle className="space-x-2">
               <ListItemSpanningTrigger
+                className={cn(isCancelled && "line-through")}
                 render={<Link href="#" />}
-                className={cn(showPendingPayment && "me-2")}
               >
                 {booking.title}
               </ListItemSpanningTrigger>
+              {showRescheduleRequestSentBadge && (
+                <span className="inline-flex h-lh items-center align-bottom">
+                  <Badge className="pointer-events-none" variant="info">
+                    <SendIcon aria-hidden="true" />
+                    Reschedule request sent
+                  </Badge>
+                </span>
+              )}
               {showPendingPayment && (
-                <div className="inline-flex items-center h-lh">
+                <span className="inline-flex h-lh items-center align-bottom">
                   <Badge className="pointer-events-none" variant="warning">
+                    <BanknoteIcon aria-hidden="true" />
                     Pending payment
                   </Badge>
-                </div>
+                </span>
               )}
             </ListItemTitle>
             {participants && (

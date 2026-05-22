@@ -1331,6 +1331,7 @@ const cancelledTeamBooking: Booking = {
     title: "Team Design Review",
   },
   id: 14,
+  rescheduled: true,
   startTime: new Date("2025-10-15T12:30:00"),
   title: "Cancelled Team Design Review",
   uid: "cancelled-booking-2",
