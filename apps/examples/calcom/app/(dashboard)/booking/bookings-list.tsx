@@ -125,11 +125,11 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
 
   return (
     <TooltipProvider delay={0} timeout={0}>
-      <CardFrame className="**:[[data-slot=card]:has(+[data-slot=card-frame-header])]:rounded-b-none **:[[data-slot=card]:has(+[data-slot=card-frame-header])_[data-slot=list-item]]:rounded-b-none **:[[data-slot=card-frame-header]+[data-slot=card]]:rounded-t-none **:[[data-slot=card-frame-header]+[data-slot=card]_[data-slot=list-item]]:rounded-t-none">
+      <CardFrame className="**:[[data-slot=card-frame-header]+[data-slot=card]]:rounded-t-none **:[[data-slot=card-frame-header]+[data-slot=card]_[data-slot=list-item]]:rounded-t-none **:[[data-slot=card]:has(+[data-slot=card-frame-header])]:rounded-b-none **:[[data-slot=card]:has(+[data-slot=card-frame-header])_[data-slot=list-item]]:rounded-b-none">
         {isUpcoming && todayBookings.length > 0 && (
           <>
             <CardFrameHeader className="py-3">
-              <CardFrameTitle className="text-muted-foreground font-medium">
+              <CardFrameTitle className="font-medium text-muted-foreground">
                 Today
               </CardFrameTitle>
             </CardFrameHeader>
@@ -144,7 +144,7 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
         {isUpcoming && nextBookings.length > 0 ? (
           <>
             <CardFrameHeader className="py-3">
-              <CardFrameTitle className="text-muted-foreground font-medium">
+              <CardFrameTitle className="font-medium text-muted-foreground">
                 Next
               </CardFrameTitle>
             </CardFrameHeader>
@@ -305,7 +305,7 @@ function BookingListItem({
               </ListItemSpanningTrigger>
               {showRescheduleRequestSentBadge && (
                 <span className="inline-flex h-lh items-center align-bottom">
-                  <Badge className="pointer-events-none" variant="info">
+                  <Badge className="pointer-events-none" variant="secondary">
                     <SendIcon aria-hidden="true" />
                     Reschedule request sent
                   </Badge>
@@ -401,7 +401,7 @@ function BookingListItem({
           </div>
           {showJoinLink && (
             <Button
-              className="pointer-events-auto max-w-full min-w-0 whitespace-normal"
+              className="pointer-events-auto min-w-0 max-w-full whitespace-normal"
               render={<Link href="#join" />}
               size="xs"
               title={locationLabel}
@@ -448,7 +448,7 @@ function MeetingTimeInTimezonesPopover({
         openOnHover
         render={
           <button
-            className="relative text-left text-muted-foreground text-sm hover:text-foreground hover:underline decoration-current/32 decoration-dotted underline-offset-2 cursor-pointer"
+            className="relative cursor-pointer text-left text-muted-foreground text-sm decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground hover:underline"
             onClick={(event) => event.stopPropagation()}
             type="button"
           />
@@ -558,7 +558,7 @@ function RecurringDatesPopover({ count }: { count: number }) {
         openOnHover
         render={
           <button
-            className="relative flex items-center gap-1 text-muted-foreground text-xs hover:underline decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground cursor-pointer px-0.5"
+            className="relative flex cursor-pointer items-center gap-1 px-0.5 text-muted-foreground text-xs decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground hover:underline"
             onClick={(event) => event.stopPropagation()}
             type="button"
           />
