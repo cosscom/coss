@@ -36,7 +36,7 @@ import {
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
-import { GlobeIcon, RepeatIcon, VideoIcon } from "lucide-react";
+import { RepeatIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookingActions } from "./booking-actions";
@@ -381,12 +381,12 @@ function BookingListItem({
         </ListItemContent>
 
         <div className="flex flex-col items-start gap-2 md:-order-1 md:w-40 md:shrink-0">
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full min-w-0 flex-col items-start gap-1">
             <p className="font-medium text-sm">{dateStr}</p>
-            <p className="inline-flex items-center justify-between gap-1 text-muted-foreground text-sm">
-              {timeStr}
-              <MeetingTimeInTimezonesPopover booking={booking} />
-            </p>
+            <MeetingTimeInTimezonesPopover
+              booking={booking}
+              timeStr={timeStr}
+            />
           </div>
           {showJoinLink && (
             <Button
@@ -413,28 +413,33 @@ function BookingListItem({
   );
 }
 
-function MeetingTimeInTimezonesPopover({ booking }: { booking: Booking }) {
+function MeetingTimeInTimezonesPopover({
+  booking,
+  timeStr,
+}: {
+  booking: Booking;
+  timeStr: string;
+}) {
   const userTimeZone = booking.user?.timeZone ?? "Europe/Rome";
   const timezoneEntries = getMeetingTimezoneEntries(booking, userTimeZone);
 
   if (timezoneEntries.length <= 1) {
-    return null;
+    return <p className="text-muted-foreground text-sm">{timeStr}</p>;
   }
 
   return (
     <Popover>
       <PopoverTrigger
+        openOnHover
         render={
-          <Button
-            aria-label="Show times in other time zones"
-            className="-my-0.5 in-[[data-slot=list-item]:has([data-spanning-trigger]:hover)]:opacity-100 opacity-0 hover:opacity-100 focus-visible:opacity-100 text-muted-foreground"
+          <button
+            className="relative text-left text-muted-foreground text-sm hover:text-foreground hover:underline decoration-current/32 decoration-dotted underline-offset-2 cursor-pointer"
             onClick={(event) => event.stopPropagation()}
-            size="icon-xs"
-            variant="ghost"
+            type="button"
           />
         }
       >
-        <GlobeIcon aria-hidden="true" />
+        {timeStr}
       </PopoverTrigger>
       <PopoverPopup side="top" tooltipStyle>
         <div className="tabular-nums">
@@ -535,6 +540,7 @@ function RecurringDatesPopover({ count }: { count: number }) {
   return (
     <Popover>
       <PopoverTrigger
+        openOnHover
         render={
           <button
             className="relative flex items-center gap-1 text-muted-foreground text-xs hover:underline decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground cursor-pointer px-0.5"
