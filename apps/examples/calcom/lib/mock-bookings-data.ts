@@ -1632,12 +1632,25 @@ export function isBookingToday(
   );
 }
 
-export function formatBookingDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+export function formatBookingDate(startTime: Date, endTime?: Date): string {
+  const isUpcoming = (endTime ?? startTime) >= new Date();
+  const bookingYear = startTime.getFullYear();
+  const currentYear = new Date().getFullYear();
+  const isDifferentYear = bookingYear !== currentYear;
+  const weekday = startTime.toLocaleDateString("en-US", { weekday: "short" });
+  const day = startTime.getDate();
+  const monthShort = startTime.toLocaleDateString("en-US", { month: "short" });
+  const monthLong = startTime.toLocaleDateString("en-US", { month: "long" });
+
+  if (isUpcoming) {
+    if (isDifferentYear) {
+      return `${weekday}, ${day} ${monthShort} ${bookingYear}`;
+    }
+
+    return `${weekday}, ${day} ${monthShort}`;
+  }
+
+  return `${day} ${monthLong} ${bookingYear}`;
 }
 
 export function formatBookingTime(startTime: Date, endTime: Date): string {

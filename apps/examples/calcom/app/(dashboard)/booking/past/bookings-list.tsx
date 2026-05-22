@@ -84,7 +84,10 @@ export function BookingsList() {
         <Card>
           <CardPanel className="p-0">
             {paginatedBookings.map((booking, _index) => {
-              const dateStr = formatBookingDate(booking.startTime);
+              const dateStr = formatBookingDate(
+                booking.startTime,
+                booking.endTime,
+              );
               const timeStr = formatBookingTime(
                 booking.startTime,
                 booking.endTime,

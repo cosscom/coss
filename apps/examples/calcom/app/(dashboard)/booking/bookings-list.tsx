@@ -243,7 +243,7 @@ function BookingListItem({
   booking: Booking;
   listingStatus: BookingListingStatus;
 }) {
-  const dateStr = formatBookingDate(booking.startTime);
+  const dateStr = formatBookingDate(booking.startTime, booking.endTime);
   const timeStr = formatBookingTime(booking.startTime, booking.endTime);
   const participants = getBookingParticipants(booking);
   const locationLabel = getLocationLabel(booking.location);
