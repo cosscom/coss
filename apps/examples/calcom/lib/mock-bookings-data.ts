@@ -1155,6 +1155,47 @@ const upcomingPaidConsultation: Booking = {
   uid: "upcoming-booking-5",
 };
 
+function createTodayDate(hours: number, minutes: number): Date {
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+const upcomingTodayMeeting: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 106,
+      email: "carina@cal.com",
+      id: 108,
+      locale: "en",
+      name: "Carina Wollheim",
+      noShow: null,
+      timeZone: "Europe/Berlin",
+    },
+  ],
+  createdAt: createTodayDate(9, 0),
+  description: "Daily standup with the product team.",
+  endTime: createTodayDate(11, 0),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    id: 18,
+    length: 60,
+    slug: "team-sync",
+    title: "Team Sync",
+  },
+  id: 106,
+  location: "integrations:google_meet",
+  startTime: createTodayDate(10, 0),
+  title: "Team Sync with Carina Wollheim",
+  uid: "upcoming-booking-today",
+  updatedAt: createTodayDate(9, 0),
+};
+
 const upcomingRescheduledRecurring: Booking = {
   ...baseUpcomingEngineering,
   description: "Weekly check-in that was moved by the attendee.",
@@ -1546,6 +1587,7 @@ export const mockPastBookingsForTab: Booking[] = mockPastBookings.filter(
 );
 
 export const mockUpcomingBookingsForTab: Booking[] = [
+  upcomingTodayMeeting,
   ...mockUpcomingBookings,
   upcomingPaidConsultation,
   upcomingRescheduledRecurring,
@@ -1578,6 +1620,17 @@ export const mockCancelledBookings: Booking[] = [
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
+
+export function isBookingToday(
+  date: Date,
+  referenceDate: Date = new Date(),
+): boolean {
+  return (
+    date.getFullYear() === referenceDate.getFullYear() &&
+    date.getMonth() === referenceDate.getMonth() &&
+    date.getDate() === referenceDate.getDate()
+  );
+}
 
 export function formatBookingDate(date: Date): string {
   return date.toLocaleDateString("en-US", {

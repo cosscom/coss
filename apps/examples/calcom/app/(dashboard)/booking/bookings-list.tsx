@@ -6,6 +6,8 @@ import {
   Card,
   CardFrame,
   CardFrameFooter,
+  CardFrameHeader,
+  CardFrameTitle,
   CardPanel,
 } from "@coss/ui/components/card";
 import {
@@ -45,7 +47,7 @@ import {
   VideoIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BookingActions } from "./booking-actions";
 import { BookingsListSkeleton } from "./booking-skeleton";
 import { ItemLabel } from "@/components/item-label";
@@ -66,6 +68,7 @@ import {
   formatBookingTime,
   getBookingParticipants,
   getLocationLabel,
+  isBookingToday,
 } from "@/lib/mock-bookings-data";
 
 const ARTIFICIAL_DELAY_MS = 800;
@@ -86,12 +89,33 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
   const showLoading = useLoadingState(ARTIFICIAL_DELAY_MS);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const isUpcoming = listingStatus === "upcoming";
 
-  const totalCount = bookings.length;
+  const { todayBookings, nextBookings } = useMemo(() => {
+    if (!isUpcoming) {
+      return { todayBookings: [], nextBookings: bookings };
+    }
+
+    const today: Booking[] = [];
+    const next: Booking[] = [];
+
+    for (const booking of bookings) {
+      if (isBookingToday(booking.startTime)) {
+        today.push(booking);
+      } else {
+        next.push(booking);
+      }
+    }
+
+    return { todayBookings: today, nextBookings: next };
+  }, [bookings, isUpcoming]);
+
+  const paginatedSource = isUpcoming ? nextBookings : bookings;
+  const totalCount = paginatedSource.length;
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = pageIndex * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalCount);
-  const paginatedBookings = bookings.slice(startIndex, endIndex);
+  const paginatedBookings = paginatedSource.slice(startIndex, endIndex);
 
   const hasPreviousPage = pageIndex > 0;
   const hasNextPage = pageIndex < totalPages - 1;
@@ -100,84 +124,118 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
     return <BookingsListSkeleton />;
   }
 
+  const renderBooking = (booking: Booking) => (
+    <BookingListItem
+      booking={booking}
+      key={booking.id}
+      listingStatus={listingStatus}
+    />
+  );
+
   return (
     <TooltipProvider delay={0} timeout={0}>
-      <CardFrame>
-        <Card>
-          <CardPanel className="p-0">
-            {paginatedBookings.map((booking) => (
-              <BookingListItem
-                booking={booking}
-                key={booking.id}
-                listingStatus={listingStatus}
-              />
-            ))}
-          </CardPanel>
-        </Card>
+      <CardFrame className="**:[[data-slot=card]:has(+[data-slot=card-frame-header])]:rounded-b-none **:[[data-slot=card]:has(+[data-slot=card-frame-header])_[data-slot=list-item]]:rounded-b-none **:[[data-slot=card-frame-header]+[data-slot=card]]:rounded-t-none **:[[data-slot=card-frame-header]+[data-slot=card]_[data-slot=list-item]]:rounded-t-none">
+        {isUpcoming && todayBookings.length > 0 && (
+          <>
+            <CardFrameHeader className="py-3">
+              <CardFrameTitle>Today</CardFrameTitle>
+            </CardFrameHeader>
+            <Card>
+              <CardPanel className="p-0">
+                {todayBookings.map(renderBooking)}
+              </CardPanel>
+            </Card>
+          </>
+        )}
 
-        <CardFrameFooter>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Select
-                onValueChange={(value) => {
-                  if (value !== null) {
-                    setPageSize(value);
-                    setPageIndex(0);
-                  }
-                }}
-                value={pageSize}
-              >
-                <SelectTrigger
-                  aria-label="Rows per page"
-                  className="w-fit min-w-none"
-                  size="sm"
+        {isUpcoming && nextBookings.length > 0 ? (
+          <>
+            <CardFrameHeader className="py-3">
+              <CardFrameTitle>Next</CardFrameTitle>
+            </CardFrameHeader>
+            <Card>
+              <CardPanel className="p-0">
+                {paginatedBookings.map(renderBooking)}
+              </CardPanel>
+            </Card>
+          </>
+        ) : (
+          !isUpcoming && (
+            <Card>
+              <CardPanel className="p-0">
+                {paginatedBookings.map(renderBooking)}
+              </CardPanel>
+            </Card>
+          )
+        )}
+
+        {(totalCount > 0 || !isUpcoming) && (
+          <CardFrameFooter>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Select
+                  onValueChange={(value) => {
+                    if (value !== null) {
+                      setPageSize(value);
+                      setPageIndex(0);
+                    }
+                  }}
+                  value={pageSize}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectPopup>
-                  <SelectItem value={10}>10</SelectItem>
-                  <SelectItem value={20}>20</SelectItem>
-                  <SelectItem value={50}>50</SelectItem>
-                </SelectPopup>
-              </Select>
-              <p className="text-muted-foreground text-sm">rows per page</p>
-            </div>
+                  <SelectTrigger
+                    aria-label="Rows per page"
+                    className="w-fit min-w-none"
+                    size="sm"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectPopup>
+                    <SelectItem value={10}>10</SelectItem>
+                    <SelectItem value={20}>20</SelectItem>
+                    <SelectItem value={50}>50</SelectItem>
+                  </SelectPopup>
+                </Select>
+                <p className="text-muted-foreground text-sm">rows per page</p>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <p className="whitespace-nowrap text-muted-foreground text-sm">
-                {startIndex + 1}-{endIndex} of {totalCount}
-              </p>
-              <Pagination>
-                <PaginationContent className="gap-2">
-                  <PaginationItem>
-                    <PaginationPrevious
-                      render={
-                        <Button
-                          disabled={!hasPreviousPage}
-                          onClick={() => setPageIndex(pageIndex - 1)}
-                          size="sm"
-                          variant="outline"
-                        />
-                      }
-                    />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext
-                      render={
-                        <Button
-                          disabled={!hasNextPage}
-                          onClick={() => setPageIndex(pageIndex + 1)}
-                          size="sm"
-                          variant="outline"
-                        />
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <div className="flex items-center gap-2">
+                <p className="whitespace-nowrap text-muted-foreground text-sm">
+                  {totalCount === 0
+                    ? "0 of 0"
+                    : `${startIndex + 1}-${endIndex} of ${totalCount}`}
+                </p>
+                <Pagination>
+                  <PaginationContent className="gap-2">
+                    <PaginationItem>
+                      <PaginationPrevious
+                        render={
+                          <Button
+                            disabled={!hasPreviousPage}
+                            onClick={() => setPageIndex(pageIndex - 1)}
+                            size="sm"
+                            variant="outline"
+                          />
+                        }
+                      />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext
+                        render={
+                          <Button
+                            disabled={!hasNextPage}
+                            onClick={() => setPageIndex(pageIndex + 1)}
+                            size="sm"
+                            variant="outline"
+                          />
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
             </div>
-          </div>
-        </CardFrameFooter>
+          </CardFrameFooter>
+        )}
       </CardFrame>
     </TooltipProvider>
   );
