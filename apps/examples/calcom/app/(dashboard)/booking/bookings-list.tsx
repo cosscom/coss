@@ -101,7 +101,7 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
   }
 
   return (
-    <TooltipProvider delay={150} timeout={0}>
+    <TooltipProvider delay={0} timeout={0}>
       <CardFrame>
         <Card>
           <CardPanel className="p-0">

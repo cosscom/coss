@@ -2,6 +2,19 @@
 
 import { Button } from "@coss/ui/components/button";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerMenu,
+  DrawerMenuGroup,
+  DrawerMenuGroupLabel,
+  DrawerMenuItem,
+  DrawerMenuSeparator,
+  DrawerPanel,
+  DrawerPopup,
+  DrawerTrigger,
+} from "@coss/ui/components/drawer";
+import { Group, GroupSeparator } from "@coss/ui/components/group";
+import {
   Menu,
   MenuGroup,
   MenuGroupLabel,
@@ -28,7 +41,6 @@ import {
   PlayCircleIcon,
   ThumbsDownIcon,
   UserPlusIcon,
-  XIcon,
 } from "lucide-react";
 import type * as React from "react";
 
@@ -41,95 +53,97 @@ export function BookingActions({
   isRecurring,
   showPendingActions,
 }: BookingActionsProps) {
+  const hasStandaloneActions = showPendingActions;
+
   return (
     <div className="relative z-1 flex items-center gap-2">
-      {showPendingActions && (
+      {hasStandaloneActions && (
         <>
-          <TooltipIconButton
-            icon={<ThumbsDownIcon />}
-            label={isRecurring ? "Reject all" : "Reject"}
-            variant="outline"
-          />
-          <TooltipIconButton
-            icon={<CheckIcon />}
-            label={isRecurring ? "Confirm all" : "Confirm"}
-          />
+          <div className="max-md:hidden xl:hidden">
+            <Group>
+              <TooltipIconButton
+                icon={<ThumbsDownIcon />}
+                label={isRecurring ? "Reject all" : "Reject"}
+                variant="outline"
+              />
+              <GroupSeparator />
+              <TooltipIconButton
+                icon={<CheckIcon />}
+                label={isRecurring ? "Confirm all" : "Confirm"}
+              />
+            </Group>
+          </div>
+          <div className="hidden items-center gap-2 xl:flex">
+            <Button size="xs" variant="outline">
+              {isRecurring ? "Reject all" : "Reject"}
+            </Button>
+            <Button size="xs">{isRecurring ? "Confirm all" : "Confirm"}</Button>
+          </div>
         </>
       )}
-      {isRecurring && (
-        <TooltipIconButton
-          icon={<CircleXIcon />}
-          label="Cancel all remaining"
-          variant="destructive-outline"
-        />
-      )}
-      <Menu>
+      <div className="max-md:hidden">
         <Tooltip>
-          <MenuTrigger
+          <TooltipTrigger
             render={
-              <TooltipTrigger
-                render={
-                  <Button aria-label="Options" size="icon" variant="outline">
-                    <EllipsisIcon />
-                  </Button>
-                }
-              />
+              <Button
+                aria-label="Report booking"
+                size="icon"
+                variant="destructive-outline"
+              >
+                <FlagIcon />
+              </Button>
             }
           />
-          <TooltipPopup>Options</TooltipPopup>
+          <TooltipPopup>Report booking</TooltipPopup>
         </Tooltip>
-        <MenuPopup align="end">
-          <MenuGroup>
-            <MenuGroupLabel>Edit event</MenuGroupLabel>
-            <MenuItem>
-              <CalendarClockIcon />
-              Reschedule booking
-            </MenuItem>
-            <MenuItem disabled>
-              <CalendarClockIcon />
-              Request reschedule
-            </MenuItem>
-            <MenuItem>
-              <MapPinIcon />
-              Edit location
-            </MenuItem>
-            <MenuItem>
-              <UserPlusIcon />
-              Add guests
-            </MenuItem>
-          </MenuGroup>
-          <MenuSeparator />
-          <MenuGroup>
-            <MenuGroupLabel>After event</MenuGroupLabel>
-            <MenuItem disabled>
-              <PlayCircleIcon />
-              View recordings
-            </MenuItem>
-            <MenuItem>
-              <InfoIcon />
-              View Session Details
-            </MenuItem>
-            <MenuItem>
-              <EyeOffIcon />
-              Mark as no-show
-            </MenuItem>
-          </MenuGroup>
-          <MenuSeparator />
-          <MenuGroup>
-            <MenuItem variant="destructive">
-              <FlagIcon />
-              Report booking
-            </MenuItem>
-          </MenuGroup>
-          <MenuSeparator />
-          <MenuGroup>
-            <MenuItem disabled={!isRecurring} variant="destructive">
-              <CircleXIcon />
-              {isRecurring ? "Cancel all remaining" : "Cancel event"}
-            </MenuItem>
-          </MenuGroup>
-        </MenuPopup>
-      </Menu>
+      </div>
+
+      <div className="max-md:hidden">
+        <Menu>
+          <Tooltip>
+            <MenuTrigger
+              render={
+                <TooltipTrigger
+                  render={
+                    <Button aria-label="Options" size="icon" variant="outline">
+                      <EllipsisIcon />
+                    </Button>
+                  }
+                />
+              }
+            />
+            <TooltipPopup>Options</TooltipPopup>
+          </Tooltip>
+          <MenuPopup align="end">
+            <BookingOptionsMenuContent
+              isRecurring={isRecurring}
+              showPendingActions={showPendingActions}
+            />
+          </MenuPopup>
+        </Menu>
+      </div>
+
+      <div className="md:hidden">
+        <Drawer>
+          <DrawerTrigger
+            render={
+              <Button aria-label="Options" size="icon" variant="outline" />
+            }
+          >
+            <EllipsisIcon aria-hidden />
+          </DrawerTrigger>
+          <DrawerPopup showBar>
+            <DrawerPanel>
+              <DrawerMenu>
+                <BookingOptionsDrawerContent
+                  isRecurring={isRecurring}
+                  showPendingActions={showPendingActions}
+                />
+              </DrawerMenu>
+            </DrawerPanel>
+          </DrawerPopup>
+        </Drawer>
+      </div>
     </div>
   );
 }
@@ -154,6 +168,159 @@ function TooltipIconButton({
       />
       <TooltipPopup>{label}</TooltipPopup>
     </Tooltip>
+  );
+}
+
+function BookingOptionsMenuContent({
+  isRecurring,
+  showPendingActions,
+}: {
+  isRecurring?: boolean;
+  showPendingActions?: boolean;
+}) {
+  return (
+    <>
+      <MenuGroup>
+        <MenuGroupLabel>Edit event</MenuGroupLabel>
+        <MenuItem>
+          <CalendarClockIcon />
+          Reschedule booking
+        </MenuItem>
+        <MenuItem disabled>
+          <CalendarClockIcon />
+          Request reschedule
+        </MenuItem>
+        <MenuItem>
+          <MapPinIcon />
+          Edit location
+        </MenuItem>
+        <MenuItem>
+          <UserPlusIcon />
+          Add guests
+        </MenuItem>
+      </MenuGroup>
+      <MenuSeparator />
+      <MenuGroup>
+        <MenuGroupLabel>After event</MenuGroupLabel>
+        <MenuItem disabled>
+          <PlayCircleIcon />
+          View recordings
+        </MenuItem>
+        <MenuItem>
+          <InfoIcon />
+          View Session Details
+        </MenuItem>
+        <MenuItem>
+          <EyeOffIcon />
+          Mark as no-show
+        </MenuItem>
+      </MenuGroup>
+      <MenuSeparator />
+      <MenuGroup>
+        <MenuItem variant="destructive">
+          <FlagIcon />
+          Report booking
+        </MenuItem>
+      </MenuGroup>
+      <MenuSeparator />
+      <MenuGroup>
+        <MenuItem disabled={!isRecurring} variant="destructive">
+          <CircleXIcon />
+          {isRecurring ? "Cancel all remaining" : "Cancel event"}
+        </MenuItem>
+      </MenuGroup>
+    </>
+  );
+}
+
+function BookingOptionsDrawerContent({
+  isRecurring,
+  showPendingActions,
+}: {
+  isRecurring?: boolean;
+  showPendingActions?: boolean;
+}) {
+  const showReject = showPendingActions;
+  const showConfirm = showPendingActions;
+  const showCancelAllRemaining = isRecurring;
+  const showCancelEvent = !isRecurring;
+  const hasBottomGroup =
+    showReject || showConfirm || showCancelAllRemaining || showCancelEvent;
+
+  return (
+    <>
+      <DrawerMenuGroup>
+        <DrawerMenuGroupLabel>Edit event</DrawerMenuGroupLabel>
+        <DrawerClose render={<DrawerMenuItem />}>
+          <CalendarClockIcon aria-hidden />
+          Reschedule booking
+        </DrawerClose>
+        <DrawerMenuItem disabled>
+          <CalendarClockIcon aria-hidden />
+          Request reschedule
+        </DrawerMenuItem>
+        <DrawerClose render={<DrawerMenuItem />}>
+          <MapPinIcon aria-hidden />
+          Edit location
+        </DrawerClose>
+        <DrawerClose render={<DrawerMenuItem />}>
+          <UserPlusIcon aria-hidden />
+          Add guests
+        </DrawerClose>
+      </DrawerMenuGroup>
+      <DrawerMenuSeparator />
+      <DrawerMenuGroup>
+        <DrawerMenuGroupLabel>After event</DrawerMenuGroupLabel>
+        <DrawerMenuItem disabled>
+          <PlayCircleIcon aria-hidden />
+          View recordings
+        </DrawerMenuItem>
+        <DrawerClose render={<DrawerMenuItem />}>
+          <InfoIcon aria-hidden />
+          View Session Details
+        </DrawerClose>
+        <DrawerClose render={<DrawerMenuItem />}>
+          <EyeOffIcon aria-hidden />
+          Mark as no-show
+        </DrawerClose>
+      </DrawerMenuGroup>
+      <DrawerMenuSeparator />
+      <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+        <FlagIcon aria-hidden />
+        Report booking
+      </DrawerClose>
+      {hasBottomGroup && (
+        <>
+          <DrawerMenuSeparator />
+          <DrawerMenuGroup>
+            {showReject && (
+              <DrawerClose render={<DrawerMenuItem />}>
+                <ThumbsDownIcon aria-hidden />
+                {isRecurring ? "Reject all" : "Reject"}
+              </DrawerClose>
+            )}
+            {showConfirm && (
+              <DrawerClose render={<DrawerMenuItem />}>
+                <CheckIcon aria-hidden />
+                {isRecurring ? "Confirm all" : "Confirm"}
+              </DrawerClose>
+            )}
+            {showCancelAllRemaining && (
+              <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+                <CircleXIcon aria-hidden />
+                Cancel all remaining
+              </DrawerClose>
+            )}
+            {showCancelEvent && (
+              <DrawerClose render={<DrawerMenuItem variant="destructive" />}>
+                <CircleXIcon aria-hidden />
+                Cancel event
+              </DrawerClose>
+            )}
+          </DrawerMenuGroup>
+        </>
+      )}
+    </>
   );
 }
 
