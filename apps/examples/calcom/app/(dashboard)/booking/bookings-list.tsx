@@ -336,7 +336,7 @@ function BookingListItem({
 
         <div className="flex flex-col items-start gap-2 md:-order-1 md:w-36 md:shrink-0">
           <div className="flex flex-col gap-1">
-            <p className="text-sm">{dateStr}</p>
+            <p className="font-medium text-sm">{dateStr}</p>
             <p className="text-muted-foreground text-sm">{timeStr}</p>
           </div>
           {isTabRecurring && typeof recurringEventsRemaining === "number" && (
@@ -344,13 +344,14 @@ function BookingListItem({
           )}
           {showJoinLink && (
             <Button
-              className="pointer-events-auto"
+              className="pointer-events-auto max-w-full min-w-0 whitespace-normal"
               render={<Link href="#join" />}
               size="xs"
+              title={locationLabel}
               variant="outline"
             >
               <VideoIcon />
-              {locationLabel}
+              <span className="truncate">{locationLabel}</span>
             </Button>
           )}
         </div>
