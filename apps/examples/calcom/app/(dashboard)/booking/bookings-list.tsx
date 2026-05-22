@@ -36,15 +36,7 @@ import {
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
-import {
-  BanknoteIcon,
-  CircleDashedIcon,
-  EyeOffIcon,
-  RefreshCcwIcon,
-  RepeatIcon,
-  UsersIcon,
-  VideoIcon,
-} from "lucide-react";
+import { RepeatIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookingActions } from "./booking-actions";
@@ -263,23 +255,29 @@ function BookingListItem({
   const isPending = booking.status === "PENDING";
   const isRejected = booking.status === "REJECTED";
   const isTabRecurring = listingStatus === "recurring";
-  const isRescheduled = booking.fromReschedule !== null || booking.rescheduled;
-  const isRecurring = isTabRecurring || booking.recurringEventId !== null;
+  const isRescheduled = booking.fromReschedule !== null;
   const recurringEventsRemaining = getBookingMetadataNumber(
     booking,
     "recurringEventsRemaining",
   );
-  const recurringPattern = getBookingMetadataString(
-    booking,
-    "recurringPattern",
-  );
-  const hasNoShowAttendee = booking.attendees.some(
-    (attendee) => attendee.noShow,
-  );
+  const assignmentReason = booking.assignmentReason.at(-1);
+  const showRejected =
+    isRejected && !isRescheduled && booking.assignmentReason.length === 0;
+  const showRecurringDates =
+    (listingStatus === "recurring" ||
+      listingStatus === "unconfirmed" ||
+      listingStatus === "cancelled") &&
+    booking.recurringEventId !== null &&
+    typeof recurringEventsRemaining === "number";
   const teamName = booking.eventType?.team?.name;
   const showPendingPayment =
     (booking.eventType?.price ?? 0) > 0 &&
     !booking.payment.some((payment) => payment.success);
+  const showPaidBadge =
+    booking.paid && booking.payment.some((payment) => payment.success);
+  const showPaymentError = booking.paid && booking.payment.length === 0;
+  const paidLabel =
+    booking.payment[0]?.paymentOption === "HOLD" ? "Card held" : "Paid";
   const showJoinLink =
     listingStatus === "upcoming" &&
     !isPending &&
@@ -294,20 +292,21 @@ function BookingListItem({
         colorLight={eventTypeColorLight ?? undefined}
       />
       <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:gap-4">
-        <ListItemContent>
+        <ListItemContent className={cn(isRejected && "line-through")}>
           <ListItemHeader>
             <ListItemTitle className={cn(isCancelled && "line-through")}>
-              <ListItemSpanningTrigger render={<Link href="#" />}>
+              <ListItemSpanningTrigger
+                render={<Link href="#" />}
+                className={cn(showPendingPayment && "me-2")}
+              >
                 {booking.title}
               </ListItemSpanningTrigger>
               {showPendingPayment && (
-                <Badge
-                  className="pointer-events-none ml-2 hidden align-middle sm:inline-flex"
-                  variant="warning"
-                >
-                  <BanknoteIcon />
-                  Pending payment
-                </Badge>
+                <div className="inline-flex items-center h-lh">
+                  <Badge className="pointer-events-none" variant="warning">
+                    Pending payment
+                  </Badge>
+                </div>
               )}
             </ListItemTitle>
             {participants && (
@@ -323,68 +322,60 @@ function BookingListItem({
           <ListItemBadges>
             {isPending && (
               <Badge className="pointer-events-none" variant="warning">
-                <CircleDashedIcon />
                 Unconfirmed
               </Badge>
             )}
-            {teamName && (
-              <Badge className="pointer-events-none" variant="outline">
-                <UsersIcon />
-                {teamName}
-              </Badge>
-            )}
-            {showPendingPayment && (
-              <Badge className="pointer-events-none" variant="warning">
-                <BanknoteIcon />
-                Pending payment
-              </Badge>
-            )}
-            {isRescheduled && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Badge variant="warning">
-                      <RefreshCcwIcon />
-                      Rescheduled
-                    </Badge>
-                  }
-                />
-                <TooltipPopup>
-                  {booking.rescheduledBy
-                    ? `Rescheduled by ${booking.rescheduledBy}`
-                    : "This booking was rescheduled"}
-                </TooltipPopup>
-              </Tooltip>
-            )}
-            {isRecurring && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Badge variant="outline">
-                      <RepeatIcon />
-                      Recurring
-                    </Badge>
-                  }
-                />
-                <TooltipPopup>{getRecurringSummary(booking)}</TooltipPopup>
-              </Tooltip>
-            )}
-            {isTabRecurring && recurringPattern && (
-              <Badge className="pointer-events-none" variant="outline">
-                <RepeatIcon />
-                {recurringPattern}
-              </Badge>
-            )}
-            {isRejected && !isRescheduled && (
+            {isRescheduled && <RescheduledBadge booking={booking} />}
+            {showRejected && (
               <Badge className="pointer-events-none" variant="secondary">
                 Rejected
               </Badge>
             )}
-            {hasNoShowAttendee && (
-              <Badge className="pointer-events-none" variant="secondary">
-                <EyeOffIcon />
-                No-show
+            {teamName && (
+              <Badge className="pointer-events-none" variant="outline">
+                {teamName}
               </Badge>
+            )}
+            {assignmentReason && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Badge className="pointer-events-none" variant="outline">
+                      {getAssignmentReasonLabel(assignmentReason.reasonString)}
+                    </Badge>
+                  }
+                />
+                <TooltipPopup>{assignmentReason.reasonString}</TooltipPopup>
+              </Tooltip>
+            )}
+            {booking.report && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Badge className="pointer-events-none" variant="error">
+                      Reported
+                    </Badge>
+                  }
+                />
+                <TooltipPopup>
+                  {booking.report.description
+                    ? `${booking.report.reason}: ${booking.report.description}`
+                    : booking.report.reason}
+                </TooltipPopup>
+              </Tooltip>
+            )}
+            {showPaymentError && (
+              <Badge className="pointer-events-none" variant="warning">
+                Error collecting card
+              </Badge>
+            )}
+            {showPaidBadge && (
+              <Badge className="pointer-events-none" variant="success">
+                {paidLabel}
+              </Badge>
+            )}
+            {showRecurringDates && (
+              <RecurringDatesPopover count={recurringEventsRemaining} />
             )}
           </ListItemBadges>
         </ListItemContent>
@@ -394,9 +385,6 @@ function BookingListItem({
             <p className="font-medium text-sm">{dateStr}</p>
             <p className="text-muted-foreground text-sm">{timeStr}</p>
           </div>
-          {isTabRecurring && typeof recurringEventsRemaining === "number" && (
-            <RecurringDatesPopover count={recurringEventsRemaining} />
-          )}
           {showJoinLink && (
             <Button
               className="pointer-events-auto max-w-full min-w-0 whitespace-normal"
@@ -422,13 +410,32 @@ function BookingListItem({
   );
 }
 
+function RescheduledBadge({ booking }: { booking: Booking }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Badge className="pointer-events-none" variant="warning">
+            Rescheduled
+          </Badge>
+        }
+      />
+      <TooltipPopup>
+        {booking.rescheduledBy
+          ? `Rescheduled by ${booking.rescheduledBy}`
+          : "This booking was rescheduled"}
+      </TooltipPopup>
+    </Tooltip>
+  );
+}
+
 function RecurringDatesPopover({ count }: { count: number }) {
   return (
     <Popover>
       <PopoverTrigger
         render={
           <button
-            className="relative flex items-center gap-1 text-muted-foreground text-xs hover:underline decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground cursor-pointer"
+            className="relative flex items-center gap-1 text-muted-foreground text-xs hover:underline decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground cursor-pointer px-0.5"
             onClick={(event) => event.stopPropagation()}
             type="button"
           />
@@ -462,23 +469,15 @@ const recurringDatesPreview = [
   { completed: false, label: "5:01pm - 12 June 2026" },
 ];
 
-function getRecurringSummary(booking: Booking): string {
-  const count = booking.eventType?.recurringEvent?.count;
-  const interval = booking.eventType?.recurringEvent?.interval;
-
-  if (count && interval) {
-    return `Repeats every ${interval === 1 ? "week" : `${interval} weeks`} for ${count} occurrences`;
+function getAssignmentReasonLabel(reasonString: string): string {
+  if (/round robin/i.test(reasonString)) {
+    return "Round robin";
   }
 
-  return "Part of a recurring booking series";
+  return "Assigned";
 }
 
 function getBookingMetadataNumber(booking: Booking, key: string) {
   const value = booking.metadata?.[key];
   return typeof value === "number" ? value : null;
-}
-
-function getBookingMetadataString(booking: Booking, key: string) {
-  const value = booking.metadata?.[key];
-  return typeof value === "string" ? value : "";
 }
