@@ -45,8 +45,8 @@ import {
   InfoIcon,
   MapPinIcon,
   PlayCircleIcon,
-  ThumbsDownIcon,
   UserPlusIcon,
+  XIcon,
 } from "lucide-react";
 import type * as React from "react";
 import { useMemo } from "react";
@@ -134,7 +134,7 @@ export function BookingActions({
           <div className="max-md:hidden xl:hidden">
             <Group>
               <TooltipIconButton
-                icon={<ThumbsDownIcon />}
+                icon={<XIcon />}
                 label={isRecurring ? "Reject all" : "Reject"}
                 variant="outline"
               />
@@ -552,7 +552,7 @@ function BookingOptionsDrawerContent({
           <DrawerMenuGroup>
             {showReject && (
               <DrawerClose render={<DrawerMenuItem />}>
-                <ThumbsDownIcon aria-hidden />
+                <XIcon aria-hidden />
                 {isRecurring ? "Reject all" : "Reject"}
               </DrawerClose>
             )}
