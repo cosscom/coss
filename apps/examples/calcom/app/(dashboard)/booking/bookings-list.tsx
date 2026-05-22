@@ -138,7 +138,9 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
         {isUpcoming && todayBookings.length > 0 && (
           <>
             <CardFrameHeader className="py-3">
-              <CardFrameTitle>Today</CardFrameTitle>
+              <CardFrameTitle className="text-muted-foreground font-medium">
+                Today
+              </CardFrameTitle>
             </CardFrameHeader>
             <Card>
               <CardPanel className="p-0">
@@ -151,7 +153,9 @@ export function BookingsList({ bookings, listingStatus }: BookingsListProps) {
         {isUpcoming && nextBookings.length > 0 ? (
           <>
             <CardFrameHeader className="py-3">
-              <CardFrameTitle>Next</CardFrameTitle>
+              <CardFrameTitle className="text-muted-foreground font-medium">
+                Next
+              </CardFrameTitle>
             </CardFrameHeader>
             <Card>
               <CardPanel className="p-0">
