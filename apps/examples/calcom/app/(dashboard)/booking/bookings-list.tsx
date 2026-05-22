@@ -39,7 +39,6 @@ import { cn } from "@coss/ui/lib/utils";
 import {
   BanknoteIcon,
   CircleDashedIcon,
-  CircleXIcon,
   EyeOffIcon,
   RefreshCcwIcon,
   RepeatIcon,
@@ -374,12 +373,6 @@ function BookingListItem({
               <Badge className="pointer-events-none" variant="outline">
                 <RepeatIcon />
                 {recurringPattern}
-              </Badge>
-            )}
-            {isCancelled && (
-              <Badge className="pointer-events-none" variant="error">
-                <CircleXIcon />
-                Cancelled
               </Badge>
             )}
             {isRejected && !isRescheduled && (
