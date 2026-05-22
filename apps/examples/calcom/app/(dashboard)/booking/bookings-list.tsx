@@ -36,7 +36,7 @@ import {
   TooltipTrigger,
 } from "@coss/ui/components/tooltip";
 import { cn } from "@coss/ui/lib/utils";
-import { RepeatIcon, VideoIcon } from "lucide-react";
+import { GlobeIcon, RepeatIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BookingActions } from "./booking-actions";
@@ -380,10 +380,13 @@ function BookingListItem({
           </ListItemBadges>
         </ListItemContent>
 
-        <div className="flex flex-col items-start gap-2 md:-order-1 md:w-36 md:shrink-0">
+        <div className="flex flex-col items-start gap-2 md:-order-1 md:w-40 md:shrink-0">
           <div className="flex flex-col gap-1">
             <p className="font-medium text-sm">{dateStr}</p>
-            <p className="text-muted-foreground text-sm">{timeStr}</p>
+            <p className="inline-flex items-center justify-between gap-1 text-muted-foreground text-sm">
+              {timeStr}
+              <MeetingTimeInTimezonesPopover booking={booking} />
+            </p>
           </div>
           {showJoinLink && (
             <Button
@@ -408,6 +411,105 @@ function BookingListItem({
       </ListItemActions>
     </ListItem>
   );
+}
+
+function MeetingTimeInTimezonesPopover({ booking }: { booking: Booking }) {
+  const userTimeZone = booking.user?.timeZone ?? "Europe/Rome";
+  const timezoneEntries = getMeetingTimezoneEntries(booking, userTimeZone);
+
+  if (timezoneEntries.length <= 1) {
+    return null;
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label="Show times in other time zones"
+            className="-my-0.5 in-[[data-slot=list-item]:has([data-spanning-trigger]:hover)]:opacity-100 opacity-0 hover:opacity-100 focus-visible:opacity-100 text-muted-foreground"
+            onClick={(event) => event.stopPropagation()}
+            size="icon-xs"
+            variant="ghost"
+          />
+        }
+      >
+        <GlobeIcon aria-hidden="true" />
+      </PopoverTrigger>
+      <PopoverPopup side="top" tooltipStyle>
+        <div className="tabular-nums">
+          {timezoneEntries.map((entry) => (
+            <div className="not-first:mt-2" key={entry.timeZone}>
+              <div className="inline-flex items-baseline gap-2">
+                <span>
+                  {entry.startTime} - {entry.endTime}
+                </span>
+                {entry.dayOffset !== 0 && (
+                  <span className="inline-flex size-5 items-center justify-center rounded-full bg-muted text-[10px]">
+                    {entry.dayOffset > 0 ? "+1" : "-1"}
+                  </span>
+                )}
+              </div>
+              <div className="text-muted-foreground">{entry.timeZone}</div>
+            </div>
+          ))}
+        </div>
+      </PopoverPopup>
+    </Popover>
+  );
+}
+
+function getMeetingTimezoneEntries(booking: Booking, userTimeZone: string) {
+  if (booking.attendees.length === 0) {
+    return [];
+  }
+
+  const uniqueTimezones = [
+    userTimeZone,
+    ...booking.attendees.map((attendee) => attendee.timeZone),
+  ].filter(
+    (timeZone, index, timeZones) => timeZones.indexOf(timeZone) === index,
+  );
+
+  if (uniqueTimezones.length <= 1) {
+    return [];
+  }
+
+  const referenceDateKey = getDateKeyInTimezone(
+    booking.startTime,
+    userTimeZone,
+  );
+
+  return uniqueTimezones.map((timeZone) => {
+    const dateKey = getDateKeyInTimezone(booking.startTime, timeZone);
+    let dayOffset = 0;
+
+    if (dateKey > referenceDateKey) {
+      dayOffset = 1;
+    } else if (dateKey < referenceDateKey) {
+      dayOffset = -1;
+    }
+
+    return {
+      dayOffset,
+      endTime: formatTimeInTimezone(booking.endTime, timeZone),
+      startTime: formatTimeInTimezone(booking.startTime, timeZone),
+      timeZone,
+    };
+  });
+}
+
+function formatTimeInTimezone(date: Date, timeZone: string): string {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    hour12: true,
+    minute: "2-digit",
+    timeZone,
+  });
+}
+
+function getDateKeyInTimezone(date: Date, timeZone: string): string {
+  return date.toLocaleDateString("en-CA", { timeZone });
 }
 
 function RescheduledBadge({ booking }: { booking: Booking }) {
