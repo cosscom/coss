@@ -389,6 +389,10 @@ function BookingOptionsMenuContent({
   showEditActions: boolean;
   showPendingActions?: boolean;
 }) {
+  const showCancelAllRemaining = isRecurring;
+  const showCancelEvent = showEditActions && !isRecurring;
+  const showCancel = showCancelAllRemaining || showCancelEvent;
+
   return (
     <>
       {showEditActions && (
@@ -440,13 +444,13 @@ function BookingOptionsMenuContent({
           Report booking
         </MenuItem>
       </MenuGroup>
-      {showEditActions && (
+      {showCancel && (
         <>
           <MenuSeparator />
           <MenuGroup>
             <MenuItem disabled={disabled.cancel} variant="destructive">
               <CircleXIcon />
-              {isRecurring ? "Cancel all remaining" : "Cancel event"}
+              {showCancelAllRemaining ? "Cancel all remaining" : "Cancel event"}
             </MenuItem>
           </MenuGroup>
         </>
