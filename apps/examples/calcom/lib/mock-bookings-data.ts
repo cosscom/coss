@@ -1583,9 +1583,52 @@ const recurringRescheduledClass: Booking = {
   uid: "recurring-booking-5",
 };
 
-export const mockPastBookingsForTab: Booking[] = mockPastBookings.filter(
-  (booking) => booking.status !== "CANCELLED" && booking.status !== "PENDING",
-);
+const pastReportedBooking: Booking = {
+  ...defaultBookingFields,
+  attendees: [
+    {
+      bookingId: 16,
+      email: "unknown@example.com",
+      id: 18,
+      locale: "en",
+      name: "Unknown Guest",
+      noShow: false,
+      timeZone: "America/New_York",
+    },
+  ],
+  createdAt: new Date("2025-10-18T08:00:00"),
+  description: "Suspicious booking submitted through a public link.",
+  endTime: new Date("2025-10-20T11:00:00"),
+  eventType: {
+    ...defaultEventType,
+    id: 22,
+    slug: "30min",
+    title: "30 Min Meeting",
+  },
+  id: 16,
+  location: "integrations:zoom",
+  report: {
+    createdAt: new Date("2025-10-20T11:05:00"),
+    description: "Unrecognized attendee used a generic booking link.",
+    id: 1,
+    reason: "Spam or unwanted booking",
+    reportedById: userPasquale.id,
+  },
+  startTime: new Date("2025-10-20T10:30:00"),
+  status: "ACCEPTED",
+  title: "30 Min Meeting with Unknown Guest",
+  uid: "past-booking-reported",
+  updatedAt: new Date("2025-10-20T11:05:00"),
+  user: userPasquale,
+  userPrimaryEmail: "pasquale@cal.com",
+};
+
+export const mockPastBookingsForTab: Booking[] = [
+  pastReportedBooking,
+  ...mockPastBookings.filter(
+    (booking) => booking.status !== "CANCELLED" && booking.status !== "PENDING",
+  ),
+];
 
 export const mockUpcomingBookingsForTab: Booking[] = [
   upcomingTodayMeeting,
