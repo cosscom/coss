@@ -480,7 +480,7 @@ function BookingOptionsDrawerContent({
 }) {
   const showReject = showPendingActions;
   const showConfirm = showPendingActions;
-  const showCancelAllRemaining = isRecurring;
+  const showCancelAllRemaining = showEditActions && isRecurring;
   const showCancelEvent = showEditActions && !isRecurring;
   const hasBottomGroup =
     showReject || showConfirm || showCancelAllRemaining || showCancelEvent;
