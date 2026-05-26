@@ -37,6 +37,8 @@ export interface BookingAttendee {
   noShow: boolean | null;
 }
 
+export type DisableScope = "HOST_AND_ATTENDEE" | "ATTENDEE_ONLY";
+
 export interface BookingEventType {
   id: number;
   slug: string;
@@ -63,7 +65,9 @@ export interface BookingEventType {
   allowReschedulingPastBookings: boolean;
   hideOrganizerEmail: boolean;
   disableCancelling: boolean;
+  disableCancellingScope: DisableScope;
   disableRescheduling: boolean;
+  disableReschedulingScope: DisableScope;
   minimumRescheduleNotice: number;
   teamId: number | null;
   parentId: number | null;
@@ -241,8 +245,10 @@ const defaultEventType: BookingEventType = {
   currency: "usd",
   customReplyToEmail: null,
   disableCancelling: false,
+  disableCancellingScope: "HOST_AND_ATTENDEE",
   disableGuests: false,
   disableRescheduling: false,
+  disableReschedulingScope: "HOST_AND_ATTENDEE",
   eventName: null,
   eventTypeColor: null,
   hideOrganizerEmail: false,
@@ -279,6 +285,7 @@ const defaultBookingFields = {
   references: [],
   rejectionReason: null,
   report: null,
+  rescheduled: false,
   rescheduledBy: null,
   responses: null,
   routedFromRoutingFormReponse: null,
@@ -309,8 +316,7 @@ export const mockPastBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2025-11-20T10:00:00"),
-    description:
-      "Weekly engineering sync to discuss ongoing projects and blockers.",
+    description: "Ship-room for the calendar sync patch and open PR queue.",
     endTime: new Date("2025-11-25T15:00:00"),
     eventType: {
       ...defaultEventType,
@@ -324,7 +330,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: true,
     startTime: new Date("2025-11-25T14:40:00"),
     status: "ACCEPTED",
-    title: "Engineering Chat between Keith Williams and Pasquale Vitiello",
+    title: "Release checklist sync",
     uid: "abc123-booking-1",
     updatedAt: new Date("2025-11-24T09:30:00"),
     user: userPasquale,
@@ -423,7 +429,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-11-06T15:00:00"),
     status: "ACCEPTED",
-    title: "Engineering Chat between Keith Williams and Pasquale Vitiello",
+    title: "Auth refactor pairing",
     uid: "abc123-booking-3",
     updatedAt: new Date("2025-11-01T09:00:00"),
     user: userPasquale,
@@ -437,7 +443,7 @@ export const mockPastBookings: Booking[] = [
         email: "susan@example.com",
         id: 8,
         locale: "en",
-        name: "Susan Moeller",
+        name: "Elena Muro",
         noShow: false,
         timeZone: "America/New_York",
       },
@@ -452,7 +458,7 @@ export const mockPastBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2025-10-28T11:00:00"),
-    description: "Quick sync about the new feature requirements.",
+    description: "Billing v2 scope — proration rules and dunning.",
     endTime: new Date("2025-11-03T15:30:00"),
     eventType: defaultEventType,
     id: 4,
@@ -460,7 +466,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-11-03T15:00:00"),
     status: "ACCEPTED",
-    title: "30 Min Meeting between Susan Moeller and Pasquale Vitiello",
+    title: "Billing v2 scope pass",
     uid: "abc123-booking-4",
     updatedAt: new Date("2025-10-28T11:00:00"),
     user: userPasquale,
@@ -480,16 +486,16 @@ export const mockPastBookings: Booking[] = [
       },
       {
         bookingId: 5,
-        email: "david@example.com",
+        email: "otto@nordvik.io",
         id: 11,
         locale: "en",
-        name: "David Borenius",
+        name: "Otto Nordvik",
         noShow: false,
         timeZone: "Europe/Stockholm",
       },
     ],
     createdAt: new Date("2025-10-01T08:00:00"),
-    description: "Follow-up discussion on partnership opportunities.",
+    description: "Channel terms and co-marketing for Nordvik.",
     endTime: new Date("2025-10-13T16:00:00"),
     eventType: defaultEventType,
     id: 5,
@@ -497,7 +503,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: true,
     startTime: new Date("2025-10-13T15:30:00"),
     status: "ACCEPTED",
-    title: "30 Min Meeting between Pasquale Vitiello and David Borenius",
+    title: "Nordvik partnership check-in",
     uid: "abc123-booking-5",
     updatedAt: new Date("2025-10-12T14:00:00"),
     user: userPasquale,
@@ -535,8 +541,7 @@ export const mockPastBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2025-10-05T10:00:00"),
-    description:
-      "Planning session for the @coss/ui component library migration.",
+    description: "Component library cutover plan and breaking changes.",
     endTime: new Date("2025-10-10T17:30:00"),
     eventType: {
       ...defaultEventType,
@@ -556,7 +561,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-10-10T17:00:00"),
     status: "ACCEPTED",
-    title: "@coss/ui migration",
+    title: "Design system migration",
     uid: "abc123-booking-6",
     updatedAt: new Date("2025-10-05T10:00:00"),
     user: userPasquale,
@@ -567,16 +572,16 @@ export const mockPastBookings: Booking[] = [
     attendees: [
       {
         bookingId: 7,
-        email: "alex@example.com",
+        email: "priya@helixstudio.co",
         id: 15,
         locale: "en",
-        name: "Alex Chen",
+        name: "Priya Narayan",
         noShow: false,
         timeZone: "America/Los_Angeles",
       },
     ],
     createdAt: new Date("2025-10-01T09:00:00"),
-    description: "Premium consultation session.",
+    description: "Paid office hours — pricing page teardown.",
     endTime: new Date("2025-10-08T14:45:00"),
     eventType: {
       ...defaultEventType,
@@ -606,7 +611,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-10-08T14:00:00"),
     status: "ACCEPTED",
-    title: "Paid Consultation with Alex Chen",
+    title: "Office hours w/ Priya Narayan",
     uid: "abc123-booking-7",
     updatedAt: new Date("2025-10-01T09:00:00"),
     user: userPasquale,
@@ -620,7 +625,7 @@ export const mockPastBookings: Booking[] = [
         email: "designer@example.com",
         id: 16,
         locale: "en",
-        name: "Jane Designer",
+        name: "Livia Marsh",
         noShow: null,
         timeZone: "America/New_York",
       },
@@ -628,7 +633,7 @@ export const mockPastBookings: Booking[] = [
     cancellationReason: "Schedule conflict - will reschedule for next week.",
     cancelledBy: "user",
     createdAt: new Date("2025-09-28T15:00:00"),
-    description: "Review of the new design mockups.",
+    description: "Mobile nav comps — round two feedback.",
     endTime: new Date("2025-10-05T10:30:00"),
     eventType: {
       ...defaultEventType,
@@ -641,7 +646,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-10-05T10:00:00"),
     status: "CANCELLED",
-    title: "Cancelled: Design Review",
+    title: "Mobile nav critique",
     uid: "abc123-booking-8",
     updatedAt: new Date("2025-10-04T08:00:00"),
     user: userPasquale,
@@ -655,13 +660,13 @@ export const mockPastBookings: Booking[] = [
         email: "team@cal.com",
         id: 17,
         locale: "en",
-        name: "Team Member",
+        name: "Marco Bellini",
         noShow: false,
         timeZone: "Europe/London",
       },
     ],
     createdAt: new Date("2025-09-01T10:00:00"),
-    description: "Weekly team sync - recurring meeting.",
+    description: "Standing ops review — incidents and on-call handoff.",
     endTime: new Date("2025-10-02T09:30:00"),
     eventType: {
       ...defaultEventType,
@@ -680,7 +685,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-10-02T09:00:00"),
     status: "ACCEPTED",
-    title: "Weekly Sync (Recurring)",
+    title: "Ops weekly (series)",
     uid: "abc123-booking-9",
     updatedAt: new Date("2025-09-01T10:00:00"),
     user: userPasquale,
@@ -703,13 +708,13 @@ export const mockPastBookings: Booking[] = [
         email: "prospect@company.com",
         id: 18,
         locale: "en",
-        name: "John Prospect",
+        name: "Sam Whitfield",
         noShow: false,
         timeZone: "America/Chicago",
       },
     ],
     createdAt: new Date("2025-09-20T11:00:00"),
-    description: "Sales call assigned via round robin.",
+    description: "Inbound from trade-show badge scan.",
     endTime: new Date("2025-09-28T16:30:00"),
     eventType: {
       ...defaultEventType,
@@ -743,7 +748,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-09-28T16:00:00"),
     status: "ACCEPTED",
-    title: "Round Robin Sales Call",
+    title: "Inbound — Whitfield & Co.",
     uid: "abc123-booking-10",
     updatedAt: new Date("2025-09-20T11:00:00"),
     user: userPasquale,
@@ -757,7 +762,7 @@ export const mockPastBookings: Booking[] = [
         email: "attendee1@example.com",
         id: 19,
         locale: "en",
-        name: "Attendee One",
+        name: "Claire Dubois",
         noShow: false,
         timeZone: "America/New_York",
       },
@@ -766,13 +771,13 @@ export const mockPastBookings: Booking[] = [
         email: "attendee2@example.com",
         id: 20,
         locale: "fr",
-        name: "Attendee Two",
+        name: "Henri Laurent",
         noShow: false,
         timeZone: "Europe/Paris",
       },
     ],
     createdAt: new Date("2025-09-10T10:00:00"),
-    description: "Public webinar introducing Cal.com features.",
+    description: "Live walkthrough for EU prospects.",
     endTime: new Date("2025-09-25T19:00:00"),
     eventType: {
       ...defaultEventType,
@@ -795,7 +800,7 @@ export const mockPastBookings: Booking[] = [
     ],
     startTime: new Date("2025-09-25T18:00:00"),
     status: "ACCEPTED",
-    title: "Webinar: Introduction to Cal.com",
+    title: "Webinar — scheduling at scale",
     uid: "abc123-booking-11",
     updatedAt: new Date("2025-09-10T10:00:00"),
     user: userPasquale,
@@ -809,13 +814,13 @@ export const mockPastBookings: Booking[] = [
         email: "noshow@example.com",
         id: 21,
         locale: "en",
-        name: "No Show Person",
+        name: "Tyler Brooks",
         noShow: true,
         timeZone: "America/Los_Angeles",
       },
     ],
     createdAt: new Date("2025-09-15T09:00:00"),
-    description: "Quick chat that was marked as no-show.",
+    description: null,
     endTime: new Date("2025-09-20T11:15:00"),
     eventType: {
       ...defaultEventType,
@@ -829,7 +834,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-09-20T11:00:00"),
     status: "ACCEPTED",
-    title: "No-show: Quick Chat",
+    title: "Intro call — Tyler Brooks",
     uid: "abc123-booking-12",
     updatedAt: new Date("2025-09-20T11:30:00"),
     user: userPasquale,
@@ -843,7 +848,7 @@ export const mockPastBookings: Booking[] = [
         email: "enterprise@example.com",
         id: 22,
         locale: "en",
-        name: "Enterprise Client",
+        name: "Renata Vogel",
         noShow: false,
         timeZone: "America/New_York",
       },
@@ -852,14 +857,13 @@ export const mockPastBookings: Booking[] = [
         email: "sales@cal.com",
         id: 23,
         locale: "en",
-        name: "Sales Team Member",
+        name: "Jonah Pike",
         noShow: false,
         timeZone: "America/Los_Angeles",
       },
     ],
     createdAt: new Date("2025-09-01T10:00:00"),
-    description:
-      "Enterprise onboarding session - rescheduled, paid, recurring team event.",
+    description: "Enterprise rollout — SSO, SCIM, and seat mapping.",
     endTime: new Date("2025-09-10T16:00:00"),
     eventType: {
       ...defaultEventType,
@@ -902,7 +906,7 @@ export const mockPastBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2025-09-10T15:00:00"),
     status: "PENDING",
-    title: "Enterprise Onboarding: Stress Test with Multiple Badges",
+    title: "Acme rollout — onboarding block",
     uid: "abc123-booking-13",
     updatedAt: new Date("2025-09-05T14:00:00"),
     user: userPasquale,
@@ -934,7 +938,7 @@ export const mockUpcomingBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2026-01-10T10:00:00"),
-    description: "Quarterly product planning and roadmap discussion.",
+    description: "Q1 bets, staffing, and milestone dates.",
     endTime: new Date("2026-01-15T15:00:00"),
     eventType: {
       ...defaultEventType,
@@ -955,7 +959,7 @@ export const mockUpcomingBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2026-01-15T14:00:00"),
     status: "ACCEPTED",
-    title: "Product Planning Session",
+    title: "Q1 roadmap working session",
     uid: "upcoming-booking-1",
     updatedAt: new Date("2026-01-10T10:00:00"),
     user: userPasquale,
@@ -969,13 +973,13 @@ export const mockUpcomingBookings: Booking[] = [
         email: "candidate@example.com",
         id: 102,
         locale: "en",
-        name: "Jane Candidate",
+        name: "Rina Okonkwo",
         noShow: null,
         timeZone: "America/New_York",
       },
     ],
     createdAt: new Date("2026-01-12T09:00:00"),
-    description: "Technical interview - awaiting confirmation.",
+    description: "Systems design panel — take-home debrief pending.",
     endTime: new Date("2026-01-20T11:00:00"),
     eventType: {
       ...defaultEventType,
@@ -997,7 +1001,7 @@ export const mockUpcomingBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2026-01-20T10:00:00"),
     status: "PENDING",
-    title: "Pending: Interview with Candidate",
+    title: "Pending — Rina Okonkwo (backend)",
     uid: "upcoming-booking-2",
     updatedAt: new Date("2026-01-12T09:00:00"),
     user: userPasquale,
@@ -1026,7 +1030,7 @@ export const mockUpcomingBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2026-01-18T11:00:00"),
-    description: "Weekly engineering standup and code review session.",
+    description: "Thursday release train and hotfix queue.",
     endTime: new Date("2026-01-25T16:00:00"),
     eventType: {
       ...defaultEventType,
@@ -1040,7 +1044,7 @@ export const mockUpcomingBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2026-01-25T15:30:00"),
     status: "ACCEPTED",
-    title: "Engineering Chat with Keith Williams",
+    title: "Release train sync",
     uid: "upcoming-booking-3",
     updatedAt: new Date("2026-01-18T11:00:00"),
     user: userKeith,
@@ -1069,7 +1073,7 @@ export const mockUpcomingBookings: Booking[] = [
       },
     ],
     createdAt: new Date("2026-01-20T09:00:00"),
-    description: "Design review for the new dashboard components.",
+    description: "Settings IA — nav density and empty states.",
     endTime: new Date("2026-01-28T12:00:00"),
     eventType: {
       ...defaultEventType,
@@ -1087,7 +1091,7 @@ export const mockUpcomingBookings: Booking[] = [
     rescheduled: false,
     startTime: new Date("2026-01-28T11:15:00"),
     status: "ACCEPTED",
-    title: "Design Review with Peer Richelsen",
+    title: "Settings IA critique",
     uid: "upcoming-booking-4",
     updatedAt: new Date("2026-01-20T09:00:00"),
     user: userPeer,
@@ -1095,20 +1099,676 @@ export const mockUpcomingBookings: Booking[] = [
   },
 ];
 
-export const mockCancelledBookings: Booking[] = mockPastBookings.filter(
-  (b) => b.status === "CANCELLED",
-);
+function getMockBooking(bookings: Booking[], index: number): Booking {
+  const booking = bookings[index];
+
+  if (!booking) {
+    throw new Error(`Missing mock booking at index ${index}`);
+  }
+
+  return booking;
+}
+
+function getMockEventType(booking: Booking): BookingEventType {
+  if (!booking.eventType) {
+    throw new Error(`Missing event type for mock booking ${booking.id}`);
+  }
+
+  return booking.eventType;
+}
+
+const baseUpcomingPlanning = getMockBooking(mockUpcomingBookings, 0);
+const baseUpcomingPending = getMockBooking(mockUpcomingBookings, 1);
+const baseUpcomingEngineering = getMockBooking(mockUpcomingBookings, 2);
+const baseCancelledDesignReview = getMockBooking(mockPastBookings, 7);
+const basePastRecurring = getMockBooking(mockPastBookings, 8);
+const basePastStressTest = getMockBooking(mockPastBookings, 12);
+
+const upcomingPaidConsultation: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 104,
+      email: "founder@example.com",
+      id: 107,
+      locale: "en",
+      name: "Nadia Elmasri",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+  ],
+  description: "Strategy block — pricing experiments still open.",
+  endTime: new Date("2026-02-03T17:45:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 16,
+    length: 45,
+    price: 14900,
+    slug: "paid-strategy",
+    title: "Paid Strategy Session",
+  },
+  id: 104,
+  location: "integrations:zoom",
+  payment: [],
+  startTime: new Date("2026-02-03T17:00:00"),
+  title: "Strategy block w/ Nadia Elmasri",
+  uid: "upcoming-booking-5",
+};
+
+function createTodayDate(hours: number, minutes: number): Date {
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+const upcomingTodayMeeting: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 106,
+      email: "carina@cal.com",
+      id: 108,
+      locale: "en",
+      name: "Carina Wollheim",
+      noShow: null,
+      timeZone: "Europe/Berlin",
+    },
+  ],
+  createdAt: createTodayDate(9, 0),
+  description: "Morning standup — blockers only.",
+  endTime: createTodayDate(11, 0),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    id: 18,
+    length: 60,
+    slug: "team-sync",
+    title: "Team Sync",
+  },
+  id: 106,
+  location: "integrations:google_meet",
+  startTime: createTodayDate(10, 0),
+  title: "Product standup",
+  uid: "upcoming-booking-today",
+  updatedAt: createTodayDate(9, 0),
+};
+
+function createRelativeDate(minutesFromNow: number): Date {
+  return new Date(Date.now() + minutesFromNow * 60 * 1000);
+}
+
+const upcomingMinimumNoticeBooking: Booking = {
+  ...baseUpcomingPlanning,
+  attendees: [
+    {
+      bookingId: 107,
+      email: "guest@example.com",
+      id: 109,
+      locale: "en",
+      name: "Tomás Ribeiro",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+  ],
+  description: "Investor prep — deck v4 and dry run.",
+  endTime: createRelativeDate(75),
+  eventType: {
+    ...defaultEventType,
+    id: 23,
+    length: 30,
+    minimumRescheduleNotice: 120,
+    slug: "notice-demo",
+    title: "Investor prep call",
+  },
+  id: 107,
+  location: "integrations:zoom",
+  startTime: createRelativeDate(45),
+  title: "Investor prep w/ Tomás Ribeiro",
+  uid: "upcoming-booking-notice",
+  updatedAt: new Date(),
+};
+
+const upcomingAttendeeOnlyRestrictions: Booking = {
+  ...baseUpcomingEngineering,
+  attendees: [
+    {
+      bookingId: 108,
+      email: "client@example.com",
+      id: 110,
+      locale: "en",
+      name: "Gemma Walsh",
+      noShow: null,
+      timeZone: "Europe/London",
+    },
+  ],
+  description: "MSA redlines — attendee cannot cancel without host.",
+  endTime: new Date("2026-03-12T11:30:00"),
+  eventType: {
+    ...defaultEventType,
+    disableCancelling: true,
+    disableCancellingScope: "ATTENDEE_ONLY",
+    disableRescheduling: true,
+    disableReschedulingScope: "ATTENDEE_ONLY",
+    id: 24,
+    slug: "host-only-actions",
+    title: "Contract walkthrough",
+  },
+  id: 108,
+  location: "integrations:google_meet",
+  startTime: new Date("2026-03-12T11:00:00"),
+  title: "MSA walkthrough — Gemma Walsh",
+  uid: "upcoming-booking-scope",
+  updatedAt: new Date("2026-03-01T09:00:00"),
+};
+
+const upcomingRescheduledRecurring: Booking = {
+  ...baseUpcomingEngineering,
+  description: "Moved by the booker — conflicts with travel.",
+  endTime: new Date("2026-02-06T10:30:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#8b5cf6",
+      lightEventTypeColor: "#8b5cf6",
+    },
+    id: 17,
+    length: 30,
+    recurringEvent: {
+      count: 8,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "customer-check-in",
+    title: "Customer Check-in",
+  },
+  fromReschedule: "previous-booking-uid",
+  id: 105,
+  metadata: {
+    recurringEventsRemaining: 6,
+    recurringPattern: "Every week for 8 occurrences",
+  },
+  recurringEventId: "recurring-upcoming-check-in",
+  rescheduled: true,
+  rescheduledBy: "Nadia Elmasri",
+  startTime: new Date("2026-02-06T10:00:00"),
+  title: "Customer check-in (series)",
+  uid: "upcoming-booking-6",
+};
+
+const unconfirmedTeamBooking: Booking = {
+  ...baseUpcomingPending,
+  attendees: [
+    {
+      bookingId: 106,
+      email: "enterprise@example.com",
+      id: 108,
+      locale: "en",
+      name: "Helena Gruber",
+      noShow: null,
+      timeZone: "America/Chicago",
+    },
+  ],
+  description: "Security questionnaire + sandbox access.",
+  endTime: new Date("2026-02-10T16:30:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    hosts: [
+      {
+        user: { email: "pasquale@cal.com", id: 1 },
+        userId: 1,
+      },
+      {
+        user: { email: "keith@cal.com", id: 2 },
+        userId: 2,
+      },
+    ],
+    id: 18,
+    schedulingType: "ROUND_ROBIN",
+    slug: "enterprise-demo",
+    team: {
+      id: 2,
+      name: "Sales Team",
+      slug: "sales",
+    },
+    teamId: 2,
+    title: "Enterprise Demo",
+  },
+  id: 106,
+  location: "integrations:teams",
+  startTime: new Date("2026-02-10T16:00:00"),
+  title: "Enterprise demo — awaiting confirm",
+  uid: "unconfirmed-booking-2",
+};
+
+const unconfirmedTeamEventType = getMockEventType(unconfirmedTeamBooking);
+
+const unconfirmedPaidRecurring: Booking = {
+  ...unconfirmedTeamBooking,
+  description: "Four-part onboarding series; payment not captured yet.",
+  endTime: new Date("2026-02-12T15:00:00"),
+  eventType: {
+    ...unconfirmedTeamEventType,
+    price: 29900,
+    recurringEvent: {
+      count: 4,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "paid-onboarding-series",
+    title: "Paid Onboarding Series",
+  },
+  id: 107,
+  metadata: {
+    recurringEventsRemaining: 4,
+    recurringPattern: "Every week for 4 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-unconfirmed-onboarding",
+  startTime: new Date("2026-02-12T14:00:00"),
+  title: "Onboarding series — pending payment",
+  uid: "unconfirmed-booking-3",
+};
+
+const cancelledTeamBooking: Booking = {
+  ...baseCancelledDesignReview,
+  cancellationReason: "Customer asked to move the project review.",
+  description: "Design critique for the analytics shell.",
+  endTime: new Date("2025-10-15T13:00:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#3b82f6",
+      lightEventTypeColor: "#3b82f6",
+    },
+    id: 19,
+    schedulingType: "COLLECTIVE",
+    slug: "team-design-review",
+    team: {
+      id: 1,
+      name: "Cal.com",
+      slug: "cal",
+    },
+    teamId: 1,
+    title: "Team Design Review",
+  },
+  id: 14,
+  rescheduled: true,
+  startTime: new Date("2025-10-15T12:30:00"),
+  title: "Analytics shell review",
+  uid: "cancelled-booking-2",
+};
+
+const cancelledPaidRecurring: Booking = {
+  ...baseCancelledDesignReview,
+  cancellationReason: "Payment was not completed before the deadline.",
+  description: "Advisory retainer — card never confirmed.",
+  endTime: new Date("2025-10-18T11:45:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 21,
+    length: 45,
+    price: 19900,
+    recurringEvent: {
+      count: 6,
+      freq: 2,
+      interval: 2,
+    },
+    slug: "paid-advisory",
+    title: "Paid Advisory",
+  },
+  id: 15,
+  metadata: {
+    recurringEventsRemaining: 3,
+    recurringPattern: "Every 2 weeks for 6 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-cancelled-paid",
+  startTime: new Date("2025-10-18T11:00:00"),
+  title: "Advisory retainer (series)",
+  uid: "cancelled-booking-3",
+};
+
+const recurringYogaClass: Booking = {
+  ...defaultBookingFields,
+  attendees: [
+    {
+      bookingId: 200,
+      email: "pro@example.com",
+      id: 200,
+      locale: "en",
+      name: "Jordan Hale",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  createdAt: new Date("2026-05-01T09:00:00"),
+  description: null,
+  endTime: new Date("2026-05-22T17:31:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#8b5cf6",
+      lightEventTypeColor: "#8b5cf6",
+    },
+    id: 200,
+    length: 30,
+    recurringEvent: {
+      count: 6,
+      freq: 2,
+      interval: 1,
+    },
+    slug: "yoga-class",
+    title: "Yoga class",
+  },
+  id: 200,
+  location: "integrations:daily",
+  metadata: {
+    recurringEventsRemaining: 4,
+    recurringPattern: "Every week for 6 occurrences",
+  },
+  recurringEventId: "recurring-yoga-class",
+  rescheduled: false,
+  startTime: new Date("2026-05-22T17:01:00"),
+  status: "ACCEPTED",
+  title: "Yoga class",
+  uid: "recurring-booking-1",
+  updatedAt: new Date("2026-05-01T09:00:00"),
+  user: userPasquale,
+  userPrimaryEmail: "pasquale@cal.com",
+};
+
+const recurringYogaEventType = getMockEventType(recurringYogaClass);
+
+const recurringUnconfirmedTennisClass: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 201,
+      email: "pro@example.com",
+      id: 201,
+      locale: "en",
+      name: "Jordan Hale",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  endTime: new Date("2026-05-23T18:01:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#0dbf82",
+      lightEventTypeColor: "#0dbf82",
+    },
+    id: 201,
+    recurringEvent: {
+      count: 5,
+      freq: 2,
+      interval: 2,
+    },
+    slug: "tennis-class",
+    title: "Tennis class",
+  },
+  id: 201,
+  metadata: {
+    recurringEventsRemaining: 5,
+    recurringPattern: "Every 2 weeks for 5 occurrences",
+  },
+  recurringEventId: "recurring-tennis-class",
+  startTime: new Date("2026-05-23T17:01:00"),
+  status: "PENDING",
+  title: "Tennis class",
+  uid: "recurring-booking-2",
+};
+
+const recurringSeededYogaClass: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 202,
+      email: "pro@example.com",
+      id: 202,
+      locale: "en",
+      name: "Jordan Hale",
+      noShow: null,
+      timeZone: "Europe/Rome",
+    },
+  ],
+  description: "Fixture row for seeded recurrence metadata.",
+  endTime: new Date("2026-05-24T17:31:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    id: 202,
+    slug: "seeded-yoga-class",
+    title: "Sunrise flow",
+  },
+  id: 202,
+  metadata: {
+    recurringEventsRemaining: 1,
+    recurringPattern: "Every week for 3 occurrences",
+  },
+  recurringEventId: "recurring-seeded-yoga-class",
+  startTime: new Date("2026-05-24T17:01:00"),
+  title: "Sunrise flow (seeded)",
+  uid: "recurring-booking-3",
+};
+
+const recurringPaidTeamWorkshop: Booking = {
+  ...recurringYogaClass,
+  attendees: [
+    {
+      bookingId: 203,
+      email: "ops@example.com",
+      id: 203,
+      locale: "en",
+      name: "Inès Moreau",
+      noShow: null,
+      timeZone: "America/New_York",
+    },
+    {
+      bookingId: 203,
+      email: "product@example.com",
+      id: 204,
+      locale: "en",
+      name: "Felix Hart",
+      noShow: null,
+      timeZone: "Europe/London",
+    },
+  ],
+  description: "Recurring workshop — invoice still outstanding.",
+  endTime: new Date("2026-05-26T16:00:00"),
+  eventType: {
+    ...defaultEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#fd6d06",
+      lightEventTypeColor: "#fd6d06",
+    },
+    id: 203,
+    length: 60,
+    price: 49900,
+    recurringEvent: {
+      count: 10,
+      freq: 2,
+      interval: 1,
+    },
+    schedulingType: "COLLECTIVE",
+    slug: "paid-team-workshop",
+    team: {
+      id: 1,
+      name: "Cal.com",
+      slug: "cal",
+    },
+    teamId: 1,
+    title: "Facilitation workshop",
+  },
+  id: 203,
+  metadata: {
+    recurringEventsRemaining: 8,
+    recurringPattern: "Every week for 10 occurrences",
+  },
+  payment: [],
+  recurringEventId: "recurring-paid-team-workshop",
+  startTime: new Date("2026-05-26T15:00:00"),
+  title: "Facilitation workshop (series)",
+  uid: "recurring-booking-4",
+};
+
+const recurringRescheduledClass: Booking = {
+  ...recurringYogaClass,
+  description: "Attendee moved the May slot to avoid overlap.",
+  endTime: new Date("2026-05-27T09:45:00"),
+  eventType: {
+    ...recurringYogaEventType,
+    eventTypeColor: {
+      darkEventTypeColor: "#3b82f6",
+      lightEventTypeColor: "#3b82f6",
+    },
+    id: 204,
+    slug: "pilates-class",
+    title: "Pilates class",
+  },
+  fromReschedule: "previous-pilates-booking",
+  id: 204,
+  metadata: {
+    recurringEventsRemaining: 2,
+    recurringPattern: "Every month for 4 occurrences",
+  },
+  recurringEventId: "recurring-pilates-class",
+  rescheduled: true,
+  rescheduledBy: "Jordan Hale",
+  startTime: new Date("2026-05-27T09:15:00"),
+  title: "Pilates class",
+  uid: "recurring-booking-5",
+};
+
+const pastReportedBooking: Booking = {
+  ...defaultBookingFields,
+  attendees: [
+    {
+      bookingId: 16,
+      email: "unknown@example.com",
+      id: 18,
+      locale: "en",
+      name: "M. Jensen",
+      noShow: false,
+      timeZone: "America/New_York",
+    },
+  ],
+  createdAt: new Date("2025-10-18T08:00:00"),
+  description: "Walk-in via public link — flagged after the call.",
+  endTime: new Date("2025-10-20T11:00:00"),
+  eventType: {
+    ...defaultEventType,
+    id: 22,
+    slug: "30min",
+    title: "30 Min Meeting",
+  },
+  id: 16,
+  location: "integrations:zoom",
+  report: {
+    createdAt: new Date("2025-10-20T11:05:00"),
+    description: "Unrecognized attendee used a generic booking link.",
+    id: 1,
+    reason: "Spam or unwanted booking",
+    reportedById: userPasquale.id,
+  },
+  startTime: new Date("2025-10-20T10:30:00"),
+  status: "ACCEPTED",
+  title: "Inbound — M. Jensen",
+  uid: "past-booking-reported",
+  updatedAt: new Date("2025-10-20T11:05:00"),
+  user: userPasquale,
+  userPrimaryEmail: "pasquale@cal.com",
+};
+
+export const mockPastBookingsForTab: Booking[] = [
+  pastReportedBooking,
+  ...mockPastBookings.filter(
+    (booking) => booking.status !== "CANCELLED" && booking.status !== "PENDING",
+  ),
+];
+
+export const mockUpcomingBookingsForTab: Booking[] = [
+  upcomingTodayMeeting,
+  upcomingMinimumNoticeBooking,
+  upcomingAttendeeOnlyRestrictions,
+  ...mockUpcomingBookings,
+  upcomingPaidConsultation,
+  upcomingRescheduledRecurring,
+];
+
+export const mockUnconfirmedBookings: Booking[] = [
+  baseUpcomingPending,
+  unconfirmedTeamBooking,
+  unconfirmedPaidRecurring,
+];
+
+export const mockRecurringBookings: Booking[] = [
+  recurringYogaClass,
+  recurringUnconfirmedTennisClass,
+  recurringSeededYogaClass,
+  recurringPaidTeamWorkshop,
+  recurringRescheduledClass,
+  upcomingRescheduledRecurring,
+  unconfirmedPaidRecurring,
+  basePastRecurring,
+  basePastStressTest,
+];
+
+export const mockCancelledBookings: Booking[] = [
+  ...mockPastBookings.filter((booking) => booking.status === "CANCELLED"),
+  cancelledTeamBooking,
+  cancelledPaidRecurring,
+];
 
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 
-export function formatBookingDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+export function isBookingToday(
+  date: Date,
+  referenceDate: Date = new Date(),
+): boolean {
+  return (
+    date.getFullYear() === referenceDate.getFullYear() &&
+    date.getMonth() === referenceDate.getMonth() &&
+    date.getDate() === referenceDate.getDate()
+  );
+}
+
+export function formatBookingDate(startTime: Date, endTime?: Date): string {
+  const isUpcoming = (endTime ?? startTime) >= new Date();
+  const bookingYear = startTime.getFullYear();
+  const currentYear = new Date().getFullYear();
+  const isDifferentYear = bookingYear !== currentYear;
+  const weekday = startTime.toLocaleDateString("en-US", { weekday: "short" });
+  const day = startTime.getDate();
+  const monthShort = startTime.toLocaleDateString("en-US", { month: "short" });
+  const monthLong = startTime.toLocaleDateString("en-US", { month: "long" });
+
+  if (isUpcoming) {
+    if (isDifferentYear) {
+      return `${weekday}, ${day} ${monthShort} ${bookingYear}`;
+    }
+
+    return `${weekday}, ${day} ${monthShort}`;
+  }
+
+  return `${day} ${monthLong} ${bookingYear}`;
 }
 
 export function formatBookingTime(startTime: Date, endTime: Date): string {

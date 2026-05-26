@@ -1,6 +1,7 @@
-import { BookingsEmpty } from "./bookings-empty";
+import { BookingsList } from "../bookings-list";
 import { BookingsNav } from "@/components/app/bookings-nav";
 import { BookingsView } from "@/components/app/bookings-view";
+import { mockCancelledBookings } from "@/lib/mock-bookings-data";
 
 export default function Page() {
   return (
@@ -11,7 +12,10 @@ export default function Page() {
       </div>
       {/* <BookingsFilters /> */}
       <div className="mt-4">
-        <BookingsEmpty />
+        <BookingsList
+          bookings={mockCancelledBookings}
+          listingStatus="cancelled"
+        />
       </div>
     </>
   );
