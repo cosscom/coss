@@ -29,7 +29,7 @@ export function ScrollArea({
         )}
         data-slot="scroll-area-viewport"
       >
-        <ScrollAreaPrimitive.Content>{children}</ScrollAreaPrimitive.Content>
+        <ScrollAreaPrimitive.Content className="size-full">{children}</ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />
