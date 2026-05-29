@@ -3,6 +3,36 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## May 29, 2026
+
+### Scroll Area
+
+**`ScrollArea`** adds an optional **`fill`** prop (default **`false`**). When **`fill`** is enabled, **`size-full`** is applied to **`ScrollArea.Content`** so inner flex layouts can use the full viewport height (for example, pinning a footer with **`mt-auto`** in a sidebar).
+
+Most scroll areas should keep the default. Opt in only when the scroll container must stretch rather than size to its children.
+
+**Migration:**
+
+No change required for existing **`ScrollArea`** usage (lists, dialogs, comboboxes, command menus). For custom sidebars or other flex columns with **`mt-auto`** footers inside a scroll area, opt in explicitly:
+
+```diff
+- <ScrollArea className="flex-1 min-h-0">
++ <ScrollArea className="flex-1 min-h-0" fill>
+    <div className="flex h-full flex-col">
+      …
+      <footer className="mt-auto">…</footer>
+    </div>
+  </ScrollArea>
+```
+
+**`SidebarContent`** from **`@coss/sidebar`** already passes **`fill`**—update your local **`sidebar.tsx`** copy if you vendor the component.
+
+**Agent migration prompt:**
+
+```text
+After upgrading @coss/scroll-area, ScrollArea has an optional fill prop (default false). Do not add fill to every ScrollArea. Add fill only where a flex column inside the scroll area must stretch to the viewport height (e.g. mt-auto footer in a sidebar). Pair fill with flex-1 min-h-0 on the ScrollArea and h-full flex-col on the inner wrapper. SidebarContent in @coss/sidebar already uses fill.
+```
+
 ## Apr 17, 2026
 
 ### Form

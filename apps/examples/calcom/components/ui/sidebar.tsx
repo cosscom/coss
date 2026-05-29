@@ -167,7 +167,7 @@ export function SidebarContent({
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
   return (
-    <ScrollArea scrollFade>
+    <ScrollArea className="min-h-0 flex-1" fill scrollFade>
       <div
         className={cn("flex h-full flex-col gap-2 px-2", className)}
         data-sidebar="content"
