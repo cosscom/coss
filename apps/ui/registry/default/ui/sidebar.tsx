@@ -413,7 +413,7 @@ export function SidebarContent({
 }: React.ComponentProps<"div">): React.ReactElement {
   return (
     <ScrollArea
-      className="flex-1 min-h-0 **:data-[slot=scroll-area-scrollbar]:hidden"
+      className="min-h-0 flex-1 **:data-[slot=scroll-area-scrollbar]:hidden"
       fill
       scrollFade
     >
