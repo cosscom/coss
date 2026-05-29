@@ -9,11 +9,12 @@ export function ScrollArea({
   children,
   scrollFade = false,
   scrollbarGutter = false,
-  fill = true,
+  fill = false,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   scrollFade?: boolean;
   scrollbarGutter?: boolean;
+  /** Applies `size-full` to `ScrollArea.Content`. Default `false`; use for flex layouts that must fill the viewport (e.g. sidebar footers with `mt-auto`). */
   fill?: boolean;
 }): React.ReactElement {
   return (

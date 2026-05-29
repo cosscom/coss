@@ -77,7 +77,7 @@ Root component. Styled wrapper for `ScrollArea.Root` from Base UI with custom sc
 | ---------------- | --------- | ------- | ------------------------------------------------ |
 | `scrollFade`     | `boolean` | `false` | Masks viewport edges so content fades in/out as you scroll |
 | `scrollbarGutter`| `boolean` | `false` | Reserves space for the scrollbar to prevent layout shifts |
-| `fill`           | `boolean` | `true`  | Applies `size-full` to the scroll area content wrapper |
+| `fill`           | `boolean` | `false` | Applies `size-full` to the scroll area content wrapper so flex layouts (e.g. `mt-auto` footers) can fill the viewport height |
 
 ### ScrollAreaViewport
 
@@ -116,3 +116,22 @@ Enable `scrollbarGutter` to reserve space for the scrollbar when overflow appear
 ### Both Scrollbars
 
 <ComponentPreview name="p-scroll-area-3" />
+
+### Fill viewport (flex layouts)
+
+Use `fill` when the scroll area wraps a flex column that should stretch to the full viewport height—for example, pinning a footer with `mt-auto` inside a sidebar. The built-in **`SidebarContent`** part already passes `fill`; opt in manually for custom layouts:
+
+```tsx
+<ScrollArea className="flex-1 min-h-0" fill>
+  <div className="flex h-full flex-col">
+    <nav>{/* main items */}</nav>
+    <footer className="mt-auto">{/* pinned footer */}</footer>
+  </div>
+</ScrollArea>
+```
+
+Leave `fill` at the default (`false`) for content-sized areas such as lists, comboboxes, and dialogs where overflow should track child height.
+
+## Changelog
+
+- [May 29, 2026](/ui/docs/changelog#scroll-area) — **`ScrollArea`** adds optional **`fill`** (default **`false`**); pass **`fill`** for flex layouts that need the content wrapper to stretch (e.g. sidebar footers with **`mt-auto`**).
