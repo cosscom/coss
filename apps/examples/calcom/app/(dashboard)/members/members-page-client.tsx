@@ -376,12 +376,6 @@ function getPinnedDataAttribute(column: Column<Member>): {
   return isPinned ? { "data-pinned": isPinned } : {};
 }
 
-function syncScrollAreaOverflowState(root: HTMLElement | null): void {
-  root
-    ?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')
-    ?.dispatchEvent(new Event("scroll"));
-}
-
 function shouldIgnoreRowSelectionClick(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
@@ -681,12 +675,7 @@ export function MembersPageClient() {
     initialState: {
       columnPinning: INITIAL_COLUMN_PINNING,
     },
-    onColumnSizingChange: (updater) => {
-      setColumnSizing(updater);
-      requestAnimationFrame(() => {
-        syncScrollAreaOverflowState(tableContainerRef.current);
-      });
-    },
+    onColumnSizingChange: setColumnSizing,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     state: {
