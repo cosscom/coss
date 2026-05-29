@@ -9,10 +9,12 @@ export function ScrollArea({
   children,
   scrollFade = false,
   scrollbarGutter = false,
+  fill = true,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   scrollFade?: boolean;
   scrollbarGutter?: boolean;
+  fill?: boolean;
 }): React.ReactElement {
   return (
     <ScrollAreaPrimitive.Root
@@ -29,7 +31,12 @@ export function ScrollArea({
         )}
         data-slot="scroll-area-viewport"
       >
-        <ScrollAreaPrimitive.Content>{children}</ScrollAreaPrimitive.Content>
+        <ScrollAreaPrimitive.Content
+          className={cn(fill && "size-full")}
+          data-slot="scroll-area-content"
+        >
+          {children}
+        </ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />
