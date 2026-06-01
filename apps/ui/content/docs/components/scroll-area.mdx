@@ -73,11 +73,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 Root component. Styled wrapper for `ScrollArea.Root` from Base UI with custom scrollbar styling.
 
-| Prop             | Type      | Default | Description                                      |
-| ---------------- | --------- | ------- | ------------------------------------------------ |
-| `scrollFade`     | `boolean` | `false` | Masks viewport edges so content fades in/out as you scroll |
-| `scrollbarGutter`| `boolean` | `false` | Reserves space for the scrollbar to prevent layout shifts |
-| `fill`           | `boolean` | `false` | Applies `size-full` to the scroll area content wrapper so flex layouts (e.g. `mt-auto` footers) can fill the viewport height |
+| Prop                    | Type      | Default | Description                                      |
+| ----------------------- | --------- | ------- | ------------------------------------------------ |
+| `scrollFade`            | `boolean` | `false` | Masks viewport edges so content fades in/out as you scroll |
+| `scrollbarGutter`       | `boolean` | `false` | Reserves space for the scrollbar to prevent layout shifts |
+| `fill`                  | `boolean` | `false` | Applies `size-full` to the scroll area content wrapper so flex layouts (e.g. `mt-auto` footers) can fill the viewport height |
+| `clampContentMinWidth`  | `boolean` | `true`  | Sets `minWidth: 0` on the content wrapper to avoid spurious horizontal scrollbars in vertical layouts |
 
 ### ScrollAreaViewport
 
@@ -131,6 +132,12 @@ Use `fill` when the scroll area wraps a flex column that should stretch to the f
 ```
 
 Leave `fill` at the default (`false`) for content-sized areas such as lists, comboboxes, and dialogs where overflow should track child height.
+
+### Content min-width
+
+Base UI sets `min-width: fit-content` on the content wrapper, which often causes unwanted horizontal scroll in vertical lists and panels (dialogs, comboboxes, sidebars). **`clampContentMinWidth`** defaults to **`true`** and applies `minWidth: 0` to prevent that.
+
+Horizontal scroll still works when children define their own width (e.g. `w-max`, table min-width). Set **`clampContentMinWidth={false}`** only if horizontal scroll stops working and the child has no explicit width—rare cases like certain flex chains or long unbreakable inline text without overflow handling.
 
 ## Changelog
 
