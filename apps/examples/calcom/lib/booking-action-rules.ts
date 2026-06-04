@@ -146,7 +146,6 @@ export function isActionDisabled(
 ): boolean {
   const {
     booking,
-    isAttendee,
     isBookingInPast,
     isCalVideoLocation,
     isCancelled,

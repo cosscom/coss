@@ -15,7 +15,7 @@ const OTP_SLOT_KEYS = Array.from(
   (_, i) => `otp-slot-${i}`,
 );
 
-function sanitizeTierCode(value: string) {
+function normalizeTierCode(value: string) {
   return value.replace(/[^0-3]/g, "");
 }
 
@@ -73,7 +73,7 @@ export default function Particle() {
       <OTPField
         inputMode="numeric"
         length={OTP_LENGTH}
-        sanitizeValue={sanitizeTierCode}
+        normalizeValue={normalizeTierCode}
         validationType="none"
         onValueChange={handleValueChange}
         onValueInvalid={handleValueInvalid}
