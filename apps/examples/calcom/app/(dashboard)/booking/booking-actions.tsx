@@ -198,7 +198,6 @@ export function BookingActions({
               onToggleAttendeeNoShow={toggleAttendeeNoShow}
               onToggleSingleAttendeeNoShow={toggleSingleAttendeeNoShow}
               showEditActions={showEditActions}
-              showPendingActions={showPendingActions}
             />
           </MenuPopup>
         </Menu>
@@ -378,7 +377,6 @@ function BookingOptionsMenuContent({
   onToggleAttendeeNoShow,
   onToggleSingleAttendeeNoShow,
   showEditActions,
-  showPendingActions,
 }: {
   attendees: BookingAttendee[];
   disabled: ActionDisabledState;
@@ -387,7 +385,6 @@ function BookingOptionsMenuContent({
   onToggleAttendeeNoShow: (email: string) => void;
   onToggleSingleAttendeeNoShow: () => void;
   showEditActions: boolean;
-  showPendingActions?: boolean;
 }) {
   const showCancelAllRemaining = isRecurring;
   const showCancelEvent = showEditActions && !isRecurring;
