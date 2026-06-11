@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-context-menu-3",
+  "description": "Nested context menu",
+  "registryDependencies": [
+    "@coss/context-menu"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-context-menu-3.tsx",
+      "content": "import {\n  ContextMenu,\n  ContextMenuItem,\n  ContextMenuPopup,\n  ContextMenuSub,\n  ContextMenuSubPopup,\n  ContextMenuSubTrigger,\n  ContextMenuTrigger,\n} from \"@/registry/default/ui/context-menu\";\n\nexport default function Particle() {\n  return (\n    <ContextMenu>\n      <ContextMenuTrigger className=\"flex h-32 w-full max-w-sm items-center justify-center rounded-lg border border-dashed text-muted-foreground text-sm\">\n        Right click here\n      </ContextMenuTrigger>\n      <ContextMenuPopup>\n        <ContextMenuItem>Cut</ContextMenuItem>\n        <ContextMenuItem>Copy</ContextMenuItem>\n        <ContextMenuItem>Paste</ContextMenuItem>\n        <ContextMenuSub>\n          <ContextMenuSubTrigger>Share</ContextMenuSubTrigger>\n          <ContextMenuSubPopup>\n            <ContextMenuItem>Email link</ContextMenuItem>\n            <ContextMenuItem>Messages</ContextMenuItem>\n            <ContextMenuItem>Notes</ContextMenuItem>\n          </ContextMenuSubPopup>\n        </ContextMenuSub>\n      </ContextMenuPopup>\n    </ContextMenu>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"
+  },
+  "categories": [
+    "context menu",
+    "menu"
+  ],
+  "type": "registry:block"
+}

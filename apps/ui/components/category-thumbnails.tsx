@@ -627,6 +627,22 @@ export const labelThumbnail = (
   </div>
 );
 
+// Context Menu
+export const contextMenuThumbnail = (
+  <div className="flex max-w-50 flex-1 flex-col">
+    <Card className="border-input border-dashed bg-none shadow-none [--radius-2xl:10px] before:hidden">
+      <CardPanel className="min-h-20" />
+    </Card>
+    <Card className="ms-auto -mt-3 w-fit [--radius-2xl:10px]">
+      <CardPanel className="flex flex-col gap-3 p-3">
+        <Text className="w-16" variant="secondary" />
+        <Text className="w-16" variant="secondary" />
+        <Text className="w-16" variant="secondary" />
+      </CardPanel>
+    </Card>
+  </div>
+);
+
 // Menu
 export const menuThumbnail = (
   <div className="flex max-w-50 flex-1 flex-col items-end gap-2">
@@ -1012,6 +1028,7 @@ export const categoryThumbnails: Record<string, ReactNode> = {
   collapsible: collapsibleThumbnail,
   combobox: comboboxThumbnail,
   command: commandThumbnail,
+  "context-menu": contextMenuThumbnail,
   "date-picker": datePickerThumbnail,
   dialog: dialogThumbnail,
   drawer: drawerThumbnail,

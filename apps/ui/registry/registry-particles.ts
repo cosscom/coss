@@ -3649,6 +3649,103 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("context menu", "menu"),
+    description: "Basic context menu",
+    files: [{ path: "particles/p-context-menu-1.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-1",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    description: "Context menu with link items",
+    files: [{ path: "particles/p-context-menu-2.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-2",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    description: "Nested context menu",
+    files: [{ path: "particles/p-context-menu-3.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-3",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    description: "Context menu with checkbox items",
+    files: [{ path: "particles/p-context-menu-4.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-4",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    description: "Context menu with group labels",
+    files: [{ path: "particles/p-context-menu-5.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-5",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    dependencies: ["lucide-react"],
+    description: "Context menu with icons",
+    files: [{ path: "particles/p-context-menu-6.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-6",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu"),
+    description: "Context menu with radio group",
+    files: [{ path: "particles/p-context-menu-7.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-7",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("context menu", "menu", "switch"),
+    description: "Context menu with switch checkbox items",
+    files: [{ path: "particles/p-context-menu-8.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm",
+    },
+    name: "p-context-menu-8",
+    registryDependencies: ["@coss/context-menu"],
+    type: "registry:block",
+  },
+  {
     categories: categories("number field", "input"),
     description: "Basic number field",
     files: [{ path: "particles/p-number-field-1.tsx", type: "registry:block" }],

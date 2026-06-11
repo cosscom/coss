@@ -1,7 +1,5 @@
 export const PAGES_NEW = [
   // "/docs/components/{component-name}",
-  "/docs/skills",
-  "/docs/changelog",
-  "/docs/components/drawer",
+  "/docs/components/context-menu",
   "/docs/components/otp-field",
 ];

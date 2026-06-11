@@ -19,6 +19,7 @@ export const ui: Registry["items"] = [
       "@coss/collapsible",
       "@coss/combobox",
       "@coss/command",
+      "@coss/context-menu",
       "@coss/dialog",
       "@coss/drawer",
       "@coss/empty",
@@ -275,6 +276,25 @@ export const ui: Registry["items"] = [
     ],
     name: "command",
     registryDependencies: ["@coss/autocomplete"],
+    type: "registry:ui",
+  },
+  {
+    cssVars: {
+      dark: {
+        "destructive-foreground": "var(--color-red-400)",
+      },
+      light: {
+        "destructive-foreground": "var(--color-red-700)",
+      },
+    },
+    dependencies: ["@base-ui/react"],
+    files: [
+      {
+        path: "ui/context-menu.tsx",
+        type: "registry:ui",
+      },
+    ],
+    name: "context-menu",
     type: "registry:ui",
   },
   {
