@@ -629,18 +629,15 @@ export const labelThumbnail = (
 
 // Context Menu
 export const contextMenuThumbnail = (
-  <div className="flex max-w-50 flex-1 flex-col gap-2">
-    <Card className="border-dashed [--radius-2xl:10px]">
-      <CardPanel className="flex items-center justify-center gap-2 p-5">
-        <Icon icon={TextCursorIcon} />
-        <Text className="w-14" variant="secondary" />
-      </CardPanel>
+  <div className="flex max-w-50 flex-1 flex-col">
+    <Card className="border-input border-dashed bg-none shadow-none before:hidden [--radius-2xl:10px]">
+      <CardPanel className="min-h-20" />
     </Card>
-    <Card className="ms-8 w-fit [--radius-2xl:10px]">
+    <Card className="-mt-3 ms-auto w-fit [--radius-2xl:10px]">
       <CardPanel className="flex flex-col gap-3 p-3">
         <Text className="w-16" variant="secondary" />
-        <Text className="w-20" variant="secondary" />
-        <Text className="w-14" variant="secondary" />
+        <Text className="w-16" variant="secondary" />
+        <Text className="w-16" variant="secondary" />
       </CardPanel>
     </Card>
   </div>
