@@ -13,7 +13,9 @@ export default function Particle() {
         Right click here
       </ContextMenuTrigger>
       <ContextMenuPopup>
-        <ContextMenuLinkItem href="/docs">Docs</ContextMenuLinkItem>
+        <ContextMenuLinkItem render={<Link href="/docs" />}>
+          Docs
+        </ContextMenuLinkItem>
         <ContextMenuLinkItem render={<Link href="/particles" />}>
           Particles
         </ContextMenuLinkItem>

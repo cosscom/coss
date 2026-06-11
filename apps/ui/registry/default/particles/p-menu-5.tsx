@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/registry/default/ui/button";
 import {
   Menu,
-  MenuItem,
+  MenuLinkItem,
   MenuPopup,
   MenuTrigger,
 } from "@/registry/default/ui/menu";
@@ -12,8 +12,10 @@ export default function Particle() {
     <Menu>
       <MenuTrigger render={<Button variant="outline" />}>Open menu</MenuTrigger>
       <MenuPopup>
-        <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>
-        <MenuItem render={<Link href="/particles" />}>Particles</MenuItem>
+        <MenuLinkItem render={<Link href="/docs" />}>Docs</MenuLinkItem>
+        <MenuLinkItem render={<Link href="/particles" />}>
+          Particles
+        </MenuLinkItem>
       </MenuPopup>
     </Menu>
   );

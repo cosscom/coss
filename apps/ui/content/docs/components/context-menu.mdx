@@ -92,7 +92,9 @@ import {
     <ContextMenuItem>Back</ContextMenuItem>
     <ContextMenuItem>Forward</ContextMenuItem>
     <ContextMenuSeparator />
-    <ContextMenuLinkItem href="/docs">Documentation</ContextMenuLinkItem>
+    <ContextMenuLinkItem render={<Link href="/docs" />}>
+      Documentation
+    </ContextMenuLinkItem>
     <ContextMenuSeparator />
     <ContextMenuSub>
       <ContextMenuSubTrigger>More tools</ContextMenuSubTrigger>
@@ -149,7 +151,7 @@ Individual menu item.
 
 ### ContextMenuLinkItem
 
-Link menu item for navigation. Renders an `<a>` element. Styled like `ContextMenuItem`.
+Link menu item for navigation. **`LinkItem`** renders a native **`<a>`** when you pass **`href`**. Styled like **`ContextMenuItem`**.
 
 | Prop           | Type                          | Default     | Description                                      |
 | -------------- | ----------------------------- | ----------- | ------------------------------------------------ |
@@ -157,10 +159,16 @@ Link menu item for navigation. Renders an `<a>` element. Styled like `ContextMen
 | `variant`      | `"default" \| "destructive"`  | `"default"` | Controls the item styling                        |
 | `closeOnClick` | `boolean`                     | `true`      | Whether the menu closes when the link is clicked |
 
-Use `render` to compose with router links:
+If you were using **`ContextMenuItem render={<Link href="..." />}`**, migrate to **`ContextMenuLinkItem`** but **keep `render`** — do not replace it with **`href`** alone when using a router **`Link`**.
 
 ```tsx
 <ContextMenuLinkItem render={<Link href="/docs" />}>Docs</ContextMenuLinkItem>
+```
+
+Use **`href`** only for plain anchor links:
+
+```tsx
+<ContextMenuLinkItem href="/docs">Docs</ContextMenuLinkItem>
 ```
 
 ### ContextMenuCheckboxItem

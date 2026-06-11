@@ -71,6 +71,7 @@ import {
   MenuGroup,
   MenuGroupLabel,
   MenuItem,
+  MenuLinkItem,
   MenuPopup,
   MenuRadioGroup,
   MenuRadioItem,
@@ -166,6 +167,28 @@ Individual menu item. Also exported as `DropdownMenuItem`.
 <MenuItem><PencilIcon /> Edit</MenuItem>
 <MenuItem><TrashIcon /> Delete</MenuItem>
 <MenuItem inset>Profile</MenuItem>  {/* Aligns with icon items above */}
+```
+
+### MenuLinkItem
+
+Link menu item for navigation. **`LinkItem`** renders a native **`<a>`** when you pass **`href`**. Styled like **`MenuItem`**.
+
+| Prop           | Type                          | Default     | Description                                      |
+| -------------- | ----------------------------- | ----------- | ------------------------------------------------ |
+| `inset`        | `boolean`                     | -           | Adds left padding to align with items that have icons |
+| `variant`      | `"default" \| "destructive"`  | `"default"` | Controls the item styling                        |
+| `closeOnClick` | `boolean`                     | `true`      | Whether the menu closes when the link is clicked |
+
+If you were using **`MenuItem render={<Link href="..." />}`**, migrate to **`MenuLinkItem`** but **keep `render`** — do not replace it with **`href`** alone when using a router **`Link`**.
+
+```tsx
+<MenuLinkItem render={<Link href="/docs" />}>Docs</MenuLinkItem>
+```
+
+Use **`href`** only for plain anchor links:
+
+```tsx
+<MenuLinkItem href="/docs">Docs</MenuLinkItem>
 ```
 
 ### MenuCheckboxItem

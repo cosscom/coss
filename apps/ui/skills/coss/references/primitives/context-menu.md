@@ -69,8 +69,9 @@ Wrap the trigger around the surface that should accept right click or long press
 
 - **Portal forwarding**: optional `portalProps` on `ContextMenuPopup` -> Base UI `ContextMenu.Portal` (`keepMounted`, `container`, ...). See [portal-props.md](../portal-props.md).
 - Use `ContextMenuTrigger` on a non-interactive wrapper (`div`) around the target surface.
-- Use `ContextMenuLinkItem` for navigation links; use `render={<Link href="..." />}` with your router.
-- Use `ContextMenuItem render={<Link ... />}` only when you need item semantics with a custom link composition.
+- Use `ContextMenuLinkItem` for navigation links.
+- If you were on `ContextMenuItem render={<Link href="..." />}`, switch to `ContextMenuLinkItem` but **keep `render={<Link … />}`** — do not use `href` alone with a router Link.
+- Use `href` on `ContextMenuLinkItem` only for plain `<a>` navigation.
 - Use `ContextMenuItem closeOnClick` for action items that should dismiss the menu.
 - Use `ContextMenuCheckboxItem variant="switch"` for toggle-style preferences.
 - Use `ContextMenuRadioGroup` + `ContextMenuRadioItem` for single-choice options.
@@ -86,7 +87,7 @@ Wrap the trigger around the surface that should accept right click or long press
 ## Useful particle references
 
 - basic pointer menu: `p-context-menu-1`
-- link/navigation items: `p-context-menu-2`
+- link/navigation with `ContextMenuLinkItem render={<Link … />}`: `p-context-menu-2`
 - nested submenu pattern: `p-context-menu-3`
 - checkbox item pattern: `p-context-menu-4`
 - grouped sections with labels: `p-context-menu-5`

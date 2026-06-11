@@ -21,7 +21,9 @@ No migration from an existing coss primitive—opt in where you need pointer-tri
 
 **`MenuLinkItem`** and **`ContextMenuLinkItem`** are styled wrappers for Base UI **`LinkItem`**. They match **`MenuItem`** / **`ContextMenuItem`** visually and default **`closeOnClick`** to **`true`** so the menu closes on navigation.
 
-Prefer them over **`MenuItem render={<Link href="..." />}`** (or the context menu equivalent) for link rows: native **`<a>`** semantics, **`href`**, and keyboard text navigation without treating links as generic action items.
+**`LinkItem`** renders a native **`<a>`** when you pass **`href`**. If you were already using **`render={<Link href="..." />}`** (or another router link), **keep `render`** on the link item — swap the component name only, do not drop `render` for `href` alone.
+
+Use **`href`** only for plain anchor links with no router **`Link`**.
 
 **Migration:**
 
@@ -37,29 +39,28 @@ Prefer them over **`MenuItem render={<Link href="..." />}`** (or the context men
 
 ```diff
 - <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>
-+ <MenuLinkItem href="/docs">Docs</MenuLinkItem>
++ <MenuLinkItem render={<Link href="/docs" />}>Docs</MenuLinkItem>
 ```
 
-With a router **`Link`**, keep using **`render`** on the link item:
+Plain anchor (no router **`Link`**):
 
-```diff
-- <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>
-+ <MenuLinkItem render={<Link href="/docs" />}>Docs</MenuLinkItem>
+```tsx
+<MenuLinkItem href="/docs">Docs</MenuLinkItem>
 ```
 
 For context menus:
 
 ```diff
 - <ContextMenuItem render={<Link href="/docs" />}>Docs</ContextMenuItem>
-+ <ContextMenuLinkItem href="/docs">Docs</ContextMenuLinkItem>
++ <ContextMenuLinkItem render={<Link href="/docs" />}>Docs</ContextMenuLinkItem>
 ```
 
-Existing **`MenuItem render={<Link … />}`** usage keeps working; migrate when you touch those menus for clearer semantics.
+Existing **`MenuItem render={<Link … />}`** usage keeps working; migrate when you touch those menus.
 
 **Agent migration prompt:**
 
 ```text
-coss now exports MenuLinkItem (menu.tsx) and ContextMenuLinkItem (context-menu.tsx) for navigation rows in menus. Replace MenuItem or ContextMenuItem with render={<Link href="..." />} (or render={<a href="..." />}) with MenuLinkItem or ContextMenuLinkItem. Use href for plain anchors; use render={<Link … />} when composing with Next.js or another router Link. Keep MenuItem/ContextMenuItem for actions (onClick), not navigation. Context Menu is a new @coss/context-menu package—use it for right-click/long-press menus; see Context Menu docs.
+coss now exports MenuLinkItem (menu.tsx) and ContextMenuLinkItem (context-menu.tsx) for navigation rows. Replace MenuItem/ContextMenuItem with render={<Link href="..." />} by changing only the component to MenuLinkItem/ContextMenuLinkItem — keep render={<Link … />}; do not replace render with href when using Next.js or another router Link. Use href on MenuLinkItem/ContextMenuLinkItem only for plain <a> navigation without a router Link. Keep MenuItem/ContextMenuItem for actions (onClick), not navigation. Context Menu is a new @coss/context-menu package—see Context Menu docs.
 ```
 
 ## May 29, 2026
