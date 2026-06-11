@@ -3,6 +3,65 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## June 11, 2026
+
+### Context Menu
+
+**`@coss/context-menu`** is a new registry component for right-click and long-press action menus anchored to the pointer. See the [Context Menu](/ui/docs/components/context-menu) docs for installation and examples.
+
+**Install:**
+
+```bash
+npx shadcn@latest add @coss/context-menu
+```
+
+No migration from an existing coss primitive—opt in where you need pointer-triggered menus instead of (or alongside) **`Menu`**.
+
+### Menu & Context Menu — link items
+
+**`MenuLinkItem`** and **`ContextMenuLinkItem`** are styled wrappers for Base UI **`LinkItem`**. They match **`MenuItem`** / **`ContextMenuItem`** visually and default **`closeOnClick`** to **`true`** so the menu closes on navigation.
+
+Prefer them over **`MenuItem render={<Link href="..." />}`** (or the context menu equivalent) for link rows: native **`<a>`** semantics, **`href`**, and keyboard text navigation without treating links as generic action items.
+
+**Migration:**
+
+```diff
+  import {
+    Menu,
+-   MenuItem,
++   MenuLinkItem,
+    MenuPopup,
+    MenuTrigger,
+  } from "@/components/ui/menu"
+```
+
+```diff
+- <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>
++ <MenuLinkItem href="/docs">Docs</MenuLinkItem>
+```
+
+With a router **`Link`**, keep using **`render`** on the link item:
+
+```diff
+- <MenuItem render={<Link href="/docs" />}>Docs</MenuItem>
++ <MenuLinkItem render={<Link href="/docs" />}>Docs</MenuLinkItem>
+```
+
+For context menus:
+
+```diff
+- <ContextMenuItem render={<Link href="/docs" />}>Docs</ContextMenuItem>
++ <ContextMenuLinkItem href="/docs">Docs</ContextMenuLinkItem>
+```
+
+Existing **`MenuItem render={<Link … />}`** usage keeps working; migrate when you touch those menus for clearer semantics.
+
+**Agent migration prompt:**
+
+```text
+coss now exports MenuLinkItem (menu.tsx) and ContextMenuLinkItem (context-menu.tsx) for navigation rows in menus. Replace MenuItem or ContextMenuItem with render={<Link href="..." />} (or render={<a href="..." />}) with MenuLinkItem or ContextMenuLinkItem. Use href for plain anchors; use render={<Link … />} when composing with Next.js or another router Link. Keep MenuItem/ContextMenuItem for actions (onClick), not navigation. Context Menu is a new @coss/context-menu package—use it for right-click/long-press menus; see Context Menu docs.
+```
+
 ## May 29, 2026
 
 ### Scroll Area

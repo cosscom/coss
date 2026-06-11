@@ -17,6 +17,7 @@
     "@coss/collapsible",
     "@coss/combobox",
     "@coss/command",
+    "@coss/context-menu",
     "@coss/dialog",
     "@coss/drawer",
     "@coss/empty",

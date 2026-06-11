@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-context-menu-5",
+  "description": "Context menu with group labels",
+  "registryDependencies": [
+    "@coss/context-menu"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-context-menu-5.tsx",
+      "content": "import {\n  ContextMenu,\n  ContextMenuGroup,\n  ContextMenuGroupLabel,\n  ContextMenuItem,\n  ContextMenuPopup,\n  ContextMenuSeparator,\n  ContextMenuTrigger,\n} from \"@/registry/default/ui/context-menu\";\n\nexport default function Particle() {\n  return (\n    <ContextMenu>\n      <ContextMenuTrigger className=\"flex h-32 w-full max-w-sm items-center justify-center rounded-lg border border-dashed text-muted-foreground text-sm\">\n        Right click here\n      </ContextMenuTrigger>\n      <ContextMenuPopup>\n        <ContextMenuGroup>\n          <ContextMenuGroupLabel>File</ContextMenuGroupLabel>\n          <ContextMenuItem>Rename</ContextMenuItem>\n          <ContextMenuItem>Duplicate</ContextMenuItem>\n        </ContextMenuGroup>\n        <ContextMenuSeparator />\n        <ContextMenuGroup>\n          <ContextMenuGroupLabel>Share</ContextMenuGroupLabel>\n          <ContextMenuItem>Send copy</ContextMenuItem>\n          <ContextMenuItem>Export</ContextMenuItem>\n        </ContextMenuGroup>\n      </ContextMenuPopup>\n    </ContextMenu>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"
+  },
+  "categories": [
+    "context menu",
+    "menu"
+  ],
+  "type": "registry:block"
+}

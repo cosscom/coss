@@ -277,6 +277,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "context-menu": {
+    name: "context-menu",
+    description: "",
+    type: "registry:ui",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/ui/context-menu.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/ui/context-menu.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "dialog": {
     name: "dialog",
     description: "",
@@ -6756,6 +6774,150 @@ export const Index: Record<string, any> = {
     }),
     categories: ["dropdown","menu"],
     meta: undefined,
+  },
+  "p-context-menu-1": {
+    name: "p-context-menu-1",
+    description: "Basic context menu",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-2": {
+    name: "p-context-menu-2",
+    description: "Context menu with link items",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-3": {
+    name: "p-context-menu-3",
+    description: "Nested context menu",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-4": {
+    name: "p-context-menu-4",
+    description: "Context menu with checkbox items",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-5": {
+    name: "p-context-menu-5",
+    description: "Context menu with group labels",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-5.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-5.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-6": {
+    name: "p-context-menu-6",
+    description: "Context menu with icons",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-6.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-6.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-7": {
+    name: "p-context-menu-7",
+    description: "Context menu with radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
+  },
+  "p-context-menu-8": {
+    name: "p-context-menu-8",
+    description: "Context menu with switch checkbox items",
+    type: "registry:block",
+    registryDependencies: ["@coss/context-menu"],
+    files: [{
+      path: "registry/default/particles/p-context-menu-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-context-menu-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["context menu","menu","switch"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-sm"},
   },
   "p-number-field-1": {
     name: "p-number-field-1",
