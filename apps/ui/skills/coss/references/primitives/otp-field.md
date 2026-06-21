@@ -1,5 +1,7 @@
 # coss OTP Field
 
+Built on [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPField` from `@base-ui/react/otp-field`).
+
 ## When to use
 
 - One-time passcode entry with segmented slots.

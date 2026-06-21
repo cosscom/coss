@@ -3,6 +3,27 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## June 21, 2026
+
+### OTP Field (Base UI 1.6) {#otp-field-base-ui-16}
+
+coss now depends on **`@base-ui/react` 1.6.0**. Base UI graduated OTP Field from preview: the namespace export is **`OTPField`** (not `OTPFieldPreview`). Re-add or update **`@coss/otp-field`** to pick up the registry change.
+
+**Migration** (only if you import Base UI directly or copied an older `otp-field.tsx`):
+
+```diff
+- import { OTPFieldPreview as OTPFieldPrimitive } from "@base-ui/react/otp-field"
++ import { OTPField as OTPFieldPrimitive } from "@base-ui/react/otp-field"
+```
+
+The coss public API is unchanged: **`OTPField`**, **`OTPFieldInput`**, **`OTPFieldSeparator`**, and **`OTPFieldPrimitive`**.
+
+**Agent migration prompt:**
+
+```text
+Base UI 1.6 renamed OTPFieldPreview to OTPField. In components/ui/otp-field.tsx (or @coss/otp-field), import { OTPField as OTPFieldPrimitive } from "@base-ui/react/otp-field". Bump @base-ui/react to ^1.6.0. Do not rename coss exports—OTPField, OTPFieldInput, and OTPFieldSeparator stay the same.
+```
+
 ## June 11, 2026
 
 ### Context Menu
@@ -118,7 +139,7 @@ The coss Form component no longer adds default Tailwind layout. Add className="f
 
 ## Apr 14, 2026
 
-### OTP Field
+### OTP Field {#otp-field}
 
 The **`input-otp.tsx`** registry component has been removed in favor of **`otp-field.tsx`** (`@coss/otp-field`), which wraps Base UI OTP Field. See the [OTP Field](/ui/docs/components/otp-field) docs and [migration guide](/ui/docs/radix-migration#otp-field) for API details.
 
