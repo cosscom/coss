@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-select-21.tsx",
-      "content": "import {\n  Select,\n  SelectItem,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\";\n\nconst items = [\n  { label: \"Next.js\", value: \"next\" },\n  { label: \"Vite\", value: \"vite\" },\n  { label: \"Astro\", value: \"astro\" },\n];\n\nexport default function Particle() {\n  return (\n    <Select aria-label=\"Select framework\" defaultValue=\"next\" items={items}>\n      <SelectTrigger className=\"w-fit\">\n        <SelectValue />\n      </SelectTrigger>\n      <SelectPopup>\n        {items.map(({ label, value }) => (\n          <SelectItem key={value} value={value}>\n            {label}\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  );\n}\n",
+      "content": "import {\r\n  Select,\r\n  SelectItem,\r\n  SelectPopup,\r\n  SelectTrigger,\r\n  SelectValue,\r\n} from \"@/registry/default/ui/select\";\r\n\r\nconst items = [\r\n  { label: \"Next.js\", value: \"next\" },\r\n  { label: \"Vite\", value: \"vite\" },\r\n  { label: \"Astro\", value: \"astro\" },\r\n];\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Select aria-label=\"Select framework\" defaultValue=\"next\" items={items}>\r\n      <SelectTrigger className=\"w-fit\">\r\n        <SelectValue />\r\n      </SelectTrigger>\r\n      <SelectPopup>\r\n        {items.map(({ label, value }) => (\r\n          <SelectItem key={value} value={value}>\r\n            {label}\r\n          </SelectItem>\r\n        ))}\r\n      </SelectPopup>\r\n    </Select>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

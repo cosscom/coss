@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-badge-17.tsx",
-      "content": "import { Badge } from \"@/registry/default/ui/badge\";\n\nexport default function Particle() {\n  return (\n    <Badge variant=\"outline\">\n      <span aria-hidden=\"true\" className=\"size-1.5 rounded-full bg-amber-500\" />\n      Pending\n    </Badge>\n  );\n}\n",
+      "content": "import { Badge } from \"@/registry/default/ui/badge\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Badge variant=\"outline\">\r\n      <span aria-hidden=\"true\" className=\"size-1.5 rounded-full bg-amber-500\" />\r\n      Pending\r\n    </Badge>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

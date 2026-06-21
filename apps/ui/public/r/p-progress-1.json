@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-progress-1.tsx",
-      "content": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport { Progress } from \"@/registry/default/ui/progress\";\n\nexport default function Particle() {\n  const [value, setValue] = useState(20);\n\n  useEffect(() => {\n    const interval = setInterval(() => {\n      setValue((current) =>\n        Math.min(100, Math.round(current + Math.random() * 25)),\n      );\n    }, 1000);\n    return () => clearInterval(interval);\n  }, []);\n\n  return <Progress value={value} />;\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { useEffect, useState } from \"react\";\r\nimport { Progress } from \"@/registry/default/ui/progress\";\r\n\r\nexport default function Particle() {\r\n  const [value, setValue] = useState(20);\r\n\r\n  useEffect(() => {\r\n    const interval = setInterval(() => {\r\n      setValue((current) =>\r\n        Math.min(100, Math.round(current + Math.random() * 25)),\r\n      );\r\n    }, 1000);\r\n    return () => clearInterval(interval);\r\n  }, []);\r\n\r\n  return <Progress value={value} />;\r\n}\r\n",
       "type": "registry:block"
     }
   ],

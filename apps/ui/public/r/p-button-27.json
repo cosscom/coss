@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-27.tsx",
-      "content": "import { QrCodeIcon } from \"lucide-react\";\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\n\nexport default function Particle() {\n  return (\n    <Group>\n      <Button aria-label=\"QR code\" size=\"icon\">\n        <QrCodeIcon aria-hidden=\"true\" />\n      </Button>\n      <GroupSeparator className=\"bg-primary/72\" />\n      <Button>Sign in</Button>\n    </Group>\n  );\n}\n",
+      "content": "import { QrCodeIcon } from \"lucide-react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Group>\r\n      <Button aria-label=\"QR code\" size=\"icon\">\r\n        <QrCodeIcon aria-hidden=\"true\" />\r\n      </Button>\r\n      <GroupSeparator className=\"bg-primary/72\" />\r\n      <Button>Sign in</Button>\r\n    </Group>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

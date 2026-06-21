@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-group-16.tsx",
-      "content": "import { PlusIcon } from \"lucide-react\";\nimport { Button } from \"@/registry/default/ui/button\";\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Add item\">\n      <Button aria-label=\"Add\" size=\"icon\" variant=\"outline\">\n        <PlusIcon aria-hidden=\"true\" />\n      </Button>\n      <GroupSeparator />\n      <Input aria-label=\"Item name\" placeholder=\"Enter item name\" type=\"text\" />\n    </Group>\n  );\n}\n",
+      "content": "import { PlusIcon } from \"lucide-react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\r\nimport { Input } from \"@/registry/default/ui/input\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Group aria-label=\"Add item\">\r\n      <Button aria-label=\"Add\" size=\"icon\" variant=\"outline\">\r\n        <PlusIcon aria-hidden=\"true\" />\r\n      </Button>\r\n      <GroupSeparator />\r\n      <Input aria-label=\"Item name\" placeholder=\"Enter item name\" type=\"text\" />\r\n    </Group>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

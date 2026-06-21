@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-calendar-7.tsx",
-      "content": "\"use client\";\n\nimport { addDays } from \"date-fns\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const today = new Date();\n\n  return (\n    <Calendar\n      disabled={[\n        { before: new Date() },\n        new Date(),\n        { dayOfWeek: [0, 6] },\n        {\n          from: addDays(today, 14),\n          to: addDays(today, 16),\n        },\n        {\n          from: addDays(today, 23),\n          to: addDays(today, 24),\n        },\n      ]}\n      excludeDisabled\n      mode=\"range\"\n    />\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { addDays } from \"date-fns\";\r\nimport { Calendar } from \"@/registry/default/ui/calendar\";\r\n\r\nexport default function Particle() {\r\n  const today = new Date();\r\n\r\n  return (\r\n    <Calendar\r\n      disabled={[\r\n        { before: new Date() },\r\n        new Date(),\r\n        { dayOfWeek: [0, 6] },\r\n        {\r\n          from: addDays(today, 14),\r\n          to: addDays(today, 16),\r\n        },\r\n        {\r\n          from: addDays(today, 23),\r\n          to: addDays(today, 24),\r\n        },\r\n      ]}\r\n      excludeDisabled\r\n      mode=\"range\"\r\n    />\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-group-20.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Email subscription\">\n      <Input aria-label=\"Email\" placeholder=\"Email\" type=\"email\" />\n      <GroupSeparator />\n      <Button variant=\"outline\">Subscribe</Button>\n    </Group>\n  );\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\r\nimport { Group, GroupSeparator } from \"@/registry/default/ui/group\";\r\nimport { Input } from \"@/registry/default/ui/input\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Group aria-label=\"Email subscription\">\r\n      <Input aria-label=\"Email\" placeholder=\"Email\" type=\"email\" />\r\n      <GroupSeparator />\r\n      <Button variant=\"outline\">Subscribe</Button>\r\n    </Group>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

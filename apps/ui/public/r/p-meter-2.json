@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-meter-2.tsx",
-      "content": "import { Meter } from \"@/registry/default/ui/meter\";\n\nexport default function Particle() {\n  return <Meter value={50} />;\n}\n",
+      "content": "import { Meter } from \"@/registry/default/ui/meter\";\r\n\r\nexport default function Particle() {\r\n  return <Meter value={50} />;\r\n}\r\n",
       "type": "registry:block"
     }
   ],

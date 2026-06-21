@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-calendar-11.tsx",
-      "content": "\"use client\";\n\nimport { useState } from \"react\";\nimport { Calendar } from \"@/registry/default/ui/calendar\";\n\nexport default function Particle() {\n  const [date, setDate] = useState<Date | undefined>(new Date());\n\n  return (\n    <Calendar\n      classNames={{\n        month_caption: \"ms-0 me-[calc(var(--cell-size)*2)] justify-start\",\n        nav: \"justify-end\",\n      }}\n      mode=\"single\"\n      onSelect={setDate}\n      selected={date}\n    />\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { useState } from \"react\";\r\nimport { Calendar } from \"@/registry/default/ui/calendar\";\r\n\r\nexport default function Particle() {\r\n  const [date, setDate] = useState<Date | undefined>(new Date());\r\n\r\n  return (\r\n    <Calendar\r\n      classNames={{\r\n        month_caption: \"ms-0 me-[calc(var(--cell-size)*2)] justify-start\",\r\n        nav: \"justify-end\",\r\n      }}\r\n      mode=\"single\"\r\n      onSelect={setDate}\r\n      selected={date}\r\n    />\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-37.tsx",
-      "content": "\"use client\";\n\nimport { PlusIcon } from \"lucide-react\";\nimport { useState } from \"react\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  const [open, setOpen] = useState(false);\n\n  return (\n    <Button\n      aria-expanded={open}\n      aria-label={open ? \"Close menu\" : \"Open menu\"}\n      className=\"rounded-full before:rounded-full\"\n      onClick={() => setOpen((prevState) => !prevState)}\n      size=\"icon\"\n      variant=\"outline\"\n    >\n      <PlusIcon\n        aria-hidden=\"true\"\n        className=\"in-[[aria-expanded=true]]:rotate-[135deg] transition-transform duration-500 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)]\"\n      />\n    </Button>\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { PlusIcon } from \"lucide-react\";\r\nimport { useState } from \"react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  const [open, setOpen] = useState(false);\r\n\r\n  return (\r\n    <Button\r\n      aria-expanded={open}\r\n      aria-label={open ? \"Close menu\" : \"Open menu\"}\r\n      className=\"rounded-full before:rounded-full\"\r\n      onClick={() => setOpen((prevState) => !prevState)}\r\n      size=\"icon\"\r\n      variant=\"outline\"\r\n    >\r\n      <PlusIcon\r\n        aria-hidden=\"true\"\r\n        className=\"in-[[aria-expanded=true]]:rotate-[135deg] transition-transform duration-500 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)]\"\r\n      />\r\n    </Button>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

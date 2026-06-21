@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-33.tsx",
-      "content": "import { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <div className=\"inline-flex items-center gap-2\">\n      <Button variant=\"ghost\">Cancel</Button>\n      <Button>Save</Button>\n    </div>\n  );\n}\n",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <div className=\"inline-flex items-center gap-2\">\r\n      <Button variant=\"ghost\">Cancel</Button>\r\n      <Button>Save</Button>\r\n    </div>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

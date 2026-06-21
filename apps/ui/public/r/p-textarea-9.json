@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-textarea-9.tsx",
-      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return (\n    <Textarea\n      aria-label=\"Message\"\n      className=\"border-transparent bg-muted shadow-none before:hidden\"\n      placeholder=\"Type your message here\"\n    />\n  );\n}\n",
+      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Textarea\r\n      aria-label=\"Message\"\r\n      className=\"border-transparent bg-muted shadow-none before:hidden\"\r\n      placeholder=\"Type your message here\"\r\n    />\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-13.tsx",
-      "content": "import { useId } from \"react\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Label htmlFor={id}>\n        Email <span className=\"text-destructive\">*</span>\n      </Label>\n      <Input id={id} placeholder=\"Email\" required type=\"email\" />\n    </div>\n  );\n}\n",
+      "content": "import { useId } from \"react\";\r\nimport { Input } from \"@/registry/default/ui/input\";\r\nimport { Label } from \"@/registry/default/ui/label\";\r\n\r\nexport default function Particle() {\r\n  const id = useId();\r\n  return (\r\n    <div className=\"flex flex-col gap-2\">\r\n      <Label htmlFor={id}>\r\n        Email <span className=\"text-destructive\">*</span>\r\n      </Label>\r\n      <Input id={id} placeholder=\"Email\" required type=\"email\" />\r\n    </div>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

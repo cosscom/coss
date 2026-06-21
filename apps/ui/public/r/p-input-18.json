@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-input-18.tsx",
-      "content": "\"use client\";\n\nimport { useState } from \"react\";\nimport { Field, FieldDescription } from \"@/registry/default/ui/field\";\nimport { Input } from \"@/registry/default/ui/input\";\n\nexport default function Particle() {\n  const maxLength = 14;\n  const [value, setValue] = useState(\"\");\n\n  return (\n    <Field>\n      <Input\n        aria-label=\"Code\"\n        maxLength={maxLength}\n        onChange={(e) => setValue(e.target.value)}\n        placeholder=\"Enter code\"\n        type=\"text\"\n        value={value}\n      />\n      <FieldDescription>\n        <span className=\"tabular-nums\">{maxLength - value.length}</span>{\" \"}\n        characters left\n      </FieldDescription>\n    </Field>\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { useState } from \"react\";\r\nimport { Field, FieldDescription } from \"@/registry/default/ui/field\";\r\nimport { Input } from \"@/registry/default/ui/input\";\r\n\r\nexport default function Particle() {\r\n  const maxLength = 14;\r\n  const [value, setValue] = useState(\"\");\r\n\r\n  return (\r\n    <Field>\r\n      <Input\r\n        aria-label=\"Code\"\r\n        maxLength={maxLength}\r\n        onChange={(e) => setValue(e.target.value)}\r\n        placeholder=\"Enter code\"\r\n        type=\"text\"\r\n        value={value}\r\n      />\r\n      <FieldDescription>\r\n        <span className=\"tabular-nums\">{maxLength - value.length}</span>{\" \"}\r\n        characters left\r\n      </FieldDescription>\r\n    </Field>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

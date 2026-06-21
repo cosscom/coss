@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-30.tsx",
-      "content": "import { ArrowRightIcon } from \"lucide-react\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button>\n      Get Started\n      <ArrowRightIcon\n        aria-hidden=\"true\"\n        className=\"in-[[data-slot=button]:hover]:translate-x-0.5 transition-transform\"\n      />\n    </Button>\n  );\n}\n",
+      "content": "import { ArrowRightIcon } from \"lucide-react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Button>\r\n      Get Started\r\n      <ArrowRightIcon\r\n        aria-hidden=\"true\"\r\n        className=\"in-[[data-slot=button]:hover]:translate-x-0.5 transition-transform\"\r\n      />\r\n    </Button>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

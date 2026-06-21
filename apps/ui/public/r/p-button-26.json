@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-26.tsx",
-      "content": "\"use client\";\n\nimport { StarIcon } from \"lucide-react\";\nimport { useState } from \"react\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  const [isStarred, setIsStarred] = useState(false);\n  const count = isStarred ? 730 : 729;\n\n  return (\n    <Button onClick={() => setIsStarred(!isStarred)}>\n      <StarIcon\n        aria-hidden=\"true\"\n        className={`${isStarred ? \"fill-yellow-500 text-yellow-500\" : undefined}`}\n      />\n      <span className=\"flex items-baseline gap-2\">\n        {isStarred ? \"Starred\" : \"Star\"}\n        <span className=\"text-primary-foreground/60 text-xs\">{count}</span>\n      </span>\n    </Button>\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { StarIcon } from \"lucide-react\";\r\nimport { useState } from \"react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  const [isStarred, setIsStarred] = useState(false);\r\n  const count = isStarred ? 730 : 729;\r\n\r\n  return (\r\n    <Button onClick={() => setIsStarred(!isStarred)}>\r\n      <StarIcon\r\n        aria-hidden=\"true\"\r\n        className={`${isStarred ? \"fill-yellow-500 text-yellow-500\" : undefined}`}\r\n      />\r\n      <span className=\"flex items-baseline gap-2\">\r\n        {isStarred ? \"Starred\" : \"Star\"}\r\n        <span className=\"text-primary-foreground/60 text-xs\">{count}</span>\r\n      </span>\r\n    </Button>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-avatar-6.tsx",
-      "content": "import { UserIcon } from \"lucide-react\";\nimport { Avatar, AvatarFallback } from \"@/registry/default/ui/avatar\";\n\nexport default function Particle() {\n  return (\n    <Avatar>\n      <AvatarFallback>\n        <UserIcon className=\"size-4\" />\n      </AvatarFallback>\n    </Avatar>\n  );\n}\n",
+      "content": "import { UserIcon } from \"lucide-react\";\r\nimport { Avatar, AvatarFallback } from \"@/registry/default/ui/avatar\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Avatar>\r\n      <AvatarFallback>\r\n        <UserIcon className=\"size-4\" />\r\n      </AvatarFallback>\r\n    </Avatar>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

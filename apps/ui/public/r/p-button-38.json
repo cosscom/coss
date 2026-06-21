@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-38.tsx",
-      "content": "import { RiGithubFill, RiGoogleFill, RiTwitterXFill } from \"@remixicon/react\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <Button variant=\"outline\">\n        <RiGoogleFill aria-hidden=\"true\" />\n        <span className=\"flex-1\">Login with Google</span>\n      </Button>\n      <Button variant=\"outline\">\n        <RiTwitterXFill aria-hidden=\"true\" />\n        <span className=\"flex-1\">Login with X</span>\n      </Button>\n      <Button variant=\"outline\">\n        <RiGithubFill aria-hidden=\"true\" />\n        <span className=\"flex-1\">Login with GitHub</span>\n      </Button>\n    </div>\n  );\n}\n",
+      "content": "import { RiGithubFill, RiGoogleFill, RiTwitterXFill } from \"@remixicon/react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <div className=\"flex flex-col gap-2\">\r\n      <Button variant=\"outline\">\r\n        <RiGoogleFill aria-hidden=\"true\" />\r\n        <span className=\"flex-1\">Login with Google</span>\r\n      </Button>\r\n      <Button variant=\"outline\">\r\n        <RiTwitterXFill aria-hidden=\"true\" />\r\n        <span className=\"flex-1\">Login with X</span>\r\n      </Button>\r\n      <Button variant=\"outline\">\r\n        <RiGithubFill aria-hidden=\"true\" />\r\n        <span className=\"flex-1\">Login with GitHub</span>\r\n      </Button>\r\n    </div>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

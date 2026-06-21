@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-textarea-8.tsx",
-      "content": "import { useId } from \"react\";\nimport { Label } from \"@/registry/default/ui/label\";\nimport { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  const id = useId();\n  return (\n    <div className=\"flex flex-col gap-2\">\n      <div className=\"inline-flex w-full items-center justify-between gap-2\">\n        <Label htmlFor={id}>Message</Label>\n        <Label className=\"font-normal text-muted-foreground\" render={<span />}>\n          Optional\n        </Label>\n      </div>\n      <Textarea id={id} placeholder=\"Type your message here\" />\n    </div>\n  );\n}\n",
+      "content": "import { useId } from \"react\";\r\nimport { Label } from \"@/registry/default/ui/label\";\r\nimport { Textarea } from \"@/registry/default/ui/textarea\";\r\n\r\nexport default function Particle() {\r\n  const id = useId();\r\n  return (\r\n    <div className=\"flex flex-col gap-2\">\r\n      <div className=\"inline-flex w-full items-center justify-between gap-2\">\r\n        <Label htmlFor={id}>Message</Label>\r\n        <Label className=\"font-normal text-muted-foreground\" render={<span />}>\r\n          Optional\r\n        </Label>\r\n      </div>\r\n      <Textarea id={id} placeholder=\"Type your message here\" />\r\n    </div>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

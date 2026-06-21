@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-toast-10.tsx",
-      "content": "\"use client\";\n\nimport { Button } from \"@/registry/default/ui/button\";\nimport { toastManager } from \"@/registry/default/ui/toast\";\n\nconst DEDUP_ID = \"coss-demo-dedup-toast\";\n\nexport default function Particle() {\n  return (\n    <Button\n      onClick={() => {\n        toastManager.add({\n          description:\n            \"Repeated clicks update this toast instead of stacking another.\",\n          id: DEDUP_ID,\n          title: \"Saved\",\n          type: \"success\",\n        });\n      }}\n      variant=\"outline\"\n    >\n      One Success Toast\n    </Button>\n  );\n}\n",
+      "content": "\"use client\";\r\n\r\nimport { Button } from \"@/registry/default/ui/button\";\r\nimport { toastManager } from \"@/registry/default/ui/toast\";\r\n\r\nconst DEDUP_ID = \"coss-demo-dedup-toast\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Button\r\n      onClick={() => {\r\n        toastManager.add({\r\n          description:\r\n            \"Repeated clicks update this toast instead of stacking another.\",\r\n          id: DEDUP_ID,\r\n          title: \"Saved\",\r\n          type: \"success\",\r\n        });\r\n      }}\r\n      variant=\"outline\"\r\n    >\r\n      One Success Toast\r\n    </Button>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-alert-3.tsx",
-      "content": "import { InfoIcon } from \"lucide-react\";\nimport {\n  Alert,\n  AlertAction,\n  AlertDescription,\n  AlertTitle,\n} from \"@/registry/default/ui/alert\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Alert>\n      <InfoIcon />\n      <AlertTitle>Heads up!</AlertTitle>\n      <AlertDescription>\n        Describe what can be done about it here.\n      </AlertDescription>\n      <AlertAction>\n        <Button size=\"xs\" variant=\"ghost\">\n          Dismiss\n        </Button>\n        <Button size=\"xs\">Ok</Button>\n      </AlertAction>\n    </Alert>\n  );\n}\n",
+      "content": "import { InfoIcon } from \"lucide-react\";\r\nimport {\r\n  Alert,\r\n  AlertAction,\r\n  AlertDescription,\r\n  AlertTitle,\r\n} from \"@/registry/default/ui/alert\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Alert>\r\n      <InfoIcon />\r\n      <AlertTitle>Heads up!</AlertTitle>\r\n      <AlertDescription>\r\n        Describe what can be done about it here.\r\n      </AlertDescription>\r\n      <AlertAction>\r\n        <Button size=\"xs\" variant=\"ghost\">\r\n          Dismiss\r\n        </Button>\r\n        <Button size=\"xs\">Ok</Button>\r\n      </AlertAction>\r\n    </Alert>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

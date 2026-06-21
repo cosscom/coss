@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-toggle-3.tsx",
-      "content": "import { BoldIcon } from \"lucide-react\";\nimport { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle aria-label=\"Toggle bold\" variant=\"outline\">\n      <BoldIcon />\n    </Toggle>\n  );\n}\n",
+      "content": "import { BoldIcon } from \"lucide-react\";\r\nimport { Toggle } from \"@/registry/default/ui/toggle\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Toggle aria-label=\"Toggle bold\" variant=\"outline\">\r\n      <BoldIcon />\r\n    </Toggle>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

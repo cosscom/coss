@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-group-17.tsx",
-      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Label } from \"@/registry/default/ui/label\";\n\nexport default function Particle() {\n  return (\n    <Group aria-label=\"Price input\">\n      <Input\n        aria-label=\"Enter the amount\"\n        className=\"text-right\"\n        defaultValue=\"100\"\n        id=\"amount\"\n        type=\"text\"\n      />\n      <GroupSeparator />\n      <GroupText render={<Label aria-label=\"Currency\" htmlFor=\"amount\" />}>\n        USD\n      </GroupText>\n    </Group>\n  );\n}\n",
+      "content": "import { Group, GroupSeparator, GroupText } from \"@/registry/default/ui/group\";\r\nimport { Input } from \"@/registry/default/ui/input\";\r\nimport { Label } from \"@/registry/default/ui/label\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Group aria-label=\"Price input\">\r\n      <Input\r\n        aria-label=\"Enter the amount\"\r\n        className=\"text-right\"\r\n        defaultValue=\"100\"\r\n        id=\"amount\"\r\n        type=\"text\"\r\n      />\r\n      <GroupSeparator />\r\n      <GroupText render={<Label aria-label=\"Currency\" htmlFor=\"amount\" />}>\r\n        USD\r\n      </GroupText>\r\n    </Group>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

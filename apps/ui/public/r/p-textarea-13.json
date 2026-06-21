@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-textarea-13.tsx",
-      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\n\nexport default function Particle() {\n  return (\n    <Textarea\n      className=\"*:field-sizing-fixed *:min-h-0\"\n      placeholder=\"Type your message here\"\n      rows={2}\n    />\n  );\n}\n",
+      "content": "import { Textarea } from \"@/registry/default/ui/textarea\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Textarea\r\n      className=\"*:field-sizing-fixed *:min-h-0\"\r\n      placeholder=\"Type your message here\"\r\n      rows={2}\r\n    />\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

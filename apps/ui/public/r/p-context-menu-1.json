@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-context-menu-1.tsx",
-      "content": "import {\n  ContextMenu,\n  ContextMenuItem,\n  ContextMenuPopup,\n  ContextMenuSeparator,\n  ContextMenuTrigger,\n} from \"@/registry/default/ui/context-menu\";\n\nexport default function Particle() {\n  return (\n    <ContextMenu>\n      <ContextMenuTrigger className=\"flex h-32 w-full max-w-sm items-center justify-center rounded-lg border border-dashed text-muted-foreground text-sm\">\n        Right click here\n      </ContextMenuTrigger>\n      <ContextMenuPopup>\n        <ContextMenuItem>Back</ContextMenuItem>\n        <ContextMenuItem>Forward</ContextMenuItem>\n        <ContextMenuSeparator />\n        <ContextMenuItem>Reload</ContextMenuItem>\n      </ContextMenuPopup>\n    </ContextMenu>\n  );\n}\n",
+      "content": "import {\r\n  ContextMenu,\r\n  ContextMenuItem,\r\n  ContextMenuPopup,\r\n  ContextMenuSeparator,\r\n  ContextMenuTrigger,\r\n} from \"@/registry/default/ui/context-menu\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <ContextMenu>\r\n      <ContextMenuTrigger className=\"flex h-32 w-full max-w-sm items-center justify-center rounded-lg border border-dashed text-muted-foreground text-sm\">\r\n        Right click here\r\n      </ContextMenuTrigger>\r\n      <ContextMenuPopup>\r\n        <ContextMenuItem>Back</ContextMenuItem>\r\n        <ContextMenuItem>Forward</ContextMenuItem>\r\n        <ContextMenuSeparator />\r\n        <ContextMenuItem>Reload</ContextMenuItem>\r\n      </ContextMenuPopup>\r\n    </ContextMenu>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

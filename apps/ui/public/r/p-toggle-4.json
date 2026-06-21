@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-toggle-4.tsx",
-      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\n\nexport default function Particle() {\n  return (\n    <Toggle size=\"sm\" variant=\"outline\">\n      Small\n    </Toggle>\n  );\n}\n",
+      "content": "import { Toggle } from \"@/registry/default/ui/toggle\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Toggle size=\"sm\" variant=\"outline\">\r\n      Small\r\n    </Toggle>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],

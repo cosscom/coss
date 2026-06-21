@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "registry/default/particles/p-button-16.tsx",
-      "content": "import { DownloadIcon } from \"lucide-react\";\nimport { Button } from \"@/registry/default/ui/button\";\n\nexport default function Particle() {\n  return (\n    <Button>\n      <DownloadIcon aria-hidden=\"true\" />\n      Download\n    </Button>\n  );\n}\n",
+      "content": "import { DownloadIcon } from \"lucide-react\";\r\nimport { Button } from \"@/registry/default/ui/button\";\r\n\r\nexport default function Particle() {\r\n  return (\r\n    <Button>\r\n      <DownloadIcon aria-hidden=\"true\" />\r\n      Download\r\n    </Button>\r\n  );\r\n}\r\n",
       "type": "registry:block"
     }
   ],
