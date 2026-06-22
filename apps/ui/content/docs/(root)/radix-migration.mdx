@@ -451,7 +451,7 @@ coss does **not** use the community [`input-otp`](https://github.com/guilhermero
 - Replace `maxLength` → `length` on the root
 - For controlled values, use `onValueChange` (and `value`) as documented for Base UI — not the old package’s `onChange` alone
 - Render one `OTPFieldInput` per character in **DOM order**; do not pass a slot `index`
-- Add an `aria-label` on each `OTPFieldInput` when there is no visible label associated with the control
+- Label `OTPField` on the root (`aria-label` or visible `<label>`); keep the first `OTPFieldInput` unlabeled and add slot `aria-label`s only to inputs `2..N`
 
 **Comparison Example:**
 
