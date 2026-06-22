@@ -475,8 +475,8 @@ coss does **not** use the community [`input-otp`](https://github.com/guilhermero
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
-<OTPField length={6} value={value} onValueChange={setValue}>
-  <OTPFieldInput aria-label="Character 1 of 6" />
+<OTPField aria-label="Verification code" length={6} value={value} onValueChange={setValue}>
+  <OTPFieldInput />
   <OTPFieldInput aria-label="Character 2 of 6" />
   <OTPFieldInput aria-label="Character 3 of 6" />
   <OTPFieldSeparator />

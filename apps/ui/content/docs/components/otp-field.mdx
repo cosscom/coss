@@ -61,7 +61,7 @@ import {
 
 ```tsx
 <OTPField aria-label="Verification code" length={6}>
-  <OTPFieldInput aria-label="Character 1 of 6" />
+  <OTPFieldInput />
   <OTPFieldInput aria-label="Character 2 of 6" />
   <OTPFieldInput aria-label="Character 3 of 6" />
   <OTPFieldSeparator />
@@ -96,7 +96,7 @@ Renders one OTP character input (Base UI `OTPField.Input`). Slots are ordered by
 | `className` | `string` | Merged with the default slot styles              |
 | `placeholder` | `string` | Native placeholder; pair with `focus-visible:placeholder:text-transparent` if hints should hide when typing |
 
-Add `aria-label` on each slot (e.g. `Character 2 of 6`) when you are not wrapping the field in `Field` with `FieldLabel` (otherwise association is automatic).
+Label the OTP control on the root (`OTPField`) with `aria-label` or a visible `<label>`/`FieldLabel`. In Base UI 1.6+, the first `OTPFieldInput` should inherit that field label, while subsequent slots can use `aria-label` (for example, `Character 2 of 6`).
 
 ### OTPFieldSeparator
 
