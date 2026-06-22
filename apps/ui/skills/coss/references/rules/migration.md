@@ -132,7 +132,7 @@ const items = [
 
 ### OTP Field: `input-otp` package → `@coss/otp-field`
 
-coss wraps [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPFieldPreview`). Remove the `input-otp` dependency and align with the new names and root props.
+coss wraps [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPField`). Remove the `input-otp` dependency and align with the new names and root props.
 
 ```tsx
 // shadcn / input-otp

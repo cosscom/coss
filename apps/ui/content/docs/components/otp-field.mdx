@@ -8,7 +8,7 @@ links:
 
 <ComponentPreview name="p-otp-field-1" />
 
-> **Note:** This component wraps [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPFieldPreview`), which is currently in **preview** and may change before it becomes stable.
+This component wraps [Base UI OTP Field](https://base-ui.com/react/components/otp-field).
 
 ## Installation
 
@@ -77,7 +77,7 @@ This component is built on [Base UI OTP Field](https://base-ui.com/react/compone
 
 ### OTPField
 
-Root component. Accepts the same props as `OTPFieldPreview.Root`; `className` is merged with the default layout styles.
+Root component. Accepts the same props as `OTPField.Root`; `className` is merged with the default layout styles.
 
 Use **`length`** (required) for the number of characters. The previous `maxLength` prop from the legacy `input-otp` package is not used.
 
@@ -89,7 +89,7 @@ Use **`length`** (required) for the number of characters. The previous `maxLengt
 
 ### OTPFieldInput
 
-Renders one OTP character input (Base UI `OTPFieldPreview.Input`). Slots are ordered by **DOM order** in the tree (no `index` prop).
+Renders one OTP character input (Base UI `OTPField.Input`). Slots are ordered by **DOM order** in the tree (no `index` prop).
 
 | Prop    | Type     | Description                                      |
 | ------- | -------- | ------------------------------------------------ |
@@ -100,7 +100,7 @@ Add `aria-label` on each slot (e.g. `Character 2 of 6`) when you are not wrappin
 
 ### OTPFieldSeparator
 
-Visual separator between slot groups. Uses the design-system `Separator` inside `OTPFieldPreview.Separator` for layout and accessibility.
+Visual separator between slot groups. Uses the design-system `Separator` inside `OTPField.Separator` for layout and accessibility.
 
 ## Examples
 
