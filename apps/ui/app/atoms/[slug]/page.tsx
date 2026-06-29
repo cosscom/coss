@@ -56,16 +56,14 @@ export default async function Page({ params }: PageProps) {
     preview?.username && preview.eventSlug ? preview : undefined;
 
   return (
-    <>
-      <div className="container w-full">
-        <PageHeader className="max-w-2xl *:items-start *:text-left">
-          <PageHeaderHeading>{atom.displayName}</PageHeaderHeading>
-          {atom.description ? (
-            <PageHeaderDescription>{atom.description}</PageHeaderDescription>
-          ) : null}
-        </PageHeader>
-      </div>
-      <div className="container w-full pb-12">
+    <div className="container w-full">
+      <PageHeader className="max-w-2xl *:items-start *:text-left">
+        <PageHeaderHeading>{atom.displayName}</PageHeaderHeading>
+        {atom.description ? (
+          <PageHeaderDescription>{atom.description}</PageHeaderDescription>
+        ) : null}
+      </PageHeader>
+      <div className="grid flex-1 items-stretch gap-9 pb-12 lg:gap-6 xl:gap-9">
         <Suspense>
           <RegistryBlockCard
             className={className}
@@ -76,6 +74,6 @@ export default async function Page({ params }: PageProps) {
           />
         </Suspense>
       </div>
-    </>
+    </div>
   );
 }

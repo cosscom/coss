@@ -25,33 +25,23 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <>
-      <div className="container w-full">
-        <PageHeader className="max-w-2xl *:items-start *:text-left">
-          <PageHeaderHeading>Scheduling, in your codebase.</PageHeaderHeading>
-          <PageHeaderDescription>{description}</PageHeaderDescription>
-        </PageHeader>
+    <div className="container w-full">
+      <PageHeader className="max-w-2xl *:items-start *:text-left">
+        <PageHeaderHeading>Scheduling, in your codebase.</PageHeaderHeading>
+        <PageHeaderDescription>{description}</PageHeaderDescription>
+      </PageHeader>
+      <div className="grid flex-1 items-stretch gap-9 pb-12 lg:gap-6 xl:gap-9">
+        {getAtomTypes().map((atom) => (
+          <AtomCard
+            description={atom.description}
+            key={atom.slug}
+            name={atom.displayName}
+            slug={atom.slug}
+            thumbnail={getAtomThumbnail(atom.slug)}
+          />
+        ))}
       </div>
-      <div className="relative before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64">
-        <div
-          aria-hidden="true"
-          className="container pointer-events-none absolute inset-0 z-50 before:absolute before:top-[-3.5px] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-3.5px] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
-        />
-        <div className="container w-full">
-          <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
-            {getAtomTypes().map((atom) => (
-              <AtomCard
-                description={atom.description}
-                key={atom.slug}
-                name={atom.displayName}
-                slug={atom.slug}
-                thumbnail={getAtomThumbnail(atom.slug)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
 

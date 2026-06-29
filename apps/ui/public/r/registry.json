@@ -11334,13 +11334,48 @@
           "type": "registry:block"
         },
         {
+          "path": "registry/default/atoms/lib/booker/calendar.tsx",
+          "target": "lib/booker/calendar.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/location.tsx",
+          "target": "lib/booker/location.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/timezone-picker.tsx",
+          "target": "lib/booker/timezone-picker.tsx",
+          "type": "registry:lib"
+        },
+        {
           "path": "registry/default/atoms/lib/booker/actions.ts",
           "target": "lib/booker/actions.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/use-booker.ts",
+          "target": "lib/booker/use-booker.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/utils.ts",
+          "target": "lib/booker/utils.ts",
           "type": "registry:lib"
         }
       ],
       "registryDependencies": [
-        "@coss/cal-api"
+        "@coss/avatar",
+        "@coss/button",
+        "@coss/cal-api",
+        "@coss/card",
+        "@coss/combobox",
+        "@coss/empty",
+        "@coss/label",
+        "@coss/scroll-area",
+        "@coss/skeleton",
+        "@coss/switch",
+        "@coss/tooltip"
       ],
       "meta": {
         "className": "**:data-[slot=preview]:w-full",
@@ -11625,6 +11660,11 @@
         {
           "path": "registry/default/lib/cal-api/event-types.ts",
           "target": "lib/cal-api/event-types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/slots.ts",
+          "target": "lib/cal-api/slots.ts",
           "type": "registry:lib"
         },
         {

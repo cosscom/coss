@@ -17,6 +17,11 @@ const calApiFiles: Registry["items"][number]["files"] = [
     type: "registry:lib",
   },
   {
+    path: "lib/cal-api/slots.ts",
+    target: "lib/cal-api/slots.ts",
+    type: "registry:lib",
+  },
+  {
     path: "lib/cal-api/types.ts",
     target: "lib/cal-api/types.ts",
     type: "registry:lib",
