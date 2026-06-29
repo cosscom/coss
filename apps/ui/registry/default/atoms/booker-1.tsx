@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarX2Icon, Clock3Icon } from "lucide-react";
+import { Clock3Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -8,32 +8,14 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/registry/default/ui/avatar";
-import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/registry/default/ui/empty";
-import { Label } from "@/registry/default/ui/label";
-import { ScrollArea } from "@/registry/default/ui/scroll-area";
-import { Skeleton } from "@/registry/default/ui/skeleton";
-import { Switch } from "@/registry/default/ui/switch";
 import { BookerCalendar } from "./booker/booker-calendar";
 import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
 import { Location } from "./booker/location";
+import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";
-import {
-  displayTimeLabel,
-  formatSelectedDay,
-  formatSelectedWeekday,
-  getInitials,
-  isSingleDigit12HourLabel,
-} from "@/lib/booker/utils";
+import { getInitials } from "@/lib/booker/utils";
 
 type BookerLabels = {
   loading: string;
@@ -194,107 +176,27 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
           />
         </div>
         {/* Time picker */}
-        <div className="relative @3xl:w-56 @5xl:w-70">
-          <div className="@3xl:absolute inset-0 flex flex-col gap-2">
-            {(isPending || selectedInCurrentMonth) && (
-              <div className="flex items-center justify-between rounded-se-2xl bg-card @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:pt-2 pt-3">
-                <div className="flex h-10 items-center gap-1.5 font-heading @3xl:@max-5xl:text-base text-lg sm:h-9">
-                  <span>
-                    {formatSelectedWeekday(selectedDate ?? new Date(), locale)}
-                  </span>
-                  <span className="text-muted-foreground/72">
-                    {formatSelectedDay(selectedDate ?? new Date(), locale)}
-                  </span>
-                </div>
-                <Label className="relative">
-                  <span
-                    className="pointer-events-none absolute inset-0 z-1 flex items-center text-center font-medium text-xs [&:has(+[data-slot=switch][data-checked])>*:first-child]:text-muted-foreground/72 [&:has(+[data-slot=switch][data-unchecked])>*:last-child]:text-muted-foreground/72"
-                    aria-hidden="true"
-                  >
-                    <span className="flex-1 transition-colors">
-                      {t.hour12Short}
-                    </span>
-                    <span className="flex-1 transition-colors">
-                      {t.hour24Short}
-                    </span>
-                  </span>
-                  <Switch
-                    className="h-9 w-[calc(var(--thumb-size)*2)] rounded-lg bg-muted! p-0.5 [--thumb-size:--spacing(10)] *:data-[slot=switch-thumb]:data-checked:translate-x-[calc(var(--thumb-size)-2px)] *:data-[slot=switch-thumb]:aspect-auto *:data-[slot=switch-thumb]:w-[calc(var(--thumb-size)-2px)] *:data-[slot=switch-thumb]:rounded-md sm:h-8 dark:*:data-[slot=switch-thumb]:bg-input sm:[--thumb-size:--spacing(9)] *:[[span]]:text-muted-foreground/70"
-                    aria-label={t.use24Hour}
-                    checked={is24Hour}
-                    onCheckedChange={setIs24Hour}
-                  />
-                </Label>
-              </div>
-            )}
-            <div className="min-h-0 flex-1">
-              {!isPending && daySlots.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                  <Empty className="gap-4 md:pt-2 md:pb-6">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon" className="mb-1">
-                        <CalendarX2Icon />
-                      </EmptyMedia>
-                      <EmptyTitle className="@3xl:@max-5xl:text-base text-lg">
-                        {t.noAvailableTimes}
-                      </EmptyTitle>
-                      <EmptyDescription className="[[data-slot=empty-title]+&]:mt-0">
-                        {selectedInCurrentMonth
-                          ? t.noSlotsThisDay
-                          : t.noSlotsThisMonth}
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    {nextAvailableDate ? (
-                      <EmptyContent>
-                        <Button onClick={() => goToDate(nextAvailableDate)}>
-                          {t.viewFirstAvailability}
-                        </Button>
-                      </EmptyContent>
-                    ) : null}
-                  </Empty>
-                </div>
-              ) : (
-                <ScrollArea className="h-full" scrollFade>
-                  <div className="flex @max-3xl:max-h-80 flex-col gap-3 @3xl:@max-5xl:px-2 px-4 pt-1 @3xl:@max-5xl:pb-2 pb-4">
-                    {isPending ? (
-                      <div className="grid w-full grid-cols-1 @5xl:gap-1.5 gap-1">
-                        {Array.from(
-                          { length: 20 },
-                          (_, index) => `time-skeleton-${index}`,
-                        ).map((skeletonKey) => (
-                          <Skeleton
-                            key={skeletonKey}
-                            className="h-9 w-full rounded-lg sm:h-8"
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid w-full grid-cols-1 @5xl:gap-1.5 gap-1">
-                        {daySlots.map((time) => (
-                          <button
-                            key={time}
-                            type="button"
-                            onClick={() => setSelectedTime(time)}
-                            className="relative flex h-9 cursor-pointer items-center justify-center rounded-lg bg-muted font-medium text-foreground tabular-nums outline-none transition-shadow after:absolute @5xl:after:-inset-1 after:-inset-0.75 hover:ring-2 hover:ring-primary/72 focus-visible:z-1 focus-visible:ring-2 focus-visible:ring-primary/72 sm:h-8 sm:text-sm"
-                          >
-                            <span>
-                              {!is24Hour && isSingleDigit12HourLabel(time) ? (
-                                <span aria-hidden="true" className="invisible">
-                                  0
-                                </span>
-                              ) : null}
-                              {displayTimeLabel(time, !is24Hour)}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              )}
-            </div>
-          </div>
-        </div>
+        <TimePicker
+          daySlots={daySlots}
+          goToDate={goToDate}
+          is24Hour={is24Hour}
+          isPending={isPending}
+          labels={{
+            hour12Short: t.hour12Short,
+            hour24Short: t.hour24Short,
+            noAvailableTimes: t.noAvailableTimes,
+            noSlotsThisDay: t.noSlotsThisDay,
+            noSlotsThisMonth: t.noSlotsThisMonth,
+            use24Hour: t.use24Hour,
+            viewFirstAvailability: t.viewFirstAvailability,
+          }}
+          locale={locale}
+          nextAvailableDate={nextAvailableDate}
+          onIs24HourChange={setIs24Hour}
+          onSelectTime={setSelectedTime}
+          selectedDate={selectedDate}
+          selectedInCurrentMonth={selectedInCurrentMonth}
+        />
       </Card>
       <Link
         href="https://cal.com"

@@ -44,6 +44,11 @@ export const atoms: AtomItem[] = [
         type: "registry:component",
       },
       {
+        path: "atoms/booker/time-picker.tsx",
+        target: "components/atoms/booker/time-picker.tsx",
+        type: "registry:component",
+      },
+      {
         path: "atoms/lib/booker/actions.ts",
         target: "lib/booker/actions.ts",
         type: "registry:lib",
