@@ -1,7 +1,7 @@
 import { Icons } from "@coss/ui/shared/icons";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { cache } from "react";
+import { Suspense } from "react";
 import { Index } from "@/registry/__index__";
 import { Button } from "@/registry/default/ui/button";
 import {
@@ -10,15 +10,11 @@ import {
   DrawerPopup,
   DrawerTrigger,
 } from "@/registry/default/ui/drawer";
+import { Skeleton } from "@/registry/default/ui/skeleton";
 import { ParticleCardContainer } from "@/app/particles/particle-card-container";
 import { CodeBlockCommand } from "@/components/code-block-command";
 import { ComponentSource } from "@/components/component-source";
 import { CopyRegistry } from "@/components/copy-registry";
-import { getRegistryItem } from "@/lib/registry";
-
-const getCachedRegistryItem = cache(async (name: string) => {
-  return await getRegistryItem(name);
-});
 
 const defaultParticlePreviewProps = {
   currentPage: 1,
@@ -47,7 +43,7 @@ function RegistryBlockPreview({
   return <Component {...previewProps} />;
 }
 
-export async function RegistryBlockCard({
+export function RegistryBlockCard({
   name,
   description,
   className,
@@ -63,7 +59,7 @@ export async function RegistryBlockCard({
   previewProps?: Record<string, unknown>;
 }) {
   const cossuiUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/ui";
-  const item = await getCachedRegistryItem(name);
+  const item = Index[name];
 
   if (!item) {
     return null;
@@ -152,11 +148,17 @@ export async function RegistryBlockCard({
                         variant="outline"
                       />
                     </div>
-                    <ComponentSource
-                      className="flex min-h-0 flex-1 flex-col overflow-hidden *:data-rehype-pretty-code-figure:mt-0"
-                      collapsible={false}
-                      name={name}
-                    />
+                    <Suspense
+                      fallback={
+                        <Skeleton className="min-h-0 flex-1 rounded-lg" />
+                      }
+                    >
+                      <ComponentSource
+                        className="flex min-h-0 flex-1 flex-col overflow-hidden *:data-rehype-pretty-code-figure:mt-0"
+                        collapsible={false}
+                        name={name}
+                      />
+                    </Suspense>
                   </div>
                 </DrawerContent>
               </DrawerPopup>
@@ -167,6 +169,40 @@ export async function RegistryBlockCard({
     >
       <div {...{ [previewAttribute]: true }} data-slot="preview">
         <RegistryBlockPreview name={name} previewProps={resolvedPreviewProps} />
+      </div>
+    </ParticleCardContainer>
+  );
+}
+
+export function RegistryBlockCardSkeleton({
+  className,
+  colSpan,
+}: {
+  className?: string;
+  colSpan?: number;
+}) {
+  return (
+    <ParticleCardContainer
+      className={className}
+      colSpan={colSpan}
+      footer={
+        <>
+          <div className="flex flex-1 items-center gap-1">
+            <Skeleton className="size-3 rounded-full" />
+            <Skeleton className="h-3 w-48 max-w-full" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            {process.env.NODE_ENV === "development" ? (
+              <Skeleton className="h-8 w-20 rounded-md" />
+            ) : null}
+            <Skeleton className="size-8 rounded-md" />
+            <Skeleton className="h-8 w-20 rounded-md" />
+          </div>
+        </>
+      }
+    >
+      <div data-slot="preview" className="w-full">
+        <Skeleton className="h-80 w-full rounded-xl" />
       </div>
     </ParticleCardContainer>
   );

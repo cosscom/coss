@@ -6,7 +6,10 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { RegistryBlockCard } from "@/components/registry-block-card";
+import {
+  RegistryBlockCard,
+  RegistryBlockCardSkeleton,
+} from "@/components/registry-block-card";
 import { getAtomRegistryItem, getAtomType, getAtomTypes } from "@/lib/atoms";
 
 type PageProps = {
@@ -64,7 +67,9 @@ export default async function Page({ params }: PageProps) {
         ) : null}
       </PageHeader>
       <div className="grid flex-1 items-stretch gap-9 pb-12 lg:gap-6 xl:gap-9">
-        <Suspense>
+        <Suspense
+          fallback={<RegistryBlockCardSkeleton className={className} />}
+        >
           <RegistryBlockCard
             className={className}
             description={atom.description}
