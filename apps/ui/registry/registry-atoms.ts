@@ -29,8 +29,8 @@ export const atoms: AtomItem[] = [
         type: "registry:file",
       },
       {
-        path: "atoms/lib/booker/calendar.tsx",
-        target: "lib/booker/calendar.tsx",
+        path: "atoms/lib/booker/booker-calendar.tsx",
+        target: "lib/booker/booker-calendar.tsx",
         type: "registry:lib",
       },
       {

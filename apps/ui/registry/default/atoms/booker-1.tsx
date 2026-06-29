@@ -23,7 +23,7 @@ import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { Switch } from "@/registry/default/ui/switch";
 import bookerHeaderPlaceholder from "./booker-header-placeholder.webp";
-import { BookerCalendar } from "@/lib/booker/calendar";
+import { BookerCalendar } from "@/lib/booker/booker-calendar";
 import { Location } from "@/lib/booker/location";
 import { TimezonePicker } from "@/lib/booker/timezone-picker";
 import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";

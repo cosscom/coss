@@ -11339,8 +11339,8 @@
           "type": "registry:file"
         },
         {
-          "path": "registry/default/atoms/lib/booker/calendar.tsx",
-          "target": "lib/booker/calendar.tsx",
+          "path": "registry/default/atoms/lib/booker/booker-calendar.tsx",
+          "target": "lib/booker/booker-calendar.tsx",
           "type": "registry:lib"
         },
         {
