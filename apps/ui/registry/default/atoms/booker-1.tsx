@@ -140,7 +140,7 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
                     {displayMeta.hostName}
                   </p>
                 ) : (
-                  <Skeleton className="h-5 sm:h-4 my-0.5 w-24" />
+                  <Skeleton className="my-0.5 h-5 w-24 sm:h-4" />
                 )}
               </div>
               <div className="flex flex-col gap-1">
@@ -157,9 +157,9 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
                   </>
                 ) : (
                   <>
-                    <Skeleton className="h-6 my-0.5 w-36" />
-                    <Skeleton className="h-4 my-0.5 w-full" />
-                    <Skeleton className="h-4 my-0.5 w-full" />
+                    <Skeleton className="my-0.5 h-6 w-36" />
+                    <Skeleton className="my-0.5 h-4 w-full" />
+                    <Skeleton className="my-0.5 h-4 w-full" />
                   </>
                 )}
               </div>

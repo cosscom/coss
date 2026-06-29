@@ -673,7 +673,7 @@ export function BookerCalendar({
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {localization.monthYearLabel(firstMonth)}
         </div>
-        <div className="flex items-center justify-between h-10 sm:h-9">
+        <div className="flex h-10 items-center justify-between sm:h-9">
           {initialLoading ? (
             <Skeleton className="h-6 w-28" />
           ) : (
@@ -734,7 +734,7 @@ export function BookerCalendar({
                     scope="col"
                   >
                     {initialLoading ? (
-                      <Skeleton className="mx-auto h-3 my-0.5 w-6" />
+                      <Skeleton className="mx-auto my-0.5 h-3 w-6" />
                     ) : (
                       weekday.short
                     )}
