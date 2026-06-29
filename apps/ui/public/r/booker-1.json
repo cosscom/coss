@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "booker-1",
+  "description": "A full scheduling flow powered by Cal.com API v2.",
+  "registryDependencies": [
+    "@coss/cal-api"
+  ],
+  "files": [
+    {
+      "path": "registry/default/atoms/booker-1.tsx",
+      "content": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport { fetchEventTypeAction } from \"@/lib/booker/actions\";\n\ntype BookerProps = {\n  username: string;\n  eventSlug: string;\n};\n\nexport default function Booker({ username, eventSlug }: BookerProps) {\n  const [title, setTitle] = useState<string | null>(null);\n  const [error, setError] = useState<string | null>(null);\n\n  useEffect(() => {\n    fetchEventTypeAction({ eventSlug, username }).then((result) => {\n      if (result.ok) {\n        setTitle(result.eventType.title);\n        return;\n      }\n\n      setError(result.error);\n    });\n  }, [eventSlug, username]);\n\n  if (error) {\n    return <p className=\"text-muted-foreground text-sm\">{error}</p>;\n  }\n\n  if (!title) {\n    return <p className=\"text-muted-foreground text-sm\">Loading event type…</p>;\n  }\n\n  return <h1 className=\"font-heading font-semibold text-xl\">{title}</h1>;\n}\n",
+      "type": "registry:block",
+      "target": "components/atoms/booker-1.tsx"
+    },
+    {
+      "path": "registry/default/atoms/lib/booker/actions.ts",
+      "content": "\"use server\";\n\nimport { CalApiError } from \"@/lib/cal-api/client\";\nimport { getEventType } from \"@/lib/cal-api/event-types\";\nimport type { EventType } from \"@/lib/cal-api/types\";\n\nexport type EventTypeResult =\n  | { ok: true; eventType: EventType }\n  | { ok: false; error: string };\n\nexport async function fetchEventTypeAction(params: {\n  username: string;\n  eventSlug: string;\n}): Promise<EventTypeResult> {\n  const { username, eventSlug } = params;\n\n  if (!username) {\n    return {\n      error: \"Pass username to Booker.\",\n      ok: false,\n    };\n  }\n\n  if (!eventSlug) {\n    return {\n      error: \"Pass eventSlug to Booker.\",\n      ok: false,\n    };\n  }\n\n  try {\n    const eventType = await getEventType({ eventSlug, username });\n\n    if (!eventType) {\n      return {\n        error: `No event type found for ${username}/${eventSlug}.`,\n        ok: false,\n      };\n    }\n\n    return { eventType, ok: true };\n  } catch (error) {\n    return {\n      error:\n        error instanceof CalApiError\n          ? error.message\n          : \"Could not load the event type.\",\n      ok: false,\n    };\n  }\n}\n",
+      "type": "registry:lib",
+      "target": "lib/booker/actions.ts"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full",
+    "displayName": "Booker",
+    "preview": {
+      "eventSlug": "15min",
+      "username": "rickastley"
+    },
+    "slug": "booker"
+  },
+  "type": "registry:block"
+}

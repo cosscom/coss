@@ -10,7 +10,7 @@ import {
   DrawerPopup,
   DrawerTrigger,
 } from "@/registry/default/ui/drawer";
-import { ParticleCardContainer } from "./particle-card-container";
+import { ParticleCardContainer } from "@/app/particles/particle-card-container";
 import { CodeBlockCommand } from "@/components/code-block-command";
 import { ComponentSource } from "@/components/component-source";
 import { CopyRegistry } from "@/components/copy-registry";
@@ -20,7 +20,19 @@ const getCachedRegistryItem = cache(async (name: string) => {
   return await getRegistryItem(name);
 });
 
-function ParticleRenderer({ name }: { name: string }) {
+const defaultParticlePreviewProps = {
+  currentPage: 1,
+  totalPages: 10,
+  totalResults: 100,
+};
+
+function RegistryBlockPreview({
+  name,
+  previewProps,
+}: {
+  name: string;
+  previewProps?: Record<string, unknown>;
+}) {
   const item = Index[name];
   const Component = item?.component;
 
@@ -32,25 +44,36 @@ function ParticleRenderer({ name }: { name: string }) {
     );
   }
 
-  return <Component currentPage={1} totalPages={10} totalResults={100} />;
+  return <Component {...previewProps} />;
 }
 
-export async function ParticleCard({
+export async function RegistryBlockCard({
   name,
+  description,
   className,
   colSpan,
+  previewKind = "particle",
+  previewProps,
 }: {
   name: string;
+  description?: string;
   className?: string;
   colSpan?: number;
+  previewKind?: "atom" | "particle";
+  previewProps?: Record<string, unknown>;
 }) {
   const cossuiUrl = process.env.NEXT_PUBLIC_APP_URL || "https://coss.com/ui";
+  const item = await getCachedRegistryItem(name);
 
-  const particle = await getCachedRegistryItem(name);
-
-  if (!particle) {
+  if (!item) {
     return null;
   }
+
+  const previewAttribute =
+    previewKind === "atom" ? "data-atom" : "data-particle";
+  const resolvedPreviewProps =
+    previewProps ??
+    (previewKind === "particle" ? defaultParticlePreviewProps : undefined);
 
   return (
     <ParticleCardContainer
@@ -64,7 +87,7 @@ export async function ParticleCard({
               icon={InformationCircleIcon}
               strokeWidth={2}
             />
-            <span className="truncate">{particle.description}</span>
+            <span className="truncate">{description ?? item.description}</span>
           </p>
           <div className="flex items-center gap-1.5">
             {process.env.NODE_ENV === "development" && (
@@ -72,10 +95,10 @@ export async function ParticleCard({
                 className="text-xs"
                 disabled
                 size="sm"
-                title="Particle name"
+                title="Registry item name"
                 variant="outline"
               >
-                {particle.name}
+                {item.name}
               </Button>
             )}
             <CopyRegistry
@@ -130,7 +153,7 @@ export async function ParticleCard({
                       />
                     </div>
                     <ComponentSource
-                      className="flex min-h-0 flex-1 flex-col *:data-rehype-pretty-code-figure:mt-0"
+                      className="flex min-h-0 flex-1 flex-col overflow-hidden *:data-rehype-pretty-code-figure:mt-0"
                       collapsible={false}
                       name={name}
                     />
@@ -142,8 +165,8 @@ export async function ParticleCard({
         </>
       }
     >
-      <div data-particle data-slot="preview">
-        <ParticleRenderer name={name} />
+      <div {...{ [previewAttribute]: true }} data-slot="preview">
+        <RegistryBlockPreview name={name} previewProps={resolvedPreviewProps} />
       </div>
     </ParticleCardContainer>
   );

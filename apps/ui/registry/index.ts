@@ -1,5 +1,7 @@
 import type { Registry } from "shadcn/schema";
+import { atoms } from "@/registry/registry-atoms";
 import { baseUi } from "@/registry/registry-base-ui";
+import { cal } from "@/registry/registry-cal";
 import { fonts } from "@/registry/registry-fonts";
 import { hooks } from "@/registry/registry-hooks";
 import { lib } from "@/registry/registry-lib";
@@ -12,9 +14,11 @@ export const registry = {
   items: [
     ...ui,
     ...(particles as Registry["items"]),
+    ...(atoms as Registry["items"]),
     ...styles,
     ...fonts,
     ...lib,
+    ...cal,
     ...baseUi,
     ...hooks,
   ],

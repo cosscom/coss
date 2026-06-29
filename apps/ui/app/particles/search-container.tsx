@@ -6,9 +6,14 @@ import { Index } from "@/registry/__index__";
 import { getCategorySortOrder } from "@/registry/registry-categories";
 import SearchField from "./search-field";
 
-const particles = Object.values(Index).filter(
-  (item) => item.type === "registry:block",
-);
+const particles = Object.values(Index).filter((item) => {
+  if (item.type !== "registry:block") {
+    return false;
+  }
+
+  const filePath = item.files?.[0]?.path;
+  return filePath?.includes("/particles/") ?? false;
+});
 
 const uniqueCategories = Array.from(
   new Set(particles.flatMap((particle) => particle.categories || [])),

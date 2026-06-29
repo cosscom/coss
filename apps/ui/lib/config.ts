@@ -11,6 +11,10 @@ export const appConfig = {
       href: "/particles",
       label: "Particles",
     },
+    {
+      href: "/atoms",
+      label: "Atoms",
+    },
   ],
   ogImage: "https://coss.com/og.jpg",
   url: "https://coss.com/ui",

@@ -2,8 +2,8 @@ import { cache, Suspense } from "react";
 import { Index } from "@/registry/__index__";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import type { RegistryCategory } from "@/registry/registry-categories";
-import { ParticleCard } from "./particle-card";
 import { ParticleCardContainer } from "./particle-card-container";
+import { RegistryBlockCard } from "@/components/registry-block-card";
 
 type Particle = {
   name: string;
@@ -62,10 +62,17 @@ function ParticleCardSkeleton({ className }: { className?: string }) {
 }
 
 // Cache the particles array to avoid recomputing on every render
+function isParticleItem(item: { type?: string; files?: { path?: string }[] }) {
+  if (item.type !== "registry:block") {
+    return false;
+  }
+
+  const filePath = item.files?.[0]?.path;
+  return filePath?.includes("/particles/") ?? false;
+}
+
 const getParticles = cache(() => {
-  return Object.values(Index).filter(
-    (item) => item.type === "registry:block",
-  ) as Particle[];
+  return Object.values(Index).filter(isParticleItem) as Particle[];
 });
 
 export async function ParticlesDisplay({
@@ -106,10 +113,11 @@ export async function ParticlesDisplay({
             fallback={<ParticleCardSkeleton className={className} />}
             key={particle.name}
           >
-            <ParticleCard
+            <RegistryBlockCard
               className={className}
               colSpan={colSpan}
               name={particle.name}
+              previewKind="particle"
             />
           </Suspense>
         );

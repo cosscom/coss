@@ -1,6 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+const libSyncExclude = new Set(["cal-api"]);
+
 async function resolvePaths() {
   const cwd = process.cwd();
   const sourceRoot = path.join(cwd, "registry/default");
@@ -38,19 +40,38 @@ async function copyAndRewriteFile(from: string, to: string) {
   }
 }
 
-async function copyDirectoryRecursive(from: string, to: string) {
+async function copyDirectoryRecursive(
+  from: string,
+  to: string,
+  exclude?: Set<string>,
+) {
   await ensureDirExists(to);
   const entries = await fs.readdir(from, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (exclude?.has(entry.name)) {
+      continue;
+    }
+
     const fromPath = path.join(from, entry.name);
     const toPath = path.join(to, entry.name);
 
     if (entry.isDirectory()) {
-      await copyDirectoryRecursive(fromPath, toPath);
+      await copyDirectoryRecursive(fromPath, toPath, exclude);
     } else {
       await copyAndRewriteFile(fromPath, toPath);
     }
+  }
+}
+
+async function removeExcludedLibDirs() {
+  const { targetDirs } = await resolvePaths();
+
+  for (const name of libSyncExclude) {
+    await fs.rm(path.join(targetDirs.lib, name), {
+      recursive: true,
+      force: true,
+    });
   }
 }
 
@@ -74,7 +95,11 @@ async function copyRegistryTrees() {
       // Skip silently if the subtree doesn't exist
       continue;
     }
-    await copyDirectoryRecursive(from, to);
+    await copyDirectoryRecursive(
+      from,
+      to,
+      key === "lib" ? libSyncExclude : undefined,
+    );
   }
 }
 
@@ -126,6 +151,7 @@ try {
   console.log(`└─ Target root: ${targetRoot}`);
 
   await copyRegistryTrees();
+  await removeExcludedLibDirs();
   await invalidatePackageCache();
 
   console.log(

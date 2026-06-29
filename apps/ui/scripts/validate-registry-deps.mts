@@ -4,6 +4,9 @@ import path from "node:path";
 // Path to particles directory
 const particlesDir = path.join(process.cwd(), "registry/default/particles");
 
+// Path to atoms directory
+const atomsDir = path.join(process.cwd(), "registry/default/atoms");
+
 // Path to registry UI components directory
 const registryUIDir = path.join(process.cwd(), "registry/default/ui");
 
@@ -17,6 +20,10 @@ const registryLibDir = path.join(process.cwd(), "registry/default/lib");
 const registryParticlesFile = path.join(
   process.cwd(),
   "registry/registry-particles.ts",
+);
+const registryAtomsFile = path.join(
+  process.cwd(),
+  "registry/registry-atoms.ts",
 );
 const registryUIFile = path.join(process.cwd(), "registry/registry-ui.ts");
 
@@ -98,9 +105,18 @@ function parseImports(content: string): {
       continue;
     }
 
+    // User-facing install paths for shared Cal.com registry libs
+    if (
+      importPath === "@/lib/cal-api" ||
+      importPath.startsWith("@/lib/cal-api/")
+    ) {
+      registryDeps.add("@coss/cal-api");
+      continue;
+    }
+
     // Check if it's an alias import that might be a component
     if (importPath.startsWith("@/")) {
-      // Could be @/components/ui/* or similar - skip for now
+      // Could be @/components/ui/*, @/lib/booker/* bundled with the atom, etc.
       continue;
     }
 
@@ -399,6 +415,85 @@ function findRegistryItemBounds(
   return { end: objEnd, start: objStart };
 }
 
+function extractAtomFilePaths(itemContent: string): string[] {
+  const paths: string[] = [];
+  const pathRegex = /path:\s*"([^"]+)"/g;
+  let match: RegExpExecArray | null = pathRegex.exec(itemContent);
+
+  while (match !== null) {
+    paths.push(match[1]);
+    match = pathRegex.exec(itemContent);
+  }
+
+  return paths;
+}
+
+async function validateAtomRegistryItem(
+  componentName: string,
+  registryContent: string,
+): Promise<boolean> {
+  const bounds = findRegistryItemBounds(componentName, registryContent);
+  if (!bounds) {
+    console.log(`❌ ${componentName}: Not found in registry`);
+    return false;
+  }
+
+  const itemContent = registryContent.substring(bounds.start, bounds.end);
+  const filePaths = extractAtomFilePaths(itemContent);
+  const registryDefaultDir = path.join(process.cwd(), "registry/default");
+  const expectedRegDeps = new Set<string>();
+  const expectedDeps = new Set<string>();
+
+  for (const filePath of filePaths) {
+    const content = await fs.readFile(
+      path.join(registryDefaultDir, filePath),
+      "utf8",
+    );
+    const parsed = parseImports(content);
+    for (const dep of parsed.registryDependencies) {
+      expectedRegDeps.add(dep);
+    }
+    for (const dep of parsed.dependencies) {
+      expectedDeps.add(dep);
+    }
+  }
+
+  const { registryDependencies: actualRegDeps, dependencies: actualDeps } =
+    extractRegistryItemDeps(itemContent);
+
+  const filteredExpectedDeps = await filterDependenciesCoveredByRegistry(
+    Array.from(expectedDeps).sort(),
+    Array.from(expectedRegDeps).sort(),
+  );
+
+  const regDepsDiff = compareArrays(
+    Array.from(expectedRegDeps).sort(),
+    actualRegDeps,
+  );
+  const depsDiff = compareArrays(filteredExpectedDeps, actualDeps);
+
+  const hasIssues =
+    regDepsDiff.missing.length > 0 ||
+    regDepsDiff.extra.length > 0 ||
+    depsDiff.missing.length > 0 ||
+    depsDiff.extra.length > 0;
+
+  if (hasIssues) {
+    reportValidationErrors(
+      componentName,
+      regDepsDiff,
+      depsDiff,
+      Array.from(expectedRegDeps).sort(),
+      actualRegDeps,
+      filteredExpectedDeps,
+      actualDeps,
+    );
+    return false;
+  }
+
+  return true;
+}
+
 // Report validation errors for a component
 function reportValidationErrors(
   componentName: string,
@@ -509,13 +604,15 @@ async function validateFiles(
   let errors = 0;
 
   for (const file of files) {
-    const filePath = path.join(fileDir, file);
     const componentName = getName(file);
-    const isValid = await validateRegistryItem(
-      componentName,
-      filePath,
-      registryContent,
-    );
+    const isValid =
+      label === "atom"
+        ? await validateAtomRegistryItem(componentName, registryContent)
+        : await validateRegistryItem(
+            componentName,
+            path.join(fileDir, file),
+            registryContent,
+          );
     if (!isValid) {
       errors++;
     }
@@ -541,6 +638,18 @@ async function validateRegistryDependencies() {
     "particle",
   );
 
+  // Validate atoms
+  const atomFiles = await fs.readdir(atomsDir).catch(() => []);
+  const atomTsxFiles = atomFiles.filter((file) => file.endsWith(".tsx"));
+
+  const atomErrors = await validateFiles(
+    atomTsxFiles,
+    atomsDir,
+    registryAtomsFile,
+    getComponentName,
+    "atom",
+  );
+
   // Validate UI components
   const uiFiles = await fs.readdir(registryUIDir);
   const uiTsxFiles = uiFiles.filter((file) => file.endsWith(".tsx"));
@@ -553,7 +662,7 @@ async function validateRegistryDependencies() {
     "UI component",
   );
 
-  const totalErrors = particleErrors + uiErrors;
+  const totalErrors = particleErrors + atomErrors + uiErrors;
 
   if (totalErrors === 0) {
     console.log("✅ All registry dependencies are correct!");

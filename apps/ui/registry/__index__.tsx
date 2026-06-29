@@ -9835,6 +9835,28 @@ export const Index: Record<string, any> = {
     categories: ["tooltip"],
     meta: undefined,
   },
+  "booker-1": {
+    name: "booker-1",
+    description: "A full scheduling flow powered by Cal.com API v2.",
+    type: "registry:block",
+    registryDependencies: ["@coss/cal-api"],
+    files: [{
+      path: "registry/default/atoms/booker-1.tsx",
+      type: "registry:block",
+      target: "components/atoms/booker-1.tsx"
+    },{
+      path: "registry/default/atoms/lib/booker/actions.ts",
+      type: "registry:lib",
+      target: "lib/booker/actions.ts"
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/atoms/booker-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: {"className":"**:data-[slot=preview]:w-full","displayName":"Booker","preview":{"eventSlug":"15min","username":"rickastley"},"slug":"booker"},
+  },
   "fonts": {
     name: "fonts",
     description: "",
@@ -9857,6 +9879,36 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/lib/utils.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "cal-api": {
+    name: "cal-api",
+    description: "Cal.com API v2 client for server-side requests.",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/lib/cal-api/client.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/client.ts"
+    },{
+      path: "registry/default/lib/cal-api/env.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/env.ts"
+    },{
+      path: "registry/default/lib/cal-api/event-types.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/event-types.ts"
+    },{
+      path: "registry/default/lib/cal-api/types.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/types.ts"
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/lib/cal-api/client.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

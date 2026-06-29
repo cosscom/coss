@@ -5,6 +5,11 @@
     "esModuleInterop": true,
     "paths": {
       "@/*": ["./*"],
+      "@/lib/booker/actions": [
+        "./registry/default/atoms/lib/booker/actions.ts"
+      ],
+      "@/lib/booker/*": ["./registry/default/atoms/lib/booker/*"],
+      "@/lib/cal-api/*": ["./registry/default/lib/cal-api/*"],
       "@coss/ui/*": ["../../packages/ui/src/*"],
       "@source/*": ["./.source/*"]
     }

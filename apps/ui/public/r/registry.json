@@ -11326,6 +11326,35 @@
       "type": "registry:block"
     },
     {
+      "description": "A full scheduling flow powered by Cal.com API v2.",
+      "files": [
+        {
+          "path": "registry/default/atoms/booker-1.tsx",
+          "target": "components/atoms/booker-1.tsx",
+          "type": "registry:block"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/actions.ts",
+          "target": "lib/booker/actions.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "registryDependencies": [
+        "@coss/cal-api"
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full",
+        "displayName": "Booker",
+        "preview": {
+          "eventSlug": "15min",
+          "username": "rickastley"
+        },
+        "slug": "booker"
+      },
+      "name": "booker-1",
+      "type": "registry:block"
+    },
+    {
       "css": {
         "@layer base": {
           "*": {
@@ -11575,6 +11604,36 @@
         }
       ],
       "name": "utils",
+      "type": "registry:lib"
+    },
+    {
+      "dependencies": [
+        "server-only"
+      ],
+      "description": "Cal.com API v2 client for server-side requests.",
+      "files": [
+        {
+          "path": "registry/default/lib/cal-api/client.ts",
+          "target": "lib/cal-api/client.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/env.ts",
+          "target": "lib/cal-api/env.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/event-types.ts",
+          "target": "lib/cal-api/event-types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/types.ts",
+          "target": "lib/cal-api/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "cal-api",
       "type": "registry:lib"
     },
     {
