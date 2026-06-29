@@ -163,8 +163,7 @@ export function useBooker({
                 eventTypeDurationMinutes: eventType.eventTypeDurationMinutes,
                 eventTypeLocation: eventType.eventTypeLocation,
                 eventTypeLocationProvider: eventType.eventTypeLocationProvider,
-                eventTypeImageUrl:
-                  eventType.eventTypeImageUrl || "/bg-test-1.webp",
+                eventTypeImageUrl: eventType.eventTypeImageUrl,
                 bookingWindowEnd: extractBookingWindowEnd(
                   result.raw.selectedEventType,
                 ),

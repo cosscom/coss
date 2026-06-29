@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarX2Icon, Clock3Icon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Avatar,
@@ -21,6 +22,7 @@ import { Label } from "@/registry/default/ui/label";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { Switch } from "@/registry/default/ui/switch";
+import bookerHeaderPlaceholder from "./booker-header-placeholder.webp";
 import { BookerCalendar } from "@/lib/booker/calendar";
 import { Location } from "@/lib/booker/location";
 import { TimezonePicker } from "@/lib/booker/timezone-picker";
@@ -45,6 +47,7 @@ type BookerLabels = {
   use24Hour: string;
   hour12Short: string;
   hour24Short: string;
+  headerImageAlt: (hostName: string, eventTitle: string) => string;
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
@@ -59,6 +62,8 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
   use24Hour: "Use 24-hour time",
   hour12Short: "12h",
   hour24Short: "24h",
+  headerImageAlt: (hostName, eventTitle) =>
+    `Banner for ${eventTitle} with ${hostName}`,
 };
 
 type BookerProps = {
@@ -99,17 +104,33 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
     return <p>{t.loading}</p>;
   }
 
+  const headerImageClassName =
+    "size-full rounded-t-[calc(var(--radius-xl)-2px)] @3xl:rounded-se-none object-cover opacity-64";
+  const headerImageAlt = t.headerImageAlt(meta.hostName, meta.eventTypeTitle);
+
   return (
     <div className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4">
       <Card className="w-full @3xl:flex-row @3xl:divide-x divide-y @3xl:divide-y-0">
         {/* Meta */}
         <div className="@3xl:w-56 @5xl:w-70">
-          <div className="relative @3xl:aspect-16/7 aspect-3/1 overflow-hidden rounded-ss-xl px-1 pt-1">
-            <img
-              alt=""
-              className="size-full rounded-t-[calc(var(--radius-xl)-2px)] @3xl:rounded-se-none object-cover opacity-64"
-              src="/bg-test-3.webp"
-            />
+          <div className="rounded-ss-xl px-1 pt-1">
+            <div className="relative @3xl:aspect-16/7 aspect-3/1 overflow-hidden">
+              {meta.eventTypeImageUrl ? (
+                <img
+                  alt={headerImageAlt}
+                  className={headerImageClassName}
+                  src={meta.eventTypeImageUrl}
+                />
+              ) : (
+                <Image
+                  alt={headerImageAlt}
+                  className={headerImageClassName}
+                  fill
+                  sizes="(min-width: 48rem) 280px, 100vw"
+                  src={bookerHeaderPlaceholder}
+                />
+              )}
+            </div>
           </div>
           <div className="relative -mt-11 @5xl:-mt-13 flex flex-col gap-6 @5xl:p-6 p-4">
             <div className="flex flex-col gap-4">

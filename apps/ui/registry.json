@@ -11334,6 +11334,11 @@
           "type": "registry:block"
         },
         {
+          "path": "registry/default/atoms/booker-header-placeholder.webp",
+          "target": "components/atoms/booker-header-placeholder.webp",
+          "type": "registry:file"
+        },
+        {
           "path": "registry/default/atoms/lib/booker/calendar.tsx",
           "target": "lib/booker/calendar.tsx",
           "type": "registry:lib"

@@ -9845,6 +9845,10 @@ export const Index: Record<string, any> = {
       type: "registry:block",
       target: "components/atoms/booker-1.tsx"
     },{
+      path: "registry/default/atoms/booker-header-placeholder.webp",
+      type: "registry:file",
+      target: "components/atoms/booker-header-placeholder.webp"
+    },{
       path: "registry/default/atoms/lib/booker/calendar.tsx",
       type: "registry:lib",
       target: "lib/booker/calendar.tsx"
