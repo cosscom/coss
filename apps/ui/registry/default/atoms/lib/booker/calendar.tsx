@@ -666,196 +666,193 @@ export function BookerCalendar({
       lang={locale}
       dir={resolvedDir === "rtl" ? "rtl" : undefined}
     >
-      <div className="relative flex w-full flex-col gap-2">
+      <div className="flex w-full flex-col gap-2">
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {localization.monthYearLabel(firstMonth)}
         </div>
-        <nav
-          className="absolute end-0 top-0 z-1 flex items-center gap-1"
-          aria-label={resolvedLabels.nav}
-        >
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            disabled={!previousMonth}
-            aria-label={resolvedLabels.previousMonth}
-            onClick={() => {
-              if (previousMonth) goToMonth(previousMonth);
-            }}
-          >
-            <ChevronLeftIcon className="rtl:rotate-180" aria-hidden="true" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            disabled={!nextMonth}
-            aria-label={resolvedLabels.nextMonth}
-            onClick={() => {
-              if (nextMonth) goToMonth(nextMonth);
-            }}
-          >
-            <ChevronRightIcon className="rtl:rotate-180" aria-hidden="true" />
-          </Button>
-        </nav>
-        <div className="flex w-full flex-col gap-2">
+        <div className="flex items-center justify-between">
           <MonthCaption
-            className="flex h-10 items-center justify-start px-1 sm:h-9"
             date={firstMonth}
             formatter={localization.captionFormatter}
           />
-          <TooltipProvider delay={0}>
-            <table
-              aria-multiselectable={false}
-              aria-label={localization.monthYearLabel(firstMonth)}
-              className="w-full"
+          <nav
+            className="flex items-center gap-1"
+            aria-label={resolvedLabels.nav}
+          >
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              disabled={!previousMonth}
+              aria-label={resolvedLabels.previousMonth}
+              onClick={() => {
+                if (previousMonth) goToMonth(previousMonth);
+              }}
             >
-              <thead aria-hidden="true">
-                <tr className="flex w-full @5xl:gap-1 gap-1 py-2">
+              <ChevronLeftIcon className="rtl:rotate-180" aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              disabled={!nextMonth}
+              aria-label={resolvedLabels.nextMonth}
+              onClick={() => {
+                if (nextMonth) goToMonth(nextMonth);
+              }}
+            >
+              <ChevronRightIcon className="rtl:rotate-180" aria-hidden="true" />
+            </Button>
+          </nav>
+        </div>
+        <TooltipProvider delay={0}>
+          <table
+            aria-multiselectable={false}
+            aria-label={localization.monthYearLabel(firstMonth)}
+            className="w-full"
+          >
+            <thead aria-hidden="true">
+              <tr className="flex w-full @5xl:gap-1 gap-1 py-2">
+                {weekdays.map((weekday) => (
+                  <th
+                    key={weekday.long}
+                    aria-label={weekday.long}
+                    className="flex-1 font-medium text-muted-foreground/72 text-xs"
+                    scope="col"
+                  >
+                    {weekday.short}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeks.map((week) => (
+                <tr
+                  key={week[0]?.isoDate ?? week.at(-1)?.isoDate ?? "week"}
+                  className="@5xl:mt-1.5 mt-1 flex w-full @5xl:gap-1.5 gap-1"
+                >
+                  {week.map((day) => {
+                    const modifiers = getModifiers(day);
+
+                    // The day button's own styling is driven by the `data-*`
+                    // attributes below; these cell classes only cover the
+                    // layout and the outside/hidden/today states.
+                    const cellClassName = cn(
+                      "@max-3xl:max-h-9 flex-1 p-0",
+                      modifiers.hidden && "invisible",
+                      modifiers.outside && "text-muted-foreground/50",
+                      modifiers.today &&
+                        "*:before:pointer-events-none *:before:absolute *:before:start-1/2 *:before:bottom-1/7 *:before:z-1 *:before:size-1 *:before:-translate-x-1/2 *:before:rounded-full *:before:bg-primary *:before:transition-colors [&[data-selected]>*]:before:bg-primary-foreground",
+                    );
+
+                    // Label (e.g. "Aug") sits on the 1st of the next month.
+                    const nextMonthLabel =
+                      day.isoDate === nextMonthLabelIso
+                        ? localization.monthShortLabel(day.date)
+                        : undefined;
+
+                    // Next-month days only show in the shifted current-month
+                    // view; a month-name tooltip keeps them from being mistaken
+                    // for the current month.
+                    const monthTooltip =
+                      day.outside && !modifiers.disabled && !modifiers.hidden
+                        ? localization.monthLongLabel(day.date)
+                        : undefined;
+
+                    return (
+                      <td
+                        key={day.isoDate}
+                        className={cellClassName}
+                        aria-selected={modifiers.selected || undefined}
+                        data-day={day.isoDate}
+                        data-month={day.outside ? day.dateMonthId : undefined}
+                        data-selected={modifiers.selected || undefined}
+                        data-disabled={modifiers.disabled || undefined}
+                        data-hidden={modifiers.hidden || undefined}
+                        data-outside={day.outside || undefined}
+                        data-focused={modifiers.focused || undefined}
+                        data-today={modifiers.today || undefined}
+                      >
+                        {modifiers.hidden ? null : loading ? (
+                          <button
+                            type="button"
+                            disabled
+                            tabIndex={-1}
+                            aria-hidden="true"
+                            className="pointer-events-none relative flex @max-3xl:aspect-auto aspect-square @max-3xl:h-9 @max-3xl:max-h-9 w-full items-center justify-center rounded-lg"
+                          >
+                            <Skeleton className="size-full rounded-lg" />
+                          </button>
+                        ) : (
+                          <DayButton
+                            className="in-data-disabled:pointer-events-none relative flex @max-3xl:aspect-auto aspect-square @max-3xl:h-9 w-full items-center justify-center rounded-lg bg-muted in-data-disabled:bg-transparent in-data-selected:bg-primary font-medium in-data-disabled:font-normal in-data-selected:text-primary-foreground text-foreground tabular-nums in-data-disabled:opacity-50 outline-none transition-shadow duration-150 ease-out after:absolute @5xl:after:-inset-0.75 after:-inset-0.5 not-in-data-disabled:not-in-data-selected:hover:ring-2 not-in-data-disabled:not-in-data-selected:hover:ring-primary/72 focus-visible:z-1 focus-visible:ring-2 focus-visible:ring-primary/72 sm:text-sm"
+                            type="button"
+                            focused={modifiers.focused}
+                            nextMonthLabel={nextMonthLabel}
+                            tooltip={monthTooltip}
+                            disabled={
+                              (!modifiers.focused && modifiers.disabled) ||
+                              undefined
+                            }
+                            aria-disabled={
+                              (modifiers.focused && modifiers.disabled) ||
+                              undefined
+                            }
+                            tabIndex={day === focusTarget ? 0 : -1}
+                            aria-label={(() => {
+                              let label = localization.fullDateLabel(day.date);
+                              if (modifiers.today) {
+                                label = `${resolvedLabels.today}, ${label}`;
+                              }
+                              if (modifiers.selected) {
+                                label = `${label}, ${resolvedLabels.selected}`;
+                              }
+                              return label;
+                            })()}
+                            onClick={handleDayClick(day, modifiers)}
+                            onBlur={handleDayBlur}
+                            onFocus={handleDayFocus(day)}
+                            onKeyDown={handleDayKeyDown}
+                          >
+                            {localization.dayNumber(day.date)}
+                          </DayButton>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              {Array.from(
+                { length: placeholderRows },
+                (_, rowIndex) => `placeholder-row-${rowIndex}`,
+              ).map((rowKey) => (
+                <tr
+                  key={rowKey}
+                  className="@5xl:mt-1.5 mt-1 flex w-full @5xl:gap-1.5 gap-1"
+                >
                   {weekdays.map((weekday) => (
-                    <th
-                      key={weekday.long}
-                      aria-label={weekday.long}
-                      className="flex-1 font-medium text-muted-foreground/72 text-xs"
-                      scope="col"
+                    <td
+                      key={`${rowKey}-${weekday.long}`}
+                      className="@max-3xl:max-h-9 flex-1 p-0"
                     >
-                      {weekday.short}
-                    </th>
+                      <div className="@max-3xl:aspect-auto aspect-square @max-3xl:h-9 w-full" />
+                    </td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {weeks.map((week) => (
-                  <tr
-                    key={week[0]?.isoDate ?? week.at(-1)?.isoDate ?? "week"}
-                    className="@5xl:mt-1.5 mt-1 flex w-full @5xl:gap-1.5 gap-1"
-                  >
-                    {week.map((day) => {
-                      const modifiers = getModifiers(day);
-
-                      // The day button's own styling is driven by the `data-*`
-                      // attributes below; these cell classes only cover the
-                      // layout and the outside/hidden/today states.
-                      const cellClassName = cn(
-                        "@max-3xl:max-h-9 flex-1 p-0",
-                        modifiers.hidden && "invisible",
-                        modifiers.outside && "text-muted-foreground/50",
-                        modifiers.today &&
-                          "*:before:pointer-events-none *:before:absolute *:before:start-1/2 *:before:bottom-1/7 *:before:z-1 *:before:size-1 *:before:-translate-x-1/2 *:before:rounded-full *:before:bg-primary *:before:transition-colors [&[data-selected]>*]:before:bg-primary-foreground",
-                      );
-
-                      // Label (e.g. "Aug") sits on the 1st of the next month.
-                      const nextMonthLabel =
-                        day.isoDate === nextMonthLabelIso
-                          ? localization.monthShortLabel(day.date)
-                          : undefined;
-
-                      // Next-month days only show in the shifted current-month
-                      // view; a month-name tooltip keeps them from being mistaken
-                      // for the current month.
-                      const monthTooltip =
-                        day.outside && !modifiers.disabled && !modifiers.hidden
-                          ? localization.monthLongLabel(day.date)
-                          : undefined;
-
-                      return (
-                        <td
-                          key={day.isoDate}
-                          className={cellClassName}
-                          aria-selected={modifiers.selected || undefined}
-                          data-day={day.isoDate}
-                          data-month={day.outside ? day.dateMonthId : undefined}
-                          data-selected={modifiers.selected || undefined}
-                          data-disabled={modifiers.disabled || undefined}
-                          data-hidden={modifiers.hidden || undefined}
-                          data-outside={day.outside || undefined}
-                          data-focused={modifiers.focused || undefined}
-                          data-today={modifiers.today || undefined}
-                        >
-                          {modifiers.hidden ? null : loading ? (
-                            <button
-                              type="button"
-                              disabled
-                              tabIndex={-1}
-                              aria-hidden="true"
-                              className="pointer-events-none relative flex @max-3xl:aspect-auto aspect-square @max-3xl:h-9 @max-3xl:max-h-9 w-full items-center justify-center rounded-lg"
-                            >
-                              <Skeleton className="size-full rounded-lg" />
-                            </button>
-                          ) : (
-                            <DayButton
-                              className="in-data-disabled:pointer-events-none relative flex @max-3xl:aspect-auto aspect-square @max-3xl:h-9 w-full items-center justify-center rounded-lg bg-muted in-data-disabled:bg-transparent in-data-selected:bg-primary font-medium in-data-disabled:font-normal in-data-selected:text-primary-foreground text-foreground tabular-nums in-data-disabled:opacity-50 outline-none transition-shadow duration-150 ease-out after:absolute @5xl:after:-inset-0.75 after:-inset-0.5 not-in-data-disabled:not-in-data-selected:hover:ring-2 not-in-data-disabled:not-in-data-selected:hover:ring-primary/72 focus-visible:z-1 focus-visible:ring-2 focus-visible:ring-primary/72 sm:text-sm"
-                              type="button"
-                              focused={modifiers.focused}
-                              nextMonthLabel={nextMonthLabel}
-                              tooltip={monthTooltip}
-                              disabled={
-                                (!modifiers.focused && modifiers.disabled) ||
-                                undefined
-                              }
-                              aria-disabled={
-                                (modifiers.focused && modifiers.disabled) ||
-                                undefined
-                              }
-                              tabIndex={day === focusTarget ? 0 : -1}
-                              aria-label={(() => {
-                                let label = localization.fullDateLabel(
-                                  day.date,
-                                );
-                                if (modifiers.today) {
-                                  label = `${resolvedLabels.today}, ${label}`;
-                                }
-                                if (modifiers.selected) {
-                                  label = `${label}, ${resolvedLabels.selected}`;
-                                }
-                                return label;
-                              })()}
-                              onClick={handleDayClick(day, modifiers)}
-                              onBlur={handleDayBlur}
-                              onFocus={handleDayFocus(day)}
-                              onKeyDown={handleDayKeyDown}
-                            >
-                              {localization.dayNumber(day.date)}
-                            </DayButton>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-                {Array.from(
-                  { length: placeholderRows },
-                  (_, rowIndex) => `placeholder-row-${rowIndex}`,
-                ).map((rowKey) => (
-                  <tr
-                    key={rowKey}
-                    className="@5xl:mt-1.5 mt-1 flex w-full @5xl:gap-1.5 gap-1"
-                  >
-                    {weekdays.map((weekday) => (
-                      <td
-                        key={`${rowKey}-${weekday.long}`}
-                        className="@max-3xl:max-h-9 flex-1 p-0"
-                      >
-                        <div className="@max-3xl:aspect-auto aspect-square @max-3xl:h-9 w-full" />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Tooltip handle={monthTooltipHandle} disableHoverablePopup>
-              {({ payload }) => (
-                <TooltipPopup
-                  className="**:data-current:opacity-100! **:data-previous:opacity-0! **:data-current:transition-none! **:data-previous:transition-none!"
-                  portalProps={{
-                    className: "**:data-[slot=tooltip-positioner]:ease-out",
-                  }}
-                >
-                  {payload}
-                </TooltipPopup>
-              )}
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+              ))}
+            </tbody>
+          </table>
+          <Tooltip handle={monthTooltipHandle} disableHoverablePopup>
+            {({ payload }) => (
+              <TooltipPopup
+                className="**:data-current:opacity-100! **:data-previous:opacity-0! **:data-current:transition-none! **:data-previous:transition-none!"
+                portalProps={{
+                  className: "**:data-[slot=tooltip-positioner]:ease-out",
+                }}
+              >
+                {payload}
+              </TooltipPopup>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
