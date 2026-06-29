@@ -357,7 +357,8 @@ export type BookerCalendarProps = {
    * default.
    */
   shiftWeeks?: boolean;
-  loading?: boolean;
+  availabilityLoading?: boolean;
+  initialLoading?: boolean;
   month?: Date;
   defaultMonth?: Date;
   startMonth?: Date;
@@ -379,7 +380,8 @@ export type BookerCalendarProps = {
 export function BookerCalendar({
   className,
   shiftWeeks = true,
-  loading = false,
+  availabilityLoading = false,
+  initialLoading = false,
   month,
   defaultMonth,
   startMonth,
@@ -393,6 +395,7 @@ export function BookerCalendar({
   dir,
   labels,
 }: BookerCalendarProps): React.ReactElement {
+  const dayCellsLoading = initialLoading || availabilityLoading;
   const localization = React.useMemo(
     () => buildLocalization(locale, weekStartsOn),
     [locale, weekStartsOn],
@@ -670,38 +673,50 @@ export function BookerCalendar({
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {localization.monthYearLabel(firstMonth)}
         </div>
-        <div className="flex items-center justify-between">
-          <MonthCaption
-            date={firstMonth}
-            formatter={localization.captionFormatter}
-          />
-          <nav
-            className="flex items-center gap-1"
-            aria-label={resolvedLabels.nav}
-          >
-            <Button
-              variant="ghost"
-              size="icon-lg"
-              disabled={!previousMonth}
-              aria-label={resolvedLabels.previousMonth}
-              onClick={() => {
-                if (previousMonth) goToMonth(previousMonth);
-              }}
-            >
-              <ChevronLeftIcon className="rtl:rotate-180" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-lg"
-              disabled={!nextMonth}
-              aria-label={resolvedLabels.nextMonth}
-              onClick={() => {
-                if (nextMonth) goToMonth(nextMonth);
-              }}
-            >
-              <ChevronRightIcon className="rtl:rotate-180" aria-hidden="true" />
-            </Button>
-          </nav>
+        <div className="flex items-center justify-between h-10 sm:h-9">
+          {initialLoading ? (
+            <Skeleton className="h-6 w-28" />
+          ) : (
+            <>
+              <MonthCaption
+                date={firstMonth}
+                formatter={localization.captionFormatter}
+              />
+              <nav
+                className="flex items-center gap-1"
+                aria-label={resolvedLabels.nav}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon-lg"
+                  disabled={!previousMonth}
+                  aria-label={resolvedLabels.previousMonth}
+                  onClick={() => {
+                    if (previousMonth) goToMonth(previousMonth);
+                  }}
+                >
+                  <ChevronLeftIcon
+                    className="rtl:rotate-180"
+                    aria-hidden="true"
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-lg"
+                  disabled={!nextMonth}
+                  aria-label={resolvedLabels.nextMonth}
+                  onClick={() => {
+                    if (nextMonth) goToMonth(nextMonth);
+                  }}
+                >
+                  <ChevronRightIcon
+                    className="rtl:rotate-180"
+                    aria-hidden="true"
+                  />
+                </Button>
+              </nav>
+            </>
+          )}
         </div>
         <TooltipProvider delay={0}>
           <table
@@ -718,7 +733,11 @@ export function BookerCalendar({
                     className="flex-1 font-medium text-muted-foreground/72 text-xs"
                     scope="col"
                   >
-                    {weekday.short}
+                    {initialLoading ? (
+                      <Skeleton className="mx-auto h-3 my-0.5 w-6" />
+                    ) : (
+                      weekday.short
+                    )}
                   </th>
                 ))}
               </tr>
@@ -740,6 +759,7 @@ export function BookerCalendar({
                       modifiers.hidden && "invisible",
                       modifiers.outside && "text-muted-foreground/50",
                       modifiers.today &&
+                        !dayCellsLoading &&
                         "*:before:pointer-events-none *:before:absolute *:before:start-1/2 *:before:bottom-1/7 *:before:z-1 *:before:size-1 *:before:-translate-x-1/2 *:before:rounded-full *:before:bg-primary *:before:transition-colors [&[data-selected]>*]:before:bg-primary-foreground",
                     );
 
@@ -771,7 +791,7 @@ export function BookerCalendar({
                         data-focused={modifiers.focused || undefined}
                         data-today={modifiers.today || undefined}
                       >
-                        {modifiers.hidden ? null : loading ? (
+                        {modifiers.hidden ? null : dayCellsLoading ? (
                           <button
                             type="button"
                             disabled

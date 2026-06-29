@@ -9,6 +9,7 @@ import {
   AvatarImage,
 } from "@/registry/default/ui/avatar";
 import { Card } from "@/registry/default/ui/card";
+import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
 import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
 import { Location } from "./booker/location";
@@ -82,33 +83,36 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
     return <p>{error === GENERIC_LOAD_ERROR ? t.loadError : error}</p>;
   }
 
-  if (!meta) {
-    return <p>{t.loading}</p>;
-  }
-
   const headerImageClassName =
     "size-full rounded-t-[calc(var(--radius-xl)-2px)] @3xl:rounded-se-none object-cover opacity-64";
-  const headerImageAlt = t.headerImageAlt(meta.hostName, meta.eventTypeTitle);
+  const displayMeta = meta;
+  const headerImageAlt = displayMeta
+    ? t.headerImageAlt(displayMeta.hostName, displayMeta.eventTypeTitle)
+    : "Booker header";
+  const isInitialLoading = !meta;
+  const isAvailabilityLoading = isPending;
 
   return (
-    <div className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4">
+    <div
+      className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
+      aria-busy={isInitialLoading || isAvailabilityLoading}
+    >
       <Card className="w-full @3xl:flex-row @3xl:divide-x divide-y @3xl:divide-y-0">
         {/* Meta */}
         <div className="@3xl:w-56 @5xl:w-70">
           <div className="rounded-ss-xl px-1 pt-1">
             <div className="relative @3xl:aspect-16/7 aspect-3/1 overflow-hidden">
-              {meta.eventTypeImageUrl ? (
+              {displayMeta?.eventTypeImageUrl ? (
                 <img
                   alt={headerImageAlt}
                   className={headerImageClassName}
-                  src={meta.eventTypeImageUrl}
+                  src={displayMeta.eventTypeImageUrl}
                 />
               ) : (
                 <Image
                   alt={headerImageAlt}
                   className={headerImageClassName}
                   fill
-                  sizes="(min-width: 48rem) 280px, 100vw"
                   src={bookerHeaderPlaceholder}
                 />
               )}
@@ -118,25 +122,50 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
-                  {meta.hostAvatarUrl ? (
-                    <AvatarImage src={meta.hostAvatarUrl} />
+                  {displayMeta?.hostAvatarUrl ? (
+                    <AvatarImage src={displayMeta.hostAvatarUrl} />
                   ) : null}
-                  <AvatarFallback>{getInitials(meta.hostName)}</AvatarFallback>
+                  {displayMeta ? (
+                    <AvatarFallback>
+                      {getInitials(displayMeta.hostName)}
+                    </AvatarFallback>
+                  ) : (
+                    <AvatarFallback className="bg-transparent">
+                      <Skeleton className="size-full rounded-full" />
+                    </AvatarFallback>
+                  )}
                 </Avatar>
-                <p className="font-medium text-muted-foreground sm:text-sm">
-                  {meta.hostName}
-                </p>
+                {displayMeta ? (
+                  <p className="font-medium text-muted-foreground sm:text-sm">
+                    {displayMeta.hostName}
+                  </p>
+                ) : (
+                  <Skeleton className="h-5 sm:h-4 my-0.5 w-24" />
+                )}
               </div>
               <div className="flex flex-col gap-1">
-                <h1 className="font-heading @3xl:@max-5xl:text-lg text-xl">
-                  {meta.eventTypeTitle}
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  {meta.eventTypeDescription}
-                </p>
+                {displayMeta ? (
+                  <>
+                    <h1 className="font-heading @3xl:@max-5xl:text-lg text-xl">
+                      {displayMeta.eventTypeTitle}
+                    </h1>
+                    {displayMeta.eventTypeDescription && (
+                      <p className="text-muted-foreground text-sm">
+                        {displayMeta.eventTypeDescription}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Skeleton className="h-6 my-0.5 w-36" />
+                    <Skeleton className="h-4 my-0.5 w-full" />
+                    <Skeleton className="h-4 my-0.5 w-full" />
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex flex-col gap-3">
+
+            {displayMeta ? (
               <div className="flex flex-col gap-3 sm:text-sm">
                 <div className="flex items-center gap-2">
                   <Clock3Icon
@@ -144,31 +173,38 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
                     aria-hidden="true"
                   />
                   <span>
-                    {meta.eventTypeDurationMinutes
-                      ? t.durationMinutes(meta.eventTypeDurationMinutes)
+                    {displayMeta.eventTypeDurationMinutes
+                      ? t.durationMinutes(displayMeta.eventTypeDurationMinutes)
                       : t.durationUnknown}
                   </span>
                 </div>
                 <Location
-                  location={meta.eventTypeLocation}
-                  provider={meta.eventTypeLocationProvider}
+                  location={displayMeta.eventTypeLocation}
+                  provider={displayMeta.eventTypeLocationProvider}
                 />
                 <TimezonePicker
                   onValueChange={setSelectedTimeZone}
                   value={selectedTimeZone}
                 />
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <Skeleton className="my-0.5 h-4 w-36" />
+                <Skeleton className="my-0.5 h-4 w-36" />
+                <Skeleton className="my-0.5 h-4 w-36" />
+              </div>
+            )}
           </div>
         </div>
         {/* Calendar */}
         <div className="flex flex-1 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
           <BookerCalendar
-            loading={isPending}
+            availabilityLoading={isAvailabilityLoading}
+            initialLoading={isInitialLoading}
             locale={locale}
             month={currentMonth}
             startMonth={startMonth}
-            endMonth={meta.bookingWindowEnd ?? undefined}
+            endMonth={displayMeta?.bookingWindowEnd ?? undefined}
             onMonthChange={handleMonthChange}
             selected={selectedDate}
             onSelect={handleSelectDate}
@@ -177,10 +213,11 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
         </div>
         {/* Time picker */}
         <TimePicker
+          availabilityLoading={isAvailabilityLoading}
           daySlots={daySlots}
           goToDate={goToDate}
           is24Hour={is24Hour}
-          isPending={isPending}
+          initialLoading={isInitialLoading}
           labels={{
             hour12Short: t.hour12Short,
             hour24Short: t.hour24Short,
