@@ -442,7 +442,7 @@ So, if you want to preserve the original shadcn/ui input height (36px), you shou
 
 ### OTP Field
 
-coss does **not** use the community [`input-otp`](https://github.com/guilhermerodz/input-otp) package. OTP entry is implemented with [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPFieldPreview`) via the `@coss/otp-field` registry item (`components/ui/otp-field.tsx`).
+coss does **not** use the community [`input-otp`](https://github.com/guilhermerodz/input-otp) package. OTP entry is implemented with [Base UI OTP Field](https://base-ui.com/react/components/otp-field) (`OTPField`) via the `@coss/otp-field` registry item (`components/ui/otp-field.tsx`).
 
 **Quick Checklist:**
 - Remove the `input-otp` dependency from your app; rely on `@base-ui/react` through coss
@@ -451,7 +451,7 @@ coss does **not** use the community [`input-otp`](https://github.com/guilhermero
 - Replace `maxLength` → `length` on the root
 - For controlled values, use `onValueChange` (and `value`) as documented for Base UI — not the old package’s `onChange` alone
 - Render one `OTPFieldInput` per character in **DOM order**; do not pass a slot `index`
-- Add an `aria-label` on each `OTPFieldInput` when there is no visible label associated with the control
+- Label `OTPField` on the root (`aria-label` or visible `<label>`); keep the first `OTPFieldInput` unlabeled and add slot `aria-label`s only to inputs `2..N`
 
 **Comparison Example:**
 
@@ -475,8 +475,8 @@ coss does **not** use the community [`input-otp`](https://github.com/guilhermero
 
 <span data-lib="base-ui">
 ```tsx title="coss ui"
-<OTPField length={6} value={value} onValueChange={setValue}>
-  <OTPFieldInput aria-label="Character 1 of 6" />
+<OTPField aria-label="Verification code" length={6} value={value} onValueChange={setValue}>
+  <OTPFieldInput />
   <OTPFieldInput aria-label="Character 2 of 6" />
   <OTPFieldInput aria-label="Character 3 of 6" />
   <OTPFieldSeparator />

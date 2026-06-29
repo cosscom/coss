@@ -3,6 +3,21 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## June 22, 2026
+
+### Base UI 1.6.0
+
+coss ui now targets **`@base-ui/react@1.6.0`**.
+
+**Breaking change covered in this bump:** Base UI renamed the OTP namespace export from **`OTPFieldPreview`** to **`OTPField`**. coss has been updated accordingly in the OTP field implementation and docs.
+
+If you import Base UI OTP primitives directly in your app, update:
+
+```diff
+- import { OTPFieldPreview } from "@base-ui/react/otp-field"
++ import { OTPField } from "@base-ui/react/otp-field"
+```
+
 ## June 11, 2026
 
 ### Context Menu
