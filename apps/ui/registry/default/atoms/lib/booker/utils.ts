@@ -1,5 +1,3 @@
-import { prettifyLocation } from "@/lib/booker/location";
-
 export type BookerMeta = {
   hostName: string;
   hostAvatarUrl: string;
@@ -20,6 +18,39 @@ export type EventTypeInfo = {
   eventTypeLocationProvider: string;
   eventTypeImageUrl: string;
 };
+
+export function prettifyLocation(value: string): string {
+  const normalized = value.trim().toLowerCase();
+
+  const known: Record<string, string> = {
+    "integrations:google:meet": "Google Meet",
+    "integrations:zoom": "Zoom",
+    "integrations:microsoft:teams": "Microsoft Teams",
+    "integrations:whereby": "Whereby",
+    "integrations:jitsi": "Jitsi Meet",
+    inperson: "In person",
+    phone: "Phone call",
+  };
+
+  if (known[normalized]) {
+    return known[normalized];
+  }
+
+  if (normalized.startsWith("integrations:")) {
+    const parts = normalized.replace("integrations:", "").split(":");
+    return parts
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  return value
+    .replace(/[_:-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 function normalizeAvatarUrl(value: unknown): string {
   if (typeof value !== "string") {

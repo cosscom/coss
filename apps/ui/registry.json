@@ -11334,24 +11334,24 @@
           "type": "registry:block"
         },
         {
-          "path": "registry/default/atoms/booker-header-placeholder.webp",
-          "target": "components/atoms/booker-header-placeholder.webp",
+          "path": "registry/default/atoms/booker/booker-header-placeholder.webp",
+          "target": "components/atoms/booker/booker-header-placeholder.webp",
           "type": "registry:file"
         },
         {
-          "path": "registry/default/atoms/lib/booker/booker-calendar.tsx",
-          "target": "lib/booker/booker-calendar.tsx",
-          "type": "registry:lib"
+          "path": "registry/default/atoms/booker/booker-calendar.tsx",
+          "target": "components/atoms/booker/booker-calendar.tsx",
+          "type": "registry:component"
         },
         {
-          "path": "registry/default/atoms/lib/booker/location.tsx",
-          "target": "lib/booker/location.tsx",
-          "type": "registry:lib"
+          "path": "registry/default/atoms/booker/location.tsx",
+          "target": "components/atoms/booker/location.tsx",
+          "type": "registry:component"
         },
         {
-          "path": "registry/default/atoms/lib/booker/timezone-picker.tsx",
-          "target": "lib/booker/timezone-picker.tsx",
-          "type": "registry:lib"
+          "path": "registry/default/atoms/booker/timezone-picker.tsx",
+          "target": "components/atoms/booker/timezone-picker.tsx",
+          "type": "registry:component"
         },
         {
           "path": "registry/default/atoms/lib/booker/actions.ts",

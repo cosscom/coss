@@ -39,39 +39,6 @@ function resolveProviderIcon(provider?: string): string {
   return mapped;
 }
 
-export function prettifyLocation(value: string): string {
-  const normalized = value.trim().toLowerCase();
-
-  const known: Record<string, string> = {
-    "integrations:google:meet": "Google Meet",
-    "integrations:zoom": "Zoom",
-    "integrations:microsoft:teams": "Microsoft Teams",
-    "integrations:whereby": "Whereby",
-    "integrations:jitsi": "Jitsi Meet",
-    inperson: "In person",
-    phone: "Phone call",
-  };
-
-  if (known[normalized]) {
-    return known[normalized];
-  }
-
-  if (normalized.startsWith("integrations:")) {
-    const parts = normalized.replace("integrations:", "").split(":");
-    return parts
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
-
-  return value
-    .replace(/[_:-]+/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 export function Location({ location, provider }: LocationProps) {
   const iconUrl = useMemo(() => resolveProviderIcon(provider), [provider]);
   const [failedIconUrl, setFailedIconUrl] = useState<string | null>(null);

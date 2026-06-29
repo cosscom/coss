@@ -22,10 +22,10 @@ import { Label } from "@/registry/default/ui/label";
 import { ScrollArea } from "@/registry/default/ui/scroll-area";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { Switch } from "@/registry/default/ui/switch";
-import bookerHeaderPlaceholder from "./booker-header-placeholder.webp";
-import { BookerCalendar } from "@/lib/booker/booker-calendar";
-import { Location } from "@/lib/booker/location";
-import { TimezonePicker } from "@/lib/booker/timezone-picker";
+import { BookerCalendar } from "./booker/booker-calendar";
+import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
+import { Location } from "./booker/location";
+import { TimezonePicker } from "./booker/timezone-picker";
 import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";
 import {
   displayTimeLabel,

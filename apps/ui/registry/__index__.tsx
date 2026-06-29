@@ -9845,21 +9845,21 @@ export const Index: Record<string, any> = {
       type: "registry:block",
       target: "components/atoms/booker-1.tsx"
     },{
-      path: "registry/default/atoms/booker-header-placeholder.webp",
+      path: "registry/default/atoms/booker/booker-header-placeholder.webp",
       type: "registry:file",
-      target: "components/atoms/booker-header-placeholder.webp"
+      target: "components/atoms/booker/booker-header-placeholder.webp"
     },{
-      path: "registry/default/atoms/lib/booker/booker-calendar.tsx",
-      type: "registry:lib",
-      target: "lib/booker/booker-calendar.tsx"
+      path: "registry/default/atoms/booker/booker-calendar.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-calendar.tsx"
     },{
-      path: "registry/default/atoms/lib/booker/location.tsx",
-      type: "registry:lib",
-      target: "lib/booker/location.tsx"
+      path: "registry/default/atoms/booker/location.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/location.tsx"
     },{
-      path: "registry/default/atoms/lib/booker/timezone-picker.tsx",
-      type: "registry:lib",
-      target: "lib/booker/timezone-picker.tsx"
+      path: "registry/default/atoms/booker/timezone-picker.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/timezone-picker.tsx"
     },{
       path: "registry/default/atoms/lib/booker/actions.ts",
       type: "registry:lib",
