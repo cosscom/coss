@@ -16,6 +16,15 @@ export type BookerTarget =
       bookingUrl: string;
     };
 
+export type LegacyBookerTargetInput = {
+  username?: string | string[];
+  eventSlug?: string;
+  isTeamEvent?: boolean;
+  teamId?: number;
+  bookingUrl?: string;
+  orgId?: number;
+};
+
 export type ParsedLinkTarget =
   | {
       type: "user";
@@ -77,5 +86,42 @@ export function parseBookingUrlTarget(bookingUrl: string): ParsedLinkTarget {
     orgId,
     type: "user",
     username: decodeURIComponent(parts[0] ?? ""),
+  };
+}
+
+export function normalizeLegacyTarget(
+  props: LegacyBookerTargetInput,
+): BookerTarget {
+  if (props.bookingUrl) {
+    return { bookingUrl: props.bookingUrl, type: "link" };
+  }
+
+  if (props.isTeamEvent) {
+    if (!props.teamId || !props.eventSlug) {
+      throw new Error(
+        "For team events, pass teamId and eventSlug in target or legacy props.",
+      );
+    }
+
+    return {
+      eventSlug: props.eventSlug,
+      orgId: props.orgId,
+      teamId: props.teamId,
+      type: "team",
+    };
+  }
+
+  const username = Array.isArray(props.username)
+    ? props.username.join("+")
+    : props.username;
+  if (!username || !props.eventSlug) {
+    throw new Error("Pass target or username + eventSlug.");
+  }
+
+  return {
+    eventSlug: props.eventSlug,
+    orgId: props.orgId,
+    type: "user",
+    username,
   };
 }
