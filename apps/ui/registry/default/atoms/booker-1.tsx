@@ -120,7 +120,10 @@ export function Booker({ target, timezone, labels }: BookerProps) {
               <div className="flex flex-col gap-2">
                 <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
                   {displayMeta?.hostAvatarUrl ? (
-                    <AvatarImage src={displayMeta.hostAvatarUrl} />
+                    <AvatarImage
+                      alt={displayMeta.hostName}
+                      src={displayMeta.hostAvatarUrl}
+                    />
                   ) : null}
                   {displayMeta ? (
                     <AvatarFallback>
