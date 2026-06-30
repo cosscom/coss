@@ -26,32 +26,34 @@ export function prettifyLocation(value: string): string {
   const normalized = value.trim().toLowerCase();
 
   const known: Record<string, string> = {
-    "integrations:google:meet": "Google Meet",
-    "integrations:zoom": "Zoom",
-    "integrations:microsoft:teams": "Microsoft Teams",
-    "integrations:whereby": "Whereby",
-    "integrations:jitsi": "Jitsi Meet",
+    "cal-video": "Cal Video",
+    "daily-video": "Daily Video",
+    "google-meet": "Google Meet",
+    "huddle01-video": "Huddle01",
+    "microsoft-teams": "Microsoft Teams",
+    jitsi: "Jitsi Meet",
     inperson: "In person",
     phone: "Phone call",
+    whereby: "Whereby",
+    zoom: "Zoom",
   };
 
-  if (known[normalized]) {
-    return known[normalized];
+  const knownLocation = known[normalized];
+  if (knownLocation) {
+    return knownLocation;
   }
 
-  if (normalized.startsWith("integrations:")) {
-    const parts = normalized.replace("integrations:", "").split(":");
-    return parts
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
+  return titleizeLocation(value);
+}
 
+function titleizeLocation(value: string): string {
   return value
     .replace(/[_:-]+/g, " ")
     .split(" ")
     .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map((part) =>
+      /^\d+$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1),
+    )
     .join(" ");
 }
 
@@ -146,22 +148,17 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
     const first = locationsRaw[0];
     if (first && typeof first === "object") {
       const loc = first as Record<string, unknown>;
-      const rawType =
-        typeof loc.type === "string"
-          ? loc.type
-          : typeof loc.value === "string" &&
-              loc.value.startsWith("integrations:")
-            ? loc.value
-            : "";
-      locationProvider = rawType;
-      locationText = String(
-        loc.type ??
-          loc.label ??
-          loc.value ??
-          loc.address ??
-          loc.location ??
-          "Unknown",
-      );
+      const integrationProvider = getIntegrationProvider(loc);
+      locationProvider = integrationProvider;
+      locationText =
+        getDisplayLocationText(loc.label, integrationProvider) ??
+        getDisplayLocationText(loc.name, integrationProvider) ??
+        (integrationProvider || null) ??
+        getStringValue(loc.address) ??
+        getStringValue(loc.location) ??
+        getStringValue(loc.value) ??
+        getStringValue(loc.type) ??
+        "Unknown";
     } else if (typeof first === "string") {
       locationText = first;
     }
@@ -190,6 +187,58 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
         record.coverImageUrl,
     ),
   };
+}
+
+function getStringValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function getDisplayLocationText(
+  value: unknown,
+  integrationProvider: string,
+): string | null {
+  const text = getStringValue(value);
+  if (!text) {
+    return null;
+  }
+
+  const normalized = text.trim().toLowerCase();
+  if (
+    integrationProvider &&
+    ["integration", "integrations"].includes(normalized)
+  ) {
+    return null;
+  }
+
+  return text;
+}
+
+function getIntegrationProvider(record: Record<string, unknown>): string {
+  const rawType = getStringValue(record.type);
+  const type = rawType?.trim().toLowerCase();
+  const candidates = [
+    record.value,
+    record.integration,
+    record.provider,
+    record.app,
+    record.appSlug,
+    record.credentialType,
+  ];
+  for (const candidate of candidates) {
+    const value = getStringValue(candidate);
+    if (!value) {
+      continue;
+    }
+    const normalized = value.trim().toLowerCase();
+    if (
+      ["integration", "integrations"].includes(type ?? "") &&
+      !["integration", "integrations"].includes(normalized) &&
+      /^[a-z0-9][a-z0-9:_-]*$/i.test(value)
+    ) {
+      return value;
+    }
+  }
+  return "";
 }
 
 function toFiniteNumber(value: unknown): number | null {

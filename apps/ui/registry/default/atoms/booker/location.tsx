@@ -9,12 +9,11 @@ type LocationProps = {
 };
 
 const PROVIDER_ICON_MAP: Record<string, string> = {
-  "integrations:google:meet":
-    "https://i.cal.com/app-store/googlevideo/logo.webp",
-  "integrations:zoom": "/app-store/zoomvideo/icon.svg",
-  "integrations:microsoft:teams": "/app-store/office365video/icon.svg",
-  "integrations:whereby": "/app-store/whereby/icon-dark.svg",
-  "integrations:jitsi": "/app-store/jitsivideo/icon.svg",
+  "google-meet": "https://i.cal.com/app-store/googlevideo/logo.webp",
+  "microsoft-teams": "/app-store/office365video/icon.svg",
+  jitsi: "/app-store/jitsivideo/icon.svg",
+  whereby: "/app-store/whereby/icon-dark.svg",
+  zoom: "/app-store/zoomvideo/icon.svg",
 };
 
 function resolveProviderIcon(provider?: string): string {
