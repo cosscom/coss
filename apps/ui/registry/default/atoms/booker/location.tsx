@@ -9,48 +9,77 @@ type LocationProps = {
 };
 
 const PROVIDER_ICON_MAP: Record<string, string> = {
+  "cal-video": "https://app.cal.com/app-store/dailyvideo/icon.svg",
+  "daily-video": "https://app.cal.com/app-store/dailyvideo/icon.svg",
   "google-meet": "https://i.cal.com/app-store/googlevideo/logo.webp",
+  "huddle01-video": "/app-store/huddle01video/icon.svg",
   "microsoft-teams": "/app-store/office365video/icon.svg",
   jitsi: "/app-store/jitsivideo/icon.svg",
   whereby: "/app-store/whereby/icon-dark.svg",
   zoom: "/app-store/zoomvideo/icon.svg",
 };
 
-function resolveProviderIcon(provider?: string): string {
+function normalizeIconUrl(value: string): string {
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `https://app.cal.com${value}`;
+  }
+
+  return value;
+}
+
+function resolveProviderIcons(provider?: string): string[] {
   if (!provider) {
-    return "";
+    return [];
   }
 
   const normalized = provider.trim().toLowerCase();
-  const mapped = PROVIDER_ICON_MAP[normalized] ?? "";
-  if (!mapped) {
-    return "";
+  if (!normalized) {
+    return [];
   }
 
-  if (mapped.startsWith("http://") || mapped.startsWith("https://")) {
-    return mapped;
+  const appStoreSlugs = new Set<string>([
+    normalized,
+    normalized.replaceAll("-", ""),
+  ]);
+  if (normalized.endsWith("-video")) {
+    appStoreSlugs.add(normalized.replace(/-video$/, "video"));
   }
 
-  if (mapped.startsWith("/")) {
-    return `https://i.cal.com${mapped}`;
-  }
-
-  return mapped;
+  return Array.from(
+    new Set([
+      PROVIDER_ICON_MAP[normalized],
+      ...Array.from(
+        appStoreSlugs,
+        (slug) => `https://app.cal.com/app-store/${slug}/icon.svg`,
+      ),
+    ]),
+  )
+    .filter((url): url is string => Boolean(url))
+    .map(normalizeIconUrl);
 }
 
 export function Location({ location, provider }: LocationProps) {
-  const iconUrl = useMemo(() => resolveProviderIcon(provider), [provider]);
-  const [failedIconUrl, setFailedIconUrl] = useState<string | null>(null);
-  const iconLoadFailed = failedIconUrl === iconUrl;
+  const iconUrls = useMemo(() => resolveProviderIcons(provider), [provider]);
+  const [failedIconUrls, setFailedIconUrls] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const iconUrl =
+    iconUrls.find((candidate) => !failedIconUrls.has(candidate)) ?? "";
 
   return (
     <div className="flex items-center gap-2">
-      {iconUrl && !iconLoadFailed ? (
+      {iconUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={`${location} icon`}
           className="size-4.5 sm:size-4"
-          onError={() => setFailedIconUrl(iconUrl)}
+          onError={() =>
+            setFailedIconUrls((prev) => new Set(prev).add(iconUrl))
+          }
           src={iconUrl}
         />
       ) : (
