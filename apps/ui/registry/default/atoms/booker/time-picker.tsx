@@ -24,6 +24,7 @@ import {
 
 type TimePickerLabels = {
   noAvailableTimes: string;
+  noSlotsAvailable: string;
   noSlotsThisDay: string;
   noSlotsThisMonth: string;
   viewFirstAvailability: string;
@@ -125,7 +126,9 @@ export function TimePicker({
                   <EmptyDescription className="[[data-slot=empty-title]+&]:mt-0">
                     {hasAvailabilityInView
                       ? labels.noSlotsThisDay
-                      : labels.noSlotsThisMonth}
+                      : nextAvailableDate
+                        ? labels.noSlotsThisMonth
+                        : labels.noSlotsAvailable}
                   </EmptyDescription>
                 </EmptyHeader>
                 {nextAvailableDate ? (

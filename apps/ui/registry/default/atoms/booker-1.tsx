@@ -40,6 +40,7 @@ type BookerLabels = {
   durationUnknown: string;
   durationMinutes: (minutes: number) => string;
   noAvailableTimes: string;
+  noSlotsAvailable: string;
   noSlotsThisDay: string;
   noSlotsThisMonth: string;
   viewFirstAvailability: string;
@@ -57,6 +58,7 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
   durationUnknown: "Unknown",
   durationMinutes: (minutes) => `${minutes} min`,
   noAvailableTimes: "No available times",
+  noSlotsAvailable: "There are no open slots.",
   noSlotsThisDay: "There are no open slots on this day.",
   noSlotsThisMonth: "There are no open slots this month.",
   viewFirstAvailability: "View first availability",
@@ -207,6 +209,7 @@ export function Booker({ target, timezone, labels }: BookerProps) {
             hour12Short: t.hour12Short,
             hour24Short: t.hour24Short,
             noAvailableTimes: t.noAvailableTimes,
+            noSlotsAvailable: t.noSlotsAvailable,
             noSlotsThisDay: t.noSlotsThisDay,
             noSlotsThisMonth: t.noSlotsThisMonth,
             use24Hour: t.use24Hour,
