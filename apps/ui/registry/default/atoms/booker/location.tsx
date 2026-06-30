@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinIcon } from "lucide-react";
+import { ExternalLinkIcon, MapPinIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 type LocationProps = {
@@ -14,7 +14,9 @@ const PROVIDER_ICON_MAP: Record<string, string> = {
   "google-meet": "https://i.cal.com/app-store/googlevideo/logo.webp",
   "huddle01-video": "/app-store/huddle01video/icon.svg",
   "microsoft-teams": "/app-store/office365video/icon.svg",
+  conferencing: "external-link",
   jitsi: "/app-store/jitsivideo/icon.svg",
+  organizersdefaultapp: "external-link",
   whereby: "/app-store/whereby/icon-dark.svg",
   zoom: "/app-store/zoomvideo/icon.svg",
 };
@@ -73,15 +75,22 @@ export function Location({ location, provider }: LocationProps) {
   return (
     <div className="flex items-center gap-2">
       {iconUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          alt={`${location} icon`}
-          className="size-4.5 sm:size-4"
-          onError={() =>
-            setFailedIconUrls((prev) => new Set(prev).add(iconUrl))
-          }
-          src={iconUrl}
-        />
+        iconUrl === "external-link" ? (
+          <ExternalLinkIcon
+            className="size-4 shrink-0 opacity-80"
+            aria-hidden="true"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt={`${location} icon`}
+            className="size-4.5 sm:size-4"
+            onError={() =>
+              setFailedIconUrls((prev) => new Set(prev).add(iconUrl))
+            }
+            src={iconUrl}
+          />
+        )
       ) : (
         <MapPinIcon className="size-4 shrink-0 opacity-80" aria-hidden="true" />
       )}

@@ -31,8 +31,10 @@ export function prettifyLocation(value: string): string {
     "google-meet": "Google Meet",
     "huddle01-video": "Huddle01",
     "microsoft-teams": "Microsoft Teams",
+    conferencing: "Organizer's Default App",
     jitsi: "Jitsi Meet",
     inperson: "In person",
+    organizersdefaultapp: "Organizer's Default App",
     phone: "Phone call",
     whereby: "Whereby",
     zoom: "Zoom",
@@ -149,7 +151,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
     if (first && typeof first === "object") {
       const loc = first as Record<string, unknown>;
       const integrationProvider = getIntegrationProvider(loc);
-      locationProvider = integrationProvider;
+      locationProvider = integrationProvider || getStringValue(loc.type) || "";
       locationText =
         getDisplayLocationText(loc.label, integrationProvider) ??
         getDisplayLocationText(loc.name, integrationProvider) ??
