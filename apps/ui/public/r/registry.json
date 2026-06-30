@@ -11349,6 +11349,11 @@
           "type": "registry:component"
         },
         {
+          "path": "registry/default/atoms/booker/duration-picker.tsx",
+          "target": "components/atoms/booker/duration-picker.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "registry/default/atoms/booker/timezone-picker.tsx",
           "target": "components/atoms/booker/timezone-picker.tsx",
           "type": "registry:component"
@@ -11383,6 +11388,7 @@
         "@coss/empty",
         "@coss/label",
         "@coss/scroll-area",
+        "@coss/select",
         "@coss/skeleton",
         "@coss/switch",
         "@coss/tooltip"
@@ -11392,7 +11398,7 @@
         "displayName": "Booker",
         "preview": {
           "eventSlug": "15min",
-          "username": "pasquale"
+          "username": "rickastley"
         },
         "slug": "booker"
       },

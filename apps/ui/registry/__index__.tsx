@@ -9839,7 +9839,7 @@ export const Index: Record<string, any> = {
     name: "booker-1",
     description: "A full scheduling flow powered by Cal.com API v2.",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/label","@coss/scroll-area","@coss/skeleton","@coss/switch","@coss/tooltip"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/label","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/tooltip"],
     files: [{
       path: "registry/default/atoms/booker-1.tsx",
       type: "registry:block",
@@ -9856,6 +9856,10 @@ export const Index: Record<string, any> = {
       path: "registry/default/atoms/booker/location.tsx",
       type: "registry:component",
       target: "components/atoms/booker/location.tsx"
+    },{
+      path: "registry/default/atoms/booker/duration-picker.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/duration-picker.tsx"
     },{
       path: "registry/default/atoms/booker/timezone-picker.tsx",
       type: "registry:component",
@@ -9883,7 +9887,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: undefined,
-    meta: {"className":"**:data-[slot=preview]:w-full","displayName":"Booker","preview":{"eventSlug":"15min","username":"pasquale"},"slug":"booker"},
+    meta: {"className":"**:data-[slot=preview]:w-full","displayName":"Booker","preview":{"eventSlug":"15min","username":"rickastley"},"slug":"booker"},
   },
   "fonts": {
     name: "fonts",

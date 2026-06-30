@@ -613,7 +613,7 @@ export function filterBookableSlots(
 export function findFirstAvailableDate(
   month: Date,
   slotsByDate: Record<string, string[]>,
-  timeZone: string,
+  _timeZone: string,
   todayStart: Date,
 ): Date | null {
   const year = month.getFullYear();
@@ -834,7 +834,7 @@ export function pickDefaultSelectedDate(
 // offer a "jump to next availability" affordance from an empty month/day.
 export function findNextAvailableDate(
   slotsByDate: Record<string, string[]>,
-  timeZone: string,
+  _timeZone: string,
   todayStart: Date,
 ): Date | null {
   const todayKey = toCalendarDateKey(todayStart);

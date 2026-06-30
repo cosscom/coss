@@ -140,7 +140,7 @@ export function useBooker({
     timezone ?? timeZone,
   );
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [_selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(30);
   const [is24Hour, setIs24Hour] = useState(() => prefers24Hour(locale));
   const coveredMonthsRef = useRef<Set<string>>(new Set());

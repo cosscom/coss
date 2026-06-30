@@ -304,7 +304,7 @@ function DayButton({
       {nextMonthLabel ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute @5xl:end-1.5 end-1 @3xl:top-1.5 top-1 font-medium text-[10px] text-muted-foreground leading-none in-data-selected:text-primary-foreground/72"
+          className="pointer-events-none absolute @5xl:end-1.5 end-1 @3xl:top-1.5 top-1 font-medium in-data-selected:text-primary-foreground/72 text-[10px] text-muted-foreground leading-none"
         >
           {nextMonthLabel}
         </span>
