@@ -303,7 +303,6 @@ export function useBooker({
         setIsPending(false);
       }
 
-
       // Auto-select the first available day the first time this month's
       // availability is known (on load and on month navigation).
       const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;

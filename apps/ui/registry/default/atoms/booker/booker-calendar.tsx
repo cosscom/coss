@@ -2,15 +2,15 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import {
+  type ComponentProps,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type ComponentProps,
-  type KeyboardEvent,
-  type MouseEvent,
-  type ReactElement,
 } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
@@ -430,12 +430,10 @@ export function BookerCalendar({
 
   const firstMonth = month ? startOfMonth(month) : internalMonth;
 
-  const [focusedDate, setFocusedDate] = useState<Date | undefined>(
+  const [focusedDate, setFocusedDate] = useState<Date | undefined>(undefined);
+  const [lastFocusedDate, setLastFocusedDate] = useState<Date | undefined>(
     undefined,
   );
-  const [lastFocusedDate, setLastFocusedDate] = useState<
-    Date | undefined
-  >(undefined);
 
   const navStart = startMonth ? startOfMonth(startMonth) : undefined;
   const navEnd = endMonth ? startOfMonth(endMonth) : undefined;
@@ -623,8 +621,7 @@ export function BookerCalendar({
   };
 
   const handleDayClick =
-    (day: CalendarDay, modifiers: DayModifiers) =>
-    (event: MouseEvent) => {
+    (day: CalendarDay, modifiers: DayModifiers) => (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
       setFocusedDate(day.date);
