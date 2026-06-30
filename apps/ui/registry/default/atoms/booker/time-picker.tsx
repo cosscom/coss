@@ -45,7 +45,7 @@ type TimePickerProps = {
   onIs24HourChange: (value: boolean) => void;
   onSelectTime: (time: string) => void;
   selectedDate: Date | undefined;
-  selectedInCurrentMonth: boolean;
+  hasAvailabilityInView: boolean;
 };
 
 export function TimePicker({
@@ -61,7 +61,7 @@ export function TimePicker({
   onIs24HourChange,
   onSelectTime,
   selectedDate,
-  selectedInCurrentMonth,
+  hasAvailabilityInView,
 }: TimePickerProps) {
   const slotsLoading = initialLoading || availabilityLoading;
 
@@ -123,7 +123,7 @@ export function TimePicker({
                     {labels.noAvailableTimes}
                   </EmptyTitle>
                   <EmptyDescription className="[[data-slot=empty-title]+&]:mt-0">
-                    {selectedInCurrentMonth
+                    {hasAvailabilityInView
                       ? labels.noSlotsThisDay
                       : labels.noSlotsThisMonth}
                   </EmptyDescription>

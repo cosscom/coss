@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -11,6 +12,7 @@ import { fetchRawBookerDataAction } from "@/lib/booker/actions";
 import { type BookerTarget, getDynamicContext } from "@/lib/booker/target";
 import {
   type BookerMeta,
+  type CalendarViewOptions,
   extractBookingWindowEnd,
   extractBookingWindowStart,
   extractEventTypeInfo,
@@ -19,9 +21,14 @@ import {
   extractSlotsByDate,
   filterBookableSlots,
   findNextAvailableDate,
+  getMinimumNavigableMonth,
+  getTodayInTimeZone,
+  getWeekStartsOn,
+  hasAvailabilityInVisibleGrid,
+  isCalendarMonthBefore,
   pickDefaultSelectedDate,
   prefers24Hour,
-  toDateKey,
+  toCalendarDateKey,
 } from "@/lib/booker/utils";
 
 const WINDOW_MONTHS = 3;
@@ -68,7 +75,7 @@ export type UseBookerResult = {
   startMonth: Date;
   todayStart: Date;
   selectedDate: Date | undefined;
-  selectedInCurrentMonth: boolean;
+  hasAvailabilityInView: boolean;
   daySlots: string[];
   nextAvailableDate: Date | null;
   is24Hour: boolean;
@@ -127,6 +134,8 @@ export function useBooker({
   );
   const minimumBookingNoticeRef = useRef(0);
   const hasMultiDurationOptionsRef = useRef(false);
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
   const inFlightMonthsRef = useRef<Map<string, Promise<void>>>(new Map());
   const availabilityRequestVersionRef = useRef(0);
 
@@ -315,11 +324,37 @@ export function useBooker({
     ],
   );
 
+  const todayStart = getTodayInTimeZone(selectedTimeZone);
+  const startMonth = getMinimumNavigableMonth(
+    selectedTimeZone,
+    meta?.bookingWindowStart,
+  );
+  const calendarViewOptions = useMemo((): CalendarViewOptions => {
+    return {
+      endMonth: meta?.bookingWindowEnd ?? undefined,
+      shiftWeeks: true,
+      startMonth,
+      weekStartsOn: getWeekStartsOn(locale),
+    };
+  }, [locale, meta?.bookingWindowEnd, startMonth]);
+
+  const hasAvailabilityInView = useMemo(
+    () =>
+      hasAvailabilityInVisibleGrid(
+        currentMonth,
+        slotsByDate,
+        todayStart,
+        calendarViewOptions,
+      ),
+    [calendarViewOptions, currentMonth, slotsByDate, todayStart],
+  );
+
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       const identity = targetIdentity();
+      let deferLoadForMonthSync = false;
 
       // A different user/event means a different event type and metadata, so
       // reset everything and force a full fetch.
@@ -351,15 +386,38 @@ export function useBooker({
         lastTimeZoneRef.current !== null &&
         lastTimeZoneRef.current !== selectedTimeZone
       ) {
+        coveredMonthsRef.current = new Set();
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
         restoreSlotsFromCache();
         autoSelectedMonthRef.current = null;
         setSelectedTime(null);
+
+        const minMonth = getMinimumNavigableMonth(
+          selectedTimeZone,
+          meta?.bookingWindowStart,
+        );
+        if (isCalendarMonthBefore(currentMonth, minMonth)) {
+          setCurrentMonth(minMonth);
+          deferLoadForMonthSync = true;
+        } else {
+          const todayInTz = getTodayInTimeZone(selectedTimeZone);
+          if (
+            selectedDateRef.current &&
+            toCalendarDateKey(selectedDateRef.current) <
+              toCalendarDateKey(todayInTz)
+          ) {
+            setSelectedDate(undefined);
+          }
+        }
       }
       lastIdentityRef.current = identity;
       lastTimeZoneRef.current = selectedTimeZone;
       lastDurationRef.current = selectedDurationMinutes;
+
+      if (deferLoadForMonthSync) {
+        return;
+      }
 
       if (!coveredMonthsRef.current.has(buildKey(currentMonth))) {
         setIsPending(true);
@@ -392,13 +450,12 @@ export function useBooker({
       // availability is known (on load and on month navigation).
       const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
       if (!cancelled && autoSelectedMonthRef.current !== monthKey) {
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
         const firstAvailable = pickDefaultSelectedDate(
           currentMonth,
           slotsByDateRef.current,
           selectedTimeZone,
-          todayStart,
+          getTodayInTimeZone(selectedTimeZone),
+          calendarViewOptions,
         );
         if (firstAvailable) {
           autoSelectedMonthRef.current = monthKey;
@@ -431,6 +488,8 @@ export function useBooker({
     fetchWindow,
     selectedDurationMinutes,
     selectedTimeZone,
+    meta?.bookingWindowStart,
+    calendarViewOptions,
     restoreSlotsFromCache,
     targetIdentity,
   ]);
@@ -464,13 +523,12 @@ export function useBooker({
 
         const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
         if (autoSelectedMonthRef.current !== monthKey) {
-          const retryTodayStart = new Date();
-          retryTodayStart.setHours(0, 0, 0, 0);
           const firstAvailable = pickDefaultSelectedDate(
             currentMonth,
             slotsByDateRef.current,
             selectedTimeZone,
-            retryTodayStart,
+            getTodayInTimeZone(selectedTimeZone),
+            calendarViewOptions,
           );
           if (firstAvailable) {
             autoSelectedMonthRef.current = monthKey;
@@ -493,7 +551,13 @@ export function useBooker({
     return () => {
       cancelled = true;
     };
-  }, [retryCounter, fetchWindow, currentMonth, selectedTimeZone]);
+  }, [
+    retryCounter,
+    fetchWindow,
+    currentMonth,
+    selectedTimeZone,
+    calendarViewOptions,
+  ]);
 
   useEffect(() => {
     if (!timezone) {
@@ -502,32 +566,7 @@ export function useBooker({
     setSelectedTimeZone(timezone);
   }, [timezone]);
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  // If the event type has a booking window start (RANGE periodType with a
-  // future periodStartDate), use that as the earliest navigable month.
-  const windowStart = meta?.bookingWindowStart;
-  const startMonthBase =
-    windowStart && windowStart > todayStart ? windowStart : todayStart;
-  const startMonth = new Date(
-    startMonthBase.getFullYear(),
-    startMonthBase.getMonth(),
-    1,
-  );
-
-  // Only treat the selection as "live" when it belongs to the month currently
-  // on screen. Navigating to a month without availability leaves selectedDate
-  // pointing at a previous month's day, which would otherwise keep its slots
-  // visible instead of the empty state.
-  const selectedInCurrentMonth =
-    selectedDate != null &&
-    selectedDate.getMonth() === currentMonth.getMonth() &&
-    selectedDate.getFullYear() === currentMonth.getFullYear();
-  const selectedDateKey = toDateKey(
-    selectedDate ?? new Date(),
-    selectedTimeZone,
-  );
+  const selectedDateKey = toCalendarDateKey(selectedDate ?? todayStart);
   const daySlots =
     selectedDate != null ? (slotsByDate[selectedDateKey] ?? []) : [];
   const nextAvailableDate = findNextAvailableDate(
@@ -546,13 +585,12 @@ export function useBooker({
     }
     // For an already-loaded month, select the first available day in the same
     // update as the month change so the selection doesn't flicker.
-    const monthTodayStart = new Date();
-    monthTodayStart.setHours(0, 0, 0, 0);
     const firstAvailable = pickDefaultSelectedDate(
       month,
       slotsByDateRef.current,
       selectedTimeZone,
-      monthTodayStart,
+      getTodayInTimeZone(selectedTimeZone),
+      calendarViewOptions,
     );
     if (firstAvailable) {
       autoSelectedMonthRef.current = `${month.getFullYear()}-${month.getMonth()}`;
@@ -577,13 +615,11 @@ export function useBooker({
   };
 
   const isDayDisabled = (date: Date) => {
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-    if (dayStart < todayStart) {
+    const dayKey = toCalendarDateKey(date);
+    if (dayKey < toCalendarDateKey(todayStart)) {
       return true;
     }
 
-    const dayKey = toDateKey(date, selectedTimeZone);
     return (slotsByDate[dayKey] ?? []).length === 0;
   };
 
@@ -606,7 +642,7 @@ export function useBooker({
     startMonth,
     todayStart,
     selectedDate,
-    selectedInCurrentMonth,
+    hasAvailabilityInView,
     daySlots,
     nextAvailableDate,
     is24Hour,

@@ -385,6 +385,8 @@ export type BookerCalendarProps = {
   dir?: "ltr" | "rtl";
   /** Translatable strings for the navigation buttons and day button states. */
   labels?: Partial<CalendarLabels>;
+  /** Reference "today" for highlighting and week shifting; defaults to now. */
+  today?: Date;
 };
 
 export function BookerCalendar({
@@ -404,6 +406,7 @@ export function BookerCalendar({
   weekStartsOn,
   dir,
   labels,
+  today: todayProp,
 }: BookerCalendarProps): ReactElement {
   const dayCellsLoading = initialLoading || availabilityLoading;
   const localization = useMemo(
@@ -414,7 +417,7 @@ export function BookerCalendar({
   const resolvedDir = dir ?? getTextDirection(locale);
   const weekStart = localization.weekStartsOn;
 
-  const today = new Date();
+  const today = todayProp ?? new Date();
 
   // The month is controlled by the parent (via `month`/`onMonthChange`), but we
   // keep an internal fallback so the calendar works uncontrolled too.

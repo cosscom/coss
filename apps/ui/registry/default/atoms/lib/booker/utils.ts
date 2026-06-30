@@ -361,6 +361,50 @@ export function toDateKey(date: Date, timeZone: string): string {
   }).format(date);
 }
 
+// Calendar grid dates are plain Y-M-D values (local Date components), not
+// instants. Use this when looking up slots keyed by the API/booking timezone.
+export function toCalendarDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function getTodayInTimeZone(
+  timeZone: string,
+  now: Date = new Date(),
+): Date {
+  const [yearRaw, monthRaw, dayRaw] = toDateKey(now, timeZone).split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+    const fallback = new Date(now);
+    fallback.setHours(0, 0, 0, 0);
+    return fallback;
+  }
+  return new Date(year, month - 1, day);
+}
+
+export function getMinimumNavigableMonth(
+  timeZone: string,
+  bookingWindowStart?: Date | null,
+  now: Date = new Date(),
+): Date {
+  const todayInTz = getTodayInTimeZone(timeZone, now);
+  const startBase =
+    bookingWindowStart && bookingWindowStart > todayInTz
+      ? bookingWindowStart
+      : todayInTz;
+  return new Date(startBase.getFullYear(), startBase.getMonth(), 1);
+}
+
+export function isCalendarMonthBefore(left: Date, right: Date): boolean {
+  const leftMonth = new Date(left.getFullYear(), left.getMonth(), 1);
+  const rightMonth = new Date(right.getFullYear(), right.getMonth(), 1);
+  return leftMonth.getTime() < rightMonth.getTime();
+}
+
 function toTimeLabel(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
@@ -489,7 +533,7 @@ export function extractSlotsByDate(
             continue;
           }
 
-          addSlot(key, toTimeLabel(parsed, timeZone));
+          addSlot(toDateKey(parsed, timeZone), toTimeLabel(parsed, timeZone));
         }
       } else {
         visitNode(value);
@@ -575,16 +619,15 @@ export function findFirstAvailableDate(
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const todayKey = toCalendarDateKey(todayStart);
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const date = new Date(year, monthIndex, day);
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-    if (dayStart < todayStart) {
+    const key = toCalendarDateKey(date);
+    if (key < todayKey) {
       continue;
     }
 
-    const key = toDateKey(date, timeZone);
     if ((slotsByDate[key] ?? []).length > 0) {
       return date;
     }
@@ -593,12 +636,194 @@ export function findFirstAvailableDate(
   return null;
 }
 
+// --- Calendar grid (mirrors booker-calendar.tsx) ---
+
+export function getWeekStartsOn(locale: string): number {
+  try {
+    const localeObj = new Intl.Locale(locale) as Intl.Locale & {
+      weekInfo?: { firstDay?: number };
+      getWeekInfo?: () => { firstDay?: number };
+    };
+    const info =
+      typeof localeObj.getWeekInfo === "function"
+        ? localeObj.getWeekInfo()
+        : localeObj.weekInfo;
+    const firstDay = info?.firstDay;
+    if (typeof firstDay === "number") {
+      return firstDay % 7;
+    }
+  } catch {
+    // Fall through to the Sunday default below.
+  }
+  return 0;
+}
+
+function calendarStartOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function calendarEndOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+function calendarAddDays(date: Date, amount: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
+}
+
+function calendarStartOfWeek(date: Date, weekStartsOn = 0): Date {
+  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diff = (day.getDay() - weekStartsOn + 7) % 7;
+  return calendarAddDays(day, -diff);
+}
+
+function calendarEndOfWeek(date: Date, weekStartsOn = 0): Date {
+  return calendarAddDays(calendarStartOfWeek(date, weekStartsOn), 6);
+}
+
+function isSameCalendarMonth(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+}
+
+export type CalendarViewOptions = {
+  weekStartsOn?: number;
+  shiftWeeks?: boolean;
+  startMonth?: Date;
+  endMonth?: Date;
+};
+
+export function getVisibleCalendarDates(
+  month: Date,
+  today: Date,
+  options: CalendarViewOptions = {},
+): Date[] {
+  const weekStartsOn = options.weekStartsOn ?? 0;
+  const shiftWeeks = options.shiftWeeks ?? true;
+  const firstMonth = calendarStartOfMonth(month);
+
+  const naturalGridStart = calendarStartOfWeek(firstMonth, weekStartsOn);
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const todayRow = Math.floor(
+    Math.round(
+      (todayStart.getTime() - naturalGridStart.getTime()) / 86_400_000,
+    ) / 7,
+  );
+  const expand =
+    shiftWeeks && isSameCalendarMonth(firstMonth, today) && todayRow >= 3;
+  const shiftRows = expand ? Math.max(0, todayRow - 3) : 0;
+
+  const monthStart = calendarStartOfMonth(firstMonth);
+  const offset = shiftRows * 7;
+  const gridStart = calendarAddDays(
+    calendarStartOfWeek(monthStart, weekStartsOn),
+    offset,
+  );
+  const gridEnd = calendarAddDays(
+    calendarEndOfWeek(calendarEndOfMonth(firstMonth), weekStartsOn),
+    offset,
+  );
+
+  const dates: Date[] = [];
+  for (
+    let cursor = gridStart;
+    cursor.getTime() <= gridEnd.getTime();
+    cursor = calendarAddDays(cursor, 1)
+  ) {
+    dates.push(cursor);
+  }
+
+  if (expand) {
+    while (dates.length < 42) {
+      const lastDate = dates.at(-1);
+      if (!lastDate) {
+        break;
+      }
+      dates.push(calendarAddDays(lastDate, 1));
+    }
+  }
+
+  const navStart = options.startMonth
+    ? calendarStartOfMonth(options.startMonth)
+    : undefined;
+  const navEnd = options.endMonth
+    ? calendarStartOfMonth(options.endMonth)
+    : undefined;
+  const monthEnd = calendarEndOfMonth(firstMonth);
+
+  return dates.filter((date) => {
+    if (navStart && date < navStart) {
+      return false;
+    }
+    if (navEnd && date > calendarEndOfMonth(navEnd)) {
+      return false;
+    }
+    if (date < monthStart) {
+      return false;
+    }
+    if (!expand && date > monthEnd) {
+      return false;
+    }
+    return true;
+  });
+}
+
+export function findFirstAvailableInVisibleGrid(
+  month: Date,
+  slotsByDate: Record<string, string[]>,
+  todayStart: Date,
+  options: CalendarViewOptions = {},
+): Date | null {
+  const todayKey = toCalendarDateKey(todayStart);
+  for (const date of getVisibleCalendarDates(month, todayStart, options)) {
+    const key = toCalendarDateKey(date);
+    if (key < todayKey) {
+      continue;
+    }
+    if ((slotsByDate[key] ?? []).length > 0) {
+      return date;
+    }
+  }
+  return null;
+}
+
+export function hasAvailabilityInVisibleGrid(
+  month: Date,
+  slotsByDate: Record<string, string[]>,
+  todayStart: Date,
+  options: CalendarViewOptions = {},
+): boolean {
+  return (
+    findFirstAvailableInVisibleGrid(month, slotsByDate, todayStart, options) !=
+    null
+  );
+}
+
+function isLiveCurrentMonth(month: Date, todayStart: Date): boolean {
+  return (
+    month.getFullYear() === todayStart.getFullYear() &&
+    month.getMonth() === todayStart.getMonth()
+  );
+}
+
 export function pickDefaultSelectedDate(
   currentMonth: Date,
   slotsByDate: Record<string, string[]>,
   timeZone: string,
   todayStart: Date,
+  viewOptions?: CalendarViewOptions,
 ): Date | null {
+  if (viewOptions && isLiveCurrentMonth(currentMonth, todayStart)) {
+    return findFirstAvailableInVisibleGrid(
+      currentMonth,
+      slotsByDate,
+      todayStart,
+      viewOptions,
+    );
+  }
+
   return (
     findFirstAvailableDate(currentMonth, slotsByDate, timeZone, todayStart) ??
     findNextAvailableDate(slotsByDate, timeZone, todayStart)
@@ -612,7 +837,7 @@ export function findNextAvailableDate(
   timeZone: string,
   todayStart: Date,
 ): Date | null {
-  const todayKey = toDateKey(todayStart, timeZone);
+  const todayKey = toCalendarDateKey(todayStart);
   let bestKey: string | null = null;
   for (const [key, times] of Object.entries(slotsByDate)) {
     if (times.length === 0 || key < todayKey) {

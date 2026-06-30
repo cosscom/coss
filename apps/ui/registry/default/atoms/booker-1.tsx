@@ -102,8 +102,9 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
     setSelectedTimeZone,
     currentMonth,
     startMonth,
+    todayStart,
     selectedDate,
-    selectedInCurrentMonth,
+    hasAvailabilityInView,
     daySlots,
     nextAvailableDate,
     is24Hour,
@@ -257,6 +258,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
             selected={selectedDate}
             onSelect={handleSelectDate}
             disabled={isDayDisabled}
+            today={todayStart}
           />
         </div>
         {/* Time picker */}
@@ -281,7 +283,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
           onIs24HourChange={setIs24Hour}
           onSelectTime={setSelectedTime}
           selectedDate={selectedDate}
-          selectedInCurrentMonth={selectedInCurrentMonth}
+          hasAvailabilityInView={hasAvailabilityInView}
         />
       </Card>
       <Link
