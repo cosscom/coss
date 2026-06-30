@@ -28,11 +28,7 @@ import { DurationPicker } from "./booker/duration-picker";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
-import {
-  type BookerTarget,
-  type LegacyBookerTargetInput,
-  normalizeLegacyTarget,
-} from "@/lib/booker/target";
+import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerError, useBooker } from "@/lib/booker/use-booker";
 import { getInitials } from "@/lib/booker/utils";
 
@@ -79,62 +75,39 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
     `Banner for ${eventTitle} with ${hostName}`,
 };
 
-type LegacyBookerProps = LegacyBookerTargetInput;
-
 type BookerProps = {
   target: BookerTarget;
   timezone?: string;
   defaultFormValues?: Record<string, unknown>;
   onCreateBookingSuccess?: (data: unknown) => void;
   labels?: Partial<BookerLabels>;
-} & LegacyBookerProps;
+};
 
-export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
-  const resolvedTarget = target ?? normalizeLegacyTarget(legacy);
+export function Booker({ target, timezone, labels }: BookerProps) {
   const t = { ...DEFAULT_BOOKER_LABELS, ...labels };
-  const {
-    meta,
-    error,
-    retry,
-    isPending,
-    locale,
-    selectedTimeZone,
-    setSelectedTimeZone,
-    currentMonth,
-    startMonth,
-    todayStart,
-    selectedDate,
-    hasAvailabilityInView,
-    daySlots,
-    nextAvailableDate,
-    is24Hour,
-    setIs24Hour,
-    setSelectedTime,
-    selectedDurationMinutes,
-    setSelectedDurationMinutes,
-    handleMonthChange,
-    handleSelectDate,
-    isDayDisabled,
-    goToDate,
-  } = useBooker({ target: resolvedTarget, timezone });
+  const booker = useBooker({ target, timezone });
 
-  if (error) {
-    return <BookerErrorState error={error} labels={t} onRetry={retry} />;
+  if (booker.error) {
+    return (
+      <BookerErrorState
+        error={booker.error}
+        labels={t}
+        onRetry={booker.retry}
+      />
+    );
   }
 
   const headerImageClassName =
     "size-full rounded-t-[calc(var(--radius-xl)-2px)] @3xl:rounded-se-none object-cover opacity-64";
-  const displayMeta = meta;
+  const displayMeta = booker.meta;
   const headerImageAlt = displayMeta
     ? t.headerImageAlt(displayMeta.hostName, displayMeta.eventTypeTitle)
     : "Booker header";
-  const isInitialLoading = !meta;
-  const isAvailabilityLoading = isPending;
 
   return (
     <div
       className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
-      aria-busy={isInitialLoading || isAvailabilityLoading}
+      aria-busy={booker.loadingState.busy}
     >
       <Card className="w-full @3xl:flex-row @3xl:divide-x divide-y @3xl:divide-y-0">
         {/* Meta */}
@@ -208,9 +181,8 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
                 {displayMeta.eventTypeDurationOptions ? (
                   <DurationPicker
                     formatLabel={t.durationMinutes}
-                    onValueChange={setSelectedDurationMinutes}
                     options={displayMeta.eventTypeDurationOptions}
-                    value={selectedDurationMinutes}
+                    {...booker.durationProps}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
@@ -231,10 +203,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
                   location={displayMeta.eventTypeLocation}
                   provider={displayMeta.eventTypeLocationProvider}
                 />
-                <TimezonePicker
-                  onValueChange={setSelectedTimeZone}
-                  value={selectedTimeZone}
-                />
+                <TimezonePicker {...booker.timezoneProps} />
               </div>
             ) : (
               <div className="flex flex-col gap-1">
@@ -247,28 +216,10 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
         </div>
         {/* Calendar */}
         <div className="flex flex-1 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
-          <BookerCalendar
-            availabilityLoading={isAvailabilityLoading}
-            initialLoading={isInitialLoading}
-            locale={locale}
-            month={currentMonth}
-            startMonth={startMonth}
-            endMonth={displayMeta?.bookingWindowEnd ?? undefined}
-            onMonthChange={handleMonthChange}
-            selected={selectedDate}
-            onSelect={handleSelectDate}
-            disabled={isDayDisabled}
-            today={todayStart}
-          />
+          <BookerCalendar {...booker.calendarProps} />
         </div>
         {/* Time picker */}
         <TimePicker
-          availabilityLoading={isAvailabilityLoading}
-          currentMonth={currentMonth}
-          daySlots={daySlots}
-          goToDate={goToDate}
-          is24Hour={is24Hour}
-          initialLoading={isInitialLoading}
           labels={{
             hour12Short: t.hour12Short,
             hour24Short: t.hour24Short,
@@ -278,12 +229,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
             use24Hour: t.use24Hour,
             viewFirstAvailability: t.viewFirstAvailability,
           }}
-          locale={locale}
-          nextAvailableDate={nextAvailableDate}
-          onIs24HourChange={setIs24Hour}
-          onSelectTime={setSelectedTime}
-          selectedDate={selectedDate}
-          hasAvailabilityInView={hasAvailabilityInView}
+          {...booker.timePickerProps}
         />
       </Card>
       <Link

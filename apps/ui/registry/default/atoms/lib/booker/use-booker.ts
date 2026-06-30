@@ -63,31 +63,60 @@ type UseBookerParams = {
   timezone?: string;
 };
 
-export type UseBookerResult = {
-  meta: BookerMeta | null;
-  error: BookerError | null;
-  retry: () => void;
-  isPending: boolean;
+type BookerLoadingState = {
+  availability: boolean;
+  busy: boolean;
+  initial: boolean;
+};
+
+type BookerTimezoneState = {
+  onValueChange: (timeZone: string) => void;
+  value: string;
+};
+
+type BookerDurationState = {
+  onValueChange: (minutes: number) => void;
+  value: number;
+};
+
+type BookerCalendarState = {
+  availabilityLoading: boolean;
+  disabled: (date: Date) => boolean;
+  endMonth?: Date;
+  initialLoading: boolean;
   locale: string;
-  selectedTimeZone: string;
-  setSelectedTimeZone: (timeZone: string) => void;
-  currentMonth: Date;
+  month: Date;
+  onMonthChange: (month: Date) => void;
+  onSelect: (nextDate: Date | undefined) => void;
+  selected: Date | undefined;
   startMonth: Date;
-  todayStart: Date;
-  selectedDate: Date | undefined;
-  hasAvailabilityInView: boolean;
+  today: Date;
+};
+
+type BookerTimePickerState = {
+  availabilityLoading: boolean;
+  currentMonth: Date;
   daySlots: string[];
-  nextAvailableDate: Date | null;
-  is24Hour: boolean;
-  setIs24Hour: (value: boolean) => void;
-  selectedTime: string | null;
-  setSelectedTime: (time: string | null) => void;
-  selectedDurationMinutes: number;
-  setSelectedDurationMinutes: (minutes: number) => void;
-  handleMonthChange: (month: Date) => void;
-  handleSelectDate: (nextDate: Date | undefined) => void;
-  isDayDisabled: (date: Date) => boolean;
   goToDate: (date: Date) => void;
+  hasAvailabilityInView: boolean;
+  initialLoading: boolean;
+  is24Hour: boolean;
+  locale: string;
+  nextAvailableDate: Date | null;
+  onIs24HourChange: (value: boolean) => void;
+  onSelectTime: (time: string) => void;
+  selectedDate: Date | undefined;
+};
+
+export type UseBookerResult = {
+  calendarProps: BookerCalendarState;
+  durationProps: BookerDurationState;
+  error: BookerError | null;
+  loadingState: BookerLoadingState;
+  meta: BookerMeta | null;
+  retry: () => void;
+  timePickerProps: BookerTimePickerState;
+  timezoneProps: BookerTimezoneState;
 };
 
 // All booker data + interaction logic: fetching/windowing cal.com availability,
@@ -630,30 +659,52 @@ export function useBooker({
     autoSelectedMonthRef.current = `${date.getFullYear()}-${date.getMonth()}`;
   };
 
+  const initialLoading = !meta;
+  const availabilityLoading = isPending;
+
   return {
-    meta,
+    calendarProps: {
+      availabilityLoading,
+      disabled: isDayDisabled,
+      endMonth: meta?.bookingWindowEnd ?? undefined,
+      initialLoading,
+      locale,
+      month: currentMonth,
+      onMonthChange: handleMonthChange,
+      onSelect: handleSelectDate,
+      selected: selectedDate,
+      startMonth,
+      today: todayStart,
+    },
+    durationProps: {
+      onValueChange: setSelectedDurationMinutes,
+      value: selectedDurationMinutes,
+    },
     error,
+    loadingState: {
+      availability: availabilityLoading,
+      busy: initialLoading || availabilityLoading,
+      initial: initialLoading,
+    },
+    meta,
     retry,
-    isPending,
-    locale,
-    selectedTimeZone,
-    setSelectedTimeZone,
-    currentMonth,
-    startMonth,
-    todayStart,
-    selectedDate,
-    hasAvailabilityInView,
-    daySlots,
-    nextAvailableDate,
-    is24Hour,
-    setIs24Hour,
-    selectedTime,
-    setSelectedTime,
-    selectedDurationMinutes,
-    setSelectedDurationMinutes,
-    handleMonthChange,
-    handleSelectDate,
-    isDayDisabled,
-    goToDate,
+    timePickerProps: {
+      availabilityLoading,
+      currentMonth,
+      daySlots,
+      goToDate,
+      hasAvailabilityInView,
+      initialLoading,
+      is24Hour,
+      locale,
+      nextAvailableDate,
+      onIs24HourChange: setIs24Hour,
+      onSelectTime: setSelectedTime,
+      selectedDate,
+    },
+    timezoneProps: {
+      onValueChange: setSelectedTimeZone,
+      value: selectedTimeZone,
+    },
   };
 }
