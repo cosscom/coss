@@ -9861,6 +9861,10 @@ export const Index: Record<string, any> = {
       type: "registry:component",
       target: "components/atoms/booker/duration-picker.tsx"
     },{
+      path: "registry/default/atoms/booker/event-description.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/event-description.tsx"
+    },{
       path: "registry/default/atoms/booker/timezone-picker.tsx",
       type: "registry:component",
       target: "components/atoms/booker/timezone-picker.tsx"

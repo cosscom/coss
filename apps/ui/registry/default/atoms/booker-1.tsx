@@ -24,6 +24,7 @@ import {
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
 import { DurationPicker } from "./booker/duration-picker";
+import { EventDescription } from "./booker/event-description";
 import { HeaderBanner } from "./booker/header-banner";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
@@ -145,11 +146,9 @@ export function Booker({ target, timezone, labels }: BookerProps) {
                     <h1 className="font-heading @3xl:@max-5xl:text-lg text-xl">
                       {displayMeta.eventTypeTitle}
                     </h1>
-                    {displayMeta.eventTypeDescription && (
-                      <p className="text-muted-foreground text-sm">
-                        {displayMeta.eventTypeDescription}
-                      </p>
-                    )}
+                    <EventDescription
+                      description={displayMeta.eventTypeDescription}
+                    />
                   </>
                 ) : (
                   <>

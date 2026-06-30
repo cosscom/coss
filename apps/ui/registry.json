@@ -11326,6 +11326,11 @@
       "type": "registry:block"
     },
     {
+      "dependencies": [
+        "isomorphic-dompurify",
+        "marked",
+        "lucide-react"
+      ],
       "description": "A full scheduling flow powered by Cal.com API v2.",
       "files": [
         {
@@ -11351,6 +11356,11 @@
         {
           "path": "registry/default/atoms/booker/duration-picker.tsx",
           "target": "components/atoms/booker/duration-picker.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/default/atoms/booker/event-description.tsx",
+          "target": "components/atoms/booker/event-description.tsx",
           "type": "registry:component"
         },
         {

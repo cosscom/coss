@@ -16,6 +16,7 @@ type AtomItem = Omit<Registry["items"][number], "meta"> & {
 
 export const atoms: AtomItem[] = [
   {
+    dependencies: ["isomorphic-dompurify", "marked", "lucide-react"],
     description: "A full scheduling flow powered by Cal.com API v2.",
     files: [
       {
@@ -41,6 +42,11 @@ export const atoms: AtomItem[] = [
       {
         path: "atoms/booker/duration-picker.tsx",
         target: "components/atoms/booker/duration-picker.tsx",
+        type: "registry:component",
+      },
+      {
+        path: "atoms/booker/event-description.tsx",
+        target: "components/atoms/booker/event-description.tsx",
         type: "registry:component",
       },
       {
