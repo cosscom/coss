@@ -1,7 +1,17 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import * as React from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
+} from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Button } from "@/registry/default/ui/button";
 import { Skeleton } from "@/registry/default/ui/skeleton";
@@ -277,14 +287,14 @@ function DayButton({
   tooltip,
   children,
   ...buttonProps
-}: React.ComponentProps<"button"> & {
+}: ComponentProps<"button"> & {
   focused: boolean;
   nextMonthLabel?: string;
   tooltip?: string;
-}): React.ReactElement {
-  const ref = React.useRef<HTMLButtonElement>(null);
+}): ReactElement {
+  const ref = useRef<HTMLButtonElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (focused) ref.current?.focus();
   }, [focused]);
 
@@ -323,7 +333,7 @@ function MonthCaption({
   date: Date;
   formatter: Intl.DateTimeFormat;
   className?: string;
-}): React.ReactElement {
+}): ReactElement {
   return (
     <div className={className}>
       <span className="font-heading @3xl:@max-5xl:text-base text-lg">
@@ -394,9 +404,9 @@ export function BookerCalendar({
   weekStartsOn,
   dir,
   labels,
-}: BookerCalendarProps): React.ReactElement {
+}: BookerCalendarProps): ReactElement {
   const dayCellsLoading = initialLoading || availabilityLoading;
-  const localization = React.useMemo(
+  const localization = useMemo(
     () => buildLocalization(locale, weekStartsOn),
     [locale, weekStartsOn],
   );
@@ -408,11 +418,11 @@ export function BookerCalendar({
 
   // The month is controlled by the parent (via `month`/`onMonthChange`), but we
   // keep an internal fallback so the calendar works uncontrolled too.
-  const [internalMonth, setInternalMonth] = React.useState(() =>
+  const [internalMonth, setInternalMonth] = useState(() =>
     startOfMonth(month ?? defaultMonth ?? today),
   );
   const monthTime = month ? startOfMonth(month).getTime() : undefined;
-  React.useEffect(() => {
+  useEffect(() => {
     if (monthTime !== undefined) {
       setInternalMonth(new Date(monthTime));
     }
@@ -420,10 +430,10 @@ export function BookerCalendar({
 
   const firstMonth = month ? startOfMonth(month) : internalMonth;
 
-  const [focusedDate, setFocusedDate] = React.useState<Date | undefined>(
+  const [focusedDate, setFocusedDate] = useState<Date | undefined>(
     undefined,
   );
-  const [lastFocusedDate, setLastFocusedDate] = React.useState<
+  const [lastFocusedDate, setLastFocusedDate] = useState<
     Date | undefined
   >(undefined);
 
@@ -439,7 +449,7 @@ export function BookerCalendar({
       ? undefined
       : addMonths(firstMonth, 1);
 
-  const goToMonth = React.useCallback(
+  const goToMonth = useCallback(
     (date: Date) => {
       let newMonth = startOfMonth(date);
       if (navStart && newMonth < navStart) {
@@ -614,7 +624,7 @@ export function BookerCalendar({
 
   const handleDayClick =
     (day: CalendarDay, modifiers: DayModifiers) =>
-    (event: React.MouseEvent) => {
+    (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
       setFocusedDate(day.date);
@@ -633,7 +643,7 @@ export function BookerCalendar({
     setFocusedDate(undefined);
   };
 
-  const handleDayKeyDown = (event: React.KeyboardEvent) => {
+  const handleDayKeyDown = (event: KeyboardEvent) => {
     const keyMap: Record<string, [MoveBy, MoveDir]> = {
       ArrowLeft: [event.shiftKey ? "month" : "day", "before"],
       ArrowRight: [event.shiftKey ? "month" : "day", "after"],

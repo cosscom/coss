@@ -6,6 +6,7 @@ import type { BookerTarget } from "@/lib/booker/target";
 import {
   type BookerMeta,
   extractBookingWindowEnd,
+  extractBookingWindowStart,
   extractEventTypeInfo,
   extractHost,
   extractMinimumBookingNotice,
@@ -19,9 +20,30 @@ import {
 
 const WINDOW_MONTHS = 3;
 
-// Stored in error state for non-Error failures so the (overridable) generic
-// message can be resolved at render time without coupling the effect to labels.
-export const GENERIC_LOAD_ERROR = "\u0000booker-generic-load-error";
+const NOT_FOUND_MESSAGE = "No event type found for the provided target.";
+
+export type BookerErrorKind = "not-found" | "network" | "unknown";
+
+export type BookerError = {
+  kind: BookerErrorKind;
+  message: string;
+};
+
+function classifyError(message: string): BookerError {
+  if (message === NOT_FOUND_MESSAGE) {
+    return { kind: "not-found", message };
+  }
+  if (
+    message.includes("fetch") ||
+    message.includes("network") ||
+    message.includes("ETIMEDOUT") ||
+    message.includes("ECONNREFUSED") ||
+    /Cal\.com API [45]\d\d/.test(message)
+  ) {
+    return { kind: "network", message };
+  }
+  return { kind: "unknown", message };
+}
 
 type UseBookerParams = {
   target: BookerTarget;
@@ -30,7 +52,8 @@ type UseBookerParams = {
 
 export type UseBookerResult = {
   meta: BookerMeta | null;
-  error: string | null;
+  error: BookerError | null;
+  retry: () => void;
   isPending: boolean;
   locale: string;
   selectedTimeZone: string;
@@ -60,7 +83,7 @@ export function useBooker({
 }: UseBookerParams): UseBookerResult {
   const [meta, setMeta] = useState<BookerMeta | null>(null);
   const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<BookerError | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -178,6 +201,9 @@ export function useBooker({
                 eventTypeLocation: eventType.eventTypeLocation,
                 eventTypeLocationProvider: eventType.eventTypeLocationProvider,
                 eventTypeImageUrl: eventType.eventTypeImageUrl,
+                bookingWindowStart: extractBookingWindowStart(
+                  result.raw.selectedEventType,
+                ),
                 bookingWindowEnd: extractBookingWindowEnd(
                   result.raw.selectedEventType,
                 ),
@@ -239,9 +265,13 @@ export function useBooker({
       ) {
         // Timezone only affects slot times, not the resolved event type, so
         // just invalidate coverage and refetch (slots-only) with the new zone.
+        // Clear slots synchronously so stale times don't flash during refetch.
         coveredMonthsRef.current = new Set();
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
+        slotsByDateRef.current = {};
+        autoSelectedMonthRef.current = null;
+        setSlotsByDate({});
       }
       lastIdentityRef.current = identity;
       lastTimeZoneRef.current = selectedTimeZone;
@@ -258,9 +288,11 @@ export function useBooker({
           if (cancelled) {
             return;
           }
-          setError(
-            caught instanceof Error ? caught.message : GENERIC_LOAD_ERROR,
-          );
+          const message =
+            caught instanceof Error
+              ? caught.message
+              : "Could not load booker data.";
+          setError(classifyError(message));
         } finally {
           if (!cancelled) {
             setIsPending(false);
@@ -270,6 +302,7 @@ export function useBooker({
         setError(null);
         setIsPending(false);
       }
+
 
       // Auto-select the first available day the first time this month's
       // availability is known (on load and on month navigation).
@@ -310,6 +343,65 @@ export function useBooker({
     };
   }, [buildKey, currentMonth, fetchWindow, selectedTimeZone, targetIdentity]);
 
+  const [retryCounter, setRetryCounter] = useState(0);
+
+  const retry = useCallback(() => {
+    coveredMonthsRef.current = new Set();
+    inFlightMonthsRef.current.clear();
+    availabilityRequestVersionRef.current += 1;
+    slotsByDateRef.current = {};
+    autoSelectedMonthRef.current = null;
+    setSlotsByDate({});
+    setError(null);
+    setRetryCounter((c) => c + 1);
+  }, []);
+
+  // Re-trigger the main load effect when the user retries.
+  useEffect(() => {
+    // The first render (retryCounter === 0) is handled by the main effect.
+    if (retryCounter === 0) return;
+    setIsPending(true);
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await fetchWindow(currentMonth);
+        if (cancelled) return;
+        setError(null);
+
+        const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
+        if (autoSelectedMonthRef.current !== monthKey) {
+          const retryTodayStart = new Date();
+          retryTodayStart.setHours(0, 0, 0, 0);
+          const firstAvailable = findFirstAvailableDate(
+            currentMonth,
+            slotsByDateRef.current,
+            selectedTimeZone,
+            retryTodayStart,
+          );
+          if (firstAvailable) {
+            autoSelectedMonthRef.current = monthKey;
+            setSelectedDate(firstAvailable);
+            setSelectedTime(null);
+          }
+        }
+      } catch (caught) {
+        if (cancelled) return;
+        const message =
+          caught instanceof Error
+            ? caught.message
+            : "Could not load booker data.";
+        setError(classifyError(message));
+      } finally {
+        if (!cancelled) setIsPending(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [retryCounter, fetchWindow, currentMonth, selectedTimeZone]);
+
   useEffect(() => {
     if (!timezone) {
       return;
@@ -319,9 +411,15 @@ export function useBooker({
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
+
+  // If the event type has a booking window start (RANGE periodType with a
+  // future periodStartDate), use that as the earliest navigable month.
+  const windowStart = meta?.bookingWindowStart;
+  const startMonthBase =
+    windowStart && windowStart > todayStart ? windowStart : todayStart;
   const startMonth = new Date(
-    todayStart.getFullYear(),
-    todayStart.getMonth(),
+    startMonthBase.getFullYear(),
+    startMonthBase.getMonth(),
     1,
   );
 
@@ -407,6 +505,7 @@ export function useBooker({
   return {
     meta,
     error,
+    retry,
     isPending,
     locale,
     selectedTimeZone,

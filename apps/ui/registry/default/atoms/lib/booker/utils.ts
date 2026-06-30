@@ -7,6 +7,7 @@ export type BookerMeta = {
   eventTypeLocation: string;
   eventTypeLocationProvider: string;
   eventTypeImageUrl: string;
+  bookingWindowStart: Date | null;
   bookingWindowEnd: Date | null;
 };
 
@@ -223,9 +224,32 @@ function parseDate(value: unknown): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-// Resolve the event type's future-booking limit (cal.com's `periodType`) into
-// the last bookable date. Returns null when the event allows unlimited future
-// bookings or no recognizable limit is present.
+// Resolve the event type's booking window start date. For RANGE period types,
+// this is the `periodStartDate`; otherwise bookings start from today.
+export function extractBookingWindowStart(payload: unknown): Date | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const eventType = payload as Record<string, unknown>;
+  const periodType =
+    typeof eventType.periodType === "string"
+      ? eventType.periodType.toUpperCase()
+      : "";
+
+  if (periodType === "RANGE") {
+    const start = parseDate(eventType.periodStartDate);
+    if (start) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      // Never return a start date in the past.
+      return start > today ? start : null;
+    }
+  }
+
+  return null;
+}
+
 export function extractBookingWindowEnd(payload: unknown): Date | null {
   if (!payload || typeof payload !== "object") {
     return null;
@@ -278,6 +302,12 @@ export function formatSelectedWeekday(date: Date, locale: string): string {
 export function formatSelectedDay(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
+  }).format(date);
+}
+
+export function formatSelectedMonth(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    month: "short",
   }).format(date);
 }
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { Clock3Icon } from "lucide-react";
-import Image from "next/image";
+import { AlertCircleIcon, Clock3Icon, RefreshCwIcon, SearchXIcon } from "lucide-react";
 import Link from "next/link";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/registry/default/ui/avatar";
+import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
@@ -20,11 +20,22 @@ import {
   type LegacyBookerTargetInput,
   normalizeLegacyTarget,
 } from "@/lib/booker/target";
-import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";
+import { type BookerError, useBooker } from "@/lib/booker/use-booker";
 import { getInitials } from "@/lib/booker/utils";
 
+// Resolve the static image import to a plain URL string. Next.js resolves
+// static imports to `{ src: string; … }` objects; other bundlers may return
+// a bare string. Normalising here avoids coupling the atom to `next/image`.
+const placeholderSrc =
+  typeof bookerHeaderPlaceholder === "string"
+    ? bookerHeaderPlaceholder
+    : (bookerHeaderPlaceholder as { src: string }).src;
+
 type BookerLabels = {
-  loadError: string;
+  errorNotFound: string;
+  errorNetwork: string;
+  errorGeneric: string;
+  retry: string;
   durationUnknown: string;
   durationMinutes: (minutes: number) => string;
   noAvailableTimes: string;
@@ -38,7 +49,10 @@ type BookerLabels = {
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
-  loadError: "Failed to load booker data.",
+  errorNotFound: "This event type could not be found.",
+  errorNetwork: "Unable to connect. Please check your internet connection.",
+  errorGeneric: "Something went wrong loading the booker.",
+  retry: "Try again",
   durationUnknown: "Unknown",
   durationMinutes: (minutes) => `${minutes} min`,
   noAvailableTimes: "No available times",
@@ -68,6 +82,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
   const {
     meta,
     error,
+    retry,
     isPending,
     locale,
     selectedTimeZone,
@@ -88,7 +103,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
   } = useBooker({ target: resolvedTarget, timezone });
 
   if (error) {
-    return <p>{error === GENERIC_LOAD_ERROR ? t.loadError : error}</p>;
+    return <BookerErrorState error={error} labels={t} onRetry={retry} />;
   }
 
   const headerImageClassName =
@@ -117,11 +132,10 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
                   src={displayMeta.eventTypeImageUrl}
                 />
               ) : (
-                <Image
+                <img
                   alt={headerImageAlt}
                   className={headerImageClassName}
-                  fill
-                  src={bookerHeaderPlaceholder}
+                  src={placeholderSrc}
                 />
               )}
             </div>
@@ -222,6 +236,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
         {/* Time picker */}
         <TimePicker
           availabilityLoading={isAvailabilityLoading}
+          currentMonth={currentMonth}
           daySlots={daySlots}
           goToDate={goToDate}
           is24Hour={is24Hour}
@@ -250,6 +265,42 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
       >
         Cal.com
       </Link>
+    </div>
+  );
+}
+
+function BookerErrorState({
+  error,
+  labels,
+  onRetry,
+}: {
+  error: BookerError;
+  labels: BookerLabels;
+  onRetry: () => void;
+}) {
+  const isNotFound = error.kind === "not-found";
+  const Icon = isNotFound ? SearchXIcon : AlertCircleIcon;
+  const heading = isNotFound
+    ? labels.errorNotFound
+    : error.kind === "network"
+      ? labels.errorNetwork
+      : labels.errorGeneric;
+
+  return (
+    <div
+      className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
+      role="alert"
+    >
+      <Card className="flex w-full flex-col items-center justify-center gap-4 p-10 text-center">
+        <Icon aria-hidden="true" className="text-muted-foreground size-10" />
+        <p className="text-foreground text-sm font-medium">{heading}</p>
+        {!isNotFound && (
+          <Button variant="outline" onClick={onRetry}>
+            <RefreshCwIcon aria-hidden="true" />
+            {labels.retry}
+          </Button>
+        )}
+      </Card>
     </div>
   );
 }

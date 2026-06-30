@@ -17,6 +17,7 @@ import { Switch } from "@/registry/default/ui/switch";
 import {
   displayTimeLabel,
   formatSelectedDay,
+  formatSelectedMonth,
   formatSelectedWeekday,
   isSingleDigit12HourLabel,
 } from "@/lib/booker/utils";
@@ -33,6 +34,7 @@ type TimePickerLabels = {
 
 type TimePickerProps = {
   availabilityLoading: boolean;
+  currentMonth: Date;
   daySlots: string[];
   goToDate: (date: Date) => void;
   is24Hour: boolean;
@@ -48,6 +50,7 @@ type TimePickerProps = {
 
 export function TimePicker({
   availabilityLoading,
+  currentMonth,
   daySlots,
   goToDate,
   is24Hour,
@@ -76,6 +79,10 @@ export function TimePicker({
                     {formatSelectedWeekday(selectedDate ?? new Date(), locale)}
                   </span>
                   <span className="text-muted-foreground/72">
+                    {selectedDate &&
+                    selectedDate.getMonth() !== currentMonth.getMonth()
+                      ? `${formatSelectedMonth(selectedDate, locale)} `
+                      : null}
                     {formatSelectedDay(selectedDate ?? new Date(), locale)}
                   </span>
                 </div>
