@@ -71,7 +71,7 @@ export function TimePicker({
         {(slotsLoading || selectedDate != null) && (
           <div className="@3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:pt-2 pt-3">
             <div className="flex h-10 items-center justify-between rounded-se-2xl bg-card sm:h-9">
-              {initialLoading ? (
+              {slotsLoading ? (
                 <Skeleton className="h-6 w-16" />
               ) : (
                 <div className="flex items-center gap-1.5 font-heading @3xl:@max-5xl:text-base text-lg">

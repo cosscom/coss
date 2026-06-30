@@ -490,6 +490,10 @@ export function useBooker({
           autoSelectedMonthRef.current = monthKey;
           setSelectedDate(firstAvailable);
           setSelectedTime(null);
+        } else {
+          autoSelectedMonthRef.current = monthKey;
+          setSelectedDate(undefined);
+          setSelectedTime(null);
         }
       }
 
@@ -563,6 +567,10 @@ export function useBooker({
             autoSelectedMonthRef.current = monthKey;
             setSelectedDate(firstAvailable);
             setSelectedTime(null);
+          } else {
+            autoSelectedMonthRef.current = monthKey;
+            setSelectedDate(undefined);
+            setSelectedTime(null);
           }
         }
       } catch (caught) {
@@ -605,11 +613,13 @@ export function useBooker({
   );
 
   const handleMonthChange = (month: Date) => {
+    const monthKey = `${month.getFullYear()}-${month.getMonth()}`;
+    const monthCovered = coveredMonthsRef.current.has(buildKey(month));
     setCurrentMonth(month);
     // Flip to pending in the same render as the month change when the target
     // month still needs fetching, so the skeleton shows immediately instead of
     // the empty state flashing for a frame before the async effect runs.
-    if (!coveredMonthsRef.current.has(buildKey(month))) {
+    if (!monthCovered) {
       setIsPending(true);
     }
     // For an already-loaded month, select the first available day in the same
@@ -622,8 +632,14 @@ export function useBooker({
       calendarViewOptions,
     );
     if (firstAvailable) {
-      autoSelectedMonthRef.current = `${month.getFullYear()}-${month.getMonth()}`;
+      autoSelectedMonthRef.current = monthKey;
       setSelectedDate(firstAvailable);
+      setSelectedTime(null);
+    } else {
+      if (monthCovered) {
+        autoSelectedMonthRef.current = monthKey;
+      }
+      setSelectedDate(undefined);
       setSelectedTime(null);
     }
   };

@@ -850,21 +850,14 @@ export function hasAvailabilityInVisibleGrid(
   );
 }
 
-function isLiveCurrentMonth(month: Date, todayStart: Date): boolean {
-  return (
-    month.getFullYear() === todayStart.getFullYear() &&
-    month.getMonth() === todayStart.getMonth()
-  );
-}
-
 export function pickDefaultSelectedDate(
   currentMonth: Date,
   slotsByDate: Record<string, string[]>,
-  timeZone: string,
+  _timeZone: string,
   todayStart: Date,
   viewOptions?: CalendarViewOptions,
 ): Date | null {
-  if (viewOptions && isLiveCurrentMonth(currentMonth, todayStart)) {
+  if (viewOptions) {
     return findFirstAvailableInVisibleGrid(
       currentMonth,
       slotsByDate,
@@ -873,9 +866,11 @@ export function pickDefaultSelectedDate(
     );
   }
 
-  return (
-    findFirstAvailableDate(currentMonth, slotsByDate, timeZone, todayStart) ??
-    findNextAvailableDate(slotsByDate, timeZone, todayStart)
+  return findFirstAvailableDate(
+    currentMonth,
+    slotsByDate,
+    _timeZone,
+    todayStart,
   );
 }
 
