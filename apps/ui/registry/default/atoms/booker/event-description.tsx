@@ -60,7 +60,7 @@ export function EventDescription({ description }: EventDescriptionProps) {
 
   return (
     <div
-      className="text-muted-foreground text-sm [&_a]:underline [&_a]:underline-offset-2 [&_a]:not-hover:decoration-current/48 [&_a:hover]:text-foreground [&_blockquote]:border-s [&_blockquote]:ps-3 [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1 [&_li]:ms-4 [&_ol]:list-decimal [&_pre]:overflow-auto [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-2 [&_ul]:list-disc"
+      className="text-muted-foreground text-sm [&_a:hover]:text-foreground [&_a]:underline [&_a]:not-hover:decoration-current/48 [&_a]:underline-offset-2 [&_blockquote]:border-s [&_blockquote]:ps-3 [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1 [&_li]:ms-4 [&_ol]:list-decimal [&_pre]:overflow-auto [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:p-2 [&_ul]:list-disc"
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
