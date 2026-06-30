@@ -16,6 +16,18 @@ type RegistryFile = {
   content?: string;
 };
 
+const NON_CODE_EXTENSIONS = new Set([
+  "avif",
+  "bmp",
+  "gif",
+  "ico",
+  "jpeg",
+  "jpg",
+  "png",
+  "svg",
+  "webp",
+]);
+
 function getRegistryFileTitle(file: RegistryFile) {
   if (file.target) {
     return file.target;
@@ -31,6 +43,16 @@ function getRegistryFileTabTitle(file: RegistryFile) {
 
 function getRegistryFileId(file: RegistryFile) {
   return `${file.path}:${file.target ?? ""}`;
+}
+
+function getRegistryFileExtension(file: RegistryFile): string {
+  const raw = getRegistryFileTitle(file);
+  const extension = raw.split(".").pop()?.toLowerCase() ?? "";
+  return extension;
+}
+
+function isRenderableSourceFile(file: RegistryFile): boolean {
+  return !NON_CODE_EXTENSIONS.has(getRegistryFileExtension(file));
 }
 
 function getLanguage(file: RegistryFile, language?: string) {
@@ -92,7 +114,9 @@ export async function ComponentSource({
   if (name) {
     const item = await getRegistryItem(name);
     const files =
-      item?.files?.filter((file: RegistryFile) => file.content) ?? [];
+      item?.files?.filter(
+        (file: RegistryFile) => file.content && isRenderableSourceFile(file),
+      ) ?? [];
 
     if (files.length > 1) {
       const tabs = await buildRegistrySourceTabs(files, language);
