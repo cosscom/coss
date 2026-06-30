@@ -137,11 +137,12 @@ async function resolveEventType(
     });
   }
 
-  const parsed = parseBookingUrlTarget(target.bookingUrl);
+  const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
   if (parsed.type === "user") {
     return getEventType({
       eventSlug: parsed.eventSlug,
       orgId: parsed.orgId,
+      orgSlug: parsed.orgSlug,
       username: parsed.username,
     });
   }
@@ -149,6 +150,7 @@ async function resolveEventType(
   return getTeamSlugEventType({
     eventSlug: parsed.eventSlug,
     orgId: parsed.orgId,
+    orgSlug: parsed.orgSlug,
     teamSlug: parsed.teamSlug,
   });
 }

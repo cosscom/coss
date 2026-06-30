@@ -9883,7 +9883,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: undefined,
-    meta: {"className":"**:data-[slot=preview]:w-full","displayName":"Booker","preview":{"eventSlug":"15min","username":"rickastley"},"slug":"booker"},
+    meta: {"className":"**:data-[slot=preview]:w-full","displayName":"Booker","preview":{"eventSlug":"15min","username":"pasquale"},"slug":"booker"},
   },
   "fonts": {
     name: "fonts",

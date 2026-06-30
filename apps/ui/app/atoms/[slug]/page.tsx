@@ -14,7 +14,23 @@ import { getAtomRegistryItem, getAtomType, getAtomTypes } from "@/lib/atoms";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{
+    bookingUrl?: string;
+    event?: string;
+    orgId?: string;
+    teamId?: string;
+    username?: string;
+  }>;
 };
+
+function parsePositiveInt(value?: string): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
 
 export function generateStaticParams() {
   return getAtomTypes().map(({ slug }) => ({ slug }));
@@ -36,8 +52,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params }: PageProps) {
-  const { slug } = await params;
+export default async function Page({ params, searchParams }: PageProps) {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
   const atom = getAtomType(slug);
 
   if (!atom) {
@@ -55,16 +71,61 @@ export default async function Page({ params }: PageProps) {
   const preview = registryItem?.meta?.preview as
     | { username: string; eventSlug: string }
     | undefined;
-  const previewProps =
-    slug === "booker" && preview?.username && preview.eventSlug
-      ? {
-          target: {
-            eventSlug: preview.eventSlug,
-            type: "user" as const,
-            username: preview.username,
-          },
-        }
-      : preview;
+  const previewProps = (() => {
+    if (slug !== "booker") {
+      return preview;
+    }
+
+    if (query.bookingUrl?.trim()) {
+      const orgId = parsePositiveInt(query.orgId);
+      return {
+        target: {
+          bookingUrl: query.bookingUrl.trim(),
+          orgId,
+          type: "link" as const,
+        },
+      };
+    }
+
+    const eventSlug = query.event?.trim();
+    const teamId = parsePositiveInt(query.teamId);
+    const orgId = parsePositiveInt(query.orgId);
+
+    if (teamId && eventSlug) {
+      return {
+        target: {
+          eventSlug,
+          orgId,
+          teamId,
+          type: "team" as const,
+        },
+      };
+    }
+
+    const username = query.username?.trim();
+    if (username && eventSlug) {
+      return {
+        target: {
+          eventSlug,
+          orgId,
+          type: "user" as const,
+          username,
+        },
+      };
+    }
+
+    if (preview?.username && preview.eventSlug) {
+      return {
+        target: {
+          eventSlug: preview.eventSlug,
+          type: "user" as const,
+          username: preview.username,
+        },
+      };
+    }
+
+    return undefined;
+  })();
 
   return (
     <div className="container w-full">

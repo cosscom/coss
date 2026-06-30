@@ -14,6 +14,7 @@ export type BookerTarget =
   | {
       type: "link";
       bookingUrl: string;
+      orgId?: number;
     };
 
 export type LegacyBookerTargetInput = {
@@ -31,12 +32,14 @@ export type ParsedLinkTarget =
       username: string;
       eventSlug: string;
       orgId?: number;
+      orgSlug?: string;
     }
   | {
       type: "teamSlug";
       teamSlug: string;
       eventSlug: string;
       orgId?: number;
+      orgSlug?: string;
     };
 
 function parsePositiveInt(value: string | null): number | undefined {
@@ -61,10 +64,30 @@ function toUrl(value: string): URL {
   return new URL(`https://${trimmed}`);
 }
 
-export function parseBookingUrlTarget(bookingUrl: string): ParsedLinkTarget {
+function parseOrgSlugFromHostname(hostname: string): string | undefined {
+  const match = hostname.match(/^([a-z0-9-]+)\.cal\.com$/i);
+  const subdomain = match?.[1]?.toLowerCase();
+
+  if (!subdomain) {
+    return undefined;
+  }
+
+  if (["api", "app", "cal", "www"].includes(subdomain)) {
+    return undefined;
+  }
+
+  return subdomain;
+}
+
+export function parseBookingUrlTarget(
+  bookingUrl: string,
+  fallbackOrgId?: number,
+): ParsedLinkTarget {
   const url = toUrl(bookingUrl);
   const parts = url.pathname.split("/").filter(Boolean);
-  const orgId = parsePositiveInt(url.searchParams.get("orgId"));
+  const orgId =
+    parsePositiveInt(url.searchParams.get("orgId")) ?? fallbackOrgId;
+  const orgSlug = parseOrgSlugFromHostname(url.hostname);
 
   if (parts.length < 2) {
     throw new Error(
@@ -76,6 +99,7 @@ export function parseBookingUrlTarget(bookingUrl: string): ParsedLinkTarget {
     return {
       eventSlug: decodeURIComponent(parts[2] ?? ""),
       orgId,
+      orgSlug,
       teamSlug: decodeURIComponent(parts[1] ?? ""),
       type: "teamSlug",
     };
@@ -84,6 +108,7 @@ export function parseBookingUrlTarget(bookingUrl: string): ParsedLinkTarget {
   return {
     eventSlug: decodeURIComponent(parts[1] ?? ""),
     orgId,
+    orgSlug,
     type: "user",
     username: decodeURIComponent(parts[0] ?? ""),
   };
@@ -93,7 +118,7 @@ export function normalizeLegacyTarget(
   props: LegacyBookerTargetInput,
 ): BookerTarget {
   if (props.bookingUrl) {
-    return { bookingUrl: props.bookingUrl, type: "link" };
+    return { bookingUrl: props.bookingUrl, orgId: props.orgId, type: "link" };
   }
 
   if (props.isTeamEvent) {
