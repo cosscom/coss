@@ -139,7 +139,7 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
         {/* Meta */}
         <div className="@3xl:w-56 @5xl:w-70">
           <div className="rounded-ss-xl px-1 pt-1">
-            <div className="relative @3xl:aspect-16/7 aspect-3/1 overflow-hidden">
+            <div className="relative aspect-4/1 overflow-hidden">
               {displayMeta?.eventTypeImageUrl ? (
                 <img
                   alt={headerImageAlt}
