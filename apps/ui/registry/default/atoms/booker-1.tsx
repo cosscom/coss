@@ -24,7 +24,6 @@ import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";
 import { getInitials } from "@/lib/booker/utils";
 
 type BookerLabels = {
-  loading: string;
   loadError: string;
   durationUnknown: string;
   durationMinutes: (minutes: number) => string;
@@ -39,7 +38,6 @@ type BookerLabels = {
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
-  loading: "Loading booker data...",
   loadError: "Failed to load booker data.",
   durationUnknown: "Unknown",
   durationMinutes: (minutes) => `${minutes} min`,
