@@ -13,7 +13,6 @@ export async function getAvailableSlots(params: {
   eventTypeSlug?: string;
   eventTypeId?: number;
   organizationSlug?: string;
-  orgId?: number;
   duration?: number;
 }): Promise<unknown> {
   const cacheIdentity =
@@ -37,7 +36,6 @@ export async function getAvailableSlots(params: {
       end: params.end,
       eventTypeId: params.eventTypeId,
       eventTypeSlug: params.eventTypeSlug,
-      orgId: params.orgId,
       organizationSlug: params.organizationSlug,
       start: params.start,
       timeZone: params.timeZone,

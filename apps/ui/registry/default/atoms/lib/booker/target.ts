@@ -110,6 +110,35 @@ function parseDynamicUsernames(
     .filter(Boolean);
 }
 
+export function getOrgSlugFromTarget(target: BookerTarget): string | undefined {
+  if (target.type === "dynamic") {
+    return target.orgSlug;
+  }
+
+  if (target.type === "link") {
+    return parseBookingUrlTarget(target.bookingUrl, target.orgId).orgSlug;
+  }
+
+  return undefined;
+}
+
+export function getUserSlotParamsFromTarget(
+  target: BookerTarget,
+): { username: string; eventTypeSlug: string } | null {
+  if (target.type === "user") {
+    return { eventTypeSlug: target.eventSlug, username: target.username };
+  }
+
+  if (target.type === "link") {
+    const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
+    if (parsed.type === "user") {
+      return { eventTypeSlug: parsed.eventSlug, username: parsed.username };
+    }
+  }
+
+  return null;
+}
+
 export function getDynamicContext(
   target: BookerTarget,
 ): DynamicTargetContext | null {

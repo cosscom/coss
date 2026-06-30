@@ -3,6 +3,8 @@
 import {
   type BookerTarget,
   getDynamicContext,
+  getOrgSlugFromTarget,
+  getUserSlotParamsFromTarget,
   parseBookingUrlTarget,
 } from "@/lib/booker/target";
 import { CalApiError } from "@/lib/cal-api/client";
@@ -105,16 +107,31 @@ async function fetchSlotsForEventType(
   const monthsToFetch = Math.max(1, Math.floor(input.monthsToFetch ?? 1));
   const { end, start } = buildSlotRange(input.monthIso, monthsToFetch);
   const duration = input.durationMinutes;
+  const organizationSlug = getOrgSlugFromTarget(input.target);
+  const userSlotParams = getUserSlotParamsFromTarget(input.target);
 
   if (resolved.dynamic) {
     return getAvailableSlots({
       duration,
       end,
-      orgId: resolved.dynamic.orgId,
       organizationSlug: resolved.dynamic.orgSlug,
       start,
       timeZone: input.timeZone,
       usernames: resolved.dynamic.usernames,
+    });
+  }
+
+  // Org-hosted user events (e.g. i.cal.com/pasquale/15min) need organizationSlug
+  // on the slots request; username + slug alone resolve a different availability.
+  if (organizationSlug && userSlotParams) {
+    return getAvailableSlots({
+      duration,
+      end,
+      eventTypeSlug: userSlotParams.eventTypeSlug,
+      organizationSlug,
+      start,
+      timeZone: input.timeZone,
+      username: userSlotParams.username,
     });
   }
 
@@ -123,6 +140,7 @@ async function fetchSlotsForEventType(
       duration,
       end,
       eventTypeId: resolved.eventTypeId,
+      organizationSlug,
       start,
       timeZone: input.timeZone,
     });
@@ -141,9 +159,10 @@ async function fetchSlotsForEventType(
     duration,
     end,
     eventTypeSlug,
+    organizationSlug,
     start,
     timeZone: input.timeZone,
-    username: input.target.type === "user" ? input.target.username : undefined,
+    username: userSlotParams?.username,
   });
 }
 

@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { fetchRawBookerDataAction } from "@/lib/booker/actions";
-import type { BookerTarget } from "@/lib/booker/target";
+import { type BookerTarget, getDynamicContext } from "@/lib/booker/target";
 import {
   type BookerMeta,
   extractBookingWindowEnd,
@@ -126,6 +126,7 @@ export function useBooker({
     new Map(),
   );
   const minimumBookingNoticeRef = useRef(0);
+  const hasMultiDurationOptionsRef = useRef(false);
   const inFlightMonthsRef = useRef<Map<string, Promise<void>>>(new Map());
   const availabilityRequestVersionRef = useRef(0);
 
@@ -187,8 +188,13 @@ export function useBooker({
           ),
       );
       const request = (async () => {
+        const durationMinutes =
+          getDynamicContext(target) || hasMultiDurationOptionsRef.current
+            ? selectedDurationMinutes
+            : undefined;
+
         const result = await fetchRawBookerDataAction({
-          durationMinutes: selectedDurationMinutes,
+          durationMinutes,
           fetchMeta: resolvedRef.current.eventTypeId == null,
           monthIso: anchor.toISOString(),
           monthsToFetch: WINDOW_MONTHS,
@@ -224,6 +230,8 @@ export function useBooker({
           minimumBookingNoticeRef.current = extractMinimumBookingNotice(
             result.raw.selectedEventType,
           );
+          hasMultiDurationOptionsRef.current =
+            (eventType.eventTypeDurationOptions?.length ?? 0) > 1;
           setMeta(
             (prev) =>
               prev ?? {
@@ -252,13 +260,19 @@ export function useBooker({
             eventType.eventTypeDurationMinutes ??
             eventType.eventTypeDurationOptions?.[0] ??
             30;
-          if (
-            eventType.eventTypeDurationOptions &&
-            !eventType.eventTypeDurationOptions.includes(
-              selectedDurationMinutes,
-            )
+          if (eventType.eventTypeDurationOptions?.length) {
+            if (
+              !eventType.eventTypeDurationOptions.includes(
+                selectedDurationMinutes,
+              )
+            ) {
+              setSelectedDurationMinutes(defaultDuration);
+            }
+          } else if (
+            eventType.eventTypeDurationMinutes != null &&
+            selectedDurationMinutes !== eventType.eventTypeDurationMinutes
           ) {
-            setSelectedDurationMinutes(defaultDuration);
+            setSelectedDurationMinutes(eventType.eventTypeDurationMinutes);
           }
         }
 
@@ -317,6 +331,7 @@ export function useBooker({
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
         resolvedRef.current = { eventTypeId: null, eventTypeSlug: null };
+        hasMultiDurationOptionsRef.current = false;
         slotsCacheRef.current = new Map();
         slotsByDateRef.current = {};
         autoSelectedMonthRef.current = null;
