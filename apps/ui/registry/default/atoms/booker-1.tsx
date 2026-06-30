@@ -1,6 +1,11 @@
 "use client";
 
-import { AlertCircleIcon, Clock3Icon, RefreshCwIcon, SearchXIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  Clock3Icon,
+  RefreshCwIcon,
+  SearchXIcon,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Avatar,
@@ -9,6 +14,13 @@ import {
 } from "@/registry/default/ui/avatar";
 import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+} from "@/registry/default/ui/empty";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
 import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
@@ -279,7 +291,6 @@ function BookerErrorState({
   onRetry: () => void;
 }) {
   const isNotFound = error.kind === "not-found";
-  const Icon = isNotFound ? SearchXIcon : AlertCircleIcon;
   const heading = isNotFound
     ? labels.errorNotFound
     : error.kind === "network"
@@ -291,15 +302,27 @@ function BookerErrorState({
       className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
       role="alert"
     >
-      <Card className="flex w-full flex-col items-center justify-center gap-4 p-10 text-center">
-        <Icon aria-hidden="true" className="text-muted-foreground size-10" />
-        <p className="text-foreground text-sm font-medium">{heading}</p>
-        {!isNotFound && (
-          <Button variant="outline" onClick={onRetry}>
-            <RefreshCwIcon aria-hidden="true" />
-            {labels.retry}
-          </Button>
-        )}
+      <Card className="w-full">
+        <Empty className="gap-4 py-10">
+          <EmptyHeader>
+            <EmptyMedia variant="icon" className="mb-1">
+              {isNotFound ? (
+                <SearchXIcon aria-hidden="true" />
+              ) : (
+                <AlertCircleIcon aria-hidden="true" />
+              )}
+            </EmptyMedia>
+            <EmptyDescription>{heading}</EmptyDescription>
+          </EmptyHeader>
+          {!isNotFound && (
+            <EmptyContent>
+              <Button variant="outline" onClick={onRetry}>
+                <RefreshCwIcon aria-hidden="true" />
+                {labels.retry}
+              </Button>
+            </EmptyContent>
+          )}
+        </Empty>
       </Card>
     </div>
   );
