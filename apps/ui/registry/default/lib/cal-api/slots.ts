@@ -14,6 +14,7 @@ export async function getAvailableSlots(params: {
   eventTypeId?: number;
   organizationSlug?: string;
   orgId?: number;
+  duration?: number;
 }): Promise<unknown> {
   const cacheIdentity =
     params.eventTypeId?.toString() ??
@@ -24,9 +25,15 @@ export async function getAvailableSlots(params: {
     apiVersion: SLOTS_API_VERSION,
     next: {
       revalidate: 60,
-      tags: ["slots", cacheIdentity, params.start],
+      tags: [
+        "slots",
+        cacheIdentity,
+        params.duration?.toString() ?? "default",
+        params.start,
+      ],
     },
     query: {
+      duration: params.duration,
       end: params.end,
       eventTypeId: params.eventTypeId,
       eventTypeSlug: params.eventTypeSlug,

@@ -24,6 +24,7 @@ import {
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
 import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
+import { DurationPicker } from "./booker/duration-picker";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
@@ -108,6 +109,8 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
     is24Hour,
     setIs24Hour,
     setSelectedTime,
+    selectedDurationMinutes,
+    setSelectedDurationMinutes,
     handleMonthChange,
     handleSelectDate,
     isDayDisabled,
@@ -201,17 +204,28 @@ export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
 
             {displayMeta ? (
               <div className="flex flex-col gap-3 sm:text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock3Icon
-                    className="size-4.5 shrink-0 opacity-80 sm:size-4"
-                    aria-hidden="true"
+                {displayMeta.eventTypeDurationOptions ? (
+                  <DurationPicker
+                    formatLabel={t.durationMinutes}
+                    onValueChange={setSelectedDurationMinutes}
+                    options={displayMeta.eventTypeDurationOptions}
+                    value={selectedDurationMinutes}
                   />
-                  <span>
-                    {displayMeta.eventTypeDurationMinutes
-                      ? t.durationMinutes(displayMeta.eventTypeDurationMinutes)
-                      : t.durationUnknown}
-                  </span>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Clock3Icon
+                      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {displayMeta.eventTypeDurationMinutes
+                        ? t.durationMinutes(
+                            displayMeta.eventTypeDurationMinutes,
+                          )
+                        : t.durationUnknown}
+                    </span>
+                  </div>
+                )}
                 <Location
                   location={displayMeta.eventTypeLocation}
                   provider={displayMeta.eventTypeLocationProvider}

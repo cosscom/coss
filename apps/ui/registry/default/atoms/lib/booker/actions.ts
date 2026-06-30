@@ -23,6 +23,7 @@ type FetchRawBookerInput = {
   monthsToFetch?: number;
   eventTypeId?: number;
   fetchMeta?: boolean;
+  durationMinutes?: number;
 };
 
 type ResolvedEventType = {
@@ -103,9 +104,11 @@ async function fetchSlotsForEventType(
 ): Promise<unknown> {
   const monthsToFetch = Math.max(1, Math.floor(input.monthsToFetch ?? 1));
   const { end, start } = buildSlotRange(input.monthIso, monthsToFetch);
+  const duration = input.durationMinutes;
 
   if (resolved.dynamic) {
     return getAvailableSlots({
+      duration,
       end,
       orgId: resolved.dynamic.orgId,
       organizationSlug: resolved.dynamic.orgSlug,
@@ -117,6 +120,7 @@ async function fetchSlotsForEventType(
 
   if (resolved.eventTypeId != null) {
     return getAvailableSlots({
+      duration,
       end,
       eventTypeId: resolved.eventTypeId,
       start,
@@ -134,6 +138,7 @@ async function fetchSlotsForEventType(
   }
 
   return getAvailableSlots({
+    duration,
     end,
     eventTypeSlug,
     start,

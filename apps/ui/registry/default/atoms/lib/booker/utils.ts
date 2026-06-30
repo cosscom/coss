@@ -4,6 +4,7 @@ export type BookerMeta = {
   eventTypeTitle: string;
   eventTypeDescription: string;
   eventTypeDurationMinutes: number | null;
+  eventTypeDurationOptions: number[] | null;
   eventTypeLocation: string;
   eventTypeLocationProvider: string;
   eventTypeImageUrl: string;
@@ -15,6 +16,7 @@ export type EventTypeInfo = {
   eventTypeTitle: string;
   eventTypeDescription: string;
   eventTypeDurationMinutes: number | null;
+  eventTypeDurationOptions: number[] | null;
   eventTypeLocation: string;
   eventTypeLocationProvider: string;
   eventTypeImageUrl: string;
@@ -115,6 +117,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
       eventTypeTitle: "No event type found",
       eventTypeDescription: "",
       eventTypeDurationMinutes: null,
+      eventTypeDurationOptions: null,
       eventTypeLocation: "Unknown",
       eventTypeLocationProvider: "",
       eventTypeImageUrl: "",
@@ -166,12 +169,16 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
     locationText = record.location;
   }
 
+  const durationOptions = extractDurationOptions(record);
+
   return {
     eventTypeTitle: String(
       record.title ?? record.name ?? record.slug ?? "No event type found",
     ),
     eventTypeDescription: String(record.description ?? ""),
     eventTypeDurationMinutes: duration,
+    eventTypeDurationOptions:
+      durationOptions.length > 1 ? durationOptions : null,
     eventTypeLocation: prettifyLocation(locationText),
     eventTypeLocationProvider: locationProvider,
     eventTypeImageUrl: normalizeAvatarUrl(
@@ -197,6 +204,40 @@ function toFiniteNumber(value: unknown): number | null {
     return Number(value);
   }
   return null;
+}
+
+function normalizeDurationList(values: unknown[]): number[] {
+  const minutes = values
+    .map(toFiniteNumber)
+    .filter((value): value is number => value != null && value > 0);
+
+  return [...new Set(minutes)].sort((a, b) => a - b);
+}
+
+export function extractDurationOptions(payload: unknown): number[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const record = payload as Record<string, unknown>;
+  const fromOptions = record.lengthInMinutesOptions;
+  if (Array.isArray(fromOptions)) {
+    const normalized = normalizeDurationList(fromOptions);
+    if (normalized.length > 0) {
+      return normalized;
+    }
+  }
+
+  const metadata = record.metadata;
+  if (metadata && typeof metadata === "object") {
+    const multipleDuration = (metadata as Record<string, unknown>)
+      .multipleDuration;
+    if (Array.isArray(multipleDuration)) {
+      return normalizeDurationList(multipleDuration);
+    }
+  }
+
+  return [];
 }
 
 function addCalendarDays(date: Date, days: number): Date {

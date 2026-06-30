@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { fetchRawBookerDataAction } from "@/lib/booker/actions";
 import type { BookerTarget } from "@/lib/booker/target";
 import {
@@ -69,6 +75,8 @@ export type UseBookerResult = {
   setIs24Hour: (value: boolean) => void;
   selectedTime: string | null;
   setSelectedTime: (time: string | null) => void;
+  selectedDurationMinutes: number;
+  setSelectedDurationMinutes: (minutes: number) => void;
   handleMonthChange: (month: Date) => void;
   handleSelectDate: (nextDate: Date | undefined) => void;
   isDayDisabled: (date: Date) => boolean;
@@ -97,6 +105,7 @@ export function useBooker({
   );
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(30);
   const [is24Hour, setIs24Hour] = useState(() => prefers24Hour(locale));
   const coveredMonthsRef = useRef<Set<string>>(new Set());
   const resolvedRef = useRef<{
@@ -110,8 +119,12 @@ export function useBooker({
   }>({ eventTypeId: null, eventTypeSlug: null });
   const lastIdentityRef = useRef<string | null>(null);
   const lastTimeZoneRef = useRef<string | null>(null);
+  const lastDurationRef = useRef<number | null>(null);
   const autoSelectedMonthRef = useRef<string | null>(null);
   const slotsByDateRef = useRef<Record<string, string[]>>({});
+  const slotsCacheRef = useRef<Map<string, Record<string, string[]>>>(
+    new Map(),
+  );
   const minimumBookingNoticeRef = useRef(0);
   const inFlightMonthsRef = useRef<Map<string, Promise<void>>>(new Map());
   const availabilityRequestVersionRef = useRef(0);
@@ -131,9 +144,24 @@ export function useBooker({
 
   const buildKey = useCallback(
     (month: Date) =>
-      `${targetIdentity()}|${selectedTimeZone}|${month.getFullYear()}-${month.getMonth()}`,
-    [selectedTimeZone, targetIdentity],
+      `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}|${month.getFullYear()}-${month.getMonth()}`,
+    [selectedDurationMinutes, selectedTimeZone, targetIdentity],
   );
+
+  const slotsCacheKey = useCallback(
+    () => `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}`,
+    [selectedDurationMinutes, selectedTimeZone, targetIdentity],
+  );
+
+  const restoreSlotsFromCache = useCallback(() => {
+    const cached = slotsCacheRef.current.get(slotsCacheKey()) ?? {};
+    slotsByDateRef.current = cached;
+    setSlotsByDate(cached);
+  }, [slotsCacheKey]);
+
+  useLayoutEffect(() => {
+    restoreSlotsFromCache();
+  }, [restoreSlotsFromCache]);
 
   // Fetch a window of several months in a single request, anchored at `anchor`.
   const fetchWindow = useCallback(
@@ -160,6 +188,7 @@ export function useBooker({
       );
       const request = (async () => {
         const result = await fetchRawBookerDataAction({
+          durationMinutes: selectedDurationMinutes,
           fetchMeta: resolvedRef.current.eventTypeId == null,
           monthIso: anchor.toISOString(),
           monthsToFetch: WINDOW_MONTHS,
@@ -206,6 +235,7 @@ export function useBooker({
                 eventTypeTitle: eventType.eventTypeTitle,
                 eventTypeDescription: eventType.eventTypeDescription,
                 eventTypeDurationMinutes: eventType.eventTypeDurationMinutes,
+                eventTypeDurationOptions: eventType.eventTypeDurationOptions,
                 eventTypeLocation: eventType.eventTypeLocation,
                 eventTypeLocationProvider: eventType.eventTypeLocationProvider,
                 eventTypeImageUrl: eventType.eventTypeImageUrl,
@@ -217,6 +247,19 @@ export function useBooker({
                 ),
               },
           );
+
+          const defaultDuration =
+            eventType.eventTypeDurationMinutes ??
+            eventType.eventTypeDurationOptions?.[0] ??
+            30;
+          if (
+            eventType.eventTypeDurationOptions &&
+            !eventType.eventTypeDurationOptions.includes(
+              selectedDurationMinutes,
+            )
+          ) {
+            setSelectedDurationMinutes(defaultDuration);
+          }
         }
 
         const windowSlots = filterBookableSlots(
@@ -225,7 +268,12 @@ export function useBooker({
           minimumBookingNoticeRef.current,
           new Date(),
         );
-        const mergedSlots = { ...slotsByDateRef.current, ...windowSlots };
+        const cacheKey = `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}`;
+        const mergedSlots = {
+          ...(slotsCacheRef.current.get(cacheKey) ?? {}),
+          ...windowSlots,
+        };
+        slotsCacheRef.current.set(cacheKey, mergedSlots);
         slotsByDateRef.current = mergedSlots;
         setSlotsByDate(mergedSlots);
       })();
@@ -244,7 +292,13 @@ export function useBooker({
         }
       }
     },
-    [buildKey, selectedTimeZone, target],
+    [
+      buildKey,
+      selectedDurationMinutes,
+      selectedTimeZone,
+      target,
+      targetIdentity,
+    ],
   );
 
   useEffect(() => {
@@ -263,26 +317,33 @@ export function useBooker({
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
         resolvedRef.current = { eventTypeId: null, eventTypeSlug: null };
+        slotsCacheRef.current = new Map();
         slotsByDateRef.current = {};
         autoSelectedMonthRef.current = null;
         setMeta(null);
+        setSelectedDurationMinutes(30);
         setSlotsByDate({});
+      } else if (
+        lastDurationRef.current !== null &&
+        lastDurationRef.current !== selectedDurationMinutes
+      ) {
+        inFlightMonthsRef.current.clear();
+        availabilityRequestVersionRef.current += 1;
+        restoreSlotsFromCache();
+        setSelectedTime(null);
       } else if (
         lastTimeZoneRef.current !== null &&
         lastTimeZoneRef.current !== selectedTimeZone
       ) {
-        // Timezone only affects slot times, not the resolved event type, so
-        // just invalidate coverage and refetch (slots-only) with the new zone.
-        // Clear slots synchronously so stale times don't flash during refetch.
-        coveredMonthsRef.current = new Set();
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
-        slotsByDateRef.current = {};
+        restoreSlotsFromCache();
         autoSelectedMonthRef.current = null;
-        setSlotsByDate({});
+        setSelectedTime(null);
       }
       lastIdentityRef.current = identity;
       lastTimeZoneRef.current = selectedTimeZone;
+      lastDurationRef.current = selectedDurationMinutes;
 
       if (!coveredMonthsRef.current.has(buildKey(currentMonth))) {
         setIsPending(true);
@@ -348,7 +409,15 @@ export function useBooker({
     return () => {
       cancelled = true;
     };
-  }, [buildKey, currentMonth, fetchWindow, selectedTimeZone, targetIdentity]);
+  }, [
+    buildKey,
+    currentMonth,
+    fetchWindow,
+    selectedDurationMinutes,
+    selectedTimeZone,
+    restoreSlotsFromCache,
+    targetIdentity,
+  ]);
 
   const [retryCounter, setRetryCounter] = useState(0);
 
@@ -356,6 +425,7 @@ export function useBooker({
     coveredMonthsRef.current = new Set();
     inFlightMonthsRef.current.clear();
     availabilityRequestVersionRef.current += 1;
+    slotsCacheRef.current = new Map();
     slotsByDateRef.current = {};
     autoSelectedMonthRef.current = null;
     setSlotsByDate({});
@@ -528,6 +598,8 @@ export function useBooker({
     setIs24Hour,
     selectedTime,
     setSelectedTime,
+    selectedDurationMinutes,
+    setSelectedDurationMinutes,
     handleMonthChange,
     handleSelectDate,
     isDayDisabled,

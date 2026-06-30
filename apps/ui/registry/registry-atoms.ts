@@ -39,6 +39,11 @@ export const atoms: AtomItem[] = [
         type: "registry:component",
       },
       {
+        path: "atoms/booker/duration-picker.tsx",
+        target: "components/atoms/booker/duration-picker.tsx",
+        type: "registry:component",
+      },
+      {
         path: "atoms/booker/timezone-picker.tsx",
         target: "components/atoms/booker/timezone-picker.tsx",
         type: "registry:component",
@@ -73,6 +78,7 @@ export const atoms: AtomItem[] = [
       "@coss/empty",
       "@coss/label",
       "@coss/scroll-area",
+      "@coss/select",
       "@coss/skeleton",
       "@coss/switch",
       "@coss/tooltip",
