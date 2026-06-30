@@ -593,6 +593,18 @@ export function findFirstAvailableDate(
   return null;
 }
 
+export function pickDefaultSelectedDate(
+  currentMonth: Date,
+  slotsByDate: Record<string, string[]>,
+  timeZone: string,
+  todayStart: Date,
+): Date | null {
+  return (
+    findFirstAvailableDate(currentMonth, slotsByDate, timeZone, todayStart) ??
+    findNextAvailableDate(slotsByDate, timeZone, todayStart)
+  );
+}
+
 // Earliest loaded date (today or later) that still has open slots, used to
 // offer a "jump to next availability" affordance from an empty month/day.
 export function findNextAvailableDate(

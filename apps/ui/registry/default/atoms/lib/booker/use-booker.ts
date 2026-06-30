@@ -18,8 +18,8 @@ import {
   extractMinimumBookingNotice,
   extractSlotsByDate,
   filterBookableSlots,
-  findFirstAvailableDate,
   findNextAvailableDate,
+  pickDefaultSelectedDate,
   prefers24Hour,
   toDateKey,
 } from "@/lib/booker/utils";
@@ -330,6 +330,7 @@ export function useBooker({
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
         restoreSlotsFromCache();
+        autoSelectedMonthRef.current = null;
         setSelectedTime(null);
       } else if (
         lastTimeZoneRef.current !== null &&
@@ -378,7 +379,7 @@ export function useBooker({
       if (!cancelled && autoSelectedMonthRef.current !== monthKey) {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
-        const firstAvailable = findFirstAvailableDate(
+        const firstAvailable = pickDefaultSelectedDate(
           currentMonth,
           slotsByDateRef.current,
           selectedTimeZone,
@@ -450,7 +451,7 @@ export function useBooker({
         if (autoSelectedMonthRef.current !== monthKey) {
           const retryTodayStart = new Date();
           retryTodayStart.setHours(0, 0, 0, 0);
-          const firstAvailable = findFirstAvailableDate(
+          const firstAvailable = pickDefaultSelectedDate(
             currentMonth,
             slotsByDateRef.current,
             selectedTimeZone,
@@ -512,9 +513,8 @@ export function useBooker({
     selectedDate ?? new Date(),
     selectedTimeZone,
   );
-  const daySlots = selectedInCurrentMonth
-    ? (slotsByDate[selectedDateKey] ?? [])
-    : [];
+  const daySlots =
+    selectedDate != null ? (slotsByDate[selectedDateKey] ?? []) : [];
   const nextAvailableDate = findNextAvailableDate(
     slotsByDate,
     selectedTimeZone,
@@ -533,7 +533,7 @@ export function useBooker({
     // update as the month change so the selection doesn't flicker.
     const monthTodayStart = new Date();
     monthTodayStart.setHours(0, 0, 0, 0);
-    const firstAvailable = findFirstAvailableDate(
+    const firstAvailable = pickDefaultSelectedDate(
       month,
       slotsByDateRef.current,
       selectedTimeZone,
