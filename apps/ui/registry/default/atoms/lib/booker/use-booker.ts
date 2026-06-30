@@ -100,6 +100,11 @@ export function useBooker({
   const [is24Hour, setIs24Hour] = useState(() => prefers24Hour(locale));
   const coveredMonthsRef = useRef<Set<string>>(new Set());
   const resolvedRef = useRef<{
+    dynamic?: {
+      orgId?: number;
+      orgSlug?: string;
+      usernames: string[];
+    };
     eventTypeId: number | null;
     eventTypeSlug: string | null;
   }>({ eventTypeId: null, eventTypeSlug: null });
@@ -117,6 +122,9 @@ export function useBooker({
     }
     if (target.type === "team") {
       return `team:${target.teamId}:${target.eventSlug}:${target.orgId ?? ""}`;
+    }
+    if (target.type === "dynamic") {
+      return `dynamic:${target.usernames.join(",")}:${target.orgSlug ?? ""}:${target.orgId ?? ""}`;
     }
     return `link:${target.bookingUrl}`;
   }, [target]);

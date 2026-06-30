@@ -7,6 +7,7 @@ const EVENT_TYPES_API_VERSION = "2024-06-14";
 
 export async function listEventTypes(params: {
   username?: string;
+  usernames?: string[];
   teamId?: number;
   teamSlug?: string;
   orgId?: number;
@@ -15,7 +16,11 @@ export async function listEventTypes(params: {
   eventSlug?: string;
 }): Promise<EventType[]> {
   const cacheKey =
-    params.teamId?.toString() ?? params.teamSlug ?? params.username ?? "all";
+    params.teamId?.toString() ??
+    params.teamSlug ??
+    params.usernames?.join(",") ??
+    params.username ??
+    "all";
 
   return calApi<EventType[]>("/event-types", {
     apiVersion: EVENT_TYPES_API_VERSION,
@@ -28,6 +33,7 @@ export async function listEventTypes(params: {
       teamId: params.teamId,
       teamSlug: params.teamSlug,
       username: params.username,
+      usernames: params.usernames?.join(","),
     },
   });
 }
@@ -68,6 +74,21 @@ export async function getTeamSlugEventType(params: {
     orgId: params.orgId,
     orgSlug: params.orgSlug,
     teamSlug: params.teamSlug,
+  });
+  return matches[0] ?? null;
+}
+
+export async function getDynamicEventType(params: {
+  usernames: string[];
+  orgId?: number;
+  orgSlug?: string;
+  eventSlug?: string;
+}): Promise<EventType | null> {
+  const matches = await listEventTypes({
+    eventSlug: params.eventSlug ?? "dynamic",
+    orgId: params.orgId,
+    orgSlug: params.orgSlug,
+    usernames: params.usernames,
   });
   return matches[0] ?? null;
 }

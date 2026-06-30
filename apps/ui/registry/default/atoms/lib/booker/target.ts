@@ -1,3 +1,9 @@
+export type DynamicTargetContext = {
+  usernames: string[];
+  orgId?: number;
+  orgSlug?: string;
+};
+
 export type BookerTarget =
   | {
       type: "user";
@@ -10,6 +16,12 @@ export type BookerTarget =
       teamId: number;
       eventSlug: string;
       orgId?: number;
+    }
+  | {
+      type: "dynamic";
+      usernames: string[];
+      orgId?: number;
+      orgSlug?: string;
     }
   | {
       type: "link";
@@ -35,12 +47,20 @@ export type ParsedLinkTarget =
       orgSlug?: string;
     }
   | {
+      type: "dynamic";
+      usernames: string[];
+      orgId?: number;
+      orgSlug?: string;
+    }
+  | {
       type: "teamSlug";
       teamSlug: string;
       eventSlug: string;
       orgId?: number;
       orgSlug?: string;
     };
+
+const DYNAMIC_EVENT_SLUG = "dynamic";
 
 function parsePositiveInt(value: string | null): number | undefined {
   if (!value) {
@@ -79,6 +99,42 @@ function parseOrgSlugFromHostname(hostname: string): string | undefined {
   return subdomain;
 }
 
+function parseDynamicUsernames(
+  pathUsername: string,
+  userParam: string | null,
+): string[] {
+  const source = userParam ?? decodeURIComponent(pathUsername);
+  return source
+    .split(/[+,\s]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+export function getDynamicContext(
+  target: BookerTarget,
+): DynamicTargetContext | null {
+  if (target.type === "dynamic") {
+    return {
+      orgId: target.orgId,
+      orgSlug: target.orgSlug,
+      usernames: target.usernames,
+    };
+  }
+
+  if (target.type === "link") {
+    const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
+    if (parsed.type === "dynamic") {
+      return {
+        orgId: parsed.orgId,
+        orgSlug: parsed.orgSlug,
+        usernames: parsed.usernames,
+      };
+    }
+  }
+
+  return null;
+}
+
 export function parseBookingUrlTarget(
   bookingUrl: string,
   fallbackOrgId?: number,
@@ -105,12 +161,25 @@ export function parseBookingUrlTarget(
     };
   }
 
+  const eventSlug = decodeURIComponent(parts[1] ?? "");
+  const pathUsername = decodeURIComponent(parts[0] ?? "");
+
+  if (eventSlug === DYNAMIC_EVENT_SLUG) {
+    const usernames = parseDynamicUsernames(
+      pathUsername,
+      url.searchParams.get("user"),
+    );
+    if (usernames.length >= 2) {
+      return { orgId, orgSlug, type: "dynamic", usernames };
+    }
+  }
+
   return {
-    eventSlug: decodeURIComponent(parts[1] ?? ""),
+    eventSlug,
     orgId,
     orgSlug,
     type: "user",
-    username: decodeURIComponent(parts[0] ?? ""),
+    username: pathUsername,
   };
 }
 

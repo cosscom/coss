@@ -1,8 +1,13 @@
 "use server";
 
-import { type BookerTarget, parseBookingUrlTarget } from "@/lib/booker/target";
+import {
+  type BookerTarget,
+  getDynamicContext,
+  parseBookingUrlTarget,
+} from "@/lib/booker/target";
 import { CalApiError } from "@/lib/cal-api/client";
 import {
+  getDynamicEventType,
   getEventType,
   getEventTypeById,
   getTeamEventType,
@@ -23,6 +28,11 @@ type FetchRawBookerInput = {
 type ResolvedEventType = {
   eventTypeId: number | null;
   eventTypeSlug: string | null;
+  dynamic?: {
+    orgId?: number;
+    orgSlug?: string;
+    usernames: string[];
+  };
 };
 
 type FetchRawBookerResult =
@@ -43,10 +53,13 @@ type FetchRawBookerResult =
 
 function buildMePayload(target: BookerTarget, eventType: EventType): unknown {
   const owner = eventType.users?.[0] ?? eventType.hosts?.[0];
+  const dynamicContext = getDynamicContext(target);
   const fallbackName =
     target.type === "user"
       ? target.username
-      : (owner?.username ?? "Unknown user");
+      : dynamicContext
+        ? dynamicContext.usernames.join(" + ")
+        : (owner?.username ?? "Unknown user");
 
   return {
     data: {
@@ -91,6 +104,17 @@ async function fetchSlotsForEventType(
   const monthsToFetch = Math.max(1, Math.floor(input.monthsToFetch ?? 1));
   const { end, start } = buildSlotRange(input.monthIso, monthsToFetch);
 
+  if (resolved.dynamic) {
+    return getAvailableSlots({
+      end,
+      orgId: resolved.dynamic.orgId,
+      organizationSlug: resolved.dynamic.orgSlug,
+      start,
+      timeZone: input.timeZone,
+      usernames: resolved.dynamic.usernames,
+    });
+  }
+
   if (resolved.eventTypeId != null) {
     return getAvailableSlots({
       end,
@@ -121,6 +145,14 @@ async function fetchSlotsForEventType(
 async function resolveEventType(
   target: BookerTarget,
 ): Promise<EventType | null> {
+  if (target.type === "dynamic") {
+    return getDynamicEventType({
+      orgId: target.orgId,
+      orgSlug: target.orgSlug,
+      usernames: target.usernames,
+    });
+  }
+
   if (target.type === "user") {
     return getEventType({
       eventSlug: target.eventSlug,
@@ -138,6 +170,14 @@ async function resolveEventType(
   }
 
   const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
+  if (parsed.type === "dynamic") {
+    return getDynamicEventType({
+      orgId: parsed.orgId,
+      orgSlug: parsed.orgSlug,
+      usernames: parsed.usernames,
+    });
+  }
+
   if (parsed.type === "user") {
     return getEventType({
       eventSlug: parsed.eventSlug,
@@ -153,6 +193,21 @@ async function resolveEventType(
     orgSlug: parsed.orgSlug,
     teamSlug: parsed.teamSlug,
   });
+}
+
+function buildResolvedEventType(
+  target: BookerTarget,
+  selectedEventType: EventType,
+): ResolvedEventType {
+  const dynamic = getDynamicContext(target);
+  if (dynamic) {
+    return { dynamic, eventTypeId: null, eventTypeSlug: null };
+  }
+
+  return {
+    eventTypeId: selectedEventType.id > 0 ? selectedEventType.id : null,
+    eventTypeSlug: selectedEventType.slug,
+  };
 }
 
 export async function fetchRawBookerDataAction(
@@ -197,10 +252,7 @@ export async function fetchRawBookerDataAction(
       };
     }
 
-    const resolved: ResolvedEventType = {
-      eventTypeId: selectedEventType.id,
-      eventTypeSlug: selectedEventType.slug,
-    };
+    const resolved = buildResolvedEventType(input.target, selectedEventType);
     const slots = await fetchSlotsForEventType(input, resolved);
 
     return {

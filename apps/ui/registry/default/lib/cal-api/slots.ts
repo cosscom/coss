@@ -9,27 +9,33 @@ export async function getAvailableSlots(params: {
   end: string;
   timeZone: string;
   username?: string;
+  usernames?: string[];
   eventTypeSlug?: string;
   eventTypeId?: number;
+  organizationSlug?: string;
+  orgId?: number;
 }): Promise<unknown> {
+  const cacheIdentity =
+    params.eventTypeId?.toString() ??
+    params.usernames?.join(",") ??
+    `${params.username}-${params.eventTypeSlug ?? "dynamic"}`;
+
   return calApi<unknown>("/slots", {
     apiVersion: SLOTS_API_VERSION,
     next: {
       revalidate: 60,
-      tags: [
-        "slots",
-        params.eventTypeId?.toString() ??
-          `${params.username}-${params.eventTypeSlug}`,
-        params.start,
-      ],
+      tags: ["slots", cacheIdentity, params.start],
     },
     query: {
       end: params.end,
       eventTypeId: params.eventTypeId,
       eventTypeSlug: params.eventTypeSlug,
+      orgId: params.orgId,
+      organizationSlug: params.organizationSlug,
       start: params.start,
       timeZone: params.timeZone,
       username: params.username,
+      usernames: params.usernames?.join(","),
     },
   });
 }
