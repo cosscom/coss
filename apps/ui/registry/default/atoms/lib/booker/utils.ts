@@ -1,3 +1,8 @@
+export type EventTypeLocationOption = {
+  label: string;
+  provider: string;
+};
+
 export type BookerMeta = {
   hostName: string;
   hostAvatarUrl: string;
@@ -5,8 +10,7 @@ export type BookerMeta = {
   eventTypeDescription: string;
   eventTypeDurationMinutes: number | null;
   eventTypeDurationOptions: number[] | null;
-  eventTypeLocation: string;
-  eventTypeLocationProvider: string;
+  eventTypeLocations: EventTypeLocationOption[];
   eventTypeImageUrl: string;
   bookingWindowStart: Date | null;
   bookingWindowEnd: Date | null;
@@ -17,8 +21,7 @@ export type EventTypeInfo = {
   eventTypeDescription: string;
   eventTypeDurationMinutes: number | null;
   eventTypeDurationOptions: number[] | null;
-  eventTypeLocation: string;
-  eventTypeLocationProvider: string;
+  eventTypeLocations: EventTypeLocationOption[];
   eventTypeImageUrl: string;
 };
 
@@ -115,6 +118,62 @@ export function extractHost(payload: unknown): {
   };
 }
 
+function parseLocationOption(value: unknown): EventTypeLocationOption | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    return { label: prettifyLocation(trimmed), provider: "" };
+  }
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const loc = value as Record<string, unknown>;
+  const integrationProvider = getIntegrationProvider(loc);
+  const provider = integrationProvider || getStringValue(loc.type) || "";
+  const rawText =
+    getDisplayLocationText(loc.label, integrationProvider) ??
+    getDisplayLocationText(loc.name, integrationProvider) ??
+    (integrationProvider || null) ??
+    getStringValue(loc.address) ??
+    getStringValue(loc.location) ??
+    getStringValue(loc.value) ??
+    getStringValue(loc.type);
+
+  if (!rawText) {
+    return null;
+  }
+
+  return {
+    label: prettifyLocation(rawText),
+    provider,
+  };
+}
+
+function extractLocations(
+  record: Record<string, unknown>,
+): EventTypeLocationOption[] {
+  const locationsRaw = record.locations;
+  if (Array.isArray(locationsRaw) && locationsRaw.length > 0) {
+    const parsed = locationsRaw
+      .map(parseLocationOption)
+      .filter((item): item is EventTypeLocationOption => item != null);
+    if (parsed.length > 0) {
+      return parsed;
+    }
+  }
+
+  if (typeof record.location === "string" && record.location.trim()) {
+    return [{ label: prettifyLocation(record.location), provider: "" }];
+  }
+
+  return [{ label: "Unknown", provider: "" }];
+}
+
 export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
   if (!payload || typeof payload !== "object") {
     return {
@@ -122,8 +181,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
       eventTypeDescription: "",
       eventTypeDurationMinutes: null,
       eventTypeDurationOptions: null,
-      eventTypeLocation: "Unknown",
-      eventTypeLocationProvider: "",
+      eventTypeLocations: [{ label: "Unknown", provider: "" }],
       eventTypeImageUrl: "",
     };
   }
@@ -142,33 +200,8 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
         ? Number(durationValue)
         : null;
 
-  const locationsRaw = record.locations;
-  let locationText = "Unknown";
-  let locationProvider = "";
-
-  if (Array.isArray(locationsRaw) && locationsRaw.length > 0) {
-    const first = locationsRaw[0];
-    if (first && typeof first === "object") {
-      const loc = first as Record<string, unknown>;
-      const integrationProvider = getIntegrationProvider(loc);
-      locationProvider = integrationProvider || getStringValue(loc.type) || "";
-      locationText =
-        getDisplayLocationText(loc.label, integrationProvider) ??
-        getDisplayLocationText(loc.name, integrationProvider) ??
-        (integrationProvider || null) ??
-        getStringValue(loc.address) ??
-        getStringValue(loc.location) ??
-        getStringValue(loc.value) ??
-        getStringValue(loc.type) ??
-        "Unknown";
-    } else if (typeof first === "string") {
-      locationText = first;
-    }
-  } else if (typeof record.location === "string") {
-    locationText = record.location;
-  }
-
   const durationOptions = extractDurationOptions(record);
+  const eventTypeLocations = extractLocations(record);
 
   return {
     eventTypeTitle: String(
@@ -178,8 +211,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
     eventTypeDurationMinutes: duration,
     eventTypeDurationOptions:
       durationOptions.length > 1 ? durationOptions : null,
-    eventTypeLocation: prettifyLocation(locationText),
-    eventTypeLocationProvider: locationProvider,
+    eventTypeLocations,
     eventTypeImageUrl: normalizeAvatarUrl(
       record.imageUrl ??
         record.image_url ??

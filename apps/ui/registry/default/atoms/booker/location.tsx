@@ -2,10 +2,22 @@
 
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  Popover,
+  PopoverDescription,
+  PopoverPopup,
+  PopoverTrigger,
+} from "@/registry/default/ui/popover";
+import type { EventTypeLocationOption } from "@/lib/booker/utils";
+
+type LocationLabels = {
+  locationOptions: (count: number) => string;
+  selectOnNextStep: string;
+};
 
 type LocationProps = {
-  location: string;
-  provider?: string;
+  locations: EventTypeLocationOption[];
+  labels: LocationLabels;
 };
 
 const PROVIDER_ICON_MAP: Record<string, string> = {
@@ -64,7 +76,13 @@ function resolveProviderIcons(provider?: string): string[] {
     .map(normalizeIconUrl);
 }
 
-export function Location({ location, provider }: LocationProps) {
+function LocationIcon({
+  label,
+  provider,
+}: {
+  label: string;
+  provider?: string;
+}) {
   const iconUrls = useMemo(() => resolveProviderIcons(provider), [provider]);
   const [failedIconUrls, setFailedIconUrls] = useState<Set<string>>(
     () => new Set(),
@@ -72,29 +90,80 @@ export function Location({ location, provider }: LocationProps) {
   const iconUrl =
     iconUrls.find((candidate) => !failedIconUrls.has(candidate)) ?? "";
 
+  if (iconUrl) {
+    if (iconUrl === "external-link") {
+      return (
+        <ExternalLinkIcon
+          className="size-4.5 shrink-0 opacity-80 sm:size-4"
+          aria-hidden="true"
+        />
+      );
+    }
+
+    return (
+      <img
+        alt=""
+        aria-hidden="true"
+        className="size-4.5 shrink-0 sm:size-4"
+        onError={() => setFailedIconUrls((prev) => new Set(prev).add(iconUrl))}
+        src={iconUrl}
+      />
+    );
+  }
+
+  return (
+    <MapPinIcon
+      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+      aria-hidden="true"
+    />
+  );
+}
+
+function LocationRow({ label, provider }: EventTypeLocationOption) {
   return (
     <div className="flex items-center gap-2">
-      {iconUrl ? (
-        iconUrl === "external-link" ? (
-          <ExternalLinkIcon
-            className="size-4 shrink-0 opacity-80"
-            aria-hidden="true"
-          />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            alt={`${location} icon`}
-            className="size-4.5 sm:size-4"
-            onError={() =>
-              setFailedIconUrls((prev) => new Set(prev).add(iconUrl))
-            }
-            src={iconUrl}
-          />
-        )
-      ) : (
-        <MapPinIcon className="size-4 shrink-0 opacity-80" aria-hidden="true" />
-      )}
-      <span>{location}</span>
+      <LocationIcon label={label} provider={provider} />
+      <span>{label}</span>
     </div>
+  );
+}
+
+export function Location({ locations, labels }: LocationProps) {
+  if (locations.length <= 1) {
+    const location = locations[0];
+    return location ? <LocationRow {...location} /> : null;
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        aria-label={labels.locationOptions(locations.length)}
+        className="flex w-fit items-center gap-2 decoration-current/32 decoration-dotted underline-offset-2 hover:text-foreground hover:underline"
+        openOnHover
+        delay={0}
+      >
+        <MapPinIcon className="size-4.5 shrink-0 opacity-80 sm:size-4" />
+        <span>{labels.locationOptions(locations.length)}</span>
+      </PopoverTrigger>
+      <PopoverPopup align="start" side="top" className="*:p-3">
+        <PopoverDescription className="mb-2 font-medium text-muted-foreground text-xs">
+          {labels.selectOnNextStep}
+        </PopoverDescription>
+        <ul className="flex flex-col gap-2">
+          {locations.map((location, index) => (
+            <li
+              className="flex items-center gap-2 font-medium text-xs"
+              key={`${location.label}-${location.provider}-${index}`}
+            >
+              <LocationIcon
+                label={location.label}
+                provider={location.provider}
+              />
+              <span>{location.label}</span>
+            </li>
+          ))}
+        </ul>
+      </PopoverPopup>
+    </Popover>
   );
 }

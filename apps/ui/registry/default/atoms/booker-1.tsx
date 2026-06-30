@@ -49,6 +49,8 @@ type BookerLabels = {
   hour12Short: string;
   hour24Short: string;
   headerImageAlt: (hostName: string, eventTitle: string) => string;
+  locationOptions: (count: number) => string;
+  locationSelectOnNextStep: string;
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
@@ -68,6 +70,8 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
   hour24Short: "24h",
   headerImageAlt: (hostName, eventTitle) =>
     `Banner for ${eventTitle} with ${hostName}`,
+  locationOptions: (count) => `${count} location options`,
+  locationSelectOnNextStep: "Select on the next step",
 };
 
 type BookerProps = {
@@ -187,8 +191,11 @@ export function Booker({ target, timezone, labels }: BookerProps) {
                   </div>
                 )}
                 <Location
-                  location={displayMeta.eventTypeLocation}
-                  provider={displayMeta.eventTypeLocationProvider}
+                  labels={{
+                    locationOptions: t.locationOptions,
+                    selectOnNextStep: t.locationSelectOnNextStep,
+                  }}
+                  locations={displayMeta.eventTypeLocations}
                 />
                 <TimezonePicker {...booker.timezoneProps} />
               </div>
