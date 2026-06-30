@@ -23,22 +23,14 @@ import {
 } from "@/registry/default/ui/empty";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerCalendar } from "./booker/booker-calendar";
-import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
 import { DurationPicker } from "./booker/duration-picker";
+import { HeaderBanner } from "./booker/header-banner";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerError, useBooker } from "@/lib/booker/use-booker";
 import { getInitials } from "@/lib/booker/utils";
-
-// Resolve the static image import to a plain URL string. Next.js resolves
-// static imports to `{ src: string; … }` objects; other bundlers may return
-// a bare string. Normalising here avoids coupling the atom to `next/image`.
-const placeholderSrc =
-  typeof bookerHeaderPlaceholder === "string"
-    ? bookerHeaderPlaceholder
-    : (bookerHeaderPlaceholder as { src: string }).src;
 
 type BookerLabels = {
   errorNotFound: string;
@@ -97,12 +89,16 @@ export function Booker({ target, timezone, labels }: BookerProps) {
     );
   }
 
-  const headerImageClassName =
-    "size-full rounded-t-[calc(var(--radius-xl)-2px)] @3xl:rounded-se-none object-cover opacity-64";
   const displayMeta = booker.meta;
   const headerImageAlt = displayMeta
     ? t.headerImageAlt(displayMeta.hostName, displayMeta.eventTypeTitle)
     : "Booker header";
+  const metaContentClassName = [
+    displayMeta?.eventTypeImageUrl ? "relative -mt-11 @5xl:-mt-13" : "",
+    "flex flex-col gap-6 @5xl:p-6 p-4",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
@@ -112,24 +108,11 @@ export function Booker({ target, timezone, labels }: BookerProps) {
       <Card className="w-full @3xl:flex-row @3xl:divide-x divide-y @3xl:divide-y-0">
         {/* Meta */}
         <div className="@3xl:w-56 @5xl:w-70">
-          <div className="rounded-ss-xl px-1 pt-1">
-            <div className="relative aspect-4/1 overflow-hidden">
-              {displayMeta?.eventTypeImageUrl ? (
-                <img
-                  alt={headerImageAlt}
-                  className={headerImageClassName}
-                  src={displayMeta.eventTypeImageUrl}
-                />
-              ) : (
-                <img
-                  alt={headerImageAlt}
-                  className={headerImageClassName}
-                  src={placeholderSrc}
-                />
-              )}
-            </div>
-          </div>
-          <div className="relative -mt-11 @5xl:-mt-13 flex flex-col gap-6 @5xl:p-6 p-4">
+          <HeaderBanner
+            alt={headerImageAlt}
+            src={displayMeta?.eventTypeImageUrl}
+          />
+          <div className={metaContentClassName}>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">

@@ -24,13 +24,13 @@ export const atoms: AtomItem[] = [
         type: "registry:block",
       },
       {
-        path: "atoms/booker/booker-header-placeholder.webp",
-        target: "components/atoms/booker/booker-header-placeholder.webp",
-        type: "registry:file",
-      },
-      {
         path: "atoms/booker/booker-calendar.tsx",
         target: "components/atoms/booker/booker-calendar.tsx",
+        type: "registry:component",
+      },
+      {
+        path: "atoms/booker/header-banner.tsx",
+        target: "components/atoms/booker/header-banner.tsx",
         type: "registry:component",
       },
       {
@@ -61,6 +61,11 @@ export const atoms: AtomItem[] = [
       {
         path: "atoms/lib/booker/use-booker.ts",
         target: "lib/booker/use-booker.ts",
+        type: "registry:lib",
+      },
+      {
+        path: "atoms/lib/booker/target.ts",
+        target: "lib/booker/target.ts",
         type: "registry:lib",
       },
       {

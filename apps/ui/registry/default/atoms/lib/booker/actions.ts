@@ -4,6 +4,7 @@ import {
   type BookerTarget,
   getDynamicContext,
   getOrgSlugFromTarget,
+  getPublicEventBannerParamsFromTarget,
   getUserSlotParamsFromTarget,
   parseBookingUrlTarget,
 } from "@/lib/booker/target";
@@ -15,6 +16,7 @@ import {
   getTeamEventType,
   getTeamSlugEventType,
 } from "@/lib/cal-api/event-types";
+import { getPublicEventBannerUrl } from "@/lib/cal-api/public-event";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
 import type { EventType } from "@/lib/cal-api/types";
 
@@ -45,6 +47,7 @@ type FetchRawBookerResult =
         me: unknown;
         eventTypes: unknown;
         selectedEventType: unknown | null;
+        bannerUrl: string;
         slots: unknown;
       };
       resolved: ResolvedEventType;
@@ -166,6 +169,15 @@ async function fetchSlotsForEventType(
   });
 }
 
+async function fetchHeaderBannerUrl(target: BookerTarget): Promise<string> {
+  const params = getPublicEventBannerParamsFromTarget(target);
+  if (!params) {
+    return "";
+  }
+
+  return getPublicEventBannerUrl(params);
+}
+
 async function resolveEventType(
   target: BookerTarget,
 ): Promise<EventType | null> {
@@ -248,16 +260,26 @@ export async function fetchRawBookerDataAction(
       if (!input.fetchMeta) {
         return {
           ok: true,
-          raw: { eventTypes: null, me: null, selectedEventType: null, slots },
+          raw: {
+            bannerUrl: "",
+            eventTypes: null,
+            me: null,
+            selectedEventType: null,
+            slots,
+          },
           resolved,
         };
       }
 
-      const selectedEventType = await getEventTypeById(input.eventTypeId);
+      const [selectedEventType, bannerUrl] = await Promise.all([
+        getEventTypeById(input.eventTypeId),
+        fetchHeaderBannerUrl(input.target),
+      ]);
 
       return {
         ok: true,
         raw: {
+          bannerUrl,
           eventTypes: [selectedEventType],
           me: buildMePayload(input.target, selectedEventType),
           selectedEventType,
@@ -277,11 +299,15 @@ export async function fetchRawBookerDataAction(
     }
 
     const resolved = buildResolvedEventType(input.target, selectedEventType);
-    const slots = await fetchSlotsForEventType(input, resolved);
+    const [slots, bannerUrl] = await Promise.all([
+      fetchSlotsForEventType(input, resolved),
+      fetchHeaderBannerUrl(input.target),
+    ]);
 
     return {
       ok: true,
       raw: {
+        bannerUrl,
         eventTypes: [selectedEventType],
         me: buildMePayload(input.target, selectedEventType),
         selectedEventType,

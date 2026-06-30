@@ -139,6 +139,41 @@ export function getUserSlotParamsFromTarget(
   return null;
 }
 
+export function getPublicEventBannerParamsFromTarget(target: BookerTarget): {
+  username: string;
+  eventSlug: string;
+  orgSlug: string;
+  isTeamEvent?: boolean;
+} | null {
+  if (target.type !== "link") {
+    return null;
+  }
+
+  const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
+  if (!parsed.orgSlug) {
+    return null;
+  }
+
+  if (parsed.type === "user") {
+    return {
+      eventSlug: parsed.eventSlug,
+      orgSlug: parsed.orgSlug,
+      username: parsed.username,
+    };
+  }
+
+  if (parsed.type === "teamSlug") {
+    return {
+      eventSlug: parsed.eventSlug,
+      isTeamEvent: true,
+      orgSlug: parsed.orgSlug,
+      username: parsed.teamSlug,
+    };
+  }
+
+  return null;
+}
+
 export function getDynamicContext(
   target: BookerTarget,
 ): DynamicTargetContext | null {

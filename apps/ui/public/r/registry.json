@@ -11334,13 +11334,13 @@
           "type": "registry:block"
         },
         {
-          "path": "registry/default/atoms/booker/booker-header-placeholder.webp",
-          "target": "components/atoms/booker/booker-header-placeholder.webp",
-          "type": "registry:file"
-        },
-        {
           "path": "registry/default/atoms/booker/booker-calendar.tsx",
           "target": "components/atoms/booker/booker-calendar.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/default/atoms/booker/header-banner.tsx",
+          "target": "components/atoms/booker/header-banner.tsx",
           "type": "registry:component"
         },
         {
@@ -11371,6 +11371,11 @@
         {
           "path": "registry/default/atoms/lib/booker/use-booker.ts",
           "target": "lib/booker/use-booker.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/atoms/lib/booker/target.ts",
+          "target": "lib/booker/target.ts",
           "type": "registry:lib"
         },
         {
@@ -11676,6 +11681,11 @@
         {
           "path": "registry/default/lib/cal-api/event-types.ts",
           "target": "lib/cal-api/event-types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/public-event.ts",
+          "target": "lib/cal-api/public-event.ts",
           "type": "registry:lib"
         },
         {

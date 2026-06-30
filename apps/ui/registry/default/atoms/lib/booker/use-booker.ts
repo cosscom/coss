@@ -284,7 +284,8 @@ export function useBooker({
                 eventTypeDurationOptions: eventType.eventTypeDurationOptions,
                 eventTypeLocation: eventType.eventTypeLocation,
                 eventTypeLocationProvider: eventType.eventTypeLocationProvider,
-                eventTypeImageUrl: eventType.eventTypeImageUrl,
+                eventTypeImageUrl:
+                  result.raw.bannerUrl || eventType.eventTypeImageUrl,
                 bookingWindowStart: extractBookingWindowStart(
                   result.raw.selectedEventType,
                 ),

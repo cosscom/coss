@@ -9845,13 +9845,13 @@ export const Index: Record<string, any> = {
       type: "registry:block",
       target: "components/atoms/booker-1.tsx"
     },{
-      path: "registry/default/atoms/booker/booker-header-placeholder.webp",
-      type: "registry:file",
-      target: "components/atoms/booker/booker-header-placeholder.webp"
-    },{
       path: "registry/default/atoms/booker/booker-calendar.tsx",
       type: "registry:component",
       target: "components/atoms/booker/booker-calendar.tsx"
+    },{
+      path: "registry/default/atoms/booker/header-banner.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/header-banner.tsx"
     },{
       path: "registry/default/atoms/booker/location.tsx",
       type: "registry:component",
@@ -9876,6 +9876,10 @@ export const Index: Record<string, any> = {
       path: "registry/default/atoms/lib/booker/use-booker.ts",
       type: "registry:lib",
       target: "lib/booker/use-booker.ts"
+    },{
+      path: "registry/default/atoms/lib/booker/target.ts",
+      type: "registry:lib",
+      target: "lib/booker/target.ts"
     },{
       path: "registry/default/atoms/lib/booker/utils.ts",
       type: "registry:lib",
@@ -9934,6 +9938,10 @@ export const Index: Record<string, any> = {
       path: "registry/default/lib/cal-api/event-types.ts",
       type: "registry:lib",
       target: "lib/cal-api/event-types.ts"
+    },{
+      path: "registry/default/lib/cal-api/public-event.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/public-event.ts"
     },{
       path: "registry/default/lib/cal-api/slots.ts",
       type: "registry:lib",
