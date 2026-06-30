@@ -56,7 +56,15 @@ export default async function Page({ params }: PageProps) {
     | { username: string; eventSlug: string }
     | undefined;
   const previewProps =
-    preview?.username && preview.eventSlug ? preview : undefined;
+    slug === "booker" && preview?.username && preview.eventSlug
+      ? {
+          target: {
+            eventSlug: preview.eventSlug,
+            type: "user" as const,
+            username: preview.username,
+          },
+        }
+      : preview;
 
   return (
     <div className="container w-full">

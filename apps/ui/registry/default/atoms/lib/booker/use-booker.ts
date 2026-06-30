@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchRawBookerDataAction } from "@/lib/booker/actions";
+import type { BookerTarget } from "@/lib/booker/target";
 import {
   type BookerMeta,
   extractBookingWindowEnd,
@@ -23,8 +24,8 @@ const WINDOW_MONTHS = 3;
 export const GENERIC_LOAD_ERROR = "\u0000booker-generic-load-error";
 
 type UseBookerParams = {
-  username: string;
-  eventSlug: string;
+  target: BookerTarget;
+  timezone?: string;
 };
 
 export type UseBookerResult = {
@@ -54,8 +55,8 @@ export type UseBookerResult = {
 // All booker data + interaction logic: fetching/windowing cal.com availability,
 // derived selection state, and the handlers the UI wires to the calendar.
 export function useBooker({
-  username,
-  eventSlug,
+  target,
+  timezone,
 }: UseBookerParams): UseBookerResult {
   const [meta, setMeta] = useState<BookerMeta | null>(null);
   const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>({});
@@ -68,7 +69,9 @@ export function useBooker({
     () => Intl.DateTimeFormat().resolvedOptions().locale || "en-US",
   );
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
-  const [selectedTimeZone, setSelectedTimeZone] = useState(timeZone);
+  const [selectedTimeZone, setSelectedTimeZone] = useState(
+    timezone ?? timeZone,
+  );
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [is24Hour, setIs24Hour] = useState(() => prefers24Hour(locale));
@@ -85,10 +88,20 @@ export function useBooker({
   const inFlightMonthsRef = useRef<Map<string, Promise<void>>>(new Map());
   const availabilityRequestVersionRef = useRef(0);
 
+  const targetIdentity = useCallback((): string => {
+    if (target.type === "user") {
+      return `user:${target.username}:${target.eventSlug}:${target.orgId ?? ""}`;
+    }
+    if (target.type === "team") {
+      return `team:${target.teamId}:${target.eventSlug}:${target.orgId ?? ""}`;
+    }
+    return `link:${target.bookingUrl}`;
+  }, [target]);
+
   const buildKey = useCallback(
     (month: Date) =>
-      `${username}|${eventSlug}|${selectedTimeZone}|${month.getFullYear()}-${month.getMonth()}`,
-    [username, eventSlug, selectedTimeZone],
+      `${targetIdentity()}|${selectedTimeZone}|${month.getFullYear()}-${month.getMonth()}`,
+    [selectedTimeZone, targetIdentity],
   );
 
   // Fetch a window of several months in a single request, anchored at `anchor`.
@@ -116,13 +129,12 @@ export function useBooker({
       );
       const request = (async () => {
         const result = await fetchRawBookerDataAction({
+          fetchMeta: resolvedRef.current.eventTypeId == null,
           monthIso: anchor.toISOString(),
           monthsToFetch: WINDOW_MONTHS,
+          target,
           timeZone: selectedTimeZone,
-          username,
-          preferredEventSlug: eventSlug,
           eventTypeId: resolvedRef.current.eventTypeId ?? undefined,
-          eventTypeSlug: resolvedRef.current.eventTypeSlug ?? undefined,
         });
 
         if (!result.ok) {
@@ -156,7 +168,9 @@ export function useBooker({
             (prev) =>
               prev ?? {
                 hostName:
-                  host.hostName === "Unknown user" ? username : host.hostName,
+                  host.hostName === "Unknown user" && target.type === "user"
+                    ? target.username
+                    : host.hostName,
                 hostAvatarUrl: host.hostAvatarUrl,
                 eventTypeTitle: eventType.eventTypeTitle,
                 eventTypeDescription: eventType.eventTypeDescription,
@@ -196,14 +210,14 @@ export function useBooker({
         }
       }
     },
-    [buildKey, eventSlug, selectedTimeZone, username],
+    [buildKey, selectedTimeZone, target],
   );
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const identity = `${username}|${eventSlug}`;
+      const identity = targetIdentity();
 
       // A different user/event means a different event type and metadata, so
       // reset everything and force a full fetch.
@@ -294,14 +308,14 @@ export function useBooker({
     return () => {
       cancelled = true;
     };
-  }, [
-    buildKey,
-    currentMonth,
-    eventSlug,
-    fetchWindow,
-    selectedTimeZone,
-    username,
-  ]);
+  }, [buildKey, currentMonth, fetchWindow, selectedTimeZone, targetIdentity]);
+
+  useEffect(() => {
+    if (!timezone) {
+      return;
+    }
+    setSelectedTimeZone(timezone);
+  }, [timezone]);
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);

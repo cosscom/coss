@@ -1,18 +1,23 @@
 "use server";
 
+import { type BookerTarget, parseBookingUrlTarget } from "@/lib/booker/target";
 import { CalApiError } from "@/lib/cal-api/client";
-import { getEventType } from "@/lib/cal-api/event-types";
+import {
+  getEventType,
+  getEventTypeById,
+  getTeamEventType,
+  getTeamSlugEventType,
+} from "@/lib/cal-api/event-types";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
 import type { EventType } from "@/lib/cal-api/types";
 
 type FetchRawBookerInput = {
   monthIso: string;
   timeZone: string;
-  username: string;
-  preferredEventSlug?: string;
+  target: BookerTarget;
   monthsToFetch?: number;
   eventTypeId?: number;
-  eventTypeSlug?: string;
+  fetchMeta?: boolean;
 };
 
 type ResolvedEventType = {
@@ -36,27 +41,18 @@ type FetchRawBookerResult =
       error: string;
     };
 
-function _toFiniteNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-}
-
-function buildMePayload(username: string, eventType: EventType): unknown {
+function buildMePayload(target: BookerTarget, eventType: EventType): unknown {
   const owner = eventType.users?.[0] ?? eventType.hosts?.[0];
+  const fallbackName =
+    target.type === "user"
+      ? target.username
+      : (owner?.username ?? "Unknown user");
 
   return {
     data: {
       avatarUrl: owner?.avatarUrl,
-      name: owner?.name ?? username,
-      username: owner?.username ?? username,
+      name: owner?.name ?? fallbackName,
+      username: owner?.username ?? fallbackName,
     },
   };
 }
@@ -104,7 +100,7 @@ async function fetchSlotsForEventType(
     });
   }
 
-  const eventTypeSlug = resolved.eventTypeSlug ?? input.preferredEventSlug;
+  const eventTypeSlug = resolved.eventTypeSlug;
   if (!eventTypeSlug) {
     throw new CalApiError(
       "Missing event type slug for slot lookup.",
@@ -118,7 +114,42 @@ async function fetchSlotsForEventType(
     eventTypeSlug,
     start,
     timeZone: input.timeZone,
-    username: input.username,
+    username: input.target.type === "user" ? input.target.username : undefined,
+  });
+}
+
+async function resolveEventType(
+  target: BookerTarget,
+): Promise<EventType | null> {
+  if (target.type === "user") {
+    return getEventType({
+      eventSlug: target.eventSlug,
+      orgId: target.orgId,
+      username: target.username,
+    });
+  }
+
+  if (target.type === "team") {
+    return getTeamEventType({
+      eventSlug: target.eventSlug,
+      orgId: target.orgId,
+      teamId: target.teamId,
+    });
+  }
+
+  const parsed = parseBookingUrlTarget(target.bookingUrl);
+  if (parsed.type === "user") {
+    return getEventType({
+      eventSlug: parsed.eventSlug,
+      orgId: parsed.orgId,
+      username: parsed.username,
+    });
+  }
+
+  return getTeamSlugEventType({
+    eventSlug: parsed.eventSlug,
+    orgId: parsed.orgId,
+    teamSlug: parsed.teamSlug,
   });
 }
 
@@ -129,30 +160,37 @@ export async function fetchRawBookerDataAction(
     if (input.eventTypeId != null) {
       const resolved: ResolvedEventType = {
         eventTypeId: input.eventTypeId,
-        eventTypeSlug: input.eventTypeSlug ?? input.preferredEventSlug ?? null,
+        eventTypeSlug: null,
       };
       const slots = await fetchSlotsForEventType(input, resolved);
 
+      if (!input.fetchMeta) {
+        return {
+          ok: true,
+          raw: { eventTypes: null, me: null, selectedEventType: null, slots },
+          resolved,
+        };
+      }
+
+      const selectedEventType = await getEventTypeById(input.eventTypeId);
+
       return {
         ok: true,
-        raw: { eventTypes: null, me: null, selectedEventType: null, slots },
+        raw: {
+          eventTypes: [selectedEventType],
+          me: buildMePayload(input.target, selectedEventType),
+          selectedEventType,
+          slots,
+        },
         resolved,
       };
     }
 
-    const preferredEventSlug = input.preferredEventSlug ?? input.eventTypeSlug;
-    if (!preferredEventSlug) {
-      return { error: "Pass eventSlug to Booker.", ok: false };
-    }
-
-    const selectedEventType = await getEventType({
-      eventSlug: preferredEventSlug,
-      username: input.username,
-    });
+    const selectedEventType = await resolveEventType(input.target);
 
     if (!selectedEventType) {
       return {
-        error: `No event type found for ${input.username}/${preferredEventSlug}.`,
+        error: "No event type found for the provided target.",
         ok: false,
       };
     }
@@ -167,7 +205,7 @@ export async function fetchRawBookerDataAction(
       ok: true,
       raw: {
         eventTypes: [selectedEventType],
-        me: buildMePayload(input.username, selectedEventType),
+        me: buildMePayload(input.target, selectedEventType),
         selectedEventType,
         slots,
       },

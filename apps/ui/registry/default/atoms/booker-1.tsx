@@ -15,6 +15,7 @@ import bookerHeaderPlaceholder from "./booker/booker-header-placeholder.webp";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
+import type { BookerTarget } from "@/lib/booker/target";
 import { GENERIC_LOAD_ERROR, useBooker } from "@/lib/booker/use-booker";
 import { getInitials } from "@/lib/booker/utils";
 
@@ -49,13 +50,60 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
     `Banner for ${eventTitle} with ${hostName}`,
 };
 
-type BookerProps = {
-  username: string;
-  eventSlug: string;
-  labels?: Partial<BookerLabels>;
+type LegacyBookerProps = {
+  username?: string | string[];
+  eventSlug?: string;
+  isTeamEvent?: boolean;
+  teamId?: number;
+  bookingUrl?: string;
+  orgId?: number;
 };
 
-export function Booker({ username, eventSlug, labels }: BookerProps) {
+type BookerProps = {
+  target: BookerTarget;
+  timezone?: string;
+  defaultFormValues?: Record<string, unknown>;
+  onCreateBookingSuccess?: (data: unknown) => void;
+  labels?: Partial<BookerLabels>;
+} & LegacyBookerProps;
+
+function normalizeLegacyTarget(props: LegacyBookerProps): BookerTarget {
+  if (props.bookingUrl) {
+    return { bookingUrl: props.bookingUrl, type: "link" };
+  }
+
+  if (props.isTeamEvent) {
+    if (!props.teamId || !props.eventSlug) {
+      throw new Error(
+        "For team events, pass teamId and eventSlug in target or legacy props.",
+      );
+    }
+
+    return {
+      eventSlug: props.eventSlug,
+      orgId: props.orgId,
+      teamId: props.teamId,
+      type: "team",
+    };
+  }
+
+  const username = Array.isArray(props.username)
+    ? props.username.join("+")
+    : props.username;
+  if (!username || !props.eventSlug) {
+    throw new Error("Pass target or username + eventSlug.");
+  }
+
+  return {
+    eventSlug: props.eventSlug,
+    orgId: props.orgId,
+    type: "user",
+    username,
+  };
+}
+
+export function Booker({ target, timezone, labels, ...legacy }: BookerProps) {
+  const resolvedTarget = target ?? normalizeLegacyTarget(legacy);
   const t = { ...DEFAULT_BOOKER_LABELS, ...labels };
   const {
     meta,
@@ -77,7 +125,7 @@ export function Booker({ username, eventSlug, labels }: BookerProps) {
     handleSelectDate,
     isDayDisabled,
     goToDate,
-  } = useBooker({ username, eventSlug });
+  } = useBooker({ target: resolvedTarget, timezone });
 
   if (error) {
     return <p>{error === GENERIC_LOAD_ERROR ? t.loadError : error}</p>;
