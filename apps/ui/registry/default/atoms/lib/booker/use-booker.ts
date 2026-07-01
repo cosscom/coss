@@ -223,14 +223,20 @@ function hydrateBookerData({
   }
 
   if (!initialData.result.ok) {
+    const error = classifyError(
+      new BookerDataError(
+        initialData.result.error,
+        initialData.result.errorCode ?? "UNKNOWN",
+      ),
+    );
+
+    if (error.kind !== "not-found" && error.kind !== "unpublished") {
+      return null;
+    }
+
     return {
       coveredMonthKeys: new Set(),
-      error: classifyError(
-        new BookerDataError(
-          initialData.result.error,
-          initialData.result.errorCode ?? "UNKNOWN",
-        ),
-      ),
+      error,
       hasMultiDurationOptions: false,
       meta: null,
       minimumBookingNotice: 0,
