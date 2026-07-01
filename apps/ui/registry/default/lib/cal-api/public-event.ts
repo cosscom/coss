@@ -36,11 +36,7 @@ function toRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function firstBannerUrl(payload: unknown): string {
-  return getPublicEventInfoFromPayload(payload).bannerUrl;
-}
-
-function getStringValue(value: unknown): string {
+function str(value: unknown): string {
   return typeof value === "string" && value.trim() ? value : "";
 }
 
@@ -58,10 +54,10 @@ function getPublicEventInfoFromPayload(payload: unknown): {
   }
 
   const displayName =
-    getStringValue(toRecord(json.profile)?.name) ||
-    getStringValue(toRecord(json.entity)?.name) ||
-    getStringValue(toRecord(json.team)?.name) ||
-    getStringValue(toRecord(json.organization)?.name);
+    str(toRecord(json.profile)?.name) ||
+    str(toRecord(json.entity)?.name) ||
+    str(toRecord(json.team)?.name) ||
+    str(toRecord(json.organization)?.name);
 
   const directCandidates = [
     toRecord(json.organization)?.bannerUrl,
@@ -85,50 +81,13 @@ function getPublicEventInfoFromPayload(payload: unknown): {
         return {
           bannerUrl: normalized,
           displayName:
-            displayName || getStringValue(toRecord(organization)?.name),
+            displayName || str(toRecord(organization)?.name),
         };
       }
     }
   }
 
   return { bannerUrl: "", displayName };
-}
-
-export async function getPublicEventBannerUrl(params: {
-  username: string;
-  eventSlug: string;
-  orgSlug: string;
-  isTeamEvent?: boolean;
-}): Promise<string> {
-  const url = new URL("/api/trpc/public/event", PUBLIC_EVENT_APP_URL);
-  url.searchParams.set("batch", "1");
-  url.searchParams.set(
-    "input",
-    JSON.stringify({
-      0: {
-        json: {
-          eventSlug: params.eventSlug,
-          isTeamEvent: params.isTeamEvent ?? false,
-          org: params.orgSlug,
-          username: params.username,
-        },
-      },
-    }),
-  );
-
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" },
-    next: {
-      revalidate: 60,
-      tags: ["public-event", params.orgSlug, params.username, params.eventSlug],
-    },
-  });
-
-  if (!response.ok) {
-    return "";
-  }
-
-  return firstBannerUrl(await response.json());
 }
 
 export async function getPublicEventInfo(params: {

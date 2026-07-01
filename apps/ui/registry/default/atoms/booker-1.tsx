@@ -7,7 +7,7 @@ import {
   RefreshCwIcon,
   SearchXIcon,
 } from "lucide-react";
-import Link from "next/link";
+
 import {
   Avatar,
   AvatarFallback,
@@ -224,13 +224,14 @@ export function Booker({ target, timezone, labels }: BookerProps) {
           {...booker.timePickerProps}
         />
       </Card>
-      <Link
+      <a
         href="https://cal.com"
         className="font-heading text-xl"
         target="_blank"
+        rel="noreferrer"
       >
         Cal.com
-      </Link>
+      </a>
     </div>
   );
 }
@@ -262,11 +263,7 @@ function BookerAvatarStack({
       : [{ avatarUrl: "", name: fallbackName, profileUrl: "" }];
 
   if (visibleAvatars.length === 1) {
-    const avatar = visibleAvatars[0] ?? {
-      avatarUrl: "",
-      name: fallbackName,
-      profileUrl: "",
-    };
+    const avatar = visibleAvatars[0];
     return (
       <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
         {avatar.avatarUrl ? (
@@ -284,7 +281,7 @@ function BookerAvatarStack({
           <Tooltip key={`${avatar.name}-${avatar.avatarUrl}-${index}`}>
             <TooltipTrigger
               render={
-                <Link
+                <a
                   aria-label={avatar.name}
                   className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
                   href={avatar.profileUrl || "#"}
