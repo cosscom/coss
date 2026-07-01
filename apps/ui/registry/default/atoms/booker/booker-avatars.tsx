@@ -74,16 +74,15 @@ export function BookerAvatars({ avatars, fallbackName }: BookerAvatarsProps) {
                   target={avatar.profileUrl ? "_blank" : undefined}
                 >
                   <span className="sr-only">{avatar.name}</span>
+                  <Avatar className="ring-2 ring-background">
+                    {avatar.avatarUrl ? (
+                      <AvatarImage alt={avatar.name} src={avatar.avatarUrl} />
+                    ) : null}
+                    <AvatarFallback>{getInitials(avatar.name)}</AvatarFallback>
+                  </Avatar>
                 </a>
               }
-            >
-              <Avatar className="ring-2 ring-background">
-                {avatar.avatarUrl ? (
-                  <AvatarImage alt={avatar.name} src={avatar.avatarUrl} />
-                ) : null}
-                <AvatarFallback>{getInitials(avatar.name)}</AvatarFallback>
-              </Avatar>
-            </TooltipTrigger>
+            />
             <TooltipPopup>{avatar.name}</TooltipPopup>
           </Tooltip>
         ))}
