@@ -953,7 +953,10 @@ export function useBooker({
   };
 
   const initialLoading = !meta;
-  const availabilityLoading = isPending;
+  const currentMonthCovered = coveredMonthsRef.current.has(
+    buildKey(currentMonth),
+  );
+  const availabilityLoading = isPending || !currentMonthCovered;
 
   return {
     calendarProps: {
