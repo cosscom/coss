@@ -55,6 +55,7 @@ type FetchRawBookerResult =
   | {
       ok: false;
       error: string;
+      errorCode?: string;
     };
 
 function buildMePayload(target: BookerTarget, eventType: EventType): unknown {
@@ -294,6 +295,15 @@ export async function fetchRawBookerDataAction(
     if (!selectedEventType) {
       return {
         error: "No event type found for the provided target.",
+        errorCode: "NOT_FOUND",
+        ok: false,
+      };
+    }
+
+    if (selectedEventType.hidden) {
+      return {
+        error: "This event type is currently unpublished and not accepting bookings.",
+        errorCode: "UNPUBLISHED",
         ok: false,
       };
     }
@@ -316,13 +326,18 @@ export async function fetchRawBookerDataAction(
       resolved,
     };
   } catch (error) {
+    if (error instanceof CalApiError) {
+      return {
+        error: error.message,
+        errorCode: error.code,
+        ok: false,
+      };
+    }
     return {
       error:
-        error instanceof CalApiError
+        error instanceof Error
           ? error.message
-          : error instanceof Error
-            ? error.message
-            : "Could not load booker data.",
+          : "Could not load booker data.",
       ok: false,
     };
   }

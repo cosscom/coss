@@ -3,6 +3,7 @@
 import {
   AlertCircleIcon,
   Clock3Icon,
+  EyeOffIcon,
   RefreshCwIcon,
   SearchXIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ import { getInitials } from "@/lib/booker/utils";
 
 type BookerLabels = {
   errorNotFound: string;
+  errorUnpublished: string;
   errorNetwork: string;
   errorGeneric: string;
   retry: string;
@@ -55,6 +57,8 @@ type BookerLabels = {
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
   errorNotFound: "This event type could not be found.",
+  errorUnpublished:
+    "This event type is not currently published and is not accepting bookings.",
   errorNetwork: "Unable to connect. Please check your internet connection.",
   errorGeneric: "Something went wrong loading the booker.",
   retry: "Try again",
@@ -247,12 +251,21 @@ function BookerErrorState({
   labels: BookerLabels;
   onRetry: () => void;
 }) {
-  const isNotFound = error.kind === "not-found";
-  const heading = isNotFound
-    ? labels.errorNotFound
-    : error.kind === "network"
-      ? labels.errorNetwork
-      : labels.errorGeneric;
+  const isTerminal = error.kind === "not-found" || error.kind === "unpublished";
+  const Icon =
+    error.kind === "unpublished"
+      ? EyeOffIcon
+      : error.kind === "not-found"
+        ? SearchXIcon
+        : AlertCircleIcon;
+  const heading =
+    error.kind === "unpublished"
+      ? labels.errorUnpublished
+      : error.kind === "not-found"
+        ? labels.errorNotFound
+        : error.kind === "network"
+          ? labels.errorNetwork
+          : labels.errorGeneric;
 
   return (
     <div
@@ -263,15 +276,11 @@ function BookerErrorState({
         <Empty className="gap-4 py-10">
           <EmptyHeader>
             <EmptyMedia variant="icon" className="mb-1">
-              {isNotFound ? (
-                <SearchXIcon aria-hidden="true" />
-              ) : (
-                <AlertCircleIcon aria-hidden="true" />
-              )}
+              <Icon aria-hidden="true" />
             </EmptyMedia>
             <EmptyDescription>{heading}</EmptyDescription>
           </EmptyHeader>
-          {!isNotFound && (
+          {!isTerminal && (
             <EmptyContent>
               <Button variant="outline" onClick={onRetry}>
                 <RefreshCwIcon aria-hidden="true" />

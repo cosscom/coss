@@ -33,20 +33,38 @@ import {
 
 const WINDOW_MONTHS = 3;
 
-const NOT_FOUND_MESSAGE = "No event type found for the provided target.";
-
-export type BookerErrorKind = "not-found" | "network" | "unknown";
+export type BookerErrorKind = "not-found" | "unpublished" | "network" | "unknown";
 
 export type BookerError = {
   kind: BookerErrorKind;
   message: string;
 };
 
-function classifyError(message: string): BookerError {
-  if (message === NOT_FOUND_MESSAGE) {
+class BookerDataError extends Error {
+  code: string;
+  constructor(message: string, code: string) {
+    super(message);
+    this.code = code;
+  }
+}
+
+function classifyError(caught: unknown): BookerError {
+  const code =
+    caught instanceof BookerDataError ? caught.code : "";
+  const message =
+    caught instanceof Error
+      ? caught.message
+      : "Could not load booker data.";
+
+  if (code === "UNPUBLISHED") {
+    return { kind: "unpublished", message };
+  }
+  if (code === "NOT_FOUND") {
     return { kind: "not-found", message };
   }
   if (
+    code.startsWith("HTTP_4") ||
+    code.startsWith("HTTP_5") ||
     message.includes("fetch") ||
     message.includes("network") ||
     message.includes("ETIMEDOUT") ||
@@ -242,7 +260,10 @@ export function useBooker({
         });
 
         if (!result.ok) {
-          throw new Error(result.error);
+          throw new BookerDataError(
+            result.error,
+            result.errorCode ?? "UNKNOWN",
+          );
         }
 
         if (availabilityRequestVersionRef.current !== requestVersion) {
@@ -460,11 +481,7 @@ export function useBooker({
           if (cancelled) {
             return;
           }
-          const message =
-            caught instanceof Error
-              ? caught.message
-              : "Could not load booker data.";
-          setError(classifyError(message));
+          setError(classifyError(caught));
         } finally {
           if (!cancelled) {
             setIsPending(false);
@@ -575,11 +592,7 @@ export function useBooker({
         }
       } catch (caught) {
         if (cancelled) return;
-        const message =
-          caught instanceof Error
-            ? caught.message
-            : "Could not load booker data.";
-        setError(classifyError(message));
+        setError(classifyError(caught));
       } finally {
         if (!cancelled) setIsPending(false);
       }
