@@ -23,6 +23,12 @@ import {
   EmptyMedia,
 } from "@/registry/default/ui/empty";
 import { Skeleton } from "@/registry/default/ui/skeleton";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/registry/default/ui/tooltip";
 import { BookerCalendar } from "./booker/booker-calendar";
 import { DurationPicker } from "./booker/duration-picker";
 import { EventDescription } from "./booker/event-description";
@@ -32,7 +38,7 @@ import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerError, useBooker } from "@/lib/booker/use-booker";
-import { getInitials } from "@/lib/booker/utils";
+import { type BookerAvatar, getInitials } from "@/lib/booker/utils";
 
 type BookerLabels = {
   errorNotFound: string;
@@ -126,23 +132,10 @@ export function Booker({ target, timezone, labels }: BookerProps) {
           <div className={metaContentClassName}>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
-                  {displayMeta?.hostAvatarUrl ? (
-                    <AvatarImage
-                      alt={displayMeta.hostName}
-                      src={displayMeta.hostAvatarUrl}
-                    />
-                  ) : null}
-                  {displayMeta ? (
-                    <AvatarFallback>
-                      {getInitials(displayMeta.hostName)}
-                    </AvatarFallback>
-                  ) : (
-                    <AvatarFallback className="bg-transparent">
-                      <Skeleton className="size-full rounded-full" />
-                    </AvatarFallback>
-                  )}
-                </Avatar>
+                <BookerAvatarStack
+                  avatars={displayMeta?.hostAvatars}
+                  fallbackName={displayMeta?.hostName}
+                />
                 {displayMeta ? (
                   <p className="font-medium text-muted-foreground sm:text-sm">
                     {displayMeta.hostName}
@@ -239,6 +232,79 @@ export function Booker({ target, timezone, labels }: BookerProps) {
         Cal.com
       </Link>
     </div>
+  );
+}
+
+function BookerAvatarStack({
+  avatars,
+  fallbackName,
+}: {
+  avatars?: BookerAvatar[];
+  fallbackName?: string;
+}) {
+  if (!fallbackName) {
+    return (
+      <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
+        <AvatarFallback className="bg-transparent">
+          <Skeleton className="size-full rounded-full" />
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+
+  if (avatars && avatars.length === 0) {
+    return null;
+  }
+
+  const visibleAvatars =
+    avatars && avatars.length > 0
+      ? avatars
+      : [{ avatarUrl: "", name: fallbackName, profileUrl: "" }];
+
+  if (visibleAvatars.length === 1) {
+    const avatar = visibleAvatars[0] ?? {
+      avatarUrl: "",
+      name: fallbackName,
+      profileUrl: "",
+    };
+    return (
+      <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
+        {avatar.avatarUrl ? (
+          <AvatarImage alt={avatar.name} src={avatar.avatarUrl} />
+        ) : null}
+        <AvatarFallback>{getInitials(avatar.name)}</AvatarFallback>
+      </Avatar>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="flex -space-x-[0.6rem]">
+        {visibleAvatars.map((avatar, index) => (
+          <Tooltip key={`${avatar.name}-${avatar.avatarUrl}-${index}`}>
+            <TooltipTrigger
+              render={
+                <Link
+                  aria-label={avatar.name}
+                  className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+                  href={avatar.profileUrl || "#"}
+                  rel={avatar.profileUrl ? "noreferrer" : undefined}
+                  target={avatar.profileUrl ? "_blank" : undefined}
+                />
+              }
+            >
+              <Avatar className="ring-2 ring-background">
+                {avatar.avatarUrl ? (
+                  <AvatarImage alt={avatar.name} src={avatar.avatarUrl} />
+                ) : null}
+                <AvatarFallback>{getInitials(avatar.name)}</AvatarFallback>
+              </Avatar>
+            </TooltipTrigger>
+            <TooltipPopup>{avatar.name}</TooltipPopup>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }
 

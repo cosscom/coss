@@ -16,7 +16,7 @@ import {
   getTeamEventType,
   getTeamSlugEventType,
 } from "@/lib/cal-api/event-types";
-import { getPublicEventBannerUrl } from "@/lib/cal-api/public-event";
+import { getPublicEventInfo } from "@/lib/cal-api/public-event";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
 import type { EventType } from "@/lib/cal-api/types";
 
@@ -48,6 +48,7 @@ type FetchRawBookerResult =
         eventTypes: unknown;
         selectedEventType: unknown | null;
         bannerUrl: string;
+        publicDisplayName: string;
         slots: unknown;
       };
       resolved: ResolvedEventType;
@@ -170,13 +171,27 @@ async function fetchSlotsForEventType(
   });
 }
 
-async function fetchHeaderBannerUrl(target: BookerTarget): Promise<string> {
+async function fetchPublicEventInfo(
+  target: BookerTarget,
+): Promise<{ bannerUrl: string; displayName: string }> {
   const params = getPublicEventBannerParamsFromTarget(target);
   if (!params) {
+    return { bannerUrl: "", displayName: "" };
+  }
+
+  return getPublicEventInfo(params);
+}
+
+function getHeaderBannerUrl(
+  target: BookerTarget,
+  publicInfo: { bannerUrl: string },
+): string {
+  // Cal's public booker does not show the org/team banner for dynamic bookings.
+  if (getDynamicContext(target)) {
     return "";
   }
 
-  return getPublicEventBannerUrl(params);
+  return publicInfo.bannerUrl;
 }
 
 async function resolveEventType(
@@ -265,6 +280,7 @@ export async function fetchRawBookerDataAction(
             bannerUrl: "",
             eventTypes: null,
             me: null,
+            publicDisplayName: "",
             selectedEventType: null,
             slots,
           },
@@ -272,17 +288,18 @@ export async function fetchRawBookerDataAction(
         };
       }
 
-      const [selectedEventType, bannerUrl] = await Promise.all([
+      const [selectedEventType, publicInfo] = await Promise.all([
         getEventTypeById(input.eventTypeId),
-        fetchHeaderBannerUrl(input.target),
+        fetchPublicEventInfo(input.target),
       ]);
 
       return {
         ok: true,
         raw: {
-          bannerUrl,
+          bannerUrl: getHeaderBannerUrl(input.target, publicInfo),
           eventTypes: [selectedEventType],
           me: buildMePayload(input.target, selectedEventType),
+          publicDisplayName: publicInfo.displayName,
           selectedEventType,
           slots,
         },
@@ -310,17 +327,18 @@ export async function fetchRawBookerDataAction(
     }
 
     const resolved = buildResolvedEventType(input.target, selectedEventType);
-    const [slots, bannerUrl] = await Promise.all([
+    const [slots, publicInfo] = await Promise.all([
       fetchSlotsForEventType(input, resolved),
-      fetchHeaderBannerUrl(input.target),
+      fetchPublicEventInfo(input.target),
     ]);
 
     return {
       ok: true,
       raw: {
-        bannerUrl,
+        bannerUrl: getHeaderBannerUrl(input.target, publicInfo),
         eventTypes: [selectedEventType],
         me: buildMePayload(input.target, selectedEventType),
+        publicDisplayName: publicInfo.displayName,
         selectedEventType,
         slots,
       },

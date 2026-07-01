@@ -37,14 +37,31 @@ function toRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function firstBannerUrl(payload: unknown): string {
+  return getPublicEventInfoFromPayload(payload).bannerUrl;
+}
+
+function getStringValue(value: unknown): string {
+  return typeof value === "string" && value.trim() ? value : "";
+}
+
+function getPublicEventInfoFromPayload(payload: unknown): {
+  bannerUrl: string;
+  displayName: string;
+} {
   const root = Array.isArray(payload) ? payload[0] : payload;
   const result = toRecord(root)?.result;
   const data = toRecord(toRecord(result)?.data);
   const json = toRecord(data?.json) ?? toRecord(root);
 
   if (!json) {
-    return "";
+    return { bannerUrl: "", displayName: "" };
   }
+
+  const displayName =
+    getStringValue(toRecord(json.profile)?.name) ||
+    getStringValue(toRecord(json.entity)?.name) ||
+    getStringValue(toRecord(json.team)?.name) ||
+    getStringValue(toRecord(json.organization)?.name);
 
   const directCandidates = [
     toRecord(json.organization)?.bannerUrl,
@@ -55,7 +72,7 @@ function firstBannerUrl(payload: unknown): string {
   for (const candidate of directCandidates) {
     const normalized = normalizeCalAppUrl(candidate);
     if (normalized) {
-      return normalized;
+      return { bannerUrl: normalized, displayName };
     }
   }
 
@@ -65,12 +82,16 @@ function firstBannerUrl(payload: unknown): string {
       const organization = toRecord(toRecord(user)?.profile)?.organization;
       const normalized = normalizeCalAppUrl(toRecord(organization)?.bannerUrl);
       if (normalized) {
-        return normalized;
+        return {
+          bannerUrl: normalized,
+          displayName:
+            displayName || getStringValue(toRecord(organization)?.name),
+        };
       }
     }
   }
 
-  return "";
+  return { bannerUrl: "", displayName };
 }
 
 export async function getPublicEventBannerUrl(params: {
@@ -108,4 +129,41 @@ export async function getPublicEventBannerUrl(params: {
   }
 
   return firstBannerUrl(await response.json());
+}
+
+export async function getPublicEventInfo(params: {
+  username: string;
+  eventSlug: string;
+  orgSlug: string;
+  isTeamEvent?: boolean;
+}): Promise<{ bannerUrl: string; displayName: string }> {
+  const url = new URL("/api/trpc/public/event", PUBLIC_EVENT_APP_URL);
+  url.searchParams.set("batch", "1");
+  url.searchParams.set(
+    "input",
+    JSON.stringify({
+      0: {
+        json: {
+          eventSlug: params.eventSlug,
+          isTeamEvent: params.isTeamEvent ?? false,
+          org: params.orgSlug,
+          username: params.username,
+        },
+      },
+    }),
+  );
+
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    next: {
+      revalidate: 60,
+      tags: ["public-event", params.orgSlug, params.username, params.eventSlug],
+    },
+  });
+
+  if (!response.ok) {
+    return { bannerUrl: "", displayName: "" };
+  }
+
+  return getPublicEventInfoFromPayload(await response.json());
 }

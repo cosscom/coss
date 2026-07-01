@@ -171,6 +171,14 @@ export function getPublicEventBannerParamsFromTarget(target: BookerTarget): {
     };
   }
 
+  if (parsed.type === "dynamic") {
+    return {
+      eventSlug: "dynamic",
+      orgSlug: parsed.orgSlug,
+      username: parsed.usernames.join("+"),
+    };
+  }
+
   return null;
 }
 

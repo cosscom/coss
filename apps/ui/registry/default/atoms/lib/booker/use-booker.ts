@@ -9,7 +9,11 @@ import {
   useState,
 } from "react";
 import { fetchRawBookerDataAction } from "@/lib/booker/actions";
-import { type BookerTarget, getDynamicContext } from "@/lib/booker/target";
+import {
+  type BookerTarget,
+  getDynamicContext,
+  getOrgSlugFromTarget,
+} from "@/lib/booker/target";
 import {
   type BookerMeta,
   type CalendarViewOptions,
@@ -17,6 +21,8 @@ import {
   extractBookingWindowStart,
   extractEventTypeInfo,
   extractHost,
+  extractHostAvatars,
+  extractHostDisplayName,
   extractMinimumBookingNotice,
   extractSlotsByDate,
   filterBookableSlots,
@@ -286,6 +292,17 @@ export function useBooker({
         // fetch, so set it once when present.
         if (result.raw.me) {
           const host = extractHost(result.raw.me);
+          const isDynamic = Boolean(getDynamicContext(target));
+          const hostAvatars = extractHostAvatars(
+            result.raw.selectedEventType,
+            result.raw.me,
+            { dynamic: isDynamic, orgSlug: getOrgSlugFromTarget(target) },
+          );
+          const hostName = extractHostDisplayName(
+            result.raw.selectedEventType,
+            result.raw.me,
+            { dynamic: isDynamic },
+          );
           const eventType = extractEventTypeInfo(result.raw.selectedEventType);
           minimumBookingNoticeRef.current = extractMinimumBookingNotice(
             result.raw.selectedEventType,
@@ -298,8 +315,9 @@ export function useBooker({
                 hostName:
                   host.hostName === "Unknown user" && target.type === "user"
                     ? target.username
-                    : host.hostName,
+                    : result.raw.publicDisplayName || hostName,
                 hostAvatarUrl: host.hostAvatarUrl,
+                hostAvatars,
                 eventTypeTitle: eventType.eventTypeTitle,
                 eventTypeDescription: eventType.eventTypeDescription,
                 eventTypeDurationMinutes: eventType.eventTypeDurationMinutes,

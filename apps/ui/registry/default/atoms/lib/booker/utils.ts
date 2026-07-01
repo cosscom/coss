@@ -3,9 +3,16 @@ export type EventTypeLocationOption = {
   provider: string;
 };
 
+export type BookerAvatar = {
+  name: string;
+  avatarUrl: string;
+  profileUrl: string;
+};
+
 export type BookerMeta = {
   hostName: string;
   hostAvatarUrl: string;
+  hostAvatars: BookerAvatar[];
   eventTypeTitle: string;
   eventTypeDescription: string;
   eventTypeDurationMinutes: number | null;
@@ -116,6 +123,234 @@ export function extractHost(payload: unknown): {
     ),
     hostAvatarUrl: normalizeAvatarUrl(rawAvatar),
   };
+}
+
+function toRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function getAvatarName(record: Record<string, unknown>): string {
+  return String(
+    record.name ?? record.username ?? record.email ?? "Unknown user",
+  );
+}
+
+function getAvatarUrl(record: Record<string, unknown>): string {
+  const profile = toRecord(record.profile);
+  return normalizeAvatarUrl(
+    record.avatarUrl ??
+      record.avatar_url ??
+      record.avatar ??
+      record.image ??
+      record.logoUrl ??
+      profile?.avatarUrl ??
+      profile?.avatar_url ??
+      profile?.avatar ??
+      profile?.image,
+  );
+}
+
+function buildProfileUrl(
+  username: string,
+  orgSlug?: string,
+  baseUrl?: string,
+): string {
+  const normalizedUsername = username.trim();
+  if (!normalizedUsername) {
+    return "";
+  }
+
+  const base =
+    baseUrl && /^https?:\/\//i.test(baseUrl)
+      ? baseUrl.replace(/\/$/, "")
+      : orgSlug
+        ? `https://${orgSlug}.cal.com`
+        : "https://cal.com";
+
+  return `${base}/${encodeURIComponent(normalizedUsername)}`;
+}
+
+function getUserAvatar(
+  record: Record<string, unknown>,
+  orgSlug?: string,
+): BookerAvatar {
+  const name = getAvatarName(record);
+  const username = getStringValue(record.username);
+  const bookerUrl = getStringValue(record.bookerUrl);
+
+  return {
+    avatarUrl: getAvatarUrl(record),
+    name,
+    profileUrl: username
+      ? buildProfileUrl(username, orgSlug, bookerUrl ?? undefined)
+      : "",
+  };
+}
+
+function getTeamAvatar(
+  record: Record<string, unknown>,
+  orgSlug?: string,
+): BookerAvatar | null {
+  const team = toRecord(record.team) ?? toRecord(record.entity);
+  const profile = toRecord(record.profile);
+  const source = team ?? profile;
+  if (!source) {
+    return null;
+  }
+
+  const avatarUrl = getAvatarUrl(source);
+  const name = String(source.name ?? source.slug ?? "");
+  const slug = getStringValue(source.slug);
+  if (!avatarUrl && !name) {
+    return null;
+  }
+
+  return {
+    avatarUrl,
+    name: name || "Team",
+    profileUrl: slug ? buildProfileUrl(slug, orgSlug) : "",
+  };
+}
+
+function getBooleanValue(value: unknown): boolean {
+  return value === true || value === "true";
+}
+
+function uniqueAvatars(avatars: BookerAvatar[]): BookerAvatar[] {
+  const seen = new Set<string>();
+  return avatars.filter((avatar) => {
+    const key = `${avatar.name}:${avatar.avatarUrl}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+export function extractHostAvatars(
+  eventTypePayload: unknown,
+  hostPayload: unknown,
+  options: { dynamic?: boolean; orgSlug?: string } = {},
+): BookerAvatar[] {
+  const eventType = toRecord(eventTypePayload);
+  const host = extractHost(hostPayload);
+
+  if (!eventType) {
+    return host.hostName === "Unknown user" && !host.hostAvatarUrl
+      ? []
+      : [
+          {
+            avatarUrl: host.hostAvatarUrl,
+            name: host.hostName,
+            profileUrl: "",
+          },
+        ];
+  }
+
+  const schedulingType = String(eventType.schedulingType ?? "").toUpperCase();
+  const metadata = toRecord(eventType.metadata);
+  const roundRobinHideOrgAndTeam =
+    getBooleanValue(eventType.roundRobinHideOrgAndTeam) ||
+    getBooleanValue(metadata?.roundRobinHideOrgAndTeam);
+  const hideOrgTeamAvatar =
+    getBooleanValue(eventType.hideOrgTeamAvatar) ||
+    getBooleanValue(metadata?.hideOrgTeamAvatar);
+  const userRecords = [
+    ...(Array.isArray(eventType.users) ? eventType.users : []),
+    ...(Array.isArray(eventType.hosts) ? eventType.hosts : []),
+  ]
+    .map(toRecord)
+    .filter((record): record is Record<string, unknown> => record != null);
+  const userAvatars = userRecords.map((record) =>
+    getUserAvatar(record, options.orgSlug),
+  );
+  const teamAvatar = getTeamAvatar(eventType, options.orgSlug);
+
+  if (options.dynamic) {
+    return uniqueAvatars(
+      userAvatars.length > 0
+        ? userAvatars
+        : [
+            {
+              avatarUrl: host.hostAvatarUrl,
+              name: host.hostName,
+              profileUrl: "",
+            },
+          ],
+    );
+  }
+
+  if (schedulingType === "ROUND_ROBIN") {
+    if (roundRobinHideOrgAndTeam || hideOrgTeamAvatar) {
+      return [];
+    }
+
+    return teamAvatar ? [teamAvatar] : [];
+  }
+
+  if (schedulingType === "COLLECTIVE") {
+    const avatars = teamAvatar ? [teamAvatar, ...userAvatars] : userAvatars;
+    return uniqueAvatars(avatars);
+  }
+
+  return uniqueAvatars([
+    {
+      avatarUrl: host.hostAvatarUrl,
+      name: host.hostName,
+      profileUrl: "",
+    },
+  ]);
+}
+
+export function extractHostDisplayName(
+  eventTypePayload: unknown,
+  hostPayload: unknown,
+  options: { dynamic?: boolean } = {},
+): string {
+  const host = extractHost(hostPayload);
+  const eventType = toRecord(eventTypePayload);
+  if (!eventType) {
+    return host.hostName;
+  }
+
+  const schedulingType = String(eventType.schedulingType ?? "").toUpperCase();
+  const profile = toRecord(eventType.profile);
+  const team = toRecord(eventType.team) ?? toRecord(eventType.entity);
+  const profileName =
+    getStringValue(profile?.name) ?? getStringValue(team?.name);
+  const userNames = [
+    ...(Array.isArray(eventType.users) ? eventType.users : []),
+    ...(Array.isArray(eventType.hosts) ? eventType.hosts : []),
+  ]
+    .map(toRecord)
+    .filter((record): record is Record<string, unknown> => record != null)
+    .map(getAvatarName)
+    .filter((name) => name !== "Unknown user");
+
+  if (options.dynamic) {
+    return (
+      profileName ??
+      (userNames.length > 0 ? userNames.join(", ") : host.hostName)
+    );
+  }
+
+  if (schedulingType === "ROUND_ROBIN") {
+    return profileName ?? host.hostName;
+  }
+
+  if (schedulingType === "COLLECTIVE") {
+    const firstName = userNames[0];
+    if (profileName && firstName && profileName !== firstName) {
+      return profileName;
+    }
+
+    return userNames.length > 0 ? userNames.join(", ") : host.hostName;
+  }
+
+  return host.hostName;
 }
 
 function parseLocationOption(value: unknown): EventTypeLocationOption | null {
