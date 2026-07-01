@@ -31,8 +31,6 @@ export type EventTypeOwner = {
   avatarUrl?: string | null;
   weekStart?: string;
   timeZone?: string;
-  brandColor?: string | null;
-  darkBrandColor?: string | null;
 };
 
 export type EventTypeTeam = {
