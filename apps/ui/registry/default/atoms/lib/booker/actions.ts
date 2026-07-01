@@ -302,7 +302,8 @@ export async function fetchRawBookerDataAction(
 
     if (selectedEventType.hidden) {
       return {
-        error: "This event type is currently unpublished and not accepting bookings.",
+        error:
+          "This event type is currently unpublished and not accepting bookings.",
         errorCode: "UNPUBLISHED",
         ok: false,
       };
@@ -335,9 +336,7 @@ export async function fetchRawBookerDataAction(
     }
     return {
       error:
-        error instanceof Error
-          ? error.message
-          : "Could not load booker data.",
+        error instanceof Error ? error.message : "Could not load booker data.",
       ok: false,
     };
   }
