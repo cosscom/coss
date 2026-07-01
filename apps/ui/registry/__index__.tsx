@@ -9853,6 +9853,10 @@ export const Index: Record<string, any> = {
       type: "registry:component",
       target: "components/atoms/booker/header-banner.tsx"
     },{
+      path: "registry/default/atoms/booker/booker-avatars.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-avatars.tsx"
+    },{
       path: "registry/default/atoms/booker/location.tsx",
       type: "registry:component",
       target: "components/atoms/booker/location.tsx"

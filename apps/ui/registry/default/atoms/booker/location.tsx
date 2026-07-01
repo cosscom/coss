@@ -76,13 +76,7 @@ function resolveProviderIcons(provider?: string): string[] {
     .map(normalizeIconUrl);
 }
 
-function LocationIcon({
-  label,
-  provider,
-}: {
-  label: string;
-  provider?: string;
-}) {
+function LocationIcon({ provider }: { provider?: string }) {
   const iconUrls = useMemo(() => resolveProviderIcons(provider), [provider]);
   const [failedIconUrls, setFailedIconUrls] = useState<Set<string>>(
     () => new Set(),
@@ -122,7 +116,7 @@ function LocationIcon({
 function LocationRow({ label, provider }: EventTypeLocationOption) {
   return (
     <div className="flex items-center gap-2">
-      <LocationIcon label={label} provider={provider} />
+      <LocationIcon provider={provider} />
       <span>{label}</span>
     </div>
   );
@@ -155,10 +149,7 @@ export function Location({ locations, labels }: LocationProps) {
               className="flex items-center gap-2 font-medium text-xs"
               key={`${location.label}-${location.provider}-${index}`}
             >
-              <LocationIcon
-                label={location.label}
-                provider={location.provider}
-              />
+              <LocationIcon provider={location.provider} />
               <span>{location.label}</span>
             </li>
           ))}

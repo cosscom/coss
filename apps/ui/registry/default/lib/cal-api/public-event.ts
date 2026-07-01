@@ -80,8 +80,7 @@ function getPublicEventInfoFromPayload(payload: unknown): {
       if (normalized) {
         return {
           bannerUrl: normalized,
-          displayName:
-            displayName || str(toRecord(organization)?.name),
+          displayName: displayName || str(toRecord(organization)?.name),
         };
       }
     }
