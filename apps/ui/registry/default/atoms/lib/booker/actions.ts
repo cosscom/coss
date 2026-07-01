@@ -20,7 +20,7 @@ import { getPublicEventInfo } from "@/lib/cal-api/public-event";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
 import type { EventType } from "@/lib/cal-api/types";
 
-type FetchRawBookerInput = {
+export type FetchRawBookerInput = {
   monthIso: string;
   timeZone: string;
   target: BookerTarget;
@@ -40,7 +40,7 @@ type ResolvedEventType = {
   };
 };
 
-type FetchRawBookerResult =
+export type FetchRawBookerResult =
   | {
       ok: true;
       raw: {

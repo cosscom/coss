@@ -14,19 +14,20 @@ import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
-import { useBooker } from "@/lib/booker/use-booker";
+import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
 
 type BookerProps = {
   target: BookerTarget;
   timezone?: string;
+  initialData?: BookerInitialData;
   defaultFormValues?: Record<string, unknown>;
   onCreateBookingSuccess?: (data: unknown) => void;
   labels?: Partial<BookerLabels>;
 };
 
-export function Booker({ target, timezone, labels }: BookerProps) {
+export function Booker({ initialData, target, timezone, labels }: BookerProps) {
   const t = getBookerLabels(labels);
-  const booker = useBooker({ target, timezone });
+  const booker = useBooker({ initialData, target, timezone });
 
   if (booker.error) {
     return (

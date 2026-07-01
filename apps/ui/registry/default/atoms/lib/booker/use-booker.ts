@@ -8,7 +8,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { fetchRawBookerDataAction } from "@/lib/booker/actions";
+import {
+  type FetchRawBookerResult,
+  fetchRawBookerDataAction,
+} from "@/lib/booker/actions";
 import {
   type BookerTarget,
   getDynamicContext,
@@ -58,6 +61,34 @@ class BookerDataError extends Error {
   }
 }
 
+type ResolvedEventType = Extract<
+  FetchRawBookerResult,
+  { ok: true }
+>["resolved"];
+
+export type BookerInitialData = {
+  durationMinutes?: number;
+  monthIso: string;
+  monthsToFetch?: number;
+  result: FetchRawBookerResult;
+  timeZone: string;
+};
+
+type DerivedBookerData = {
+  hasMultiDurationOptions: boolean;
+  meta: BookerMeta | null;
+  minimumBookingNotice: number;
+  selectedDurationMinutes: number | null;
+};
+
+type HydratedBookerData = DerivedBookerData & {
+  coveredMonthKeys: Set<string>;
+  error: BookerError | null;
+  resolved: ResolvedEventType;
+  slotsByDate: Record<string, string[]>;
+  slotsCacheKey: string;
+};
+
 function classifyError(caught: unknown): BookerError {
   const code = caught instanceof BookerDataError ? caught.code : "";
   const message =
@@ -83,7 +114,180 @@ function classifyError(caught: unknown): BookerError {
   return { kind: "unknown", message };
 }
 
+function getTargetIdentity(target: BookerTarget): string {
+  if (target.type === "user") {
+    return `user:${target.username}:${target.eventSlug}:${target.orgId ?? ""}`;
+  }
+  if (target.type === "team") {
+    return `team:${target.teamId}:${target.eventSlug}:${target.orgId ?? ""}`;
+  }
+  if (target.type === "dynamic") {
+    return `dynamic:${target.usernames.join(",")}:${target.orgSlug ?? ""}:${target.orgId ?? ""}`;
+  }
+  return `link:${target.bookingUrl}`;
+}
+
+function getMonthCacheKey(
+  identity: string,
+  timeZone: string,
+  durationMinutes: number,
+  month: Date,
+): string {
+  return `${identity}|${timeZone}|${durationMinutes}|${month.getFullYear()}-${month.getMonth()}`;
+}
+
+function getSlotsCacheKey(
+  identity: string,
+  timeZone: string,
+  durationMinutes: number,
+): string {
+  return `${identity}|${timeZone}|${durationMinutes}`;
+}
+
+function deriveBookerData(
+  result: Extract<FetchRawBookerResult, { ok: true }>,
+  target: BookerTarget,
+): DerivedBookerData {
+  if (!result.raw.me) {
+    return {
+      hasMultiDurationOptions: false,
+      meta: null,
+      minimumBookingNotice: 0,
+      selectedDurationMinutes: null,
+    };
+  }
+
+  const host = extractHost(result.raw.me);
+  const isDynamic = Boolean(getDynamicContext(target));
+  const hostAvatars = extractHostAvatars(
+    result.raw.selectedEventType,
+    result.raw.me,
+    { dynamic: isDynamic, orgSlug: getOrgSlugFromTarget(target) },
+  );
+  const hostName = extractHostDisplayName(
+    result.raw.selectedEventType,
+    result.raw.me,
+    { dynamic: isDynamic },
+  );
+  const eventType = extractEventTypeInfo(result.raw.selectedEventType);
+  const minimumBookingNotice = extractMinimumBookingNotice(
+    result.raw.selectedEventType,
+  );
+  const hasMultiDurationOptions =
+    (eventType.eventTypeDurationOptions?.length ?? 0) > 1;
+  const selectedDurationMinutes =
+    eventType.eventTypeDurationOptions?.[0] ??
+    eventType.eventTypeDurationMinutes ??
+    null;
+
+  return {
+    hasMultiDurationOptions,
+    meta: {
+      bookingWindowEnd: extractBookingWindowEnd(result.raw.selectedEventType),
+      bookingWindowStart: extractBookingWindowStart(
+        result.raw.selectedEventType,
+      ),
+      eventTypeDescription: eventType.eventTypeDescription,
+      eventTypeDurationMinutes: eventType.eventTypeDurationMinutes,
+      eventTypeDurationOptions: eventType.eventTypeDurationOptions,
+      eventTypeImageUrl: result.raw.bannerUrl || eventType.eventTypeImageUrl,
+      eventTypeLocations: eventType.eventTypeLocations,
+      eventTypeTitle: eventType.eventTypeTitle,
+      hostAvatarUrl: host.hostAvatarUrl,
+      hostAvatars,
+      hostName:
+        host.hostName === "Unknown user" && target.type === "user"
+          ? target.username
+          : result.raw.publicDisplayName || hostName,
+    },
+    minimumBookingNotice,
+    selectedDurationMinutes,
+  };
+}
+
+function hydrateBookerData({
+  initialData,
+  selectedTimeZone,
+  target,
+}: {
+  initialData?: BookerInitialData;
+  selectedTimeZone: string;
+  target: BookerTarget;
+}): HydratedBookerData | null {
+  if (!initialData) {
+    return null;
+  }
+
+  if (initialData.timeZone !== selectedTimeZone) {
+    return null;
+  }
+
+  if (!initialData.result.ok) {
+    return {
+      coveredMonthKeys: new Set(),
+      error: classifyError(
+        new BookerDataError(
+          initialData.result.error,
+          initialData.result.errorCode ?? "UNKNOWN",
+        ),
+      ),
+      hasMultiDurationOptions: false,
+      meta: null,
+      minimumBookingNotice: 0,
+      resolved: { eventTypeId: null, eventTypeSlug: null },
+      selectedDurationMinutes: null,
+      slotsByDate: {},
+      slotsCacheKey: "",
+    };
+  }
+
+  const derived = deriveBookerData(initialData.result, target);
+  const durationMinutes =
+    derived.selectedDurationMinutes ?? initialData.durationMinutes ?? 30;
+  const identity = getTargetIdentity(target);
+  const anchor = new Date(initialData.monthIso);
+  const safeAnchor = Number.isNaN(anchor.getTime()) ? new Date() : anchor;
+  const monthsToFetch = Math.max(
+    1,
+    Math.floor(initialData.monthsToFetch ?? WINDOW_MONTHS),
+  );
+  const coveredMonthKeys = new Set<string>();
+
+  for (let offset = 0; offset < monthsToFetch; offset += 1) {
+    coveredMonthKeys.add(
+      getMonthCacheKey(
+        identity,
+        selectedTimeZone,
+        durationMinutes,
+        new Date(safeAnchor.getFullYear(), safeAnchor.getMonth() + offset, 1),
+      ),
+    );
+  }
+
+  const slotsByDate = filterBookableSlots(
+    extractSlotsByDate(initialData.result.raw.slots, selectedTimeZone),
+    selectedTimeZone,
+    derived.minimumBookingNotice,
+    new Date(),
+  );
+
+  return {
+    ...derived,
+    coveredMonthKeys,
+    error: null,
+    resolved: initialData.result.resolved,
+    selectedDurationMinutes: durationMinutes,
+    slotsByDate,
+    slotsCacheKey: getSlotsCacheKey(
+      identity,
+      selectedTimeZone,
+      durationMinutes,
+    ),
+  };
+}
+
 type UseBookerParams = {
+  initialData?: BookerInitialData;
   target: BookerTarget;
   timezone?: string;
 };
@@ -147,73 +351,137 @@ export type UseBookerResult = {
 // All booker data + interaction logic: fetching/windowing cal.com availability,
 // derived selection state, and the handlers the UI wires to the calendar.
 export function useBooker({
+  initialData,
   target,
   timezone,
 }: UseBookerParams): UseBookerResult {
-  const [meta, setMeta] = useState<BookerMeta | null>(null);
-  const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>({});
-  const [error, setError] = useState<BookerError | null>(null);
-  const [isPending, setIsPending] = useState(false);
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   );
   const [locale] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().locale || "en-US",
   );
-  const [currentMonth, setCurrentMonth] = useState(() => new Date());
-  const [selectedTimeZone, setSelectedTimeZone] = useState(
-    timezone ?? timeZone,
+  const initialSelectedTimeZone = initialData?.timeZone ?? timezone ?? timeZone;
+  const hydratedData = useMemo(
+    () =>
+      hydrateBookerData({
+        initialData,
+        selectedTimeZone: initialSelectedTimeZone,
+        target,
+      }),
+    [initialData, initialSelectedTimeZone, target],
   );
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const initialCurrentMonth = useMemo(() => {
+    const initialMonth = initialData?.monthIso
+      ? new Date(initialData.monthIso)
+      : new Date();
+    return Number.isNaN(initialMonth.getTime()) ? new Date() : initialMonth;
+  }, [initialData?.monthIso]);
+  const initialSelectedDate = useMemo(() => {
+    if (!hydratedData || hydratedData.error) {
+      return undefined;
+    }
+
+    return (
+      pickDefaultSelectedDate(
+        initialCurrentMonth,
+        hydratedData.slotsByDate,
+        initialSelectedTimeZone,
+        getTodayInTimeZone(initialSelectedTimeZone),
+        {
+          endMonth: hydratedData.meta?.bookingWindowEnd ?? undefined,
+          shiftWeeks: true,
+          startMonth: getMinimumNavigableMonth(
+            initialSelectedTimeZone,
+            hydratedData.meta?.bookingWindowStart,
+          ),
+          weekStartsOn: getWeekStartsOn(locale),
+        },
+      ) ?? undefined
+    );
+  }, [hydratedData, initialCurrentMonth, initialSelectedTimeZone, locale]);
+  const [meta, setMeta] = useState<BookerMeta | null>(
+    hydratedData?.meta ?? null,
+  );
+  const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>(
+    hydratedData?.slotsByDate ?? {},
+  );
+  const [error, setError] = useState<BookerError | null>(
+    hydratedData?.error ?? null,
+  );
+  const [isPending, setIsPending] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(initialCurrentMonth);
+  const [selectedTimeZone, setSelectedTimeZone] = useState(
+    initialSelectedTimeZone,
+  );
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    initialSelectedDate,
+  );
   const [_selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(30);
+  const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(
+    hydratedData?.selectedDurationMinutes ?? 30,
+  );
   const [is24Hour, setIs24Hour] = useState(() => prefers24Hour(locale));
-  const coveredMonthsRef = useRef<Set<string>>(new Set());
-  const resolvedRef = useRef<{
-    dynamic?: {
-      orgId?: number;
-      orgSlug?: string;
-      usernames: string[];
-    };
-    eventTypeId: number | null;
-    eventTypeSlug: string | null;
-  }>({ eventTypeId: null, eventTypeSlug: null });
+  const coveredMonthsRef = useRef<Set<string>>(
+    hydratedData?.coveredMonthKeys ?? new Set(),
+  );
+  const resolvedRef = useRef<ResolvedEventType>(
+    hydratedData?.resolved ?? { eventTypeId: null, eventTypeSlug: null },
+  );
   const lastIdentityRef = useRef<string | null>(null);
   const lastTimeZoneRef = useRef<string | null>(null);
   const lastDurationRef = useRef<number | null>(null);
-  const autoSelectedMonthRef = useRef<string | null>(null);
-  const slotsByDateRef = useRef<Record<string, string[]>>({});
-  const slotsCacheRef = useRef<Map<string, Record<string, string[]>>>(
-    new Map(),
+  const autoSelectedMonthRef = useRef<string | null>(
+    initialSelectedDate
+      ? `${initialCurrentMonth.getFullYear()}-${initialCurrentMonth.getMonth()}`
+      : null,
   );
-  const minimumBookingNoticeRef = useRef(0);
-  const hasMultiDurationOptionsRef = useRef(false);
+  const slotsByDateRef = useRef<Record<string, string[]>>(
+    hydratedData?.slotsByDate ?? {},
+  );
+  const slotsCacheRef = useRef<Map<string, Record<string, string[]>>>(
+    new Map(
+      hydratedData?.slotsCacheKey
+        ? [[hydratedData.slotsCacheKey, hydratedData.slotsByDate]]
+        : [],
+    ),
+  );
+  const minimumBookingNoticeRef = useRef(
+    hydratedData?.minimumBookingNotice ?? 0,
+  );
+  const hasMultiDurationOptionsRef = useRef(
+    hydratedData?.hasMultiDurationOptions ?? false,
+  );
   const selectedDateRef = useRef(selectedDate);
   selectedDateRef.current = selectedDate;
   const inFlightMonthsRef = useRef<Map<string, Promise<void>>>(new Map());
   const availabilityRequestVersionRef = useRef(0);
+  const skipInitialWarmRef = useRef(
+    Boolean(hydratedData && !hydratedData.error),
+  );
 
   const targetIdentity = useCallback((): string => {
-    if (target.type === "user") {
-      return `user:${target.username}:${target.eventSlug}:${target.orgId ?? ""}`;
-    }
-    if (target.type === "team") {
-      return `team:${target.teamId}:${target.eventSlug}:${target.orgId ?? ""}`;
-    }
-    if (target.type === "dynamic") {
-      return `dynamic:${target.usernames.join(",")}:${target.orgSlug ?? ""}:${target.orgId ?? ""}`;
-    }
-    return `link:${target.bookingUrl}`;
+    return getTargetIdentity(target);
   }, [target]);
 
   const buildKey = useCallback(
     (month: Date) =>
-      `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}|${month.getFullYear()}-${month.getMonth()}`,
+      getMonthCacheKey(
+        targetIdentity(),
+        selectedTimeZone,
+        selectedDurationMinutes,
+        month,
+      ),
     [selectedDurationMinutes, selectedTimeZone, targetIdentity],
   );
 
   const slotsCacheKey = useCallback(
-    () => `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}`,
+    () =>
+      getSlotsCacheKey(
+        targetIdentity(),
+        selectedTimeZone,
+        selectedDurationMinutes,
+      ),
     [selectedDurationMinutes, selectedTimeZone, targetIdentity],
   );
 
@@ -291,66 +559,25 @@ export function useBooker({
         // The host/event metadata only comes back on the full (non slots-only)
         // fetch, so set it once when present.
         if (result.raw.me) {
-          const host = extractHost(result.raw.me);
-          const isDynamic = Boolean(getDynamicContext(target));
-          const hostAvatars = extractHostAvatars(
-            result.raw.selectedEventType,
-            result.raw.me,
-            { dynamic: isDynamic, orgSlug: getOrgSlugFromTarget(target) },
-          );
-          const hostName = extractHostDisplayName(
-            result.raw.selectedEventType,
-            result.raw.me,
-            { dynamic: isDynamic },
-          );
-          const eventType = extractEventTypeInfo(result.raw.selectedEventType);
-          minimumBookingNoticeRef.current = extractMinimumBookingNotice(
-            result.raw.selectedEventType,
-          );
-          hasMultiDurationOptionsRef.current =
-            (eventType.eventTypeDurationOptions?.length ?? 0) > 1;
-          setMeta(
-            (prev) =>
-              prev ?? {
-                hostName:
-                  host.hostName === "Unknown user" && target.type === "user"
-                    ? target.username
-                    : result.raw.publicDisplayName || hostName,
-                hostAvatarUrl: host.hostAvatarUrl,
-                hostAvatars,
-                eventTypeTitle: eventType.eventTypeTitle,
-                eventTypeDescription: eventType.eventTypeDescription,
-                eventTypeDurationMinutes: eventType.eventTypeDurationMinutes,
-                eventTypeDurationOptions: eventType.eventTypeDurationOptions,
-                eventTypeLocations: eventType.eventTypeLocations,
-                eventTypeImageUrl:
-                  result.raw.bannerUrl || eventType.eventTypeImageUrl,
-                bookingWindowStart: extractBookingWindowStart(
-                  result.raw.selectedEventType,
-                ),
-                bookingWindowEnd: extractBookingWindowEnd(
-                  result.raw.selectedEventType,
-                ),
-              },
-          );
+          const derived = deriveBookerData(result, target);
+          minimumBookingNoticeRef.current = derived.minimumBookingNotice;
+          hasMultiDurationOptionsRef.current = derived.hasMultiDurationOptions;
+          setMeta((prev) => prev ?? derived.meta);
 
-          const defaultDuration =
-            eventType.eventTypeDurationMinutes ??
-            eventType.eventTypeDurationOptions?.[0] ??
-            30;
-          if (eventType.eventTypeDurationOptions?.length) {
+          const defaultDuration = derived.selectedDurationMinutes ?? 30;
+          if (derived.meta?.eventTypeDurationOptions?.length) {
             if (
-              !eventType.eventTypeDurationOptions.includes(
+              !derived.meta.eventTypeDurationOptions.includes(
                 selectedDurationMinutes,
               )
             ) {
               setSelectedDurationMinutes(defaultDuration);
             }
           } else if (
-            eventType.eventTypeDurationMinutes != null &&
-            selectedDurationMinutes !== eventType.eventTypeDurationMinutes
+            derived.meta?.eventTypeDurationMinutes != null &&
+            selectedDurationMinutes !== derived.meta.eventTypeDurationMinutes
           ) {
-            setSelectedDurationMinutes(eventType.eventTypeDurationMinutes);
+            setSelectedDurationMinutes(derived.meta.eventTypeDurationMinutes);
           }
         }
 
@@ -360,7 +587,11 @@ export function useBooker({
           minimumBookingNoticeRef.current,
           new Date(),
         );
-        const cacheKey = `${targetIdentity()}|${selectedTimeZone}|${selectedDurationMinutes}`;
+        const cacheKey = getSlotsCacheKey(
+          targetIdentity(),
+          selectedTimeZone,
+          selectedDurationMinutes,
+        );
         const mergedSlots = {
           ...(slotsCacheRef.current.get(cacheKey) ?? {}),
           ...windowSlots,
@@ -545,6 +776,10 @@ export function useBooker({
         currentMonth.getMonth() + WINDOW_MONTHS,
         1,
       );
+      if (skipInitialWarmRef.current) {
+        skipInitialWarmRef.current = false;
+        return;
+      }
       if (!coveredMonthsRef.current.has(buildKey(nextWindow))) {
         void fetchWindow(nextWindow).catch(() => {});
       }
