@@ -263,7 +263,7 @@ function BookerAvatarStack({
       : [{ avatarUrl: "", name: fallbackName, profileUrl: "" }];
 
   if (visibleAvatars.length === 1) {
-    const avatar = visibleAvatars[0];
+    const avatar = visibleAvatars[0]!;
     return (
       <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
         {avatar.avatarUrl ? (
