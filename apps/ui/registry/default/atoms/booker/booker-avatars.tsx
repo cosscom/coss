@@ -42,12 +42,20 @@ export function BookerAvatars({ avatars, fallbackName }: BookerAvatarsProps) {
 
   if (visibleAvatars.length === 1 && firstAvatar) {
     return (
-      <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
-        {firstAvatar.avatarUrl ? (
-          <AvatarImage alt={firstAvatar.name} src={firstAvatar.avatarUrl} />
-        ) : null}
-        <AvatarFallback>{getInitials(firstAvatar.name)}</AvatarFallback>
-      </Avatar>
+      <a
+        aria-label={firstAvatar.name}
+        className="w-fit rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+        href={firstAvatar.profileUrl || "#"}
+        rel={firstAvatar.profileUrl ? "noreferrer" : undefined}
+        target={firstAvatar.profileUrl ? "_blank" : undefined}
+      >
+        <Avatar className="@3xl:@max-5xl:size-12 size-14 outline-2 outline-background">
+          {firstAvatar.avatarUrl ? (
+            <AvatarImage alt={firstAvatar.name} src={firstAvatar.avatarUrl} />
+          ) : null}
+          <AvatarFallback>{getInitials(firstAvatar.name)}</AvatarFallback>
+        </Avatar>
+      </a>
     );
   }
 

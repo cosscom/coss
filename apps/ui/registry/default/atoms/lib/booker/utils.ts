@@ -296,13 +296,18 @@ export function extractHostAvatars(
     return uniqueAvatars(avatars);
   }
 
-  return uniqueAvatars([
-    {
-      avatarUrl: host.hostAvatarUrl,
-      name: host.hostName,
-      profileUrl: "",
-    },
-  ]);
+  const firstUserAvatar = userAvatars[0];
+  return uniqueAvatars(
+    firstUserAvatar
+      ? [firstUserAvatar]
+      : [
+          {
+            avatarUrl: host.hostAvatarUrl,
+            name: host.hostName,
+            profileUrl: "",
+          },
+        ],
+  );
 }
 
 export function extractHostDisplayName(
