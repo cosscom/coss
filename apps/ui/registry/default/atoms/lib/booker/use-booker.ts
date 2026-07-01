@@ -33,7 +33,11 @@ import {
 
 const WINDOW_MONTHS = 3;
 
-export type BookerErrorKind = "not-found" | "unpublished" | "network" | "unknown";
+export type BookerErrorKind =
+  | "not-found"
+  | "unpublished"
+  | "network"
+  | "unknown";
 
 export type BookerError = {
   kind: BookerErrorKind;
@@ -49,12 +53,9 @@ class BookerDataError extends Error {
 }
 
 function classifyError(caught: unknown): BookerError {
-  const code =
-    caught instanceof BookerDataError ? caught.code : "";
+  const code = caught instanceof BookerDataError ? caught.code : "";
   const message =
-    caught instanceof Error
-      ? caught.message
-      : "Could not load booker data.";
+    caught instanceof Error ? caught.message : "Could not load booker data.";
 
   if (code === "UNPUBLISHED") {
     return { kind: "unpublished", message };
@@ -374,10 +375,13 @@ export function useBooker({
     ],
   );
 
-  const todayStart = getTodayInTimeZone(selectedTimeZone);
-  const startMonth = getMinimumNavigableMonth(
-    selectedTimeZone,
-    meta?.bookingWindowStart,
+  const todayStart = useMemo(
+    () => getTodayInTimeZone(selectedTimeZone),
+    [selectedTimeZone],
+  );
+  const startMonth = useMemo(
+    () => getMinimumNavigableMonth(selectedTimeZone, meta?.bookingWindowStart),
+    [meta?.bookingWindowStart, selectedTimeZone],
   );
   const calendarViewOptions = useMemo((): CalendarViewOptions => {
     return {
@@ -482,6 +486,7 @@ export function useBooker({
             return;
           }
           setError(classifyError(caught));
+          return;
         } finally {
           if (!cancelled) {
             setIsPending(false);
