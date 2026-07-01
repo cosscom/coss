@@ -1,24 +1,12 @@
 "use client";
 
-import {
-  AlertCircleIcon,
-  Clock3Icon,
-  EyeOffIcon,
-  RefreshCwIcon,
-  SearchXIcon,
-} from "lucide-react";
-import { Button } from "@/registry/default/ui/button";
+import { Clock3Icon } from "lucide-react";
 import { Card } from "@/registry/default/ui/card";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-} from "@/registry/default/ui/empty";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerAvatars } from "./booker/booker-avatars";
 import { BookerCalendar } from "./booker/booker-calendar";
+import { BookerErrorState } from "./booker/booker-error-state";
+import { type BookerLabels, getBookerLabels } from "./booker/booker-labels";
 import { DurationPicker } from "./booker/duration-picker";
 import { EventDescription } from "./booker/event-description";
 import { HeaderBanner } from "./booker/header-banner";
@@ -26,51 +14,7 @@ import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
-import { type BookerError, useBooker } from "@/lib/booker/use-booker";
-
-type BookerLabels = {
-  errorNotFound: string;
-  errorUnpublished: string;
-  errorNetwork: string;
-  errorGeneric: string;
-  retry: string;
-  durationUnknown: string;
-  durationMinutes: (minutes: number) => string;
-  noAvailableTimes: string;
-  noSlotsAvailable: string;
-  noSlotsThisDay: string;
-  noSlotsThisMonth: string;
-  viewFirstAvailability: string;
-  use24Hour: string;
-  hour12Short: string;
-  hour24Short: string;
-  headerImageAlt: (hostName: string, eventTitle: string) => string;
-  locationOptions: (count: number) => string;
-  locationSelectOnNextStep: string;
-};
-
-const DEFAULT_BOOKER_LABELS: BookerLabels = {
-  errorNotFound: "This event type could not be found.",
-  errorUnpublished:
-    "This event type is not currently published and is not accepting bookings.",
-  errorNetwork: "Unable to connect. Please check your internet connection.",
-  errorGeneric: "Something went wrong loading the booker.",
-  retry: "Try again",
-  durationUnknown: "Unknown",
-  durationMinutes: (minutes) => `${minutes} min`,
-  noAvailableTimes: "No available times",
-  noSlotsAvailable: "There are no open slots.",
-  noSlotsThisDay: "There are no open slots on this day.",
-  noSlotsThisMonth: "There are no open slots this month.",
-  viewFirstAvailability: "View first availability",
-  use24Hour: "Use 24-hour time",
-  hour12Short: "12h",
-  hour24Short: "24h",
-  headerImageAlt: (hostName, eventTitle) =>
-    `Banner for ${eventTitle} with ${hostName}`,
-  locationOptions: (count) => `${count} location options`,
-  locationSelectOnNextStep: "Select on the next step",
-};
+import { useBooker } from "@/lib/booker/use-booker";
 
 type BookerProps = {
   target: BookerTarget;
@@ -81,7 +25,7 @@ type BookerProps = {
 };
 
 export function Booker({ target, timezone, labels }: BookerProps) {
-  const t = { ...DEFAULT_BOOKER_LABELS, ...labels };
+  const t = getBookerLabels(labels);
   const booker = useBooker({ target, timezone });
 
   if (booker.error) {
@@ -220,58 +164,6 @@ export function Booker({ target, timezone, labels }: BookerProps) {
       >
         Cal.com
       </a>
-    </div>
-  );
-}
-
-function BookerErrorState({
-  error,
-  labels,
-  onRetry,
-}: {
-  error: BookerError;
-  labels: BookerLabels;
-  onRetry: () => void;
-}) {
-  const isTerminal = error.kind === "not-found" || error.kind === "unpublished";
-  const Icon =
-    error.kind === "unpublished"
-      ? EyeOffIcon
-      : error.kind === "not-found"
-        ? SearchXIcon
-        : AlertCircleIcon;
-  const heading =
-    error.kind === "unpublished"
-      ? labels.errorUnpublished
-      : error.kind === "not-found"
-        ? labels.errorNotFound
-        : error.kind === "network"
-          ? labels.errorNetwork
-          : labels.errorGeneric;
-
-  return (
-    <div
-      className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
-      role="alert"
-    >
-      <Card className="w-full">
-        <Empty className="gap-4 py-10">
-          <EmptyHeader>
-            <EmptyMedia variant="icon" className="mb-1">
-              <Icon aria-hidden="true" />
-            </EmptyMedia>
-            <EmptyDescription>{heading}</EmptyDescription>
-          </EmptyHeader>
-          {!isTerminal && (
-            <EmptyContent>
-              <Button variant="outline" onClick={onRetry}>
-                <RefreshCwIcon aria-hidden="true" />
-                {labels.retry}
-              </Button>
-            </EmptyContent>
-          )}
-        </Empty>
-      </Card>
     </div>
   );
 }

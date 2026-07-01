@@ -40,6 +40,16 @@ export const atoms: AtomItem[] = [
         type: "registry:component",
       },
       {
+        path: "atoms/booker/booker-error-state.tsx",
+        target: "components/atoms/booker/booker-error-state.tsx",
+        type: "registry:component",
+      },
+      {
+        path: "atoms/booker/booker-labels.ts",
+        target: "components/atoms/booker/booker-labels.ts",
+        type: "registry:component",
+      },
+      {
         path: "atoms/booker/location.tsx",
         target: "components/atoms/booker/location.tsx",
         type: "registry:component",

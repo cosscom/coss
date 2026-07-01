@@ -9857,6 +9857,14 @@ export const Index: Record<string, any> = {
       type: "registry:component",
       target: "components/atoms/booker/booker-avatars.tsx"
     },{
+      path: "registry/default/atoms/booker/booker-error-state.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-error-state.tsx"
+    },{
+      path: "registry/default/atoms/booker/booker-labels.ts",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-labels.ts"
+    },{
       path: "registry/default/atoms/booker/location.tsx",
       type: "registry:component",
       target: "components/atoms/booker/location.tsx"
