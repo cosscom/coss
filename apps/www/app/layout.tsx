@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
+import { fontMono, fontSans } from "@coss/ui/fonts";
 import { SiteCta } from "@coss/ui/shared/site-cta";
 import { SiteFooter } from "@coss/ui/shared/site-footer";
 import { SiteHeader } from "@coss/ui/shared/site-header";
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} relative bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontSans.variable} ${fontMono.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <div className="relative isolate flex min-h-svh flex-col overflow-clip [--header-height:4rem]">
