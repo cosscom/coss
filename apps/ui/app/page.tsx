@@ -96,7 +96,7 @@ function CategoryCard({
     <CardFrame className="w-full after:pointer-events-none after:absolute after:-inset-[5px] after:-z-1 after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
       <CardFrameHeader className="static grid grid-rows-[auto_1fr]">
         <CardFrameTitle
-          className="font-heading text-base"
+          className="font-bold font-heading text-base"
           render={
             <h2>
               <Link className="before:absolute before:inset-0" href={href}>

@@ -20,7 +20,7 @@ function PageHeaderHeading({
 }: React.ComponentProps<"h1">) {
   return (
     <h1
-      className={cn("font-heading text-4xl lg:text-5xl", className)}
+      className={cn("font-bold font-heading text-4xl lg:text-5xl", className)}
       {...props}
     />
   );

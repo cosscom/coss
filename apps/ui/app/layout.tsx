@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
+import { fontMono, fontSans } from "@coss/ui/fonts";
 import { ThemeProvider } from "@coss/ui/shared/theme-provider";
 import type { Metadata } from "next";
 import {
@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} relative bg-sidebar font-sans text-foreground antialiased`}
+        className={`${fontSans.variable} ${fontMono.variable} relative bg-sidebar font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
           <ToastProvider>
