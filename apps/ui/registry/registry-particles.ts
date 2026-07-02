@@ -619,6 +619,9 @@ export const particles: ParticleItem[] = [
     dependencies: ["lucide-react"],
     description: "Selectable badge with checkbox",
     files: [{ path: "particles/p-badge-19.tsx", type: "registry:block" }],
+    meta: {
+      className: "**:data-[slot=preview]:flex",
+    },
     name: "p-badge-19",
     registryDependencies: ["@coss/badge", "@coss/checkbox"],
     type: "registry:block",
