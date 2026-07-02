@@ -308,11 +308,8 @@ export function ComboboxRow({
   );
 }
 
-export function ComboboxValue({
-  ...props
-}: ComboboxPrimitive.Value.Props): React.ReactElement {
-  return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
-}
+export const ComboboxValue: typeof ComboboxPrimitive.Value =
+  ComboboxPrimitive.Value;
 
 export function ComboboxList({
   className,
@@ -361,13 +358,8 @@ export function ComboboxStatus({
   );
 }
 
-export function ComboboxCollection(
-  props: ComboboxPrimitive.Collection.Props,
-): React.ReactElement {
-  return (
-    <ComboboxPrimitive.Collection data-slot="combobox-collection" {...props} />
-  );
-}
+export const ComboboxCollection: typeof ComboboxPrimitive.Collection =
+  ComboboxPrimitive.Collection;
 
 export function ComboboxChips({
   className,
