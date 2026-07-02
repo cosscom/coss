@@ -2075,7 +2075,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["badge","checkbox"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:flex"},
   },
   "p-badge-20": {
     name: "p-badge-20",
