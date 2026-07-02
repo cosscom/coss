@@ -18,7 +18,20 @@ import {
 } from "@/lib/cal-api/event-types";
 import { getPublicEventInfo } from "@/lib/cal-api/public-event";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
+import { getScheduleViaTrpc } from "@/lib/cal-api/slots-trpc";
 import type { EventType } from "@/lib/cal-api/types";
+
+type PerformanceTimings = {
+  source: "apiv2" | "trpc";
+  totalMs: number;
+  eventTypeResolutionMs: number;
+  slotsFetchMs: number;
+  metaFetchMs: number;
+};
+
+function getSlotsSource(): "apiv2" | "trpc" {
+  return process.env.SLOTS_SOURCE === "trpc" ? "trpc" : "apiv2";
+}
 
 export type FetchRawBookerInput = {
   monthIso: string;
@@ -52,11 +65,13 @@ export type FetchRawBookerResult =
         slots: unknown;
       };
       resolved: ResolvedEventType;
+      timings?: PerformanceTimings;
     }
   | {
       ok: false;
       error: string;
       errorCode?: string;
+      timings?: PerformanceTimings;
     };
 
 function buildMePayload(target: BookerTarget, eventType: EventType): unknown {
@@ -105,10 +120,20 @@ function buildSlotRange(monthIso: string, monthsToFetch: number) {
   };
 }
 
-async function fetchSlotsForEventType(
+function buildSlotFetchParams(
   input: FetchRawBookerInput,
   resolved: ResolvedEventType,
-): Promise<unknown> {
+): {
+  start: string;
+  end: string;
+  timeZone: string;
+  username?: string;
+  usernames?: string[];
+  eventTypeSlug?: string;
+  eventTypeId?: number;
+  organizationSlug?: string;
+  duration?: number;
+} {
   const monthsToFetch = Math.max(1, Math.floor(input.monthsToFetch ?? 1));
   const { end, start } = buildSlotRange(input.monthIso, monthsToFetch);
   const duration = input.durationMinutes;
@@ -116,20 +141,18 @@ async function fetchSlotsForEventType(
   const userSlotParams = getUserSlotParamsFromTarget(input.target);
 
   if (resolved.dynamic) {
-    return getAvailableSlots({
+    return {
       duration,
       end,
       organizationSlug: resolved.dynamic.orgSlug,
       start,
       timeZone: input.timeZone,
       usernames: resolved.dynamic.usernames,
-    });
+    };
   }
 
-  // Org-hosted user events (e.g. i.cal.com/pasquale/15min) need organizationSlug
-  // on the slots request; username + slug alone resolve a different availability.
   if (organizationSlug && userSlotParams) {
-    return getAvailableSlots({
+    return {
       duration,
       end,
       eventTypeSlug: userSlotParams.eventTypeSlug,
@@ -137,18 +160,18 @@ async function fetchSlotsForEventType(
       start,
       timeZone: input.timeZone,
       username: userSlotParams.username,
-    });
+    };
   }
 
   if (resolved.eventTypeId != null) {
-    return getAvailableSlots({
+    return {
       duration,
       end,
       eventTypeId: resolved.eventTypeId,
       organizationSlug,
       start,
       timeZone: input.timeZone,
-    });
+    };
   }
 
   const eventTypeSlug = resolved.eventTypeSlug;
@@ -160,7 +183,7 @@ async function fetchSlotsForEventType(
     );
   }
 
-  return getAvailableSlots({
+  return {
     duration,
     end,
     eventTypeSlug,
@@ -168,7 +191,21 @@ async function fetchSlotsForEventType(
     start,
     timeZone: input.timeZone,
     username: userSlotParams?.username,
-  });
+  };
+}
+
+async function fetchSlotsForEventType(
+  input: FetchRawBookerInput,
+  resolved: ResolvedEventType,
+): Promise<unknown> {
+  const params = buildSlotFetchParams(input, resolved);
+  const source = getSlotsSource();
+
+  if (source === "trpc") {
+    return getScheduleViaTrpc(params);
+  }
+
+  return getAvailableSlots(params);
 }
 
 async function fetchPublicEventInfo(
@@ -262,18 +299,46 @@ function buildResolvedEventType(
   };
 }
 
+function logTimings(timings: PerformanceTimings): void {
+  console.log(
+    `[booker-perf] source=${timings.source}` +
+      ` total=${timings.totalMs}ms` +
+      ` eventTypeResolution=${timings.eventTypeResolutionMs}ms` +
+      ` slotsFetch=${timings.slotsFetchMs}ms` +
+      ` metaFetch=${timings.metaFetchMs}ms`,
+  );
+}
+
 export async function fetchRawBookerDataAction(
   input: FetchRawBookerInput,
 ): Promise<FetchRawBookerResult> {
+  const actionStart = performance.now();
+  const source = getSlotsSource();
+  let eventTypeResolutionMs = 0;
+  let slotsFetchMs = 0;
+  let metaFetchMs = 0;
+
   try {
     if (input.eventTypeId != null) {
       const resolved: ResolvedEventType = {
         eventTypeId: input.eventTypeId,
         eventTypeSlug: null,
       };
+
+      const slotsStart = performance.now();
       const slots = await fetchSlotsForEventType(input, resolved);
+      slotsFetchMs = Math.round(performance.now() - slotsStart);
 
       if (!input.fetchMeta) {
+        const timings: PerformanceTimings = {
+          eventTypeResolutionMs,
+          metaFetchMs,
+          slotsFetchMs,
+          source,
+          totalMs: Math.round(performance.now() - actionStart),
+        };
+        logTimings(timings);
+
         return {
           ok: true,
           raw: {
@@ -285,13 +350,25 @@ export async function fetchRawBookerDataAction(
             slots,
           },
           resolved,
+          timings,
         };
       }
 
+      const metaStart = performance.now();
       const [selectedEventType, publicInfo] = await Promise.all([
         getEventTypeById(input.eventTypeId),
         fetchPublicEventInfo(input.target),
       ]);
+      metaFetchMs = Math.round(performance.now() - metaStart);
+
+      const timings: PerformanceTimings = {
+        eventTypeResolutionMs,
+        metaFetchMs,
+        slotsFetchMs,
+        source,
+        totalMs: Math.round(performance.now() - actionStart),
+      };
+      logTimings(timings);
 
       return {
         ok: true,
@@ -304,33 +381,69 @@ export async function fetchRawBookerDataAction(
           slots,
         },
         resolved,
+        timings,
       };
     }
 
+    const etStart = performance.now();
     const selectedEventType = await resolveEventType(input.target);
+    eventTypeResolutionMs = Math.round(performance.now() - etStart);
 
     if (!selectedEventType) {
+      const timings: PerformanceTimings = {
+        eventTypeResolutionMs,
+        metaFetchMs,
+        slotsFetchMs,
+        source,
+        totalMs: Math.round(performance.now() - actionStart),
+      };
+      logTimings(timings);
+
       return {
         error: "No event type found for the provided target.",
         errorCode: "NOT_FOUND",
         ok: false,
+        timings,
       };
     }
 
     if (selectedEventType.hidden) {
+      const timings: PerformanceTimings = {
+        eventTypeResolutionMs,
+        metaFetchMs,
+        slotsFetchMs,
+        source,
+        totalMs: Math.round(performance.now() - actionStart),
+      };
+      logTimings(timings);
+
       return {
         error:
           "This event type is currently unpublished and not accepting bookings.",
         errorCode: "UNPUBLISHED",
         ok: false,
+        timings,
       };
     }
 
     const resolved = buildResolvedEventType(input.target, selectedEventType);
+
+    const slotsStart = performance.now();
     const [slots, publicInfo] = await Promise.all([
       fetchSlotsForEventType(input, resolved),
       fetchPublicEventInfo(input.target),
     ]);
+    slotsFetchMs = Math.round(performance.now() - slotsStart);
+    metaFetchMs = slotsFetchMs;
+
+    const timings: PerformanceTimings = {
+      eventTypeResolutionMs,
+      metaFetchMs,
+      slotsFetchMs,
+      source,
+      totalMs: Math.round(performance.now() - actionStart),
+    };
+    logTimings(timings);
 
     return {
       ok: true,
@@ -343,19 +456,31 @@ export async function fetchRawBookerDataAction(
         slots,
       },
       resolved,
+      timings,
     };
   } catch (error) {
+    const timings: PerformanceTimings = {
+      eventTypeResolutionMs,
+      metaFetchMs,
+      slotsFetchMs,
+      source,
+      totalMs: Math.round(performance.now() - actionStart),
+    };
+    logTimings(timings);
+
     if (error instanceof CalApiError) {
       return {
         error: error.message,
         errorCode: error.code,
         ok: false,
+        timings,
       };
     }
     return {
       error:
         error instanceof Error ? error.message : "Could not load booker data.",
       ok: false,
+      timings,
     };
   }
 }
