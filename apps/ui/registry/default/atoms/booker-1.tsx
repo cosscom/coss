@@ -23,11 +23,18 @@ type BookerProps = {
   defaultFormValues?: Record<string, unknown>;
   onCreateBookingSuccess?: (data: unknown) => void;
   labels?: Partial<BookerLabels>;
+  slotsSource?: "apiv2" | "trpc";
 };
 
-export function Booker({ initialData, target, timezone, labels }: BookerProps) {
+export function Booker({
+  initialData,
+  target,
+  timezone,
+  labels,
+  slotsSource,
+}: BookerProps) {
   const t = getBookerLabels(labels);
-  const booker = useBooker({ initialData, target, timezone });
+  const booker = useBooker({ initialData, target, timezone, slotsSource });
 
   if (booker.error) {
     return (

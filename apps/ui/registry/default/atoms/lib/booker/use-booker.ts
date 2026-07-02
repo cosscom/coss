@@ -296,6 +296,7 @@ type UseBookerParams = {
   initialData?: BookerInitialData;
   target: BookerTarget;
   timezone?: string;
+  slotsSource?: "apiv2" | "trpc";
 };
 
 type BookerLoadingState = {
@@ -360,6 +361,7 @@ export function useBooker({
   initialData,
   target,
   timezone,
+  slotsSource,
 }: UseBookerParams): UseBookerResult {
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -538,6 +540,7 @@ export function useBooker({
           target,
           timeZone: selectedTimeZone,
           eventTypeId: resolvedRef.current.eventTypeId ?? undefined,
+          slotsSource,
         });
 
         if (!result.ok) {
@@ -625,6 +628,7 @@ export function useBooker({
       buildKey,
       selectedDurationMinutes,
       selectedTimeZone,
+      slotsSource,
       target,
       targetIdentity,
     ],

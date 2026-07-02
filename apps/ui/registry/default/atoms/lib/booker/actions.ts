@@ -41,6 +41,7 @@ export type FetchRawBookerInput = {
   eventTypeId?: number;
   fetchMeta?: boolean;
   durationMinutes?: number;
+  slotsSource?: "apiv2" | "trpc";
 };
 
 type ResolvedEventType = {
@@ -199,7 +200,7 @@ async function fetchSlotsForEventType(
   resolved: ResolvedEventType,
 ): Promise<unknown> {
   const params = buildSlotFetchParams(input, resolved);
-  const source = getSlotsSource();
+  const source = input.slotsSource ?? getSlotsSource();
 
   if (source === "trpc") {
     return getScheduleViaTrpc(params);
@@ -313,7 +314,7 @@ export async function fetchRawBookerDataAction(
   input: FetchRawBookerInput,
 ): Promise<FetchRawBookerResult> {
   const actionStart = performance.now();
-  const source = getSlotsSource();
+  const source = input.slotsSource ?? getSlotsSource();
   let eventTypeResolutionMs = 0;
   let slotsFetchMs = 0;
   let metaFetchMs = 0;
