@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="flex flex-col gap-0.5">
       <p>
         <Link
-          className="font-heading font-bold text-lg [font-variation-settings:'opsz'_32]"
+          className="font-bold font-heading text-lg [font-variation-settings:'opsz'_32]"
           href="/"
         >
           coss.com <span className="text-muted-foreground/72">ui</span>
