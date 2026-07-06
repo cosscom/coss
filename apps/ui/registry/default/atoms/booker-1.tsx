@@ -4,6 +4,10 @@ import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
 import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
 import { Input } from "@/registry/default/ui/input";
+import {
+  SizeTransition,
+  SizeTransitionPanel,
+} from "@/registry/default/ui/size-transition";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerAvatars } from "./booker/booker-avatars";
 import { BookerCalendar } from "./booker/booker-calendar";
@@ -140,9 +144,16 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             )}
           </div>
         </div>
-        <div className="flex w-full flex-col @3xl:flex-1 @3xl:flex-row">
+        <SizeTransition
+          transitionKey={booker.step}
+          render={
+            <div className="h-(--size-height,auto) w-full @3xl:w-(--size-width,auto) transition-[width,height] data-transitioning:overflow-clip **:data-current:transition-opacity **:data-current:data-starting-style:opacity-0 **:data-previous:transition-opacity **:data-previous:data-ending-style:opacity-0" />
+          }
+        >
           {booker.step === "select" ? (
-            <>
+            <SizeTransitionPanel
+              render={<div className="flex w-full flex-col @3xl:flex-row" />}
+            >
               {/* Calendar */}
               <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
                 <BookerCalendar {...booker.calendarProps} />
@@ -161,17 +172,21 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                 }}
                 {...booker.timePickerProps}
               />
-            </>
+            </SizeTransitionPanel>
           ) : (
-            <div className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+            <SizeTransitionPanel
+              render={
+                <div className="w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4" />
+              }
+            >
               <Button variant="ghost" size="sm" onClick={booker.onBack}>
                 <ArrowLeftIcon aria-hidden="true" />
                 Back
               </Button>
               <Input className="w-full" placeholder="Your name" />
-            </div>
+            </SizeTransitionPanel>
           )}
-        </div>
+        </SizeTransition>
       </Card>
       <a
         href="https://cal.com"

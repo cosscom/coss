@@ -107,6 +107,7 @@ export const atoms: AtomItem[] = [
       "@coss/popover",
       "@coss/scroll-area",
       "@coss/select",
+      "@coss/size-transition",
       "@coss/skeleton",
       "@coss/switch",
       "@coss/tooltip",

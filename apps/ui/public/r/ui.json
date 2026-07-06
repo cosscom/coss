@@ -44,6 +44,7 @@
     "@coss/separator",
     "@coss/sheet",
     "@coss/sidebar",
+    "@coss/size-transition",
     "@coss/skeleton",
     "@coss/slider",
     "@coss/spinner",
