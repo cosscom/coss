@@ -52,12 +52,12 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
 
   return (
     <div
-      className="@container mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center gap-4"
+      className="@container flex flex-col items-center gap-4"
       aria-busy={booker.loadingState.busy}
     >
-      <Card className="w-full @3xl:flex-row @3xl:divide-x divide-y @3xl:divide-y-0">
+      <Card className="@max-3xl:w-full @3xl:flex-row [--booker-side:--spacing(56)] @5xl:[--booker-side:--spacing(70)]">
         {/* Meta */}
-        <div className="@3xl:w-56 @5xl:w-70">
+        <div className="@3xl:w-(--booker-side) border-b @3xl:border-b-0 @3xl:border-e">
           <HeaderBanner
             alt={headerImageAlt}
             src={displayMeta?.eventTypeImageUrl}
@@ -138,24 +138,26 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             )}
           </div>
         </div>
-        {/* Calendar */}
-        <div className="flex flex-1 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
-          <BookerCalendar {...booker.calendarProps} />
+        <div className="flex w-full flex-col @3xl:flex-1 @3xl:flex-row">
+          {/* Calendar */}
+          <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+            <BookerCalendar {...booker.calendarProps} />
+          </div>
+          {/* Time picker */}
+          <TimePicker
+            labels={{
+              hour12Short: t.hour12Short,
+              hour24Short: t.hour24Short,
+              noAvailableTimes: t.noAvailableTimes,
+              noSlotsAvailable: t.noSlotsAvailable,
+              noSlotsThisDay: t.noSlotsThisDay,
+              noSlotsThisMonth: t.noSlotsThisMonth,
+              use24Hour: t.use24Hour,
+              viewFirstAvailability: t.viewFirstAvailability,
+            }}
+            {...booker.timePickerProps}
+          />
         </div>
-        {/* Time picker */}
-        <TimePicker
-          labels={{
-            hour12Short: t.hour12Short,
-            hour24Short: t.hour24Short,
-            noAvailableTimes: t.noAvailableTimes,
-            noSlotsAvailable: t.noSlotsAvailable,
-            noSlotsThisDay: t.noSlotsThisDay,
-            noSlotsThisMonth: t.noSlotsThisMonth,
-            use24Hour: t.use24Hour,
-            viewFirstAvailability: t.viewFirstAvailability,
-          }}
-          {...booker.timePickerProps}
-        />
       </Card>
       <a
         href="https://cal.com"

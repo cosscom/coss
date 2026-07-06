@@ -335,21 +335,21 @@ function MonthCaption({
   className?: string;
 }): ReactElement {
   return (
-    <div className={className}>
-      <span className="font-heading @3xl:@max-5xl:text-base text-lg">
-        {formatter.formatToParts(date).map((part) =>
-          part.type === "year" ? (
-            <span
-              key={`year-${part.value}`}
-              className="text-muted-foreground/72"
-            >
-              {part.value}
-            </span>
-          ) : (
-            part.value
-          ),
-        )}
-      </span>
+    <div
+      className={cn(
+        "@5xl:ps-1 font-heading @3xl:@max-5xl:text-base text-lg",
+        className,
+      )}
+    >
+      {formatter.formatToParts(date).map((part) =>
+        part.type === "year" ? (
+          <span key={`year-${part.value}`} className="text-muted-foreground/72">
+            {part.value}
+          </span>
+        ) : (
+          part.value
+        ),
+      )}
     </div>
   );
 }
