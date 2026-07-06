@@ -16,7 +16,7 @@ type AtomItem = Omit<Registry["items"][number], "meta"> & {
 
 export const atoms: AtomItem[] = [
   {
-    dependencies: ["isomorphic-dompurify", "marked", "lucide-react"],
+    dependencies: ["isomorphic-dompurify", "marked", "lucide-react", "motion"],
     description: "A full scheduling flow powered by Cal.com API v2.",
     files: [
       {
