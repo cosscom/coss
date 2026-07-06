@@ -47,18 +47,15 @@ function useStepResizeTransition(
   selectStepRef: RefObject<HTMLDivElement | null>,
   confirmStepRef: RefObject<HTMLDivElement | null>,
 ) {
-  const isFirstRenderRef = useRef(true);
+  const previousStepRef = useRef(step);
   const transitionTokenRef = useRef(0);
 
   useIsomorphicLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container) {
+    if (!container || previousStepRef.current === step) {
       return;
     }
-    if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
-      return;
-    }
+    previousStepRef.current = step;
 
     const enteringStep =
       step === "select" ? selectStepRef.current : confirmStepRef.current;
