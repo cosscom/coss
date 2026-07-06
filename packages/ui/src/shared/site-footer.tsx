@@ -11,7 +11,7 @@ export function SiteFooter() {
         <p>
           © {new Date().getFullYear()}{" "}
           <Link
-            className="font-bold font-heading text-foreground text-lg"
+            className="font-bold font-heading text-foreground [font-variation-settings:'opsz'_32]"
             href="/"
           >
             coss.com
