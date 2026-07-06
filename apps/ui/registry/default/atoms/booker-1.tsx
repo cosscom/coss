@@ -3,11 +3,13 @@
 import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
 import {
   AnimatePresence,
+  animate,
   domMax,
   LazyMotion,
   MotionConfig,
   m,
 } from "motion/react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
 import { Input } from "@/registry/default/ui/input";
@@ -25,6 +27,12 @@ import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
 
+const TRANSITION_DURATION = 0.45;
+const TRANSITION_EASE = [0.32, 0.72, 0, 1] as const;
+
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 type BookerProps = {
   target: BookerTarget;
   timezone?: string;
@@ -37,6 +45,76 @@ type BookerProps = {
 export function Booker({ initialData, target, timezone, labels }: BookerProps) {
   const t = getBookerLabels(labels);
   const booker = useBooker({ initialData, target, timezone });
+
+  const stepContainerRef = useRef<HTMLDivElement>(null);
+  const selectStepRef = useRef<HTMLDivElement>(null);
+  const confirmStepRef = useRef<HTMLDivElement>(null);
+  const previousStepRef = useRef(booker.step);
+  const isFirstRenderRef = useRef(true);
+  const transitionTokenRef = useRef(0);
+
+  useIsomorphicLayoutEffect(() => {
+    const container = stepContainerRef.current;
+    if (!container) {
+      return;
+    }
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      previousStepRef.current = booker.step;
+      return;
+    }
+    if (previousStepRef.current === booker.step) {
+      return;
+    }
+    previousStepRef.current = booker.step;
+
+    const enteringStep =
+      booker.step === "select" ? selectStepRef.current : confirmStepRef.current;
+
+    // FLIP: capture the current box, release to the entering step's natural
+    // size to measure the target, then animate the real width/height between
+    // them so the card resizes without transforms or reflowing its content.
+    const start = {
+      height: container.offsetHeight,
+      width: container.offsetWidth,
+    };
+    container.style.width = "auto";
+    container.style.height = "auto";
+    enteringStep?.style.removeProperty("width");
+    void container.offsetHeight;
+    const end = {
+      height: container.offsetHeight,
+      width: container.offsetWidth,
+    };
+    if (enteringStep) {
+      enteringStep.style.width = `${end.width}px`;
+    }
+    container.style.width = `${start.width}px`;
+    container.style.height = `${start.height}px`;
+
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const token = ++transitionTokenRef.current;
+    const controls = animate(
+      container,
+      { height: end.height, width: end.width },
+      {
+        duration: prefersReducedMotion ? 0 : TRANSITION_DURATION,
+        ease: TRANSITION_EASE,
+      },
+    );
+    controls
+      .then(() => {
+        if (token !== transitionTokenRef.current) {
+          return;
+        }
+        container.style.width = "";
+        container.style.height = "";
+        enteringStep?.style.removeProperty("width");
+      })
+      .catch(() => {});
+  }, [booker.step]);
 
   if (booker.error) {
     return (
@@ -150,16 +228,20 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
         <LazyMotion features={domMax}>
           <MotionConfig
             reducedMotion="user"
-            transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
+            transition={{
+              duration: TRANSITION_DURATION,
+              ease: TRANSITION_EASE,
+            }}
           >
-            <m.div
-              layout
-              className="relative flex @3xl:w-auto w-full @3xl:flex-row flex-col overflow-clip"
+            <div
+              ref={stepContainerRef}
+              className="relative w-full @3xl:flex-1 overflow-clip"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 {booker.step === "select" ? (
                   <m.div
                     key="select"
+                    ref={selectStepRef}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -187,6 +269,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                 ) : (
                   <m.div
                     key="confirm"
+                    ref={confirmStepRef}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -200,7 +283,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                   </m.div>
                 )}
               </AnimatePresence>
-            </m.div>
+            </div>
           </MotionConfig>
         </LazyMotion>
       </Card>
