@@ -66,7 +66,7 @@ export default async function Page(props: {
                 <div className="flex min-w-0 flex-col gap-8">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                      <h1 className="scroll-m-20 font-heading font-semibold text-3xl xl:text-4xl">
+                      <h1 className="scroll-m-20 font-heading font-bold text-3xl xl:text-4xl">
                         {doc.title}
                       </h1>
                       {doc.description && (
