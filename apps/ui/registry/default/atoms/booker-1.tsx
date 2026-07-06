@@ -52,6 +52,12 @@ function useStepResizeTransition(
 
   useIsomorphicLayoutEffect(() => {
     const container = containerRef.current;
+    // eslint-disable-next-line no-console
+    console.log("[BOOKER_RESIZE_DIAG rev=marker-A]", {
+      prev: previousStepRef.current,
+      step,
+      hasContainer: !!container,
+    });
     if (!container || previousStepRef.current === step) {
       return;
     }
@@ -72,6 +78,14 @@ function useStepResizeTransition(
       height: container.offsetHeight,
       width: container.offsetWidth,
     };
+    // eslint-disable-next-line no-console
+    console.log("[BOOKER_RESIZE_DIAG rev=marker-A] measured", {
+      startW: start.width,
+      startH: start.height,
+      endW: end.width,
+      endH: end.height,
+      hasEntering: !!enteringStep,
+    });
 
     // Pin the entering step so it can't reflow while the container is clipped.
     if (enteringStep) {
