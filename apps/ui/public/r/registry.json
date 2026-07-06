@@ -46,7 +46,6 @@
         "@coss/separator",
         "@coss/sheet",
         "@coss/sidebar",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/slider",
         "@coss/spinner",
@@ -727,19 +726,6 @@
         "@coss/use-media-query",
         "@coss/utils"
       ],
-      "type": "registry:ui"
-    },
-    {
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "files": [
-        {
-          "path": "registry/default/ui/size-transition.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "name": "size-transition",
       "type": "registry:ui"
     },
     {
@@ -11430,12 +11416,10 @@
         "@coss/card",
         "@coss/combobox",
         "@coss/empty",
-        "@coss/input",
         "@coss/label",
         "@coss/popover",
         "@coss/scroll-area",
         "@coss/select",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/switch",
         "@coss/tooltip"

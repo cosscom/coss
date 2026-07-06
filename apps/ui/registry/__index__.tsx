@@ -763,24 +763,6 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "size-transition": {
-    name: "size-transition",
-    description: "",
-    type: "registry:ui",
-    registryDependencies: undefined,
-    files: [{
-      path: "registry/default/ui/size-transition.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/ui/size-transition.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: undefined,
-    meta: undefined,
-  },
   "skeleton": {
     name: "skeleton",
     description: "",
@@ -9857,7 +9839,7 @@ export const Index: Record<string, any> = {
     name: "booker-1",
     description: "A full scheduling flow powered by Cal.com API v2.",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/size-transition","@coss/skeleton","@coss/switch","@coss/tooltip"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/tooltip"],
     files: [{
       path: "registry/default/atoms/booker-1.tsx",
       type: "registry:block",
