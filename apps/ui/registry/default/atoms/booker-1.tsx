@@ -147,7 +147,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
         <SizeTransition
           transitionKey={booker.step}
           render={
-            <div className="h-(--size-height,auto) w-full @3xl:w-(--size-width,auto) transition-[width,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-transitioning:overflow-clip **:data-current:transition-opacity **:data-current:data-starting-style:opacity-0 **:data-previous:transition-opacity **:data-previous:data-ending-style:opacity-0" />
+            <div className="h-(--size-height,auto) w-full @3xl:w-(--size-width,auto) transition-[width,height] data-transitioning:overflow-clip **:data-current:transition-opacity **:data-current:data-starting-style:opacity-0 **:data-previous:transition-opacity **:data-previous:data-ending-style:opacity-0" />
           }
         >
           {booker.step === "select" ? (
