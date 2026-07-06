@@ -37,10 +37,22 @@ const TRANSITION_EASE = [0.32, 0.72, 0, 1] as const;
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-// FLIP: on step change, measure the container's current box, release it to the
-// entering step's natural size to read the target, then animate the real
-// width/height between the two. Animating actual dimensions (not `transform`)
-// resizes the card without scaling or reflowing its content mid-transition.
+type Size = { width: number; height: number };
+
+const measure = (element: HTMLElement): Size => ({
+  height: element.offsetHeight,
+  width: element.offsetWidth,
+});
+
+// FLIP: on step change, animate the container's real width/height from its
+// previous box to the entering step's natural box. Animating actual dimensions
+// (not `transform`) resizes the card without scaling or reflowing its content.
+//
+// `popLayout` pulls the outgoing step out of flow before this layout effect
+// runs, so by now the container already reports the *new* size — too late to
+// read the old one from the DOM. A `ResizeObserver` therefore tracks the
+// container's resting size continuously (skipping frames driven by our own
+// animation) so the pre-change size is always available as the FLIP origin.
 function useStepResizeTransition(
   step: BookerStep,
   containerRef: RefObject<HTMLDivElement | null>,
@@ -48,16 +60,26 @@ function useStepResizeTransition(
   confirmStepRef: RefObject<HTMLDivElement | null>,
 ) {
   const previousStepRef = useRef(step);
+  const restingSizeRef = useRef<Size | null>(null);
+  const isAnimatingRef = useRef(false);
   const transitionTokenRef = useRef(0);
 
   useIsomorphicLayoutEffect(() => {
     const container = containerRef.current;
-    // eslint-disable-next-line no-console
-    console.log("[BOOKER_RESIZE_DIAG rev=marker-A]", {
-      prev: previousStepRef.current,
-      step,
-      hasContainer: !!container,
+    if (!container) {
+      return;
+    }
+    const observer = new ResizeObserver(() => {
+      if (!isAnimatingRef.current) {
+        restingSizeRef.current = measure(container);
+      }
     });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [containerRef]);
+
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
     if (!container || previousStepRef.current === step) {
       return;
     }
@@ -66,26 +88,12 @@ function useStepResizeTransition(
     const enteringStep =
       step === "select" ? selectStepRef.current : confirmStepRef.current;
 
-    const start = {
-      height: container.offsetHeight,
-      width: container.offsetWidth,
-    };
+    const start = restingSizeRef.current ?? measure(container);
     container.style.width = "auto";
     container.style.height = "auto";
     enteringStep?.style.removeProperty("width");
     void container.offsetHeight;
-    const end = {
-      height: container.offsetHeight,
-      width: container.offsetWidth,
-    };
-    // eslint-disable-next-line no-console
-    console.log("[BOOKER_RESIZE_DIAG rev=marker-A] measured", {
-      startW: start.width,
-      startH: start.height,
-      endW: end.width,
-      endH: end.height,
-      hasEntering: !!enteringStep,
-    });
+    const end = measure(container);
 
     // Pin the entering step so it can't reflow while the container is clipped.
     if (enteringStep) {
@@ -98,6 +106,7 @@ function useStepResizeTransition(
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const token = ++transitionTokenRef.current;
+    isAnimatingRef.current = true;
     animate(
       container,
       { height: end.height, width: end.width },
@@ -113,6 +122,8 @@ function useStepResizeTransition(
         container.style.width = "";
         container.style.height = "";
         enteringStep?.style.removeProperty("width");
+        restingSizeRef.current = measure(container);
+        isAnimatingRef.current = false;
       })
       .catch(() => {});
   }, [step]);
