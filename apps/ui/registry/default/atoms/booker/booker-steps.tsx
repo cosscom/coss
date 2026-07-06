@@ -12,7 +12,7 @@ import type { BookerStep } from "@/lib/booker/use-booker";
 
 const EASE = [0.32, 0.72, 0, 1] as const;
 const SIZE_TRANSITION = { duration: 0.45, ease: EASE } as const;
-const ENTER_TRANSITION = { delay: 0.1, duration: 0.45, ease: EASE } as const;
+const ENTER_TRANSITION = { delay: 0.05, duration: 0.55, ease: EASE } as const;
 
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
