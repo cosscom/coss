@@ -153,7 +153,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
 
   return (
     <div
-      className="@container w-full flex flex-col items-center gap-4"
+      className="@container flex w-full flex-col items-center gap-4"
       aria-busy={booker.loadingState.busy}
     >
       <Card className="@max-3xl:w-full @3xl:flex-row @5xl:[--booker-side:--spacing(70)] [--booker-side:--spacing(56)]">
