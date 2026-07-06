@@ -44,8 +44,6 @@ const measure = (element: HTMLElement): Size => ({
   height: element.offsetHeight,
 });
 
-// FLIP resize + opacity enter on step change. A ResizeObserver tracks the
-// container's resting size because the new step is already laid out when we run.
 function useStepTransition(step: BookerStep) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previousStepRef = useRef(step);
