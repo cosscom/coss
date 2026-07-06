@@ -64,9 +64,9 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
       className="@container flex flex-col items-center gap-4"
       aria-busy={booker.loadingState.busy}
     >
-      <Card className="@max-3xl:w-full @3xl:flex-row [--booker-side:--spacing(56)] @5xl:[--booker-side:--spacing(70)]">
+      <Card className="@max-3xl:w-full @3xl:flex-row @5xl:[--booker-side:--spacing(70)] [--booker-side:--spacing(56)]">
         {/* Meta */}
-        <div className="@3xl:w-(--booker-side) border-b @3xl:border-b-0 @3xl:border-e">
+        <div className="@3xl:w-(--booker-side) @3xl:border-e border-b @3xl:border-b-0">
           <HeaderBanner
             alt={headerImageAlt}
             src={displayMeta?.eventTypeImageUrl}
@@ -154,20 +154,19 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
           >
             <m.div
               layout
-              className="relative flex w-full flex-col overflow-clip @3xl:w-auto @3xl:flex-row"
+              className="relative flex @3xl:w-auto w-full @3xl:flex-row flex-col overflow-clip"
             >
               <AnimatePresence initial={false} mode="popLayout">
                 {booker.step === "select" ? (
                   <m.div
                     key="select"
-                    layout="position"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex w-full flex-col @3xl:flex-row"
+                    className="flex w-full @3xl:flex-row flex-col"
                   >
                     {/* Calendar */}
-                    <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+                    <div className="flex @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
                       <BookerCalendar {...booker.calendarProps} />
                     </div>
                     {/* Time picker */}
@@ -188,11 +187,10 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                 ) : (
                   <m.div
                     key="confirm"
-                    layout="position"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4"
+                    className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4"
                   >
                     <Button variant="ghost" size="sm" onClick={booker.onBack}>
                       <ArrowLeftIcon aria-hidden="true" />
