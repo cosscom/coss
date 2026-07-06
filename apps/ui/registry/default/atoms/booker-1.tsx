@@ -2,14 +2,13 @@
 
 import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
 import {
-  AnimatePresence,
   animate,
-  domMax,
+  domAnimation,
   LazyMotion,
   MotionConfig,
-  m,
+  useReducedMotion,
 } from "motion/react";
-import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef } from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
 import { Input } from "@/registry/default/ui/input";
@@ -31,8 +30,9 @@ import {
   useBooker,
 } from "@/lib/booker/use-booker";
 
-const TRANSITION_DURATION = 0.45;
-const TRANSITION_EASE = [0.32, 0.72, 0, 1] as const;
+const EASE = [0.32, 0.72, 0, 1] as const;
+const SIZE_TRANSITION = { duration: 0.45, ease: EASE } as const;
+const ENTER_TRANSITION = { delay: 0.1, duration: 0.45, ease: EASE } as const;
 
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -40,35 +40,23 @@ const useIsomorphicLayoutEffect =
 type Size = { width: number; height: number };
 
 const measure = (element: HTMLElement): Size => ({
-  height: element.offsetHeight,
   width: element.offsetWidth,
+  height: element.offsetHeight,
 });
 
-// FLIP: on step change, animate the container's real width/height from its
-// previous box to the entering step's natural box. Animating actual dimensions
-// (not `transform`) resizes the card without scaling or reflowing its content.
-//
-// `popLayout` pulls the outgoing step out of flow before this layout effect
-// runs, so by now the container already reports the *new* size — too late to
-// read the old one from the DOM. A `ResizeObserver` therefore tracks the
-// container's resting size continuously (skipping frames driven by our own
-// animation) so the pre-change size is always available as the FLIP origin.
-function useStepResizeTransition(
-  step: BookerStep,
-  containerRef: RefObject<HTMLDivElement | null>,
-  selectStepRef: RefObject<HTMLDivElement | null>,
-  confirmStepRef: RefObject<HTMLDivElement | null>,
-) {
+// FLIP resize + opacity enter on step change. A ResizeObserver tracks the
+// container's resting size because the new step is already laid out when we run.
+function useStepTransition(step: BookerStep) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const previousStepRef = useRef(step);
   const restingSizeRef = useRef<Size | null>(null);
   const isAnimatingRef = useRef(false);
-  const transitionTokenRef = useRef(0);
+  const reducedMotion = useReducedMotion();
 
   useIsomorphicLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container) {
-      return;
-    }
+    if (!container) return;
+
     const observer = new ResizeObserver(() => {
       if (!isAnimatingRef.current) {
         restingSizeRef.current = measure(container);
@@ -76,17 +64,18 @@ function useStepResizeTransition(
     });
     observer.observe(container);
     return () => observer.disconnect();
-  }, [containerRef]);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container || previousStepRef.current === step) {
-      return;
-    }
+    if (!container || previousStepRef.current === step) return;
     previousStepRef.current = step;
 
-    const enteringStep =
-      step === "select" ? selectStepRef.current : confirmStepRef.current;
+    const enteringStep = container.firstElementChild as HTMLElement | null;
+
+    if (enteringStep && !reducedMotion) {
+      enteringStep.style.opacity = "0";
+    }
 
     const start = restingSizeRef.current ?? measure(container);
     container.style.width = "auto";
@@ -95,38 +84,59 @@ function useStepResizeTransition(
     void container.offsetHeight;
     const end = measure(container);
 
-    // Pin the entering step so it can't reflow while the container is clipped.
-    if (enteringStep) {
-      enteringStep.style.width = `${end.width}px`;
-    }
+    if (enteringStep) enteringStep.style.width = `${end.width}px`;
     container.style.width = `${start.width}px`;
     container.style.height = `${start.height}px`;
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const token = ++transitionTokenRef.current;
     isAnimatingRef.current = true;
-    animate(
+    const sizeAnimation = animate(
       container,
-      { height: end.height, width: end.width },
-      {
-        duration: prefersReducedMotion ? 0 : TRANSITION_DURATION,
-        ease: TRANSITION_EASE,
-      },
-    )
-      .then(() => {
-        if (token !== transitionTokenRef.current) {
-          return;
-        }
+      { width: end.width, height: end.height },
+      reducedMotion ? { duration: 0 } : SIZE_TRANSITION,
+    );
+    const enterAnimation =
+      enteringStep && !reducedMotion
+        ? animate(enteringStep, { opacity: [0, 1] }, ENTER_TRANSITION)
+        : null;
+
+    void Promise.all([sizeAnimation, enterAnimation ?? Promise.resolve()]).then(
+      () => {
         container.style.width = "";
         container.style.height = "";
         enteringStep?.style.removeProperty("width");
+        enteringStep?.style.removeProperty("opacity");
         restingSizeRef.current = measure(container);
         isAnimatingRef.current = false;
-      })
-      .catch(() => {});
-  }, [step]);
+      },
+    );
+
+    return () => {
+      sizeAnimation.stop();
+      enterAnimation?.stop();
+      isAnimatingRef.current = false;
+    };
+  }, [step, reducedMotion]);
+
+  return containerRef;
+}
+
+function BookerSteps({
+  step,
+  children,
+}: {
+  step: BookerStep;
+  children: ReactNode;
+}) {
+  const containerRef = useStepTransition(step);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full @3xl:flex-1 overflow-clip"
+    >
+      {children}
+    </div>
+  );
 }
 
 type BookerProps = {
@@ -141,16 +151,6 @@ type BookerProps = {
 export function Booker({ initialData, target, timezone, labels }: BookerProps) {
   const t = getBookerLabels(labels);
   const booker = useBooker({ initialData, target, timezone });
-
-  const stepContainerRef = useRef<HTMLDivElement>(null);
-  const selectStepRef = useRef<HTMLDivElement>(null);
-  const confirmStepRef = useRef<HTMLDivElement>(null);
-  useStepResizeTransition(
-    booker.step,
-    stepContainerRef,
-    selectStepRef,
-    confirmStepRef,
-  );
 
   if (booker.error) {
     return (
@@ -261,70 +261,49 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             )}
           </div>
         </div>
-        <LazyMotion features={domMax}>
-          <MotionConfig
-            reducedMotion="user"
-            transition={{
-              duration: TRANSITION_DURATION,
-              ease: TRANSITION_EASE,
-            }}
-          >
-            <div
-              ref={stepContainerRef}
-              className="relative w-full @3xl:flex-1 overflow-clip"
-            >
-              <AnimatePresence initial={false} mode="popLayout">
-                {booker.step === "select" ? (
-                  <m.div
-                    key="select"
-                    ref={selectStepRef}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex w-full @3xl:flex-row flex-col"
-                  >
-                    {/* Calendar */}
-                    <div className="flex @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
-                      <BookerCalendar {...booker.calendarProps} />
-                    </div>
-                    {/* Time picker */}
-                    <TimePicker
-                      labels={{
-                        hour12Short: t.hour12Short,
-                        hour24Short: t.hour24Short,
-                        noAvailableTimes: t.noAvailableTimes,
-                        noSlotsAvailable: t.noSlotsAvailable,
-                        noSlotsThisDay: t.noSlotsThisDay,
-                        noSlotsThisMonth: t.noSlotsThisMonth,
-                        use24Hour: t.use24Hour,
-                        viewFirstAvailability: t.viewFirstAvailability,
-                      }}
-                      {...booker.timePickerProps}
-                    />
-                  </m.div>
-                ) : (
-                  <m.div
-                    key="confirm"
-                    ref={confirmStepRef}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4"
-                  >
-                    <Button variant="ghost" size="sm" onClick={booker.onBack}>
-                      <ArrowLeftIcon aria-hidden="true" />
-                      Back
-                    </Button>
-                    <Input
-                      autoFocus
-                      className="w-full"
-                      placeholder="Your name"
-                      type="text"
-                    />
-                  </m.div>
-                )}
-              </AnimatePresence>
-            </div>
+        <LazyMotion features={domAnimation}>
+          <MotionConfig reducedMotion="user" transition={SIZE_TRANSITION}>
+            <BookerSteps step={booker.step}>
+              {booker.step === "select" ? (
+                <div
+                  key="select"
+                  className="flex w-full @3xl:flex-row flex-col"
+                >
+                  <div className="flex @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+                    <BookerCalendar {...booker.calendarProps} />
+                  </div>
+                  <TimePicker
+                    labels={{
+                      hour12Short: t.hour12Short,
+                      hour24Short: t.hour24Short,
+                      noAvailableTimes: t.noAvailableTimes,
+                      noSlotsAvailable: t.noSlotsAvailable,
+                      noSlotsThisDay: t.noSlotsThisDay,
+                      noSlotsThisMonth: t.noSlotsThisMonth,
+                      use24Hour: t.use24Hour,
+                      viewFirstAvailability: t.viewFirstAvailability,
+                    }}
+                    {...booker.timePickerProps}
+                  />
+                </div>
+              ) : (
+                <div
+                  key="confirm"
+                  className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4"
+                >
+                  <Button variant="ghost" size="sm" onClick={booker.onBack}>
+                    <ArrowLeftIcon aria-hidden="true" />
+                    Back
+                  </Button>
+                  <Input
+                    autoFocus
+                    className="w-full"
+                    placeholder="Your name"
+                    type="text"
+                  />
+                </div>
+              )}
+            </BookerSteps>
           </MotionConfig>
         </LazyMotion>
       </Card>
