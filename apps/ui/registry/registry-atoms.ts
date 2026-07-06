@@ -25,6 +25,11 @@ export const atoms: AtomItem[] = [
         type: "registry:block",
       },
       {
+        path: "atoms/booker/booker-steps.tsx",
+        target: "components/atoms/booker/booker-steps.tsx",
+        type: "registry:component",
+      },
+      {
         path: "atoms/booker/booker-calendar.tsx",
         target: "components/atoms/booker/booker-calendar.tsx",
         type: "registry:component",
