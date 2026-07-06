@@ -9,7 +9,7 @@ import {
   MotionConfig,
   m,
 } from "motion/react";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
 import { Input } from "@/registry/default/ui/input";
@@ -25,13 +25,87 @@ import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
 import { TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
-import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
+import {
+  type BookerInitialData,
+  type BookerStep,
+  useBooker,
+} from "@/lib/booker/use-booker";
 
 const TRANSITION_DURATION = 0.45;
 const TRANSITION_EASE = [0.32, 0.72, 0, 1] as const;
 
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+// FLIP: on step change, measure the container's current box, release it to the
+// entering step's natural size to read the target, then animate the real
+// width/height between the two. Animating actual dimensions (not `transform`)
+// resizes the card without scaling or reflowing its content mid-transition.
+function useStepResizeTransition(
+  step: BookerStep,
+  containerRef: RefObject<HTMLDivElement | null>,
+  selectStepRef: RefObject<HTMLDivElement | null>,
+  confirmStepRef: RefObject<HTMLDivElement | null>,
+) {
+  const isFirstRenderRef = useRef(true);
+  const transitionTokenRef = useRef(0);
+
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      return;
+    }
+
+    const enteringStep =
+      step === "select" ? selectStepRef.current : confirmStepRef.current;
+
+    const start = {
+      height: container.offsetHeight,
+      width: container.offsetWidth,
+    };
+    container.style.width = "auto";
+    container.style.height = "auto";
+    enteringStep?.style.removeProperty("width");
+    void container.offsetHeight;
+    const end = {
+      height: container.offsetHeight,
+      width: container.offsetWidth,
+    };
+
+    // Pin the entering step so it can't reflow while the container is clipped.
+    if (enteringStep) {
+      enteringStep.style.width = `${end.width}px`;
+    }
+    container.style.width = `${start.width}px`;
+    container.style.height = `${start.height}px`;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const token = ++transitionTokenRef.current;
+    animate(
+      container,
+      { height: end.height, width: end.width },
+      {
+        duration: prefersReducedMotion ? 0 : TRANSITION_DURATION,
+        ease: TRANSITION_EASE,
+      },
+    )
+      .then(() => {
+        if (token !== transitionTokenRef.current) {
+          return;
+        }
+        container.style.width = "";
+        container.style.height = "";
+        enteringStep?.style.removeProperty("width");
+      })
+      .catch(() => {});
+  }, [step]);
+}
 
 type BookerProps = {
   target: BookerTarget;
@@ -49,72 +123,12 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
   const stepContainerRef = useRef<HTMLDivElement>(null);
   const selectStepRef = useRef<HTMLDivElement>(null);
   const confirmStepRef = useRef<HTMLDivElement>(null);
-  const previousStepRef = useRef(booker.step);
-  const isFirstRenderRef = useRef(true);
-  const transitionTokenRef = useRef(0);
-
-  useIsomorphicLayoutEffect(() => {
-    const container = stepContainerRef.current;
-    if (!container) {
-      return;
-    }
-    if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
-      previousStepRef.current = booker.step;
-      return;
-    }
-    if (previousStepRef.current === booker.step) {
-      return;
-    }
-    previousStepRef.current = booker.step;
-
-    const enteringStep =
-      booker.step === "select" ? selectStepRef.current : confirmStepRef.current;
-
-    // FLIP: capture the current box, release to the entering step's natural
-    // size to measure the target, then animate the real width/height between
-    // them so the card resizes without transforms or reflowing its content.
-    const start = {
-      height: container.offsetHeight,
-      width: container.offsetWidth,
-    };
-    container.style.width = "auto";
-    container.style.height = "auto";
-    enteringStep?.style.removeProperty("width");
-    void container.offsetHeight;
-    const end = {
-      height: container.offsetHeight,
-      width: container.offsetWidth,
-    };
-    if (enteringStep) {
-      enteringStep.style.width = `${end.width}px`;
-    }
-    container.style.width = `${start.width}px`;
-    container.style.height = `${start.height}px`;
-
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const token = ++transitionTokenRef.current;
-    const controls = animate(
-      container,
-      { height: end.height, width: end.width },
-      {
-        duration: prefersReducedMotion ? 0 : TRANSITION_DURATION,
-        ease: TRANSITION_EASE,
-      },
-    );
-    controls
-      .then(() => {
-        if (token !== transitionTokenRef.current) {
-          return;
-        }
-        container.style.width = "";
-        container.style.height = "";
-        enteringStep?.style.removeProperty("width");
-      })
-      .catch(() => {});
-  }, [booker.step]);
+  useStepResizeTransition(
+    booker.step,
+    stepContainerRef,
+    selectStepRef,
+    confirmStepRef,
+  );
 
   if (booker.error) {
     return (
@@ -279,7 +293,12 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                       <ArrowLeftIcon aria-hidden="true" />
                       Back
                     </Button>
-                    <Input className="w-full" placeholder="Your name" />
+                    <Input
+                      autoFocus
+                      className="w-full"
+                      placeholder="Your name"
+                      type="text"
+                    />
                   </m.div>
                 )}
               </AnimatePresence>
