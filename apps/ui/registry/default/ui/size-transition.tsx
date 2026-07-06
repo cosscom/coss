@@ -128,8 +128,9 @@ export function SizeTransition({
     React.useState<HTMLElement | null>(null);
   const [previousSize, setPreviousSize] = React.useState<Size | null>(null);
   const [startingStyle, setStartingStyle] = React.useState(false);
+  const [sizeTransitioning, setSizeTransitioning] = React.useState(false);
 
-  const isTransitioning = previousContent !== null;
+  const hasPreviousLayer = previousContent !== null;
 
   useIsoLayoutEffect(() => {
     const element = rootRef.current;
@@ -151,6 +152,8 @@ export function SizeTransition({
 
     const outgoingContent = snapshotRef.current;
     const previousSizeValue = committedSizeRef.current;
+
+    setSizeTransitioning(true);
 
     if (outgoingContent) {
       setPreviousContent(outgoingContent);
@@ -191,6 +194,7 @@ export function SizeTransition({
         () => {
           releaseSize(element);
           currentRef.current?.style.removeProperty("width");
+          setSizeTransitioning(false);
         },
         sizeAbort.signal,
       );
@@ -237,11 +241,15 @@ export function SizeTransition({
   });
 
   const contextValue = React.useMemo<SizeTransitionContextValue>(
-    () => ({ currentRef, startingStyle, transitioning: isTransitioning }),
-    [isTransitioning, startingStyle],
+    () => ({
+      currentRef,
+      startingStyle,
+      transitioning: hasPreviousLayer || sizeTransitioning,
+    }),
+    [hasPreviousLayer, sizeTransitioning, startingStyle],
   );
 
-  const content = isTransitioning ? (
+  const content = hasPreviousLayer ? (
     <React.Fragment>
       {children}
       {/* After `children` so inserting this layer never remounts the panel. */}
@@ -275,7 +283,7 @@ export function SizeTransition({
     props: mergeProps<"div">(defaultProps, props, { children: content }),
     render,
     ref: rootRef,
-    state: { transitioning: isTransitioning },
+    state: { transitioning: sizeTransitioning },
     stateAttributesMapping: {
       transitioning: (value) => (value ? { "data-transitioning": "" } : null),
     },
