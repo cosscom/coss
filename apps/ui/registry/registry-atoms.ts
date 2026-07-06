@@ -25,6 +25,11 @@ export const atoms: AtomItem[] = [
         type: "registry:block",
       },
       {
+        path: "atoms/booker/booker-confirm-form.tsx",
+        target: "components/atoms/booker/booker-confirm-form.tsx",
+        type: "registry:component",
+      },
+      {
         path: "atoms/booker/booker-steps.tsx",
         target: "components/atoms/booker/booker-steps.tsx",
         type: "registry:component",
@@ -107,6 +112,8 @@ export const atoms: AtomItem[] = [
       "@coss/card",
       "@coss/combobox",
       "@coss/empty",
+      "@coss/field",
+      "@coss/form",
       "@coss/input",
       "@coss/label",
       "@coss/popover",
@@ -114,6 +121,7 @@ export const atoms: AtomItem[] = [
       "@coss/select",
       "@coss/skeleton",
       "@coss/switch",
+      "@coss/textarea",
       "@coss/tooltip",
     ],
     meta: {

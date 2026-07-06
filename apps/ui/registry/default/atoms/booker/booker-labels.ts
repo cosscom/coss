@@ -17,6 +17,16 @@ export type BookerLabels = {
   headerImageAlt: (hostName: string, eventTitle: string) => string;
   locationOptions: (count: number) => string;
   locationSelectOnNextStep: string;
+  confirmYourName: string;
+  confirmEmail: string;
+  confirmNotes: string;
+  confirmNotesPlaceholder: string;
+  confirmAddGuests: string;
+  confirmBack: string;
+  confirmSubmit: string;
+  confirmTermsPrefix: string;
+  confirmTerms: string;
+  confirmPrivacyPolicy: string;
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
@@ -40,6 +50,17 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
     `Banner for ${eventTitle} with ${hostName}`,
   locationOptions: (count) => `${count} location options`,
   locationSelectOnNextStep: "Select on the next step",
+  confirmYourName: "Your name",
+  confirmEmail: "Email address",
+  confirmNotes: "Additional notes",
+  confirmNotesPlaceholder:
+    "Please share anything that will help prepare for our meeting.",
+  confirmAddGuests: "Add guests",
+  confirmBack: "Back",
+  confirmSubmit: "Confirm",
+  confirmTermsPrefix: "By proceeding, you agree to Cal.com's",
+  confirmTerms: "Terms",
+  confirmPrivacyPolicy: "Privacy Policy",
 };
 
 export function getBookerLabels(labels?: Partial<BookerLabels>): BookerLabels {

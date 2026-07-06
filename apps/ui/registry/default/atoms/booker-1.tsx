@@ -1,13 +1,12 @@
 "use client";
 
-import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
+import { Clock3Icon } from "lucide-react";
 import { cn } from "@/registry/default/lib/utils";
-import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
-import { Input } from "@/registry/default/ui/input";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerAvatars } from "./booker/booker-avatars";
 import { BookerCalendar } from "./booker/booker-calendar";
+import { BookerConfirmForm } from "./booker/booker-confirm-form";
 import { BookerErrorState } from "./booker/booker-error-state";
 import { type BookerLabels, getBookerLabels } from "./booker/booker-labels";
 import { BookerSteps } from "./booker/booker-steps";
@@ -29,7 +28,13 @@ type BookerProps = {
   labels?: Partial<BookerLabels>;
 };
 
-export function Booker({ initialData, target, timezone, labels }: BookerProps) {
+export function Booker({
+  initialData,
+  target,
+  timezone,
+  labels,
+  defaultFormValues,
+}: BookerProps) {
   const t = getBookerLabels(labels);
   const booker = useBooker({ initialData, target, timezone });
 
@@ -164,17 +169,21 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
           ) : (
             <div
               key="confirm"
-              className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4"
+              className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @5xl:p-6 p-4"
             >
-              <Button variant="ghost" size="sm" onClick={booker.onBack}>
-                <ArrowLeftIcon aria-hidden="true" />
-                Back
-              </Button>
-              <Input
-                autoFocus
-                className="w-full"
-                placeholder="Your name"
-                type="text"
+              <BookerConfirmForm
+                defaultEmail={
+                  typeof defaultFormValues?.email === "string"
+                    ? defaultFormValues.email
+                    : undefined
+                }
+                defaultName={
+                  typeof defaultFormValues?.name === "string"
+                    ? defaultFormValues.name
+                    : undefined
+                }
+                labels={t}
+                onBack={booker.onBack}
               />
             </div>
           )}
