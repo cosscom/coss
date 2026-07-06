@@ -343,13 +343,18 @@ type BookerTimePickerState = {
   selectedDate: Date | undefined;
 };
 
+export type BookerStep = "select" | "confirm";
+
 export type UseBookerResult = {
   calendarProps: BookerCalendarState;
   durationProps: BookerDurationState;
   error: BookerError | null;
   loadingState: BookerLoadingState;
   meta: BookerMeta | null;
+  onBack: () => void;
   retry: () => void;
+  selectedTime: string | null;
+  step: BookerStep;
   timePickerProps: BookerTimePickerState;
   timezoneProps: BookerTimezoneState;
 };
@@ -424,6 +429,7 @@ export function useBooker({
     initialSelectedDate,
   );
   const [_selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [step, setStep] = useState<BookerStep>("select");
   const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(
     hydratedData?.selectedDurationMinutes ?? 30,
   );
@@ -952,6 +958,15 @@ export function useBooker({
     autoSelectedMonthRef.current = `${date.getFullYear()}-${date.getMonth()}`;
   };
 
+  const handleSelectTime = (time: string) => {
+    setSelectedTime(time);
+    setStep("confirm");
+  };
+
+  const handleBack = () => {
+    setStep("select");
+  };
+
   const initialLoading = !meta;
   const currentMonthCovered = coveredMonthsRef.current.has(
     buildKey(currentMonth),
@@ -983,7 +998,10 @@ export function useBooker({
       initial: initialLoading,
     },
     meta,
+    onBack: handleBack,
     retry,
+    selectedTime: _selectedTime,
+    step,
     timePickerProps: {
       availabilityLoading,
       currentMonth,
@@ -995,7 +1013,7 @@ export function useBooker({
       locale,
       nextAvailableDate,
       onIs24HourChange: setIs24Hour,
-      onSelectTime: setSelectedTime,
+      onSelectTime: handleSelectTime,
       selectedDate,
     },
     timezoneProps: {

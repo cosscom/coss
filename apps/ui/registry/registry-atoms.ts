@@ -102,6 +102,7 @@ export const atoms: AtomItem[] = [
       "@coss/card",
       "@coss/combobox",
       "@coss/empty",
+      "@coss/input",
       "@coss/label",
       "@coss/popover",
       "@coss/scroll-area",

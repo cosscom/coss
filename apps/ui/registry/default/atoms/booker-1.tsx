@@ -1,7 +1,9 @@
 "use client";
 
-import { Clock3Icon } from "lucide-react";
+import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
+import { Button } from "@/registry/default/ui/button";
 import { Card } from "@/registry/default/ui/card";
+import { Input } from "@/registry/default/ui/input";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerAvatars } from "./booker/booker-avatars";
 import { BookerCalendar } from "./booker/booker-calendar";
@@ -138,26 +140,36 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             )}
           </div>
         </div>
-        <div className="flex w-full flex-col @3xl:flex-1 @3xl:flex-row">
-          {/* Calendar */}
-          <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
-            <BookerCalendar {...booker.calendarProps} />
+        {booker.step === "select" ? (
+          <div className="flex w-full flex-col @3xl:flex-1 @3xl:flex-row">
+            {/* Calendar */}
+            <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+              <BookerCalendar {...booker.calendarProps} />
+            </div>
+            {/* Time picker */}
+            <TimePicker
+              labels={{
+                hour12Short: t.hour12Short,
+                hour24Short: t.hour24Short,
+                noAvailableTimes: t.noAvailableTimes,
+                noSlotsAvailable: t.noSlotsAvailable,
+                noSlotsThisDay: t.noSlotsThisDay,
+                noSlotsThisMonth: t.noSlotsThisMonth,
+                use24Hour: t.use24Hour,
+                viewFirstAvailability: t.viewFirstAvailability,
+              }}
+              {...booker.timePickerProps}
+            />
           </div>
-          {/* Time picker */}
-          <TimePicker
-            labels={{
-              hour12Short: t.hour12Short,
-              hour24Short: t.hour24Short,
-              noAvailableTimes: t.noAvailableTimes,
-              noSlotsAvailable: t.noSlotsAvailable,
-              noSlotsThisDay: t.noSlotsThisDay,
-              noSlotsThisMonth: t.noSlotsThisMonth,
-              use24Hour: t.use24Hour,
-              viewFirstAvailability: t.viewFirstAvailability,
-            }}
-            {...booker.timePickerProps}
-          />
-        </div>
+        ) : (
+          <div className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+            <Button variant="ghost" size="sm" onClick={booker.onBack}>
+              <ArrowLeftIcon aria-hidden="true" />
+              Back
+            </Button>
+            <Input className="w-full" placeholder="Your name" />
+          </div>
+        )}
       </Card>
       <a
         href="https://cal.com"
