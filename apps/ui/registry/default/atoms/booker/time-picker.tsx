@@ -67,7 +67,7 @@ export function TimePicker({
   const slotsLoading = initialLoading || availabilityLoading;
 
   return (
-    <div className="relative @3xl:w-(--booker-side) border-t @3xl:border-t-0 @3xl:border-s">
+    <div className="relative @3xl:w-(--booker-side) @3xl:border-s border-t @3xl:border-t-0">
       <div className="@3xl:absolute inset-0 flex flex-col gap-2">
         {(slotsLoading || selectedDate != null) && (
           <div className="@3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:pt-2 pt-3">

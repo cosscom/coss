@@ -61,9 +61,9 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
       className="@container flex flex-col items-center gap-4"
       aria-busy={booker.loadingState.busy}
     >
-      <Card className="@max-3xl:w-full @3xl:flex-row [--booker-side:--spacing(56)] @5xl:[--booker-side:--spacing(70)]">
+      <Card className="@max-3xl:w-full @3xl:flex-row @5xl:[--booker-side:--spacing(70)] [--booker-side:--spacing(56)]">
         {/* Meta */}
-        <div className="@3xl:w-(--booker-side) border-b @3xl:border-b-0 @3xl:border-e">
+        <div className="@3xl:w-(--booker-side) @3xl:border-e border-b @3xl:border-b-0">
           <HeaderBanner
             alt={headerImageAlt}
             src={displayMeta?.eventTypeImageUrl}
@@ -147,15 +147,15 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
         <SizeTransition
           transitionKey={booker.step}
           render={
-            <div className="h-(--size-height,auto) w-full @3xl:w-(--size-width,auto) transition-[width,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-transitioning:overflow-clip **:data-current:transition-opacity **:data-current:data-starting-style:opacity-0 **:data-previous:transition-opacity **:data-previous:data-ending-style:opacity-0" />
+            <div className="h-(--size-height,auto) @3xl:w-(--size-width,auto) w-full transition-[width,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-transitioning:overflow-clip **:data-current:data-starting-style:opacity-0 **:data-previous:data-ending-style:opacity-0 **:data-current:transition-opacity **:data-previous:transition-opacity" />
           }
         >
           {booker.step === "select" ? (
             <SizeTransitionPanel
-              render={<div className="flex w-full flex-col @3xl:flex-row" />}
+              render={<div className="flex w-full @3xl:flex-row flex-col" />}
             >
               {/* Calendar */}
-              <div className="flex w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
+              <div className="flex @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
                 <BookerCalendar {...booker.calendarProps} />
               </div>
               {/* Time picker */}
@@ -176,7 +176,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
           ) : (
             <SizeTransitionPanel
               render={
-                <div className="w-full @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4" />
+                <div className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4" />
               }
             >
               <Button variant="ghost" size="sm" onClick={booker.onBack}>
