@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3Icon } from "lucide-react";
+import { CalendarIcon, Clock3Icon } from "lucide-react";
 import { cn } from "@/registry/default/lib/utils";
 import { Card } from "@/registry/default/ui/card";
 import { Skeleton } from "@/registry/default/ui/skeleton";
@@ -18,6 +18,11 @@ import { TimePicker } from "./booker/time-picker";
 import { TimezoneDisplay, TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
+import {
+  formatConfirmDateDetail,
+  formatConfirmTimeRange,
+  formatSelectedWeekday,
+} from "@/lib/booker/utils";
 
 type BookerProps = {
   target: BookerTarget;
@@ -49,6 +54,10 @@ export function Booker({
   }
 
   const displayMeta = booker.meta;
+  const selectedDate = booker.timePickerProps.selectedDate;
+  const selectedTime = booker.selectedTime;
+  const showSelectedSlot =
+    booker.step === "confirm" && selectedDate != null && selectedTime != null;
   const headerImageAlt = displayMeta
     ? t.headerImageAlt(displayMeta.hostName, displayMeta.eventTypeTitle)
     : "Booker header";
@@ -107,6 +116,30 @@ export function Booker({
 
             {displayMeta ? (
               <div className="flex flex-col gap-3 sm:text-sm">
+                {showSelectedSlot ? (
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon
+                      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {formatSelectedWeekday(
+                        selectedDate,
+                        booker.calendarProps.locale,
+                      )}{" "}
+                      {formatConfirmDateDetail(
+                        selectedDate,
+                        booker.calendarProps.locale,
+                      )}{" "}
+                      {formatConfirmTimeRange(
+                        selectedTime,
+                        booker.durationProps.value,
+                        !booker.timePickerProps.is24Hour,
+                        booker.calendarProps.locale,
+                      )}
+                    </span>
+                  </div>
+                ) : null}
                 {displayMeta.eventTypeDurationOptions ? (
                   <DurationPicker
                     formatLabel={t.durationMinutes}
@@ -186,13 +219,8 @@ export function Booker({
                     ? defaultFormValues.name
                     : undefined
                 }
-                durationMinutes={booker.durationProps.value}
-                is24Hour={booker.timePickerProps.is24Hour}
                 labels={t}
-                locale={booker.calendarProps.locale}
                 onBack={booker.onBack}
-                selectedDate={booker.timePickerProps.selectedDate}
-                selectedTime={booker.selectedTime}
               />
             </div>
           )}
