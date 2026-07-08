@@ -45,7 +45,7 @@ export function BookerConfirmForm({
   return (
     <div className="flex flex-col gap-4">
       {showSummary ? (
-        <div className="flex flex-wrap items-baseline gap-x-1.5 font-heading">
+        <div className="flex flex-wrap items-baseline gap-x-1.5 font-heading @3xl:@max-5xl:text-base text-lg">
           <span>
             {formatSelectedWeekday(selectedDate, locale)}{" "}
             {formatConfirmDateDetail(selectedDate, locale)}
