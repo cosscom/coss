@@ -136,7 +136,7 @@ export function Location({ locations, labels }: LocationProps) {
         openOnHover
         delay={0}
       >
-        <MapPinIcon className="size-4.5 shrink-0 opacity-80 sm:size-4" />
+        <MapPinIcon className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4" />
         <span>{labels.locationOptions(locations.length)}</span>
       </PopoverTrigger>
       <PopoverPopup align="start" side="top" className="*:p-3">

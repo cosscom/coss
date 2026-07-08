@@ -34,7 +34,7 @@ export function TimezoneDisplay({ value }: { value: string }) {
   return (
     <div className="flex items-center gap-2">
       <GlobeIcon
-        className="size-4.5 shrink-0 opacity-80 sm:size-4"
+        className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
         aria-hidden="true"
       />
       <span>{formatTimezoneLabel(value)}</span>

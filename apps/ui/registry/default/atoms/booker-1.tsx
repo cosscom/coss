@@ -117,9 +117,9 @@ export function Booker({
             {displayMeta ? (
               <div className="flex flex-col gap-3 sm:text-sm">
                 {showSelectedSlot ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2">
                     <CalendarIcon
-                      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+                      className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
                       aria-hidden="true"
                     />
                     <span>
@@ -149,7 +149,7 @@ export function Booker({
                 ) : (
                   <div className="flex items-center gap-2">
                     <Clock3Icon
-                      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+                      className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
                       aria-hidden="true"
                     />
                     <span>
