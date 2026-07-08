@@ -2,7 +2,7 @@
 
 import { UserPlusIcon } from "lucide-react";
 import { Button } from "@/registry/default/ui/button";
-import { Field, FieldLabel } from "@/registry/default/ui/field";
+import { Field, FieldError, FieldLabel } from "@/registry/default/ui/field";
 import { Form } from "@/registry/default/ui/form";
 import { Input } from "@/registry/default/ui/input";
 import { Textarea } from "@/registry/default/ui/textarea";
@@ -29,43 +29,34 @@ export function BookerConfirmForm({
     <div className="flex flex-col gap-4">
       <Form
         className="flex flex-col gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
+        onFormSubmit={() => {
+          // Booking submission to be wired.
         }}
       >
-        <Field>
+        <Field name="name">
           <FieldLabel>
             {labels.confirmYourName} <RequiredMark />
           </FieldLabel>
-          <Input
-            autoFocus
-            defaultValue={defaultName}
-            name="name"
-            required
-            type="text"
-          />
+          <Input autoFocus defaultValue={defaultName} required type="text" />
+          <FieldError>{labels.confirmNameError}</FieldError>
         </Field>
 
-        <Field>
+        <Field name="email">
           <FieldLabel>
             {labels.confirmEmail} <RequiredMark />
           </FieldLabel>
           <Input
             autoComplete="email"
             defaultValue={defaultEmail}
-            name="email"
             required
             type="email"
           />
+          <FieldError>{labels.confirmEmailError}</FieldError>
         </Field>
 
-        <Field>
+        <Field name="notes">
           <FieldLabel>{labels.confirmNotes}</FieldLabel>
-          <Textarea
-            name="notes"
-            placeholder={labels.confirmNotesPlaceholder}
-            rows={3}
-          />
+          <Textarea placeholder={labels.confirmNotesPlaceholder} rows={3} />
         </Field>
 
         <Button className="self-start" type="button" variant="ghost">

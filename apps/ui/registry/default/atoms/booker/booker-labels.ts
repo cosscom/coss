@@ -19,6 +19,8 @@ export type BookerLabels = {
   locationSelectOnNextStep: string;
   confirmYourName: string;
   confirmEmail: string;
+  confirmNameError: string;
+  confirmEmailError: string;
   confirmNotes: string;
   confirmNotesPlaceholder: string;
   confirmAddGuests: string;
@@ -52,6 +54,8 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
   locationSelectOnNextStep: "Select on the next step",
   confirmYourName: "Your name",
   confirmEmail: "Email address",
+  confirmNameError: "Please enter your name.",
+  confirmEmailError: "Please enter a valid email address.",
   confirmNotes: "Additional notes",
   confirmNotesPlaceholder:
     "Please share anything that will help prepare for our meeting.",
