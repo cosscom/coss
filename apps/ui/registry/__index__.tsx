@@ -9839,11 +9839,15 @@ export const Index: Record<string, any> = {
     name: "booker-1",
     description: "A full scheduling flow powered by Cal.com API v2.",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/tooltip"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/field","@coss/form","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/textarea","@coss/tooltip"],
     files: [{
       path: "registry/default/atoms/booker-1.tsx",
       type: "registry:block",
       target: "components/atoms/booker-1.tsx"
+    },{
+      path: "registry/default/atoms/booker/booker-confirm-form.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-confirm-form.tsx"
     },{
       path: "registry/default/atoms/booker/booker-steps.tsx",
       type: "registry:component",

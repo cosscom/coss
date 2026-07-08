@@ -15,7 +15,7 @@ import { EventDescription } from "./booker/event-description";
 import { HeaderBanner } from "./booker/header-banner";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
-import { TimezonePicker } from "./booker/timezone-picker";
+import { TimezoneDisplay, TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
 
@@ -135,7 +135,11 @@ export function Booker({
                   }}
                   locations={displayMeta.eventTypeLocations}
                 />
-                <TimezonePicker {...booker.timezoneProps} />
+                {booker.step === "select" ? (
+                  <TimezonePicker {...booker.timezoneProps} />
+                ) : (
+                  <TimezoneDisplay value={booker.timezoneProps.value} />
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-1">
@@ -182,8 +186,13 @@ export function Booker({
                     ? defaultFormValues.name
                     : undefined
                 }
+                durationMinutes={booker.durationProps.value}
+                is24Hour={booker.timePickerProps.is24Hour}
                 labels={t}
+                locale={booker.calendarProps.locale}
                 onBack={booker.onBack}
+                selectedDate={booker.timePickerProps.selectedDate}
+                selectedTime={booker.selectedTime}
               />
             </div>
           )}

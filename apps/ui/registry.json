@@ -11340,6 +11340,11 @@
           "type": "registry:block"
         },
         {
+          "path": "registry/default/atoms/booker/booker-confirm-form.tsx",
+          "target": "components/atoms/booker/booker-confirm-form.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "registry/default/atoms/booker/booker-steps.tsx",
           "target": "components/atoms/booker/booker-steps.tsx",
           "type": "registry:component"
@@ -11422,6 +11427,8 @@
         "@coss/card",
         "@coss/combobox",
         "@coss/empty",
+        "@coss/field",
+        "@coss/form",
         "@coss/input",
         "@coss/label",
         "@coss/popover",
@@ -11429,6 +11436,7 @@
         "@coss/select",
         "@coss/skeleton",
         "@coss/switch",
+        "@coss/textarea",
         "@coss/tooltip"
       ],
       "meta": {

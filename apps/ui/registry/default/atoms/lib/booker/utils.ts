@@ -675,6 +675,101 @@ export function formatSelectedMonth(date: Date, locale: string): string {
   }).format(date);
 }
 
+export function formatConfirmDateDetail(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function parseTimeLabel(
+  label: string,
+): { hours: number; minutes: number } | null {
+  const [hoursRaw, minutesRaw] = label.split(":");
+  const hours = Number(hoursRaw);
+  const minutes = Number(minutesRaw);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+  return { hours, minutes };
+}
+
+function formatConfirmTimePart(
+  date: Date,
+  locale: string,
+  hour12: boolean,
+  includePeriod: boolean,
+): string {
+  if (!hour12) {
+    return new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      hour12: false,
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  const parts = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    hour12: true,
+    minute: "2-digit",
+  }).formatToParts(date);
+
+  return parts
+    .filter(
+      (part) =>
+        part.type === "hour" ||
+        part.type === "minute" ||
+        (includePeriod && part.type === "dayPeriod") ||
+        (part.type === "literal" && part.value.trim() !== ""),
+    )
+    .map((part) =>
+      part.type === "dayPeriod" ? part.value.toLowerCase() : part.value,
+    )
+    .join("")
+    .trim();
+}
+
+export function formatConfirmTimeRange(
+  startTime: string,
+  durationMinutes: number,
+  hour12: boolean,
+  locale: string,
+): string {
+  const parsed = parseTimeLabel(startTime);
+  if (!parsed) {
+    return startTime;
+  }
+
+  const startDate = new Date();
+  startDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60_000);
+
+  if (!hour12) {
+    return `${formatConfirmTimePart(startDate, locale, false, false)} – ${formatConfirmTimePart(endDate, locale, false, false)}`;
+  }
+
+  const startParts = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    hour12: true,
+    minute: "2-digit",
+  }).formatToParts(startDate);
+  const endParts = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    hour12: true,
+    minute: "2-digit",
+  }).formatToParts(endDate);
+  const startPeriod = startParts
+    .find((part) => part.type === "dayPeriod")
+    ?.value.toLowerCase();
+  const endPeriod = endParts
+    .find((part) => part.type === "dayPeriod")
+    ?.value.toLowerCase();
+  const samePeriod = startPeriod === endPeriod;
+
+  return `${formatConfirmTimePart(startDate, locale, true, !samePeriod)} – ${formatConfirmTimePart(endDate, locale, true, true)}`;
+}
+
 export function toDateKey(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
