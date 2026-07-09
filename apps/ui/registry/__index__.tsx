@@ -8557,6 +8557,60 @@ export const Index: Record<string, any> = {
     categories: ["switch"],
     meta: undefined,
   },
+  "p-switch-7": {
+    name: "p-switch-7",
+    description: "Weekly availability editor with time range combobox pickers",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/label","@coss/popover","@coss/select","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-switch-8": {
+    name: "p-switch-8",
+    description: "Weekly availability editor with grouped time range controls",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/group","@coss/label","@coss/popover","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","group","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-switch-9": {
+    name: "p-switch-9",
+    description: "Weekly availability editor with From/To labeled time groups",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/group","@coss/label","@coss/popover","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","group","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
   "p-table-1": {
     name: "p-table-1",
     description: "Basic table",
