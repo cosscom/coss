@@ -1483,6 +1483,24 @@ export const Index: Record<string, any> = {
     categories: ["autocomplete","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-autocomplete-16": {
+    name: "p-autocomplete-16",
+    description: "Address autocomplete with Google Maps Places API",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input","async","search"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-avatar-1": {
     name: "p-avatar-1",
     description: "Avatar with image and fallback",
