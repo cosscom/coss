@@ -357,6 +357,21 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("autocomplete", "input", "async", "search"),
+    dependencies: ["lucide-react"],
+    description: "Address autocomplete with Google Maps Places API",
+    files: [
+      { path: "particles/p-autocomplete-16.tsx", type: "registry:block" },
+    ],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-autocomplete-16",
+    registryDependencies: ["@coss/autocomplete", "@coss/spinner"],
+    type: "registry:block",
+  },
+  {
     categories: categories("avatar"),
     description: "Avatar with image and fallback",
     files: [{ path: "particles/p-avatar-1.tsx", type: "registry:block" }],
