@@ -23,9 +23,16 @@ export type BookerLabels = {
   confirmEmailError: string;
   confirmNotes: string;
   confirmNotesPlaceholder: string;
+  confirmLocation: string;
+  confirmGuestEmail: string;
+  confirmGuestEmailPlaceholder: string;
+  confirmRemoveGuest: string;
   confirmAddGuests: string;
   confirmBack: string;
   confirmSubmit: string;
+  confirmSubmitting: string;
+  confirmError: string;
+  confirmSuccess: string;
   confirmTermsPrefix: string;
   confirmTerms: string;
   confirmPrivacyPolicy: string;
@@ -59,9 +66,16 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
   confirmNotes: "Additional notes",
   confirmNotesPlaceholder:
     "Please share anything that will help prepare for our meeting.",
+  confirmLocation: "Location",
+  confirmGuestEmail: "Guest email",
+  confirmGuestEmailPlaceholder: "guest@example.com",
+  confirmRemoveGuest: "Remove guest",
   confirmAddGuests: "Add guests",
   confirmBack: "Back",
   confirmSubmit: "Confirm",
+  confirmSubmitting: "Confirming…",
+  confirmError: "Could not create booking. Please try again.",
+  confirmSuccess: "Booking confirmed",
   confirmTermsPrefix: "By proceeding, you agree to Cal.com's",
   confirmTerms: "Terms",
   confirmPrivacyPolicy: "Privacy Policy",

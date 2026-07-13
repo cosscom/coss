@@ -39,6 +39,7 @@ export function Booker({
   timezone,
   labels,
   defaultFormValues,
+  onCreateBookingSuccess,
 }: BookerProps) {
   const t = getBookerLabels(labels);
   const booker = useBooker({ initialData, target, timezone });
@@ -55,7 +56,7 @@ export function Booker({
 
   const displayMeta = booker.meta;
   const selectedDate = booker.timePickerProps.selectedDate;
-  const selectedTime = booker.selectedTime;
+  const selectedTime = booker.confirmFormProps.selectedTime;
   const showSelectedSlot =
     booker.step === "confirm" && selectedDate != null && selectedTime != null;
   const headerImageAlt = displayMeta
@@ -209,6 +210,7 @@ export function Booker({
               className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @5xl:p-6 p-4"
             >
               <BookerConfirmForm
+                {...booker.confirmFormProps}
                 defaultEmail={
                   typeof defaultFormValues?.email === "string"
                     ? defaultFormValues.email
@@ -220,7 +222,7 @@ export function Booker({
                     : undefined
                 }
                 labels={t}
-                onBack={booker.onBack}
+                onSuccess={onCreateBookingSuccess}
               />
             </div>
           )}

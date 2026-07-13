@@ -125,18 +125,63 @@ export function getOrgSlugFromTarget(target: BookerTarget): string | undefined {
 export function getUserSlotParamsFromTarget(
   target: BookerTarget,
 ): { username: string; eventTypeSlug: string } | null {
+  const params = getCreateBookingParamsFromTarget(target);
+  if (!params.username || !params.eventTypeSlug) {
+    return null;
+  }
+
+  return { eventTypeSlug: params.eventTypeSlug, username: params.username };
+}
+
+export type CreateBookingTargetParams = {
+  eventTypeSlug?: string;
+  organizationSlug?: string;
+  teamSlug?: string;
+  username?: string;
+};
+
+export function getCreateBookingParamsFromTarget(
+  target: BookerTarget,
+  resolved?: { eventTypeSlug?: string | null },
+): CreateBookingTargetParams {
   if (target.type === "user") {
-    return { eventTypeSlug: target.eventSlug, username: target.username };
+    return {
+      eventTypeSlug: target.eventSlug,
+      organizationSlug: getOrgSlugFromTarget(target),
+      username: target.username,
+    };
+  }
+
+  if (target.type === "team") {
+    return {
+      eventTypeSlug: target.eventSlug,
+      organizationSlug: getOrgSlugFromTarget(target),
+    };
   }
 
   if (target.type === "link") {
     const parsed = parseBookingUrlTarget(target.bookingUrl, target.orgId);
     if (parsed.type === "user") {
-      return { eventTypeSlug: parsed.eventSlug, username: parsed.username };
+      return {
+        eventTypeSlug: parsed.eventSlug,
+        organizationSlug: parsed.orgSlug,
+        username: parsed.username,
+      };
+    }
+
+    if (parsed.type === "teamSlug") {
+      return {
+        eventTypeSlug: parsed.eventSlug,
+        organizationSlug: parsed.orgSlug,
+        teamSlug: parsed.teamSlug,
+      };
     }
   }
 
-  return null;
+  return {
+    eventTypeSlug: resolved?.eventTypeSlug ?? undefined,
+    organizationSlug: getOrgSlugFromTarget(target),
+  };
 }
 
 export function getPublicEventBannerParamsFromTarget(target: BookerTarget): {

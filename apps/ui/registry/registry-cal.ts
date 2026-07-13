@@ -31,6 +31,11 @@ const calApiFiles: Registry["items"][number]["files"] = [
     target: "lib/cal-api/types.ts",
     type: "registry:lib",
   },
+  {
+    path: "lib/cal-api/bookings.ts",
+    target: "lib/cal-api/bookings.ts",
+    type: "registry:lib",
+  },
 ];
 
 export const cal: Registry["items"] = [

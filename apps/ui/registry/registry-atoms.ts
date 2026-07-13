@@ -114,6 +114,7 @@ export const atoms: AtomItem[] = [
       "@coss/empty",
       "@coss/field",
       "@coss/form",
+      "@coss/group",
       "@coss/input",
       "@coss/label",
       "@coss/popover",

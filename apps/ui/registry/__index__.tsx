@@ -9839,7 +9839,7 @@ export const Index: Record<string, any> = {
     name: "booker-1",
     description: "A full scheduling flow powered by Cal.com API v2.",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/field","@coss/form","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/textarea","@coss/tooltip"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/field","@coss/form","@coss/group","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/textarea","@coss/tooltip"],
     files: [{
       path: "registry/default/atoms/booker-1.tsx",
       type: "registry:block",
@@ -9974,6 +9974,10 @@ export const Index: Record<string, any> = {
       path: "registry/default/lib/cal-api/types.ts",
       type: "registry:lib",
       target: "lib/cal-api/types.ts"
+    },{
+      path: "registry/default/lib/cal-api/bookings.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/bookings.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/lib/cal-api/client.ts")

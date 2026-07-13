@@ -19,6 +19,7 @@ export type BookerMeta = {
   eventTypeDurationOptions: number[] | null;
   eventTypeLocations: EventTypeLocationOption[];
   eventTypeImageUrl: string;
+  disableGuests: boolean;
   bookingWindowStart: Date | null;
   bookingWindowEnd: Date | null;
 };
@@ -30,6 +31,7 @@ export type EventTypeInfo = {
   eventTypeDurationOptions: number[] | null;
   eventTypeLocations: EventTypeLocationOption[];
   eventTypeImageUrl: string;
+  disableGuests?: boolean;
 };
 
 export function prettifyLocation(value: string): string {
@@ -423,6 +425,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
       eventTypeDurationOptions: null,
       eventTypeLocations: [{ label: "Unknown", provider: "" }],
       eventTypeImageUrl: "",
+      disableGuests: false,
     };
   }
 
@@ -460,6 +463,7 @@ export function extractEventTypeInfo(payload: unknown): EventTypeInfo {
         record.coverImage ??
         record.coverImageUrl,
     ),
+    disableGuests: record.disableGuests === true,
   };
 }
 
@@ -786,6 +790,52 @@ export function toCalendarDateKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function buildBookingStartIso(
+  dateKey: string,
+  selectedTime: string,
+  timeZone: string,
+): string {
+  const parsed = parseTimeLabel(selectedTime);
+  if (!parsed) {
+    throw new Error("Invalid time slot.");
+  }
+
+  const dateParts = dateKey.split("-");
+  const year = Number(dateParts[0]);
+  const month = Number(dateParts[1]);
+  const day = Number(dateParts[2]);
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+    throw new Error("Invalid booking date.");
+  }
+
+  const { hours, minutes } = parsed;
+  const utcGuess = Date.UTC(year, month - 1, day, hours, minutes, 0);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false,
+    minute: "2-digit",
+    month: "2-digit",
+    second: "2-digit",
+    timeZone,
+    year: "numeric",
+  });
+  const parts = formatter.formatToParts(new Date(utcGuess));
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour") % 24,
+    get("minute"),
+    get("second"),
+  );
+  const offset = asUtc - utcGuess;
+
+  return new Date(utcGuess - offset).toISOString();
 }
 
 export function getTodayInTimeZone(

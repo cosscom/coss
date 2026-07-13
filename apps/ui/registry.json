@@ -11429,6 +11429,7 @@
         "@coss/empty",
         "@coss/field",
         "@coss/form",
+        "@coss/group",
         "@coss/input",
         "@coss/label",
         "@coss/popover",
@@ -11737,6 +11738,11 @@
         {
           "path": "registry/default/lib/cal-api/types.ts",
           "target": "lib/cal-api/types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/bookings.ts",
+          "target": "lib/cal-api/bookings.ts",
           "type": "registry:lib"
         }
       ],

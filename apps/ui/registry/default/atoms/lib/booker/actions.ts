@@ -1,13 +1,17 @@
 "use server";
 
+import { toBookingLocation } from "@/lib/booker/booking-location";
 import {
   type BookerTarget,
+  getCreateBookingParamsFromTarget,
   getDynamicContext,
   getOrgSlugFromTarget,
   getPublicEventBannerParamsFromTarget,
   getUserSlotParamsFromTarget,
   parseBookingUrlTarget,
 } from "@/lib/booker/target";
+import { buildBookingStartIso } from "@/lib/booker/utils";
+import { createBooking } from "@/lib/cal-api/bookings";
 import { CalApiError } from "@/lib/cal-api/client";
 import {
   getDynamicEventType,
@@ -18,7 +22,7 @@ import {
 } from "@/lib/cal-api/event-types";
 import { getPublicEventInfo } from "@/lib/cal-api/public-event";
 import { getAvailableSlots } from "@/lib/cal-api/slots";
-import type { EventType } from "@/lib/cal-api/types";
+import type { Booking, EventType } from "@/lib/cal-api/types";
 
 export type FetchRawBookerInput = {
   monthIso: string;
@@ -355,6 +359,264 @@ export async function fetchRawBookerDataAction(
     return {
       error:
         error instanceof Error ? error.message : "Could not load booker data.",
+      ok: false,
+    };
+  }
+}
+
+export type CreateBookingActionInput = {
+  email: string;
+  guests?: string[];
+  lengthInMinutes?: number;
+  locale?: string;
+  locationProvider?: string;
+  name: string;
+  notes?: string;
+  selectedDateKey: string;
+  selectedTime: string;
+  target: BookerTarget;
+  timeZone: string;
+};
+
+export type CreateBookingActionResult =
+  | { ok: true; booking: Booking }
+  | { ok: false; error: string; errorCode?: string };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateCreateBookingInput(
+  input: CreateBookingActionInput,
+): CreateBookingActionResult | null {
+  const name = input.name.trim();
+  if (!name) {
+    return {
+      error: "Name is required.",
+      errorCode: "INVALID_NAME",
+      ok: false,
+    };
+  }
+
+  const email = input.email.trim();
+  if (!email || !EMAIL_PATTERN.test(email)) {
+    return {
+      error: "A valid email address is required.",
+      errorCode: "INVALID_EMAIL",
+      ok: false,
+    };
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.selectedDateKey)) {
+    return {
+      error: "Invalid booking date.",
+      errorCode: "INVALID_DATE",
+      ok: false,
+    };
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(input.selectedTime)) {
+    return {
+      error: "Invalid booking time.",
+      errorCode: "INVALID_TIME",
+      ok: false,
+    };
+  }
+
+  if (!input.timeZone.trim()) {
+    return {
+      error: "Timezone is required.",
+      errorCode: "INVALID_TIMEZONE",
+      ok: false,
+    };
+  }
+
+  if (input.guests?.some((guest) => !EMAIL_PATTERN.test(guest.trim()))) {
+    return {
+      error: "All guest emails must be valid.",
+      errorCode: "INVALID_GUEST_EMAIL",
+      ok: false,
+    };
+  }
+
+  return null;
+}
+
+function getEventTypeDurationOptions(eventType: EventType): number[] | null {
+  const options = (
+    eventType as EventType & { lengthInMinutesOptions?: number[] }
+  ).lengthInMinutesOptions;
+  if (!Array.isArray(options)) {
+    return null;
+  }
+
+  const parsed = options.filter(
+    (value): value is number => typeof value === "number" && value > 0,
+  );
+  return parsed.length > 1 ? parsed : null;
+}
+
+function resolveBookingLengthInMinutes(
+  eventType: EventType,
+  lengthInMinutes: number | undefined,
+): CreateBookingActionResult | { lengthInMinutes?: number } {
+  const durationOptions = getEventTypeDurationOptions(eventType);
+  if (!durationOptions) {
+    return {};
+  }
+
+  if (lengthInMinutes == null) {
+    return {
+      error: "Duration is required for this event type.",
+      errorCode: "INVALID_DURATION",
+      ok: false,
+    };
+  }
+
+  if (!durationOptions.includes(lengthInMinutes)) {
+    return {
+      error: "The selected duration is not allowed for this event type.",
+      errorCode: "INVALID_DURATION",
+      ok: false,
+    };
+  }
+
+  return { lengthInMinutes };
+}
+
+async function resolveBookableEventType(
+  target: BookerTarget,
+): Promise<CreateBookingActionResult | { eventType: EventType }> {
+  const eventType = await resolveEventType(target);
+
+  if (!eventType) {
+    return {
+      error: "No event type found for the provided target.",
+      errorCode: "NOT_FOUND",
+      ok: false,
+    };
+  }
+
+  if (eventType.hidden) {
+    return {
+      error:
+        "This event type is not currently published and is not accepting bookings.",
+      errorCode: "UNPUBLISHED",
+      ok: false,
+    };
+  }
+
+  return { eventType };
+}
+
+export async function createBookingAction(
+  input: CreateBookingActionInput,
+): Promise<CreateBookingActionResult> {
+  try {
+    const validationError = validateCreateBookingInput(input);
+    if (validationError) {
+      return validationError;
+    }
+
+    const resolvedEvent = await resolveBookableEventType(input.target);
+    if (!("eventType" in resolvedEvent)) {
+      return resolvedEvent;
+    }
+
+    const { eventType } = resolvedEvent;
+
+    if (eventType.disableGuests && input.guests?.length) {
+      return {
+        error: "Guests are not allowed for this event type.",
+        errorCode: "GUESTS_DISABLED",
+        ok: false,
+      };
+    }
+
+    const lengthResult = resolveBookingLengthInMinutes(
+      eventType,
+      input.lengthInMinutes,
+    );
+    if ("ok" in lengthResult) {
+      return lengthResult;
+    }
+
+    const start = buildBookingStartIso(
+      input.selectedDateKey,
+      input.selectedTime,
+      input.timeZone,
+    );
+    const bookingFieldsResponses: Record<string, unknown> = {};
+
+    if (input.notes?.trim()) {
+      bookingFieldsResponses.notes = input.notes.trim();
+    }
+
+    if (input.locationProvider?.trim()) {
+      bookingFieldsResponses.location = input.locationProvider.trim();
+    }
+
+    const targetParams = getCreateBookingParamsFromTarget(input.target, {
+      eventTypeSlug: eventType.slug,
+    });
+
+    const body: Parameters<typeof createBooking>[0] = {
+      attendee: {
+        email: input.email.trim(),
+        name: input.name.trim(),
+        timeZone: input.timeZone,
+        ...(input.locale ? { language: input.locale.split("-")[0] } : {}),
+      },
+      start,
+      ...(input.guests?.length ? { guests: input.guests } : {}),
+      ...(Object.keys(bookingFieldsResponses).length
+        ? { bookingFieldsResponses }
+        : {}),
+      ...("lengthInMinutes" in lengthResult && lengthResult.lengthInMinutes
+        ? { lengthInMinutes: lengthResult.lengthInMinutes }
+        : {}),
+    };
+
+    if (eventType.id > 0) {
+      body.eventTypeId = eventType.id;
+    } else if (
+      eventType.slug &&
+      (targetParams.username || targetParams.teamSlug)
+    ) {
+      body.eventTypeSlug = eventType.slug;
+      if (targetParams.username) {
+        body.username = targetParams.username;
+      }
+      if (targetParams.teamSlug) {
+        body.teamSlug = targetParams.teamSlug;
+      }
+      if (targetParams.organizationSlug) {
+        body.organizationSlug = targetParams.organizationSlug;
+      }
+    } else {
+      return {
+        error: "Missing event type for booking.",
+        errorCode: "MISSING_EVENT_TYPE",
+        ok: false,
+      };
+    }
+
+    if (input.locationProvider?.trim()) {
+      body.location = toBookingLocation(input.locationProvider.trim());
+    }
+
+    const booking = await createBooking(body);
+    return { ok: true, booking };
+  } catch (error) {
+    if (error instanceof CalApiError) {
+      return {
+        error: error.message,
+        errorCode: error.code,
+        ok: false,
+      };
+    }
+
+    return {
+      error:
+        error instanceof Error ? error.message : "Could not create booking.",
       ok: false,
     };
   }
