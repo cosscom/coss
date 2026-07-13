@@ -46,7 +46,6 @@
         "@coss/separator",
         "@coss/sheet",
         "@coss/sidebar",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/slider",
         "@coss/spinner",
@@ -727,19 +726,6 @@
         "@coss/use-media-query",
         "@coss/utils"
       ],
-      "type": "registry:ui"
-    },
-    {
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "files": [
-        {
-          "path": "registry/default/ui/size-transition.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "name": "size-transition",
       "type": "registry:ui"
     },
     {
@@ -11343,7 +11329,8 @@
       "dependencies": [
         "isomorphic-dompurify",
         "marked",
-        "lucide-react"
+        "lucide-react",
+        "motion"
       ],
       "description": "A full scheduling flow powered by Cal.com API v2.",
       "files": [
@@ -11351,6 +11338,16 @@
           "path": "registry/default/atoms/booker-1.tsx",
           "target": "components/atoms/booker-1.tsx",
           "type": "registry:block"
+        },
+        {
+          "path": "registry/default/atoms/booker/booker-confirm-form.tsx",
+          "target": "components/atoms/booker/booker-confirm-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/default/atoms/booker/booker-steps.tsx",
+          "target": "components/atoms/booker/booker-steps.tsx",
+          "type": "registry:component"
         },
         {
           "path": "registry/default/atoms/booker/booker-calendar.tsx",
@@ -11430,14 +11427,17 @@
         "@coss/card",
         "@coss/combobox",
         "@coss/empty",
+        "@coss/field",
+        "@coss/form",
+        "@coss/group",
         "@coss/input",
         "@coss/label",
         "@coss/popover",
         "@coss/scroll-area",
         "@coss/select",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/switch",
+        "@coss/textarea",
         "@coss/tooltip"
       ],
       "meta": {
@@ -11738,6 +11738,11 @@
         {
           "path": "registry/default/lib/cal-api/types.ts",
           "target": "lib/cal-api/types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/bookings.ts",
+          "target": "lib/cal-api/bookings.ts",
           "type": "registry:lib"
         }
       ],

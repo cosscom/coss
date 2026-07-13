@@ -5,6 +5,13 @@ import type { EventType } from "./types";
 
 const EVENT_TYPES_API_VERSION = "2024-06-14";
 
+function findEventTypeBySlug(
+  matches: EventType[],
+  eventSlug: string,
+): EventType | null {
+  return matches.find((event) => event.slug === eventSlug) ?? null;
+}
+
 export async function listEventTypes(params: {
   username?: string;
   usernames?: string[];
@@ -45,7 +52,7 @@ export async function getEventType(params: {
   orgSlug?: string;
 }): Promise<EventType | null> {
   const matches = await listEventTypes(params);
-  return matches[0] ?? null;
+  return findEventTypeBySlug(matches, params.eventSlug);
 }
 
 export async function getTeamEventType(params: {
@@ -59,7 +66,7 @@ export async function getTeamEventType(params: {
     orgId: params.orgId,
     teamId: params.teamId,
   });
-  return matches[0] ?? null;
+  return findEventTypeBySlug(matches, params.eventSlug);
 }
 
 export async function getTeamSlugEventType(params: {
@@ -75,7 +82,7 @@ export async function getTeamSlugEventType(params: {
     orgSlug: params.orgSlug,
     teamSlug: params.teamSlug,
   });
-  return matches[0] ?? null;
+  return findEventTypeBySlug(matches, params.eventSlug);
 }
 
 export async function getDynamicEventType(params: {
@@ -84,13 +91,14 @@ export async function getDynamicEventType(params: {
   orgSlug?: string;
   eventSlug?: string;
 }): Promise<EventType | null> {
+  const eventSlug = params.eventSlug ?? "dynamic";
   const matches = await listEventTypes({
-    eventSlug: params.eventSlug ?? "dynamic",
+    eventSlug,
     orgId: params.orgId,
     orgSlug: params.orgSlug,
     usernames: params.usernames,
   });
-  return matches[0] ?? null;
+  return findEventTypeBySlug(matches, eventSlug);
 }
 
 export async function getEventTypeById(

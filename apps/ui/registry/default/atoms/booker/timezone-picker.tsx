@@ -26,6 +26,22 @@ type TimezonePickerProps = {
   onValueChange: (value: string) => void;
 };
 
+function formatTimezoneLabel(timezone: string): string {
+  return timezone.replace(/_/g, " ");
+}
+
+export function TimezoneDisplay({ value }: { value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <GlobeIcon
+        className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
+        aria-hidden="true"
+      />
+      <span>{formatTimezoneLabel(value)}</span>
+    </div>
+  );
+}
+
 export function TimezonePicker({ value, onValueChange }: TimezonePickerProps) {
   const timezoneOptions = useMemo<TimezoneOption[]>(() => {
     const rawTimezones =
@@ -58,7 +74,7 @@ export function TimezonePicker({ value, onValueChange }: TimezonePickerProps) {
         const totalMinutes = sign * (hours * 60 + minutes);
 
         return {
-          label: timezone.replace(/_/g, " "),
+          label: formatTimezoneLabel(timezone),
           numericOffset: totalMinutes,
           offset: modifiedOffset,
           value: timezone,

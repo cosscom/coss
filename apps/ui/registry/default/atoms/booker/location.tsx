@@ -2,12 +2,20 @@
 
 import { ExternalLinkIcon, MapPinIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Field, FieldLabel } from "@/registry/default/ui/field";
 import {
   Popover,
   PopoverDescription,
   PopoverPopup,
   PopoverTrigger,
 } from "@/registry/default/ui/popover";
+import {
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+} from "@/registry/default/ui/select";
 import type { EventTypeLocationOption } from "@/lib/booker/utils";
 
 type LocationLabels = {
@@ -76,7 +84,7 @@ function resolveProviderIcons(provider?: string): string[] {
     .map(normalizeIconUrl);
 }
 
-function LocationIcon({ provider }: { provider?: string }) {
+export function LocationIcon({ provider }: { provider?: string }) {
   const iconUrls = useMemo(() => resolveProviderIcons(provider), [provider]);
   const [failedIconUrls, setFailedIconUrls] = useState<Set<string>>(
     () => new Set(),
@@ -113,12 +121,86 @@ function LocationIcon({ provider }: { provider?: string }) {
   );
 }
 
-function LocationRow({ label, provider }: EventTypeLocationOption) {
+export function LocationRow({ label, provider }: EventTypeLocationOption) {
   return (
     <div className="flex items-center gap-2">
       <LocationIcon provider={provider} />
       <span>{label}</span>
     </div>
+  );
+}
+
+export function getLocationOptionValue(
+  location: EventTypeLocationOption,
+  index: number,
+): string {
+  return location.provider || `${location.label}-${index}`;
+}
+
+type LocationSelectItem = EventTypeLocationOption & {
+  value: string;
+};
+
+type LocationPickerProps = {
+  locations: EventTypeLocationOption[];
+  label: string;
+  onValueChange?: (provider: string) => void;
+};
+
+function LocationSelectOption({ label, provider }: LocationSelectItem) {
+  return (
+    <span className="flex items-center gap-2">
+      <LocationIcon provider={provider} />
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+
+export function LocationPicker({
+  locations,
+  label,
+  onValueChange,
+}: LocationPickerProps) {
+  const items = useMemo(
+    (): LocationSelectItem[] =>
+      locations.map((location, index) => ({
+        ...location,
+        value: getLocationOptionValue(location, index),
+      })),
+    [locations],
+  );
+
+  if (items.length <= 1) {
+    return null;
+  }
+
+  return (
+    <Field name="location">
+      <FieldLabel>{label}</FieldLabel>
+      <Select
+        aria-label={label}
+        defaultValue={items[0]}
+        itemToStringValue={(item) => item.value}
+        onValueChange={(item) => {
+          if (item) {
+            onValueChange?.(item.provider || item.value);
+          }
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue>
+            {(item) => <LocationSelectOption {...item} />}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectPopup>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item}>
+              <LocationSelectOption {...item} />
+            </SelectItem>
+          ))}
+        </SelectPopup>
+      </Select>
+    </Field>
   );
 }
 
@@ -136,7 +218,7 @@ export function Location({ locations, labels }: LocationProps) {
         openOnHover
         delay={0}
       >
-        <MapPinIcon className="size-4.5 shrink-0 opacity-80 sm:size-4" />
+        <MapPinIcon className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4" />
         <span>{labels.locationOptions(locations.length)}</span>
       </PopoverTrigger>
       <PopoverPopup align="start" side="top" className="*:p-3">

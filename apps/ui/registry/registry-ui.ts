@@ -46,7 +46,6 @@ export const ui: Registry["items"] = [
       "@coss/separator",
       "@coss/sheet",
       "@coss/sidebar",
-      "@coss/size-transition",
       "@coss/skeleton",
       "@coss/slider",
       "@coss/spinner",
@@ -626,17 +625,6 @@ export const ui: Registry["items"] = [
       "@coss/use-media-query",
       "@coss/utils",
     ],
-    type: "registry:ui",
-  },
-  {
-    dependencies: ["@base-ui/react"],
-    files: [
-      {
-        path: "ui/size-transition.tsx",
-        type: "registry:ui",
-      },
-    ],
-    name: "size-transition",
     type: "registry:ui",
   },
   {

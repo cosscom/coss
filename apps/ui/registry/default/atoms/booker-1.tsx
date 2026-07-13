@@ -1,26 +1,28 @@
 "use client";
 
-import { ArrowLeftIcon, Clock3Icon } from "lucide-react";
-import { Button } from "@/registry/default/ui/button";
+import { CalendarIcon, Clock3Icon } from "lucide-react";
+import { cn } from "@/registry/default/lib/utils";
 import { Card } from "@/registry/default/ui/card";
-import { Input } from "@/registry/default/ui/input";
-import {
-  SizeTransition,
-  SizeTransitionPanel,
-} from "@/registry/default/ui/size-transition";
 import { Skeleton } from "@/registry/default/ui/skeleton";
 import { BookerAvatars } from "./booker/booker-avatars";
 import { BookerCalendar } from "./booker/booker-calendar";
+import { BookerConfirmForm } from "./booker/booker-confirm-form";
 import { BookerErrorState } from "./booker/booker-error-state";
 import { type BookerLabels, getBookerLabels } from "./booker/booker-labels";
+import { BookerSteps } from "./booker/booker-steps";
 import { DurationPicker } from "./booker/duration-picker";
 import { EventDescription } from "./booker/event-description";
 import { HeaderBanner } from "./booker/header-banner";
 import { Location } from "./booker/location";
 import { TimePicker } from "./booker/time-picker";
-import { TimezonePicker } from "./booker/timezone-picker";
+import { TimezoneDisplay, TimezonePicker } from "./booker/timezone-picker";
 import type { BookerTarget } from "@/lib/booker/target";
 import { type BookerInitialData, useBooker } from "@/lib/booker/use-booker";
+import {
+  formatConfirmDateDetail,
+  formatConfirmTimeRange,
+  formatSelectedWeekday,
+} from "@/lib/booker/utils";
 
 type BookerProps = {
   target: BookerTarget;
@@ -31,7 +33,14 @@ type BookerProps = {
   labels?: Partial<BookerLabels>;
 };
 
-export function Booker({ initialData, target, timezone, labels }: BookerProps) {
+export function Booker({
+  initialData,
+  target,
+  timezone,
+  labels,
+  defaultFormValues,
+  onCreateBookingSuccess,
+}: BookerProps) {
   const t = getBookerLabels(labels);
   const booker = useBooker({ initialData, target, timezone });
 
@@ -46,19 +55,17 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
   }
 
   const displayMeta = booker.meta;
+  const selectedDate = booker.timePickerProps.selectedDate;
+  const selectedTime = booker.confirmFormProps.selectedTime;
+  const showSelectedSlot =
+    booker.step === "confirm" && selectedDate != null && selectedTime != null;
   const headerImageAlt = displayMeta
     ? t.headerImageAlt(displayMeta.hostName, displayMeta.eventTypeTitle)
     : "Booker header";
-  const metaContentClassName = [
-    displayMeta?.eventTypeImageUrl ? "relative -mt-11 @5xl:-mt-13" : "",
-    "flex flex-col gap-6 @5xl:p-6 p-4",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
     <div
-      className="@container flex flex-col items-center gap-4"
+      className="@container flex w-full flex-col items-center gap-4"
       aria-busy={booker.loadingState.busy}
     >
       <Card className="@max-3xl:w-full @3xl:flex-row @5xl:[--booker-side:--spacing(70)] [--booker-side:--spacing(56)]">
@@ -68,7 +75,12 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             alt={headerImageAlt}
             src={displayMeta?.eventTypeImageUrl}
           />
-          <div className={metaContentClassName}>
+          <div
+            className={cn(
+              "flex flex-col gap-6 @5xl:p-6 p-4",
+              displayMeta?.eventTypeImageUrl && "relative -mt-11 @5xl:-mt-13",
+            )}
+          >
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <BookerAvatars
@@ -105,6 +117,30 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
 
             {displayMeta ? (
               <div className="flex flex-col gap-3 sm:text-sm">
+                {showSelectedSlot ? (
+                  <div className="flex gap-2">
+                    <CalendarIcon
+                      className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {formatSelectedWeekday(
+                        selectedDate,
+                        booker.calendarProps.locale,
+                      )}{" "}
+                      {formatConfirmDateDetail(
+                        selectedDate,
+                        booker.calendarProps.locale,
+                      )}{" "}
+                      {formatConfirmTimeRange(
+                        selectedTime,
+                        booker.durationProps.value,
+                        !booker.timePickerProps.is24Hour,
+                        booker.calendarProps.locale,
+                      )}
+                    </span>
+                  </div>
+                ) : null}
                 {displayMeta.eventTypeDurationOptions ? (
                   <DurationPicker
                     formatLabel={t.durationMinutes}
@@ -114,7 +150,7 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                 ) : (
                   <div className="flex items-center gap-2">
                     <Clock3Icon
-                      className="size-4.5 shrink-0 opacity-80 sm:size-4"
+                      className="h-lh w-4.5 shrink-0 opacity-80 sm:w-4"
                       aria-hidden="true"
                     />
                     <span>
@@ -133,7 +169,11 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                   }}
                   locations={displayMeta.eventTypeLocations}
                 />
-                <TimezonePicker {...booker.timezoneProps} />
+                {booker.step === "select" ? (
+                  <TimezonePicker {...booker.timezoneProps} />
+                ) : (
+                  <TimezoneDisplay value={booker.timezoneProps.value} />
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-1">
@@ -144,21 +184,12 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
             )}
           </div>
         </div>
-        <SizeTransition
-          transitionKey={booker.step}
-          render={
-            <div className="h-(--size-height,auto) @3xl:w-(--size-width,auto) w-full transition-[width,height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)] data-transitioning:overflow-clip **:data-current:data-starting-style:opacity-0 **:data-previous:data-ending-style:opacity-0 **:data-current:transition-opacity **:data-previous:transition-opacity" />
-          }
-        >
+        <BookerSteps step={booker.step}>
           {booker.step === "select" ? (
-            <SizeTransitionPanel
-              render={<div className="flex w-full @3xl:flex-row flex-col" />}
-            >
-              {/* Calendar */}
+            <div key="select" className="flex w-full @3xl:flex-row flex-col">
               <div className="flex @3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 flex-col items-center @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4">
                 <BookerCalendar {...booker.calendarProps} />
               </div>
-              {/* Time picker */}
               <TimePicker
                 labels={{
                   hour12Short: t.hour12Short,
@@ -172,21 +203,30 @@ export function Booker({ initialData, target, timezone, labels }: BookerProps) {
                 }}
                 {...booker.timePickerProps}
               />
-            </SizeTransitionPanel>
+            </div>
           ) : (
-            <SizeTransitionPanel
-              render={
-                <div className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:@max-5xl:px-2 px-4 @3xl:@max-5xl:py-2 pt-3 pb-4" />
-              }
+            <div
+              key="confirm"
+              className="@3xl:w-[min(28.75rem,100cqw-2*var(--booker-side))] w-full @3xl:shrink-0 @5xl:p-6 p-4"
             >
-              <Button variant="ghost" size="sm" onClick={booker.onBack}>
-                <ArrowLeftIcon aria-hidden="true" />
-                Back
-              </Button>
-              <Input className="w-full" placeholder="Your name" />
-            </SizeTransitionPanel>
+              <BookerConfirmForm
+                {...booker.confirmFormProps}
+                defaultEmail={
+                  typeof defaultFormValues?.email === "string"
+                    ? defaultFormValues.email
+                    : undefined
+                }
+                defaultName={
+                  typeof defaultFormValues?.name === "string"
+                    ? defaultFormValues.name
+                    : undefined
+                }
+                labels={t}
+                onSuccess={onCreateBookingSuccess}
+              />
+            </div>
           )}
-        </SizeTransition>
+        </BookerSteps>
       </Card>
       <a
         href="https://cal.com"
