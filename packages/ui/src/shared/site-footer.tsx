@@ -10,7 +10,10 @@ export function SiteFooter() {
       <div className="container flex w-full items-center justify-center gap-2 px-4 sm:px-6">
         <p>
           © {new Date().getFullYear()}{" "}
-          <Link className="font-heading text-foreground text-lg" href="/">
+          <Link
+            className="font-bold font-heading text-foreground [font-variation-settings:'GEOM'_50,'opsz'_32]"
+            href="/"
+          >
             coss.com
           </Link>{" "}
           – open source, open heart, open mind.

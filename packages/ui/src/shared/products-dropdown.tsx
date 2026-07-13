@@ -67,7 +67,7 @@ export function ProductsDropdown({ items }: ProductsDropdownProps) {
               // biome-ignore lint/a11y/useAnchorContent: This is intentional
               render={isExternal ? <a href={href} /> : <Link href={href} />}
             >
-              <span className="font-heading in-data-highlighted:text-foreground text-muted-foreground">
+              <span className="font-bold font-heading in-data-highlighted:text-foreground text-muted-foreground">
                 {item.label}
               </span>
               {item.upcoming && (
