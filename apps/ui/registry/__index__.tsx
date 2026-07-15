@@ -7243,6 +7243,24 @@ export const Index: Record<string, any> = {
     categories: ["avatar","button","popover"],
     meta: undefined,
   },
+  "p-popover-4": {
+    name: "p-popover-4",
+    description: "Split button with popover to confirm multiple occurrences",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/group","@coss/label","@coss/popover"],
+    files: [{
+      path: "registry/default/particles/p-popover-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-popover-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","checkbox","checkbox group","group","popover"],
+    meta: undefined,
+  },
   "p-preview-card-1": {
     name: "p-preview-card-1",
     description: "Preview card with popup",

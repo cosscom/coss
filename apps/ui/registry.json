@@ -8398,6 +8398,36 @@
     },
     {
       "categories": [
+        "button",
+        "checkbox",
+        "checkbox group",
+        "group",
+        "popover"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Split button with popover to confirm multiple occurrences",
+      "files": [
+        {
+          "path": "registry/default/particles/p-popover-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-popover-4",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/button",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/group",
+        "@coss/label",
+        "@coss/popover"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "preview card"
       ],
       "dependencies": [
