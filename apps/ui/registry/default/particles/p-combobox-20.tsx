@@ -85,6 +85,7 @@ const teamMembers: TeamMember[] = [
 ];
 
 export default function Particle() {
+  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TeamMember[]>(
     teamMembers.slice(0, 2),
   );
@@ -92,9 +93,15 @@ export default function Particle() {
   return (
     <div className="flex w-full flex-col gap-2">
       <Combobox
+        autoHighlight
         items={teamMembers}
         multiple
-        onValueChange={setSelected}
+        onOpenChange={setOpen}
+        onValueChange={(value) => {
+          setSelected(value);
+          setOpen(false);
+        }}
+        open={open}
         value={selected}
       >
         <ComboboxInput
@@ -114,10 +121,10 @@ export default function Particle() {
         </ComboboxPopup>
       </Combobox>
       {selected.length > 0 && (
-        <ul className="flex flex-col gap-2">
+        <ul className="divide-y rounded-lg border">
           {selected.map((member) => (
             <li
-              className="flex items-center gap-2 rounded-lg border border-input p-1 ps-2 text-base sm:text-sm"
+              className="flex items-center gap-2 p-1 ps-2 text-base sm:text-sm"
               key={member.value}
             >
               <Avatar className="size-5">
@@ -127,10 +134,10 @@ export default function Particle() {
                 </AvatarFallback>
               </Avatar>
               <span className="truncate font-medium">{member.label}</span>
-              <Badge className="ms-auto" variant="outline">
+              <Badge className="ms-auto" size="sm" variant="outline">
                 {member.priority}
               </Badge>
-              <span className="text-muted-foreground tabular-nums">
+              <span className="text-muted-foreground text-xs tabular-nums">
                 {member.weight}%
               </span>
               <Button

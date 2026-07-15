@@ -2042,6 +2042,24 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("combobox", "input"),
+    dependencies: ["lucide-react"],
+    description: "Combobox multiple with stacked divided chips",
+    files: [{ path: "particles/p-combobox-20.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80",
+    },
+    name: "p-combobox-20",
+    registryDependencies: [
+      "@coss/avatar",
+      "@coss/badge",
+      "@coss/button",
+      "@coss/combobox",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("command", "dialog"),
     dependencies: ["lucide-react"],
     description: "Command palette with dialog",

@@ -4291,6 +4291,24 @@ export const Index: Record<string, any> = {
     categories: ["combobox","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
   },
+  "p-combobox-20": {
+    name: "p-combobox-20",
+    description: "Combobox multiple with stacked divided chips",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/badge","@coss/button","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
   "p-command-1": {
     name: "p-command-1",
     description: "Command palette with dialog",
