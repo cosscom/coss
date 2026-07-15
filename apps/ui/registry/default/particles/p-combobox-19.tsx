@@ -85,6 +85,7 @@ const teamMembers: TeamMember[] = [
 ];
 
 export default function Particle() {
+  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<TeamMember[]>(
     teamMembers.slice(0, 2),
   );
@@ -92,9 +93,15 @@ export default function Particle() {
   return (
     <div className="flex w-full flex-col gap-2">
       <Combobox
+        autoHighlight
         items={teamMembers}
         multiple
-        onValueChange={setSelected}
+        onOpenChange={setOpen}
+        onValueChange={(value) => {
+          setSelected(value);
+          setOpen(false);
+        }}
+        open={open}
         value={selected}
       >
         <ComboboxInput
