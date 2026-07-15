@@ -127,10 +127,10 @@ export default function Particle() {
                 </AvatarFallback>
               </Avatar>
               <span className="truncate font-medium">{member.label}</span>
-              <Badge className="ms-auto" variant="outline">
+              <Badge className="ms-auto" variant="outline" size="sm">
                 {member.priority}
               </Badge>
-              <span className="text-muted-foreground tabular-nums">
+              <span className="text-muted-foreground tabular-nums text-xs">
                 {member.weight}%
               </span>
               <Button
