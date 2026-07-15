@@ -787,6 +787,9 @@
       "type": "registry:ui"
     },
     {
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/table.tsx",
@@ -4794,6 +4797,33 @@
       "registryDependencies": [
         "@coss/combobox",
         "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox multiple with stacked chips",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
+      },
+      "name": "p-combobox-19",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/badge",
+        "@coss/button",
+        "@coss/combobox"
       ],
       "type": "registry:block"
     },

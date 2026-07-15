@@ -682,6 +682,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/table.tsx",
