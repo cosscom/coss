@@ -1304,6 +1304,19 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("calendar", "autocomplete", "field", "time"),
+    dependencies: ["date-fns", "lucide-react"],
+    description: "Calendar with 24-hour autocomplete time input",
+    files: [{ path: "particles/p-calendar-25.tsx", type: "registry:block" }],
+    name: "p-calendar-25",
+    registryDependencies: [
+      "@coss/calendar",
+      "@coss/autocomplete",
+      "@coss/field",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("date picker", "calendar", "popover", "button"),
     dependencies: ["date-fns", "lucide-react"],
     description: "Basic date picker",

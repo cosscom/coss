@@ -3391,6 +3391,24 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: {"colSpan":2},
   },
+  "p-calendar-25": {
+    name: "p-calendar-25",
+    description: "Calendar with 24-hour autocomplete time input",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/autocomplete","@coss/field"],
+    files: [{
+      path: "registry/default/particles/p-calendar-25.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-25.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar","autocomplete","field","time"],
+    meta: undefined,
+  },
   "p-date-picker-1": {
     name: "p-date-picker-1",
     description: "Basic date picker",
