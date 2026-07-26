@@ -7,10 +7,10 @@ import {
   PopoverPopup,
   PopoverTrigger,
 } from "@coss/ui/components/popover";
+import type { DateRange } from "@daypicker/react";
 import { ChevronsUpDownIcon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import type { DateRange } from "react-day-picker";
 import { FilterChipShell } from "./filter-chip-shell";
 import type { ActiveFilter, FilterField } from "./filter-chip-types";
 

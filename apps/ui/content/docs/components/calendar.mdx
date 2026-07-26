@@ -31,7 +31,7 @@ npx shadcn@latest add @coss/calendar
 <Step>Install the following dependencies:</Step>
 
 ```bash
-npm install react-day-picker
+npm install @daypicker/react
 ```
 
 <Step>Copy and paste the following code into your project.</Step>
@@ -58,7 +58,7 @@ import { Calendar } from "@/components/ui/calendar"
 
 ## API Reference
 
-This component wraps [react-day-picker](https://daypicker.dev/) with custom styling.
+This component wraps [@daypicker/react](https://daypicker.dev/) with custom styling.
 
 ### Calendar
 
@@ -77,7 +77,7 @@ A calendar component for date selection.
 | `classNames`      | `object`                                            | -          | Custom class names for calendar parts            |
 | `components`      | `object`                                            | -          | Custom components to override defaults           |
 
-For the full list of props, see the [react-day-picker documentation](https://daypicker.dev/).
+For the full list of props, see the [@daypicker/react documentation](https://daypicker.dev/).
 
 ### Customizing Cell Size
 
@@ -126,3 +126,7 @@ Calendar with a custom Select component for month and year navigation:
 Calendar with a searchable Combobox for month and year navigation:
 
 <ComponentPreview name="p-calendar-6" />
+
+## Changelog
+
+- [July 26, 2026](/ui/docs/changelog#react-daypicker-10) — Upgraded to **React DayPicker 10** and migrated from **`react-day-picker`** to **`@daypicker/react`**. Applications with custom calendar wrappers should follow the linked migration guide.

@@ -199,7 +199,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["react-day-picker", "lucide-react"],
+    dependencies: ["@daypicker/react", "lucide-react"],
     files: [
       {
         path: "ui/calendar.tsx",
