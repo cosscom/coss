@@ -1,12 +1,12 @@
 "use client";
 
+import { DayPicker } from "@daypicker/react";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsUpDownIcon,
 } from "lucide-react";
 import type * as React from "react";
-import { DayPicker } from "react-day-picker";
 import { cn } from "@/registry/default/lib/utils";
 
 const buttonClassNames =
@@ -28,7 +28,7 @@ export function Calendar({
     day: "size-(--cell-size) text-sm py-px",
     day_button: cn(
       buttonClassNames,
-      "in-data-disabled:pointer-events-none in-[.range-middle]:rounded-none in-[.range-end:not(.range-start)]:rounded-s-none in-[.range-start:not(.range-end)]:rounded-e-none in-[.range-middle]:in-data-selected:bg-accent in-data-selected:bg-primary in-[.range-middle]:in-data-selected:text-foreground in-data-disabled:text-muted-foreground/72 in-data-outside:text-muted-foreground/72 in-data-selected:in-data-outside:text-primary-foreground in-data-selected:text-primary-foreground in-data-disabled:line-through outline-none in-[[data-selected]:not(.range-middle)]:transition-[color,background-color,border-radius,box-shadow] focus-visible:z-1 focus-visible:ring-[3px] focus-visible:ring-ring/50",
+      "in-data-disabled:pointer-events-none in-[.range-middle]:rounded-none in-[.range-end:not(.range-start)]:rounded-s-none in-[.range-start:not(.range-end)]:rounded-e-none in-[.range-middle]:in-data-selected:bg-accent in-data-selected:bg-primary in-[.range-middle]:in-data-selected:text-foreground in-data-disabled:text-muted-foreground/72 in-data-outside:text-muted-foreground/72 in-data-selected:in-data-outside:text-primary-foreground in-data-selected:text-primary-foreground in-data-disabled:line-through outline-none in-[[data-selected]:not(.range-middle)]:transition-[border-radius,box-shadow] focus-visible:z-1 focus-visible:ring-[3px] focus-visible:ring-ring/50",
     ),
     dropdown: "absolute bg-popover inset-0 opacity-0",
     dropdown_root:

@@ -3,6 +3,27 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## July 26, 2026
+
+### React DayPicker 10.0.1
+
+coss ui now targets **`@daypicker/react@10.0.1`**. The legacy **`react-day-picker`** package name remains available for compatibility, but DayPicker recommends the scoped package for v10 and newer.
+
+If you import DayPicker APIs directly, update the dependency and imports:
+
+```diff
+- import { DayPicker, type DateRange } from "react-day-picker"
++ import { DayPicker, type DateRange } from "@daypicker/react"
+```
+
+DayPicker v10 removes APIs deprecated in v9, including legacy navigation props, aliases, component slots, and `classNames` / `styles` keys. Applications with custom calendar wrappers should follow the [DayPicker v10 migration guide](https://daypicker.dev/upgrading).
+
+**Agent migration prompt:**
+
+```text
+Upgrade React DayPicker to v10. Replace the react-day-picker dependency with @daypicker/react and update all imports, including style and locale imports. Audit custom Calendar and DatePicker wrappers for APIs removed in v10: replace deprecated navigation and focus props, aliases, component slots, and classNames/styles keys according to https://daypicker.dev/upgrading. If the app uses a non-Gregorian calendar, install the corresponding @daypicker/* add-on and update its imports. Run the typecheck and test affected date-picker screens after migrating.
+```
+
 ## June 22, 2026
 
 ### Base UI 1.6.0

@@ -1,8 +1,8 @@
 "use client";
 
+import type { DayButtonProps } from "@daypicker/react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import type { DayButtonProps } from "react-day-picker";
 import { cn } from "@/registry/default/lib/utils";
 import { Calendar } from "@/registry/default/ui/calendar";
 
