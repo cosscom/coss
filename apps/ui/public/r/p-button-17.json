@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-button-17",
-  "description": "Link rendered as button",
+  "description": "Link styled with buttonVariants",
   "registryDependencies": [
     "@coss/button"
   ],
