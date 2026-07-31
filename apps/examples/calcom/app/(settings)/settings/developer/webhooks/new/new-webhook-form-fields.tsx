@@ -220,6 +220,7 @@ export function NewWebhookFormFields() {
               <CollapsiblePanel>
                 <ScrollArea
                   className="mt-4 h-64 rounded-lg border border-input"
+                  overscrollContain
                   scrollbarGutter
                   scrollFade
                 >

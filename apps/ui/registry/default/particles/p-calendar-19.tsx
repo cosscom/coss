@@ -49,7 +49,12 @@ export default function Particle() {
       />
       <div className="relative w-full max-sm:h-48 sm:w-40">
         <div className="absolute inset-0 max-sm:border-t">
-          <ScrollArea className="h-full sm:border-s" scrollbarGutter scrollFade>
+          <ScrollArea
+            className="h-full sm:border-s"
+            overscrollContain
+            scrollbarGutter
+            scrollFade
+          >
             <div className="flex flex-col gap-3 py-3 sm:pt-0 sm:pb-2">
               <div className="flex shrink-0 items-center font-medium text-sm sm:h-8 sm:px-5">
                 {format(date, "EEEE, d")}

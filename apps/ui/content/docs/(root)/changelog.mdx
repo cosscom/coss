@@ -3,6 +3,29 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## July 31, 2026
+
+### Scroll Area — overscroll contain
+
+**`ScrollArea`** no longer applies **`overscroll-behavior: contain`** by default. Use the new optional **`overscrollContain`** prop (default **`false`**) to opt in.
+
+Nested surfaces that should not chain scroll to the page already pass it: **`DialogPanel`**, **`SheetPanel`**, **`DrawerPanel`**, **`ComboboxList`**, **`AutocompleteList`**, and **`SidebarContent`**.
+
+**Migration:**
+
+No change required for those composed parts after upgrading. For custom nested scroll areas (command menus, calendar time lists, vendored **`sidebar.tsx`**, etc.), opt in explicitly:
+
+```diff
+- <ScrollArea scrollbarGutter scrollFade>
++ <ScrollArea overscrollContain scrollbarGutter scrollFade>
+```
+
+**Agent migration prompt:**
+
+```text
+After upgrading @coss/scroll-area, ScrollArea no longer applies overscroll-contain by default. Add overscrollContain only on nested scroll surfaces where wheel/touch should not chain to a parent scroller (dialogs, sheets, drawers, popups, sidebars, command panels). DialogPanel, SheetPanel, DrawerPanel, ComboboxList, AutocompleteList, and SidebarContent already pass overscrollContain—update local copies of those components if you vendor them.
+```
+
 ## July 26, 2026
 
 ### React DayPicker 10

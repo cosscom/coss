@@ -113,6 +113,7 @@ export default async function Page(props: {
       <div className="sticky top-(--header-height) z-30 ms-auto hidden h-[calc(100svh-var(--header-height))] w-72 flex-col overflow-hidden overscroll-none xl:flex">
         <ScrollArea
           className="**:data-[slot=scroll-area-scrollbar]:hidden"
+          overscrollContain
           scrollFade
         >
           <div className="flex min-h-0 flex-col gap-2 py-2">
