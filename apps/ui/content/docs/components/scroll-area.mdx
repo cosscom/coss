@@ -79,6 +79,7 @@ Root component. Styled wrapper for `ScrollArea.Root` from Base UI with custom sc
 | `scrollbarGutter`       | `boolean` | `false` | Reserves space for the scrollbar to prevent layout shifts |
 | `fill`                  | `boolean` | `false` | Applies `size-full` to the scroll area content wrapper so flex layouts (e.g. `mt-auto` footers) can fill the viewport height |
 | `clampContentMinWidth`  | `boolean` | `true`  | Sets `minWidth: 0` on the content wrapper to avoid spurious horizontal scrollbars in vertical layouts |
+| `overscrollContain`     | `boolean` | `false` | Prevents scroll chaining into parent scrollers when the viewport overflows |
 
 ### ScrollAreaViewport
 
@@ -133,6 +134,18 @@ Use `fill` when the scroll area wraps a flex column that should stretch to the f
 
 Leave `fill` at the default (`false`) for content-sized areas such as lists, comboboxes, and dialogs where overflow should track child height.
 
+### Overscroll contain
+
+Use **`overscrollContain`** to stop wheel/touch scrolling from chaining into a parent scroller once the viewport hits its edge. Dialog, sheet, drawer, combobox, autocomplete, and sidebar already opt in; pass it yourself for custom nested scroll surfaces.
+
+```tsx
+<ScrollArea className="h-64" overscrollContain>
+  <div className="p-4">{/* Long content */}</div>
+</ScrollArea>
+```
+
+Leave it at the default (`false`) for standalone scroll areas where natural scroll chaining is preferred.
+
 ### Content min-width
 
 Base UI sets `min-width: fit-content` on the content wrapper, which often causes unwanted horizontal scroll in vertical lists and panels (dialogs, comboboxes, sidebars). **`clampContentMinWidth`** defaults to **`true`** and applies `minWidth: 0` to prevent that.
@@ -141,4 +154,5 @@ Horizontal scroll still works when children define their own width (e.g. `w-max`
 
 ## Changelog
 
+- [July 31, 2026](/ui/docs/changelog#scroll-area--overscroll-contain) — **`ScrollArea`** no longer applies overscroll contain by default; pass optional **`overscrollContain`** for nested surfaces. Dialog, sheet, drawer, combobox, autocomplete, and sidebar already opt in.
 - [May 29, 2026](/ui/docs/changelog#scroll-area) — **`ScrollArea`** adds optional **`fill`** (default **`false`**); pass **`fill`** for flex layouts that need the content wrapper to stretch (e.g. sidebar footers with **`mt-auto`**).

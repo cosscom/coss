@@ -631,7 +631,7 @@ export function AppCommand(): React.ReactElement {
               </Button>
             </div>
             <CommandPanel>
-              <ScrollArea scrollbarGutter scrollFade>
+              <ScrollArea overscrollContain scrollbarGutter scrollFade>
                 <div className="p-5">
                   {!aiState.isGenerating &&
                     !aiState.response &&
