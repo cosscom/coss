@@ -190,7 +190,7 @@ export default function Component() {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
-                      className="whitespace-nowrap [&:has([aria-expanded])]:w-px [&:has([aria-expanded])]:py-0 [&:has([aria-expanded])]:pr-0"
+                      className="whitespace-nowrap has-aria-[expanded]:w-px has-aria-[expanded]:py-0 has-aria-[expanded]:pr-0"
                       key={cell.id}
                     >
                       {flexRender(

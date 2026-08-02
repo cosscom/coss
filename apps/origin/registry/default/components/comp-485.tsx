@@ -335,13 +335,13 @@ export default function Component() {
                 (table.getColumn("name")?.getFilterValue() ?? "") as string
               }
             />
-            <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
+            <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
               <ListFilterIcon aria-hidden="true" size={16} />
             </div>
             {Boolean(table.getColumn("name")?.getFilterValue()) && (
               <button
                 aria-label="Clear filter"
-                className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="absolute inset-e-0 inset-y-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => {
                   table.getColumn("name")?.setFilterValue("");
                   if (inputRef.current) {
@@ -608,7 +608,7 @@ export default function Component() {
             <SelectTrigger className="w-fit whitespace-nowrap" id={id}>
               <SelectValue placeholder="Select number of results" />
             </SelectTrigger>
-            <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+            <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
               {[5, 10, 25, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={pageSize.toString()}>
                   {pageSize}

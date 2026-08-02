@@ -97,7 +97,7 @@ export default function SearchField({
         />
         <div
           aria-label="Search component"
-          className="pointer-events-none absolute inset-y-0 start-0 flex items-start justify-center ps-4 pt-2.5 text-muted-foreground"
+          className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-start justify-center ps-4 pt-2.5 text-muted-foreground"
         >
           <RiSearch2Line aria-hidden="true" size={24} />
         </div>

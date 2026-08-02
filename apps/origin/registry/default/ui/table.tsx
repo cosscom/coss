@@ -71,10 +71,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
-      className={cn(
-        "p-3 align-middle [&:has([role=checkbox])]:pr-0",
-        className,
-      )}
+      className={cn("p-3 align-middle has-[[role=checkbox]]:pr-0", className)}
       data-slot="table-cell"
       {...props}
     />

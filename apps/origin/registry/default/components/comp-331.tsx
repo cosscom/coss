@@ -108,7 +108,7 @@ export default function Component() {
                     required
                     type="text"
                   />
-                  <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
+                  <div className="pointer-events-none absolute inset-e-0 inset-y-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
                     <CheckIcon
                       aria-hidden="true"
                       className="text-emerald-500"

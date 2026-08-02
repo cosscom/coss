@@ -61,7 +61,7 @@ export default function Component() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
+                    className="origin-center translate-y-[-7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                     d="M4 12L20 12"
                   />
                   <path
@@ -109,7 +109,7 @@ export default function Component() {
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+                  <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="personal">Personal</SelectItem>
                     <SelectItem value="team">Team</SelectItem>
                     <SelectItem value="business">Business</SelectItem>
@@ -134,7 +134,7 @@ export default function Component() {
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+                  <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="1">Main project</SelectItem>
                     <SelectItem value="2">Origin project</SelectItem>
                   </SelectContent>

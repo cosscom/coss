@@ -7,7 +7,7 @@ export default function Component() {
   return (
     <div className="group relative">
       <Label
-        className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 font-medium text-foreground text-xs group-has-disabled:opacity-50"
+        className="absolute inset-s-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 font-medium text-foreground text-xs group-has-disabled:opacity-50"
         htmlFor={id}
       >
         Textarea with overlapping label

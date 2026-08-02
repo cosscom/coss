@@ -18,7 +18,7 @@ export default function Particle() {
     >
       <PlusIcon
         aria-hidden="true"
-        className="in-[[aria-expanded=true]]:rotate-[135deg] transition-transform duration-500 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)]"
+        className="in-aria-expanded:rotate-135 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)]"
       />
     </Button>
   );

@@ -83,7 +83,7 @@ export default function Component() {
                       />
                     </Button>
                   </SelectPrimitive.SelectTrigger>
-                  <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+                  <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
                     <SelectItem value="1">Main project</SelectItem>
                     <SelectItem value="2">Origin project</SelectItem>
                   </SelectContent>

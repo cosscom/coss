@@ -55,7 +55,7 @@ export default function Page() {
       <div className="relative before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64">
         <div
           aria-hidden="true"
-          className="container pointer-events-none absolute inset-0 z-50 before:absolute before:top-[-3.5px] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-3.5px] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
+          className="container pointer-events-none absolute inset-0 z-50 before:absolute before:top-[-3.5px] before:left-[-11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs after:absolute after:top-[-3.5px] after:right-[-11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs dark:after:bg-clip-border dark:before:bg-clip-border"
         />
         <div className="container w-full">
           <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
@@ -93,7 +93,7 @@ function CategoryCard({
   const isNew = PAGES_NEW.includes(href);
 
   return (
-    <CardFrame className="w-full after:pointer-events-none after:absolute after:-inset-[5px] after:-z-1 after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
+    <CardFrame className="w-full after:pointer-events-none after:absolute after:inset-[-5px] after:-z-1 after:rounded-[calc(var(--radius-xl)+4px)] after:border after:border-border/64">
       <CardFrameHeader className="static grid grid-rows-[auto_1fr]">
         <CardFrameTitle
           className="font-bold font-heading text-base [font-variation-settings:'GEOM'_50,'opsz'_32]"
@@ -114,7 +114,7 @@ function CategoryCard({
       </CardFrameHeader>
       <Card className="pointer-events-none min-h-55 flex-1 flex-col flex-wrap overflow-x-auto bg-[color-mix(in_srgb,var(--color-card),var(--color-sidebar))] dark:bg-background">
         {isNew && (
-          <Badge className="absolute end-3 top-3" variant="info">
+          <Badge className="absolute inset-e-3 top-3" variant="info">
             New
           </Badge>
         )}

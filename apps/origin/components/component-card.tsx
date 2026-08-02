@@ -40,7 +40,7 @@ export default function ComponentCard({
   return (
     <div
       className={cn(
-        "group/item relative border border-zinc-200 has-[[data-comp-loading=true]]:border-none dark:border-zinc-900",
+        "group/item relative border border-zinc-200 has-data-[comp-loading=true]:border-none dark:border-zinc-900",
         isSearchPage
           ? "col-span-12 grid grid-cols-12"
           : cn(getColSpanClasses(), styleClasses),

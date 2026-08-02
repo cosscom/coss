@@ -10,7 +10,7 @@ export default function Component() {
       <Label htmlFor={id}>Input with end icon</Label>
       <div className="relative">
         <Input className="peer pe-9" id={id} placeholder="Email" type="email" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
+        <div className="pointer-events-none absolute inset-e-0 inset-y-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
           <MailIcon aria-hidden="true" size={16} />
         </div>
       </div>

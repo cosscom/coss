@@ -464,7 +464,7 @@ function Filter({ column }: { column: Column<Item, unknown> }) {
         <div className="flex">
           <Input
             aria-label={`${columnHeader} min`}
-            className="flex-1 rounded-e-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+            className="flex-1 rounded-e-none [-moz-appearance:textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
             id={`${id}-range-1`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
@@ -478,7 +478,7 @@ function Filter({ column }: { column: Column<Item, unknown> }) {
           />
           <Input
             aria-label={`${columnHeader} max`}
-            className="-ms-px flex-1 rounded-s-none [-moz-appearance:_textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+            className="-ms-px flex-1 rounded-s-none [-moz-appearance:textfield] focus:z-10 [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
             id={`${id}-range-2`}
             onChange={(e) =>
               column.setFilterValue((old: [number, number]) => [
@@ -533,7 +533,7 @@ function Filter({ column }: { column: Column<Item, unknown> }) {
           type="text"
           value={(columnFilterValue ?? "") as string}
         />
-        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
+        <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
           <SearchIcon size={16} />
         </div>
       </div>

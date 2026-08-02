@@ -474,7 +474,7 @@ export function AnalyticsAppsContent() {
       <div className="flex flex-col gap-6 sm:flex-row">
         {isSmallScreen ? (
           <ScrollArea
-            className="-mx-4 w-[calc(100%+--spacing(4)*2)]"
+            className="-mx-4 w-[calc(100%+(--spacing(4))*2)]"
             overscrollContain
             scrollbarGutter
           >
