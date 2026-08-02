@@ -151,7 +151,7 @@ export function EventItem({
     return (
       <EventWrapper
         className={cn(
-          "mt-[var(--event-gap)] h-[var(--event-height)] items-center text-[10px] sm:text-xs",
+          "mt-(--event-gap) h-(--event-height) items-center text-[10px] sm:text-xs",
           className,
         )}
         currentTime={currentTime}

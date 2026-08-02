@@ -460,7 +460,7 @@ const MultipleSelector = ({
                 {option.label}
                 <button
                   aria-label="Remove"
-                  className="absolute -inset-y-px -end-px flex size-7 items-center justify-center rounded-e-md border border-transparent p-0 text-muted-foreground/80 outline-none outline-hidden transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  className="absolute -inset-e-px -inset-y-px flex size-7 items-center justify-center rounded-e-md border border-transparent p-0 text-muted-foreground/80 outline-none outline-hidden transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                   onClick={() => handleUnselect(option)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -519,7 +519,7 @@ const MultipleSelector = ({
           <button
             aria-label="Clear all"
             className={cn(
-              "absolute end-0 top-0 flex size-9 items-center justify-center rounded-md border border-transparent text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+              "absolute inset-e-0 top-0 flex size-9 items-center justify-center rounded-md border border-transparent text-muted-foreground/80 outline-none transition-[color,box-shadow] hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
               (hideClearAllButton ||
                 disabled ||
                 selected.length < 1 ||

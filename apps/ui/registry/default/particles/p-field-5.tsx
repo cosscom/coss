@@ -17,7 +17,7 @@ export default function FieldWithValidityDemo() {
               </p>
             )}
             <div className="w-full rounded-md bg-muted p-2">
-              <pre className="max-h-60 overflow-y-auto font-mono text-xs [scrollbar-width:none]">
+              <pre className="scrollbar-none max-h-60 overflow-y-auto font-mono text-xs">
                 {JSON.stringify(validity, null, 2)}
               </pre>
             </div>

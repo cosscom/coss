@@ -92,7 +92,7 @@ function TreeItem<T = any>({
       <Comp
         aria-expanded={item.isExpanded()}
         className={cn(
-          "z-10 select-none ps-(--tree-padding) not-last:pb-0.5 outline-hidden focus:z-20 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          "z-10 select-none ps-(--tree-padding) not-last:pb-0.5 outline-hidden focus:z-20 data-disabled:pointer-events-none data-disabled:opacity-50",
           className,
         )}
         data-drag-target={
@@ -184,7 +184,7 @@ function TreeDragLine({
   return (
     <div
       className={cn(
-        "absolute z-30 -mt-px h-0.5 w-[unset] bg-primary before:absolute before:-top-[3px] before:left-0 before:size-2 before:rounded-full before:border-2 before:border-primary before:bg-background",
+        "absolute z-30 -mt-px h-0.5 w-[unset] bg-primary before:absolute before:top-[-3px] before:left-0 before:size-2 before:rounded-full before:border-2 before:border-primary before:bg-background",
         className,
       )}
       style={dragLine}

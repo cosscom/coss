@@ -14,19 +14,19 @@ export default function Component() {
     >
       <TabsList className="flex-col rounded-none border-l bg-transparent p-0">
         <TabsTrigger
-          className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          className="relative w-full justify-start rounded-none after:absolute after:inset-s-0 after:inset-y-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
           value="tab-1"
         >
           Overview
         </TabsTrigger>
         <TabsTrigger
-          className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          className="relative w-full justify-start rounded-none after:absolute after:inset-s-0 after:inset-y-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
           value="tab-2"
         >
           Projects
         </TabsTrigger>
         <TabsTrigger
-          className="relative w-full justify-start rounded-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+          className="relative w-full justify-start rounded-none after:absolute after:inset-s-0 after:inset-y-0 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
           value="tab-3"
         >
           Packages

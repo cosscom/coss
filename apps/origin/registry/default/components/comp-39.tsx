@@ -12,7 +12,7 @@ export default function Component() {
       </Label>
       <div className="relative">
         <DateInput />
-        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 flex items-center justify-center pe-3 text-muted-foreground/80">
+        <div className="pointer-events-none absolute inset-e-0 inset-y-0 z-10 flex items-center justify-center pe-3 text-muted-foreground/80">
           <ClockIcon aria-hidden="true" size={16} />
         </div>
       </div>

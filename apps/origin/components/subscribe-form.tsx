@@ -53,7 +53,7 @@ function Form() {
       <div className="space-y-2">
         <div className="inline-flex gap-2">
           <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground peer-disabled:opacity-50">
+            <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground peer-disabled:opacity-50">
               <RiNavigationLine
                 aria-hidden="true"
                 className="-scale-x-100"

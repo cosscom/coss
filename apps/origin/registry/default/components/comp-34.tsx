@@ -30,7 +30,7 @@ export default function Component() {
         />
         <div
           aria-live="polite"
-          className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground text-xs tabular-nums peer-disabled:opacity-50"
+          className="pointer-events-none absolute inset-e-0 inset-y-0 flex items-center justify-center pe-3 text-muted-foreground text-xs tabular-nums peer-disabled:opacity-50"
           id={`${id}-description`}
           role="status"
         >

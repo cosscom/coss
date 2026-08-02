@@ -832,7 +832,7 @@ export function MembersPageClient() {
                             ? "descending"
                             : "none"
                       }
-                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=left]:before:inset-s-full data-[pinned=right]:before:inset-e-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
                       colSpan={header.colSpan}
                       key={header.id}
                       {...getPinnedDataAttribute(header.column)}
@@ -893,7 +893,7 @@ export function MembersPageClient() {
                       {header.column.getCanResize() ? (
                         <div
                           aria-hidden="true"
-                          className="user-select-none absolute -end-2 top-0 z-10 flex h-full w-4 touch-none items-center justify-center before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
+                          className="user-select-none absolute -inset-e-2 top-0 z-10 flex h-full w-4 touch-none items-center justify-center before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
                           data-slot="column-resize-handle"
                           onDoubleClick={() => header.column.resetSize()}
                           onMouseDown={header.getResizeHandler()}
@@ -919,7 +919,7 @@ export function MembersPageClient() {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
+                        className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=left]:before:inset-s-full data-[pinned=right]:before:inset-e-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
                         key={cell.id}
                         {...getPinnedDataAttribute(cell.column)}
                         style={{

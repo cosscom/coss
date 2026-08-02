@@ -237,7 +237,7 @@ export function EventCalendar({
           <span aria-hidden="true" className="min-[480px]:hidden">
             {format(currentDate, "MMM d, yyyy")}
           </span>
-          <span aria-hidden="true" className="max-[479px]:hidden min-md:hidden">
+          <span aria-hidden="true" className="max-[479px]:hidden md:hidden">
             {format(currentDate, "MMMM d, yyyy")}
           </span>
           <span className="max-md:hidden">

@@ -53,7 +53,7 @@ export default function Component() {
                 placeholder="hi@yourcompany.com"
                 type="email"
               />
-              <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
+              <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
                 <MailIcon aria-hidden="true" size={16} />
               </div>
             </div>

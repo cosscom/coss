@@ -44,7 +44,7 @@ export default function Component() {
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
+                      className="origin-center translate-y-[-7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                       d="M4 12L20 12"
                     />
                     <path
@@ -91,7 +91,7 @@ export default function Component() {
                 {navigationLinks.map((link, index) => (
                   <NavigationMenuItem className="h-full" key={String(index)}>
                     <NavigationMenuLink
-                      className="h-full justify-center rounded-none border-transparent border-y-2 py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-[active]:border-b-primary data-[active]:bg-transparent!"
+                      className="h-full justify-center rounded-none border-transparent border-y-2 py-1.5 font-medium text-muted-foreground hover:border-b-primary hover:bg-transparent hover:text-primary data-active:border-b-primary data-active:bg-transparent!"
                       data-active={link.active ? "" : undefined}
                       href={link.href}
                     >

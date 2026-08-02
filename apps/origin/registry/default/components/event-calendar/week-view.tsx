@@ -310,7 +310,7 @@ export function WeekView({
         <div className="grid auto-cols-fr border-border/70 border-r">
           {hours.map((hour, index) => (
             <div
-              className="relative min-h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+              className="relative min-h-(--week-cells-height) border-border/70 border-b last:border-b-0"
               key={hour.toString()}
             >
               {index > 0 && (
@@ -370,7 +370,7 @@ export function WeekView({
               const hourValue = getHours(hour);
               return (
                 <div
-                  className="relative min-h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+                  className="relative min-h-(--week-cells-height) border-border/70 border-b last:border-b-0"
                   key={hour.toString()}
                 >
                   {/* Quarter-hour intervals */}
