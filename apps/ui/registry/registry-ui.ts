@@ -701,6 +701,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "tabs",
+    registryDependencies: ["@coss/scroll-area"],
     type: "registry:ui",
   },
   {

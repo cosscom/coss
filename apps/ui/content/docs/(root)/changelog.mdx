@@ -3,6 +3,25 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## August 4, 2026
+
+### Tabs — scrollable list
+
+**`TabsList`** now wraps its tabs in a **`ScrollArea`** so overflowing tabs scroll horizontally instead of overflowing their container — the usual reason dashboards could be pushed sideways on mobile. Opt out with **`scrollable={false}`**, and add **`scrollFade`** to fade the edges while there is more to scroll to.
+
+Because the list can no longer grow past its container, a **`TabsList`** stretched with **`className="w-full"`** now sizes to its tabs instead. Pass **`scrollable={false}`** in that case:
+
+```diff
+- <TabsList className="w-full">
++ <TabsList className="w-full" scrollable={false}>
+```
+
+**Agent migration prompt:**
+
+```text
+After upgrading @coss/tabs, TabsList wraps its tabs in a ScrollArea and no longer grows past its container. Add scrollable={false} to any TabsList that relies on stretching itself (for example className="w-full"). If the project vendors tabs.tsx, also add the scroll-area component since tabs.tsx now imports it.
+```
+
 ## July 31, 2026
 
 ### Scroll Area — overscroll contain

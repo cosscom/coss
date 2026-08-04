@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-tabs-14",
+  "description": "Tabs that scroll horizontally when they overflow",
+  "registryDependencies": [
+    "@coss/tabs"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-tabs-14.tsx",
+      "content": "import { Tabs, TabsList, TabsPanel, TabsTab } from \"@/registry/default/ui/tabs\";\n\nconst tabs = [\n  { label: \"Overview\", value: \"tab-1\" },\n  { label: \"Insights\", value: \"tab-2\" },\n  { label: \"Performance\", value: \"tab-3\" },\n  { label: \"Members\", value: \"tab-4\" },\n  { label: \"Integrations\", value: \"tab-5\" },\n  { label: \"Billing\", value: \"tab-6\" },\n  { label: \"Notifications\", value: \"tab-7\" },\n  { label: \"Audit log\", value: \"tab-8\" },\n];\n\nexport default function Particle() {\n  return (\n    <Tabs defaultValue=\"tab-1\">\n      <TabsList scrollFade>\n        {tabs.map((tab) => (\n          <TabsTab key={tab.value} value={tab.value}>\n            {tab.label}\n          </TabsTab>\n        ))}\n      </TabsList>\n      {tabs.map((tab) => (\n        <TabsPanel key={tab.value} value={tab.value}>\n          <p className=\"p-4 text-center text-muted-foreground text-xs\">\n            {tab.label} content\n          </p>\n        </TabsPanel>\n      ))}\n    </Tabs>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full"
+  },
+  "categories": [
+    "tabs",
+    "scroll area"
+  ],
+  "type": "registry:block"
+}

@@ -65,13 +65,17 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs"
 
 Root component. Styled wrapper for `Tabs.Root` from Base UI.
 
-| Prop      | Type                         | Default     | Description                                      |
-| --------- | ---------------------------- | ----------- | ------------------------------------------------ |
-| `variant` | `"default" \| "underline"`   | `"default"` | Controls the tabs styling                        |
-
 ### TabsList
 
 Container for tab triggers. Styled wrapper for `Tabs.List` from Base UI.
+
+| Prop         | Type                       | Default     | Description                                                      |
+| ------------ | -------------------------- | ----------- | ---------------------------------------------------------------- |
+| `variant`    | `"default" \| "underline"` | `"default"` | Controls the tabs styling                                        |
+| `scrollable` | `boolean`                  | `true`      | Wraps the list in a scroll area so overflowing tabs can scroll   |
+| `scrollFade` | `boolean`                  | `false`     | Fades the scroll area edges while there is content to scroll to  |
+
+When `scrollable` is enabled the list never grows past the width of its container, which keeps overflowing tabs reachable on small screens instead of overflowing the page. Pass `scrollable={false}` if the list should size itself freely, for example when stretching it to the full container width with `className="w-full"`.
 
 ### TabsTab
 
@@ -98,3 +102,7 @@ Visual indicator for the active tab. Styled wrapper for `Tabs.Indicator` from Ba
 ### Underline with Vertical Orientation
 
 <ComponentPreview name="p-tabs-4" />
+
+### Scrollable
+
+<ComponentPreview name="p-tabs-14" />
