@@ -5232,6 +5232,17 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("tabs", "scroll area"),
+    description: "Tabs that scroll horizontally when they overflow",
+    files: [{ path: "particles/p-tabs-14.tsx", type: "registry:block" }],
+    meta: {
+      className: "**:data-[slot=preview]:w-full",
+    },
+    name: "p-tabs-14",
+    registryDependencies: ["@coss/tabs"],
+    type: "registry:block",
+  },
+  {
     categories: categories("textarea"),
     description: "Basic textarea",
     files: [{ path: "particles/p-textarea-1.tsx", type: "registry:block" }],

@@ -3,6 +3,7 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import type React from "react";
 import { cn } from "@/registry/default/lib/utils";
+import { ScrollArea } from "@/registry/default/ui/scroll-area";
 
 export type TabsVariant = "default" | "underline";
 
@@ -26,11 +27,15 @@ export function TabsList({
   variant = "default",
   className,
   children,
+  scrollable = true,
+  scrollFade = false,
   ...props
 }: TabsPrimitive.List.Props & {
   variant?: TabsVariant;
+  scrollable?: boolean;
+  scrollFade?: boolean;
 }): React.ReactElement {
-  return (
+  const list = (
     <TabsPrimitive.List
       className={cn(
         "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
@@ -54,6 +59,20 @@ export function TabsList({
         data-slot="tab-indicator"
       />
     </TabsPrimitive.List>
+  );
+
+  if (!scrollable) {
+    return list;
+  }
+
+  return (
+    <ScrollArea
+      className="-m-0.5 size-fit max-h-[calc(100%+--spacing(1))] max-w-[calc(100%+--spacing(1))] **:data-[slot=scroll-area-viewport]:p-0.5"
+      overscrollContain
+      scrollFade={scrollFade}
+    >
+      {list}
+    </ScrollArea>
   );
 }
 

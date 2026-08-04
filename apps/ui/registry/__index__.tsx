@@ -857,7 +857,7 @@ export const Index: Record<string, any> = {
     name: "tabs",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/scroll-area"],
     files: [{
       path: "registry/default/ui/tabs.tsx",
       type: "registry:ui",
@@ -9078,6 +9078,24 @@ export const Index: Record<string, any> = {
     }),
     categories: ["tabs","tooltip"],
     meta: undefined,
+  },
+  "p-tabs-14": {
+    name: "p-tabs-14",
+    description: "Tabs that scroll horizontally when they overflow",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs","scroll area"],
+    meta: {"className":"**:data-[slot=preview]:w-full"},
   },
   "p-textarea-1": {
     name: "p-textarea-1",
