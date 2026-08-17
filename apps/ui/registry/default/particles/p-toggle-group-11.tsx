@@ -1,3 +1,5 @@
+"use client";
+
 import {
   segmentedControlItemVariants,
   segmentedControlRootClassName,
@@ -15,6 +17,11 @@ export default function Particle() {
       aria-label="Filter issues"
       className={segmentedControlRootClassName}
       defaultValue={["open"]}
+      onValueChange={(value, eventDetails) => {
+        if (value.length === 0) {
+          eventDetails.cancel();
+        }
+      }}
     >
       <ToggleGroupItem className={itemClassName} value="open">
         Open
