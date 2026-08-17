@@ -3955,7 +3955,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "tabs"),
+    categories: categories("navigation", "segmented control", "tabs"),
     description: "Tabs-style segmented navigation",
     files: [{ path: "particles/p-navigation-1.tsx", type: "registry:block" }],
     name: "p-navigation-1",
@@ -3963,7 +3963,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "tabs"),
+    categories: categories("navigation", "segmented control", "tabs"),
     description: "Small tabs-style segmented navigation",
     files: [{ path: "particles/p-navigation-2.tsx", type: "registry:block" }],
     name: "p-navigation-2",
@@ -3971,7 +3971,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "tabs"),
+    categories: categories("navigation", "segmented control", "tabs"),
     description: "Large tabs-style segmented navigation",
     files: [{ path: "particles/p-navigation-3.tsx", type: "registry:block" }],
     name: "p-navigation-3",
@@ -4172,7 +4172,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "tabs"),
+    categories: categories("radio group", "segmented control", "tabs"),
     description: "Small tabs-style segmented control",
     files: [{ path: "particles/p-radio-group-7.tsx", type: "registry:block" }],
     name: "p-radio-group-7",
@@ -4180,7 +4180,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "tabs"),
+    categories: categories("radio group", "segmented control", "tabs"),
     description: "Tabs-style segmented control",
     files: [{ path: "particles/p-radio-group-8.tsx", type: "registry:block" }],
     name: "p-radio-group-8",
@@ -4188,7 +4188,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "tabs"),
+    categories: categories("radio group", "segmented control", "tabs"),
     description: "Large tabs-style segmented control",
     files: [{ path: "particles/p-radio-group-9.tsx", type: "registry:block" }],
     name: "p-radio-group-9",
@@ -5157,7 +5157,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("tabs"),
+    categories: categories("segmented control", "tabs"),
     description: "Basic tabs",
     files: [{ path: "particles/p-tabs-1.tsx", type: "registry:block" }],
     name: "p-tabs-1",
@@ -5280,7 +5280,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("tabs"),
+    categories: categories("segmented control", "tabs"),
     description: "Small tabs",
     files: [{ path: "particles/p-tabs-14.tsx", type: "registry:block" }],
     name: "p-tabs-14",
@@ -5288,7 +5288,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("tabs"),
+    categories: categories("segmented control", "tabs"),
     description: "Large tabs",
     files: [{ path: "particles/p-tabs-15.tsx", type: "registry:block" }],
     name: "p-tabs-15",
@@ -5666,7 +5666,13 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("toggle", "toggle group", "tabs", "filter"),
+    categories: categories(
+      "toggle",
+      "toggle group",
+      "segmented control",
+      "tabs",
+      "filter",
+    ),
     description: "Small tabs-style filter toggles",
     files: [
       { path: "particles/p-toggle-group-10.tsx", type: "registry:block" },
@@ -5676,7 +5682,13 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("toggle", "toggle group", "tabs", "filter"),
+    categories: categories(
+      "toggle",
+      "toggle group",
+      "segmented control",
+      "tabs",
+      "filter",
+    ),
     description: "Tabs-style filter toggles",
     files: [
       { path: "particles/p-toggle-group-11.tsx", type: "registry:block" },
@@ -5686,7 +5698,13 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("toggle", "toggle group", "tabs", "filter"),
+    categories: categories(
+      "toggle",
+      "toggle group",
+      "segmented control",
+      "tabs",
+      "filter",
+    ),
     description: "Large tabs-style filter toggles",
     files: [
       { path: "particles/p-toggle-group-12.tsx", type: "registry:block" },

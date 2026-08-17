@@ -8353,6 +8353,7 @@
     {
       "categories": [
         "navigation",
+        "segmented control",
         "tabs"
       ],
       "description": "Tabs-style segmented navigation",
@@ -8371,6 +8372,7 @@
     {
       "categories": [
         "navigation",
+        "segmented control",
         "tabs"
       ],
       "description": "Small tabs-style segmented navigation",
@@ -8389,6 +8391,7 @@
     {
       "categories": [
         "navigation",
+        "segmented control",
         "tabs"
       ],
       "description": "Large tabs-style segmented navigation",
@@ -8770,6 +8773,7 @@
     {
       "categories": [
         "radio group",
+        "segmented control",
         "tabs"
       ],
       "description": "Small tabs-style segmented control",
@@ -8789,6 +8793,7 @@
     {
       "categories": [
         "radio group",
+        "segmented control",
         "tabs"
       ],
       "description": "Tabs-style segmented control",
@@ -8808,6 +8813,7 @@
     {
       "categories": [
         "radio group",
+        "segmented control",
         "tabs"
       ],
       "description": "Large tabs-style segmented control",
@@ -10453,6 +10459,7 @@
     },
     {
       "categories": [
+        "segmented control",
         "tabs"
       ],
       "description": "Basic tabs",
@@ -10710,6 +10717,7 @@
     },
     {
       "categories": [
+        "segmented control",
         "tabs"
       ],
       "description": "Small tabs",
@@ -10727,6 +10735,7 @@
     },
     {
       "categories": [
+        "segmented control",
         "tabs"
       ],
       "description": "Large tabs",
@@ -11481,6 +11490,7 @@
       "categories": [
         "toggle",
         "toggle group",
+        "segmented control",
         "tabs",
         "filter"
       ],
@@ -11502,6 +11512,7 @@
       "categories": [
         "toggle",
         "toggle group",
+        "segmented control",
         "tabs",
         "filter"
       ],
@@ -11523,6 +11534,7 @@
       "categories": [
         "toggle",
         "toggle group",
+        "segmented control",
         "tabs",
         "filter"
       ],

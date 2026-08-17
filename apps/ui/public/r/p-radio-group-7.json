@@ -15,6 +15,7 @@
   ],
   "categories": [
     "radio group",
+    "segmented control",
     "tabs"
   ],
   "type": "registry:block"

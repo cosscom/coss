@@ -50,6 +50,7 @@ export const registryCategories = [
   "radio group",
   "scroll area",
   "select",
+  "segmented control",
   "separator",
   "sheet",
   "skeleton",
