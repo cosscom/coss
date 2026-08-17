@@ -5157,7 +5157,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("segmented control", "tabs"),
+    categories: categories("tabs"),
     description: "Segmented control built with tabs",
     files: [{ path: "particles/p-tabs-1.tsx", type: "registry:block" }],
     name: "p-tabs-1",
@@ -5280,7 +5280,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("segmented control", "tabs"),
+    categories: categories("tabs"),
     description: "Small segmented control built with tabs",
     files: [{ path: "particles/p-tabs-14.tsx", type: "registry:block" }],
     name: "p-tabs-14",
@@ -5288,7 +5288,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("segmented control", "tabs"),
+    categories: categories("tabs"),
     description: "Large segmented control built with tabs",
     files: [{ path: "particles/p-tabs-15.tsx", type: "registry:block" }],
     name: "p-tabs-15",

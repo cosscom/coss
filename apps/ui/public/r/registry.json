@@ -10459,7 +10459,6 @@
     },
     {
       "categories": [
-        "segmented control",
         "tabs"
       ],
       "description": "Segmented control built with tabs",
@@ -10717,7 +10716,6 @@
     },
     {
       "categories": [
-        "segmented control",
         "tabs"
       ],
       "description": "Small segmented control built with tabs",
@@ -10735,7 +10733,6 @@
     },
     {
       "categories": [
-        "segmented control",
         "tabs"
       ],
       "description": "Large segmented control built with tabs",
