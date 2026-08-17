@@ -65,13 +65,14 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs"
 
 Root component. Styled wrapper for `Tabs.Root` from Base UI.
 
-| Prop      | Type                         | Default     | Description                                      |
-| --------- | ---------------------------- | ----------- | ------------------------------------------------ |
-| `variant` | `"default" \| "underline"`   | `"default"` | Controls the tabs styling                        |
-
 ### TabsList
 
 Container for tab triggers. Styled wrapper for `Tabs.List` from Base UI.
+
+| Prop      | Type                       | Default     | Description                         |
+| --------- | -------------------------- | ----------- | ----------------------------------- |
+| `size`    | `"sm" \| "default" \| "lg"` | `"default"` | Controls the size of all tab items. |
+| `variant` | `"default" \| "underline"` | `"default"` | Controls the tabs styling.          |
 
 ### TabsTab
 
@@ -86,6 +87,18 @@ Content panel for each tab. Styled wrapper for `Tabs.Panel` from Base UI.
 Visual indicator for the active tab. Styled wrapper for `Tabs.Indicator` from Base UI.
 
 ## Examples
+
+For guidance on choosing between Tabs, Radio Group, Toggle Group, and navigation links, see the [Segmented Control](/ui/docs/components/segmented-control) pattern.
+
+Tabs use the same optical sizing as segmented controls. The default surface is slightly taller than a Button of the same size so its inset active indicator remains visually balanced alongside adjacent controls.
+
+### Small
+
+<ComponentPreview name="p-tabs-14" />
+
+### Large
+
+<ComponentPreview name="p-tabs-15" />
 
 ### Underline Variant
 

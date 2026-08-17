@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "segmented-control",
+  "dependencies": [
+    "class-variance-authority"
+  ],
+  "files": [
+    {
+      "path": "registry/default/lib/segmented-control.ts",
+      "content": "import { cva } from \"class-variance-authority\";\n\nexport type SegmentedControlSize = \"default\" | \"lg\" | \"sm\";\n\nexport const segmentedControlItemSizeClassNames: Record<\n  SegmentedControlSize,\n  string\n> = {\n  default: \"h-8.5 px-[calc(--spacing(3)-1px)] sm:h-7.5\",\n  lg: \"h-9.5 px-[calc(--spacing(3.5)-1px)] sm:h-8.5\",\n  sm: \"h-7.5 px-[calc(--spacing(2.5)-1px)] sm:h-6.5\",\n};\n\nexport const segmentedControlRootClassName =\n  \"relative z-0 flex w-fit items-center justify-center gap-0.5 rounded-lg bg-muted p-0.5\";\n\nexport const segmentedControlItemVariants = cva(\n  \"relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-md border border-transparent font-medium text-base text-muted-foreground/72 outline-none transition-[color,background-color,box-shadow] hover:bg-transparent hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-64 data-disabled:pointer-events-none data-disabled:opacity-64 sm:text-sm\",\n  {\n    defaultVariants: {\n      size: \"default\",\n    },\n    variants: {\n      size: segmentedControlItemSizeClassNames,\n      state: {\n        checked:\n          \"data-checked:bg-background data-checked:text-foreground data-checked:shadow-sm/5 dark:data-checked:bg-input\",\n        current:\n          \"aria-[current=page]:bg-background aria-[current=page]:text-foreground aria-[current=page]:shadow-sm/5 dark:aria-[current=page]:bg-input\",\n        pressed:\n          \"data-pressed:bg-background data-pressed:text-foreground data-pressed:shadow-sm/5 dark:data-pressed:bg-input\",\n      },\n    },\n  },\n);\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:lib"
+}
