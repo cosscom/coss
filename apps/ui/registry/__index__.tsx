@@ -7191,7 +7191,7 @@ export const Index: Record<string, any> = {
   },
   "p-navigation-1": {
     name: "p-navigation-1",
-    description: "Tabs-style segmented navigation",
+    description: "Segmented navigation built with links",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control"],
     files: [{
@@ -7209,7 +7209,7 @@ export const Index: Record<string, any> = {
   },
   "p-navigation-2": {
     name: "p-navigation-2",
-    description: "Small tabs-style segmented navigation",
+    description: "Small segmented navigation built with links",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control"],
     files: [{
@@ -7227,7 +7227,7 @@ export const Index: Record<string, any> = {
   },
   "p-navigation-3": {
     name: "p-navigation-3",
-    description: "Large tabs-style segmented navigation",
+    description: "Large segmented navigation built with links",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control"],
     files: [{
@@ -7551,7 +7551,7 @@ export const Index: Record<string, any> = {
   },
   "p-radio-group-7": {
     name: "p-radio-group-7",
-    description: "Small tabs-style segmented control",
+    description: "Small segmented control built with a radio group",
     type: "registry:block",
     registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
     files: [{
@@ -7569,7 +7569,7 @@ export const Index: Record<string, any> = {
   },
   "p-radio-group-8": {
     name: "p-radio-group-8",
-    description: "Tabs-style segmented control",
+    description: "Segmented control built with a radio group",
     type: "registry:block",
     registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
     files: [{
@@ -7587,7 +7587,7 @@ export const Index: Record<string, any> = {
   },
   "p-radio-group-9": {
     name: "p-radio-group-9",
-    description: "Large tabs-style segmented control",
+    description: "Large segmented control built with a radio group",
     type: "registry:block",
     registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
     files: [{
@@ -8955,7 +8955,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-1": {
     name: "p-tabs-1",
-    description: "Basic tabs",
+    description: "Segmented control built with tabs",
     type: "registry:block",
     registryDependencies: ["@coss/tabs"],
     files: [{
@@ -9189,7 +9189,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-14": {
     name: "p-tabs-14",
-    description: "Small tabs",
+    description: "Small segmented control built with tabs",
     type: "registry:block",
     registryDependencies: ["@coss/tabs"],
     files: [{
@@ -9207,7 +9207,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-15": {
     name: "p-tabs-15",
-    description: "Large tabs",
+    description: "Large segmented control built with tabs",
     type: "registry:block",
     registryDependencies: ["@coss/tabs"],
     files: [{
@@ -9891,7 +9891,7 @@ export const Index: Record<string, any> = {
   },
   "p-toggle-group-10": {
     name: "p-toggle-group-10",
-    description: "Small tabs-style filter toggles",
+    description: "Small segmented filter built with a toggle group",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
     files: [{
@@ -9909,7 +9909,7 @@ export const Index: Record<string, any> = {
   },
   "p-toggle-group-11": {
     name: "p-toggle-group-11",
-    description: "Tabs-style filter toggles",
+    description: "Segmented filter built with a toggle group",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
     files: [{
@@ -9927,7 +9927,7 @@ export const Index: Record<string, any> = {
   },
   "p-toggle-group-12": {
     name: "p-toggle-group-12",
-    description: "Large tabs-style filter toggles",
+    description: "Large segmented filter built with a toggle group",
     type: "registry:block",
     registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
     files: [{

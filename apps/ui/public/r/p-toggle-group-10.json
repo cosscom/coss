@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-toggle-group-10",
-  "description": "Small tabs-style filter toggles",
+  "description": "Small segmented filter built with a toggle group",
   "registryDependencies": [
     "@coss/segmented-control",
     "@coss/toggle-group"

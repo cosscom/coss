@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-navigation-1",
-  "description": "Tabs-style segmented navigation",
+  "description": "Segmented navigation built with links",
   "registryDependencies": [
     "@coss/segmented-control"
   ],

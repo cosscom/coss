@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "p-radio-group-9",
-  "description": "Large tabs-style segmented control",
+  "description": "Large segmented control built with a radio group",
   "registryDependencies": [
     "@coss/radio-group",
     "@coss/segmented-control"
