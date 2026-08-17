@@ -21,6 +21,7 @@ export default function Particle() {
       aria-label="Billing period"
       className={segmentedControlRootClassName}
       defaultValue="monthly"
+      required
     >
       <RadioPrimitive.Root className={itemClassName} value="monthly">
         Monthly
