@@ -3,6 +3,38 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## August 17, 2026
+
+### Tabs sizing and segmented control styles
+
+**`TabsList`** now supports a **`size`** prop with **`"sm"`**, **`"default"`**, and **`"lg"`** values. The size propagates to its **`TabsTab`** children, and an individual tab can override the inherited size when necessary.
+
+The default Tabs appearance now uses the same optical item sizing as the [Segmented Control](/ui/docs/components/segmented-control) pattern. The default rendered height is slightly smaller than before so the inset active indicator remains visually balanced beside a Button of the corresponding size.
+
+Tabs now imports its size map from the **`@coss/segmented-control`** registry library. **`@coss/tabs`** declares this as a registry dependency, so the shadcn CLI installs it automatically with a fresh installation or CLI-managed update.
+
+**Migration:**
+
+Existing Tabs JSX requires no changes because **`"default"`** remains the default size. If you replace your local Tabs component through the CLI, review any local customizations before accepting the overwrite:
+
+```bash
+npx shadcn@latest add @coss/tabs
+```
+
+If you update **`tabs.tsx`** manually, install the shared library first and then merge the latest Tabs implementation. Copying only the new Tabs file without this dependency results in an unresolved import.
+
+```bash
+npx shadcn@latest add @coss/segmented-control
+```
+
+After updating, remove local height or horizontal-padding utilities from **`TabsList`** and **`TabsTab`** only where they unintentionally override the new **`size`** API. Keep intentional product-specific overrides.
+
+**Agent migration prompt:**
+
+```text
+Update the local coss Tabs component to the latest segmented-control sizing while preserving project-specific customizations. Install the shared registry dependency with `npx shadcn@latest add @coss/segmented-control`, then merge the latest @coss/tabs implementation. TabsList now accepts size="sm" | "default" | "lg" (default: "default") and propagates it to TabsTab; a TabsTab size prop overrides the inherited value. Replace the old hard-coded TabsTab height and horizontal-padding classes with segmentedControlItemSizeClassNames from the shared library. Existing Tabs JSX does not need a size prop. Audit local h-* and px-* overrides on TabsList/TabsTab and remove only those that unintentionally conflict with the new size API. Run formatting and typechecking, then visually verify default and underline Tabs in every size used by the app.
+```
+
 ## July 31, 2026
 
 ### Scroll Area — overscroll contain

@@ -22,13 +22,25 @@ links:
 npx shadcn@latest add @coss/tabs
 ```
 
+The CLI installs the shared `@coss/segmented-control` registry dependency automatically.
+
 </TabsPanel>
 
 <TabsPanel value="manual">
 
 <Steps>
 
-<Step>Copy and paste the following code into your project.</Step>
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install @base-ui/react class-variance-authority
+```
+
+<Step>Copy the shared segmented control styling into your project.</Step>
+
+<ComponentSource name="segmented-control" title="lib/segmented-control.ts" />
+
+<Step>Copy and paste the Tabs component into your project.</Step>
 
 <ComponentSource name="tabs" title="components/ui/tabs.tsx" />
 
