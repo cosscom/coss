@@ -69,7 +69,7 @@ const itemClassName = segmentedControlItemVariants({
 
 Use `checked` with Radio Group, `current` with navigation links, and `pressed` with Toggle Group. Tabs retain their own animated indicator and do not use the shared state recipe.
 
-Each size uses the horizontal padding of the corresponding Button size. The outer segmented surface is slightly taller than that Button to optically balance its inset selected item when the controls appear next to each other.
+At the outside edges, the item padding and the surface's `p-0.5` inset combine to match the horizontal padding of the corresponding Button size. The outer segmented surface is slightly taller than that Button to optically balance its inset selected item when the controls appear next to each other.
 
 <ComponentSource
   name="segmented-control"

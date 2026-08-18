@@ -7204,7 +7204,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["navigation","segmented control","tabs"],
+    categories: ["navigation","segmented control"],
     meta: undefined,
   },
   "p-navigation-2": {
@@ -7222,7 +7222,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["navigation","segmented control","tabs"],
+    categories: ["navigation","segmented control"],
     meta: undefined,
   },
   "p-navigation-3": {
@@ -7240,7 +7240,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["navigation","segmented control","tabs"],
+    categories: ["navigation","segmented control"],
     meta: undefined,
   },
   "p-pagination-1": {
@@ -7564,7 +7564,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["radio group","segmented control","tabs"],
+    categories: ["radio group","segmented control"],
     meta: undefined,
   },
   "p-radio-group-8": {
@@ -7582,7 +7582,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["radio group","segmented control","tabs"],
+    categories: ["radio group","segmented control"],
     meta: undefined,
   },
   "p-radio-group-9": {
@@ -7600,7 +7600,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["radio group","segmented control","tabs"],
+    categories: ["radio group","segmented control"],
     meta: undefined,
   },
   "p-scroll-area-1": {
@@ -9904,7 +9904,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["toggle","toggle group","segmented control","tabs","filter"],
+    categories: ["toggle","toggle group","segmented control","filter"],
     meta: undefined,
   },
   "p-toggle-group-11": {
@@ -9922,7 +9922,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["toggle","toggle group","segmented control","tabs","filter"],
+    categories: ["toggle","toggle group","segmented control","filter"],
     meta: undefined,
   },
   "p-toggle-group-12": {
@@ -9940,7 +9940,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["toggle","toggle group","segmented control","tabs","filter"],
+    categories: ["toggle","toggle group","segmented control","filter"],
     meta: undefined,
   },
   "p-toggle-1": {

@@ -8353,8 +8353,7 @@
     {
       "categories": [
         "navigation",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Segmented navigation built with links",
       "files": [
@@ -8372,8 +8371,7 @@
     {
       "categories": [
         "navigation",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Small segmented navigation built with links",
       "files": [
@@ -8391,8 +8389,7 @@
     {
       "categories": [
         "navigation",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Large segmented navigation built with links",
       "files": [
@@ -8773,8 +8770,7 @@
     {
       "categories": [
         "radio group",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Small segmented control built with a radio group",
       "files": [
@@ -8793,8 +8789,7 @@
     {
       "categories": [
         "radio group",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Segmented control built with a radio group",
       "files": [
@@ -8813,8 +8808,7 @@
     {
       "categories": [
         "radio group",
-        "segmented control",
-        "tabs"
+        "segmented control"
       ],
       "description": "Large segmented control built with a radio group",
       "files": [
@@ -11488,7 +11482,6 @@
         "toggle",
         "toggle group",
         "segmented control",
-        "tabs",
         "filter"
       ],
       "description": "Small segmented filter built with a toggle group",
@@ -11510,7 +11503,6 @@
         "toggle",
         "toggle group",
         "segmented control",
-        "tabs",
         "filter"
       ],
       "description": "Segmented filter built with a toggle group",
@@ -11532,7 +11524,6 @@
         "toggle",
         "toggle group",
         "segmented control",
-        "tabs",
         "filter"
       ],
       "description": "Large segmented filter built with a toggle group",

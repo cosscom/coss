@@ -17,7 +17,6 @@
     "toggle",
     "toggle group",
     "segmented control",
-    "tabs",
     "filter"
   ],
   "type": "registry:block"

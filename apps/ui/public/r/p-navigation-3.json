@@ -14,8 +14,7 @@
   ],
   "categories": [
     "navigation",
-    "segmented control",
-    "tabs"
+    "segmented control"
   ],
   "type": "registry:block"
 }

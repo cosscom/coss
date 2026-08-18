@@ -3955,7 +3955,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "segmented control", "tabs"),
+    categories: categories("navigation", "segmented control"),
     description: "Segmented navigation built with links",
     files: [{ path: "particles/p-navigation-1.tsx", type: "registry:block" }],
     name: "p-navigation-1",
@@ -3963,7 +3963,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "segmented control", "tabs"),
+    categories: categories("navigation", "segmented control"),
     description: "Small segmented navigation built with links",
     files: [{ path: "particles/p-navigation-2.tsx", type: "registry:block" }],
     name: "p-navigation-2",
@@ -3971,7 +3971,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("navigation", "segmented control", "tabs"),
+    categories: categories("navigation", "segmented control"),
     description: "Large segmented navigation built with links",
     files: [{ path: "particles/p-navigation-3.tsx", type: "registry:block" }],
     name: "p-navigation-3",
@@ -4172,7 +4172,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "segmented control", "tabs"),
+    categories: categories("radio group", "segmented control"),
     description: "Small segmented control built with a radio group",
     files: [{ path: "particles/p-radio-group-7.tsx", type: "registry:block" }],
     name: "p-radio-group-7",
@@ -4180,7 +4180,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "segmented control", "tabs"),
+    categories: categories("radio group", "segmented control"),
     description: "Segmented control built with a radio group",
     files: [{ path: "particles/p-radio-group-8.tsx", type: "registry:block" }],
     name: "p-radio-group-8",
@@ -4188,7 +4188,7 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories("radio group", "segmented control", "tabs"),
+    categories: categories("radio group", "segmented control"),
     description: "Large segmented control built with a radio group",
     files: [{ path: "particles/p-radio-group-9.tsx", type: "registry:block" }],
     name: "p-radio-group-9",
@@ -5670,7 +5670,6 @@ export const particles: ParticleItem[] = [
       "toggle",
       "toggle group",
       "segmented control",
-      "tabs",
       "filter",
     ),
     description: "Small segmented filter built with a toggle group",
@@ -5686,7 +5685,6 @@ export const particles: ParticleItem[] = [
       "toggle",
       "toggle group",
       "segmented control",
-      "tabs",
       "filter",
     ),
     description: "Segmented filter built with a toggle group",
@@ -5702,7 +5700,6 @@ export const particles: ParticleItem[] = [
       "toggle",
       "toggle group",
       "segmented control",
-      "tabs",
       "filter",
     ),
     description: "Large segmented filter built with a toggle group",
