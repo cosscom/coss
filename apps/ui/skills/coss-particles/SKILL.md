@@ -37,7 +37,7 @@ Run the generator script from the coss repo root:
 node apps/ui/scripts/generate-particle-index.cjs
 ```
 
-Total: **484 particles** across **52 component types**
+Total: **495 particles** across **53 component types**
 
 ## Component types
 
@@ -70,13 +70,14 @@ Total: **484 particles** across **52 component types**
 - [kbd](#kbd) (1)
 - [menu](#menu) (9)
 - [meter](#meter) (4)
+- [navigation](#navigation) (3)
 - [number-field](#number-field) (11)
 - [otp-field](#otp-field) (9)
 - [pagination](#pagination) (3)
 - [popover](#popover) (3)
 - [preview-card](#preview-card) (1)
 - [progress](#progress) (3)
-- [radio-group](#radio-group) (6)
+- [radio-group](#radio-group) (9)
 - [scroll-area](#scroll-area) (5)
 - [select](#select) (23)
 - [separator](#separator) (1)
@@ -86,11 +87,11 @@ Total: **484 particles** across **52 component types**
 - [spinner](#spinner) (1)
 - [switch](#switch) (6)
 - [table](#table) (8)
-- [tabs](#tabs) (13)
+- [tabs](#tabs) (15)
 - [textarea](#textarea) (15)
 - [toast](#toast) (13)
 - [toggle](#toggle) (8)
-- [toggle-group](#toggle-group) (9)
+- [toggle-group](#toggle-group) (12)
 - [toolbar](#toolbar) (1)
 - [tooltip](#tooltip) (4)
 
@@ -496,6 +497,12 @@ Total: **484 particles** across **52 component types**
 - Meter with formatted value | [JSON](https://coss.com/ui/r/p-meter-3.json)
 - Meter with range | [JSON](https://coss.com/ui/r/p-meter-4.json)
 
+### navigation
+
+- Segmented navigation built with links | [JSON](https://coss.com/ui/r/p-navigation-1.json)
+- Small segmented navigation built with links | [JSON](https://coss.com/ui/r/p-navigation-2.json)
+- Large segmented navigation built with links | [JSON](https://coss.com/ui/r/p-navigation-3.json)
+
 ### number-field
 
 - Basic number field | [JSON](https://coss.com/ui/r/p-number-field-1.json)
@@ -552,6 +559,9 @@ Total: **484 particles** across **52 component types**
 - Radio group card | [JSON](https://coss.com/ui/r/p-radio-group-4.json)
 - Radio group in form | [JSON](https://coss.com/ui/r/p-radio-group-5.json)
 - Theme selector with image cards | [JSON](https://coss.com/ui/r/p-radio-group-6.json)
+- Small segmented control built with a radio group | [JSON](https://coss.com/ui/r/p-radio-group-7.json)
+- Segmented control built with a radio group | [JSON](https://coss.com/ui/r/p-radio-group-8.json)
+- Large segmented control built with a radio group | [JSON](https://coss.com/ui/r/p-radio-group-9.json)
 
 ### scroll-area
 
@@ -667,6 +677,8 @@ Total: **484 particles** across **52 component types**
 - Vertical tabs with underline and icon before name | [JSON](https://coss.com/ui/r/p-tabs-11.json)
 - Tabs with icon only and count badge | [JSON](https://coss.com/ui/r/p-tabs-12.json)
 - Tabs with icon only and grouped tooltips | [JSON](https://coss.com/ui/r/p-tabs-13.json)
+- Small segmented control built with tabs | [JSON](https://coss.com/ui/r/p-tabs-14.json)
+- Large segmented control built with tabs | [JSON](https://coss.com/ui/r/p-tabs-15.json)
 
 ### textarea
 
@@ -724,6 +736,9 @@ Total: **484 particles** across **52 component types**
 - Toggle group with disabled item | [JSON](https://coss.com/ui/r/p-toggle-group-7.json)
 - Multiple selection toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-8.json)
 - Toggle group with tooltips | [JSON](https://coss.com/ui/r/p-toggle-group-9.json)
+- Small segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-10.json)
+- Segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-11.json)
+- Large segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-12.json)
 
 ### toolbar
 
