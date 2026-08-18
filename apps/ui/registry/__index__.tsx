@@ -9889,60 +9889,6 @@ export const Index: Record<string, any> = {
     categories: ["toggle","toggle group"],
     meta: undefined,
   },
-  "p-toggle-group-10": {
-    name: "p-toggle-group-10",
-    description: "Small segmented filter built with a toggle group",
-    type: "registry:block",
-    registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
-    files: [{
-      path: "registry/default/particles/p-toggle-group-10.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-toggle-group-10.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["toggle","toggle group","segmented control","filter"],
-    meta: undefined,
-  },
-  "p-toggle-group-11": {
-    name: "p-toggle-group-11",
-    description: "Segmented filter built with a toggle group",
-    type: "registry:block",
-    registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
-    files: [{
-      path: "registry/default/particles/p-toggle-group-11.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-toggle-group-11.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["toggle","toggle group","segmented control","filter"],
-    meta: undefined,
-  },
-  "p-toggle-group-12": {
-    name: "p-toggle-group-12",
-    description: "Large segmented filter built with a toggle group",
-    type: "registry:block",
-    registryDependencies: ["@coss/segmented-control","@coss/toggle-group"],
-    files: [{
-      path: "registry/default/particles/p-toggle-group-12.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-toggle-group-12.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["toggle","toggle group","segmented control","filter"],
-    meta: undefined,
-  },
   "p-toggle-1": {
     name: "p-toggle-1",
     description: "Basic toggle",

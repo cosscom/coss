@@ -68,7 +68,7 @@ const [value, setValue] = useState(["bold"])
 
 ### More examples
 
-See `p-toggle-group-1` through `p-toggle-group-9` for sizes, outline, vertical, disabled, multiple, and tooltip patterns. For an exclusive segmented filter or mode, use `p-toggle-group-10`, `p-toggle-group-11`, or `p-toggle-group-12`; read `../segmented-control.md` before choosing the underlying primitive.
+See `p-toggle-group-1` through `p-toggle-group-9` for sizes, outline, vertical, disabled, multiple, and tooltip patterns. Read `../segmented-control.md` before applying segmented styling to a custom reversible mode.
 
 ## Common pitfalls
 
@@ -86,4 +86,3 @@ See `p-toggle-group-1` through `p-toggle-group-9` for sizes, outline, vertical, 
 - with disabled toggle: `p-toggle-group-7`
 - multiple selection: `p-toggle-group-8`
 - with tooltips: `p-toggle-group-9`
-- segmented filter, small/default/large: `p-toggle-group-10`, `p-toggle-group-11`, `p-toggle-group-12`

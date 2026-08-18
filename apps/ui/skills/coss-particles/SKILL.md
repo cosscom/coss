@@ -37,7 +37,7 @@ Run the generator script from the coss repo root:
 node apps/ui/scripts/generate-particle-index.cjs
 ```
 
-Total: **495 particles** across **53 component types**
+Total: **492 particles** across **53 component types**
 
 ## Component types
 
@@ -91,7 +91,7 @@ Total: **495 particles** across **53 component types**
 - [textarea](#textarea) (15)
 - [toast](#toast) (13)
 - [toggle](#toggle) (8)
-- [toggle-group](#toggle-group) (12)
+- [toggle-group](#toggle-group) (9)
 - [toolbar](#toolbar) (1)
 - [tooltip](#tooltip) (4)
 
@@ -736,10 +736,6 @@ Total: **495 particles** across **53 component types**
 - Toggle group with disabled item | [JSON](https://coss.com/ui/r/p-toggle-group-7.json)
 - Multiple selection toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-8.json)
 - Toggle group with tooltips | [JSON](https://coss.com/ui/r/p-toggle-group-9.json)
-- Small segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-10.json)
-- Segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-11.json)
-- Large segmented filter built with a toggle group | [JSON](https://coss.com/ui/r/p-toggle-group-12.json)
-
 ### toolbar
 
 - Toolbar with toggles, buttons, and select | [JSON](https://coss.com/ui/r/p-toolbar-1.json)

@@ -5666,51 +5666,6 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
-    categories: categories(
-      "toggle",
-      "toggle group",
-      "segmented control",
-      "filter",
-    ),
-    description: "Small segmented filter built with a toggle group",
-    files: [
-      { path: "particles/p-toggle-group-10.tsx", type: "registry:block" },
-    ],
-    name: "p-toggle-group-10",
-    registryDependencies: ["@coss/segmented-control", "@coss/toggle-group"],
-    type: "registry:block",
-  },
-  {
-    categories: categories(
-      "toggle",
-      "toggle group",
-      "segmented control",
-      "filter",
-    ),
-    description: "Segmented filter built with a toggle group",
-    files: [
-      { path: "particles/p-toggle-group-11.tsx", type: "registry:block" },
-    ],
-    name: "p-toggle-group-11",
-    registryDependencies: ["@coss/segmented-control", "@coss/toggle-group"],
-    type: "registry:block",
-  },
-  {
-    categories: categories(
-      "toggle",
-      "toggle group",
-      "segmented control",
-      "filter",
-    ),
-    description: "Large segmented filter built with a toggle group",
-    files: [
-      { path: "particles/p-toggle-group-12.tsx", type: "registry:block" },
-    ],
-    name: "p-toggle-group-12",
-    registryDependencies: ["@coss/segmented-control", "@coss/toggle-group"],
-    type: "registry:block",
-  },
-  {
     categories: categories("toggle"),
     description: "Basic toggle",
     files: [{ path: "particles/p-toggle-1.tsx", type: "registry:block" }],

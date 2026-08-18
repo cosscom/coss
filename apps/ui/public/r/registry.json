@@ -11479,69 +11479,6 @@
     },
     {
       "categories": [
-        "toggle",
-        "toggle group",
-        "segmented control",
-        "filter"
-      ],
-      "description": "Small segmented filter built with a toggle group",
-      "files": [
-        {
-          "path": "registry/default/particles/p-toggle-group-10.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-toggle-group-10",
-      "registryDependencies": [
-        "@coss/segmented-control",
-        "@coss/toggle-group"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "toggle",
-        "toggle group",
-        "segmented control",
-        "filter"
-      ],
-      "description": "Segmented filter built with a toggle group",
-      "files": [
-        {
-          "path": "registry/default/particles/p-toggle-group-11.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-toggle-group-11",
-      "registryDependencies": [
-        "@coss/segmented-control",
-        "@coss/toggle-group"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
-        "toggle",
-        "toggle group",
-        "segmented control",
-        "filter"
-      ],
-      "description": "Large segmented filter built with a toggle group",
-      "files": [
-        {
-          "path": "registry/default/particles/p-toggle-group-12.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "name": "p-toggle-group-12",
-      "registryDependencies": [
-        "@coss/segmented-control",
-        "@coss/toggle-group"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "toggle"
       ],
       "description": "Basic toggle",

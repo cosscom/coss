@@ -19,9 +19,10 @@ Do not use Tabs for navigation links, form values, or filters merely because the
 | --- | --- | --- | --- |
 | Radio Group | `@coss/p-radio-group-7` | `@coss/p-radio-group-8` | `@coss/p-radio-group-9` |
 | Navigation links | `@coss/p-navigation-2` | `@coss/p-navigation-1` | `@coss/p-navigation-3` |
-| Toggle Group | `@coss/p-toggle-group-10` | `@coss/p-toggle-group-11` | `@coss/p-toggle-group-12` |
 
 The CLI installs the relevant primitive and the shared `@coss/segmented-control` styling library automatically.
+
+COSS does not publish a Toggle Group segmented particle. Use the shared styling directly only when a reversible mode genuinely allows no active option.
 
 ## Custom composition
 
