@@ -5,21 +5,13 @@ description: Breaking changes, migration guides, and notable updates.
 
 ## August 19, 2026
 
-### Shared segmented control item layout styles
-
-**`segmented-control`** now exports **`segmentedControlItemLayoutClassName`** for the shared icon gap, size, and opacity treatment. **`segmentedControlItemVariants`** includes this class, and **`TabsTab`** uses it instead of inlining the same utilities.
-
-Existing Tabs and segmented-control usage does not need JSX changes. If you maintain a local copy of the library or Tabs, merge the new export so icons stay optically aligned with Button.
-
-## August 17, 2026
-
 ### Tabs sizing and segmented control styles
 
 **`TabsList`** now supports a **`size`** prop with **`"sm"`**, **`"default"`**, and **`"lg"`** values. The size propagates to its **`TabsTab`** children, and an individual tab can override the inherited size when necessary.
 
 The default Tabs appearance now uses the same optical item sizing as the [Segmented Control](/ui/docs/components/segmented-control) pattern. The default rendered height is slightly smaller than before so the inset active indicator remains visually balanced beside a Button of the corresponding size.
 
-Tabs now imports its size map from the **`@coss/segmented-control`** registry library. **`@coss/tabs`** declares this as a registry dependency, so the shadcn CLI installs it automatically with a fresh installation or CLI-managed update.
+Tabs now imports its size map and **`segmentedControlItemLayoutClassName`** from the **`@coss/segmented-control`** registry library. That class covers the shared icon gap, size, and opacity treatment. **`segmentedControlItemVariants`** includes it, and **`TabsTab`** uses it instead of inlining the same utilities. **`@coss/tabs`** declares this as a registry dependency, so the shadcn CLI installs it automatically with a fresh installation or CLI-managed update.
 
 **Migration:**
 
@@ -35,12 +27,12 @@ If you update **`tabs.tsx`** manually, install the shared library first and then
 npx shadcn@latest add @coss/segmented-control
 ```
 
-After updating, remove local height or horizontal-padding utilities from **`TabsList`** and **`TabsTab`** only where they unintentionally override the new **`size`** API. Keep intentional product-specific overrides.
+After updating, remove local height or horizontal-padding utilities from **`TabsList`** and **`TabsTab`** only where they unintentionally override the new **`size`** API. Keep intentional product-specific overrides. If you maintain a local copy of the library or Tabs, also merge **`segmentedControlItemLayoutClassName`** so icons stay optically aligned with Button.
 
 **Agent migration prompt:**
 
 ```text
-Update the local coss Tabs component to the latest segmented-control sizing while preserving project-specific customizations. Install the shared registry dependency with `npx shadcn@latest add @coss/segmented-control`, then merge the latest @coss/tabs implementation. TabsList now accepts size="sm" | "default" | "lg" (default: "default") and propagates it to TabsTab; a TabsTab size prop overrides the inherited value. Replace the old hard-coded TabsTab height and horizontal-padding classes with segmentedControlItemSizeClassNames from the shared library. Existing Tabs JSX does not need a size prop. Audit local h-* and px-* overrides on TabsList/TabsTab and remove only those that unintentionally conflict with the new size API. Run formatting and typechecking, then visually verify default and underline Tabs in every size used by the app.
+Update the local coss Tabs component to the latest segmented-control sizing and item layout while preserving project-specific customizations. Install the shared registry dependency with `npx shadcn@latest add @coss/segmented-control`, then merge the latest @coss/tabs implementation. TabsList now accepts size="sm" | "default" | "lg" (default: "default") and propagates it to TabsTab; a TabsTab size prop overrides the inherited value. Replace the old hard-coded TabsTab height and horizontal-padding classes with segmentedControlItemSizeClassNames from the shared library, and replace inlined icon gap/size/opacity utilities with segmentedControlItemLayoutClassName. Existing Tabs JSX does not need a size prop. Audit local h-* and px-* overrides on TabsList/TabsTab and remove only those that unintentionally conflict with the new size API. Run formatting and typechecking, then visually verify default and underline Tabs in every size used by the app.
 ```
 
 ## July 31, 2026
