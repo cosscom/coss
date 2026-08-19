@@ -16,7 +16,7 @@ export default function Particle() {
       </Avatar>
       <span
         aria-hidden="true"
-        className="absolute -end-0.5 -top-0.5 size-2 rounded-full bg-emerald-500 outline-2 outline-background"
+        className="absolute -inset-e-0.5 -top-0.5 size-2 rounded-full bg-emerald-500 outline-2 outline-background"
       />
     </div>
   );

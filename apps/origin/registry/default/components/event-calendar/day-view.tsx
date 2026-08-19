@@ -233,7 +233,7 @@ export function DayView({
         <div>
           {hours.map((hour, index) => (
             <div
-              className="relative h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+              className="relative h-(--week-cells-height) border-border/70 border-b last:border-b-0"
               key={hour.toString()}
             >
               {index > 0 && (
@@ -289,7 +289,7 @@ export function DayView({
             const hourValue = getHours(hour);
             return (
               <div
-                className="relative h-[var(--week-cells-height)] border-border/70 border-b last:border-b-0"
+                className="relative h-(--week-cells-height) border-border/70 border-b last:border-b-0"
                 key={hour.toString()}
               >
                 {/* Quarter-hour intervals */}

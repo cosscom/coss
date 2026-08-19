@@ -158,7 +158,7 @@ export default function Component() {
     <div className="flex flex-col gap-2">
       {/* Drop area */}
       <div
-        className="relative flex min-h-52 flex-col items-center not-data-[files]:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
+        className="relative flex min-h-52 flex-col items-center not-data-files:justify-center overflow-hidden rounded-xl border border-input border-dashed p-4 transition-colors has-[input:focus]:border-ring has-[input:focus]:ring-[3px] has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50"
         data-dragging={isDragging || undefined}
         data-files={files.length > 0 || undefined}
         onDragEnter={handleDragEnter}

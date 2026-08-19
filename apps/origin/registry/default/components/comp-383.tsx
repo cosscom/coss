@@ -175,7 +175,7 @@ export default function Component() {
                 </div>
               </div>
               {notification.unread && (
-                <div className="absolute end-0 self-center">
+                <div className="absolute inset-e-0 self-center">
                   <Dot />
                 </div>
               )}

@@ -29,5 +29,8 @@
     "apps/*",
     "apps/examples/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "tailwindcss": "^4.3.3"
+  }
 }

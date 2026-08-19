@@ -9,7 +9,7 @@ export default function Component() {
     <Button
       onClick={() => {
         toast.custom((t) => (
-          <div className="w-full rounded-md border bg-background px-4 py-3 text-foreground shadow-lg sm:w-[var(--width)]">
+          <div className="w-full rounded-md border bg-background px-4 py-3 text-foreground shadow-lg sm:w-(--width)">
             <div className="flex gap-2">
               <div className="flex grow gap-3">
                 <CircleCheckIcon

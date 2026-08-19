@@ -22,7 +22,7 @@ export default function Component() {
               <BotMessageSquareIcon aria-hidden="true" size={16} />
               <SelectValue placeholder="Choose an AI model" />
             </SelectTrigger>
-            <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+            <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
               <SelectGroup>
                 <SelectLabel className="ps-2">Models</SelectLabel>
                 <SelectItem value="orion-alpha-45">

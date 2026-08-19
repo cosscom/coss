@@ -62,7 +62,7 @@ export default function Component() {
                   className="peer pe-9 [direction:inherit]"
                   id={`number-${id}`}
                 />
-                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
+                <div className="pointer-events-none absolute inset-e-0 inset-y-0 flex items-center justify-center pe-3 text-muted-foreground/80 peer-disabled:opacity-50">
                   {meta.cardType ? (
                     <svg
                       className="overflow-hidden rounded-sm"

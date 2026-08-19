@@ -32,7 +32,7 @@ export default function Component() {
                 step="1"
                 type="time"
               />
-              <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
+              <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">
                 <ClockIcon aria-hidden="true" size={16} />
               </div>
             </div>

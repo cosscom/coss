@@ -252,7 +252,7 @@ const DraggableTableHeader = ({
             ? "descending"
             : "none"
       }
-      className="relative h-10 border-t before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-border first:before:bg-transparent"
+      className="relative h-10 border-t before:absolute before:inset-s-0 before:inset-y-0 before:w-px before:bg-border first:before:bg-transparent"
       ref={setNodeRef}
       style={style}
     >

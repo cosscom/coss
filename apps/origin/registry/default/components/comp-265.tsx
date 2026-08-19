@@ -244,7 +244,7 @@ export default function Component() {
               type="text"
               value={inputValues[0]}
             />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
+            <span className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $
             </span>
           </div>
@@ -267,7 +267,7 @@ export default function Component() {
               type="text"
               value={inputValues[1]}
             />
-            <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
+            <span className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-3 text-muted-foreground text-sm peer-disabled:opacity-50">
               $
             </span>
           </div>

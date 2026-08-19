@@ -77,7 +77,7 @@ export async function highlightCode(
 				},
 				pre(node) {
 					node.properties.class =
-						"text-[.8125rem] min-w-0 w-max px-4 py-3.5 outline-none has-data-[highlighted-line]:px-0 has-data-[line-numbers]:ps-0 has-data-[slot=tabs]:p-0 !bg-transparent";
+						"text-[.8125rem] min-w-0 w-max px-4 py-3.5 outline-none has-data-highlighted-line:px-0 has-data-line-numbers:ps-0 has-data-[slot=tabs]:p-0 bg-transparent!";
 				},
 			},
 			transformerNotationWordHighlight(),

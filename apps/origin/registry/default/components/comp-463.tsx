@@ -39,7 +39,7 @@ export default function Component({
           <SelectTrigger className="w-fit whitespace-nowrap" id={id}>
             <SelectValue placeholder="Select number of results" />
           </SelectTrigger>
-          <SelectContent className="[&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
+          <SelectContent className="[&_*[role=option]>span]:inset-e-2 [&_*[role=option]>span]:inset-s-auto [&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8">
             <SelectItem value="10">10</SelectItem>
             <SelectItem value="25">25</SelectItem>
             <SelectItem value="50">50</SelectItem>

@@ -162,7 +162,7 @@ export function ListItemDragHandle({
     <Button
       aria-label="Drag to reorder"
       className={cn(
-        "pointer-events-auto absolute inset-y-px start-0 z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity in-[[data-slot=list-item]:hover]:delay-100 not-in-[[data-slot=list-item]:hover]:duration-50 focus-visible:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
+        "pointer-events-auto absolute inset-s-0 inset-y-px z-1 h-auto! cursor-grab items-start bg-transparent! pt-4.25 in-[[data-slot=list-item]:hover,[data-slot=list-item][data-drag-overlay],[data-drag-release]]:opacity-100 opacity-0 not-in-data-drag-release:transition-opacity in-[[data-slot=list-item]:hover]:delay-100 not-in-[[data-slot=list-item]:hover]:duration-50 focus-visible:opacity-100 focus-visible:ring-0 focus-visible:ring-offset-0 active:cursor-grabbing",
         className,
       )}
       data-slot="list-item-drag-handle"

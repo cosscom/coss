@@ -12,7 +12,7 @@ export default function Particle() {
         <TabsTab aria-label="Inbox" className="size-10!" value="tab-2">
           <InboxIcon aria-hidden="true" />
           <Badge
-            className="absolute end-0 top-0 rounded-full not-in-data-active:opacity-64"
+            className="absolute inset-e-0 top-0 rounded-full not-in-data-active:opacity-64"
             size="sm"
           >
             5

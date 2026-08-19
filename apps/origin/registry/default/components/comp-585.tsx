@@ -61,7 +61,7 @@ export default function Component() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    className="origin-center -translate-y-[7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
+                    className="origin-center translate-y-[-7px] transition-all duration-300 ease-[cubic-bezier(.5,.85,.25,1.1)] group-aria-expanded:translate-x-0 group-aria-expanded:translate-y-0 group-aria-expanded:rotate-315"
                     d="M4 12L20 12"
                   />
                   <path
@@ -112,7 +112,7 @@ export default function Component() {
                 placeholder="Search..."
                 type="search"
               />
-              <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-2 text-muted-foreground/80 peer-disabled:opacity-50">
+              <div className="pointer-events-none absolute inset-s-0 inset-y-0 flex items-center justify-center ps-2 text-muted-foreground/80 peer-disabled:opacity-50">
                 <SearchIcon size={16} />
               </div>
             </div>
