@@ -3,6 +3,14 @@ title: Changelog
 description: Breaking changes, migration guides, and notable updates.
 ---
 
+## August 19, 2026
+
+### Shared segmented control item layout styles
+
+**`segmented-control`** now exports **`segmentedControlItemLayoutClassName`** for the shared icon gap, size, and opacity treatment. **`segmentedControlItemVariants`** includes this class, and **`TabsTab`** uses it instead of inlining the same utilities.
+
+Existing Tabs and segmented-control usage does not need JSX changes. If you maintain a local copy of the library or Tabs, merge the new export so icons stay optically aligned with Button.
+
 ## August 17, 2026
 
 ### Tabs sizing and segmented control styles

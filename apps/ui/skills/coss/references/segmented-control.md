@@ -55,6 +55,6 @@ const itemClassName = segmentedControlItemVariants({
 
 Use the exported Radio Group primitives for a custom segmented radio presentation so the native radio indicator is not rendered. Keep a default or controlled value when the interface requires one option to remain selected.
 
-Tabs do not use the shared state recipe because they retain their animated indicator. They import the shared size map: set `size="sm" | "default" | "lg"` on `TabsList`, and use a `TabsTab` size only as an item-level override.
+Tabs do not use the shared state recipe because they retain their animated indicator. They import the shared size map and `segmentedControlItemLayoutClassName`: set `size="sm" | "default" | "lg"` on `TabsList`, and use a `TabsTab` size only as an item-level override.
 
-Reuse the shared root and item recipes instead of copying their classes into a new segmented particle. This keeps Tabs and the radio, navigation, and toggle implementations optically aligned.
+Reuse the shared root, item, and layout recipes instead of copying their classes into a new segmented particle. This keeps Tabs and the radio, navigation, and toggle implementations optically aligned.
