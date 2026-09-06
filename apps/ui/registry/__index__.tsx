@@ -857,7 +857,7 @@ export const Index: Record<string, any> = {
     name: "tabs",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/segmented-control"],
     files: [{
       path: "registry/default/ui/tabs.tsx",
       type: "registry:ui",
@@ -7189,6 +7189,60 @@ export const Index: Record<string, any> = {
     categories: ["number field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-navigation-1": {
+    name: "p-navigation-1",
+    description: "Segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
+  "p-navigation-2": {
+    name: "p-navigation-2",
+    description: "Small segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
+  "p-navigation-3": {
+    name: "p-navigation-3",
+    description: "Large segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
   "p-pagination-1": {
     name: "p-pagination-1",
     description: "Pagination example",
@@ -7494,6 +7548,60 @@ export const Index: Record<string, any> = {
     }),
     categories: ["radio group","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-[320px]"},
+  },
+  "p-radio-group-7": {
+    name: "p-radio-group-7",
+    description: "Small segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
+  },
+  "p-radio-group-8": {
+    name: "p-radio-group-8",
+    description: "Segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
+  },
+  "p-radio-group-9": {
+    name: "p-radio-group-9",
+    description: "Large segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
   },
   "p-scroll-area-1": {
     name: "p-scroll-area-1",
@@ -8847,7 +8955,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-1": {
     name: "p-tabs-1",
-    description: "Basic tabs",
+    description: "Segmented control built with tabs",
     type: "registry:block",
     registryDependencies: ["@coss/tabs"],
     files: [{
@@ -9077,6 +9185,42 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["tabs","tooltip"],
+    meta: undefined,
+  },
+  "p-tabs-14": {
+    name: "p-tabs-14",
+    description: "Small segmented control built with tabs",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs"],
+    meta: undefined,
+  },
+  "p-tabs-15": {
+    name: "p-tabs-15",
+    description: "Large segmented control built with tabs",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs"],
     meta: undefined,
   },
   "p-textarea-1": {
@@ -9986,6 +10130,24 @@ export const Index: Record<string, any> = {
     registryDependencies: ["@coss/font-sans","@coss/font-heading","@coss/font-mono"],
     files: [],
     component: null,
+    categories: undefined,
+    meta: undefined,
+  },
+  "segmented-control": {
+    name: "segmented-control",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/lib/segmented-control.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/lib/segmented-control.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
     categories: undefined,
     meta: undefined,
   },
