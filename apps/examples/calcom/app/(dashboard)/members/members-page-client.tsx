@@ -42,11 +42,20 @@ import {
   type Column,
   type ColumnDef,
   type ColumnSizingState,
+  columnFilteringFeature,
+  columnPinningFeature,
+  columnResizingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ArrowUpRightIcon,
@@ -126,6 +135,21 @@ type Member = {
   lastActive: string;
   avatarUrl?: string;
 };
+
+const features = tableFeatures({
+  columnFilteringFeature,
+  columnPinningFeature,
+  columnSizingFeature,
+  columnResizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
 
 const members: Member[] = [
   {
@@ -352,25 +376,30 @@ function OptionalBadge({ value }: { value?: string }) {
 const FILLER_EXCLUDED_COLUMN_IDS = new Set(["select", "actions"]);
 
 const INITIAL_COLUMN_PINNING = {
-  left: ["select", "name"],
-  right: ["actions"],
+  end: ["actions"],
+  start: ["select", "name"],
 };
 
-function getPinningStyles(column: Column<Member>): CSSProperties {
+function getPinningStyles(
+  column: Column<typeof features, Member, unknown>,
+): CSSProperties {
   const isPinned = column.getIsPinned();
 
   return {
-    "--pinned-left-offset":
-      isPinned === "left" ? `${column.getStart("left")}px` : undefined,
-    left: undefined,
-    position: isPinned === "right" ? "sticky" : undefined,
-    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
+    "--pinned-start-offset":
+      isPinned === "start" ? `${column.getStart("start")}px` : undefined,
+    insetInlineEnd:
+      isPinned === "end" ? `${column.getAfter("end")}px` : undefined,
+    insetInlineStart: undefined,
+    position: isPinned === "end" ? "sticky" : undefined,
     zIndex: isPinned ? 1 : 0,
   } as CSSProperties;
 }
 
-function getPinnedDataAttribute(column: Column<Member>): {
-  "data-pinned"?: "left" | "right";
+function getPinnedDataAttribute(
+  column: Column<typeof features, Member, unknown>,
+): {
+  "data-pinned"?: "end" | "start";
 } {
   const isPinned = column.getIsPinned();
   return isPinned ? { "data-pinned": isPinned } : {};
@@ -421,8 +450,8 @@ function getColumnDisplayWidth({
 
 function getColumns(
   columnVisibility: Record<ColumnKey, boolean>,
-): ColumnDef<Member>[] {
-  const cols: ColumnDef<Member>[] = [
+): ColumnDef<typeof features, Member>[] {
+  const cols: ColumnDef<typeof features, Member>[] = [
     {
       cell: ({ row }) => (
         <Label>
@@ -663,15 +692,14 @@ export function MembersPageClient() {
     return () => observer.disconnect();
   }, []);
 
-  const table = useReactTable({
+  const table = useTable({
     columnResizeMode: "onChange",
     columns,
     data: filteredMembers,
     enableRowSelection: true,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
+    features,
     getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
     initialState: {
       columnPinning: INITIAL_COLUMN_PINNING,
     },
@@ -832,7 +860,7 @@ export function MembersPageClient() {
                             ? "descending"
                             : "none"
                       }
-                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=start]:before:start-full data-[pinned=end]:before:end-full in-data-overflow-x-end:data-[pinned=end]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=start]:max-md:before:hidden data-[pinned=start]:md:sticky data-[pinned=start]:md:start-(--pinned-start-offset) in-data-overflow-x-start:data-[pinned=start]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
                       colSpan={header.colSpan}
                       key={header.id}
                       {...getPinnedDataAttribute(header.column)}
@@ -919,7 +947,7 @@ export function MembersPageClient() {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
+                        className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=start]:before:start-full data-[pinned=end]:before:end-full in-data-overflow-x-end:data-[pinned=end]:before:bg-linear-to-l data-[pinned=start]:max-md:before:hidden data-[pinned=start]:md:sticky data-[pinned=start]:md:start-(--pinned-start-offset) in-data-overflow-x-start:data-[pinned=start]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
                         key={cell.id}
                         {...getPinnedDataAttribute(cell.column)}
                         style={{

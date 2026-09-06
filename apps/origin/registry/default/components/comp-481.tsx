@@ -21,12 +21,19 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   type Cell,
   type ColumnDef,
+  columnOrderingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   type Header,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, GripVerticalIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useId, useState } from "react";
@@ -50,7 +57,20 @@ type Item = {
   balance: number;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnOrderingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     accessorKey: "name",
     cell: ({ row }) => (
@@ -115,13 +135,11 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
-    columnResizeMode: "onChange",
+  const table = useTable({
     columns,
     data,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    features,
     onColumnOrderChange: setColumnOrder,
     onSortingChange: setSorting,
     state: {
@@ -220,7 +238,7 @@ export default function Component() {
 const DraggableTableHeader = ({
   header,
 }: {
-  header: Header<Item, unknown>;
+  header: Header<typeof features, Item, unknown>;
 }) => {
   const {
     attributes,
@@ -320,7 +338,11 @@ const DraggableTableHeader = ({
   );
 };
 
-const DragAlongCell = ({ cell }: { cell: Cell<Item, unknown> }) => {
+const DragAlongCell = ({
+  cell,
+}: {
+  cell: Cell<typeof features, Item, unknown>;
+}) => {
   const { isDragging, setNodeRef, transform, transition } = useSortable({
     id: cell.column.id,
   });

@@ -4,16 +4,25 @@ import {
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
+  columnFacetingFeature,
+  columnFilteringFeature,
+  columnVisibilityFeature,
+  createFacetedMinMaxValues,
+  createFacetedRowModel,
+  createFacetedUniqueValues,
+  createFilteredRowModel,
+  createSortedRowModel,
+  filterFn_includesString,
+  filterFn_inNumberRange,
   flexRender,
-  getCoreRowModel,
-  getFacetedMinMaxValues,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getSortedRowModel,
-  type RowData,
+  metaHelper,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ChevronDownIcon,
@@ -42,15 +51,6 @@ import {
   TableRow,
 } from "@/registry/default/ui/table";
 
-declare module "@tanstack/react-table" {
-  //allows us to define custom properties for our columns
-  // Type parameters TData and TValue must match TanStack Table's declaration exactly
-  // biome-ignore lint: Type parameters required for module augmentation compatibility
-  interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "range" | "select";
-  }
-}
-
 type Item = {
   id: string;
   keyword: string;
@@ -63,7 +63,31 @@ type Item = {
   link: string;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnFilteringFeature,
+  columnFacetingFeature,
+  columnVisibilityFeature,
+  facetedMinMaxValues: createFacetedMinMaxValues(),
+  facetedRowModel: createFacetedRowModel(),
+  facetedUniqueValues: createFacetedUniqueValues(),
+  filteredRowModel: createFilteredRowModel(),
+  filterFns: {
+    includesString: filterFn_includesString,
+    inNumberRange: filterFn_inNumberRange,
+  },
+  columnMeta: metaHelper<{
+    filterVariant?: "text" | "range" | "select";
+  }>(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -262,16 +286,11 @@ export default function Component() {
     },
   ]);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: items,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
-    getFacetedRowModel: getFacetedRowModel(), // client-side faceting
-    getFacetedUniqueValues: getFacetedUniqueValues(), // generate unique values for select filter/autocomplete
-    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
-    getSortedRowModel: getSortedRowModel(),
+    features,
     onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
     state: {
@@ -431,7 +450,11 @@ export default function Component() {
   );
 }
 
-function Filter({ column }: { column: Column<Item, unknown> }) {
+function Filter({
+  column,
+}: {
+  column: Column<typeof features, Item, unknown>;
+}) {
   const id = useId();
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};

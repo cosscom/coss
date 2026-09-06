@@ -48,11 +48,17 @@ import {
 } from "@coss/ui/components/table";
 import {
   type ColumnDef,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ArrowUpRightIcon,
@@ -97,6 +103,18 @@ type TeamMember = {
   avatarUrl?: string;
   hasOptions?: boolean;
 };
+
+const features = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
 
 const members: TeamMember[] = [
   {
@@ -230,8 +248,8 @@ function getColumns({
 }: {
   showRoleColumn: boolean;
   showLastActiveColumn: boolean;
-}): ColumnDef<TeamMember>[] {
-  const cols: ColumnDef<TeamMember>[] = [
+}): ColumnDef<typeof features, TeamMember>[] {
+  const cols: ColumnDef<typeof features, TeamMember>[] = [
     {
       cell: ({ row }) => (
         <Label className="before:absolute before:inset-0">
@@ -389,14 +407,13 @@ export function TeamMembersPageClient() {
     });
   }, [showLastActiveColumn, showRoleColumn]);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: filteredMembers,
     enableRowSelection: true,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
+    features,
     getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     state: {

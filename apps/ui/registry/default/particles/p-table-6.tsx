@@ -2,9 +2,11 @@
 
 import {
   type ColumnDef,
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import type React from "react";
 import { useMemo, useState } from "react";
@@ -89,7 +91,12 @@ const getStatusColor = (status: Project["status"]) => {
   }
 };
 
-const getColumns = (): ColumnDef<Project>[] => [
+const features = tableFeatures({
+  columnVisibilityFeature,
+  rowSelectionFeature,
+});
+
+const getColumns = (): ColumnDef<typeof features, Project>[] => [
   {
     cell: ({ row }) => {
       const toggleHandler = row.getToggleSelectedHandler();
@@ -108,7 +115,6 @@ const getColumns = (): ColumnDef<Project>[] => [
         />
       );
     },
-    enableSorting: false,
     header: ({ table }) => {
       const isAllSelected = table.getIsAllPageRowsSelected();
       const isSomeSelected = table.getIsSomePageRowsSelected();
@@ -179,11 +185,11 @@ export default function Particle() {
 
   const columns = useMemo(() => getColumns(), []);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: tableData,
     enableRowSelection: true,
-    getCoreRowModel: getCoreRowModel(),
+    features,
     onRowSelectionChange: setRowSelection,
     state: {
       rowSelection,

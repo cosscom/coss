@@ -2,9 +2,11 @@
 
 import {
   type ColumnDef,
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { cn } from "@/registry/default/lib/utils";
@@ -30,7 +32,12 @@ type Item = {
   balance: number;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnVisibilityFeature,
+  rowSelectionFeature,
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -114,10 +121,10 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data,
-    getCoreRowModel: getCoreRowModel(),
+    features,
   });
 
   return (

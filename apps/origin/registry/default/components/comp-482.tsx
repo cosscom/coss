@@ -2,10 +2,13 @@
 
 import {
   type ColumnDef,
+  columnVisibilityFeature,
+  createExpandedRowModel,
   flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  useReactTable,
+  rowExpandingFeature,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
@@ -33,7 +36,14 @@ type Item = {
   note?: string;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnVisibilityFeature,
+  rowExpandingFeature,
+  expandedRowModel: createExpandedRowModel(),
+  rowSelectionFeature,
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => {
       return row.getCanExpand() ? (
@@ -151,11 +161,10 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data,
-    getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
+    features,
     getRowCanExpand: (row) => Boolean(row.original.note),
   });
 

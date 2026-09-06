@@ -2,13 +2,20 @@
 
 import {
   type ColumnDef,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   type PaginationState,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ChevronDownIcon,
@@ -55,7 +62,21 @@ type Item = {
   balance: number;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -158,13 +179,11 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    features,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
@@ -281,7 +300,7 @@ export default function Component() {
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
-            value={table.getState().pagination.pageSize.toString()}
+            value={table.state.pagination.pageSize.toString()}
           >
             <SelectTrigger className="w-fit whitespace-nowrap" id={id}>
               <SelectValue placeholder="Select number of results" />
@@ -302,15 +321,15 @@ export default function Component() {
             className="whitespace-nowrap text-muted-foreground text-sm"
           >
             <span className="text-foreground">
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
+              {table.state.pagination.pageIndex *
+                table.state.pagination.pageSize +
                 1}
               -
               {Math.min(
                 Math.max(
-                  table.getState().pagination.pageIndex *
-                    table.getState().pagination.pageSize +
-                    table.getState().pagination.pageSize,
+                  table.state.pagination.pageIndex *
+                    table.state.pagination.pageSize +
+                    table.state.pagination.pageSize,
                   0,
                 ),
                 table.getRowCount(),

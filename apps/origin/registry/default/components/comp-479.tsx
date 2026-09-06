@@ -2,11 +2,18 @@
 
 import {
   type ColumnDef,
+  columnResizingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -35,7 +42,20 @@ type Item = {
   performance: "Excellent" | "Good" | "Average" | "Poor";
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnSizingFeature,
+  columnResizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     accessorKey: "name",
     cell: ({ row }) => (
@@ -117,13 +137,12 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
+  const table = useTable({
     columnResizeMode: "onChange",
     columns,
     data,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    features,
     onSortingChange: setSorting,
     state: {
       sorting,

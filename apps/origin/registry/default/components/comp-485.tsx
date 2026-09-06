@@ -3,18 +3,27 @@
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnVisibilityState,
+  columnFacetingFeature,
+  columnFilteringFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createFacetedUniqueValues,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
   type FilterFn,
   flexRender,
-  getCoreRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   type PaginationState,
   type Row,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
-  type VisibilityState,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ChevronDownIcon,
@@ -101,15 +110,37 @@ type Item = {
   balance: number;
 };
 
+const features = tableFeatures({
+  columnFilteringFeature,
+  columnFacetingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  facetedUniqueValues: createFacetedUniqueValues(),
+  filteredRowModel: createFilteredRowModel(),
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Item> = (row, _columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<typeof features, Item> = (
+  row,
+  _columnId,
+  filterValue,
+) => {
   const searchableRowContent =
     `${row.original.name} ${row.original.email}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Item> = (
+const statusFilterFn: FilterFn<typeof features, Item> = (
   row,
   columnId,
   filterValue: string[],
@@ -119,7 +150,7 @@ const statusFilterFn: FilterFn<Item> = (
   return filterValue.includes(status);
 };
 
-const columns: ColumnDef<Item>[] = [
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -214,7 +245,8 @@ const columns: ColumnDef<Item>[] = [
 export default function Component() {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -249,15 +281,11 @@ export default function Component() {
     table.resetRowSelection();
   };
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data,
     enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    features,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
@@ -603,7 +631,7 @@ export default function Component() {
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
-            value={table.getState().pagination.pageSize.toString()}
+            value={table.state.pagination.pageSize.toString()}
           >
             <SelectTrigger className="w-fit whitespace-nowrap" id={id}>
               <SelectValue placeholder="Select number of results" />
@@ -624,15 +652,15 @@ export default function Component() {
             className="whitespace-nowrap text-muted-foreground text-sm"
           >
             <span className="text-foreground">
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
+              {table.state.pagination.pageIndex *
+                table.state.pagination.pageSize +
                 1}
               -
               {Math.min(
                 Math.max(
-                  table.getState().pagination.pageIndex *
-                    table.getState().pagination.pageSize +
-                    table.getState().pagination.pageSize,
+                  table.state.pagination.pageIndex *
+                    table.state.pagination.pageSize +
+                    table.state.pagination.pageSize,
                   0,
                 ),
                 table.getRowCount(),
@@ -720,7 +748,7 @@ export default function Component() {
   );
 }
 
-function RowActions({ row: _row }: { row: Row<Item> }) {
+function RowActions({ row: _row }: { row: Row<typeof features, Item> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
