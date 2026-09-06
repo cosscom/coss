@@ -7,11 +7,9 @@ import {
   createPaginatedRowModel,
   createSortedRowModel,
   flexRender,
-  type PaginationState,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
@@ -155,18 +153,6 @@ const columns: ColumnDef<typeof features, Item>[] = [
 
 export default function Component() {
   const id = useId();
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 5,
-  });
-
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      desc: false,
-      id: "name",
-    },
-  ]);
-
   const [data, setData] = useState<Item[]>([]);
   useEffect(() => {
     async function fetchPosts() {
@@ -179,18 +165,31 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columns,
-    data,
-    enableSortingRemoval: false,
-    features,
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    state: {
-      pagination,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize: 5,
+        },
+        sorting: [
+          {
+            desc: false,
+            id: "name",
+          },
+        ],
+      },
     },
-  });
+    (state) => ({
+      pagination: state.pagination,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   return (
     <div className="space-y-4">

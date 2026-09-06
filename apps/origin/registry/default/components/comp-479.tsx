@@ -7,9 +7,7 @@ import {
   columnVisibilityFeature,
   createSortedRowModel,
   flexRender,
-  rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
@@ -46,7 +44,6 @@ const features = tableFeatures({
   columnSizingFeature,
   columnResizingFeature,
   columnVisibilityFeature,
-  rowSelectionFeature,
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: {
@@ -119,12 +116,6 @@ const columns: ColumnDef<typeof features, Item>[] = [
 
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      desc: false,
-      id: "name",
-    },
-  ]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -137,17 +128,27 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columnResizeMode: "onChange",
-    columns,
-    data,
-    enableSortingRemoval: false,
-    features,
-    onSortingChange: setSorting,
-    state: {
-      sorting,
+  const table = useTable(
+    {
+      columnResizeMode: "onChange",
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        sorting: [
+          {
+            desc: false,
+            id: "name",
+          },
+        ],
+      },
     },
-  });
+    (state) => ({
+      columnSizing: state.columnSizing,
+      sorting: state.sorting,
+    }),
+  );
 
   return (
     <div>
@@ -242,10 +243,7 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell className="truncate" key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

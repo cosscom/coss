@@ -161,12 +161,18 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columns,
-    data,
-    features,
-    getRowCanExpand: (row) => Boolean(row.original.note),
-  });
+  const table = useTable(
+    {
+      columns,
+      data,
+      features,
+      getRowCanExpand: (row) => Boolean(row.original.note),
+    },
+    (state) => ({
+      expanded: state.expanded,
+      rowSelection: state.rowSelection,
+    }),
+  );
 
   return (
     <div>

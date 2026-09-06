@@ -27,9 +27,7 @@ import {
   createSortedRowModel,
   flexRender,
   type Header,
-  rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
@@ -61,7 +59,6 @@ const features = tableFeatures({
   columnOrderingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
-  rowSelectionFeature,
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: {
@@ -117,12 +114,10 @@ const columns: ColumnDef<typeof features, Item>[] = [
   },
 ];
 
+const initialColumnOrder = columns.map((column) => column.id as string);
+
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnOrder, setColumnOrder] = useState<string[]>(
-    columns.map((column) => column.id as string),
-  );
 
   useEffect(() => {
     async function fetchPosts() {
@@ -135,24 +130,27 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columns,
-    data,
-    enableSortingRemoval: false,
-    features,
-    onColumnOrderChange: setColumnOrder,
-    onSortingChange: setSorting,
-    state: {
-      columnOrder,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        columnOrder: initialColumnOrder,
+      },
     },
-  });
+    (state) => ({
+      columnOrder: state.columnOrder,
+      sorting: state.sorting,
+    }),
+  );
 
   // reorder columns after drag & drop
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setColumnOrder((columnOrder) => {
+      table.setColumnOrder((columnOrder) => {
         const oldIndex = columnOrder.indexOf(active.id as string);
         const newIndex = columnOrder.indexOf(over.id as string);
         return arrayMove(columnOrder, oldIndex, newIndex); //this is just a splice util
@@ -179,7 +177,7 @@ export default function Component() {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-muted/50" key={headerGroup.id}>
               <SortableContext
-                items={columnOrder}
+                items={table.state.columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
                 {headerGroup.headers.map((header) => (
@@ -192,13 +190,10 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <SortableContext
-                    items={columnOrder}
+                    items={table.state.columnOrder}
                     key={cell.id}
                     strategy={horizontalListSortingStrategy}
                   >

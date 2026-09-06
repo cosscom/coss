@@ -121,11 +121,14 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columns,
-    data,
-    features,
-  });
+  const table = useTable(
+    {
+      columns,
+      data,
+      features,
+    },
+    (state) => ({ rowSelection: state.rowSelection }),
+  );
 
   return (
     <div>

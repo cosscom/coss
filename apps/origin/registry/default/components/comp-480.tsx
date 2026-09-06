@@ -8,13 +8,7 @@ import {
   columnResizingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
-  createSortedRowModel,
   flexRender,
-  rowSelectionFeature,
-  rowSortingFeature,
-  type SortingState,
-  sortFn_alphanumeric,
-  sortFn_text,
   tableFeatures,
   useTable,
 } from "@tanstack/react-table";
@@ -62,13 +56,6 @@ const features = tableFeatures({
   columnSizingFeature,
   columnResizingFeature,
   columnVisibilityFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-  sortFns: {
-    alphanumeric: sortFn_alphanumeric,
-    text: sortFn_text,
-  },
 });
 
 // Helper function to compute pinning styles for columns
@@ -149,7 +136,6 @@ const columns: ColumnDef<typeof features, Item>[] = [
 
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -162,17 +148,18 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useTable({
-    columnResizeMode: "onChange",
-    columns,
-    data,
-    enableSortingRemoval: false,
-    features,
-    onSortingChange: setSorting,
-    state: {
-      sorting,
+  const table = useTable(
+    {
+      columnResizeMode: "onChange",
+      columns,
+      data,
+      features,
     },
-  });
+    (state) => ({
+      columnPinning: state.columnPinning,
+      columnSizing: state.columnSizing,
+    }),
+  );
 
   return (
     <div>
@@ -297,10 +284,7 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => {
                   const { column } = cell;
                   const isPinned = column.getIsPinned();

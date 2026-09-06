@@ -2,8 +2,6 @@
 
 import {
   type ColumnDef,
-  type ColumnFiltersState,
-  type ColumnVisibilityState,
   columnFacetingFeature,
   columnFilteringFeature,
   columnSizingFeature,
@@ -14,12 +12,10 @@ import {
   createSortedRowModel,
   type FilterFn,
   flexRender,
-  type PaginationState,
   type Row,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
@@ -244,21 +240,7 @@ const columns: ColumnDef<typeof features, Item>[] = [
 
 export default function Component() {
   const id = useId();
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] =
-    useState<ColumnVisibilityState>({});
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      desc: false,
-      id: "name",
-    },
-  ]);
 
   const [data, setData] = useState<Item[]>([]);
   useEffect(() => {
@@ -281,22 +263,33 @@ export default function Component() {
     table.resetRowSelection();
   };
 
-  const table = useTable({
-    columns,
-    data,
-    enableSortingRemoval: false,
-    features,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    state: {
-      columnFilters,
-      columnVisibility,
-      pagination,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize: 10,
+        },
+        sorting: [
+          {
+            desc: false,
+            id: "name",
+          },
+        ],
+      },
     },
-  });
+    (state) => ({
+      columnFilters: state.columnFilters,
+      columnVisibility: state.columnVisibility,
+      pagination: state.pagination,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   // Get unique status values
   const uniqueStatusValues = useMemo(() => {

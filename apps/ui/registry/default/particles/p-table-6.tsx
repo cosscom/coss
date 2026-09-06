@@ -8,8 +8,6 @@ import {
   tableFeatures,
   useTable,
 } from "@tanstack/react-table";
-import type React from "react";
-import { useMemo, useState } from "react";
 import { Badge } from "@/registry/default/ui/badge";
 import { CardFrame } from "@/registry/default/ui/card";
 import { Checkbox } from "@/registry/default/ui/checkbox";
@@ -98,39 +96,23 @@ const features = tableFeatures({
 
 const getColumns = (): ColumnDef<typeof features, Project>[] => [
   {
-    cell: ({ row }) => {
-      const toggleHandler = row.getToggleSelectedHandler();
-      return (
-        <Checkbox
-          aria-label="Select row"
-          checked={row.getIsSelected()}
-          disabled={!row.getCanSelect()}
-          onCheckedChange={(value) => {
-            // Create a synthetic event for the handler
-            const syntheticEvent = {
-              target: { checked: !!value },
-            } as unknown as React.ChangeEvent<HTMLInputElement>;
-            toggleHandler(syntheticEvent);
-          }}
-        />
-      );
-    },
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label="Select row"
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
     header: ({ table }) => {
       const isAllSelected = table.getIsAllPageRowsSelected();
       const isSomeSelected = table.getIsSomePageRowsSelected();
-      const toggleHandler = table.getToggleAllPageRowsSelectedHandler();
       return (
         <Checkbox
           aria-label="Select all"
           checked={isAllSelected}
           indeterminate={isSomeSelected && !isAllSelected}
-          onCheckedChange={(value) => {
-            // Create a synthetic event for the handler
-            const syntheticEvent = {
-              target: { checked: !!value },
-            } as unknown as React.ChangeEvent<HTMLInputElement>;
-            toggleHandler(syntheticEvent);
-          }}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
       );
     },
@@ -179,27 +161,20 @@ const getColumns = (): ColumnDef<typeof features, Project>[] => [
   },
 ];
 
+const columns = getColumns();
+
 export default function Particle() {
-  const [tableData] = useState<Project[]>(data);
-  const [rowSelection, setRowSelection] = useState({});
-
-  const columns = useMemo(() => getColumns(), []);
-
-  const table = useTable({
-    columns,
-    data: tableData,
-    enableRowSelection: true,
-    features,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      rowSelection,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableRowSelection: true,
+      features,
     },
-  });
-
-  const totalBudget = tableData.reduce(
-    (sum, project) => sum + project.budget,
-    0,
+    (state) => ({ rowSelection: state.rowSelection }),
   );
+
+  const totalBudget = data.reduce((sum, project) => sum + project.budget, 0);
   const formattedTotal = new Intl.NumberFormat("en-US", {
     currency: "USD",
     maximumFractionDigits: 0,

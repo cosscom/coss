@@ -7,18 +7,15 @@ import {
   createPaginatedRowModel,
   createSortedRowModel,
   flexRender,
-  type PaginationState,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
   useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, PlaneTakeoffIcon } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
@@ -207,30 +204,31 @@ const columns: ColumnDef<typeof features, Flight>[] = [
 export default function Particle() {
   const pageSize = 10;
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: pageSize,
-  });
-
-  const [sorting, setSorting] = useState<SortingState>([
+  const table = useTable(
     {
-      desc: false,
-      id: "departureTime",
+      columns,
+      data: flights,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize,
+        },
+        sorting: [
+          {
+            desc: false,
+            id: "departureTime",
+          },
+        ],
+      },
     },
-  ]);
-
-  const table = useTable({
-    columns,
-    data: flights,
-    enableSortingRemoval: false,
-    features,
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    state: {
-      pagination,
-      sorting,
-    },
-  });
+    (state) => ({
+      pagination: state.pagination,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   return (
     <CardFrame className="w-full">

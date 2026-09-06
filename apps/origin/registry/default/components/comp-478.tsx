@@ -3,7 +3,6 @@
 import {
   type Column,
   type ColumnDef,
-  type ColumnFiltersState,
   columnFacetingFeature,
   columnFilteringFeature,
   columnVisibilityFeature,
@@ -18,7 +17,6 @@ import {
   metaHelper,
   rowSelectionFeature,
   rowSortingFeature,
-  type SortingState,
   sortFn_alphanumeric,
   sortFn_text,
   tableFeatures,
@@ -30,7 +28,7 @@ import {
   ExternalLinkIcon,
   SearchIcon,
 } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Input } from "@/registry/default/ui/input";
@@ -278,26 +276,27 @@ const items: Item[] = [
 ];
 
 export default function Component() {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<SortingState>([
+  const table = useTable(
     {
-      desc: false,
-      id: "traffic",
+      columns,
+      data: items,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        sorting: [
+          {
+            desc: false,
+            id: "traffic",
+          },
+        ],
+      },
     },
-  ]);
-
-  const table = useTable({
-    columns,
-    data: items,
-    enableSortingRemoval: false,
-    features,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-    state: {
-      columnFilters,
-      sorting,
-    },
-  });
+    (state) => ({
+      columnFilters: state.columnFilters,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   const keywordColumn = table.getColumn("keyword");
   const intentsColumn = table.getColumn("intents");
