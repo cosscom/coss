@@ -60,6 +60,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 </Avatar>
 ```
 
+Use `keepMounted` when the image relies on native lazy loading or an optimized image component. The fallback remains visible while the image loads or if it fails:
+
+```tsx
+<Avatar>
+  <AvatarImage
+    src="/avatars/01.png"
+    alt="User avatar"
+    loading="lazy"
+    keepMounted
+  />
+  <AvatarFallback>JD</AvatarFallback>
+</Avatar>
+```
+
 ## API Reference
 
 ### Avatar
@@ -68,7 +82,7 @@ Root component. Styled wrapper for `Avatar.Root` from Base UI with default size 
 
 ### AvatarImage
 
-Image element for the avatar. Styled wrapper for `Avatar.Image` from Base UI.
+Image element for the avatar. Styled wrapper for `Avatar.Image` from Base UI with support for `keepMounted` images.
 
 ### AvatarFallback
 

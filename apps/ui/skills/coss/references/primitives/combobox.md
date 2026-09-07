@@ -39,6 +39,7 @@ import {
   ComboboxPopup,
   ComboboxSeparator,
   ComboboxValue,
+  createComboboxItems,
   useComboboxFilter,
 } from "@/components/ui/combobox"
 ```
@@ -65,6 +66,8 @@ const items = [
 ```
 
 For form-bound comboboxes, prefer `Field` composition (`Field` + `FieldLabel` + `FieldError`) instead of standalone controls.
+
+Use `createComboboxItems` when object items should derive stable primitive selection values and labels. Define static collections at module scope and memoize dynamic collections.
 
 ## Patterns from coss particles
 

@@ -18,8 +18,12 @@ export const ComboboxContext: React.Context<{
   multiple: false,
 });
 
-export function Combobox<Value, Multiple extends boolean | undefined = false>(
-  props: ComboboxPrimitive.Root.Props<Value, Multiple>,
+export function Combobox<
+  Value,
+  Multiple extends boolean | undefined = false,
+  Item = Value,
+>(
+  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item>,
 ): React.ReactElement {
   const chipsRef = React.useRef<Element | null>(null);
   return (
@@ -428,6 +432,9 @@ export function ComboboxChipRemove(
     </ComboboxPrimitive.ChipRemove>
   );
 }
+
+export const createComboboxItems: typeof ComboboxPrimitive.createItems =
+  ComboboxPrimitive.createItems;
 
 export const useComboboxFilter: typeof ComboboxPrimitive.useFilter =
   ComboboxPrimitive.useFilter;
