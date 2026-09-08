@@ -41,12 +41,20 @@ import { cn } from "@coss/ui/lib/utils";
 import {
   type Column,
   type ColumnDef,
-  type ColumnSizingState,
+  columnFilteringFeature,
+  columnPinningFeature,
+  columnResizingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ArrowUpRightIcon,
@@ -126,6 +134,21 @@ type Member = {
   lastActive: string;
   avatarUrl?: string;
 };
+
+const features = tableFeatures({
+  columnFilteringFeature,
+  columnPinningFeature,
+  columnSizingFeature,
+  columnResizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
 
 const members: Member[] = [
   {
@@ -352,25 +375,30 @@ function OptionalBadge({ value }: { value?: string }) {
 const FILLER_EXCLUDED_COLUMN_IDS = new Set(["select", "actions"]);
 
 const INITIAL_COLUMN_PINNING = {
-  left: ["select", "name"],
-  right: ["actions"],
+  end: ["actions"],
+  start: ["select", "name"],
 };
 
-function getPinningStyles(column: Column<Member>): CSSProperties {
+function getPinningStyles(
+  column: Column<typeof features, Member, unknown>,
+): CSSProperties {
   const isPinned = column.getIsPinned();
 
   return {
-    "--pinned-left-offset":
-      isPinned === "left" ? `${column.getStart("left")}px` : undefined,
-    left: undefined,
-    position: isPinned === "right" ? "sticky" : undefined,
-    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
+    "--pinned-start-offset":
+      isPinned === "start" ? `${column.getStart("start")}px` : undefined,
+    insetInlineEnd:
+      isPinned === "end" ? `${column.getAfter("end")}px` : undefined,
+    insetInlineStart: undefined,
+    position: isPinned === "end" ? "sticky" : undefined,
     zIndex: isPinned ? 1 : 0,
   } as CSSProperties;
 }
 
-function getPinnedDataAttribute(column: Column<Member>): {
-  "data-pinned"?: "left" | "right";
+function getPinnedDataAttribute(
+  column: Column<typeof features, Member, unknown>,
+): {
+  "data-pinned"?: "end" | "start";
 } {
   const isPinned = column.getIsPinned();
   return isPinned ? { "data-pinned": isPinned } : {};
@@ -421,8 +449,8 @@ function getColumnDisplayWidth({
 
 function getColumns(
   columnVisibility: Record<ColumnKey, boolean>,
-): ColumnDef<Member>[] {
-  const cols: ColumnDef<Member>[] = [
+): ColumnDef<typeof features, Member>[] {
+  const cols: ColumnDef<typeof features, Member>[] = [
     {
       cell: ({ row }) => (
         <Label>
@@ -595,10 +623,8 @@ export function MembersPageClient() {
   const [columnVisibility, setColumnVisibility] = useState(
     DEFAULT_COLUMN_VISIBILITY,
   );
-  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([
     { desc: false, id: "name" },
   ]);
@@ -663,35 +689,25 @@ export function MembersPageClient() {
     return () => observer.disconnect();
   }, []);
 
-  const table = useReactTable({
-    columnResizeMode: "onChange",
-    columns,
-    data: filteredMembers,
-    enableRowSelection: true,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
-    initialState: {
-      columnPinning: INITIAL_COLUMN_PINNING,
+  const table = useTable(
+    {
+      columnResizeMode: "onChange",
+      columns,
+      data: filteredMembers,
+      enableRowSelection: true,
+      enableSortingRemoval: false,
+      features,
+      getRowId: (row) => row.id,
+      initialState: {
+        columnPinning: INITIAL_COLUMN_PINNING,
+      },
+      onSortingChange: setSorting,
+      state: {
+        sorting,
+      },
     },
-    onColumnSizingChange: setColumnSizing,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    state: {
-      columnSizing,
-      rowSelection,
-      sorting,
-    },
-  });
-
-  const headers = table.getHeaderGroups()[0]?.headers ?? [];
-  const columnsTotalSize = table.getCenterTotalSize();
-  const tableWidth =
-    containerWidth > 0
-      ? Math.max(containerWidth + 2, columnsTotalSize)
-      : columnsTotalSize;
-  const fillerColumnId = getFillerColumnId(headers);
+    () => null,
+  );
 
   return (
     <>
@@ -809,175 +825,204 @@ export function MembersPageClient() {
           </Button>
         </div>
 
-        <CardFrame
-          className="w-full before:bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] **:data-[slot=table-container]:overflow-x-visible dark:before:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
-          ref={tableContainerRef}
+        <table.Subscribe
+          selector={(state) => ({
+            columnSizing: state.columnSizing,
+            rowSelection: state.rowSelection,
+            sorting: state.sorting,
+          })}
         >
-          <Table
-            render={
-              <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:z-10 **:data-[slot=scroll-area-scrollbar]:translate-y-3" />
-            }
-            className="table-fixed [--border:color-mix(in_srgb,var(--color-black)_8%,color-mix(in_srgb,var(--color-black)_3%,var(--background)))] dark:[--border:color-mix(in_srgb,var(--color-white)_6%,color-mix(in_srgb,var(--color-white)_4.6%,var(--background)))]"
-            variant="card"
-          >
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      aria-sort={
-                        header.column.getIsSorted() === "asc"
-                          ? "ascending"
-                          : header.column.getIsSorted() === "desc"
-                            ? "descending"
-                            : "none"
-                      }
-                      className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
-                      colSpan={header.colSpan}
-                      key={header.id}
-                      {...getPinnedDataAttribute(header.column)}
-                      style={{
-                        ...getPinningStyles(header.column),
-                        width: getColumnDisplayWidth({
-                          columnId: header.column.id,
-                          columnsTotalSize,
-                          fillerColumnId,
-                          headers,
-                          size: header.getSize(),
-                          tableWidth,
-                        }),
-                      }}
-                    >
-                      {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                        <div
-                          className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
-                          onClick={header.column.getToggleSortingHandler()}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              header.column.getToggleSortingHandler()?.(event);
+          {() => {
+            const headers = table.getHeaderGroups()[0]?.headers ?? [];
+            const columnsTotalSize = table.getCenterTotalSize();
+            const tableWidth =
+              containerWidth > 0
+                ? Math.max(containerWidth + 2, columnsTotalSize)
+                : columnsTotalSize;
+            const fillerColumnId = getFillerColumnId(headers);
+
+            return (
+              <CardFrame
+                className="w-full before:bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] **:data-[slot=table-container]:overflow-x-visible dark:before:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+                ref={tableContainerRef}
+              >
+                <Table
+                  render={
+                    <ScrollArea className="**:data-[slot=scroll-area-scrollbar]:z-10 **:data-[slot=scroll-area-scrollbar]:translate-y-3" />
+                  }
+                  className="table-fixed [--border:color-mix(in_srgb,var(--color-black)_8%,color-mix(in_srgb,var(--color-black)_3%,var(--background)))] dark:[--border:color-mix(in_srgb,var(--color-white)_6%,color-mix(in_srgb,var(--color-white)_4.6%,var(--background)))]"
+                  variant="card"
+                >
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead
+                            aria-sort={
+                              header.column.getIsSorted() === "asc"
+                                ? "ascending"
+                                : header.column.getIsSorted() === "desc"
+                                  ? "descending"
+                                  : "none"
                             }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                        >
-                          <span className="truncate text-sm">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
+                            className="relative z-1 select-none bg-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-[color-mix(in_srgb,var(--color-black)_3%,var(--background))] before:to-transparent data-[pinned=start]:before:start-full data-[pinned=end]:before:end-full in-data-overflow-x-end:data-[pinned=end]:before:bg-linear-to-l last:*:data-[slot=column-resize-handle]:opacity-0 data-[pinned=start]:max-md:before:hidden data-[pinned=start]:md:sticky data-[pinned=start]:md:start-(--pinned-start-offset) in-data-overflow-x-start:data-[pinned=start]:md:before:bg-linear-to-r dark:bg-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))] dark:before:from-[color-mix(in_srgb,var(--color-white)_4.6%,var(--background))]"
+                            colSpan={header.colSpan}
+                            key={header.id}
+                            {...getPinnedDataAttribute(header.column)}
+                            style={{
+                              ...getPinningStyles(header.column),
+                              width: getColumnDisplayWidth({
+                                columnId: header.column.id,
+                                columnsTotalSize,
+                                fillerColumnId,
+                                headers,
+                                size: header.getSize(),
+                                tableWidth,
+                              }),
+                            }}
+                          >
+                            {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                              <div
+                                className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
+                                onClick={header.column.getToggleSortingHandler()}
+                                onKeyDown={(event) => {
+                                  if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                  ) {
+                                    event.preventDefault();
+                                    header.column.getToggleSortingHandler()?.(
+                                      event,
+                                    );
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <span className="truncate text-sm">
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                                </span>
+                                {{
+                                  asc: (
+                                    <ChevronUpIcon
+                                      aria-hidden="true"
+                                      className="size-4 shrink-0 opacity-80"
+                                    />
+                                  ),
+                                  desc: (
+                                    <ChevronDownIcon
+                                      aria-hidden="true"
+                                      className="size-4 shrink-0 opacity-80"
+                                    />
+                                  ),
+                                }[header.column.getIsSorted() as string] ??
+                                  null}
+                              </div>
+                            ) : (
+                              <span className="truncate">
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                              </span>
                             )}
-                          </span>
-                          {{
-                            asc: (
-                              <ChevronUpIcon
+                            {header.column.getCanResize() ? (
+                              <div
                                 aria-hidden="true"
-                                className="size-4 shrink-0 opacity-80"
+                                className="user-select-none absolute -end-2 top-0 z-10 flex h-full w-4 touch-none items-center justify-center before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
+                                data-slot="column-resize-handle"
+                                onDoubleClick={() => header.column.resetSize()}
+                                onMouseDown={header.getResizeHandler()}
+                                style={{ cursor: "col-resize" }}
+                                onTouchStart={header.getResizeHandler()}
                               />
-                            ),
-                            desc: (
-                              <ChevronDownIcon
-                                aria-hidden="true"
-                                className="size-4 shrink-0 opacity-80"
-                              />
-                            ),
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </div>
-                      ) : (
-                        <span className="truncate">
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                        </span>
-                      )}
-                      {header.column.getCanResize() ? (
-                        <div
-                          aria-hidden="true"
-                          className="user-select-none absolute -end-2 top-0 z-10 flex h-full w-4 touch-none items-center justify-center before:absolute before:inset-y-2 before:w-px before:-translate-x-px before:bg-input"
-                          data-slot="column-resize-handle"
-                          onDoubleClick={() => header.column.resetSize()}
-                          onMouseDown={header.getResizeHandler()}
-                          style={{ cursor: "col-resize" }}
-                          onTouchStart={header.getResizeHandler()}
-                        />
-                      ) : null}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody className="in-data-overflow-x-start:before:rounded-ss-none in-data-overflow-x-end:before:rounded-se-none in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:first:*:[td]:first:rounded-ss-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:last:*:[td]:last:rounded-ee-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:first:*:[td]:last:rounded-se-none in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:last:*:[td]:first:rounded-es-none">
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    data-state={row.getIsSelected() ? "selected" : undefined}
-                    key={row.id}
-                    onClick={(event) => {
-                      if (shouldIgnoreRowSelectionClick(event.target)) return;
-                      row.toggleSelected();
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=left]:before:start-full data-[pinned=right]:before:end-full in-data-overflow-x-end:data-[pinned=right]:before:bg-linear-to-l data-[pinned=left]:max-md:before:hidden data-[pinned=left]:md:sticky data-[pinned=left]:md:left-(--pinned-left-offset) in-data-overflow-x-start:data-[pinned=left]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
-                        key={cell.id}
-                        {...getPinnedDataAttribute(cell.column)}
-                        style={{
-                          ...getPinningStyles(cell.column),
-                          width: getColumnDisplayWidth({
-                            columnId: cell.column.id,
-                            columnsTotalSize,
-                            fillerColumnId,
-                            headers,
-                            size: cell.column.getSize(),
-                            tableWidth,
-                          }),
-                        }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
+                            ) : null}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    No members found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          <CardFrameFooter className="flex items-center justify-between gap-2 border-t">
-            <p className="text-muted-foreground text-sm">
-              {table.getFilteredSelectedRowModel().rows.length > 0 ? (
-                <>
-                  <strong className="font-medium text-foreground">
-                    {table.getFilteredSelectedRowModel().rows.length}
-                  </strong>{" "}
-                  of{" "}
-                  <strong className="font-medium text-foreground">
-                    {table.getFilteredRowModel().rows.length}
-                  </strong>{" "}
-                  selected
-                </>
-              ) : (
-                <>
-                  <strong className="font-medium text-foreground">
-                    {table.getFilteredRowModel().rows.length}
-                  </strong>{" "}
-                  members
-                </>
-              )}
-            </p>
-          </CardFrameFooter>
-        </CardFrame>
+                  </TableHeader>
+                  <TableBody className="in-data-overflow-x-start:before:rounded-ss-none in-data-overflow-x-end:before:rounded-se-none in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:first:*:[td]:first:rounded-ss-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:last:*:[td]:last:rounded-ee-none in-data-overflow-x-end:in-data-[variant=card]:*:[tr]:first:*:[td]:last:rounded-se-none in-data-overflow-x-start:in-data-[variant=card]:*:[tr]:last:*:[td]:first:rounded-es-none">
+                    {table.getRowModel().rows.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          data-state={
+                            row.getIsSelected() ? "selected" : undefined
+                          }
+                          key={row.id}
+                          onClick={(event) => {
+                            if (shouldIgnoreRowSelectionClick(event.target))
+                              return;
+                            row.toggleSelected();
+                          }}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell
+                              className="before:pointer-events-none before:absolute before:inset-y-0 before:z-1 not-data-pinned:before:hidden before:w-4 before:from-card in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] before:to-transparent data-[pinned=start]:before:start-full data-[pinned=end]:before:end-full in-data-overflow-x-end:data-[pinned=end]:before:bg-linear-to-l data-[pinned=start]:max-md:before:hidden data-[pinned=start]:md:sticky data-[pinned=start]:md:start-(--pinned-start-offset) in-data-overflow-x-start:data-[pinned=start]:md:before:bg-linear-to-r dark:in-[[data-slot=table-row]:hover]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] dark:in-[[data-slot=table-row][data-state=selected]]:before:from-[color-mix(in_srgb,var(--card),var(--color-white)_4%)]"
+                              key={cell.id}
+                              {...getPinnedDataAttribute(cell.column)}
+                              style={{
+                                ...getPinningStyles(cell.column),
+                                width: getColumnDisplayWidth({
+                                  columnId: cell.column.id,
+                                  columnsTotalSize,
+                                  fillerColumnId,
+                                  headers,
+                                  size: cell.column.getSize(),
+                                  tableWidth,
+                                }),
+                              }}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          className="h-24 text-center"
+                          colSpan={columns.length}
+                        >
+                          No members found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <CardFrameFooter className="flex items-center justify-between gap-2 border-t">
+                  <p className="text-muted-foreground text-sm">
+                    {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+                      <>
+                        <strong className="font-medium text-foreground">
+                          {table.getFilteredSelectedRowModel().rows.length}
+                        </strong>{" "}
+                        of{" "}
+                        <strong className="font-medium text-foreground">
+                          {table.getFilteredRowModel().rows.length}
+                        </strong>{" "}
+                        selected
+                      </>
+                    ) : (
+                      <>
+                        <strong className="font-medium text-foreground">
+                          {table.getFilteredRowModel().rows.length}
+                        </strong>{" "}
+                        members
+                      </>
+                    )}
+                  </p>
+                </CardFrameFooter>
+              </CardFrame>
+            );
+          }}
+        </table.Subscribe>
       </div>
     </>
   );

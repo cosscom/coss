@@ -48,11 +48,17 @@ import {
 } from "@coss/ui/components/table";
 import {
   type ColumnDef,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ArrowUpRightIcon,
@@ -97,6 +103,18 @@ type TeamMember = {
   avatarUrl?: string;
   hasOptions?: boolean;
 };
+
+const features = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
 
 const members: TeamMember[] = [
   {
@@ -146,6 +164,15 @@ const members: TeamMember[] = [
     role: "OWNER",
   },
 ];
+
+function shouldIgnoreRowSelectionClick(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element &&
+    target.closest(
+      'a, button, input, select, textarea, [role="button"], [role="checkbox"], [data-slot="checkbox"], [data-slot="label"]',
+    ) !== null
+  );
+}
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -230,17 +257,16 @@ function getColumns({
 }: {
   showRoleColumn: boolean;
   showLastActiveColumn: boolean;
-}): ColumnDef<TeamMember>[] {
-  const cols: ColumnDef<TeamMember>[] = [
+}): ColumnDef<typeof features, TeamMember>[] {
+  const cols: ColumnDef<typeof features, TeamMember>[] = [
     {
       cell: ({ row }) => (
-        <Label className="before:absolute before:inset-0">
+        <Label>
           <Checkbox
             aria-label={`Select ${row.original.name}`}
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
           />
-          <span className="sr-only">{`Select ${row.original.name}`}</span>
         </Label>
       ),
       enableSorting: false,
@@ -330,7 +356,6 @@ export function TeamMembersPageClient() {
   const [searchValue, setSearchValue] = useState("");
   const [showRoleColumn, setShowRoleColumn] = useState(true);
   const [showLastActiveColumn, setShowLastActiveColumn] = useState(true);
-  const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([
     { desc: false, id: "name" },
   ]);
@@ -389,21 +414,21 @@ export function TeamMembersPageClient() {
     });
   }, [showLastActiveColumn, showRoleColumn]);
 
-  const table = useReactTable({
-    columns,
-    data: filteredMembers,
-    enableRowSelection: true,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.id,
-    getSortedRowModel: getSortedRowModel(),
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    state: {
-      rowSelection,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data: filteredMembers,
+      enableRowSelection: true,
+      enableSortingRemoval: false,
+      features,
+      getRowId: (row) => row.id,
+      onSortingChange: setSorting,
+      state: {
+        sorting,
+      },
     },
-  });
+    () => null,
+  );
 
   return (
     <>
@@ -521,100 +546,124 @@ export function TeamMembersPageClient() {
           </Button>
         </div>
 
-        <CardFrame className="w-full">
-          <Table variant="card" className="table-fixed">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const columnSize = header.column.getSize();
+        <table.Subscribe
+          selector={(state) => ({
+            rowSelection: state.rowSelection,
+            sorting: state.sorting,
+          })}
+        >
+          {() => (
+            <CardFrame className="w-full">
+              <Table variant="card" className="table-fixed">
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        const columnSize = header.column.getSize();
 
-                    return (
-                      <TableHead
-                        className={
-                          header.column.id === "name" ? "sm:w-auto!" : undefined
-                        }
-                        key={header.id}
-                        style={
-                          columnSize ? { width: `${columnSize}px` } : undefined
-                        }
-                      >
-                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                          <div
-                            className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
-                            onClick={header.column.getToggleSortingHandler()}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                header.column.getToggleSortingHandler()?.(
-                                  event,
-                                );
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
+                        return (
+                          <TableHead
+                            className={
+                              header.column.id === "name"
+                                ? "sm:w-auto!"
+                                : undefined
+                            }
+                            key={header.id}
+                            style={
+                              columnSize
+                                ? { width: `${columnSize}px` }
+                                : undefined
+                            }
                           >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
+                            {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                              <div
+                                className="flex h-full cursor-pointer select-none items-center justify-between gap-2"
+                                onClick={header.column.getToggleSortingHandler()}
+                                onKeyDown={(event) => {
+                                  if (
+                                    event.key === "Enter" ||
+                                    event.key === " "
+                                  ) {
+                                    event.preventDefault();
+                                    header.column.getToggleSortingHandler()?.(
+                                      event,
+                                    );
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                                {{
+                                  asc: (
+                                    <ChevronUpIcon
+                                      aria-hidden="true"
+                                      className="size-4 shrink-0 opacity-80"
+                                    />
+                                  ),
+                                  desc: (
+                                    <ChevronDownIcon
+                                      aria-hidden="true"
+                                      className="size-4 shrink-0 opacity-80"
+                                    />
+                                  ),
+                                }[header.column.getIsSorted() as string] ??
+                                  null}
+                              </div>
+                            ) : (
+                              flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )
                             )}
-                            {{
-                              asc: (
-                                <ChevronUpIcon
-                                  aria-hidden="true"
-                                  className="size-4 shrink-0 opacity-80"
-                                />
-                              ),
-                              desc: (
-                                <ChevronDownIcon
-                                  aria-hidden="true"
-                                  className="size-4 shrink-0 opacity-80"
-                                />
-                              ),
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        ) : (
-                          flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )
-                        )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    data-state={row.getIsSelected() ? "selected" : undefined}
-                    key={row.id}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        data-state={
+                          row.getIsSelected() ? "selected" : undefined
+                        }
+                        key={row.id}
+                        onClick={(event) => {
+                          if (shouldIgnoreRowSelectionClick(event.target))
+                            return;
+                          row.toggleSelected();
+                        }}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        className="h-24 text-center"
+                        colSpan={columns.length}
+                      >
+                        No members found.
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={columns.length}
-                  >
-                    No members found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardFrame>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardFrame>
+          )}
+        </table.Subscribe>
       </div>
     </>
   );

@@ -3,11 +3,14 @@
 import {
   type Column,
   type ColumnDef,
+  columnOrderingFeature,
+  columnPinningFeature,
+  columnResizingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ArrowLeftToLineIcon,
@@ -47,19 +50,31 @@ type Item = {
   performance: "Good" | "Very Good" | "Excellent" | "Outstanding";
 };
 
+const features = tableFeatures({
+  columnOrderingFeature,
+  columnPinningFeature,
+  columnSizingFeature,
+  columnResizingFeature,
+  columnVisibilityFeature,
+});
+
 // Helper function to compute pinning styles for columns
-const getPinningStyles = (column: Column<Item>): CSSProperties => {
+const getPinningStyles = (
+  column: Column<typeof features, Item, unknown>,
+): CSSProperties => {
   const isPinned = column.getIsPinned();
   return {
-    left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
+    insetInlineEnd:
+      isPinned === "end" ? `${column.getAfter("end")}px` : undefined,
+    insetInlineStart:
+      isPinned === "start" ? `${column.getStart("start")}px` : undefined,
     position: isPinned ? "sticky" : "relative",
-    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
     width: column.getSize(),
     zIndex: isPinned ? 1 : 0,
   };
 };
 
-const columns: ColumnDef<Item>[] = [
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     accessorKey: "name",
     cell: ({ row }) => (
@@ -121,7 +136,6 @@ const columns: ColumnDef<Item>[] = [
 
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -134,18 +148,18 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
-    columnResizeMode: "onChange",
-    columns,
-    data,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
+  const table = useTable(
+    {
+      columnResizeMode: "onChange",
+      columns,
+      data,
+      features,
     },
-  });
+    (state) => ({
+      columnPinning: state.columnPinning,
+      columnSizing: state.columnSizing,
+    }),
+  );
 
   return (
     <div>
@@ -161,20 +175,20 @@ export default function Component() {
               {headerGroup.headers.map((header) => {
                 const { column } = header;
                 const isPinned = column.getIsPinned();
-                const isLastLeftPinned =
-                  isPinned === "left" && column.getIsLastColumn("left");
-                const isFirstRightPinned =
-                  isPinned === "right" && column.getIsFirstColumn("right");
+                const isLastStartPinned =
+                  isPinned === "start" && column.getIsLastColumn("start");
+                const isFirstEndPinned =
+                  isPinned === "end" && column.getIsFirstColumn("end");
 
                 return (
                   <TableHead
-                    className="relative h-10 truncate border-t data-pinned:bg-muted/90 data-pinned:backdrop-blur-xs [&:not([data-pinned]):has(+[data-pinned])_div.cursor-col-resize:last-child]:opacity-0 [&[data-last-col=left]_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=left][data-last-col=left]]:border-r [&[data-pinned=right]:last-child_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=right][data-last-col=right]]:border-l [&[data-pinned][data-last-col]]:border-border"
+                    className="relative h-10 truncate border-t data-pinned:bg-muted/90 data-pinned:backdrop-blur-xs [&:not([data-pinned]):has(+[data-pinned])_div.cursor-col-resize:last-child]:opacity-0 [&[data-last-col=start]_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=end]:last-child_div.cursor-col-resize:last-child]:opacity-0 [&[data-pinned=end][data-last-col=end]]:border-s [&[data-pinned=start][data-last-col=start]]:border-e [&[data-pinned][data-last-col]]:border-border"
                     colSpan={header.colSpan}
                     data-last-col={
-                      isLastLeftPinned
-                        ? "left"
-                        : isFirstRightPinned
-                          ? "right"
+                      isLastStartPinned
+                        ? "start"
+                        : isFirstEndPinned
+                          ? "end"
                           : undefined
                     }
                     data-pinned={isPinned || undefined}
@@ -227,24 +241,24 @@ export default function Component() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => header.column.pin("left")}
+                                onClick={() => header.column.pin("start")}
                               >
                                 <ArrowLeftToLineIcon
                                   aria-hidden="true"
                                   className="opacity-60"
                                   size={16}
                                 />
-                                Stick to left
+                                Stick to start
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => header.column.pin("right")}
+                                onClick={() => header.column.pin("end")}
                               >
                                 <ArrowRightToLineIcon
                                   aria-hidden="true"
                                   className="opacity-60"
                                   size={16}
                                 />
-                                Stick to right
+                                Stick to end
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -270,26 +284,23 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => {
                   const { column } = cell;
                   const isPinned = column.getIsPinned();
-                  const isLastLeftPinned =
-                    isPinned === "left" && column.getIsLastColumn("left");
-                  const isFirstRightPinned =
-                    isPinned === "right" && column.getIsFirstColumn("right");
+                  const isLastStartPinned =
+                    isPinned === "start" && column.getIsLastColumn("start");
+                  const isFirstEndPinned =
+                    isPinned === "end" && column.getIsFirstColumn("end");
 
                   return (
                     <TableCell
-                      className="truncate data-pinned:bg-background/90 data-pinned:backdrop-blur-xs [&[data-pinned=left][data-last-col=left]]:border-r [&[data-pinned=right][data-last-col=right]]:border-l [&[data-pinned][data-last-col]]:border-border"
+                      className="truncate data-pinned:bg-background/90 data-pinned:backdrop-blur-xs [&[data-pinned=end][data-last-col=end]]:border-s [&[data-pinned=start][data-last-col=start]]:border-e [&[data-pinned][data-last-col]]:border-border"
                       data-last-col={
-                        isLastLeftPinned
-                          ? "left"
-                          : isFirstRightPinned
-                            ? "right"
+                        isLastStartPinned
+                          ? "start"
+                          : isFirstEndPinned
+                            ? "end"
                             : undefined
                       }
                       data-pinned={isPinned || undefined}
