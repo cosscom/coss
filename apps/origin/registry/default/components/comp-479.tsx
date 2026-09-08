@@ -2,11 +2,16 @@
 
 import {
   type ColumnDef,
+  columnResizingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -35,7 +40,19 @@ type Item = {
   performance: "Excellent" | "Good" | "Average" | "Poor";
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnSizingFeature,
+  columnResizingFeature,
+  columnVisibilityFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     accessorKey: "name",
     cell: ({ row }) => (
@@ -99,12 +116,6 @@ const columns: ColumnDef<Item>[] = [
 
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      desc: false,
-      id: "name",
-    },
-  ]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -117,18 +128,27 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
-    columnResizeMode: "onChange",
-    columns,
-    data,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
+  const table = useTable(
+    {
+      columnResizeMode: "onChange",
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        sorting: [
+          {
+            desc: false,
+            id: "name",
+          },
+        ],
+      },
     },
-  });
+    (state) => ({
+      columnSizing: state.columnSizing,
+      sorting: state.sorting,
+    }),
+  );
 
   return (
     <div>
@@ -223,10 +243,7 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell className="truncate" key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

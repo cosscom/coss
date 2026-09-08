@@ -325,14 +325,16 @@ function DayButton({
 
 // Month + year heading; the year is muted via formatToParts so it stays
 // locale-correct (some locales render "2026 June").
-function MonthCaption({
+export function MonthCaption({
   date,
   formatter,
   className,
+  muteYear = true,
 }: {
   date: Date;
   formatter: Intl.DateTimeFormat;
   className?: string;
+  muteYear?: boolean;
 }): ReactElement {
   return (
     <div
@@ -343,7 +345,10 @@ function MonthCaption({
     >
       {formatter.formatToParts(date).map((part) =>
         part.type === "year" ? (
-          <span key={`year-${part.value}`} className="text-muted-foreground/72">
+          <span
+            key={`year-${part.value}`}
+            className={muteYear ? "text-muted-foreground/72" : undefined}
+          >
             {part.value}
           </span>
         ) : (

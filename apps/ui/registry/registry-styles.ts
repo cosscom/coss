@@ -120,7 +120,7 @@ export const styles: Registry["items"] = [
       },
       theme: {
         "font-heading":
-          "var(--font-heading, ui-sans-serif, system-ui, sans-serif)",
+          "var(--font-sans, ui-sans-serif, system-ui, sans-serif)",
         "font-mono": "var(--font-mono, ui-monospace, monospace)",
         "font-sans": "var(--font-sans, ui-sans-serif, system-ui, sans-serif)",
       },

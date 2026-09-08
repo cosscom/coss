@@ -16,13 +16,23 @@ type AtomItem = Omit<Registry["items"][number], "meta"> & {
 
 export const atoms: AtomItem[] = [
   {
-    dependencies: ["isomorphic-dompurify", "marked", "lucide-react"],
+    dependencies: ["isomorphic-dompurify", "marked", "lucide-react", "motion"],
     description: "A full scheduling flow powered by Cal.com API v2.",
     files: [
       {
         path: "atoms/booker-1.tsx",
         target: "components/atoms/booker-1.tsx",
         type: "registry:block",
+      },
+      {
+        path: "atoms/booker/booker-confirm-form.tsx",
+        target: "components/atoms/booker/booker-confirm-form.tsx",
+        type: "registry:component",
+      },
+      {
+        path: "atoms/booker/booker-steps.tsx",
+        target: "components/atoms/booker/booker-steps.tsx",
+        type: "registry:component",
       },
       {
         path: "atoms/booker/booker-calendar.tsx",
@@ -102,14 +112,17 @@ export const atoms: AtomItem[] = [
       "@coss/card",
       "@coss/combobox",
       "@coss/empty",
+      "@coss/field",
+      "@coss/form",
+      "@coss/group",
       "@coss/input",
       "@coss/label",
       "@coss/popover",
       "@coss/scroll-area",
       "@coss/select",
-      "@coss/size-transition",
       "@coss/skeleton",
       "@coss/switch",
+      "@coss/textarea",
       "@coss/tooltip",
     ],
     meta: {

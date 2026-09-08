@@ -17,6 +17,25 @@ export type BookerLabels = {
   headerImageAlt: (hostName: string, eventTitle: string) => string;
   locationOptions: (count: number) => string;
   locationSelectOnNextStep: string;
+  confirmYourName: string;
+  confirmEmail: string;
+  confirmNameError: string;
+  confirmEmailError: string;
+  confirmNotes: string;
+  confirmNotesPlaceholder: string;
+  confirmLocation: string;
+  confirmGuestEmail: string;
+  confirmGuestEmailPlaceholder: string;
+  confirmRemoveGuest: string;
+  confirmAddGuests: string;
+  confirmBack: string;
+  confirmSubmit: string;
+  confirmSubmitting: string;
+  confirmError: string;
+  confirmSuccess: string;
+  confirmTermsPrefix: string;
+  confirmTerms: string;
+  confirmPrivacyPolicy: string;
 };
 
 const DEFAULT_BOOKER_LABELS: BookerLabels = {
@@ -40,6 +59,26 @@ const DEFAULT_BOOKER_LABELS: BookerLabels = {
     `Banner for ${eventTitle} with ${hostName}`,
   locationOptions: (count) => `${count} location options`,
   locationSelectOnNextStep: "Select on the next step",
+  confirmYourName: "Your name",
+  confirmEmail: "Email address",
+  confirmNameError: "Please enter your name.",
+  confirmEmailError: "Please enter a valid email address.",
+  confirmNotes: "Additional notes",
+  confirmNotesPlaceholder:
+    "Please share anything that will help prepare for our meeting.",
+  confirmLocation: "Location",
+  confirmGuestEmail: "Guest email",
+  confirmGuestEmailPlaceholder: "guest@example.com",
+  confirmRemoveGuest: "Remove guest",
+  confirmAddGuests: "Add guests",
+  confirmBack: "Back",
+  confirmSubmit: "Confirm",
+  confirmSubmitting: "Confirming…",
+  confirmError: "Could not create booking. Please try again.",
+  confirmSuccess: "Booking confirmed",
+  confirmTermsPrefix: "By proceeding, you agree to Cal.com's",
+  confirmTerms: "Terms",
+  confirmPrivacyPolicy: "Privacy Policy",
 };
 
 export function getBookerLabels(labels?: Partial<BookerLabels>): BookerLabels {

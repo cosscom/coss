@@ -46,7 +46,6 @@
         "@coss/separator",
         "@coss/sheet",
         "@coss/sidebar",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/slider",
         "@coss/spinner",
@@ -220,7 +219,7 @@
     },
     {
       "dependencies": [
-        "react-day-picker",
+        "@daypicker/react",
         "lucide-react"
       ],
       "files": [
@@ -730,19 +729,6 @@
       "type": "registry:ui"
     },
     {
-      "dependencies": [
-        "@base-ui/react"
-      ],
-      "files": [
-        {
-          "path": "registry/default/ui/size-transition.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "name": "size-transition",
-      "type": "registry:ui"
-    },
-    {
       "css": {
         "@keyframes skeleton": {
           "to": {
@@ -801,6 +787,9 @@
       "type": "registry:ui"
     },
     {
+      "dependencies": [
+        "@base-ui/react"
+      ],
       "files": [
         {
           "path": "registry/default/ui/table.tsx",
@@ -821,6 +810,9 @@
         }
       ],
       "name": "tabs",
+      "registryDependencies": [
+        "@coss/segmented-control"
+      ],
       "type": "registry:ui"
     },
     {
@@ -1587,6 +1579,33 @@
     },
     {
       "categories": [
+        "autocomplete",
+        "input",
+        "async",
+        "search"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Address autocomplete with Google Maps Places API",
+      "files": [
+        {
+          "path": "registry/default/particles/p-autocomplete-16.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+      },
+      "name": "p-autocomplete-16",
+      "registryDependencies": [
+        "@coss/autocomplete",
+        "@coss/spinner"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "avatar"
       ],
       "description": "Avatar with image and fallback",
@@ -2157,6 +2176,9 @@
           "type": "registry:block"
         }
       ],
+      "meta": {
+        "className": "**:data-[slot=preview]:flex"
+      },
       "name": "p-badge-19",
       "registryDependencies": [
         "@coss/badge",
@@ -3579,6 +3601,32 @@
     },
     {
       "categories": [
+        "calendar",
+        "autocomplete",
+        "field",
+        "time"
+      ],
+      "dependencies": [
+        "date-fns",
+        "lucide-react"
+      ],
+      "description": "Calendar with 24-hour autocomplete time input",
+      "files": [
+        {
+          "path": "registry/default/particles/p-calendar-25.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-calendar-25",
+      "registryDependencies": [
+        "@coss/calendar",
+        "@coss/autocomplete",
+        "@coss/field"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "date picker",
         "calendar",
         "popover",
@@ -4778,6 +4826,60 @@
       "registryDependencies": [
         "@coss/combobox",
         "@coss/select"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox multiple with stacked chips",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-19.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
+      },
+      "name": "p-combobox-19",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/badge",
+        "@coss/button",
+        "@coss/combobox"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "combobox",
+        "input"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Combobox multiple with stacked divided chips",
+      "files": [
+        {
+          "path": "registry/default/particles/p-combobox-20.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"
+      },
+      "name": "p-combobox-20",
+      "registryDependencies": [
+        "@coss/avatar",
+        "@coss/badge",
+        "@coss/button",
+        "@coss/combobox"
       ],
       "type": "registry:block"
     },
@@ -8250,6 +8352,60 @@
     },
     {
       "categories": [
+        "navigation",
+        "segmented control"
+      ],
+      "description": "Segmented navigation built with links",
+      "files": [
+        {
+          "path": "registry/default/particles/p-navigation-1.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-navigation-1",
+      "registryDependencies": [
+        "@coss/segmented-control"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "navigation",
+        "segmented control"
+      ],
+      "description": "Small segmented navigation built with links",
+      "files": [
+        {
+          "path": "registry/default/particles/p-navigation-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-navigation-2",
+      "registryDependencies": [
+        "@coss/segmented-control"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "navigation",
+        "segmented control"
+      ],
+      "description": "Large segmented navigation built with links",
+      "files": [
+        {
+          "path": "registry/default/particles/p-navigation-3.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-navigation-3",
+      "registryDependencies": [
+        "@coss/segmented-control"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "pagination"
       ],
       "description": "Pagination example",
@@ -8376,6 +8532,36 @@
       "registryDependencies": [
         "@coss/avatar",
         "@coss/button",
+        "@coss/popover"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "button",
+        "checkbox",
+        "checkbox group",
+        "group",
+        "popover"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Split button with popover to confirm multiple occurrences",
+      "files": [
+        {
+          "path": "registry/default/particles/p-popover-4.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-popover-4",
+      "registryDependencies": [
+        "@coss/badge",
+        "@coss/button",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/group",
+        "@coss/label",
         "@coss/popover"
       ],
       "type": "registry:block"
@@ -8578,6 +8764,63 @@
         "@coss/field",
         "@coss/fieldset",
         "@coss/radio-group"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "radio group",
+        "segmented control"
+      ],
+      "description": "Small segmented control built with a radio group",
+      "files": [
+        {
+          "path": "registry/default/particles/p-radio-group-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-radio-group-7",
+      "registryDependencies": [
+        "@coss/radio-group",
+        "@coss/segmented-control"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "radio group",
+        "segmented control"
+      ],
+      "description": "Segmented control built with a radio group",
+      "files": [
+        {
+          "path": "registry/default/particles/p-radio-group-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-radio-group-8",
+      "registryDependencies": [
+        "@coss/radio-group",
+        "@coss/segmented-control"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "radio group",
+        "segmented control"
+      ],
+      "description": "Large segmented control built with a radio group",
+      "files": [
+        {
+          "path": "registry/default/particles/p-radio-group-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-radio-group-9",
+      "registryDependencies": [
+        "@coss/radio-group",
+        "@coss/segmented-control"
       ],
       "type": "registry:block"
     },
@@ -9881,6 +10124,113 @@
     },
     {
       "categories": [
+        "switch",
+        "combobox",
+        "popover",
+        "time"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Weekly availability editor with time range combobox pickers",
+      "files": [
+        {
+          "path": "registry/default/particles/p-switch-7.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+        "colSpan": 2
+      },
+      "name": "p-switch-7",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/combobox",
+        "@coss/label",
+        "@coss/popover",
+        "@coss/select",
+        "@coss/switch",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "switch",
+        "combobox",
+        "group",
+        "popover",
+        "time"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Weekly availability editor with grouped time range controls",
+      "files": [
+        {
+          "path": "registry/default/particles/p-switch-8.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+        "colSpan": 2
+      },
+      "name": "p-switch-8",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/combobox",
+        "@coss/group",
+        "@coss/label",
+        "@coss/popover",
+        "@coss/switch",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "switch",
+        "combobox",
+        "group",
+        "popover",
+        "time"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Weekly availability editor with From/To labeled time groups",
+      "files": [
+        {
+          "path": "registry/default/particles/p-switch-9.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "meta": {
+        "className": "**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl",
+        "colSpan": 2
+      },
+      "name": "p-switch-9",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/checkbox",
+        "@coss/checkbox-group",
+        "@coss/combobox",
+        "@coss/group",
+        "@coss/label",
+        "@coss/popover",
+        "@coss/switch",
+        "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "table"
       ],
       "description": "Basic table",
@@ -10105,7 +10455,7 @@
       "categories": [
         "tabs"
       ],
-      "description": "Basic tabs",
+      "description": "Segmented control built with tabs",
       "files": [
         {
           "path": "registry/default/particles/p-tabs-1.tsx",
@@ -10355,6 +10705,40 @@
       "registryDependencies": [
         "@coss/tabs",
         "@coss/tooltip"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "tabs"
+      ],
+      "description": "Small segmented control built with tabs",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tabs-14.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tabs-14",
+      "registryDependencies": [
+        "@coss/tabs"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
+        "tabs"
+      ],
+      "description": "Large segmented control built with tabs",
+      "files": [
+        {
+          "path": "registry/default/particles/p-tabs-15.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-tabs-15",
+      "registryDependencies": [
+        "@coss/tabs"
       ],
       "type": "registry:block"
     },
@@ -11343,7 +11727,8 @@
       "dependencies": [
         "isomorphic-dompurify",
         "marked",
-        "lucide-react"
+        "lucide-react",
+        "motion"
       ],
       "description": "A full scheduling flow powered by Cal.com API v2.",
       "files": [
@@ -11351,6 +11736,16 @@
           "path": "registry/default/atoms/booker-1.tsx",
           "target": "components/atoms/booker-1.tsx",
           "type": "registry:block"
+        },
+        {
+          "path": "registry/default/atoms/booker/booker-confirm-form.tsx",
+          "target": "components/atoms/booker/booker-confirm-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/default/atoms/booker/booker-steps.tsx",
+          "target": "components/atoms/booker/booker-steps.tsx",
+          "type": "registry:component"
         },
         {
           "path": "registry/default/atoms/booker/booker-calendar.tsx",
@@ -11430,14 +11825,17 @@
         "@coss/card",
         "@coss/combobox",
         "@coss/empty",
+        "@coss/field",
+        "@coss/form",
+        "@coss/group",
         "@coss/input",
         "@coss/label",
         "@coss/popover",
         "@coss/scroll-area",
         "@coss/select",
-        "@coss/size-transition",
         "@coss/skeleton",
         "@coss/switch",
+        "@coss/textarea",
         "@coss/tooltip"
       ],
       "meta": {
@@ -11555,7 +11953,7 @@
           "sidebar-ring": "var(--color-neutral-400)"
         },
         "theme": {
-          "font-heading": "var(--font-heading, ui-sans-serif, system-ui, sans-serif)",
+          "font-heading": "var(--font-sans, ui-sans-serif, system-ui, sans-serif)",
           "font-mono": "var(--font-mono, ui-monospace, monospace)",
           "font-sans": "var(--font-sans, ui-sans-serif, system-ui, sans-serif)"
         }
@@ -11692,6 +12090,19 @@
     },
     {
       "dependencies": [
+        "class-variance-authority"
+      ],
+      "files": [
+        {
+          "path": "registry/default/lib/segmented-control.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "segmented-control",
+      "type": "registry:lib"
+    },
+    {
+      "dependencies": [
         "clsx",
         "tailwind-merge"
       ],
@@ -11738,6 +12149,11 @@
         {
           "path": "registry/default/lib/cal-api/types.ts",
           "target": "lib/cal-api/types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/default/lib/cal-api/bookings.ts",
+          "target": "lib/cal-api/bookings.ts",
           "type": "registry:lib"
         }
       ],

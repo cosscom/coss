@@ -78,9 +78,11 @@ coss components use three CSS custom properties for typography:
 
 - `--font-sans` — Body text, buttons, labels, and most UI elements
 - `--font-mono` — Code blocks, `<kbd>`, monospace text
-- `--font-heading` — Dialog and AlertDialog titles (defaults to Inter, same as `--font-sans`)
+- `--font-heading` — Dialog and AlertDialog titles (`--font-heading: var(--font-sans)` in theme)
 
 When you use `@coss/style`, `@coss/fonts` is installed automatically — Inter for `--font-sans` and `--font-heading`, Geist Mono for `--font-mono` — all wired in your `layout.tsx`.
+
+coss.com uses **Cal Sans 2.0** variable from `@coss/ui/fonts` for both body and headings. By default the theme aliases `--font-heading` to `--font-sans`, so one `--font-sans` variable is enough. You can wire a separate `--font-heading` when titles should use a different family — see [Styling — Font Variables](/ui/docs/styling#font-variables).
 
 ### Custom fonts
 
@@ -91,8 +93,23 @@ import { Inter } from "next/font/google";
 import { JetBrains_Mono } from "next/font/google";
 
 const inter = Inter({ variable: "--font-sans", subsets: ["latin"] });
-const interHeading = Inter({ variable: "--font-heading", subsets: ["latin"] });
 const jetbrainsMono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"] });
+```
+
+When sans and heading share one family, only `--font-sans` needs to be set — the theme aliases `--font-heading` to it.
+
+For a separate heading font, add `--font-heading` in your layout and update the theme token:
+
+```tsx
+const interDisplay = Inter({ variable: "--font-heading", subsets: ["latin"], weight: "700" });
+
+<body className={`${inter.variable} ${interDisplay.variable} ${jetbrainsMono.variable} font-sans`}>
+```
+
+```css
+@theme inline {
+  --font-heading: var(--font-heading);
+}
 ```
 
 **Note:** Next.js starters default to variable names like `--font-geist-sans`, which don't match coss's expected `--font-sans`. If fonts appear broken after setup, check that the variable names match.

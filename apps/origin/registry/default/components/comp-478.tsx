@@ -3,17 +3,24 @@
 import {
   type Column,
   type ColumnDef,
-  type ColumnFiltersState,
+  columnFacetingFeature,
+  columnFilteringFeature,
+  columnVisibilityFeature,
+  createFacetedMinMaxValues,
+  createFacetedRowModel,
+  createFacetedUniqueValues,
+  createFilteredRowModel,
+  createSortedRowModel,
+  filterFn_includesString,
+  filterFn_inNumberRange,
   flexRender,
-  getCoreRowModel,
-  getFacetedMinMaxValues,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getSortedRowModel,
-  type RowData,
-  type SortingState,
-  useReactTable,
+  metaHelper,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ChevronDownIcon,
@@ -21,7 +28,7 @@ import {
   ExternalLinkIcon,
   SearchIcon,
 } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Checkbox } from "@/registry/default/ui/checkbox";
 import { Input } from "@/registry/default/ui/input";
@@ -42,15 +49,6 @@ import {
   TableRow,
 } from "@/registry/default/ui/table";
 
-declare module "@tanstack/react-table" {
-  //allows us to define custom properties for our columns
-  // Type parameters TData and TValue must match TanStack Table's declaration exactly
-  // biome-ignore lint: Type parameters required for module augmentation compatibility
-  interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "range" | "select";
-  }
-}
-
 type Item = {
   id: string;
   keyword: string;
@@ -63,7 +61,31 @@ type Item = {
   link: string;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnFilteringFeature,
+  columnFacetingFeature,
+  columnVisibilityFeature,
+  facetedMinMaxValues: createFacetedMinMaxValues(),
+  facetedRowModel: createFacetedRowModel(),
+  facetedUniqueValues: createFacetedUniqueValues(),
+  filteredRowModel: createFilteredRowModel(),
+  filterFns: {
+    includesString: filterFn_includesString,
+    inNumberRange: filterFn_inNumberRange,
+  },
+  columnMeta: metaHelper<{
+    filterVariant?: "text" | "range" | "select";
+  }>(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -254,31 +276,27 @@ const items: Item[] = [
 ];
 
 export default function Component() {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = useState<SortingState>([
+  const table = useTable(
     {
-      desc: false,
-      id: "traffic",
+      columns,
+      data: items,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        sorting: [
+          {
+            desc: false,
+            id: "traffic",
+          },
+        ],
+      },
     },
-  ]);
-
-  const table = useReactTable({
-    columns,
-    data: items,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(), // generate min/max values for range filter
-    getFacetedRowModel: getFacetedRowModel(), // client-side faceting
-    getFacetedUniqueValues: getFacetedUniqueValues(), // generate unique values for select filter/autocomplete
-    getFilteredRowModel: getFilteredRowModel(), //client-side filtering
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-    state: {
-      columnFilters,
-      sorting,
-    },
-  });
+    (state) => ({
+      columnFilters: state.columnFilters,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   const keywordColumn = table.getColumn("keyword");
   const intentsColumn = table.getColumn("intents");
@@ -431,7 +449,11 @@ export default function Component() {
   );
 }
 
-function Filter({ column }: { column: Column<Item, unknown> }) {
+function Filter({
+  column,
+}: {
+  column: Column<typeof features, Item, unknown>;
+}) {
   const id = useId();
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};

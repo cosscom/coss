@@ -193,6 +193,7 @@ function deriveBookerData(
       eventTypeImageUrl: result.raw.bannerUrl || eventType.eventTypeImageUrl,
       eventTypeLocations: eventType.eventTypeLocations,
       eventTypeTitle: eventType.eventTypeTitle,
+      disableGuests: eventType.disableGuests ?? false,
       hostAvatarUrl: host.hostAvatarUrl,
       hostAvatars,
       hostName:
@@ -345,15 +346,27 @@ type BookerTimePickerState = {
 
 export type BookerStep = "select" | "confirm";
 
+export type BookerConfirmFormContext = {
+  disableGuests?: boolean;
+  durationMinutes: number;
+  includeLengthInMinutes: boolean;
+  locale: string;
+  locations?: BookerMeta["eventTypeLocations"];
+  onBack: () => void;
+  selectedDate?: Date;
+  selectedTime: string | null;
+  target: BookerTarget;
+  timeZone: string;
+};
+
 export type UseBookerResult = {
   calendarProps: BookerCalendarState;
+  confirmFormProps: BookerConfirmFormContext;
   durationProps: BookerDurationState;
   error: BookerError | null;
   loadingState: BookerLoadingState;
   meta: BookerMeta | null;
-  onBack: () => void;
   retry: () => void;
-  selectedTime: string | null;
   step: BookerStep;
   timePickerProps: BookerTimePickerState;
   timezoneProps: BookerTimezoneState;
@@ -439,6 +452,12 @@ export function useBooker({
   );
   const resolvedRef = useRef<ResolvedEventType>(
     hydratedData?.resolved ?? { eventTypeId: null, eventTypeSlug: null },
+  );
+  const [_eventTypeId, setEventTypeId] = useState<number | null>(
+    hydratedData?.resolved.eventTypeId ?? null,
+  );
+  const [_eventTypeSlug, setEventTypeSlug] = useState<string | null>(
+    hydratedData?.resolved.eventTypeSlug ?? null,
   );
   const lastIdentityRef = useRef<string | null>(null);
   const lastTimeZoneRef = useRef<string | null>(null);
@@ -558,6 +577,8 @@ export function useBooker({
         }
 
         resolvedRef.current = result.resolved;
+        setEventTypeId(result.resolved.eventTypeId);
+        setEventTypeSlug(result.resolved.eventTypeSlug);
 
         for (let offset = 0; offset < WINDOW_MONTHS; offset += 1) {
           const month = new Date(
@@ -681,6 +702,8 @@ export function useBooker({
         inFlightMonthsRef.current.clear();
         availabilityRequestVersionRef.current += 1;
         resolvedRef.current = { eventTypeId: null, eventTypeSlug: null };
+        setEventTypeId(null);
+        setEventTypeSlug(null);
         hasMultiDurationOptionsRef.current = false;
         slotsCacheRef.current = new Map();
         slotsByDateRef.current = {};
@@ -963,15 +986,41 @@ export function useBooker({
     setStep("confirm");
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setStep("select");
-  };
+  }, []);
 
   const initialLoading = !meta;
   const currentMonthCovered = coveredMonthsRef.current.has(
     buildKey(currentMonth),
   );
   const availabilityLoading = isPending || !currentMonthCovered;
+
+  const confirmFormProps = useMemo((): BookerConfirmFormContext => {
+    return {
+      disableGuests: meta?.disableGuests,
+      durationMinutes: selectedDurationMinutes,
+      includeLengthInMinutes: (meta?.eventTypeDurationOptions?.length ?? 0) > 1,
+      locale,
+      locations: meta?.eventTypeLocations,
+      onBack: handleBack,
+      selectedDate,
+      selectedTime: _selectedTime,
+      target,
+      timeZone: selectedTimeZone,
+    };
+  }, [
+    _selectedTime,
+    locale,
+    meta?.disableGuests,
+    meta?.eventTypeDurationOptions,
+    meta?.eventTypeLocations,
+    selectedDate,
+    selectedDurationMinutes,
+    selectedTimeZone,
+    target,
+    handleBack,
+  ]);
 
   return {
     calendarProps: {
@@ -987,6 +1036,7 @@ export function useBooker({
       startMonth,
       today: todayStart,
     },
+    confirmFormProps,
     durationProps: {
       onValueChange: setSelectedDurationMinutes,
       value: selectedDurationMinutes,
@@ -998,9 +1048,7 @@ export function useBooker({
       initial: initialLoading,
     },
     meta,
-    onBack: handleBack,
     retry,
-    selectedTime: _selectedTime,
     step,
     timePickerProps: {
       availabilityLoading,

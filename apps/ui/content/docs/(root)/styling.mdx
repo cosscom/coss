@@ -18,7 +18,7 @@ See [Get Started](/ui/docs/get-started) for installing with the CLI. If you pref
 ```css title="app/globals.css"
 @theme inline {
   --font-sans: var(--font-sans);
-  --font-heading: var(--font-heading);
+  --font-heading: var(--font-sans);
   --font-mono: var(--font-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -165,23 +165,43 @@ See [Get Started](/ui/docs/get-started) for installing with the CLI. If you pref
 
 ## Font Variables
 
-Components like Dialog, AlertDialog, Sheet, and Empty use the `font-heading` class for titles. The coss style preset defines `--font-sans`, `--font-heading`, and `--font-mono` with system font fallbacks. To use custom fonts, define these variables in your layout using `next/font`:
+Components like Dialog, AlertDialog, Sheet, and Empty use the `font-heading` class for titles. The coss style preset defines `--font-sans`, `--font-heading`, and `--font-mono` with system font fallbacks.
+
+When you install `@coss/style` via the CLI, Inter is used for `--font-sans` and `--font-heading`, with Geist Mono for `--font-mono`. coss.com uses **Cal Sans 2.0** variable from `@coss/ui/fonts` for both body and headings.
+
+By default, `--font-heading` is aliased to `--font-sans` in the theme. Pair `font-heading` with a weight utility such as `font-bold` or `font-semibold` where needed.
+
+### Custom fonts
+
+To use your own fonts, define the variables in your layout with `next/font`:
 
 ```tsx title="app/layout.tsx"
-import { Geist, Geist_Mono } from "next/font/google";
-
-const fontSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
-const fontHeading = Geist({ variable: "--font-heading", subsets: ["latin"], weight: "600" });
-const fontMono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
+import { fontMono, fontSans } from "@coss/ui/fonts";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} font-sans`}>
+      <body className={`${fontSans.variable} ${fontMono.variable} font-sans`}>
         {children}
       </body>
     </html>
   );
+}
+```
+
+When sans and heading share one family, only `--font-sans` needs to be set — the theme aliases `--font-heading` to it.
+
+For a separate heading font, wire `--font-heading` in your layout and point the theme token at it:
+
+```tsx title="app/layout.tsx"
+import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
+
+<body className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} font-sans`}>
+```
+
+```css title="app/globals.css"
+@theme inline {
+  --font-heading: var(--font-heading);
 }
 ```
 

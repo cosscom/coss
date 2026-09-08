@@ -763,24 +763,6 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
-  "size-transition": {
-    name: "size-transition",
-    description: "",
-    type: "registry:ui",
-    registryDependencies: undefined,
-    files: [{
-      path: "registry/default/ui/size-transition.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/ui/size-transition.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: undefined,
-    meta: undefined,
-  },
   "skeleton": {
     name: "skeleton",
     description: "",
@@ -875,7 +857,7 @@ export const Index: Record<string, any> = {
     name: "tabs",
     description: "",
     type: "registry:ui",
-    registryDependencies: undefined,
+    registryDependencies: ["@coss/segmented-control"],
     files: [{
       path: "registry/default/ui/tabs.tsx",
       type: "registry:ui",
@@ -1501,6 +1483,24 @@ export const Index: Record<string, any> = {
     categories: ["autocomplete","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-autocomplete-16": {
+    name: "p-autocomplete-16",
+    description: "Address autocomplete with Google Maps Places API",
+    type: "registry:block",
+    registryDependencies: ["@coss/autocomplete","@coss/spinner"],
+    files: [{
+      path: "registry/default/particles/p-autocomplete-16.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-autocomplete-16.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["autocomplete","input","async","search"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
   "p-avatar-1": {
     name: "p-avatar-1",
     description: "Avatar with image and fallback",
@@ -2093,7 +2093,7 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["badge","checkbox"],
-    meta: undefined,
+    meta: {"className":"**:data-[slot=preview]:flex"},
   },
   "p-badge-20": {
     name: "p-badge-20",
@@ -3391,6 +3391,24 @@ export const Index: Record<string, any> = {
     categories: ["calendar"],
     meta: {"colSpan":2},
   },
+  "p-calendar-25": {
+    name: "p-calendar-25",
+    description: "Calendar with 24-hour autocomplete time input",
+    type: "registry:block",
+    registryDependencies: ["@coss/calendar","@coss/autocomplete","@coss/field"],
+    files: [{
+      path: "registry/default/particles/p-calendar-25.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-calendar-25.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["calendar","autocomplete","field","time"],
+    meta: undefined,
+  },
   "p-date-picker-1": {
     name: "p-date-picker-1",
     description: "Basic date picker",
@@ -4272,6 +4290,42 @@ export const Index: Record<string, any> = {
     }),
     categories: ["combobox","select"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-combobox-19": {
+    name: "p-combobox-19",
+    description: "Combobox multiple with stacked chips",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/badge","@coss/button","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-19.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-19.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
+  },
+  "p-combobox-20": {
+    name: "p-combobox-20",
+    description: "Combobox multiple with stacked divided chips",
+    type: "registry:block",
+    registryDependencies: ["@coss/avatar","@coss/badge","@coss/button","@coss/combobox"],
+    files: [{
+      path: "registry/default/particles/p-combobox-20.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-combobox-20.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["combobox","input"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-80"},
   },
   "p-command-1": {
     name: "p-command-1",
@@ -7135,6 +7189,60 @@ export const Index: Record<string, any> = {
     categories: ["number field","input"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
   },
+  "p-navigation-1": {
+    name: "p-navigation-1",
+    description: "Segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-1.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-1.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
+  "p-navigation-2": {
+    name: "p-navigation-2",
+    description: "Small segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
+  "p-navigation-3": {
+    name: "p-navigation-3",
+    description: "Large segmented navigation built with links",
+    type: "registry:block",
+    registryDependencies: ["@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-navigation-3.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-navigation-3.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["navigation","segmented control"],
+    meta: undefined,
+  },
   "p-pagination-1": {
     name: "p-pagination-1",
     description: "Pagination example",
@@ -7241,6 +7349,24 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["avatar","button","popover"],
+    meta: undefined,
+  },
+  "p-popover-4": {
+    name: "p-popover-4",
+    description: "Split button with popover to confirm multiple occurrences",
+    type: "registry:block",
+    registryDependencies: ["@coss/badge","@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/group","@coss/label","@coss/popover"],
+    files: [{
+      path: "registry/default/particles/p-popover-4.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-popover-4.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["button","checkbox","checkbox group","group","popover"],
     meta: undefined,
   },
   "p-preview-card-1": {
@@ -7422,6 +7548,60 @@ export const Index: Record<string, any> = {
     }),
     categories: ["radio group","form"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-[320px]"},
+  },
+  "p-radio-group-7": {
+    name: "p-radio-group-7",
+    description: "Small segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
+  },
+  "p-radio-group-8": {
+    name: "p-radio-group-8",
+    description: "Segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
+  },
+  "p-radio-group-9": {
+    name: "p-radio-group-9",
+    description: "Large segmented control built with a radio group",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/segmented-control"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","segmented control"],
+    meta: undefined,
   },
   "p-scroll-area-1": {
     name: "p-scroll-area-1",
@@ -8575,6 +8755,60 @@ export const Index: Record<string, any> = {
     categories: ["switch"],
     meta: undefined,
   },
+  "p-switch-7": {
+    name: "p-switch-7",
+    description: "Weekly availability editor with time range combobox pickers",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/label","@coss/popover","@coss/select","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-7.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-7.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-switch-8": {
+    name: "p-switch-8",
+    description: "Weekly availability editor with grouped time range controls",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/group","@coss/label","@coss/popover","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-8.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-8.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","group","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
+  "p-switch-9": {
+    name: "p-switch-9",
+    description: "Weekly availability editor with From/To labeled time groups",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/checkbox","@coss/checkbox-group","@coss/combobox","@coss/group","@coss/label","@coss/popover","@coss/switch","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-switch-9.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-switch-9.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["switch","combobox","group","popover","time"],
+    meta: {"className":"**:data-[slot=preview]:w-full sm:**:data-[slot=preview]:max-w-4xl","colSpan":2},
+  },
   "p-table-1": {
     name: "p-table-1",
     description: "Basic table",
@@ -8721,7 +8955,7 @@ export const Index: Record<string, any> = {
   },
   "p-tabs-1": {
     name: "p-tabs-1",
-    description: "Basic tabs",
+    description: "Segmented control built with tabs",
     type: "registry:block",
     registryDependencies: ["@coss/tabs"],
     files: [{
@@ -8951,6 +9185,42 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     categories: ["tabs","tooltip"],
+    meta: undefined,
+  },
+  "p-tabs-14": {
+    name: "p-tabs-14",
+    description: "Small segmented control built with tabs",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-14.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-14.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs"],
+    meta: undefined,
+  },
+  "p-tabs-15": {
+    name: "p-tabs-15",
+    description: "Large segmented control built with tabs",
+    type: "registry:block",
+    registryDependencies: ["@coss/tabs"],
+    files: [{
+      path: "registry/default/particles/p-tabs-15.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-tabs-15.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["tabs"],
     meta: undefined,
   },
   "p-textarea-1": {
@@ -9857,11 +10127,19 @@ export const Index: Record<string, any> = {
     name: "booker-1",
     description: "A full scheduling flow powered by Cal.com API v2.",
     type: "registry:block",
-    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/size-transition","@coss/skeleton","@coss/switch","@coss/tooltip"],
+    registryDependencies: ["@coss/avatar","@coss/button","@coss/cal-api","@coss/card","@coss/combobox","@coss/empty","@coss/field","@coss/form","@coss/group","@coss/input","@coss/label","@coss/popover","@coss/scroll-area","@coss/select","@coss/skeleton","@coss/switch","@coss/textarea","@coss/tooltip"],
     files: [{
       path: "registry/default/atoms/booker-1.tsx",
       type: "registry:block",
       target: "components/atoms/booker-1.tsx"
+    },{
+      path: "registry/default/atoms/booker/booker-confirm-form.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-confirm-form.tsx"
+    },{
+      path: "registry/default/atoms/booker/booker-steps.tsx",
+      type: "registry:component",
+      target: "components/atoms/booker/booker-steps.tsx"
     },{
       path: "registry/default/atoms/booker/booker-calendar.tsx",
       type: "registry:component",
@@ -9937,6 +10215,24 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "segmented-control": {
+    name: "segmented-control",
+    description: "",
+    type: "registry:lib",
+    registryDependencies: undefined,
+    files: [{
+      path: "registry/default/lib/segmented-control.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/lib/segmented-control.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "utils": {
     name: "utils",
     description: "",
@@ -9984,6 +10280,10 @@ export const Index: Record<string, any> = {
       path: "registry/default/lib/cal-api/types.ts",
       type: "registry:lib",
       target: "lib/cal-api/types.ts"
+    },{
+      path: "registry/default/lib/cal-api/bookings.ts",
+      type: "registry:lib",
+      target: "lib/cal-api/bookings.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/lib/cal-api/client.ts")

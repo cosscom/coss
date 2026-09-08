@@ -124,13 +124,24 @@ export type Booking = {
   rescheduledFromUid?: string;
 };
 
+export type BookingLocationInput =
+  | { type: "integration"; integration: string }
+  | { type: "address" }
+  | { type: "link" }
+  | { type: "phone" }
+  | { type: "organizersDefaultApp" };
+
 export type CreateBookingInput = {
   start: string;
-  eventTypeId: number;
+  eventTypeId?: number;
+  eventTypeSlug?: string;
+  username?: string;
+  teamSlug?: string;
+  organizationSlug?: string;
   attendee: BookingAttendee;
   guests?: string[];
   bookingFieldsResponses?: Record<string, unknown>;
-  location?: string;
+  location?: BookingLocationInput | string;
   metadata?: Record<string, unknown>;
   lengthInMinutes?: number;
 };
