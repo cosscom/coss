@@ -7,12 +7,12 @@ This directory contains shared font files and configurations used across all app
 Import fonts directly from the shared UI package:
 
 ```tsx
-import { fontSans, fontHeading } from "@coss/ui/fonts";
+import { fontMono, fontSans } from "@coss/ui/fonts";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${fontSans.variable} ${fontHeading.variable}`}>
+      <body className={`${fontSans.variable} ${fontMono.variable} font-sans`}>
         {children}
       </body>
     </html>
@@ -20,10 +20,29 @@ export default function RootLayout({ children }) {
 }
 ```
 
+`--font-heading` is aliased to `--font-sans` in the theme (`--font-heading: var(--font-sans)`). Apply the `font-heading` class on titles and headings, with `font-bold` or `font-semibold` as needed.
+
 ## Available Fonts
 
-- `fontSans` - Cal Sans UI variable font (supports multiple weights and modes)
-- `fontHeading` - Cal Sans Regular font
+- `fontSans` — Cal Sans 2.0 variable font (`CalSansVF.woff2`)
+- `fontHeading` — Alias of `fontSans`; use when wiring a separate `--font-heading` variable
+- `fontMono` — Paper Mono for code and monospace UI
+
+## Separate heading font
+
+To use a different family for headings, set `--font-heading` in your layout and point the theme token at it:
+
+```tsx
+import { fontHeading, fontMono, fontSans } from "@coss/ui/fonts";
+
+<body className={`${fontSans.variable} ${fontHeading.variable} ${fontMono.variable} font-sans`}>
+```
+
+```css
+@theme inline {
+  --font-heading: var(--font-heading);
+}
+```
 
 ## Adding New Fonts
 

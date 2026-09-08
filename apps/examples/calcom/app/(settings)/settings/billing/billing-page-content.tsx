@@ -45,10 +45,10 @@ import {
   PopoverTrigger,
 } from "@coss/ui/components/popover";
 import { SelectButton } from "@coss/ui/components/select";
+import type { DateRange } from "@daypicker/react";
 import { ExternalLinkIcon, FileTextIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
 import {
   AppHeader,
   AppHeaderContent,

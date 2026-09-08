@@ -2,13 +2,18 @@
 
 import {
   type ColumnDef,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type PaginationState,
-  type SortingState,
-  useReactTable,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import {
   ChevronDownIcon,
@@ -54,7 +59,21 @@ type Item = {
   balance: number;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -134,18 +153,6 @@ const columns: ColumnDef<Item>[] = [
 export default function Component() {
   const pageSize = 5;
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: pageSize,
-  });
-
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      desc: false,
-      id: "name",
-    },
-  ]);
-
   const [data, setData] = useState<Item[]>([]);
   useEffect(() => {
     async function fetchPosts() {
@@ -158,23 +165,34 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
-    columns,
-    data,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    state: {
-      pagination,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize,
+        },
+        sorting: [
+          {
+            desc: false,
+            id: "name",
+          },
+        ],
+      },
     },
-  });
+    (state) => ({
+      pagination: state.pagination,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
-    currentPage: table.getState().pagination.pageIndex + 1,
+    currentPage: table.state.pagination.pageIndex + 1,
     paginationItemsToDisplay: 5,
     totalPages: table.getPageCount(),
   });
@@ -285,7 +303,7 @@ export default function Component() {
         >
           Page{" "}
           <span className="text-foreground">
-            {table.getState().pagination.pageIndex + 1}
+            {table.state.pagination.pageIndex + 1}
           </span>{" "}
           of <span className="text-foreground">{table.getPageCount()}</span>
         </p>
@@ -317,8 +335,7 @@ export default function Component() {
 
               {/* Page number buttons */}
               {pages.map((page) => {
-                const isActive =
-                  page === table.getState().pagination.pageIndex + 1;
+                const isActive = page === table.state.pagination.pageIndex + 1;
                 return (
                   <PaginationItem key={page}>
                     <Button
@@ -364,7 +381,7 @@ export default function Component() {
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
-            value={table.getState().pagination.pageSize.toString()}
+            value={table.state.pagination.pageSize.toString()}
           >
             <SelectTrigger
               className="w-fit whitespace-nowrap"

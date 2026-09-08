@@ -8,14 +8,10 @@ export const fontMono = localFont({
 
 export const fontSans = localFont({
   display: "swap",
-  src: "./CalSansUI[wght,GEOM].woff2",
+  src: "./CalSansVF.woff2",
   variable: "--font-sans",
   weight: "300 700",
 });
 
-export const fontHeading = localFont({
-  display: "swap",
-  src: "./CalSans-Regular.woff2",
-  variable: "--font-heading",
-  weight: "400 600",
-});
+/** Same variable font as `fontSans`; optional when wiring a separate `--font-heading`. */
+export const fontHeading = fontSans;

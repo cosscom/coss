@@ -1,7 +1,7 @@
 "use client";
 
+import type { DropdownNavProps, DropdownProps } from "@daypicker/react";
 import { useState } from "react";
-import type { DropdownNavProps, DropdownProps } from "react-day-picker";
 import { Calendar } from "@/registry/default/ui/calendar";
 import {
   Select,

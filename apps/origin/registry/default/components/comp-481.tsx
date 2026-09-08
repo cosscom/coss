@@ -21,12 +21,17 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   type Cell,
   type ColumnDef,
+  columnOrderingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   type Header,
-  type SortingState,
-  useReactTable,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, GripVerticalIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useId, useState } from "react";
@@ -50,7 +55,19 @@ type Item = {
   balance: number;
 };
 
-const columns: ColumnDef<Item>[] = [
+const features = tableFeatures({
+  columnOrderingFeature,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Item>[] = [
   {
     accessorKey: "name",
     cell: ({ row }) => (
@@ -97,12 +114,10 @@ const columns: ColumnDef<Item>[] = [
   },
 ];
 
+const initialColumnOrder = columns.map((column) => column.id as string);
+
 export default function Component() {
   const [data, setData] = useState<Item[]>([]);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnOrder, setColumnOrder] = useState<string[]>(
-    columns.map((column) => column.id as string),
-  );
 
   useEffect(() => {
     async function fetchPosts() {
@@ -115,26 +130,27 @@ export default function Component() {
     fetchPosts();
   }, []);
 
-  const table = useReactTable({
-    columnResizeMode: "onChange",
-    columns,
-    data,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onColumnOrderChange: setColumnOrder,
-    onSortingChange: setSorting,
-    state: {
-      columnOrder,
-      sorting,
+  const table = useTable(
+    {
+      columns,
+      data,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        columnOrder: initialColumnOrder,
+      },
     },
-  });
+    (state) => ({
+      columnOrder: state.columnOrder,
+      sorting: state.sorting,
+    }),
+  );
 
   // reorder columns after drag & drop
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setColumnOrder((columnOrder) => {
+      table.setColumnOrder((columnOrder) => {
         const oldIndex = columnOrder.indexOf(active.id as string);
         const newIndex = columnOrder.indexOf(over.id as string);
         return arrayMove(columnOrder, oldIndex, newIndex); //this is just a splice util
@@ -161,7 +177,7 @@ export default function Component() {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-muted/50" key={headerGroup.id}>
               <SortableContext
-                items={columnOrder}
+                items={table.state.columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
                 {headerGroup.headers.map((header) => (
@@ -174,13 +190,10 @@ export default function Component() {
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <SortableContext
-                    items={columnOrder}
+                    items={table.state.columnOrder}
                     key={cell.id}
                     strategy={horizontalListSortingStrategy}
                   >
@@ -220,7 +233,7 @@ export default function Component() {
 const DraggableTableHeader = ({
   header,
 }: {
-  header: Header<Item, unknown>;
+  header: Header<typeof features, Item, unknown>;
 }) => {
   const {
     attributes,
@@ -320,7 +333,11 @@ const DraggableTableHeader = ({
   );
 };
 
-const DragAlongCell = ({ cell }: { cell: Cell<Item, unknown> }) => {
+const DragAlongCell = ({
+  cell,
+}: {
+  cell: Cell<typeof features, Item, unknown>;
+}) => {
   const { isDragging, setNodeRef, transform, transition } = useSortable({
     id: cell.column.id,
   });

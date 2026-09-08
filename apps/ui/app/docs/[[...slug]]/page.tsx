@@ -66,7 +66,7 @@ export default async function Page(props: {
                 <div className="flex min-w-0 flex-col gap-8">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                      <h1 className="scroll-m-20 font-heading font-semibold text-3xl xl:text-4xl">
+                      <h1 className="scroll-m-20 font-bold font-heading text-3xl xl:text-4xl">
                         {doc.title}
                       </h1>
                       {doc.description && (
@@ -113,6 +113,7 @@ export default async function Page(props: {
       <div className="sticky top-(--header-height) z-30 ms-auto hidden h-[calc(100svh-var(--header-height))] w-72 flex-col overflow-hidden overscroll-none xl:flex">
         <ScrollArea
           className="**:data-[slot=scroll-area-scrollbar]:hidden"
+          overscrollContain
           scrollFade
         >
           <div className="flex min-h-0 flex-col gap-2 py-2">

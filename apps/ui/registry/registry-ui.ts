@@ -199,7 +199,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
-    dependencies: ["react-day-picker", "lucide-react"],
+    dependencies: ["@daypicker/react", "lucide-react"],
     files: [
       {
         path: "ui/calendar.tsx",
@@ -682,6 +682,7 @@ export const ui: Registry["items"] = [
     type: "registry:ui",
   },
   {
+    dependencies: ["@base-ui/react"],
     files: [
       {
         path: "ui/table.tsx",
@@ -700,6 +701,7 @@ export const ui: Registry["items"] = [
       },
     ],
     name: "tabs",
+    registryDependencies: ["@coss/segmented-control"],
     type: "registry:ui",
   },
   {

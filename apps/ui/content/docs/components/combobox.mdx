@@ -59,6 +59,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxPopup,
+  createComboboxItems,
 } from "@/components/ui/combobox"
 ```
 
@@ -76,6 +77,33 @@ const items = [
     <ComboboxEmpty>No results found.</ComboboxEmpty>
     <ComboboxList>
       {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}
+    </ComboboxList>
+  </ComboboxPopup>
+</Combobox>
+```
+
+When your source items are objects but selection should use a stable primitive value, create a typed collection with `createComboboxItems`:
+
+```tsx
+const users = [
+  { id: "ada", name: "Ada Lovelace" },
+  { id: "grace", name: "Grace Hopper" },
+]
+
+const userItems = createComboboxItems(users, {
+  getLabel: (user) => user.name,
+  getValue: (user) => user.id,
+})
+
+<Combobox defaultValue="ada" items={userItems}>
+  <ComboboxInput placeholder="Select a user..." />
+  <ComboboxPopup>
+    <ComboboxList>
+      {(user) => (
+        <ComboboxItem key={user.id} value={user.id}>
+          {user.name}
+        </ComboboxItem>
+      )}
     </ComboboxList>
   </ComboboxPopup>
 </Combobox>
@@ -144,6 +172,10 @@ The root combobox component. Manages the combobox state and provides context to 
 | `multiple` | `boolean`                               | Whether to allow multiple selection               |
 | `open`     | `boolean`                               | Controls whether the popup is open                |
 | `...props` | `React.ComponentProps<typeof Combobox>` | All Base UI Combobox props are supported          |
+
+### createComboboxItems
+
+Creates a typed item collection that derives primitive selection values and labels from object items. Define static collections outside components and memoize dynamic collections.
 
 ### ComboboxInput
 
@@ -328,4 +360,3 @@ Use `SelectButton` as a `render` prop on `ComboboxTrigger` to make the combobox 
 ### Form Integration - Multiple
 
 <ComponentPreview name="p-combobox-12" />
-

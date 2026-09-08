@@ -2,16 +2,20 @@
 
 import {
   type ColumnDef,
+  columnSizingFeature,
+  columnVisibilityFeature,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type PaginationState,
-  type SortingState,
-  useReactTable,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronUpIcon, PlaneTakeoffIcon } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/registry/default/lib/utils";
 import { Badge } from "@/registry/default/ui/badge";
 import { Button } from "@/registry/default/ui/button";
@@ -67,7 +71,21 @@ const getStatusColor = (status: Flight["status"]) => {
   }
 };
 
-const columns: ColumnDef<Flight>[] = [
+const features = tableFeatures({
+  columnSizingFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+});
+
+const columns: ColumnDef<typeof features, Flight>[] = [
   {
     cell: ({ row }) => (
       <Checkbox
@@ -186,32 +204,31 @@ const columns: ColumnDef<Flight>[] = [
 export default function Particle() {
   const pageSize = 10;
 
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: pageSize,
-  });
-
-  const [sorting, setSorting] = useState<SortingState>([
+  const table = useTable(
     {
-      desc: false,
-      id: "departureTime",
+      columns,
+      data: flights,
+      enableSortingRemoval: false,
+      features,
+      initialState: {
+        pagination: {
+          pageIndex: 0,
+          pageSize,
+        },
+        sorting: [
+          {
+            desc: false,
+            id: "departureTime",
+          },
+        ],
+      },
     },
-  ]);
-
-  const table = useReactTable({
-    columns,
-    data: flights,
-    enableSortingRemoval: false,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    state: {
-      pagination,
-      sorting,
-    },
-  });
+    (state) => ({
+      pagination: state.pagination,
+      rowSelection: state.rowSelection,
+      sorting: state.sorting,
+    }),
+  );
 
   return (
     <Frame className="w-full">
@@ -302,9 +319,9 @@ export default function Particle() {
             <p className="text-muted-foreground text-sm">Viewing</p>
             <Select
               items={Array.from({ length: table.getPageCount() }, (_, i) => {
-                const start = i * table.getState().pagination.pageSize + 1;
+                const start = i * table.state.pagination.pageSize + 1;
                 const end = Math.min(
-                  (i + 1) * table.getState().pagination.pageSize,
+                  (i + 1) * table.state.pagination.pageSize,
                   table.getRowCount(),
                 );
                 const pageNum = i + 1;
@@ -313,7 +330,7 @@ export default function Particle() {
               onValueChange={(value) => {
                 table.setPageIndex((value as number) - 1);
               }}
-              value={table.getState().pagination.pageIndex + 1}
+              value={table.state.pagination.pageIndex + 1}
             >
               <SelectTrigger
                 aria-label="Select result range"
@@ -324,9 +341,9 @@ export default function Particle() {
               </SelectTrigger>
               <SelectPopup>
                 {Array.from({ length: table.getPageCount() }, (_, i) => {
-                  const start = i * table.getState().pagination.pageSize + 1;
+                  const start = i * table.state.pagination.pageSize + 1;
                   const end = Math.min(
-                    (i + 1) * table.getState().pagination.pageSize,
+                    (i + 1) * table.state.pagination.pageSize,
                     table.getRowCount(),
                   );
                   const pageNum = i + 1;
