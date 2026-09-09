@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-separator-2",
+  "description": "Separator in the form",
+  "registryDependencies": [
+    "@coss/button",
+    "@coss/card",
+    "@coss/field",
+    "@coss/form",
+    "@coss/input",
+    "@coss/separator"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-separator-2.tsx",
+      "content": "import { Button } from \"@/registry/default/ui/button\";\nimport {\n  Card,\n  CardDescription,\n  CardHeader,\n  CardPanel,\n  CardTitle,\n} from \"@/registry/default/ui/card\";\nimport { Field, FieldLabel } from \"@/registry/default/ui/field\";\nimport { Form } from \"@/registry/default/ui/form\";\nimport { Input } from \"@/registry/default/ui/input\";\nimport { Separator } from \"@/registry/default/ui/separator\";\n\nexport default function Particle() {\n  return (\n    <Card className=\"w-full max-w-xs\">\n      <CardHeader>\n        <CardTitle>\n          <h1 className=\"font-bold text-2xl\">Welcome back</h1>\n        </CardTitle>\n        <CardDescription>\n          <p>Sign in to your account to continue.</p>\n        </CardDescription>\n      </CardHeader>\n      <CardPanel>\n        <Form className=\"flex w-full flex-col gap-4\">\n          <Field>\n            <FieldLabel>Email</FieldLabel>\n            <Input placeholder=\"Enter your email\" type=\"email\" />\n          </Field>\n          <Field>\n            <FieldLabel>Password</FieldLabel>\n            <Input placeholder=\"Enter your password\" type=\"password\" />\n          </Field>\n          <Button className=\"w-full\" type=\"submit\">\n            Sign in\n          </Button>\n        </Form>\n        <div className=\"my-3 flex items-center justify-center gap-3 overflow-x-auto\">\n          <Separator />\n          <span className=\"text-muted-foreground text-sm\">or</span>\n          <Separator />\n        </div>\n        <Button className=\"w-full\" variant=\"outline\">\n          Sign up\n        </Button>\n      </CardPanel>\n    </Card>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "categories": [
+    "separator"
+  ],
+  "type": "registry:block"
+}

@@ -9407,6 +9407,28 @@
     },
     {
       "categories": [
+        "separator"
+      ],
+      "description": "Separator in the form",
+      "files": [
+        {
+          "path": "registry/default/particles/p-separator-2.tsx",
+          "type": "registry:block"
+        }
+      ],
+      "name": "p-separator-2",
+      "registryDependencies": [
+        "@coss/button",
+        "@coss/card",
+        "@coss/field",
+        "@coss/form",
+        "@coss/input",
+        "@coss/separator"
+      ],
+      "type": "registry:block"
+    },
+    {
+      "categories": [
         "sheet"
       ],
       "description": "Basic sheet",

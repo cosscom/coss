@@ -8125,6 +8125,24 @@ export const Index: Record<string, any> = {
     categories: ["separator"],
     meta: undefined,
   },
+  "p-separator-2": {
+    name: "p-separator-2",
+    description: "Separator in the form",
+    type: "registry:block",
+    registryDependencies: ["@coss/button","@coss/card","@coss/field","@coss/form","@coss/input","@coss/separator"],
+    files: [{
+      path: "registry/default/particles/p-separator-2.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-separator-2.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["separator"],
+    meta: undefined,
+  },
   "p-sheet-1": {
     name: "p-sheet-1",
     description: "Basic sheet",
