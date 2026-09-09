@@ -4531,6 +4531,21 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("separator"),
+    description: "Separator in the form",
+    files: [{ path: "particles/p-separator-2.tsx", type: "registry:block" }],
+    name: "p-separator-2",
+    registryDependencies: [
+      "@coss/button",
+      "@coss/card",
+      "@coss/field",
+      "@coss/form",
+      "@coss/input",
+      "@coss/separator",
+    ],
+    type: "registry:block",
+  },
+  {
     categories: categories("sheet"),
     description: "Basic sheet",
     files: [{ path: "particles/p-sheet-1.tsx", type: "registry:block" }],
