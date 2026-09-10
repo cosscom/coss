@@ -211,6 +211,7 @@ export function DrawerPopup({
           {...props}
         >
           {children}
+          {showBar && <DrawerBar />}
           {showCloseButton && (
             <DrawerPrimitive.Close
               aria-label="Close"
@@ -220,7 +221,6 @@ export function DrawerPopup({
               <XIcon />
             </DrawerPrimitive.Close>
           )}
-          {showBar && <DrawerBar />}
         </DrawerPrimitive.Popup>
       </DrawerViewport>
     </DrawerPortal>
@@ -366,7 +366,7 @@ export function DrawerBar({
   const defaultProps = {
     "aria-hidden": true as const,
     className: cn(
-      "absolute flex touch-none items-center justify-center p-3 before:rounded-full before:bg-input",
+      "pointer-events-none absolute flex touch-none items-center justify-center p-3 before:rounded-full before:bg-input",
       horizontal
         ? "inset-y-0 before:h-12 before:w-1"
         : "inset-x-0 before:h-1 before:w-12",
