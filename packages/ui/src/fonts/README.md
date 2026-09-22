@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
 
 ## Available Fonts
 
-- `fontSans` — Cal Sans 2.0 variable font (`CalSansVF.woff2`)
+- `fontSans` — Cal Sans 2.0 variable font (`CalSansVF.woff2` upright, `CalSansVF-Italic.woff2` italic)
 - `fontHeading` — Alias of `fontSans`; use when wiring a separate `--font-heading` variable
 - `fontMono` — Paper Mono for code and monospace UI
 
