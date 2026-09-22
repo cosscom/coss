@@ -8,9 +8,12 @@ export const fontMono = localFont({
 
 export const fontSans = localFont({
   display: "swap",
-  src: "./CalSansVF.woff2",
+  src: [
+    { path: "./CalSansVF.woff2", style: "normal" },
+    { path: "./CalSansVF-Italic.woff2", style: "italic" },
+  ],
   variable: "--font-sans",
-  weight: "300 700",
+  weight: "400 700",
 });
 
 /** Same variable font as `fontSans`; optional when wiring a separate `--font-heading`. */
