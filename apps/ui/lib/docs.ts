@@ -1,4 +1,15 @@
 export const PAGES_NEW = [
   // "/docs/components/{component-name}",
   "/docs/components/segmented-control",
+  "/docs/agent-ui/composition",
+  "/docs/agent-ui/agent-approval",
+  "/docs/agent-ui/agent-message",
+  "/docs/agent-ui/agent-conversation",
+  "/docs/agent-ui/agent-composer",
+  "/docs/agent-ui/connected-conversation",
+  "/docs/agent-ui/agent-status-indicator",
+  "/docs/agent-ui/agent-tool-activity",
+  "/docs/agent-ui/agent-reasoning",
+  "/docs/agent-ui/agent-response-feedback",
+  "/docs/agent-ui/agent-panel",
 ];
