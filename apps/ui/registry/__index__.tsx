@@ -7603,6 +7603,24 @@ export const Index: Record<string, any> = {
     categories: ["radio group","segmented control"],
     meta: undefined,
   },
+  "p-radio-group-10": {
+    name: "p-radio-group-10",
+    description: "Color palette radio cards in a four-column grid",
+    type: "registry:block",
+    registryDependencies: ["@coss/radio-group","@coss/tooltip"],
+    files: [{
+      path: "registry/default/particles/p-radio-group-10.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-radio-group-10.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["radio group","tooltip"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96"},
+  },
   "p-scroll-area-1": {
     name: "p-scroll-area-1",
     description: "Basic scroll area",
@@ -8083,6 +8101,24 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/default/particles/p-select-23.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: ["select"],
+    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"},
+  },
+  "p-select-24": {
+    name: "p-select-24",
+    description: "Color palette select with three-color swatches",
+    type: "registry:block",
+    registryDependencies: ["@coss/select"],
+    files: [{
+      path: "registry/default/particles/p-select-24.tsx",
+      type: "registry:block",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/particles/p-select-24.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

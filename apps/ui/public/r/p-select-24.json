@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "p-select-24",
+  "description": "Color palette select with three-color swatches",
+  "registryDependencies": [
+    "@coss/select"
+  ],
+  "files": [
+    {
+      "path": "registry/default/particles/p-select-24.tsx",
+      "content": "\"use client\";\n\nimport {\n  Select,\n  SelectItem,\n  SelectLabel,\n  SelectPopup,\n  SelectTrigger,\n  SelectValue,\n} from \"@/registry/default/ui/select\";\n\nconst palettes = [\n  { label: \"Mono\", value: \"mono\", colors: [\"#18181B\", \"#A1A1AA\", \"#FAFAFA\"] },\n  {\n    label: \"Porcelain\",\n    value: \"porcelain\",\n    colors: [\"#AA8F73\", \"#C8B79A\", \"#889FA3\"],\n  },\n  { label: \"Ember\", value: \"ember\", colors: [\"#B94724\", \"#DB8649\", \"#EDD0A0\"] },\n  { label: \"Terra\", value: \"terra\", colors: [\"#A64F3C\", \"#C78F70\", \"#896577\"] },\n  { label: \"Rosé\", value: \"rose\", colors: [\"#9B3F60\", \"#C98693\", \"#E9B9A5\"] },\n  { label: \"Dusk\", value: \"dusk\", colors: [\"#BE835B\", \"#8E7C9F\", \"#6E97AE\"] },\n  {\n    label: \"Orchard\",\n    value: \"orchard\",\n    colors: [\"#63794B\", \"#ADA66B\", \"#83A18A\"],\n  },\n  {\n    label: \"Petrol\",\n    value: \"petrol\",\n    colors: [\"#326A76\", \"#C97868\", \"#C9AD81\"],\n  },\n  {\n    label: \"Lagoon\",\n    value: \"lagoon\",\n    colors: [\"#247E92\", \"#4CAFA3\", \"#B6D8C7\"],\n  },\n  {\n    label: \"Borealis\",\n    value: \"borealis\",\n    colors: [\"#267F69\", \"#527FB8\", \"#9A83BF\"],\n  },\n  {\n    label: \"Cobalt\",\n    value: \"cobalt\",\n    colors: [\"#244E9A\", \"#607DA9\", \"#B5C9DD\"],\n  },\n  { label: \"Iris\", value: \"iris\", colors: [\"#7361A3\", \"#AC87A5\", \"#DBC3CA\"] },\n];\n\nexport default function Particle() {\n  return (\n    <Select\n      defaultValue={palettes[5]}\n      items={palettes}\n      itemToStringValue={(palette) => palette.value}\n    >\n      <SelectLabel>Color palette</SelectLabel>\n      <SelectTrigger>\n        <SelectValue>\n          {(palette: (typeof palettes)[number]) => (\n            <span className=\"flex items-center gap-2\">\n              <span aria-hidden=\"true\" className=\"flex shrink-0 -space-x-1\">\n                {palette.colors.map((color) => (\n                  <span\n                    key={color}\n                    className=\"size-4 rounded-full ring-1 ring-background\"\n                    style={{ backgroundColor: color }}\n                  />\n                ))}\n              </span>\n              <span className=\"truncate\">{palette.label}</span>\n            </span>\n          )}\n        </SelectValue>\n      </SelectTrigger>\n      <SelectPopup>\n        {palettes.map((palette) => (\n          <SelectItem key={palette.value} value={palette}>\n            <span className=\"flex items-center gap-2\">\n              <span aria-hidden=\"true\" className=\"flex shrink-0 -space-x-1\">\n                {palette.colors.map((color) => (\n                  <span\n                    key={color}\n                    className=\"size-4 rounded-full ring-1 ring-background\"\n                    style={{ backgroundColor: color }}\n                  />\n                ))}\n              </span>\n              {palette.label}\n            </span>\n          </SelectItem>\n        ))}\n      </SelectPopup>\n    </Select>\n  );\n}\n",
+      "type": "registry:block"
+    }
+  ],
+  "meta": {
+    "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64"
+  },
+  "categories": [
+    "select"
+  ],
+  "type": "registry:block"
+}

@@ -4196,6 +4196,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("radio group", "tooltip"),
+    description: "Color palette radio cards in a four-column grid",
+    files: [{ path: "particles/p-radio-group-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96",
+    },
+    name: "p-radio-group-10",
+    registryDependencies: ["@coss/radio-group", "@coss/tooltip"],
+    type: "registry:block",
+  },
+  {
     categories: categories("scroll area"),
     description: "Basic scroll area",
     files: [{ path: "particles/p-scroll-area-1.tsx", type: "registry:block" }],
@@ -4502,6 +4514,18 @@ export const particles: ParticleItem[] = [
         "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
     },
     name: "p-select-23",
+    registryDependencies: ["@coss/select"],
+    type: "registry:block",
+  },
+  {
+    categories: categories("select"),
+    description: "Color palette select with three-color swatches",
+    files: [{ path: "particles/p-select-24.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-64",
+    },
+    name: "p-select-24",
     registryDependencies: ["@coss/select"],
     type: "registry:block",
   },
