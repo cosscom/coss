@@ -7607,7 +7607,7 @@ export const Index: Record<string, any> = {
     name: "p-radio-group-10",
     description: "Color palette radio cards in a three-column grid",
     type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/radio-group"],
+    registryDependencies: ["@coss/radio-group","@coss/tooltip"],
     files: [{
       path: "registry/default/particles/p-radio-group-10.tsx",
       type: "registry:block",
@@ -7618,7 +7618,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    categories: ["radio group"],
+    categories: ["radio group","tooltip"],
     meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96"},
   },
   "p-scroll-area-1": {

@@ -1,5 +1,12 @@
-import { Label } from "@/registry/default/ui/label";
-import { Radio, RadioGroup } from "@/registry/default/ui/radio-group";
+"use client";
+
+import { RadioGroup, RadioPrimitive } from "@/registry/default/ui/radio-group";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/registry/default/ui/tooltip";
 
 const palettes = [
   { label: "Mono", value: "mono", colors: ["#18181B", "#A1A1AA", "#FAFAFA"] },
@@ -44,32 +51,38 @@ export default function Particle() {
   return (
     <fieldset className="w-full space-y-3">
       <legend className="font-medium text-sm">Color palette</legend>
-      <RadioGroup
-        aria-label="Color palette"
-        className="grid grid-cols-3 gap-2"
-        defaultValue="dusk"
-      >
-        {palettes.map((palette) => (
-          <Label
-            key={palette.value}
-            className="relative flex items-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-1 has-focus-visible:ring-offset-background sm:text-xs"
-          >
-            <span aria-hidden="true" className="flex shrink-0 -space-x-1">
-              {palette.colors.map((color) => (
-                <span
-                  key={color}
-                  className="size-3 rounded-full ring-1 ring-background"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </span>
-            <span className="min-w-0 truncate">
-              {palette.label}
-              <Radio className="sr-only" value={palette.value} />
-            </span>
-          </Label>
-        ))}
-      </RadioGroup>
+      <TooltipProvider>
+        <RadioGroup
+          aria-label="Color palette"
+          className="grid grid-cols-3 gap-2"
+          defaultValue="dusk"
+        >
+          {palettes.map((palette) => (
+            <Tooltip key={palette.value}>
+              <TooltipTrigger
+                render={
+                  <RadioPrimitive.Root
+                    aria-label={palette.label}
+                    value={palette.value}
+                    className="flex items-center justify-center rounded-lg border p-2.5 outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-checked:border-primary/48 data-checked:bg-accent/50"
+                  />
+                }
+              >
+                <span aria-hidden="true" className="flex shrink-0 -space-x-1">
+                  {palette.colors.map((color) => (
+                    <span
+                      key={color}
+                      className="size-4 rounded-full ring-1 ring-background"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </span>
+              </TooltipTrigger>
+              <TooltipPopup>{palette.label}</TooltipPopup>
+            </Tooltip>
+          ))}
+        </RadioGroup>
+      </TooltipProvider>
     </fieldset>
   );
 }
