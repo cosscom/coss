@@ -58,7 +58,7 @@ export default function Particle() {
           defaultValue="dusk"
         >
           {palettes.map((palette) => (
-            <Tooltip key={palette.value}>
+            <Tooltip key={palette.value} disableHoverablePopup>
               <TooltipTrigger
                 render={
                   <RadioPrimitive.Root
