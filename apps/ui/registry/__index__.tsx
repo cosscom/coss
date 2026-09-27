@@ -7603,24 +7603,6 @@ export const Index: Record<string, any> = {
     categories: ["radio group","segmented control"],
     meta: undefined,
   },
-  "p-radio-group-10": {
-    name: "p-radio-group-10",
-    description: "Color palette presets with three-color previews",
-    type: "registry:block",
-    registryDependencies: ["@coss/label","@coss/radio-group"],
-    files: [{
-      path: "registry/default/particles/p-radio-group-10.tsx",
-      type: "registry:block",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/default/particles/p-radio-group-10.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    categories: ["radio group"],
-    meta: {"className":"**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96"},
-  },
   "p-scroll-area-1": {
     name: "p-scroll-area-1",
     description: "Basic scroll area",

@@ -8826,27 +8826,6 @@
     },
     {
       "categories": [
-        "radio group"
-      ],
-      "description": "Color palette presets with three-color previews",
-      "files": [
-        {
-          "path": "registry/default/particles/p-radio-group-10.tsx",
-          "type": "registry:block"
-        }
-      ],
-      "meta": {
-        "className": "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96"
-      },
-      "name": "p-radio-group-10",
-      "registryDependencies": [
-        "@coss/label",
-        "@coss/radio-group"
-      ],
-      "type": "registry:block"
-    },
-    {
-      "categories": [
         "scroll area"
       ],
       "description": "Basic scroll area",
