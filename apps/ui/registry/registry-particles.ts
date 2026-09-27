@@ -4197,7 +4197,7 @@ export const particles: ParticleItem[] = [
   },
   {
     categories: categories("radio group", "tooltip"),
-    description: "Color palette radio cards in a three-column grid",
+    description: "Color palette radio cards in a four-column grid",
     files: [{ path: "particles/p-radio-group-10.tsx", type: "registry:block" }],
     meta: {
       className:

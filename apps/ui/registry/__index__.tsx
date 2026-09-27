@@ -7605,7 +7605,7 @@ export const Index: Record<string, any> = {
   },
   "p-radio-group-10": {
     name: "p-radio-group-10",
-    description: "Color palette radio cards in a three-column grid",
+    description: "Color palette radio cards in a four-column grid",
     type: "registry:block",
     registryDependencies: ["@coss/radio-group","@coss/tooltip"],
     files: [{

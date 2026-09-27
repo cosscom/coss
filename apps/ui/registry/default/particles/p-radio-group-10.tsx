@@ -54,7 +54,7 @@ export default function Particle() {
       <TooltipProvider>
         <RadioGroup
           aria-label="Color palette"
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-4 gap-2"
           defaultValue="dusk"
         >
           {palettes.map((palette) => (
