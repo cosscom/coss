@@ -4196,6 +4196,18 @@ export const particles: ParticleItem[] = [
     type: "registry:block",
   },
   {
+    categories: categories("radio group"),
+    description: "Color palette radio cards in a three-column grid",
+    files: [{ path: "particles/p-radio-group-10.tsx", type: "registry:block" }],
+    meta: {
+      className:
+        "**:data-[slot=preview]:w-full **:data-[slot=preview]:max-w-96",
+    },
+    name: "p-radio-group-10",
+    registryDependencies: ["@coss/label", "@coss/radio-group"],
+    type: "registry:block",
+  },
+  {
     categories: categories("scroll area"),
     description: "Basic scroll area",
     files: [{ path: "particles/p-scroll-area-1.tsx", type: "registry:block" }],
