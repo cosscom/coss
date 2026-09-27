@@ -52,7 +52,7 @@ export default function Particle() {
         {palettes.map((palette) => (
           <Label
             key={palette.value}
-            className="flex flex-col items-stretch gap-3 rounded-lg border p-2.5 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50"
+            className="relative flex flex-col items-stretch gap-3 rounded-lg border p-2.5 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-1 has-focus-visible:ring-offset-background"
           >
             <span aria-hidden="true" className="flex -space-x-1">
               {palette.colors.map((color) => (
@@ -65,7 +65,7 @@ export default function Particle() {
             </span>
             <span className="flex items-center justify-between gap-2">
               {palette.label}
-              <Radio value={palette.value} />
+              <Radio className="sr-only" value={palette.value} />
             </span>
           </Label>
         ))}
