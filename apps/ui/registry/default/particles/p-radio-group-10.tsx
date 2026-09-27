@@ -52,18 +52,18 @@ export default function Particle() {
         {palettes.map((palette) => (
           <Label
             key={palette.value}
-            className="relative flex flex-col items-stretch gap-3 rounded-lg border p-2.5 hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-1 has-focus-visible:ring-offset-background"
+            className="relative flex items-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs hover:bg-accent/50 has-data-checked:border-primary/48 has-data-checked:bg-accent/50 has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-1 has-focus-visible:ring-offset-background sm:text-xs"
           >
-            <span aria-hidden="true" className="flex -space-x-1">
+            <span aria-hidden="true" className="flex shrink-0 -space-x-1">
               {palette.colors.map((color) => (
                 <span
                   key={color}
-                  className="size-5 rounded-full ring-1 ring-background"
+                  className="size-3 rounded-full ring-1 ring-background"
                   style={{ backgroundColor: color }}
                 />
               ))}
             </span>
-            <span className="flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate">
               {palette.label}
               <Radio className="sr-only" value={palette.value} />
             </span>
