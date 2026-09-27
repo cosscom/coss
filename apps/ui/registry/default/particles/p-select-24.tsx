@@ -74,7 +74,7 @@ export default function Particle() {
           )}
         </SelectValue>
       </SelectTrigger>
-      <SelectPopup alignItemWithTrigger={false}>
+      <SelectPopup>
         {palettes.map((palette) => (
           <SelectItem key={palette.value} value={palette}>
             <span className="flex items-center gap-2">
