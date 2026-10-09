@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "get-started",
+    "chat",
     "styling",
     "radix-migration",
     "skills",

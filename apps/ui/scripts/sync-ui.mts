@@ -6,6 +6,7 @@ async function resolvePaths() {
   const sourceRoot = path.join(cwd, "registry/default");
   const sourceDirs = {
     baseUi: path.join(sourceRoot, "base-ui"),
+    chat: path.join(sourceRoot, "chat"),
     hooks: path.join(sourceRoot, "hooks"),
     lib: path.join(sourceRoot, "lib"),
     ui: path.join(sourceRoot, "ui"),
@@ -14,6 +15,7 @@ async function resolvePaths() {
   const targetRoot = path.resolve(cwd, "../../packages/ui/src");
   const targetDirs = {
     baseUi: path.join(targetRoot, "base-ui"),
+    chat: path.join(targetRoot, "chat"),
     hooks: path.join(targetRoot, "hooks"),
     lib: path.join(targetRoot, "lib"),
     ui: path.join(targetRoot, "components"),

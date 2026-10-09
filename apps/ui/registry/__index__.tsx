@@ -979,6 +979,174 @@ export const Index: Record<string, any> = {
     categories: undefined,
     meta: undefined,
   },
+  "chat": {
+    name: "chat",
+    description: "Composable chat components with messages, reactions, replies, and a composer.",
+    type: "registry:ui",
+    registryDependencies: ["@coss/button","@coss/collapsible","@coss/empty","@coss/input-group","@coss/menu","@coss/popover","@coss/scroll-area","@coss/skeleton","@coss/textarea","@coss/toggle","@coss/toolbar","@coss/tooltip","@coss/use-media-query","@coss/utils"],
+    files: [{
+      path: "registry/default/chat/chat-bubble.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-bubble.tsx"
+    },{
+      path: "registry/default/chat/chat-collapsible-message.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-collapsible-message.tsx"
+    },{
+      path: "registry/default/chat/chat-composer-field.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-composer-field.tsx"
+    },{
+      path: "registry/default/chat/chat-composer.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-composer.tsx"
+    },{
+      path: "registry/default/chat/chat-conversation.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-conversation.tsx"
+    },{
+      path: "registry/default/chat/chat-date-pill.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-date-pill.tsx"
+    },{
+      path: "registry/default/chat/chat-delivery-indicator.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-delivery-indicator.tsx"
+    },{
+      path: "registry/default/chat/chat-jump-to-latest-button.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-jump-to-latest-button.tsx"
+    },{
+      path: "registry/default/chat/chat-members.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-members.tsx"
+    },{
+      path: "registry/default/chat/chat-mentions.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-mentions.tsx"
+    },{
+      path: "registry/default/chat/chat-message-actions.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message-actions.tsx"
+    },{
+      path: "registry/default/chat/chat-message-bubble.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message-bubble.tsx"
+    },{
+      path: "registry/default/chat/chat-message-info.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message-info.tsx"
+    },{
+      path: "registry/default/chat/chat-message-layout.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message-layout.tsx"
+    },{
+      path: "registry/default/chat/chat-message-text.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message-text.tsx"
+    },{
+      path: "registry/default/chat/chat-message.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-message.tsx"
+    },{
+      path: "registry/default/chat/chat-reaction-chip.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-reaction-chip.tsx"
+    },{
+      path: "registry/default/chat/chat-reaction-picker.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-reaction-picker.tsx"
+    },{
+      path: "registry/default/chat/chat-reply-preview.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-reply-preview.tsx"
+    },{
+      path: "registry/default/chat/chat-reply-reference.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-reply-reference.tsx"
+    },{
+      path: "registry/default/chat/chat-states.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-states.tsx"
+    },{
+      path: "registry/default/chat/chat-typing-indicator.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-typing-indicator.tsx"
+    },{
+      path: "registry/default/chat/chat-unread-divider.tsx",
+      type: "registry:component",
+      target: "@components/chat/chat-unread-divider.tsx"
+    },{
+      path: "registry/default/chat/hooks/use-chat-popup-dismissal.ts",
+      type: "registry:component",
+      target: "@components/chat/hooks/use-chat-popup-dismissal.ts"
+    },{
+      path: "registry/default/chat/hooks/use-chat-scroll.ts",
+      type: "registry:component",
+      target: "@components/chat/hooks/use-chat-scroll.ts"
+    },{
+      path: "registry/default/chat/lib/split-chat-message-preview.ts",
+      type: "registry:component",
+      target: "@components/chat/lib/split-chat-message-preview.ts"
+    },{
+      path: "registry/default/chat/lib/chat-mention-text.ts",
+      type: "registry:component",
+      target: "@components/chat/lib/chat-mention-text.ts"
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/chat/chat-bubble.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
+  "chat-demo": {
+    name: "chat-demo",
+    description: "An interactive group chat with a responsive drawer and conversation states.",
+    type: "registry:block",
+    registryDependencies: ["@coss/alert-dialog","@coss/avatar","@coss/badge","@coss/button","@coss/drawer","@coss/menu","@coss/tooltip","@coss/use-media-query","@coss/utils","@coss/chat"],
+    files: [{
+      path: "registry/default/chat-demo/chat-demo-composer.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-composer.tsx"
+    },{
+      path: "registry/default/chat-demo/chat-demo-message-info.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-message-info.tsx"
+    },{
+      path: "registry/default/chat-demo/chat-demo-message.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-message.tsx"
+    },{
+      path: "registry/default/chat-demo/chat-demo-receipts.ts",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-receipts.ts"
+    },{
+      path: "registry/default/chat-demo/chat-demo-reply-focus.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-reply-focus.tsx"
+    },{
+      path: "registry/default/chat-demo/chat-demo-scenarios.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-scenarios.tsx"
+    },{
+      path: "registry/default/chat-demo/chat-demo-state.ts",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo-state.ts"
+    },{
+      path: "registry/default/chat-demo/chat-demo.tsx",
+      type: "registry:component",
+      target: "@components/chat-demo/chat-demo.tsx"
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/default/chat-demo/chat-demo-composer.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    categories: undefined,
+    meta: undefined,
+  },
   "p-accordion-1": {
     name: "p-accordion-1",
     description: "Basic accordion",

@@ -9,6 +9,11 @@
 - [Roadmap](https://coss.com/ui/docs/roadmap.md)
 - [Radix / shadcn Migration](https://coss.com/ui/docs/radix-shadcn-migration.md): A comprehensive guide for migrating from shadcn/ui and Radix UI to coss ui components.
 
+## Chat UI
+
+- [Chat UI showcase](https://coss.com/ui/chat): Interactive conversation and state examples.
+- [Chat UI integration](https://coss.com/ui/docs/chat.md): Installation, component map, controlled state, motion, and backend responsibilities.
+
 ## Components
 
 - [Accordion](https://coss.com/ui/docs/components/accordion.md): A set of collapsible panels with headings.
