@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: "https://coss.com/ui" },
     { url: "https://coss.com/ui/particles" },
+    { url: "https://coss.com/ui/chat" },
     ...pages.map((page) => ({
       url: `https://coss.com/ui${page.url}`,
     })),

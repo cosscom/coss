@@ -1,0 +1,175 @@
+---
+title: Chat UI
+description: Compose a conversation with messages, reactions, replies, and a controlled composer.
+---
+
+[Explore the interactive Chat UI showcase](/ui/chat).
+
+Chat UI is a family of ready-made components. Use it in a drawer, a panel, or directly in a page. The components handle presentation and local interaction; your application supplies messages, membership, persistence, and authorization.
+
+## Install
+
+Configure coss ui using [Get started](/ui/docs/get-started), then install the family:
+
+```bash
+npx shadcn@latest add @coss/chat
+```
+
+This installs the chat source into your configured components directory under `chat/`, including its hooks and text helpers. It also installs the required coss components, Lucide icons, Base UI, and `motion@14.0.0`. The family uses React 19 and Tailwind CSS 4 in this repository. Keep Tailwind source scanning enabled for the installed directory.
+
+To start from the complete drawer example, including synthetic data and simulated actions:
+
+```bash
+npx shadcn@latest add @coss/chat-demo
+```
+
+The example is separate from the component family. Its roles, moderation decisions, timers, and receipt aggregation are sample application code. Adapt them to your product's rules.
+
+The installed drawer example accepts a trigger renderer so you can place its controls anywhere on your page:
+
+```tsx
+import { ChatDemo } from "@/components/chat-demo/chat-demo";
+import { Button } from "@/components/ui/button";
+import { DrawerTrigger } from "@/components/ui/drawer";
+
+<ChatDemo
+  renderTriggers={(select) => (
+    <DrawerTrigger
+      render={<Button />}
+      onClick={() => select("conversation")}
+    >
+      Open chat
+    </DrawerTrigger>
+  )}
+/>
+```
+
+Use this composition inside a client component. Additional scenario values are exported from `chat-demo-state.ts`.
+
+## Start with three components
+
+A conversation needs a bounded height, a scroll controller, messages, and a controlled draft.
+
+```tsx
+"use client";
+
+import { useRef, useState } from "react";
+import { ChatComposer } from "@/components/chat/chat-composer";
+import { ChatConversation } from "@/components/chat/chat-conversation";
+import { ChatMessage } from "@/components/chat/chat-message";
+import { useChatScroll } from "@/components/chat/hooks/use-chat-scroll";
+
+export function Conversation() {
+  const [draft, setDraft] = useState("");
+  const [messages, setMessages] = useState([
+    { id: 0, own: false, text: "Where should we start?" },
+  ]);
+  const nextId = useRef(1);
+  const scroll = useChatScroll({ itemCount: messages.length });
+
+  return (
+    <section className="flex h-120 flex-col rounded-xl border bg-popover">
+      <ChatConversation scroll={scroll} label="Messages" jumpLabel="Jump to latest">
+        <div className="flex flex-col gap-4 pt-4">
+          {messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              side={message.own ? "outgoing" : "incoming"}
+              author="Maya"
+              animateEntrance={message.own}
+            >
+              {message.text}
+            </ChatMessage>
+          ))}
+        </div>
+      </ChatConversation>
+      <ChatComposer
+        className="px-4 pb-4"
+        draft={draft}
+        onDraftChange={setDraft}
+        onSend={(text) => {
+          const id = nextId.current++;
+          scroll.atBottomRef.current = true;
+          setMessages((current) => [...current, { id, own: true, text }]);
+          setDraft("");
+        }}
+        textareaLabel="Message"
+        sendLabel="Send message"
+        placeholder="Write a message…"
+      />
+    </section>
+  );
+}
+```
+
+In a real application, `onSend` starts your mutation. Clear the draft after accepting the message into your local send queue. Give each message a stable client ID so replacing a pending message with the server response does not remount it.
+
+## Component map
+
+Import components directly from their files. There is no required global chat provider.
+
+| Area | Components | Responsibility |
+| --- | --- | --- |
+| Conversation | `ChatConversation`, `useChatScroll` | Scroll viewport, end following, jump to latest, overlay slot |
+| Message | `ChatMessage` | Incoming/outgoing row, avatar, author, grouping, actions, reactions, footer |
+| Surfaces | `ChatMessageBubble`, `ChatBubble`, `ChatMessageLayout` | Standalone previews and custom row compositions |
+| Content | `ChatMessageText`, `ChatCollapsibleMessage`, `ChatReplyReference` | Mention emphasis, long text, quoted message navigation |
+| Composer | `ChatComposer`, `ChatComposerField`, `ChatMentionSuggestions` | Controlled draft, send, textarea sizing, mention list |
+| Actions | `ChatMessageActionToolbar`, `ChatReactionPicker`, `ChatReactionChip` | Reply/menu controls, emoji selection, reactor list |
+| Focused reply | `ChatReplyPreview` | Move the selected message above the composer, dim the timeline, cancel/exit |
+| Timeline | `ChatDatePill`, `ChatUnreadDivider`, `ChatJumpToLatestButton` | Sticky date markers, unread boundary, latest navigation |
+| Activity | `ChatTypingIndicator`, `ChatDeliveryIndicator` | Typing and delivery presentation |
+| People | `ChatMemberSection`, `ChatMessageInfo` | Member rows and receipt groups with supplied actions |
+| States | `ChatEmptyState`, `ChatLoadingState`, `ChatStatusBar` | Joining, unavailable history, loading, connection feedback |
+
+## Messages and actions
+
+`ChatMessage` accepts `side`, `author`, `avatar`, and `children`, plus `actions`, `reactions`, and `footer` slots. Set `grouped` for consecutive messages from the same sender. The first bubble uses a smaller upper corner on its sender's side; grouped bubbles use equal corners.
+
+String children render through `ChatMessageText`. For mention emphasis, supply `ChatMessageText` with `mentions` containing known handles. Custom React content passes through unchanged. Keep images and attachments outside `ChatCollapsibleMessage`, which expands text only. Its default `maxPreviewLength` is 500. Expanded text preserves the original paragraphs and mentions. Previews prefer whitespace boundaries and keep graphemes intact when `Intl.Segmenter` is available, with a surrogate-safe fallback for older browsers. Use `ChatMessageText` directly when you want the complete text without a collapse control. Controlled `open` must remain controlled for the component's lifetime.
+
+Use `bubble={false}` for a deleted-message placeholder. Your application decides whether historical messages remain after membership changes.
+
+The toolbar reserves its width beside the bubble. Popups dismiss when their scroll ancestor moves. Reactions toggle on click; a delayed hover, keyboard context-menu key, or long touch opens the supplied reactor content. Always provide accessible labels, including `reactorLabel` when supplying `reactorContent`.
+
+## Composer and mentions
+
+Required props are `draft`, `onDraftChange`, `onSend`, `textareaLabel`, and `sendLabel`. `onSend` receives trimmed text. `disabled` also dims the keyboard hint. Set `compact` for a single-row composer at every breakpoint, or omit it for automatic responsive sizing. The hint is hidden for coarse pointers, where Enter inserts a newline and the send button submits.
+
+Opt into mentions with `mentions={{ options, label }}`. Each option supplies an `id`, `insertText`, `name`, and optional `avatar`. The popup anchors to the composer, hides when nothing matches, and supports arrows, Enter, and Escape. IME composition is respected. In production, store stable user IDs alongside your displayed mention text; a matching display name is not authorization.
+
+## Scrolling and replies
+
+Pass the same `useChatScroll` result to `ChatConversation`. Update `itemCount` when messages change and `layoutKey` for other size changes such as a typing row. Set `active` to the drawer's open state. Set `paused` while a nested drawer or focused reply owns the interaction.
+
+End following runs only while the reader is at the bottom. Set `scroll.atBottomRef.current = true` before appending a locally sent message. Incoming messages should preserve a reader's position when they are reviewing history. Use stable keys when prepending history and preserve the visible anchor in your data integration.
+
+The complete example demonstrates `ChatReplyPreview` inside the conversation's `overlay` slot and `AnimatePresence`. Supply a measured `ChatReplyTarget`, `dismissalRef`, and accessible cancellation label. Set `inactive` on the conversation while the overlay is active. Keep the source message mounted and mark it `lifted` during the transition. Clear the retained target only after the exit completes. Avoid replacing this with a second copy of the conversation.
+
+## Drawer and mobile keyboard
+
+Compose the chat inside the regular coss [Drawer](/ui/docs/components/drawer). Keep its header, conversation, and composer as separate flex children. The conversation needs `min-h-0` and a bounded available height.
+
+The example uses a right inset drawer on larger screens and a bottom drawer below `md`. It wraps the popup in Base UI's `Drawer.VirtualKeyboardProvider` and uses the provided `--drawer-keyboard-inset` to reserve space above the virtual keyboard. The composer becomes a single-row field with a bounded scroll area on narrow screens.
+
+Focus the composer when the drawer opens, except for disabled or join states. Nested members and message-info drawers return focus to their trigger. Reconnect and rejoin restore focus to the enabled composer. Preserve the default modal behavior so the page cannot scroll behind an open drawer.
+
+## Motion
+
+Animations use `motion/react`. Message entrance is opt-in through `animateEntrance`; do not animate the whole loaded history. `highlighted` draws attention when navigating to a quoted message. Reaction feedback and typing dots honor `prefers-reduced-motion`.
+
+The port removes Motion 10's native-element compatibility wrappers and uses typed `motion.div`, `motion.span`, and `motion.button`. Motion's render scheduling is asynchronous: wait for an animation frame before checking final animation styles in tests. See the [Motion upgrade guide](https://motion.dev/docs/react-upgrade-guide).
+
+## Connect your application
+
+1. **Map data:** stable message IDs, sender IDs, display names, timestamps, grouping, and attachment content.
+2. **Own delivery:** track sending, sent, delivered, read, and failed states from your transport. Pass the derived state to `ChatDeliveryIndicator`. Successful retries must replace stale recipient receipts as well as the aggregate status.
+3. **Own mutations:** wire send, retry, react, reply, pin, delete, and membership actions to your server. Preserve drafts on failures.
+4. **Authorize on the server:** the demo's admin/moderator/member rules are examples. Hide unavailable UI actions and recheck every mutation server-side.
+5. **Define access:** distinguish leaving/removal from bans according to your product. The example permits rejoining after removal, blocks rejoining while banned, and restores membership on unban. These are deliberate demo choices, not component-enforced rules.
+6. **Handle subscriptions:** remove listeners and pending operations when the room changes. Do not send or emit typing while muted or without access.
+7. **Supply copy:** localize component labels, descriptions, timestamps, and empty-state content in your application.
+
+## Before shipping
+
+Check keyboard-only operation, IME input, mentions in reply mode, reduced motion, long drafts, narrow layouts, and a real mobile virtual keyboard. Test send/retry failures, removed reply targets, duplicate delivery events, reconnect, and history pagination with your own backend. The showcase uses local state and timers; it does not persist or transmit messages.
