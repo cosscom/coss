@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { listOrganizationMembers } from "@coss/tenancy";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
@@ -14,8 +13,8 @@ export default async function OrganizationSettingsPage({
   params,
 }: PageProps<"/[orgSlug]/settings">) {
   const { orgSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  const canUpdate = orgRoleCan(member.role, { organization: ["update"] });
+  const { organization, member, can, suspended } = await requireOrgMember(orgSlug);
+  const canUpdate = can({ organization: ["update"] });
   const members = await listOrganizationMembers({ organizationId: organization.id });
   const isOwner = member.role.split(",").includes("owner");
   const owners = members.filter((row) => row.role.split(",").includes("owner")).length;
@@ -64,7 +63,7 @@ export default async function OrganizationSettingsPage({
               : "Remove yourself from this organization."}
           </CardDescription>
         </CardHeader>
-        {lastOwner ? null : (
+        {lastOwner || suspended ? null : (
           <CardPanel>
             <LeaveOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
           </CardPanel>

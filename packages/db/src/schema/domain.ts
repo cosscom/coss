@@ -521,6 +521,52 @@ export const webhookAttempt = pgTable(
 );
 
 /**
+ * A platform admin's suspension of an organization; the row's presence is the suspension.
+ * While it exists the organization's API keys are refused, its webhook deliveries are held and
+ * its dashboard is read-only. Lifting it deletes the row (history lives in `admin_audit_event`).
+ */
+export const organizationSuspension = pgTable("organization_suspension", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  // Internal note for platform admins; never shown to the organization.
+  reason: text("reason").notNull(),
+  suspendedByUserId: text("suspended_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: createdAt(),
+});
+
+/**
+ * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
+ * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
+ * actor's email is copied so entries stay readable after the rows they name are gone.
+ */
+export const adminAuditEvent = pgTable(
+  "admin_audit_event",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.adminAuditEvent)),
+    actorUserId: text("actor_user_id"),
+    actorEmail: text("actor_email").notNull(),
+    action: text("action").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    organizationId: text("organization_id"),
+    reason: text("reason"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("admin_audit_event_target_idx").on(t.targetType, t.targetId, t.id.desc()),
+    index("admin_audit_event_organization_idx")
+      .on(t.organizationId, t.id.desc())
+      .where(sql`${t.organizationId} is not null`),
+  ],
+);
+
+/**
  * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
  * default. Set by platform admins (`bun run ratelimit:set`).
  */

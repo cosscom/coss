@@ -88,7 +88,13 @@ resets) are printed to the dashboard's server console in development.
   suppression is turned off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
-- **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
+- **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
+  organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
+  revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403
+  `organization_suspended`, webhook deliveries are held until lifted, the dashboard turns read-only and membership
+  changes are blocked; members never see the internal reason); revoke a single leaked API key. Every action is
+  recorded in an append-only audit log (`/admin/audit`). Banning a user doesn't stop their organizations' keys —
+  suspend the organization for that.
 
 ## Commands
 

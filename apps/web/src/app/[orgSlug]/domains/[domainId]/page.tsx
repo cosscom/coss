@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { type DomainRecord, domainRecords, getDomain, getEmailTenant } from "@coss/email";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -80,16 +79,16 @@ function RecordRow({ record }: { record: DomainRecord }) {
 
 export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domains/[domainId]">) {
   const { orgSlug, domainId } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { domain: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ domain: ["read"] })) notFound();
   const [domain, tenant] = await Promise.all([
     getDomain({ organizationId: organization.id, id: domainId }),
     getEmailTenant(organization.id),
   ]);
   if (!domain) notFound();
   const records = domainRecords(domain);
-  const canVerify = orgRoleCan(member.role, { domain: ["verify"] });
-  const canDelete = orgRoleCan(member.role, { domain: ["delete"] });
+  const canVerify = can({ domain: ["verify"] });
+  const canDelete = can({ domain: ["delete"] });
   const target = { orgSlug: organization.slug, domainId: domain.id };
 
   return (

@@ -95,9 +95,9 @@ export const sendEmailRoute = createRoute({
     ),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     403: errorDoc(
-      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or " +
-        "sending is paused for the organization because of its sending reputation " +
-        "(`sending_paused`).",
+      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its " +
+        "organization is suspended (`organization_suspended`), or sending is paused for the " +
+        "organization because of its sending reputation (`sending_paused`).",
     ),
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +

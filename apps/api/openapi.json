@@ -1909,7 +1909,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
+            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its organization is suspended (`organization_suspended`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2163,7 +2163,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2348,7 +2348,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2549,7 +2549,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2780,7 +2780,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2944,7 +2944,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3127,7 +3127,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3333,7 +3333,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3576,7 +3576,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3786,7 +3786,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3950,7 +3950,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4164,7 +4164,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4410,7 +4410,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4632,7 +4632,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4897,7 +4897,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5093,7 +5093,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5294,7 +5294,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5548,7 +5548,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5732,7 +5732,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5915,7 +5915,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

@@ -27,7 +27,10 @@ const retryAfterHeader: HeaderDoc = {
 /** The errors every authenticated endpoint can return. */
 export const commonErrors = {
   401: errorDoc("The API key is missing, invalid, revoked or expired (`authentication_error`)."),
-  403: errorDoc("The API key lacks the permission this endpoint needs (`permission_error`)."),
+  403: errorDoc(
+    "The API key lacks the permission this endpoint needs (`permission_error`), or its " +
+      "organization is suspended (`organization_suspended`).",
+  ),
   429: errorDoc(
     "Too many requests with this API key (`rate_limited`), or too many requests with invalid " +
       "keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` " +

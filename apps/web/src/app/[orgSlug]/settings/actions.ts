@@ -51,7 +51,8 @@ export async function leaveOrganizationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const result = await runAction(async () => {
-    const { organization } = await requireOrgMember(formString(formData, "orgSlug"));
+    const { organization, suspended } = await requireOrgMember(formString(formData, "orgSlug"));
+    if (suspended) throw new ActionError("This organization is suspended.");
     await auth.api.leaveOrganization({
       headers: await headers(),
       body: { organizationId: organization.id },

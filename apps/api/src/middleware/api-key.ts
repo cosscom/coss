@@ -77,6 +77,14 @@ export function requireApiKey(
     }
 
     if (!result.ok) {
+      if (result.reason === "suspended") {
+        throw new ApiError(403, {
+          type: "permission_error",
+          code: "organization_suspended",
+          message:
+            "This organization is suspended, so its API keys can't be used. Contact support.",
+        });
+      }
       if (result.reason === "forbidden") {
         throw new ApiError(403, {
           type: "permission_error",

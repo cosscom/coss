@@ -25,6 +25,7 @@ export const ID_PREFIXES = {
   webhookAttempt: "whatt",
   rateLimitOverride: "rlo",
   request: "req",
+  adminAuditEvent: "audit",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

@@ -1,4 +1,4 @@
-import { assignableOrgRoles, canRemoveOrgMember, orgRoleCan } from "@coss/auth/permissions";
+import { assignableOrgRoles, canRemoveOrgMember } from "@coss/auth/permissions";
 import { listOrganizationMembers, listPendingInvitations } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -24,15 +24,15 @@ export const metadata: Metadata = { title: "Members" };
 
 export default async function MembersPage({ params }: PageProps<"/[orgSlug]/members">) {
   const { orgSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
+  const { organization, member, can } = await requireOrgMember(orgSlug);
   const [members, invitations] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listPendingInvitations({ organizationId: organization.id }),
   ]);
-  const canInvite = orgRoleCan(member.role, { invitation: ["create"] });
-  const canCancelInvitations = orgRoleCan(member.role, { invitation: ["cancel"] });
-  const canChangeRoles = orgRoleCan(member.role, { member: ["update"] });
-  const canRemoveMembers = orgRoleCan(member.role, { member: ["delete"] });
+  const canInvite = can({ invitation: ["create"] });
+  const canCancelInvitations = can({ invitation: ["cancel"] });
+  const canChangeRoles = can({ member: ["update"] });
+  const canRemoveMembers = can({ member: ["delete"] });
   const canManageMembers = canChangeRoles || canRemoveMembers;
   const canManageInvitations = canInvite || canCancelInvitations;
 
