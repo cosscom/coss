@@ -3,8 +3,8 @@ import {
   type DomainDeps,
   type EmailDispatchQueue,
   recheckDueDomains,
-  requeueUnclaimedEmails,
   sweepStaleClaims,
+  sweepUnclaimedEmails,
 } from "@coss/email";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
@@ -50,11 +50,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
     }),
     startLoop({
-      name: "requeue-unclaimed",
+      name: "unclaimed",
       intervalMs: 60_000,
-      // Never "busy": emails waiting behind a backlog stay unclaimed, and rescanning them at once
-      // would only spin.
-      run: () => requeueUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH }),
+      // Busy only while there are more emails to fail (they leave the scan). Requeued emails may
+      // stay unclaimed behind a backlog, and rescanning them at once would only spin.
+      run: async () =>
+        (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
+        SWEEP_BATCH,
     }),
   ];
   const ses = deps.sesEvents;

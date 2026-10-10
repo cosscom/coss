@@ -174,8 +174,9 @@ export {
   toSuppressionObject,
 } from "./suppressions.ts";
 export {
-  requeueUnclaimedEmails,
   STALE_CLAIM_MS,
   sweepStaleClaims,
+  sweepUnclaimedEmails,
+  UNCLAIMED_FAIL_MS,
   UNCLAIMED_REQUEUE_MS,
 } from "./sweeps.ts";
