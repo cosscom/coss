@@ -1,0 +1,51 @@
+---
+title: Sending email
+description: Addresses, content, headers, tags and safe retries.
+---
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.send(
+  {
+    from: "Acme <hello@acme.com>",
+    to: ["ada@example.com", "Grace Hopper <grace@example.com>"],
+    cc: "team@acme.com",
+    reply_to: "support@acme.com",
+    subject: "Your invoice",
+    html: "<p>Your invoice is attached to your account.</p>",
+    text: "Your invoice is attached to your account.",
+    headers: { "X-Entity-Ref-ID": "invoice-123" },
+    tags: [{ name: "category", value: "invoice" }],
+  },
+  { idempotencyKey: "invoice-123" },
+);
+```
+
+## Addresses
+
+`from`, `to`, `cc`, `bcc` and `reply_to` take `"user@example.com"` or
+`"Display Name <user@example.com>"`. Each recipient field takes one address or an array of up to 50.
+
+With a live key, `from` must use a [verified domain](/docs/email/domains) of your organization.
+Sandbox keys accept any `from`.
+
+## Content
+
+`subject` is required. Provide `html`, `text`, or both: sending both lets mail clients pick, and
+improves deliverability.
+
+## Headers and tags
+
+- `headers`: up to 15 custom headers. Names are case-insensitive, and reserved names such as
+  `subject` are rejected.
+- `tags`: up to 50 `name`/`value` pairs (letters, digits, `_` and `-`) for your own filtering. They are
+  included in webhook payloads.
+
+## Retrying safely
+
+Every send carries an `Idempotency-Key`. The SDK generates one per call and reuses it across its
+automatic retries; pass your own (such as `invoice-123`) to stay safe across process restarts too.
+For 24 hours, repeating a request with the same key returns the original email instead of sending
+again. See [idempotency](/docs/api-reference/idempotency).

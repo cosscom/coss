@@ -11,21 +11,24 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | Path | Package | What |
 |---|---|---|
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
-| `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. |
+| `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
+| `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries. |
-| `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `globals.css`. |
+| `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 
 Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`; `api → tenancy, email, db`;
-`web → auth, tenancy, email, webhooks, db, ui`; `worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace.
+`web → auth, tenancy, email, webhooks, db, ui`; `site → ui` + `@coss/api/openapi.json` (data only, never api code);
+`worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`worker → tenancy` (test fixtures — so tenancy must never import email or webhooks) and
-`api`/`worker → coss` (SDK contract tests — turbo builds the SDK before their `typecheck`/`test`).
+`api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
+`typecheck`/`test`, and before the site's `dev`/`build`).
 
 ## Commands (repo root)
 
@@ -33,7 +36,7 @@ Prerequisites: Bun (version in `packageManager`), Node ≥ 24, Postgres with `co
 
 ```sh
 bun install                 # never npm/pnpm/yarn
-bun run dev                 # web :3000 + api :3001 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
+bun run dev                 # web :3000 + api :3001 + site :3002 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
 bun run lint                # biome ci .            bun run format → biome check --write .
 bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next typegen` first; builds the SDK first
 bun run test                # migrates TEST_DATABASE_URL, then `bun test` in every workspace (uncached; SDK built first)
@@ -42,6 +45,7 @@ bun run db:generate         # drizzle-kit generate after editing packages/db/src
 bun run db:migrate          # apply migrations to DATABASE_URL (db:migrate:test → TEST_DATABASE_URL); db:studio
 bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after changing Better Auth plugins/options,
                             #   then bun run db:generate && bun run db:migrate
+bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
@@ -92,6 +96,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links) |
 | `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers`, falls back to the request origin) |
+| `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `NEXT_PUBLIC_API_URL` | `apps/web` (quick-start snippets) |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
@@ -118,6 +123,13 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth`. Document error statuses with
   `errorDoc`/`commonErrors` (`src/routes/emails.ts`). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
+- Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
+  `.meta({ examples: [...] })` (OpenAPI 3.1 form; the singular `example` is ignored by the docs), checked by
+  `packages/email/test/schema-examples.test.ts`; they feed the reference's samples and playground. After route changes
+  run `bun run openapi:generate` and add the operation's SDK sample in `apps/site/src/lib/sdk-samples.ts` (tests
+  enforce both).
+- CORS: only `/v1/*`, only `API_CORS_ORIGINS`, never `credentials` — the API authenticates with bearer keys and must
+  never accept the dashboard's session cookie (that would need CSRF protection on every endpoint).
 
 ## SDK (`packages/sdk`, published as `coss`)
 
@@ -193,18 +205,21 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
    mapped in `toApiError`, OpenAPI path list in `test/app.test.ts` updated.
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
    `sdk-contract.test.ts`.
-6. Dashboard: dependency + `transpilePackages`; pages under `[orgSlug]/projects/[projectSlug]/[envSlug]/`.
-7. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
+6. Docs (`apps/site`): `bun run openapi:generate`, SDK samples for the new operations, a guide under
+   `content/docs/(guides)/<product>/` and an SDK page under `content/docs/sdk/` (Twoslash).
+7. Dashboard: dependency + `transpilePackages`; pages under `[orgSlug]/projects/[projectSlug]/[envSlug]/`.
+8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
 
 ## Generated / managed files — don't hand-edit
 
 - `packages/db/src/schema/auth.ts` (`bun run auth:generate`) and `packages/db/migrations/**` (`bun run db:generate`).
+- `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome).
 - `packages/sdk/package.json` `exports`/`main`/`module`/`types` (rewritten by the SDK build — commit the result).
 - `packages/ui/src/{components,hooks,lib}`: vendored from the `@coss` registry and excluded from Biome; re-adding a
   component overwrites local edits.
 - `bun.lock` (only via `bun install`; CI uses `--frozen-lockfile`).
-- The `<!-- BEGIN:*-agent-rules -->` blocks at the end of this file and in `apps/web/AGENTS.md` are rewritten by `turbo`
+- The `<!-- BEGIN:*-agent-rules -->` blocks at the end of this file and in `apps/{web,site}/AGENTS.md` are rewritten by `turbo`
   and `next dev`: never edit inside them, keep project text above them, and commit tool changes to them.
 - Agent docs: `AGENTS.md` files are the source of truth; each `CLAUDE.md` contains only `@AGENTS.md`. A new nested
   `AGENTS.md` needs a sibling `CLAUDE.md` shim, or Claude Code never sees it.
@@ -253,7 +268,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/ui/*`. `@coss/webhooks` and `@coss/email/{runtime,ses}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks` and `@coss/email/{runtime,ses}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -292,11 +307,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
+**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, routing coss.com
+between the site and the dashboard (multi-zones / Vercel microfrontends; the dashboard's `/` entry page collides with
+the landing page), open/click tracking (and custom tracking
 domains), public API/SDK for domains and webhook endpoints, a suppression-list API, attachments/batch/scheduled sends,
 rate limiting, async dispatch, org settings,
-removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
-UI, release tooling.
+removing members / leaving an org, resending invitations, signed-in password change, API version header, release tooling.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

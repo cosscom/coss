@@ -1,0 +1,1285 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "COSS API",
+    "version": "v1",
+    "description": "One API key for every COSS product. Errors share one envelope: `Error`."
+  },
+  "servers": [
+    {
+      "url": "https://api.coss.com"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Emails",
+      "description": "Send transactional email and follow its delivery."
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A secret API key from the dashboard: `coss_live_…` for production environments, `coss_test_…` for sandbox environments."
+      }
+    },
+    "schemas": {
+      "Email": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bcc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reply_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "html": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ]
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sent",
+              "failed"
+            ],
+            "description": "Whether the email was handed to the delivery provider. Per-recipient delivery is in `recipients`."
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailRecipient"
+            }
+          },
+          "sandbox": {
+            "type": "boolean",
+            "description": "True when sent from a sandbox environment (never delivered)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sent_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "from",
+          "to",
+          "cc",
+          "bcc",
+          "reply_to",
+          "subject",
+          "html",
+          "text",
+          "headers",
+          "tags",
+          "status",
+          "recipients",
+          "sandbox",
+          "created_at",
+          "sent_at"
+        ],
+        "examples": [
+          {
+            "object": "email",
+            "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "from": "Acme <onboarding@acme.com>",
+            "to": [
+              "user@example.com"
+            ],
+            "cc": [],
+            "bcc": [],
+            "reply_to": [],
+            "subject": "Welcome to Acme",
+            "html": "<p>Thanks for signing up!</p>",
+            "text": null,
+            "headers": {},
+            "tags": [
+              {
+                "name": "category",
+                "value": "welcome"
+              }
+            ],
+            "status": "sent",
+            "recipients": [
+              {
+                "address": "user@example.com",
+                "type": "to",
+                "status": "delivered",
+                "last_event_at": "2026-10-10T12:00:02.000Z"
+              }
+            ],
+            "sandbox": false,
+            "created_at": "2026-10-10T12:00:00.000Z",
+            "sent_at": "2026-10-10T12:00:01.000Z"
+          }
+        ]
+      },
+      "EmailRecipient": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The bare, lower-cased address."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "to",
+              "cc",
+              "bcc"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sent",
+              "delivery_delayed",
+              "delivered",
+              "bounced",
+              "suppressed",
+              "complained",
+              "failed"
+            ],
+            "description": "Delivery status of this recipient. `suppressed` means the address is on the suppression list after an earlier bounce or complaint."
+          },
+          "last_event_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "address",
+          "type",
+          "status",
+          "last_event_at"
+        ],
+        "examples": [
+          {
+            "address": "user@example.com",
+            "type": "to",
+            "status": "delivered",
+            "last_event_at": "2026-10-10T12:00:02.000Z"
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "not_found_error",
+                  "idempotency_error",
+                  "rate_limit_error",
+                  "api_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Machine-readable reason, e.g. `invalid_api_key`."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable explanation. May change."
+              },
+              "param": {
+                "type": "string",
+                "description": "The request field or header the error relates to."
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Dot-separated field path, e.g. `to.1`."
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "message"
+                  ]
+                },
+                "description": "Every validation problem (`validation_error` only)."
+              },
+              "request_id": {
+                "type": "string",
+                "examples": [
+                  "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "code",
+              "message",
+              "request_id"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SendEmailRequest": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+          },
+          "to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+                },
+                "minItems": 1,
+                "maxItems": 50
+              }
+            ]
+          },
+          "cc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+                },
+                "minItems": 0,
+                "maxItems": 50
+              }
+            ]
+          },
+          "bcc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+                },
+                "minItems": 0,
+                "maxItems": 50
+              }
+            ]
+          },
+          "reply_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "An email address, optionally with a display name: \"Acme <hello@acme.com>\"."
+                },
+                "minItems": 0,
+                "maxItems": 50
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 998
+          },
+          "html": {
+            "type": "string",
+            "description": "HTML body. Provide `html`, `text`, or both."
+          },
+          "text": {
+            "type": "string",
+            "description": "Plain-text body."
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Up to 15 custom headers. Names are case-insensitive."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,256}$"
+                },
+                "value": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{1,256}$"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "subject"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "from": "Acme <onboarding@acme.com>",
+            "to": "user@example.com",
+            "subject": "Welcome to Acme",
+            "html": "<p>Thanks for signing up!</p>",
+            "tags": [
+              {
+                "name": "category",
+                "value": "welcome"
+              }
+            ]
+          }
+        ]
+      },
+      "EmailEventList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailEvent"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "email_event",
+                "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+                "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "type": "email.sent",
+                "recipient": null,
+                "occurred_at": "2026-10-10T12:00:01.000Z",
+                "data": {}
+              },
+              {
+                "object": "email_event",
+                "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "type": "email.delivered",
+                "recipient": "user@example.com",
+                "occurred_at": "2026-10-10T12:00:02.000Z",
+                "data": {
+                  "delivery": {
+                    "smtp_response": "250 2.0.0 OK"
+                  }
+                }
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "EmailEvent": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email_event"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "email_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "email.sent",
+              "email.delivered",
+              "email.delivery_delayed",
+              "email.bounced",
+              "email.complained",
+              "email.failed"
+            ]
+          },
+          "recipient": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The recipient this event is about; `null` for the whole email."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "$ref": "#/components/schemas/EmailEventData"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "email_id",
+          "type",
+          "recipient",
+          "occurred_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "object": "email_event",
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "type": "email.delivered",
+            "recipient": "user@example.com",
+            "occurred_at": "2026-10-10T12:00:02.000Z",
+            "data": {
+              "delivery": {
+                "smtp_response": "250 2.0.0 OK"
+              }
+            }
+          }
+        ]
+      },
+      "EmailEventData": {
+        "type": "object",
+        "properties": {
+          "bounce": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "permanent",
+                  "transient",
+                  "undetermined"
+                ]
+              },
+              "sub_type": {
+                "type": "string"
+              },
+              "diagnostic_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "sub_type",
+              "diagnostic_code"
+            ]
+          },
+          "complaint": {
+            "type": "object",
+            "properties": {
+              "feedback_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sub_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "feedback_type",
+              "sub_type"
+            ]
+          },
+          "delay": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "diagnostic_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "expires_at",
+              "diagnostic_code"
+            ]
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "smtp_response": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "smtp_response"
+            ]
+          },
+          "failure": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "examples": [
+          {
+            "delivery": {
+              "smtp_response": "250 2.0.0 OK"
+            }
+          }
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/v1/emails": {
+      "post": {
+        "operationId": "sendEmail",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Send an email",
+        "description": "Sends an email from the API key's environment. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Makes retries safe: a repeated request with the same key and body returns the original email instead of sending again (for 24 hours). 1-256 characters.",
+              "examples": [
+                "welcome-user-123"
+              ]
+            },
+            "required": false,
+            "description": "Makes retries safe: a repeated request with the same key and body returns the original email instead of sending again (for 24 hours). 1-256 characters.",
+            "name": "Idempotency-Key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The email and its delivery status.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A request with this `Idempotency-Key` is still in progress (`request_in_progress`). Retry after `Retry-After` seconds.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a verified domain of the organization (`domain_not_verified`, live keys only), or the `Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/emails/{id}": {
+      "get": {
+        "operationId": "getEmail",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Retrieve an email",
+        "description": "Only emails sent from the API key's own environment can be retrieved.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The email's id.",
+              "examples": [
+                "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The email's id.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The email.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No email with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/emails/{id}/events": {
+      "get": {
+        "operationId": "listEmailEvents",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "List an email's delivery events",
+        "description": "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced` and `email.complained` per recipient.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The email's id.",
+              "examples": [
+                "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The email's id.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The email's events.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailEventList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No email with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

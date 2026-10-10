@@ -9,11 +9,14 @@ import type { ErrorEnvelopeBody } from "../src/errors.ts";
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
 /** An app whose live and sandbox providers are separate, silent fakes. */
-export function createTestApp(opts: { emailService?: EmailService } = {}) {
+export function createTestApp(
+  opts: { emailService?: EmailService; corsOrigins?: readonly string[] } = {},
+) {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const app = createApp({
     emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
+    corsOrigins: opts.corsOrigins,
   });
   return { app, liveProvider, sandboxProvider };
 }

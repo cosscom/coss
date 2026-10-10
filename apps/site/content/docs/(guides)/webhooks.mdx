@@ -1,0 +1,55 @@
+---
+title: Webhooks
+description: Get told when something happens, instead of polling.
+icon: Webhook
+---
+
+Add webhook endpoints per environment in the dashboard (**Webhooks**). Each endpoint subscribes
+to event types and has its own `whsec_…` signing secret.
+
+## Events
+
+| Type                     | Sent when                                               |
+| ------------------------ | ------------------------------------------------------- |
+| `email.sent`             | The provider accepted the email                         |
+| `email.delivered`        | A recipient's mail server accepted it                   |
+| `email.delivery_delayed` | Delivery to a recipient is being retried                |
+| `email.bounced`          | A recipient's mail server rejected it                   |
+| `email.complained`       | A recipient marked it as spam                           |
+| `email.failed`           | The email could not be sent at all                      |
+
+The request body is a JSON event. Payloads describe the email (`email_id`, `from`, `to`, `subject`,
+`tags`) but never include its content, headers, cc or bcc.
+
+```json
+{
+  "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  "object": "event",
+  "type": "email.delivered",
+  "created_at": "2026-10-10T12:00:01.000Z",
+  "data": {
+    "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "from": "Acme <hello@acme.com>",
+    "to": ["user@example.com"],
+    "subject": "Welcome",
+    "tags": [],
+    "sandbox": false,
+    "recipient": "user@example.com",
+    "occurred_at": "2026-10-10T12:00:00.000Z",
+    "delivery": { "smtp_response": "250 2.0.0 OK" }
+  }
+}
+```
+
+## Verifying requests
+
+Requests are signed with [Standard Webhooks](https://www.standardwebhooks.com) headers:
+`webhook-id`, `webhook-timestamp` and `webhook-signature`. Always verify them before trusting the
+body. With the SDK, use [`verifyWebhook`](/docs/sdk/webhooks).
+
+## Delivery and retries
+
+- Respond with any `2xx` status within 10 seconds to acknowledge an event.
+- Failed deliveries are retried 7 times over about 28 hours (5 s, 5 min, 30 min, 2 h, 5 h, 10 h, 10 h).
+- Events can arrive out of order: sort by `data.occurred_at`.
+- An event can arrive more than once: deduplicate by `id` (equal to the `webhook-id` header).

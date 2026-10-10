@@ -1,0 +1,39 @@
+---
+title: Environments and API keys
+description: Organizations, projects, environments, and the keys that belong to them.
+icon: KeyRound
+---
+
+## Organizations and projects
+
+Everything in COSS belongs to an **organization**. Members are owners, admins or members.
+An organization has any number of **projects**, and each project has two **environments**:
+
+| Environment   | Mode      | Key prefix   | Sends email                                      |
+| ------------- | --------- | ------------ | ------------------------------------------------ |
+| `production`  | `live`    | `coss_live_` | Yes, from your organization's verified domains   |
+| `development` | `sandbox` | `coss_test_` | No. Emails are recorded with `sandbox: true`     |
+
+## API keys
+
+An API key belongs to exactly one environment, and everything it creates or reads lives in that
+environment. A key can only read emails sent from its own environment.
+
+Keys are secrets. Call COSS from your server, never from a browser: the SDK refuses to run where a
+`document` global exists unless you opt in with `dangerouslyAllowBrowser`.
+
+Creating a live key requires a verified email address on your account.
+
+## Sandbox behaviour
+
+Sandbox keys accept any `from` address and never deliver anything. Delivery events are simulated
+the way the Amazon SES mailbox simulator behaves, so you can test failure handling:
+
+| Recipient                                  | Simulated events                                  | Recipient status |
+| ------------------------------------------ | ------------------------------------------------- | ---------------- |
+| any address outside `simulator.amazonses.com` | `email.delivered`                              | `delivered`      |
+| `bounce@simulator.amazonses.com`           | `email.bounced` (permanent)                       | `bounced`        |
+| `complaint@simulator.amazonses.com`        | `email.delivered`, then `email.complained`        | `complained`     |
+| `suppressionlist@simulator.amazonses.com`  | `email.bounced` (on the suppression list)         | `suppressed`     |
+
+Every sandbox email also gets `email.sent`.

@@ -1,0 +1,39 @@
+---
+title: Overview
+description: Base URL, authentication and conventions of the COSS HTTP API.
+---
+
+The COSS API is a JSON API. Every endpoint page in this reference shows the request, every response,
+and samples for the [TypeScript SDK](/docs/sdk), cURL, Python and Go.
+
+The machine-readable [OpenAPI 3.1 document](https://api.coss.com/openapi.json) describes the same
+endpoints.
+
+## Base URL
+
+```
+https://api.coss.com
+```
+
+Endpoints are versioned in the path: `/v1/…`.
+
+## Authentication
+
+Send your API key as a bearer token:
+
+```bash
+curl https://api.coss.com/v1/emails/email_01k7c8m4q2f3e9v6t5r1n0p8yz \
+  -H "Authorization: Bearer $COSS_API_KEY"
+```
+
+The key decides the environment: requests only see data from the key's own environment. See
+[Environments and API keys](/docs/environments).
+
+## Conventions
+
+- Request and response bodies are JSON (`Content-Type: application/json`), up to 5 MB.
+- Field names are `snake_case`; timestamps are ISO 8601 strings in UTC.
+- IDs are prefixed with their type: `email_…`, `evt_…`.
+- Every object has an `object` field naming its type (`"email"`, `"email_event"`, `"list"`).
+- Lists are `{ "object": "list", "data": [...], "has_more": false }`.
+- Every response carries an `X-Request-Id` header (`req_…`). Include it when contacting support.

@@ -1,0 +1,95 @@
+---
+title: Overview
+description: Install the coss package and configure the client.
+---
+
+`coss` is the official TypeScript SDK. It has zero dependencies, is fully typed and runs on
+Node.js 22+, Bun, Deno and Cloudflare Workers.
+
+```package-install
+coss
+```
+
+<Callout type="warn">
+  The SDK is not published to npm yet. Until it is, use it from the COSS repository.
+</Callout>
+
+## The client
+
+One client covers every product. Create it once and reuse it.
+
+```ts twoslash
+import { Coss } from "coss";
+
+const coss = new Coss({ apiKey: process.env.COSS_API_KEY });
+//    ^?
+```
+
+Hover any identifier in these examples to see its type.
+
+## Options
+
+```ts twoslash
+import { Coss } from "coss";
+// ---cut---
+const coss = new Coss({
+  apiKey: "coss_test_...",
+  baseUrl: "https://api.coss.com",
+  timeout: 30_000,
+  maxRetries: 2,
+  dangerouslyAllowBrowser: false,
+});
+```
+
+| Option                    | Default                                         | Description                                                |
+| ------------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `apiKey`                  | `COSS_API_KEY`                                  | A `coss_live_…` or `coss_test_…` key                       |
+| `baseUrl`                 | `COSS_BASE_URL`, then `https://api.coss.com`    | The API origin                                             |
+| `timeout`                 | `30000`                                         | Per-attempt timeout in milliseconds                        |
+| `maxRetries`              | `2`                                             | Retries for network errors, timeouts, 409, 429 and 5xx     |
+| `fetch`                   | global `fetch`                                  | A custom `fetch` implementation                            |
+| `dangerouslyAllowBrowser` | `false`                                         | Allow running where `document` exists (exposes your key)   |
+
+The constructor throws only for programmer errors: a missing API key, or running in a browser
+without `dangerouslyAllowBrowser`.
+
+## Results, not exceptions
+
+Every method returns `{ data, error }`. API and network failures come back as `error`; they are
+never thrown. Checking `error` narrows `data`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const result = await coss.email.get("email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+
+if (result.error) {
+  console.error(result.error.message);
+} else {
+  console.log(result.data.subject);
+  //                 ^?
+}
+```
+
+## Per-request options
+
+Methods take an optional last argument. Every method accepts an `AbortSignal`; `send` also takes an
+idempotency key.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const params = { from: "a@acme.com", to: "b@example.com", subject: "Hi", text: "Hi" };
+// ---cut---
+const controller = new AbortController();
+
+await coss.email.send(params, { idempotencyKey: "welcome-user-123", signal: controller.signal });
+await coss.email.get("email_01k7c8m4q2f3e9v6t5r1n0p8yz", { signal: controller.signal });
+```
+
+## Runtimes
+
+The package is ESM-only and uses nothing but `fetch`, `AbortSignal` and `crypto.randomUUID`.
+Environment fallbacks read `process.env` where it exists; on Workers or Deno without env access,
+pass `apiKey` (and `baseUrl`) explicitly.

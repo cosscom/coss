@@ -11,12 +11,12 @@ export const IDEMPOTENCY_KEY_MAX_LENGTH = 256;
 
 type HeaderDoc = {
   description: string;
-  schema: { type: "string" | "integer"; enum?: string[]; example?: string };
+  schema: { type: "string" | "integer"; enum?: string[]; examples?: string[] };
 };
 
 const requestIdHeader: HeaderDoc = {
   description: "Unique id of this request. Include it when contacting support.",
-  schema: { type: "string", example: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" },
+  schema: { type: "string", examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] },
 };
 
 function errorDoc(description: string, headers: Record<string, HeaderDoc> = {}) {
@@ -45,14 +45,14 @@ const SendEmailHeaders = z.object({
       description:
         "Makes retries safe: a repeated request with the same key and body returns the original " +
         `email instead of sending again (for 24 hours). 1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
-      example: "welcome-user-123",
+      examples: ["welcome-user-123"],
     }),
 });
 
 const EmailIdParams = z.object({
   id: z.string().meta({
     description: "The email's id.",
-    example: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    examples: ["email_01k7c8m4q2f3e9v6t5r1n0p8yz"],
   }),
 });
 

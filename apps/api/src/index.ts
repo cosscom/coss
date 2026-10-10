@@ -6,6 +6,7 @@ import { env } from "./env.ts";
 const app = createApp({
   emailService: createDefaultEmailService(env),
   publicUrl: env.API_PUBLIC_URL,
+  corsOrigins: env.API_CORS_ORIGINS,
 });
 
 export default {

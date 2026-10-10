@@ -42,7 +42,7 @@ export const ErrorEnvelope = z
         )
         .optional()
         .meta({ description: "Every validation problem (`validation_error` only)." }),
-      request_id: z.string().meta({ example: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+      request_id: z.string().meta({ examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     }),
   })
   .meta({ id: "Error" });

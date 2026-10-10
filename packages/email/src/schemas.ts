@@ -278,7 +278,18 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     ),
     tags: value.tags ?? [],
   }))
-  .meta({ id: "SendEmailRequest" });
+  .meta({
+    id: "SendEmailRequest",
+    examples: [
+      {
+        from: "Acme <onboarding@acme.com>",
+        to: "user@example.com",
+        subject: "Welcome to Acme",
+        html: "<p>Thanks for signing up!</p>",
+        tags: [{ name: "category", value: "welcome" }],
+      },
+    ],
+  });
 
 export type SendEmailRequestInput = z.input<typeof SendEmailRequest>;
 export type SendEmailRequestOutput = z.output<typeof SendEmailRequest>;
@@ -312,6 +323,33 @@ export const EMAIL_EVENT_TYPES = [
 
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
 
+// Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
+const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const RECIPIENT_EXAMPLE = {
+  address: "user@example.com",
+  type: "to",
+  status: "delivered",
+  last_event_at: "2026-10-10T12:00:02.000Z",
+};
+const SENT_EVENT_EXAMPLE = {
+  object: "email_event",
+  id: "evt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+  email_id: EMAIL_ID_EXAMPLE,
+  type: "email.sent",
+  recipient: null,
+  occurred_at: "2026-10-10T12:00:01.000Z",
+  data: {},
+};
+const DELIVERED_EVENT_EXAMPLE = {
+  object: "email_event",
+  id: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  email_id: EMAIL_ID_EXAMPLE,
+  type: "email.delivered",
+  recipient: "user@example.com",
+  occurred_at: "2026-10-10T12:00:02.000Z",
+  data: { delivery: { smtp_response: "250 2.0.0 OK" } },
+};
+
 export const EmailRecipient = z
   .object({
     address: z.string().meta({ description: "The bare, lower-cased address." }),
@@ -323,7 +361,7 @@ export const EmailRecipient = z
     }),
     last_event_at: z.iso.datetime().nullable(),
   })
-  .meta({ id: "EmailRecipient" });
+  .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
 export const EmailEventData = z
   .object({
@@ -347,14 +385,14 @@ export const EmailEventData = z
     delivery: z.object({ smtp_response: z.string().nullable() }).optional(),
     failure: z.object({ code: z.string(), message: z.string() }).optional(),
   })
-  .meta({ id: "EmailEventData" });
+  .meta({ id: "EmailEventData", examples: [DELIVERED_EVENT_EXAMPLE.data] });
 
 export type EmailEventDataOutput = z.output<typeof EmailEventData>;
 
 export const EmailEvent = z
   .object({
     object: z.literal("email_event"),
-    id: z.string().meta({ example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    id: z.string().meta({ examples: ["evt_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     email_id: z.string(),
     type: z.enum(EMAIL_EVENT_TYPES),
     recipient: z
@@ -364,7 +402,7 @@ export const EmailEvent = z
     occurred_at: z.iso.datetime(),
     data: EmailEventData,
   })
-  .meta({ id: "EmailEvent" });
+  .meta({ id: "EmailEvent", examples: [DELIVERED_EVENT_EXAMPLE] });
 
 export type EmailEventOutput = z.output<typeof EmailEvent>;
 
@@ -374,7 +412,16 @@ export const EmailEventList = z
     data: z.array(EmailEvent),
     has_more: z.boolean(),
   })
-  .meta({ id: "EmailEventList" });
+  .meta({
+    id: "EmailEventList",
+    examples: [
+      {
+        object: "list",
+        data: [SENT_EVENT_EXAMPLE, DELIVERED_EVENT_EXAMPLE],
+        has_more: false,
+      },
+    ],
+  });
 
 export type EmailEventListOutput = z.output<typeof EmailEventList>;
 
@@ -386,7 +433,7 @@ export const EmailWebhookEvent = z
   .object({
     id: z.string().meta({
       description: "The event id: the same as `EmailEvent.id`, and the `webhook-id` header.",
-      example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+      examples: ["evt_01k7c8m4q2f3e9v6t5r1n0p8yz"],
     }),
     object: z.literal("event"),
     type: z.enum(EMAIL_EVENT_TYPES),
@@ -402,14 +449,35 @@ export const EmailWebhookEvent = z
       occurred_at: z.iso.datetime(),
     }),
   })
-  .meta({ id: "EmailWebhookEvent" });
+  .meta({
+    id: "EmailWebhookEvent",
+    examples: [
+      {
+        id: DELIVERED_EVENT_EXAMPLE.id,
+        object: "event",
+        type: "email.delivered",
+        created_at: "2026-10-10T12:00:03.000Z",
+        data: {
+          email_id: EMAIL_ID_EXAMPLE,
+          from: "Acme <onboarding@acme.com>",
+          to: ["user@example.com"],
+          subject: "Welcome to Acme",
+          tags: [{ name: "category", value: "welcome" }],
+          sandbox: false,
+          recipient: "user@example.com",
+          occurred_at: DELIVERED_EVENT_EXAMPLE.occurred_at,
+          delivery: { smtp_response: "250 2.0.0 OK" },
+        },
+      },
+    ],
+  });
 
 export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
 
 export const EmailObject = z
   .object({
     object: z.literal("email"),
-    id: z.string().meta({ example: "email_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    id: z.string().meta({ examples: [EMAIL_ID_EXAMPLE] }),
     from: z.string(),
     to: z.array(z.string()),
     cc: z.array(z.string()),
@@ -431,6 +499,29 @@ export const EmailObject = z
     created_at: z.iso.datetime(),
     sent_at: z.iso.datetime().nullable(),
   })
-  .meta({ id: "Email" });
+  .meta({
+    id: "Email",
+    examples: [
+      {
+        object: "email",
+        id: EMAIL_ID_EXAMPLE,
+        from: "Acme <onboarding@acme.com>",
+        to: ["user@example.com"],
+        cc: [],
+        bcc: [],
+        reply_to: [],
+        subject: "Welcome to Acme",
+        html: "<p>Thanks for signing up!</p>",
+        text: null,
+        headers: {},
+        tags: [{ name: "category", value: "welcome" }],
+        status: "sent",
+        recipients: [RECIPIENT_EXAMPLE],
+        sandbox: false,
+        created_at: "2026-10-10T12:00:00.000Z",
+        sent_at: "2026-10-10T12:00:01.000Z",
+      },
+    ],
+  });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
