@@ -64,6 +64,38 @@ describe("SDK samples", () => {
     expect(code).toEndWith('await coss.email.listEvents("email_123");');
   });
 
+  test.each(["http://localhost:3001", "https://api.coss.com", "https://api.example.com:8443"])(
+    "use the selected API origin %s in the client setup",
+    async (origin) => {
+      const code = renderSdkSample(
+        request({
+          method: "get",
+          url: `${origin}/v1/emails/email_123?example=true`,
+          path: { id: { value: "email_123" } },
+        }),
+      );
+      const urls: string[] = [];
+      class TestCoss extends Coss {
+        constructor(options: ConstructorParameters<typeof Coss>[0]) {
+          super({
+            ...options,
+            apiKey: "coss_test_docs",
+            fetch: async (input) => {
+              urls.push(String(input));
+              return Response.json({ id: "email_123" });
+            },
+          });
+        }
+      }
+      const run = new Function(
+        "Coss",
+        `return (async () => { ${code.replace('import { Coss } from "coss";', "")} })();`,
+      );
+      await run(TestCoss);
+      expect(urls).toEqual([`${origin}/v1/emails/email_123`]);
+    },
+  );
+
   test("say so for endpoints the SDK doesn't cover", () => {
     const code = renderSdkSample(request({ method: "delete", url: "https://api.coss.com/v1/x" }));
     expect(code).toStartWith("//");

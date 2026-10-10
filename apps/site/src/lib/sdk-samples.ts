@@ -31,10 +31,6 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
 };
 
-const SETUP = `import { Coss } from "coss";
-
-const coss = new Coss({ apiKey: process.env.COSS_API_KEY });`;
-
 const routes = Object.entries(SDK_SAMPLES).map(([key, sample]) => {
   const [method = "", path = ""] = key.split(" ");
   const pattern = new RegExp(`^${path.replace(/\{[^}]+\}/g, "[^/]+")}$`);
@@ -55,7 +51,13 @@ export function renderSdkSample(request: SampleRequest): string {
 
   const args = sample.args(request);
   while (args.length > 0 && args.at(-1) === undefined) args.pop();
-  return `${SETUP}
+  const { origin } = new URL(request.url, "https://api.coss.com");
+  return `import { Coss } from "coss";
+
+const coss = new Coss({
+  apiKey: process.env.COSS_API_KEY,
+  baseUrl: ${tsValue(origin)},
+});
 
 const { data, error } = await coss.${sample.method}(${args.map((arg) => arg ?? "undefined").join(", ")});`;
 }
