@@ -227,11 +227,14 @@ export function toApiError(error: unknown): ApiError | null {
   return null;
 }
 
-export function payloadTooLarge(): ApiError {
+export function payloadTooLarge(limitBytes?: number): ApiError {
   return new ApiError(413, {
     type: "invalid_request_error",
     code: "payload_too_large",
-    message: "The request body is larger than the 5 MB limit.",
+    message:
+      limitBytes === undefined
+        ? "The request body is too large."
+        : `The request body is larger than the ${limitBytes / 1024 / 1024} MB limit.`,
   });
 }
 

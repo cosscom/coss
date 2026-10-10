@@ -17,6 +17,7 @@ export const ID_PREFIXES = {
   environment: "env",
   email: "email",
   emailRecipient: "rcpt",
+  emailAttachment: "att",
   emailEvent: "evt",
   emailSuppression: "sup",
   domain: "dom",

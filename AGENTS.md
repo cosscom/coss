@@ -109,7 +109,7 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 
 - `createApp(opts)` (`src/app.ts`) is side-effect free; services are injected via `CreateAppOptions` and `src/index.ts`
   wires env (`webhookDeps` is required — a throwaway secrets key would make the endpoints it creates
-  undeliverable; `emailService`/`domainDeps` default to the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
+  undeliverable; `emailService`/`domainDeps` default to the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB; `POST /v1/emails` skips it and applies its own 40 MB limit after `requireApiKey`, `src/body-limit.ts`) → `logger` (off under test). Every
   response carries a server-generated `X-Request-Id: req_…` (client values are ignored).
 - Errors are always the envelope `{ error: { type, code, message, param?, issues?, request_id } }`, built only by
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
@@ -285,6 +285,14 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
+- **Attachments** (`packages/email/src/attachments.ts`, table `email_attachment`, ids `att_`): base64 in the send
+  request only (COSS never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
+  SES-refused extensions are rejected at validation. Bytes live in `email_attachment.content` (bytea) only while the
+  email is `queued` — `deliver` and the stale-claim sweep null them in the transaction that moves it out of `queued` (an
+  email never claimed keeps them). Reads select metadata columns only; API/SDK/dashboard and webhook payloads never
+  expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
+  it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
+  (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -320,7 +328,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
-domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
+domains), bulk suppression import/export, batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.

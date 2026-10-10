@@ -1,3 +1,4 @@
+export type { EmailAttachmentMetadata } from "./attachments.ts";
 export {
   checkRecords,
   type DnsResolver,
@@ -49,6 +50,7 @@ export {
   type IdentityProvider,
   IdentityTakenError,
   type MailFromStatus,
+  type OutboundAttachment,
   type OutboundEmail,
   type ProviderEvent,
   type ProviderTenant,
@@ -56,6 +58,7 @@ export {
 } from "./provider.ts";
 export {
   FakeEmailProvider,
+  type FakeSentEmail,
   SIMULATOR_DOMAIN,
   simulatedEvents,
   uniqueRecipients,
@@ -97,6 +100,8 @@ export {
   EMAIL_RECIPIENT_STATUSES,
   EMAIL_RECIPIENT_TYPES,
   EMAIL_STATUSES,
+  EmailAttachmentObject,
+  type EmailAttachmentObjectOutput,
   EmailEvent,
   EmailEventData,
   type EmailEventDataOutput,
@@ -115,6 +120,8 @@ export {
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
   MAIL_FROM_STATUSES,
+  MAX_ATTACHMENTS,
+  MAX_ATTACHMENTS_BYTES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
   MAX_TAGS,

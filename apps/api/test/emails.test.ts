@@ -106,7 +106,7 @@ describe("POST /v1/emails", () => {
       to: ["ok@example.com", "not-an-email"],
       subject: "",
       text: "Hi",
-      attachments: [],
+      attachments: [{ filename: "a.pdf", content: "not base64" }],
     });
 
     expect(res.status).toBe(422);
@@ -115,10 +115,54 @@ describe("POST /v1/emails", () => {
     const paths = error.issues?.map((issue) => issue.path);
     expect(paths).toContain("to.1");
     expect(paths).toContain("subject");
-    expect(paths).toContain("attachments");
+    expect(paths).toContain("attachments.0.content");
     expect(error.param).toBe(error.issues?.[0]?.path);
     expect(error.message).toStartWith("Invalid request body: ");
     expect(sandboxProvider.sent).toHaveLength(0);
+  });
+
+  test("attachments are sent and returned as metadata only", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const content = Buffer.from("%PDF-1.7").toString("base64");
+
+    const res = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({
+        html: '<img src="cid:logo">',
+        attachments: [
+          { filename: "invoice.pdf", content },
+          { filename: "logo.svg", content, content_id: "logo" },
+        ],
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    const email = (await res.json()) as EmailObjectOutput;
+    expect(email.attachments).toEqual([
+      {
+        id: expect.stringMatching(/^att_/),
+        filename: "invoice.pdf",
+        content_type: "application/pdf",
+        content_id: null,
+        size: 8,
+      },
+      {
+        id: expect.stringMatching(/^att_/),
+        filename: "logo.svg",
+        content_type: "image/svg+xml",
+        content_id: "logo",
+        size: 8,
+      },
+    ]);
+    expect(JSON.stringify(email)).not.toContain(content);
+    expect(sandboxProvider.sent[0]?.attachments.map((a) => a.filename)).toEqual([
+      "invoice.pdf",
+      "logo.svg",
+    ]);
+    const fetched = await getEmailById(app, tenant.sandboxKey, email.id);
+    expect(await fetched.json()).toEqual(email);
   });
 
   test("a missing body field is reported at its path", async () => {

@@ -2,6 +2,7 @@ import { type EmailService, getEmail, listEmailEvents } from "@coss/email";
 import { EmailEventList, EmailObject, SendEmailRequest } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import type { AppEnv } from "../types.ts";
@@ -43,9 +44,11 @@ export const sendEmailRoute = createRoute({
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
     "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
     "suppression list (for every email, or for the email's `category`) are skipped and get " +
-    "the status `suppressed`.",
+    "the status `suppressed`. Attachments are sent base64-encoded in `attachments`; only their " +
+    "metadata is kept once the email is sent.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ email: ["send"] }),
+  // Authenticate before accepting up to 40 MB.
+  middleware: [requireApiKey({ email: ["send"] }), limitBody(SEND_BODY_LIMIT_BYTES)] as const,
   request: {
     headers: SendEmailHeaders,
     body: { required: true, content: { "application/json": { schema: SendEmailRequest } } },
@@ -73,7 +76,7 @@ export const sendEmailRoute = createRoute({
         "Retry after `Retry-After` seconds.",
       { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
     ),
-    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    413: errorDoc("The request body is larger than 40 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     403: errorDoc(
       "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or " +

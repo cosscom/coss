@@ -9,6 +9,10 @@ export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
 export const MAX_TAGS = 50;
 export const SUBJECT_MAX_LENGTH = 998;
+export const MAX_ATTACHMENTS = 20;
+/** Decoded bytes across every attachment of one email (SES caps the whole message at 40 MB). */
+export const MAX_ATTACHMENTS_BYTES = 25 * 1024 * 1024;
+const FILENAME_MAX_LENGTH = 255;
 
 const ADDRESS_MAX_LENGTH = 254;
 const DISPLAY_NAME_MAX_LENGTH = 256;
@@ -28,6 +32,73 @@ const HEADER_VALUE = /^[ -~]{1,995}$/;
 const HEADER_LINE_MAX_LENGTH = 996;
 const TAG_PART = /^[A-Za-z0-9_-]{1,256}$/;
 const CATEGORY = TAG_PART;
+// RFC 2045 `type/subtype` tokens, without parameters.
+const CONTENT_TYPE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+// The `cid:` reference without angle brackets (an RFC 5322 dot-atom-ish msg-id).
+const CONTENT_ID = /^[A-Za-z0-9!#$%&'*+\-./=?^_`{|}~@]{1,100}$/;
+
+/** File extensions SES refuses to send (https://docs.aws.amazon.com/ses/latest/dg/attachments.html). */
+const BLOCKED_ATTACHMENT_EXTENSIONS: ReadonlySet<string> = new Set(
+  (
+    "ade adp app asp bas bat cer chm cmd com cpl crt csh der exe fxp gadget hlp hta inf ins isp " +
+    "its js jse ksh lib lnk mad maf mag mam maq mar mas mat mau mav maw mda mdb mde mdt mdw mdz " +
+    "msc msh msh1 msh2 mshxml msh1xml msh2xml msi msp mst ops pcd pif plg prf prg reg scf scr " +
+    "sct shb shs sys ps1 ps1xml ps2 ps2xml psc1 psc2 tmp url vb vbe vbs vps vsmacros vss vst " +
+    "vsw vxd ws wsc wsf wsh xnk"
+  ).split(" "),
+);
+
+/** Content types filled in from the file extension when the caller sends none. */
+const CONTENT_TYPES_BY_EXTENSION: Readonly<Record<string, string>> = {
+  csv: "text/csv",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  gif: "image/gif",
+  html: "text/html",
+  ics: "text/calendar",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  json: "application/json",
+  pdf: "application/pdf",
+  png: "image/png",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  svg: "image/svg+xml",
+  txt: "text/plain",
+  webp: "image/webp",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  zip: "application/zip",
+};
+const DEFAULT_CONTENT_TYPE = "application/octet-stream";
+
+function fileExtension(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  return dot === -1 ? "" : filename.slice(dot + 1).toLowerCase();
+}
+
+/**
+ * Canonical base64: padded, no whitespace or data: URL prefix. A plain scan, because regex
+ * engines give up on multi-megabyte strings.
+ */
+export function isCanonicalBase64(value: string): boolean {
+  if (value.length % 4 !== 0) return false;
+  const padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
+  for (let i = 0; i < value.length - padding; i++) {
+    const c = value.charCodeAt(i);
+    const valid =
+      (c >= 65 && c <= 90) || // A-Z
+      (c >= 97 && c <= 122) || // a-z
+      (c >= 48 && c <= 57) || // 0-9
+      c === 43 || // +
+      c === 47; // /
+    if (!valid) return false;
+  }
+  return true;
+}
+
+/** Decoded size of canonical base64, without decoding it. */
+export function base64DecodedSize(value: string): number {
+  const padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
+  return (value.length / 4) * 3 - padding;
+}
 
 /** The suppression scope that matches every email, whatever its category. */
 export const ALL_CATEGORIES = "*";
@@ -152,6 +223,50 @@ const Category = z
   .string()
   .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
 
+const Attachment = z
+  .strictObject({
+    filename: z
+      .string()
+      .min(1, "Filename must not be empty.")
+      .max(FILENAME_MAX_LENGTH, `Filenames can be at most ${FILENAME_MAX_LENGTH} characters.`)
+      .superRefine((value, ctx) => {
+        const extension = fileExtension(value);
+        let message: string | null = null;
+        if (CONTROL_CHARACTERS.test(value) || FORMAT_CHARACTERS.test(value)) {
+          message = "Filenames must not contain control or invisible formatting characters.";
+        } else if (value.includes("/") || value.includes("\\")) {
+          message = "Filenames must not contain / or \\.";
+        } else if (extension === "" || value.endsWith(".")) {
+          message = 'Filenames need an extension, e.g. "invoice.pdf".';
+        } else if (BLOCKED_ATTACHMENT_EXTENSIONS.has(extension)) {
+          message = `Attachments with the .${extension} extension cannot be sent.`;
+        }
+        if (message) ctx.addIssue({ code: "custom", message });
+      }),
+    content: z
+      .string()
+      .min(1, "Content must not be empty.")
+      .refine(isCanonicalBase64, "Must be base64-encoded (no whitespace or data: prefix).")
+      .meta({ description: "The file's bytes, base64-encoded." }),
+    content_type: z
+      .string()
+      .regex(CONTENT_TYPE, 'Must be a media type like "application/pdf", without parameters.')
+      .optional()
+      .meta({ description: "Defaults from the filename's extension." }),
+    content_id: z
+      .string()
+      .regex(
+        CONTENT_ID,
+        "Must be 1-100 characters without spaces or angle brackets, e.g. logo@acme.",
+      )
+      .optional()
+      .meta({
+        description:
+          'Makes the attachment inline: reference it from `html` as `<img src="cid:logo@acme">`.',
+      }),
+  })
+  .meta({ id: "SendEmailAttachment" });
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -253,6 +368,39 @@ const SendEmailRequestFields = z.strictObject({
       'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
       "(or for every email) are skipped.",
   }),
+  attachments: z
+    .array(Attachment)
+    .max(MAX_ATTACHMENTS, `At most ${MAX_ATTACHMENTS} attachments are allowed.`)
+    .superRefine((attachments, ctx) => {
+      const seen = new Set<string>();
+      let total = 0;
+      for (const [index, attachment] of attachments.entries()) {
+        // Issues on a single attachment don't abort, so fields may still be invalid here.
+        if (typeof attachment.content === "string" && isCanonicalBase64(attachment.content)) {
+          total += base64DecodedSize(attachment.content);
+        }
+        const contentId = attachment.content_id;
+        if (contentId === undefined) continue;
+        if (seen.has(contentId)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [index, "content_id"],
+            message: `Duplicate content_id "${contentId}".`,
+          });
+        }
+        seen.add(contentId);
+      }
+      if (total > MAX_ATTACHMENTS_BYTES) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Attachments can be at most ${MAX_ATTACHMENTS_BYTES / 1024 / 1024} MB combined (decoded).`,
+        });
+      }
+    })
+    .optional()
+    .meta({
+      description: `Up to ${MAX_ATTACHMENTS} files, at most ${MAX_ATTACHMENTS_BYTES / 1024 / 1024} MB combined.`,
+    }),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -293,6 +441,20 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     // Absent rather than `null` without a category, so request hashes from before categories
     // existed stay valid for idempotent retries.
     ...(value.category === undefined ? {} : { category: value.category }),
+    // Absent when there are none, for the same reason.
+    ...(value.attachments?.length
+      ? {
+          attachments: value.attachments.map((attachment) => ({
+            filename: attachment.filename,
+            content: attachment.content,
+            content_type:
+              attachment.content_type?.toLowerCase() ??
+              CONTENT_TYPES_BY_EXTENSION[fileExtension(attachment.filename)] ??
+              DEFAULT_CONTENT_TYPE,
+            content_id: attachment.content_id ?? null,
+          })),
+        }
+      : {}),
   }))
   .meta({ id: "SendEmailRequest" });
 
@@ -449,6 +611,21 @@ export const EmailWebhookEvent = z
 
 export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
 
+export const EmailAttachmentObject = z
+  .object({
+    id: z.string().meta({ example: "att_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    filename: z.string(),
+    content_type: z.string(),
+    content_id: z
+      .string()
+      .nullable()
+      .meta({ description: "Set for inline attachments (`cid:` references)." }),
+    size: z.number().int().meta({ description: "Size in bytes." }),
+  })
+  .meta({ id: "EmailAttachment" });
+
+export type EmailAttachmentObjectOutput = z.output<typeof EmailAttachmentObject>;
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -469,6 +646,9 @@ export const EmailObject = z
         "Whether the email was handed to the delivery provider. Per-recipient delivery is in `recipients`.",
     }),
     recipients: z.array(EmailRecipient),
+    attachments: z.array(EmailAttachmentObject).meta({
+      description: "Attachment metadata. Content is never returned, and is discarded once sent.",
+    }),
     sandbox: z
       .boolean()
       .meta({ description: "True when sent from a sandbox environment (never delivered)." }),

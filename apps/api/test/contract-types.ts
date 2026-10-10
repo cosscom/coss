@@ -83,10 +83,17 @@ export type Contract = [
   Assert<Equals<keyof SendInput, keyof SendEmailParams>>,
   Assert<MutuallyAssignable<SendInput["to"], SendEmailParams["to"]>>,
   Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailParams["tags"]>>>,
+  Assert<
+    MutuallyAssignable<
+      NonNullable<SendInput["attachments"]>[number],
+      NonNullable<SendEmailParams["attachments"]>[number]
+    >
+  >,
   // Response: what the API returns is exactly the SDK's `Email`.
   Assert<MutuallyAssignable<EmailOutput, Email>>,
   Assert<MutuallyAssignable<EmailOutput["status"], Email["status"]>>,
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
+  Assert<MutuallyAssignable<EmailOutput["attachments"][number], Email["attachments"][number]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>, SdkEmailEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,

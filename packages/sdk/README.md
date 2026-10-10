@@ -77,6 +77,30 @@ await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: cont
 await coss.email.get(id, { signal });
 ```
 
+## Attachments
+
+Attach up to 20 files (25 MB combined) as base64. The content type defaults from the extension.
+A `content_id` makes an attachment inline, so the HTML can reference it as `cid:…`:
+
+```ts
+import { readFile } from "node:fs/promises";
+
+await coss.email.send({
+  from: "Acme <billing@acme.com>",
+  to: "user@example.com",
+  subject: "Your invoice",
+  html: '<img src="cid:logo@acme" alt="Acme"><p>Your invoice is attached.</p>',
+  attachments: [
+    { filename: "invoice.pdf", content: (await readFile("invoice.pdf")).toString("base64") },
+    { filename: "logo.png", content: logoBase64, content_id: "logo@acme" },
+  ],
+});
+```
+
+Emails only return attachment metadata (`id`, `filename`, `content_type`, `content_id`, `size`).
+COSS discards the content once the email is sent. Executables and other file types the delivery
+provider refuses (`.exe`, `.js`, `.bat`, …) are rejected with a `validation_error`.
+
 ## Domains
 
 Live keys can only send from a verified domain. Domains belong to the **organization**, so a

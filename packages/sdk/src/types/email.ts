@@ -10,6 +10,35 @@ export interface EmailTag {
   value: string;
 }
 
+/**
+ * A file to attach (at most 20 per email, 25 MB combined). Executables and other file types the
+ * delivery provider refuses (such as `.exe` or `.js`) are rejected.
+ */
+export interface EmailAttachmentParams {
+  /** The name recipients see. Must include an extension, e.g. `"invoice.pdf"`. */
+  filename: string;
+  /** The file's bytes, base64-encoded (no line breaks or `data:` prefix). */
+  content: string;
+  /** Media type such as `"application/pdf"`. Defaults from the filename's extension. */
+  content_type?: string;
+  /**
+   * Makes the attachment inline: reference it from `html` as `<img src="cid:logo@acme">`
+   * (without angle brackets here).
+   */
+  content_id?: string;
+}
+
+/** Metadata of a sent attachment. The content itself is never returned. */
+export interface EmailAttachment {
+  id: string;
+  filename: string;
+  content_type: string;
+  /** Set for inline attachments. */
+  content_id: string | null;
+  /** Size in bytes. */
+  size: number;
+}
+
 /** Whether the email was handed to the delivery provider. Delivery is tracked per recipient. */
 export type EmailStatus = "queued" | "sent" | "failed";
 
@@ -104,6 +133,7 @@ export interface SendEmailParams {
    * for every email) are skipped.
    */
   category?: string;
+  attachments?: EmailAttachmentParams[];
 }
 
 /** An email as returned by the API. Recipient fields are always arrays. */
@@ -125,6 +155,8 @@ export interface Email {
   status: EmailStatus;
   /** Every distinct recipient across `to`, `cc` and `bcc`, with its delivery status. */
   recipients: EmailRecipient[];
+  /** Attachment metadata; the content is discarded once the email is sent. */
+  attachments: EmailAttachment[];
   /** `true` when sent with a sandbox (`coss_test_…`) key: nothing is actually delivered. */
   sandbox: boolean;
   /** ISO 8601 timestamp. */

@@ -37,6 +37,7 @@ describe("coss SDK against the API", () => {
       html: "<p>Hello!</p>",
       headers: { "X-Campaign": "fall" },
       tags: [{ name: "category", value: "welcome" }],
+      attachments: [{ filename: "notes.txt", content: btoa("hi") }],
     });
 
     expect(sent.error).toBeNull();
@@ -46,6 +47,9 @@ describe("coss SDK against the API", () => {
       cc: ["copy@example.com"],
       headers: { "x-campaign": "fall" },
       tags: [{ name: "category", value: "welcome" }],
+      attachments: [
+        { filename: "notes.txt", content_type: "text/plain", content_id: null, size: 2 },
+      ],
       status: "sent",
       sandbox: true,
     });

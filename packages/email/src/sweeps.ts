@@ -4,6 +4,7 @@
  */
 import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, lt } from "drizzle-orm";
+import { purgeAttachmentContent } from "./attachments.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 
 const { email, emailEvent } = schema;
@@ -62,6 +63,7 @@ export async function sweepStaleClaims(opts: {
           .set({ status: "sent", sentAt: sent.occurredAt })
           .where(thisEmail)
           .returning({ id: email.id });
+        if (updated) await purgeAttachmentContent(tx, candidate);
         return Boolean(updated);
       }
       const [failed] = await tx
@@ -74,6 +76,7 @@ export async function sweepStaleClaims(opts: {
         .where(thisEmail)
         .returning({ id: email.id });
       if (!failed) return false;
+      await purgeAttachmentContent(tx, candidate);
       await recordProviderEvent(tx, {
         provider: COSS_EVENT_SOURCE,
         providerEventType: "DispatchInterrupted",

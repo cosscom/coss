@@ -21,6 +21,7 @@ const { data, error } = await coss.email.send({
   html: "<p>It works! This email was sent with the <strong>coss</strong> SDK.</p>",
   text: "It works! This email was sent with the coss SDK.",
   tags: [{ name: "source", value: "sdk-example" }],
+  attachments: [{ filename: "hello.txt", content: btoa("Hello from COSS!") }],
 });
 
 if (error) {

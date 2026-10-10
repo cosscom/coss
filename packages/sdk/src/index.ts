@@ -17,6 +17,8 @@ export type {
 } from "./types/domain.ts";
 export type {
   Email,
+  EmailAttachment,
+  EmailAttachmentParams,
   EmailEvent,
   EmailEventData,
   EmailEventType,
