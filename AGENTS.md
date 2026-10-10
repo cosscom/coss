@@ -14,7 +14,7 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), webhook deliveries, domain re-checks, stale-claim/requeue sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
@@ -340,7 +340,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `requeueUnclaimedEmails`
+  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -414,8 +414,9 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   provider, so a job that runs twice never sends twice. Retries with the same `Idempotency-Key` replay the email in its
   current state (queued included). If a worker dies after the claim, the row stays `queued` until the stale-claim sweep
   (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late SES `Send` event still
-  repairs it); an email still unclaimed after 10 min (its job exhausted its retries) is re-enqueued. Sends need the
-  worker running.
+  repairs it). An email still unclaimed after 10 min (its job exhausted its retries) is re-enqueued, and after 1 hour
+  (`UNCLAIMED_FAIL_MS`) it is `failed`/`dispatch_failed` with an `email.failed` webhook — so a worker outage longer than
+  an hour fails the emails queued during it instead of sending them late. Sends need the worker running.
 - Webhook deliveries are not ordered (use `data.occurred_at`; SES itself may publish a complaint before the
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
