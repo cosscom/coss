@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
   DASHBOARD_PATH,
+  ORG_NAME_MAX_LENGTH,
   RESERVED_ORG_SLUGS,
   SITE_ASSET_PREFIX,
   slugify,
+  validateOrgName,
   validateOrgSlug,
   ZONE_ROUTES,
   zoneForPath,
@@ -84,5 +86,19 @@ describe("zones", () => {
     for (const slug of ["pricing", "blog", "changelog", "email", "sms", "open-source", "legal"]) {
       expect(validateOrgSlug(slug)).toContain("reserved");
     }
+  });
+});
+
+describe("validateOrgName", () => {
+  test("accepts 1-64 characters after trimming", () => {
+    expect(validateOrgName("Acme")).toBeNull();
+    expect(validateOrgName(" A ")).toBeNull();
+    expect(validateOrgName("x".repeat(ORG_NAME_MAX_LENGTH))).toBeNull();
+  });
+
+  test("rejects blank and overlong names", () => {
+    expect(validateOrgName("")).not.toBeNull();
+    expect(validateOrgName("   ")).not.toBeNull();
+    expect(validateOrgName("x".repeat(ORG_NAME_MAX_LENGTH + 1))).not.toBeNull();
   });
 });

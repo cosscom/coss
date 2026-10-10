@@ -198,6 +198,13 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - Domain management uses `emailRuntime().domainDeps` (`src/lib/email-runtime.ts`) and webhook management
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
+- Org settings (`[orgSlug]/settings`: rename, slug change, leave) and account settings (top-level `/settings`: name,
+  verification email, password change, sessions) call `auth.api.*` server-side — `/organization/update` stays a
+  disabled HTTP path. `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
+  Auth alone protects the last owner. Account actions refuse while impersonating.
+- Session-bound Better Auth calls made while *rendering* pass `authHeaders()` (`src/lib/session.ts`), not raw
+  `headers()`: after an action replaces the session cookie (password change), Next re-renders with the new cookies
+  but the old request headers.
 - When driving the dashboard in a browser, wait for hydration before typing or submitting.
 
 ## coss.com zones
@@ -430,8 +437,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), open/click tracking (and custom tracking domains),
 attachments/batch/scheduled sends, webhook delivery logs over the API,
-rate limit overrides in the dashboard, org settings,
-removing members / leaving an org, resending invitations, signed-in password change, API version header, release tooling.
+rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling.
 
 <!-- BEGIN:turborepo-agent-rules -->
 
