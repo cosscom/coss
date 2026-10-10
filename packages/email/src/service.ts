@@ -1,6 +1,7 @@
-import { db, type Executor, schema } from "@coss/db";
+import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, eq, isNull } from "drizzle-orm";
+import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
@@ -30,7 +31,11 @@ export type SendEmailInput = {
 };
 
 export type EmailService = {
+  /** Read a matching replay without creating or dispatching an email. */
+  replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
+  /** Stores the email and enqueues its dispatch; the email is returned `queued`. */
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
+  /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
   dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
 };
 
@@ -149,6 +154,7 @@ function errorMessage(error: unknown): string {
 export function createEmailService(opts: {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
+  queue: EmailDispatchQueue;
 }): EmailService {
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
@@ -158,7 +164,7 @@ export function createEmailService(opts: {
     if (row.status !== "queued") return currentEmail(row);
 
     const provider = providerFor(sandbox);
-    // Claim the email first so concurrent dispatchers (e.g. a future worker) never send it twice.
+    // Claim the email first so concurrent dispatchers (e.g. a retried job) never send it twice.
     // `provider` is only ever set by this claim. A crash after the claim leaves the row `queued`
     // with a provider: the worker's stale-claim sweep resolves it.
     const [claimed] = await db
@@ -250,7 +256,7 @@ export function createEmailService(opts: {
     return deliver(found.email, found.sandbox);
   }
 
-  /** The finished email an unexpired idempotency key with the same request hash points at. */
+  /** The email an unexpired idempotency key with the same request hash points at. */
   async function findReplay(
     environment: SendEnvironment,
     idempotencyKey: string,
@@ -269,7 +275,6 @@ export function createEmailService(opts: {
       .limit(1);
     if (
       !existing ||
-      existing.status === "queued" ||
       existing.requestHash !== requestHash ||
       Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
     ) {
@@ -327,11 +332,12 @@ export function createEmailService(opts: {
       }
     }
 
-    // Inserts the email and, only if this request won the insert, its recipients: atomically, so
-    // a stored email always has its recipient rows. Recipients on the suppression list are stored
-    // `suppressed` (with an `email.suppressed` event) and never handed to the provider.
-    const insertEmail = async (executor: Executor): Promise<EmailRow | undefined> => {
-      const [row] = await executor
+    // Inserts the email and, only if this request won the insert, its recipients and dispatch job:
+    // atomically, so a stored email always has its recipient rows and is always dispatched.
+    // Recipients on the suppression list are stored `suppressed` (with an `email.suppressed`
+    // event) and never handed to the provider.
+    const insertEmail = async (tx: Transaction): Promise<EmailRow | undefined> => {
+      const [row] = await tx
         .insert(email)
         .values(values)
         .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
@@ -339,23 +345,29 @@ export function createEmailService(opts: {
       if (!row) return row;
       const recipients = recipientRows(row);
       const suppressed = await suppressedRecipients(
-        executor,
+        tx,
         environment,
         recipients.map((recipient) => recipient.address),
         row.category,
       );
-      await executor.insert(emailRecipient).values(recipients);
+      await tx.insert(emailRecipient).values(recipients);
       for (const [address, entry] of suppressed) {
-        await recordProviderEvent(executor, suppressedEvent(row, address, entry));
+        await recordProviderEvent(tx, suppressedEvent(row, address, entry));
       }
+      await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
       return row;
     };
     const insertOnce = () => db.transaction((tx) => insertEmail(tx));
+    const stored = async (row: EmailRow, replayed: boolean) => {
+      const [object] = await toEmailObjects(environment.organizationId, [{ email: row, sandbox }]);
+      if (!object) throw new Error("Email serialization produced no object.");
+      return { email: object, replayed };
+    };
 
     if (!idempotencyKey) {
       const row = await insertOnce();
       if (!row) throw new Error("Email insert returned no row.");
-      return { email: await deliver(row, sandbox), replayed: false };
+      return stored(row, false);
     }
 
     const sameKey = and(
@@ -364,7 +376,8 @@ export function createEmailService(opts: {
       eq(email.idempotencyKey, idempotencyKey),
     );
     // The unique (environment_id, idempotency_key) index arbitrates races: exactly one request
-    // inserts, every other one sees `DO NOTHING` and inspects the winner's row.
+    // inserts, every other one waits for its commit, sees `DO NOTHING` and replays the winner's
+    // row (whatever its status: a queued email is replayed as queued).
     let inserted = await insertOnce();
     for (let attempt = 1; !inserted; attempt++) {
       if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
@@ -394,20 +407,15 @@ export function createEmailService(opts: {
           "This idempotency key was already used with a different request body.",
         );
       }
-      if (existing.status === "queued") {
-        throw new EmailError(
-          "request_in_progress",
-          "A request with this idempotency key is still being processed. Retry shortly.",
-        );
-      }
-      const [replayed] = await toEmailObjects(environment.organizationId, [
-        { email: existing, sandbox },
-      ]);
-      if (!replayed) throw new Error("Email replay produced no object.");
-      return { email: replayed, replayed: true };
+      return stored(existing, true);
     }
-    return { email: await deliver(inserted, sandbox), replayed: false };
+    return stored(inserted, false);
   }
 
-  return { send, dispatch };
+  async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
+    if (!input.idempotencyKey) return null;
+    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+  }
+
+  return { send, dispatch, replay };
 }

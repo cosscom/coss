@@ -1,0 +1,52 @@
+---
+title: Verifying webhooks
+description: Verify webhook requests with verifyWebhook.
+---
+
+`verifyWebhook(body, headers, secret)` checks a request's [Standard Webhooks](https://www.standardwebhooks.com)
+signature and age, and returns the parsed event. Pass the **raw** request body, exactly as received,
+and the endpoint's `whsec_…` signing secret (shown in the dashboard, or returned once by
+`coss.webhookEndpoints.create`).
+
+```ts twoslash title="app/webhooks/coss/route.ts"
+import { verifyWebhook, WebhookVerificationError } from "coss";
+
+export async function POST(request: Request) {
+  try {
+    const event = await verifyWebhook(
+      await request.text(),
+      request.headers,
+      process.env.COSS_WEBHOOK_SECRET!,
+    );
+
+    if (event.type === "email.bounced") {
+      console.log(event.data.recipient, event.data.bounce?.type);
+      //                                               ^?
+    }
+    return new Response("ok");
+  } catch (error) {
+    if (error instanceof WebhookVerificationError) {
+      return new Response("invalid signature", { status: 400 });
+    }
+    throw error;
+  }
+}
+```
+
+Unlike every other SDK function, `verifyWebhook` **throws**: a failed signature check must not be
+ignorable. `headers` can be a `Headers` object or a plain Node-style record.
+
+Requests older than 5 minutes (or from a clock more than 5 minutes off) are rejected. Change the
+window with `toleranceSeconds`:
+
+```ts twoslash
+import { verifyWebhook } from "coss";
+declare const body: string;
+declare const headers: Headers;
+// ---cut---
+const event = await verifyWebhook(body, headers, process.env.COSS_WEBHOOK_SECRET!, {
+  toleranceSeconds: 600,
+});
+```
+
+See [Webhooks](/docs/webhooks) for event types, retries and ordering.

@@ -2,6 +2,7 @@ import { type AuthenticateResult, authenticateApiKey, type KeyPermissions } from
 import { createMiddleware } from "hono/factory";
 import { ApiError } from "../errors.ts";
 import type { AppEnv } from "../types.ts";
+import { rateLimitError } from "./rate-limit.ts";
 
 export type Authenticate = (
   rawKey: string,
@@ -13,6 +14,11 @@ const BEARER = /^bearer\s+(.+)$/i;
 // RFC 6750: 401 responses name the scheme the client should use.
 const WWW_AUTHENTICATE = { "WWW-Authenticate": "Bearer" };
 
+const tooManyFailures = {
+  code: "too_many_failed_authentications",
+  message: "Too many requests with invalid API keys from this address. Retry later.",
+};
+
 function describePermissions(required: KeyPermissions): string {
   return Object.entries(required)
     .flatMap(([resource, actions]) => actions.map((action) => `${resource}:${action}`))
@@ -21,7 +27,8 @@ function describePermissions(required: KeyPermissions): string {
 
 /**
  * Route-level middleware (`createRoute({ middleware })`) so it runs before request validation:
- * an unauthenticated caller gets a 401, never a 422 describing the endpoint's schema.
+ * an unauthenticated caller gets a 401, never a 422 describing the endpoint's schema. Callers
+ * whose keys keep failing are cut off per client IP (`api.auth_failure`) before the key lookup.
  * `authenticate` is injectable for tests only.
  */
 export function requireApiKey(
@@ -45,6 +52,15 @@ export function requireApiKey(
         },
         WWW_AUTHENTICATE,
       );
+    }
+
+    const { rateLimiter, clientIp } = c.var;
+    const failures = clientIp
+      ? { buckets: ["api.auth_failure"] as const, subject: clientIp }
+      : null;
+    if (failures) {
+      const decision = await rateLimiter.consume({ ...failures, peek: true });
+      if (!decision.allowed) throw rateLimitError(decision, tooManyFailures);
     }
 
     let result: AuthenticateResult;
@@ -76,6 +92,7 @@ export function requireApiKey(
           message: `This API key does not have the required permission: ${describePermissions(required)}.`,
         });
       }
+      if (failures) await rateLimiter.consume(failures);
       throw new ApiError(
         401,
         {

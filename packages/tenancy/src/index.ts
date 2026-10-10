@@ -7,6 +7,7 @@ export {
   type EnvironmentApiKeySummary,
   getKeyBinding,
   type KeyPermissions,
+  LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
 } from "./api-keys.ts";
 export {

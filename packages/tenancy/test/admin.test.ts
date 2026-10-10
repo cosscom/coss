@@ -221,11 +221,32 @@ describe("organization suspension", () => {
 
     await suspendOrganization({ organizationId, reason: "Abuse", actor });
     const inviteeHeaders = await sessionHeaders(invitee.email, invitee.password);
+    const colleagueHeaders = await sessionHeaders(colleague.email, colleague.password);
     const refused = [
       () =>
         auth.api.createInvitation({
           headers: ownerHeaders,
           body: { email: `x-${uniqueSuffix()}@coss.test`, role: "member", organizationId },
+        }),
+      () =>
+        auth.api.createInvitation({
+          headers: ownerHeaders,
+          body: { email: invitee.email, role: "member", organizationId, resend: true },
+        }),
+      () =>
+        auth.api.removeMember({
+          headers: ownerHeaders,
+          body: { memberIdOrEmail: colleagueMember.id, organizationId },
+        }),
+      () =>
+        auth.api.leaveOrganization({
+          headers: colleagueHeaders,
+          body: { organizationId },
+        }),
+      () =>
+        auth.api.updateOrganization({
+          headers: ownerHeaders,
+          body: { organizationId, data: { name: "Changed" } },
         }),
       () =>
         auth.api.acceptInvitation({

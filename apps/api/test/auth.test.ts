@@ -97,7 +97,7 @@ describe("authentication", () => {
       Authorization: `bearer ${tenant.sandboxKey}`,
     });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
   });
 
   test("authentication runs before body validation (401 wins over 422)", async () => {
@@ -159,7 +159,7 @@ describe("authentication", () => {
     });
 
     await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
-    expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(200);
+    expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(202);
   });
 
   test("permissions are checked per endpoint", async () => {

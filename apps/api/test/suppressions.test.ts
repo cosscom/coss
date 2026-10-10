@@ -101,6 +101,70 @@ describe("/v1/suppressions", () => {
     );
   });
 
+  test("POST /import imports valid entries and reports invalid ones", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const res = await call(app, tenant.sandboxKey, "POST", "/v1/suppressions/import", {
+      suppressions: [
+        { address: "jane@example.com" },
+        { address: "jane@example.com", scope: "marketing" },
+        { address: "nope" },
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      object: "suppression_import",
+      created: 2,
+      existing: 0,
+      invalid: [{ index: 2, address: "nope", message: expect.stringContaining("Invalid address") }],
+    });
+
+    for (const body of [
+      { suppressions: [] },
+      { suppressions: Array.from({ length: 1001 }, (_, i) => ({ address: `u${i}@example.com` })) },
+      { suppressions: [{ address: "a@b.co", reason: "bounce" }] },
+      [{ address: "a@b.co" }],
+    ]) {
+      const invalid = await call(app, tenant.sandboxKey, "POST", "/v1/suppressions/import", body);
+      expect(invalid.status).toBe(422);
+    }
+  });
+
+  test("GET /export streams the environment's list as CSV, optionally filtered", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    await call(app, tenant.sandboxKey, "POST", "/v1/suppressions/import", {
+      suppressions: [{ address: "a@example.com" }, { address: "b@example.com", scope: "news" }],
+    });
+    // Another environment's entries never appear.
+    await call(app, tenant.liveKey, "POST", "/v1/suppressions", { address: "live@example.com" });
+
+    const res = await call(app, tenant.sandboxKey, "GET", "/v1/suppressions/export");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("text/csv; charset=utf-8");
+    expect(res.headers.get("content-disposition")).toBe(
+      `attachment; filename="suppressions-${tenant.development.id}.csv"`,
+    );
+    expect(res.headers.get("x-request-id")).toStartWith("req_");
+    const lines = (await res.text()).trimEnd().split("\r\n");
+    expect(lines[0]).toBe("address,scope,reason,created_at,email_id,id");
+    // One import: the two entries share a millisecond, so their id order is arbitrary.
+    expect(
+      lines
+        .slice(1)
+        .map((line) => line.split(",").slice(0, 3))
+        .sort(),
+    ).toEqual([
+      ["a@example.com", "*", "import"],
+      ["b@example.com", "news", "import"],
+    ]);
+
+    const news = await call(app, tenant.sandboxKey, "GET", "/v1/suppressions/export?scope=news");
+    expect((await news.text()).trimEnd().split("\r\n")).toHaveLength(2);
+    const bad = await call(app, tenant.sandboxKey, "GET", "/v1/suppressions/export?reason=x");
+    expect(bad.status).toBe(422);
+  });
+
   test("needs the suppression permissions", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
@@ -125,6 +189,11 @@ describe("/v1/suppressions", () => {
       "/v1/suppressions/sup_01k7c8m4q2f3e9v6t5r1n0p8yz",
     );
     expect(deleted.status).toBe(403);
+    const imported = await call(app, tenant.sandboxKey, "POST", "/v1/suppressions/import", {
+      suppressions: [{ address: "jane@example.com" }],
+    });
+    expect(imported.status).toBe(403);
+    expect((await call(app, tenant.sandboxKey, "GET", "/v1/suppressions/export")).status).toBe(200);
     const unauthenticated = await Promise.resolve(app.request("/v1/suppressions"));
     expect(unauthenticated.status).toBe(401);
   });

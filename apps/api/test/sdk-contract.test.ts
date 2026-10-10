@@ -4,6 +4,8 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
 import { createTestApp, REQUEST_ID, type TestApp, uniqueDomainName } from "./helpers.ts";
@@ -26,7 +28,7 @@ function clientFor(app: TestApp, apiKey: string, options: Partial<CossOptions> =
 describe("coss SDK against the API", () => {
   test("send then get round-trips the same email", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const sent = await coss.email.send({
@@ -46,19 +48,23 @@ describe("coss SDK against the API", () => {
       cc: ["copy@example.com"],
       headers: { "x-campaign": "fall" },
       tags: [{ name: "category", value: "welcome" }],
-      status: "sent",
+      status: "queued",
       sandbox: true,
     });
     if (!sent.data) throw new Error("send failed");
 
     const fetched = await coss.email.get(sent.data.id);
     expect(fetched).toEqual({ data: sent.data, error: null });
+
+    await dispatch();
+    const dispatched = await coss.email.get(sent.data.id);
+    expect(dispatched.data).toMatchObject({ id: sent.data.id, status: "sent" });
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
   test("recipients and events report simulated delivery outcomes", async () => {
     const tenant = await createTestTenant();
-    const { app } = createTestApp();
+    const { app, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const sent = await coss.email.send({
@@ -68,7 +74,9 @@ describe("coss SDK against the API", () => {
       text: "Hi",
     });
     if (!sent.data) throw new Error("send failed");
-    expect(sent.data.recipients.map((r) => [r.address, r.status])).toEqual([
+    await dispatch();
+    const fetched = await coss.email.get(sent.data.id);
+    expect(fetched.data?.recipients.map((r) => [r.address, r.status])).toEqual([
       ["success@simulator.amazonses.com", "delivered"],
       ["bounce@simulator.amazonses.com", "bounced"],
     ]);
@@ -84,7 +92,7 @@ describe("coss SDK against the API", () => {
 
   test("an SDK retry with the same idempotency key does not send twice", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
     const params = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "Hi" };
     const idempotencyKey = crypto.randomUUID();
@@ -93,6 +101,7 @@ describe("coss SDK against the API", () => {
     const second = await coss.email.send(params, { idempotencyKey });
 
     expect(second.data?.id).toBe(first.data?.id ?? "missing");
+    await dispatch();
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
@@ -114,6 +123,28 @@ describe("coss SDK against the API", () => {
       status: 401,
     });
     expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+
+  test("a used-up send quota maps to rate_limit_error without waiting", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "email.sandbox_recipients.day",
+      rule: { limit: 1, periodMs: 86_400_000 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    // Default retries: a Retry-After of hours is returned, not slept on.
+    const coss = clientFor(app, tenant.sandboxKey);
+    const email = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "Hi" };
+
+    expect((await coss.email.send(email)).error).toBeNull();
+    const result = await coss.email.send(email);
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "rate_limit_error",
+      code: "quota_exceeded",
+      status: 429,
+    });
   });
 
   test("validation errors map param and issues", async () => {
@@ -157,7 +188,7 @@ describe("coss SDK against the API", () => {
 
   test("suppressions: add, check, list, get, remove, and a category send skips the address", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const added = await coss.email.suppressions.add({
@@ -210,7 +241,14 @@ describe("coss SDK against the API", () => {
       category: "marketing",
     });
     expect(skipped.data?.category).toBe("marketing");
+    // Suppressed at send time, before dispatch.
     expect(skipped.data?.recipients.map((r) => [r.address, r.status])).toEqual([
+      ["jane@example.com", "suppressed"],
+      ["joe@example.com", "queued"],
+    ]);
+    await dispatch();
+    const dispatched = await coss.email.get(skipped.data?.id ?? "");
+    expect(dispatched.data?.recipients.map((r) => [r.address, r.status])).toEqual([
       ["jane@example.com", "suppressed"],
       ["joe@example.com", "delivered"],
     ]);
@@ -229,6 +267,42 @@ describe("coss SDK against the API", () => {
     expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
     const validation = await coss.email.suppressions.add({ address: "nope", scope: "*" });
     expect(validation.error).toMatchObject({ type: "invalid_request_error", param: "address" });
+  });
+});
+
+describe("coss.email.suppressions bulk import and export against the API", () => {
+  test("import batches large lists, and export returns CSV that imports again", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const suppressions = Array.from({ length: 1500 }, (_, i) => ({
+      address: `user${i}@example.com`,
+    }));
+    suppressions.push({ address: "nope" }, { address: "user0@example.com" });
+
+    expect(await coss.email.suppressions.import({ suppressions })).toEqual({
+      data: {
+        object: "suppression_import",
+        created: 1500,
+        existing: 1,
+        invalid: [{ index: 1500, address: "nope", message: expect.any(String) }],
+      },
+      error: null,
+    });
+
+    const exported = await coss.email.suppressions.export({ reason: "import" });
+    const lines = exported.data?.trimEnd().split("\r\n") ?? [];
+    expect(lines).toHaveLength(1501);
+    expect(lines[1]).toMatch(/^user\d+@example\.com,\*,import,[^,]+,,sup_\w+$/);
+
+    const other = clientFor(app, tenant.liveKey);
+    const rows = lines.slice(1).map((line) => {
+      const [address = "", scope] = line.split(",");
+      return { address, scope };
+    });
+    expect((await other.email.suppressions.import({ suppressions: rows })).data?.created).toBe(
+      1500,
+    );
   });
 });
 

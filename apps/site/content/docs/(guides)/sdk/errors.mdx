@@ -1,0 +1,65 @@
+---
+title: Errors and retries
+description: The error object, error types, and automatic retries.
+---
+
+## The error object
+
+When a call fails, `error` is a plain `CossError` object (never an exception):
+
+| Field        | Type                                  | Description                                            |
+| ------------ | ------------------------------------- | ------------------------------------------------------ |
+| `type`       | `CossErrorType`                       | The category, see [Error types](#error-types)          |
+| `code`       | `string`                              | Machine-readable reason, e.g. `invalid_api_key`        |
+| `message`    | `string`                              | Human-readable explanation; may change                 |
+| `status`     | `number \| null`                      | HTTP status, `null` when no response was received      |
+| `request_id` | `string \| null`                      | The API's `X-Request-Id`                               |
+| `param`      | `string`, optional                    | The request field or header the error relates to       |
+| `issues`     | `{ path: string; message: string }[]`, optional | Per-field validation problems         |
+
+Include `request_id` when contacting support. `issues` lists per-field problems of a
+`validation_error`.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { error } = await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "user@example.com",
+  subject: "",
+  text: "Hi!",
+});
+
+if (error?.code === "validation_error") {
+  for (const issue of error.issues ?? []) console.log(issue.path, issue.message);
+}
+```
+
+## Error types
+
+| `type`                  | Status          | Meaning                                                              |
+| ----------------------- | --------------- | -------------------------------------------------------------------- |
+| `invalid_request_error` | 400 / 413 / 422 | Malformed JSON, payload too large, or failed validation (`issues`)   |
+| `authentication_error`  | 401             | `missing_api_key` or `invalid_api_key`                               |
+| `permission_error`      | 403             | The key lacks the permission (`insufficient_permissions`)            |
+| `not_found_error`       | 404             | No such resource in the key's environment                            |
+| `idempotency_error`     | 409 / 422       | `request_in_progress`, or `idempotency_key_reused` with a different body |
+| `rate_limit_error`      | 429             | Too many requests                                                    |
+| `api_error`             | 5xx, other      | Server error, or a response that is not a COSS error (`unexpected_response`) |
+| `connection_error`      | none            | Network failure (`network_error`), or you aborted (`aborted`)        |
+| `timeout_error`         | none            | An attempt exceeded `timeout` (`request_timeout`)                    |
+
+`connection_error` and `timeout_error` happen on the client, so their `status` and `request_id` are
+`null`.
+
+## Automatic retries
+
+The SDK retries up to `maxRetries` times (default 2) on connection errors, timeouts, and `409`,
+`429` and `5xx` responses. Other errors are returned immediately.
+
+- The wait grows exponentially (500 ms, 1 s, 2 s, … up to 8 s) with random jitter.
+- A `Retry-After` header is honored exactly; if it asks for more than 60 s, the error is returned
+  instead.
+- Every `POST` carries an `Idempotency-Key` that is reused on each retry, so a retried send is never
+  delivered twice.

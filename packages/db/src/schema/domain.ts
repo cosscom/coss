@@ -140,6 +140,8 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
+    index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -249,6 +251,7 @@ export const emailSuppressionReason = pgEnum("email_suppression_reason", [
   "bounce",
   "complaint",
   "manual",
+  "import",
 ]);
 
 export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[number];
@@ -561,4 +564,28 @@ export const adminAuditEvent = pgTable(
       .on(t.organizationId, t.id.desc())
       .where(sql`${t.organizationId} is not null`),
   ],
+);
+
+/**
+ * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
+ * default. Set by platform admins (`bun run ratelimit:set`).
+ */
+export const rateLimitOverride = pgTable(
+  "rate_limit_override",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.rateLimitOverride)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucket: text("bucket").notNull(),
+    limit: integer("limit").notNull(),
+    periodMs: integer("period_ms").notNull(),
+    // Defaults to `limit`.
+    burst: integer("burst"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
 );

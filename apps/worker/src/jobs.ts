@@ -1,5 +1,11 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
-import { type DomainDeps, recheckDueDomains, sweepStaleClaims } from "@coss/email";
+import {
+  type DomainDeps,
+  type EmailDispatchQueue,
+  recheckDueDomains,
+  sweepStaleClaims,
+  sweepUnclaimedEmails,
+} from "@coss/email";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
@@ -10,10 +16,17 @@ const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 
 export type WorkerDeps = {
+  /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
+  dispatchQueue: EmailDispatchQueue;
   domains: DomainDeps;
   webhooks: WebhookDeliveryDeps;
   /** Only with `EMAIL_PROVIDER=ses`. */
-  sesEvents?: { sqs: SqsApi; tenantPrefix: string; signal: AbortSignal };
+  sesEvents?: { sqs: SqsApi; tenantPrefix: string };
+  /**
+   * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
+   * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
+   */
+  signal: AbortSignal;
 };
 
 export function startJobs(deps: WorkerDeps): Loop[] {
@@ -28,12 +41,22 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "domains",
       intervalMs: 30_000,
       run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH }, deps.domains)) === DOMAIN_BATCH,
+        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
+        DOMAIN_BATCH,
     }),
     startLoop({
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
+    }),
+    startLoop({
+      name: "unclaimed",
+      intervalMs: 60_000,
+      // Busy only while there are more emails to fail (they leave the scan). Requeued emails may
+      // stay unclaimed behind a backlog, and rescanning them at once would only spin.
+      run: async () =>
+        (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
+        SWEEP_BATCH,
     }),
   ];
   const ses = deps.sesEvents;
@@ -44,12 +67,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
         run: async () => {
-          if (ses.signal.aborted) return;
+          if (deps.signal.aborted) return;
           try {
-            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: ses.signal });
+            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: deps.signal });
           } catch (error) {
             // Shutting down aborts the long poll; that's not a failure.
-            if (!ses.signal.aborted) throw error;
+            if (!deps.signal.aborted) throw error;
           }
         },
       }),

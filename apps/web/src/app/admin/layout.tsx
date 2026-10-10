@@ -1,3 +1,4 @@
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { Button } from "@coss/ui/components/button";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -32,7 +33,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </Button>
           </nav>
           <div className="ms-auto flex items-center gap-2">
-            <Button render={<Link href="/" />} size="sm" variant="ghost">
+            <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">
               Dashboard
             </Button>
             <span className="text-muted-foreground text-sm">{session.user.email}</span>

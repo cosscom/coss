@@ -76,7 +76,7 @@ export default async function EnvironmentPage({
   const canCreateKey = can({ apiKey: ["create"] });
   const canRevokeKey = can({ apiKey: ["delete"] });
   const createRestriction = environment.mode === "live" ? liveKeyRestriction(session) : null;
-  const apiUrl = env.NEXT_PUBLIC_API_URL;
+  const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const curl = quickStartCurl(apiUrl, from);
   const sdkCommand = `COSS_API_KEY=${API_KEY_PREFIX[environment.mode]}… COSS_BASE_URL=${apiUrl} COSS_FROM=${from} bun packages/sdk/examples/send-email.ts`;

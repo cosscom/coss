@@ -1,3 +1,5 @@
+// Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
+export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
   checkRecords,
   type DnsResolver,
@@ -110,13 +112,19 @@ export {
   type EmailRecipientStatus,
   EmailWebhookEvent,
   type EmailWebhookEventOutput,
+  ExportSuppressionsQuery,
+  type ExportSuppressionsQueryOutput,
   emailAddressProblem,
+  ImportSuppressionsRequest,
+  type ImportSuppressionsRequestInput,
+  type ImportSuppressionsRequestOutput,
   isReservedHeader,
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
   MAIL_FROM_STATUSES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
+  MAX_SUPPRESSION_IMPORT_ENTRIES,
   MAX_TAGS,
   type ParsedEmailAddress,
   parseEmailAddress,
@@ -129,6 +137,8 @@ export {
   Suppression,
   SuppressionCheck,
   type SuppressionCheckOutput,
+  SuppressionImport,
+  type SuppressionImportOutput,
   SuppressionList,
   type SuppressionListOutput,
   type SuppressionOutput,
@@ -143,13 +153,30 @@ export {
   type SendEnvironment,
 } from "./service.ts";
 export {
+  parseSuppressionCsv,
+  SUPPRESSION_CSV_COLUMNS,
+  type SuppressionCsvEntry,
+  suppressionCsvHeader,
+  suppressionCsvRow,
+} from "./suppression-csv.ts";
+export {
   addSuppression,
   checkSuppression,
+  exportSuppressionPages,
   getSuppression,
+  importSuppressions,
   listSuppressions,
   removeSuppression,
   type SuppressionEnvironment,
+  type SuppressionImportEntry,
   type SuppressionRow,
+  suppressionsCsvStream,
   toSuppressionObject,
 } from "./suppressions.ts";
-export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";
+export {
+  STALE_CLAIM_MS,
+  sweepStaleClaims,
+  sweepUnclaimedEmails,
+  UNCLAIMED_FAIL_MS,
+  UNCLAIMED_REQUEUE_MS,
+} from "./sweeps.ts";

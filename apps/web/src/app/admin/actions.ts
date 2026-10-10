@@ -1,5 +1,6 @@
 "use server";
 
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { isId } from "@coss/db/id";
 import {
   ADMIN_REASON_MAX_LENGTH,
@@ -231,7 +232,7 @@ export async function impersonateUserAction(
       reason,
       metadata: { email },
     });
-    redirect("/");
+    redirect(DASHBOARD_PATH);
   });
 }
 
