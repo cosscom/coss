@@ -4,9 +4,9 @@
  * only the known static segments may exist; project pages sit under the static `projects` segment.
  */
 import { describe, expect, test } from "bun:test";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { RESERVED_ORG_SLUGS } from "@coss/auth/slugs";
+import { RESERVED_ORG_SLUGS, zoneForPath } from "@coss/auth/slugs";
 
 const APP_DIR = path.resolve(import.meta.dir, "../src/app");
 
@@ -45,12 +45,21 @@ describe("route segments vs. organization slugs", () => {
   test("every static top-level segment is a reserved org slug", () => {
     const segments = staticSegments(APP_DIR);
     expect(segments).toContain("sign-in");
+    expect(segments).toContain("dashboard");
     for (const segment of segments) {
       expect({ segment, reserved: RESERVED_ORG_SLUGS.has(segment) }).toEqual({
         segment,
         reserved: true,
       });
     }
+  });
+
+  test("no dashboard route is served by another zone on coss.com", () => {
+    for (const segment of staticSegments(APP_DIR)) {
+      expect({ segment, zone: zoneForPath(`/${segment}`) }).toEqual({ segment, zone: "dashboard" });
+    }
+    // The dashboard has no `/` page: in production that is the site's landing page.
+    expect(existsSync(path.join(APP_DIR, "page.tsx"))).toBe(false);
   });
 
   test("static segments under [orgSlug] are known", () => {

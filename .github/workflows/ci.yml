@@ -32,7 +32,7 @@ jobs:
       TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/coss_test
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
       BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      API_PUBLIC_URL: http://localhost:3001
       API_PORT: "3001"
       EMAIL_PROVIDER: fake
       WEBHOOK_SECRETS_KEY: Y2ktb25seS13ZWJob29rLXNlY3JldHMta2V5LTMyYnk=

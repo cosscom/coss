@@ -2,6 +2,7 @@ import "server-only";
 import spec from "@coss/api/openapi.json";
 import type { Document } from "fumadocs-openapi";
 import { createOpenAPI } from "fumadocs-openapi/server";
+import { DEV_API_ORIGIN } from "./site";
 
 /**
  * The public API's OpenAPI document. It is the committed snapshot apps/api/openapi.json (regenerate
@@ -14,6 +15,6 @@ export const openapi = createOpenAPI({
 /** In `next dev`, samples and the playground target the local API (`bun run dev`) first. */
 function withLocalServer(document: Document): Document {
   if (process.env.NODE_ENV !== "development") return document;
-  const local = { url: "http://localhost:3001", description: "Local API" };
+  const local = { url: DEV_API_ORIGIN, description: "Local API" };
   return { ...document, servers: [local, ...(document.servers ?? [])] };
 }

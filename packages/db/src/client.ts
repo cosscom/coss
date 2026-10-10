@@ -2,6 +2,9 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema/index.ts";
 
+// TLS comes from DATABASE_URL: on RDS `?sslmode=verify-full&sslrootcert=<CA bundle>` (pg reads the
+// file; the images ship /etc/ssl/certs/rds-global-bundle.pem). Size the pool so that tasks ×
+// DATABASE_POOL_MAX stays below the database's max_connections.
 // Reuse one pool across Next.js HMR / `bun --hot` re-evaluations in development.
 const globalForDb = globalThis as unknown as { __cossPgPool?: pg.Pool };
 

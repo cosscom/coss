@@ -14,23 +14,9 @@ function mockAuth(routes: Record<string, unknown>) {
   }) as typeof fetch;
 }
 
-test("signed in: links to the first organization by name, like the dashboard does", async () => {
-  mockAuth({
-    "/api/auth/get-session": { user: { name: "Ada" }, session: {} },
-    "/api/auth/organization/list": [
-      { name: "Zeta", slug: "zeta" },
-      { name: "Acme", slug: "acme" },
-    ],
-  });
-  expect(await loadAccount()).toEqual({ status: "signed-in", name: "Ada", dashboardPath: "/acme" });
-});
-
-test("signed in without an organization: onboarding", async () => {
-  mockAuth({
-    "/api/auth/get-session": { user: { name: "Ada" } },
-    "/api/auth/organization/list": [],
-  });
-  expect(await loadAccount()).toMatchObject({ dashboardPath: "/onboarding" });
+test("signed in: the dashboard's entry page picks the organization", async () => {
+  mockAuth({ "/api/auth/get-session": { user: { name: "Ada" }, session: {} } });
+  expect(await loadAccount()).toEqual({ status: "signed-in", name: "Ada" });
 });
 
 test("no session, or no auth endpoint at all: signed out", async () => {

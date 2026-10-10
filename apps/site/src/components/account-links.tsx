@@ -1,9 +1,13 @@
 "use client";
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { Button } from "@coss/ui/components/button";
 import { dashboardUrl } from "@/lib/site";
 import { useAccount } from "@/lib/use-account";
 
-/** "Dashboard" when signed in to the dashboard, otherwise "Sign in" and "Sign up". */
+/**
+ * "Dashboard" when signed in to the dashboard (its entry page opens the user's organization),
+ * otherwise "Sign in" and "Sign up".
+ */
 export function AccountLinks() {
   const account = useAccount();
   // Reserve the space while loading so the header doesn't jump.
@@ -11,7 +15,7 @@ export function AccountLinks() {
 
   if (account.status === "signed-in") {
     return (
-      <Button render={<a href={dashboardUrl(account.dashboardPath)} />} size="sm">
+      <Button render={<a href={dashboardUrl(DASHBOARD_PATH)} />} size="sm">
         Dashboard
       </Button>
     );

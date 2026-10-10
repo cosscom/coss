@@ -11,7 +11,8 @@
     "packages": [
       "apps/*",
       "packages/*",
-      "tooling/*"
+      "tooling/*",
+      "infra"
     ],
     "catalog": {
       "@arethetypeswrong/core": "0.18.5",
