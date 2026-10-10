@@ -22,8 +22,7 @@ import { DomainError, EmailError } from "../src/errors.ts";
 import { type IdentityProvider, IdentityTakenError } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
-import { createEmailService } from "../src/service.ts";
-import { createVerifiedDomain, fakeDnsResolver } from "../src/testing.ts";
+import { createVerifiedDomain, dispatchingEmailService, fakeDnsResolver } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 const uniqueName = () => `t-${uniqueSuffix()}.coss.test`;
@@ -325,6 +324,23 @@ describe("checkDomain", () => {
     const [stored] = await db.select().from(schema.domain).where(eq(schema.domain.id, row.id));
     expect(stored?.status).toBe("verified");
   });
+
+  test("recheckDueDomains leases nothing once shutdown has begun", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const row = await createDomain({ organizationId, name: uniqueName(), userId: null }, deps());
+    const scope = { organizationIds: [organizationId] };
+    const later = new Date(Date.now() + 2 * 60 * 1000);
+    const [before] = await db.select().from(schema.domain).where(eq(schema.domain.id, row.id));
+
+    expect(
+      await recheckDueDomains({ now: later, scope, signal: AbortSignal.abort() }, deps()),
+    ).toBe(0);
+    const [after] = await db.select().from(schema.domain).where(eq(schema.domain.id, row.id));
+    expect(after?.nextCheckAt).toEqual(before?.nextCheckAt ?? null);
+    // Still due for the next worker.
+    expect(await recheckDueDomains({ now: later, scope }, deps())).toBe(1);
+  });
 });
 
 describe("checkRecords", () => {
@@ -434,7 +450,7 @@ describe("live sends", () => {
     const tenant = await createTestTenant();
     const organizationId = tenant.organization.id;
     const provider = new FakeEmailProvider({ log: false });
-    const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+    const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
     const environment = sendEnvironment(tenant.production);
 
     await expectError(

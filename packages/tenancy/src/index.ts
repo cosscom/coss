@@ -1,4 +1,4 @@
-export { promoteToAdmin, resetUserTwoFactor } from "./admin.ts";
+export { promoteToAdmin } from "./admin.ts";
 export {
   type ApiKeyContext,
   type AuthenticateResult,
@@ -7,6 +7,7 @@ export {
   type EnvironmentApiKeySummary,
   getKeyBinding,
   type KeyPermissions,
+  LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
 } from "./api-keys.ts";
 export {

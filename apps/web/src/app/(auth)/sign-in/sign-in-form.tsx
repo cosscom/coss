@@ -11,6 +11,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { nextQuery } from "@/lib/safe-redirect";
 
 /** Codes that end the two-factor challenge: the user has to enter their password again. */
 const CHALLENGE_OVER = new Set(["INVALID_TWO_FACTOR_COOKIE", "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE"]);
@@ -104,7 +105,7 @@ function CredentialsStep(props: {
     setPending(null);
   }
 
-  const query = props.next === "/" ? "" : `?next=${encodeURIComponent(props.next)}`;
+  const query = nextQuery(props.next);
 
   return (
     <Card>

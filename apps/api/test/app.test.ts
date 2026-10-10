@@ -18,7 +18,7 @@ describe("X-Request-Id", () => {
       await app.request("/health", { headers: spoofed }),
     ];
 
-    expect(responses.map((res) => res.status)).toEqual([200, 401, 404, 200]);
+    expect(responses.map((res) => res.status)).toEqual([202, 401, 404, 200]);
     const ids = responses.map((res) => res.headers.get("x-request-id"));
     for (const id of ids) expect(id).toMatch(REQUEST_ID);
     expect(new Set(ids).size).toBe(ids.length);
@@ -97,6 +97,8 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/events",
       "/v1/suppressions",
       "/v1/suppressions/check",
+      "/v1/suppressions/export",
+      "/v1/suppressions/import",
       "/v1/suppressions/{id}",
       "/v1/webhook_endpoints",
       "/v1/webhook_endpoints/{id}",
@@ -175,6 +177,8 @@ describe("GET /openapi.json", () => {
         "SuppressionCheck",
         "CreateSuppressionRequest",
         "DeletedSuppression",
+        "ImportSuppressionsRequest",
+        "SuppressionImport",
         "CreateDomainRequest",
         "Domain",
         "DomainRecord",

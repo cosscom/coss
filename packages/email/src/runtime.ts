@@ -9,7 +9,6 @@ import type { EmailEnv, EmailProviderName } from "./env.ts";
 import type { EmailProvider, IdentityProvider } from "./provider.ts";
 import { FakeEmailProvider } from "./providers/fake.ts";
 import { FakeIdentityProvider } from "./providers/fake-identity.ts";
-import { createEmailService, type EmailService } from "./service.ts";
 import { createSesApi, type SesApi, type SesConfig } from "./ses/api.ts";
 import { SesIdentityProvider } from "./ses/identity.ts";
 import { SesEmailProvider } from "./ses/provider.ts";
@@ -55,7 +54,6 @@ export type EmailRuntime = {
   /** `null` with the fake provider: its domains verify without DNS. */
   dns: DnsResolver | null;
   domainDeps: DomainDeps;
-  emailService: EmailService;
 };
 
 export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
@@ -84,6 +82,5 @@ export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
     identity,
     dns,
     domainDeps: { identity, dns },
-    emailService: createEmailService({ liveProvider, sandboxProvider }),
   };
 }

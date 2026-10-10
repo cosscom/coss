@@ -1,0 +1,24 @@
+---
+title: Idempotency
+description: Retry POST requests without sending twice.
+---
+
+`POST /v1/emails` accepts an `Idempotency-Key` header (1–256 characters). For 24 hours, a repeated
+request with the same key:
+
+- and the **same body** returns the email with its current status (including `queued`), with an `Idempotent-Replayed: true` header;
+- and a **different body** fails with `422 idempotency_key_reused`;
+- concurrent matching requests wait for the first transaction to commit and replay its email.
+  A busy key can return `409 request_in_progress` with a `Retry-After` header.
+
+```bash
+curl -X POST https://api.coss.com/v1/emails \
+  -H "Authorization: Bearer $COSS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: welcome-user-123" \
+  -d '{"from":"Acme <hello@acme.com>","to":"user@example.com","subject":"Welcome","text":"Hi!"}'
+```
+
+Derive keys from your own data (`welcome-${userId}`) so that a retry after a crash reuses the same
+key. The [TypeScript SDK](/docs/sdk/errors#automatic-retries) sends a key on every `POST` and reuses
+it across its automatic retries.

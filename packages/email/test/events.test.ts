@@ -9,12 +9,12 @@ import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
 import { EmailWebhookEvent } from "../src/schemas.ts";
-import { createEmailService } from "../src/service.ts";
+import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 function service(opts: { fail?: boolean } = {}) {
   const provider = new FakeEmailProvider({ log: false, fail: () => opts.fail ?? false });
-  return createEmailService({ liveProvider: provider, sandboxProvider: provider });
+  return dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
 }
 
 async function sendSandbox(overrides: Parameters<typeof params>[0] = {}, opts = {}) {

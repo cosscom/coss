@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { listProjects } from "@coss/tenancy";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import {
@@ -20,9 +19,9 @@ export const metadata: Metadata = { title: "Projects" };
 
 export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) {
   const { orgSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
+  const { organization, can } = await requireOrgMember(orgSlug);
   const projects = await listProjects({ organizationId: organization.id });
-  const canCreate = orgRoleCan(member.role, { project: ["create"] });
+  const canCreate = can({ project: ["create"] });
 
   return (
     <div className="flex flex-col gap-6">

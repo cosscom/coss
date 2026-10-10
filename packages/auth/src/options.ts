@@ -12,13 +12,14 @@ import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { admin, organization, twoFactor } from "better-auth/plugins";
+import { and, eq } from "drizzle-orm";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
-import { validateOrgSlug } from "./slugs.ts";
+import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 
 /** Better Auth model name -> TypeID prefix. */
 const MODEL_ID_PREFIX: Record<string, string> = {
@@ -51,10 +52,22 @@ function logDevEmail(kind: string, to: string, url: string): void {
   console.info(`\n[auth] ${kind} for ${to}:\n  ${url}\n`);
 }
 
-function assertValidOrgSlug(slug: string | undefined): void {
-  if (slug === undefined) return;
-  const error = validateOrgSlug(slug);
+/** Validates the name/slug of an organization being created or updated (absent = unchanged). */
+function assertValidOrg(org: { name?: string | undefined; slug?: string | undefined }): void {
+  const error =
+    (org.name === undefined ? null : validateOrgName(org.name)) ??
+    (org.slug === undefined ? null : validateOrgSlug(org.slug));
   if (error) throw new APIError("BAD_REQUEST", { message: error });
+}
+
+/** Membership changes are frozen while a platform admin has the organization suspended. */
+async function assertOrgNotSuspended(organizationId: string): Promise<void> {
+  const [row] = await db
+    .select({ organizationId: schema.organizationSuspension.organizationId })
+    .from(schema.organizationSuspension)
+    .where(eq(schema.organizationSuspension.organizationId, organizationId))
+    .limit(1);
+  if (row) throw new APIError("FORBIDDEN", { message: "This organization is suspended." });
 }
 
 /**
@@ -99,6 +112,9 @@ export const authOptions = {
   advanced: {
     database: { generateId: generateAuthId },
   },
+  // Off: it counts per process and trusts any x-forwarded-for. The dashboard limits the credential
+  // endpoints itself, in Valkey (apps/web/src/lib/auth-rate-limit.ts).
+  rateLimit: { enabled: false },
   emailAndPassword: {
     enabled: true,
     // v0: sign-up does not require verification (accepts sign-up email enumeration).
@@ -122,6 +138,7 @@ export const authOptions = {
   },
   // Block these HTTP routes (server-side `auth.api.*` calls still work). API keys are only
   // created/listed/revoked through our server code so every key gets an environment binding.
+  // Admin mutations go through the dashboard's server actions, which record the audit log.
   disabledPaths: [
     "/api-key/create",
     "/api-key/update",
@@ -130,16 +147,47 @@ export const authOptions = {
     "/api-key/delete",
     "/organization/update",
     "/admin/remove-user",
+    "/admin/create-user",
+    "/admin/update-user",
+    "/admin/set-role",
+    "/admin/set-user-password",
+    "/admin/ban-user",
+    "/admin/unban-user",
+    "/admin/impersonate-user",
+    "/admin/revoke-user-session",
+    "/admin/revoke-user-sessions",
   ],
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      if (!FACTOR_MANAGEMENT_PATHS.has(ctx.path)) return;
-      const session = await getSessionFromCtx(ctx);
-      if (session?.session.impersonatedBy) {
-        throw new APIError("FORBIDDEN", {
-          message: "Two-factor settings and passkeys can't be changed while impersonating a user.",
-        });
+      if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {
+        const session = await getSessionFromCtx(ctx);
+        if (session?.session.impersonatedBy) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "Two-factor settings and passkeys can't be changed while impersonating a user.",
+          });
+        }
+        return;
       }
+      // Better Auth skips beforeCreateInvitation on resend, and leave has no organization hook.
+      if (ctx.path !== "/organization/invite-member" && ctx.path !== "/organization/leave") return;
+      const session = await getSessionFromCtx(ctx);
+      if (!session) return;
+      const organizationId =
+        ctx.body?.organizationId ||
+        (session.session as { activeOrganizationId?: string | null }).activeOrganizationId;
+      if (typeof organizationId !== "string") return;
+      const [membership] = await db
+        .select({ id: schema.member.id })
+        .from(schema.member)
+        .where(
+          and(
+            eq(schema.member.organizationId, organizationId),
+            eq(schema.member.userId, session.user.id),
+          ),
+        )
+        .limit(1);
+      if (membership) await assertOrgNotSuspended(organizationId);
     }),
   },
   plugins: [
@@ -171,10 +219,11 @@ export const authOptions = {
       },
       organizationHooks: {
         beforeCreateOrganization: async ({ organization: org }) => {
-          assertValidOrgSlug(org.slug);
+          assertValidOrg(org);
         },
-        beforeUpdateOrganization: async ({ organization: org }) => {
-          assertValidOrgSlug(org.slug);
+        beforeUpdateOrganization: async ({ organization: org, member }) => {
+          await assertOrgNotSuspended(member.organizationId);
+          assertValidOrg(org);
         },
         // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
         // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
@@ -182,18 +231,27 @@ export const authOptions = {
           if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
             throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
           }
+          await assertOrgNotSuspended(invitation.organizationId);
+        },
+        beforeAcceptInvitation: async ({ organization: org }) => {
+          await assertOrgNotSuspended(org.id);
         },
         // Better Auth cancels invitations in any status, which would rewrite an accepted (or
         // already canceled) one; only pending invitations can be canceled.
         beforeCancelInvitation: async ({ invitation }) => {
+          await assertOrgNotSuspended(invitation.organizationId);
           if (invitation.status !== "pending") {
             throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
           }
         },
-        beforeUpdateMemberRole: async ({ newRole }) => {
+        beforeRemoveMember: async ({ organization: org }) => {
+          await assertOrgNotSuspended(org.id);
+        },
+        beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
           if (!newRole.split(",").every(isOrgRole)) {
             throw new APIError("BAD_REQUEST", { message: "Unknown role." });
           }
+          await assertOrgNotSuspended(org.id);
         },
       },
     }),

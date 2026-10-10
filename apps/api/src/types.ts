@@ -1,3 +1,4 @@
+import type { RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 
 /** Hono environment shared by every router and middleware of the public API. */
@@ -7,5 +8,8 @@ export type AppEnv = {
     requestId: string;
     /** The authenticated key's environment. Only set behind `requireApiKey`. */
     auth: ApiKeyContext;
+    rateLimiter: RateLimiter;
+    /** The caller's address per `CLIENT_IP_HEADER`; `null` disables per-IP limits. */
+    clientIp: string | null;
   };
 };

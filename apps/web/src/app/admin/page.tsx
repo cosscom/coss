@@ -1,135 +1,57 @@
-import { Badge } from "@coss/ui/components/badge";
+import { getAdminOverview, listAdminAuditEvents } from "@coss/tenancy/admin";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
-import type { UserWithRole } from "better-auth/plugins";
+import { Card, CardAction, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { AuditLogTable } from "@/components/admin/audit-log-table";
 import { PageHeader } from "@/components/page-header";
-import { SignOutButton } from "@/components/sign-out-button";
-import { auth } from "@/lib/auth";
-import { formatDateTime } from "@/lib/format";
-import { isPlatformAdmin, requireSession } from "@/lib/session";
-import { ResetTwoFactorButton } from "./reset-two-factor-button";
-import { UserActions } from "./user-actions";
+import { requirePlatformAdmin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Admin" };
 
-/** Platform admin console. Non-admins get a 404 so the page's existence isn't revealed. */
-export default async function AdminPage() {
-  const session = await requireSession();
-  if (!isPlatformAdmin(session)) notFound();
+function Stat(props: { label: string; value: number; href: string }) {
+  return (
+    <Link className="rounded-xl border p-4 transition-colors hover:bg-accent/50" href={props.href}>
+      <p className="text-muted-foreground text-sm">{props.label}</p>
+      <p className="font-heading font-semibold text-2xl tabular-nums">{props.value}</p>
+    </Link>
+  );
+}
 
-  const { users, total } = (await auth.api.listUsers({
-    headers: await headers(),
-    query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
-  })) as {
-    // The admin plugin's type omits other plugins' user fields; the rows include them.
-    users: (UserWithRole & { twoFactorEnabled?: boolean | null })[];
-    total: number;
-  };
+export default async function AdminOverviewPage() {
+  await requirePlatformAdmin();
+  const [overview, { events }] = await Promise.all([
+    getAdminOverview(),
+    listAdminAuditEvents({ limit: 10 }),
+  ]);
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
-          <Link className="font-semibold" href="/">
-            COSS
-          </Link>
-          <Button render={<Link href="/" />} size="sm" variant="ghost">
-            Dashboard
-          </Button>
-          <div className="ms-auto flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">{session.user.email}</span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-        <PageHeader
-          description={`${total} user${total === 1 ? "" : "s"}${total > users.length ? ` (showing the newest ${users.length})` : ""}.`}
-          title="Users"
+    <>
+      <PageHeader description="Users, organizations and every admin action." title="Overview" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        <Stat href="/admin/users" label="Users" value={overview.users} />
+        <Stat href="/admin/users?status=banned" label="Banned users" value={overview.bannedUsers} />
+        <Stat href="/admin/users?status=admin" label="Platform admins" value={overview.admins} />
+        <Stat href="/admin/organizations" label="Organizations" value={overview.organizations} />
+        <Stat
+          href="/admin/organizations?status=suspended"
+          label="Suspended organizations"
+          value={overview.suspendedOrganizations}
         />
-        <Card>
-          <CardPanel className="p-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Two-factor</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>
-                      {user.email}
-                      {user.emailVerified ? null : (
-                        <Badge className="ms-2" variant="warning">
-                          unverified
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === "admin" ? "info" : "outline"}>
-                        {user.role ?? "user"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.banned ? (
-                        <Badge variant="error">banned</Badge>
-                      ) : (
-                        <Badge variant="success">active</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.twoFactorEnabled ? (
-                        <Badge variant="success">on</Badge>
-                      ) : (
-                        <Badge variant="outline">off</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(user.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {user.id === session.user.id ? (
-                        <span className="text-muted-foreground text-sm">You</span>
-                      ) : (
-                        <div className="flex justify-end gap-1">
-                          {user.twoFactorEnabled ? (
-                            <ResetTwoFactorButton email={user.email} userId={user.id} />
-                          ) : null}
-                          <UserActions
-                            banned={Boolean(user.banned)}
-                            isAdmin={user.role === "admin"}
-                            userId={user.id}
-                          />
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardPanel>
-        </Card>
-      </main>
-    </div>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent admin actions</CardTitle>
+          <CardAction>
+            <Button render={<Link href="/admin/audit" />} size="sm" variant="outline">
+              Full audit log
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardPanel className="p-2">
+          <AuditLogTable events={events} />
+        </CardPanel>
+      </Card>
+    </>
   );
 }

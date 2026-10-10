@@ -6,7 +6,7 @@
 import { db, schema } from "@coss/db";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 
-const { invitation, member, organization, user } = schema;
+const { invitation, member, organization, organizationSuspension, user } = schema;
 
 export type OrganizationSummary = {
   id: string;
@@ -21,6 +21,8 @@ export type OrganizationSummary = {
 export type Membership = {
   organization: OrganizationSummary;
   member: { id: string; organizationId: string; userId: string; role: string; createdAt: Date };
+  /** A platform admin suspended the organization: its dashboard is read-only. */
+  suspended: boolean;
 };
 
 export type OrganizationMember = {
@@ -75,12 +77,16 @@ export async function getMembership(input: {
         role: member.role,
         createdAt: member.createdAt,
       },
+      suspendedAt: organizationSuspension.createdAt,
     })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
+    .leftJoin(organizationSuspension, eq(organizationSuspension.organizationId, organization.id))
     .where(and(eq(organization.slug, input.organizationSlug), eq(member.userId, input.userId)))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  const { suspendedAt, ...membership } = row;
+  return { ...membership, suspended: suspendedAt !== null };
 }
 
 /** Members of an organization with their user's name and email, oldest first. */

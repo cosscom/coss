@@ -14,11 +14,23 @@ const EVENT_TYPES_DESCRIPTION =
   "Event types delivered to this endpoint. An empty array means every event type, including " +
   "ones added later.";
 
+const ENDPOINT_ID_EXAMPLE = "whep_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const ENDPOINT_EXAMPLE = {
+  object: "webhook_endpoint",
+  id: ENDPOINT_ID_EXAMPLE,
+  url: "https://example.com/webhooks/coss",
+  description: "Production receiver",
+  event_types: ["email.delivered", "email.bounced"],
+  enabled: true,
+  created_at: "2026-01-15T09:30:00.000Z",
+  updated_at: "2026-01-15T09:30:00.000Z",
+};
+
 export const WebhookEndpointObject = z
   .object({
     object: z.literal("webhook_endpoint"),
-    id: z.string().meta({ example: "whep_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
-    url: z.string().meta({ example: "https://example.com/webhooks/coss" }),
+    id: z.string().meta({ examples: [ENDPOINT_ID_EXAMPLE] }),
+    url: z.string().meta({ examples: ["https://example.com/webhooks/coss"] }),
     description: z.string().nullable(),
     event_types: z.array(z.string()).meta({ description: EVENT_TYPES_DESCRIPTION }),
     enabled: z
@@ -27,7 +39,7 @@ export const WebhookEndpointObject = z
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
   })
-  .meta({ id: "WebhookEndpoint" });
+  .meta({ id: "WebhookEndpoint", examples: [ENDPOINT_EXAMPLE] });
 
 export type WebhookEndpointObjectOutput = z.output<typeof WebhookEndpointObject>;
 
@@ -37,9 +49,12 @@ export const WebhookEndpointWithSecret = WebhookEndpointObject.extend({
       "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. " +
       "Returned only when the endpoint is created — store it now; it cannot be read back " +
       "through the API.",
-    example: "whsec_6Jk…",
+    examples: ["whsec_6Jk…"],
   }),
-}).meta({ id: "WebhookEndpointWithSecret" });
+}).meta({
+  id: "WebhookEndpointWithSecret",
+  examples: [{ ...ENDPOINT_EXAMPLE, secret: "whsec_6Jk…" }],
+});
 
 export type WebhookEndpointWithSecretOutput = z.output<typeof WebhookEndpointWithSecret>;
 
@@ -49,7 +64,10 @@ export const WebhookEndpointList = z
     data: z.array(WebhookEndpointObject),
     has_more: z.boolean(),
   })
-  .meta({ id: "WebhookEndpointList" });
+  .meta({
+    id: "WebhookEndpointList",
+    examples: [{ object: "list", data: [ENDPOINT_EXAMPLE], has_more: false }],
+  });
 
 export type WebhookEndpointListOutput = z.output<typeof WebhookEndpointList>;
 
@@ -59,7 +77,10 @@ export const DeletedWebhookEndpoint = z
     id: z.string(),
     deleted: z.literal(true),
   })
-  .meta({ id: "DeletedWebhookEndpoint" });
+  .meta({
+    id: "DeletedWebhookEndpoint",
+    examples: [{ object: "webhook_endpoint", id: ENDPOINT_ID_EXAMPLE, deleted: true }],
+  });
 
 export type DeletedWebhookEndpointOutput = z.output<typeof DeletedWebhookEndpoint>;
 
@@ -69,7 +90,7 @@ const Url = z
   .max(WEBHOOK_URL_MAX_LENGTH, `URLs can be at most ${WEBHOOK_URL_MAX_LENGTH} characters.`)
   .meta({
     description: "An `https://` URL COSS posts events to.",
-    example: "https://example.com/webhooks/coss",
+    examples: ["https://example.com/webhooks/coss"],
   });
 
 const Description = z
@@ -97,7 +118,16 @@ export function webhookEndpointRequests<const T extends readonly [string, ...str
         description: `${EVENT_TYPES_DESCRIPTION} Defaults to every event type.`,
       }),
     })
-    .meta({ id: "CreateWebhookEndpointRequest" });
+    .meta({
+      id: "CreateWebhookEndpointRequest",
+      examples: [
+        {
+          url: "https://example.com/webhooks/coss",
+          description: "Production receiver",
+          event_types: eventTypes.slice(0, 2),
+        },
+      ],
+    });
 
   const UpdateWebhookEndpointRequest = z
     .strictObject({
@@ -109,7 +139,7 @@ export function webhookEndpointRequests<const T extends readonly [string, ...str
     .refine((value) => Object.values(value).some((field) => field !== undefined), {
       error: "Provide at least one field to update.",
     })
-    .meta({ id: "UpdateWebhookEndpointRequest" });
+    .meta({ id: "UpdateWebhookEndpointRequest", examples: [{ enabled: false }] });
 
   return { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest };
 }

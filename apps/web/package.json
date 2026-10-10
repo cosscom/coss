@@ -16,6 +16,7 @@
     "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/ratelimit": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/webhooks": "workspace:*",

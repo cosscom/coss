@@ -1,0 +1,188 @@
+import { afterAll, describe, expect, test } from "bun:test";
+import { uniqueSuffix } from "@coss/db/testing";
+import { createTestTenant } from "@coss/tenancy/testing";
+import { BUCKETS } from "../src/buckets.ts";
+import { clientIpResolver } from "../src/client-ip.ts";
+import { createRateLimiter, hashEmail } from "../src/limiter.ts";
+import {
+  cachedOverrides,
+  deleteRateLimitOverride,
+  listRateLimitOverrides,
+  setRateLimitOverride,
+} from "../src/overrides.ts";
+import type { RateLimitStore } from "../src/store.ts";
+import { memoryLimiter, testValkeyLimiter } from "../src/testing.ts";
+
+const valkeyLimiter = await testValkeyLimiter();
+afterAll(() => valkeyLimiter.close());
+
+describe("limiter", () => {
+  test("counts per subject and reports the tightest bucket", async () => {
+    const limiter = memoryLimiter();
+    const a = `key_${uniqueSuffix()}`;
+    for (let i = 0; i < BUCKETS["api.write"].burst; i++) {
+      expect((await limiter.consume({ buckets: ["api.write"], subject: a })).allowed).toBe(true);
+    }
+    const denied = await limiter.consume({ buckets: ["api.write"], subject: a });
+    expect(denied).toMatchObject({ allowed: false, bucket: "api.write", limit: 30, remaining: 0 });
+    expect(denied.retryAfterMs).toBeGreaterThan(0);
+    // Another key and another route class are separate buckets.
+    expect((await limiter.consume({ buckets: ["api.write"], subject: "b" })).allowed).toBe(true);
+    expect((await limiter.consume({ buckets: ["api.read"], subject: a })).allowed).toBe(true);
+  });
+
+  test("charges several buckets of one subject against Valkey", async () => {
+    const org = `org_${uniqueSuffix()}`;
+    const request = {
+      buckets: ["email.recipients.second", "email.recipients.day"] as const,
+      subject: org,
+      cost: 40,
+    };
+    const first = await valkeyLimiter.consume(request);
+    expect(first).toMatchObject({
+      allowed: true,
+      bucket: "email.recipients.second",
+      remaining: 60,
+    });
+    await valkeyLimiter.refund(request);
+    expect((await valkeyLimiter.consume({ ...request, peek: true })).remaining).toBe(60);
+  });
+
+  test("refuses buckets with different scopes in one request", async () => {
+    await expect(
+      memoryLimiter().consume({ buckets: ["auth.sign_in.ip", "auth.sign_in.email"], subject: "x" }),
+    ).rejects.toThrow(/share a scope/);
+  });
+
+  test("fails open when the store throws", async () => {
+    const errors: unknown[] = [];
+    const broken: RateLimitStore = {
+      consume: async () => {
+        throw new Error("down");
+      },
+      close: async () => {},
+    };
+    const limiter = createRateLimiter({ store: broken, onStoreError: (e) => errors.push(e) });
+    const decision = await limiter.consume({ buckets: ["api.read"], subject: "k" });
+    expect(decision).toMatchObject({ allowed: true, failedOpen: true, limit: 100 });
+    await limiter.refund({ buckets: ["api.read"], subject: "k" });
+    expect(errors).toHaveLength(2);
+  });
+
+  test("keys never contain raw emails or braces", async () => {
+    const keys: string[] = [];
+    const spy: RateLimitStore = {
+      consume: async (specs) => {
+        keys.push(...specs.map((s) => s.key));
+        return {
+          allowed: true,
+          limits: specs.map(() => ({ remaining: 1, resetMs: 0, retryAfterMs: 0 })),
+        };
+      },
+      close: async () => {},
+    };
+    const limiter = createRateLimiter({ store: spy, prefix: "p" });
+    await limiter.consume({ buckets: ["auth.sign_in.email"], subject: " Ann@Example.com" });
+    await limiter.consume({ buckets: ["auth.sign_in.ip"], subject: "}{evil" });
+    expect(keys[0]).toBe(`p:rl:{email:${hashEmail("ann@example.com")}}:auth.sign_in.email`);
+    expect(keys[1]).toMatch(/^p:rl:\{ip:[0-9a-f]{32}\}:auth\.sign_in\.ip$/);
+  });
+});
+
+describe("overrides", () => {
+  test("replace the default rule for one organization", async () => {
+    const { organization } = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: organization.id,
+      bucket: "api.read",
+      rule: { limit: 2, periodMs: 60_000 },
+    });
+    const limiter = memoryLimiter({ overrides: cachedOverrides() });
+    const request = {
+      buckets: ["api.read"] as const,
+      subject: "k",
+      organizationId: organization.id,
+    };
+    expect((await limiter.consume(request)).limit).toBe(2);
+    await limiter.consume(request);
+    expect((await limiter.consume(request)).allowed).toBe(false);
+    // Without the organization the default applies.
+    expect((await limiter.consume({ buckets: ["api.read"], subject: "other" })).limit).toBe(100);
+
+    await setRateLimitOverride({
+      organizationId: organization.id,
+      bucket: "api.read",
+      rule: { limit: 5, periodMs: 1000, burst: 20 },
+    });
+    expect(await listRateLimitOverrides(organization.id)).toEqual({
+      "api.read": { limit: 5, periodMs: 1000, burst: 20 },
+    });
+    expect(
+      await deleteRateLimitOverride({ organizationId: organization.id, bucket: "api.read" }),
+    ).toBe(true);
+    expect(await listRateLimitOverrides(organization.id)).toEqual({});
+  });
+
+  test("only overridable buckets with positive integers", async () => {
+    const { organization } = await createTestTenant();
+    const organizationId = organization.id;
+    await expect(
+      setRateLimitOverride({
+        organizationId,
+        bucket: "auth.sign_in.ip",
+        rule: { limit: 1, periodMs: 1 },
+      }),
+    ).rejects.toThrow(/not a bucket/);
+    await expect(
+      setRateLimitOverride({ organizationId, bucket: "api.read", rule: { limit: 0, periodMs: 1 } }),
+    ).rejects.toThrow(/positive integer/);
+  });
+
+  test("are cached and fall back to defaults when loading fails", async () => {
+    let now = 0;
+    let calls = 0;
+    let fail = false;
+    const source = cachedOverrides({
+      ttlMs: 1000,
+      now: () => now,
+      load: async () => {
+        calls++;
+        if (fail) throw new Error("db down");
+        return { "api.read": { limit: 1, periodMs: 1000 } };
+      },
+    });
+    await source("org");
+    await source("org");
+    expect(calls).toBe(1);
+    now = 2000;
+    fail = true;
+    expect(await source("org")).toEqual({});
+    fail = false;
+    expect(await source("org")).toEqual({ "api.read": { limit: 1, periodMs: 1000 } });
+    expect(calls).toBe(3);
+  });
+});
+
+describe("clientIpResolver", () => {
+  const headers = (value: string) => new Headers({ "x-forwarded-for": value, "x-real-ip": value });
+
+  test("takes the entry our proxies appended", () => {
+    expect(clientIpResolver({ header: "x-forwarded-for" })(headers("6.6.6.6, 1.2.3.4"))).toBe(
+      "1.2.3.4",
+    );
+    expect(
+      clientIpResolver({ header: "X-Forwarded-For", trustedProxyCount: 2 })(
+        headers("6.6.6.6, 1.2.3.4, 10.0.0.1"),
+      ),
+    ).toBe("1.2.3.4");
+    expect(clientIpResolver({ header: "x-real-ip" })(headers("2001:db8::1"))).toBe("2001:db8::1");
+  });
+
+  test("is off when unconfigured or the value is not an IP", () => {
+    expect(clientIpResolver({})(headers("1.2.3.4"))).toBeNull();
+    expect(clientIpResolver({ header: "x-real-ip" })(headers("evil"))).toBeNull();
+    expect(
+      clientIpResolver({ header: "x-forwarded-for", trustedProxyCount: 3 })(headers("1.2.3.4")),
+    ).toBeNull();
+  });
+});

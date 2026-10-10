@@ -10,7 +10,10 @@ export interface EmailTag {
   value: string;
 }
 
-/** Whether the email was handed to the delivery provider. Delivery is tracked per recipient. */
+/**
+ * Whether the email was handed to the delivery provider: `queued` until then (sends return it
+ * `queued`). Delivery is tracked per recipient.
+ */
 export type EmailStatus = "queued" | "sent" | "failed";
 
 /**

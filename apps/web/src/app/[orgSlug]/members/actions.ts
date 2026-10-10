@@ -2,15 +2,12 @@
 
 import {
   assignableOrgRoles,
+  canRemoveOrgMember,
   INVITABLE_ORG_ROLES,
   type InvitableOrgRole,
   isOrgRole,
 } from "@coss/auth/permissions";
-import {
-  getOrganizationMember,
-  getPendingInvitation,
-  setOrganizationTwoFactorRequired,
-} from "@coss/tenancy";
+import { getOrganizationMember, getPendingInvitation } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -44,6 +41,36 @@ export async function inviteMemberAction(
     });
     refresh();
     return { email };
+  });
+}
+
+/**
+ * Sends a pending invitation again with a fresh expiry; the invitation (and its link) stays the
+ * same. Only canonical invitable roles are re-sent (Better Auth reuses the stored role).
+ */
+export async function resendInvitationAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      invitation: ["create"],
+    });
+    const invitation = await getPendingInvitation({
+      organizationId: organization.id,
+      invitationId: formString(formData, "invitationId"),
+    });
+    if (!invitation) throw new ActionError("This invitation is no longer pending.");
+    const role = invitation.role ?? "member";
+    if (!isInvitableRole(role)) throw new ActionError("This invitation has an unknown role.");
+
+    // `resend: true` makes Better Auth extend and re-send the pending invitation for this email.
+    await auth.api.createInvitation({
+      headers: await headers(),
+      body: { email: invitation.email, role, organizationId: organization.id, resend: true },
+    });
+    refresh();
+    return null;
   });
 }
 
@@ -107,22 +134,34 @@ export async function updateMemberRoleAction(
 }
 
 /**
- * Turns the organization's two-factor requirement on or off. Members without it are sent to
- * /settings on their next request. Only someone who has two-factor themselves can turn it on.
+ * Removes another member from the organization. `canRemoveOrgMember` gives a clear error for what
+ * Better Auth would reject anyway; Better Auth re-checks everything, including the last owner.
  */
-export async function setTwoFactorRequirementAction(
+export async function removeMemberAction(
   _previous: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
-      organization: ["update"],
+    const { organization, member } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      member: ["delete"],
     });
-    const required = formString(formData, "required") === "true";
-    if (required && !session.user.twoFactorEnabled) {
-      throw new ActionError("Set up two-factor authentication for your own account first.");
+    const target = await getOrganizationMember({
+      organizationId: organization.id,
+      memberId: formString(formData, "memberId"),
+    });
+    if (!target) throw new ActionError("Member not found.");
+    if (target.id === member.id) {
+      throw new ActionError("To remove yourself, leave the organization from its settings.");
     }
-    await setOrganizationTwoFactorRequired({ organizationId: organization.id, required });
+    if (!canRemoveOrgMember(member.role, target.role)) {
+      throw new ForbiddenError("Only owners can remove an owner.");
+    }
+
+    // organizationId is explicit: Better Auth would otherwise fall back to the active org.
+    await auth.api.removeMember({
+      headers: await headers(),
+      body: { memberIdOrEmail: target.id, organizationId: organization.id },
+    });
     refresh();
     return null;
   });

@@ -3,15 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./openapi.json": "./openapi.json"
+  },
   "scripts": {
     "dev": "bun --env-file=../../.env --watch src/index.ts",
     "start": "bun --env-file=../../.env src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "bun --env-file=../../.env test"
+    "test": "bun --env-file=../../.env test",
+    "openapi:generate": "bun --env-file=../../.env scripts/openapi.ts"
   },
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/ratelimit": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",

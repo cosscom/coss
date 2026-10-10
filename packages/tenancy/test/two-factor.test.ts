@@ -2,12 +2,12 @@ import { describe, expect, test } from "bun:test";
 import { auth } from "@coss/auth";
 import { db, schema } from "@coss/db";
 import { eq } from "drizzle-orm";
+import { listAdminAuditEvents, resetUserTwoFactor } from "../src/admin.ts";
 import {
   getMembership,
   listOrganizationMembers,
   listOrganizationsRequiringTwoFactor,
   promoteToAdmin,
-  resetUserTwoFactor,
   setOrganizationTwoFactorRequired,
 } from "../src/index.ts";
 import { createTestTenant, createTestUser, type TestUser } from "../src/testing.ts";
@@ -116,10 +116,14 @@ describe("TOTP two-factor authentication", () => {
     ).rejects.toThrow();
   });
 
-  test("resetUserTwoFactor removes the secret and the challenge", async () => {
+  test("resetUserTwoFactor removes the secret and the challenge, and is audited", async () => {
     const user = await createTestUser();
+    const admin = await createTestUser();
+    const actor = { userId: admin.id, email: admin.email };
     await enableTotp(user);
-    expect(await resetUserTwoFactor({ userId: user.id })).toBe(true);
+
+    await expect(resetUserTwoFactor({ userId: user.id, reason: " ", actor })).rejects.toThrow();
+    await resetUserTwoFactor({ userId: user.id, reason: "Lost phone", actor });
     expect(await twoFactorEnabled(user.id)).toBe(false);
     const rows = await db
       .select()
@@ -127,7 +131,13 @@ describe("TOTP two-factor authentication", () => {
       .where(eq(schema.twoFactor.userId, user.id));
     expect(rows).toHaveLength(0);
     expect((await signIn(user)).response).not.toHaveProperty("twoFactorRedirect");
-    expect(await resetUserTwoFactor({ userId: "user_does_not_exist" })).toBe(false);
+
+    const { events } = await listAdminAuditEvents({ target: { type: "user", id: user.id } });
+    expect(events.map((e) => [e.action, e.reason])).toEqual([
+      ["user.reset_two_factor", "Lost phone"],
+    ]);
+    // Nothing to reset any more.
+    await expect(resetUserTwoFactor({ userId: user.id, reason: "Again", actor })).rejects.toThrow();
   });
 });
 

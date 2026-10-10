@@ -1,0 +1,85 @@
+---
+title: Quickstart
+description: Send your first email with the TypeScript SDK.
+icon: Rocket
+---
+
+<Steps>
+<Step>
+
+### Create an API key
+
+In the dashboard, open your project's **Development** environment and create an API key. Development
+keys start with `coss_test_`: emails sent with them are recorded but never delivered, so you can
+experiment freely. See [Environments and API keys](/docs/environments).
+
+```bash
+export COSS_API_KEY=coss_test_...
+```
+
+</Step>
+<Step>
+
+### Install the SDK
+
+```package-install
+coss
+```
+
+<Callout type="warn">
+  The SDK is not published to npm yet. Until it is, use it from the COSS repository.
+</Callout>
+
+</Step>
+<Step>
+
+### Send an email
+
+The client reads `COSS_API_KEY` from the environment when you don't pass `apiKey`.
+
+```ts twoslash title="send.ts"
+import { Coss } from "coss";
+
+const coss = new Coss();
+
+const { data, error } = await coss.email.send({
+  from: "Acme <onboarding@acme.com>",
+  to: "user@example.com",
+  subject: "Hello from COSS",
+  html: "<p>It works!</p>",
+});
+
+if (error) {
+  console.error(error.code, error.message);
+} else {
+  console.log(data.id, data.status);
+  //                       ^?
+}
+```
+
+Every method returns `{ data, error }` and never throws for API or network failures.
+
+</Step>
+<Step>
+
+### Follow delivery
+
+Each recipient has its own delivery status. Fetch the email again, or
+[subscribe to webhooks](/docs/webhooks) to be told when it changes.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: email } = await coss.email.get("email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+
+for (const recipient of email?.recipients ?? []) {
+  console.log(recipient.address, recipient.status);
+}
+```
+
+</Step>
+</Steps>
+
+When you are ready to deliver real email, [verify a domain](/docs/email/domains) and switch to a
+key from the **Production** environment.
