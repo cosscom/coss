@@ -3,7 +3,7 @@
  * imports also accept other providers' exports (an `email` column) and header-less files whose
  * first column is the address and optional second column the scope.
  */
-import type { SuppressionOutput } from "./schemas.ts";
+import { emailAddressProblem, type SuppressionOutput } from "./schemas.ts";
 
 export const SUPPRESSION_CSV_COLUMNS = [
   "address",
@@ -14,11 +14,11 @@ export const SUPPRESSION_CSV_COLUMNS = [
   "id",
 ] as const;
 
-/** Spreadsheets run cells starting with these as formulas; exports prefix them with `'`. */
-const FORMULA_START = /^[=+\-@\t\r]/;
+/** Guard formula starts and escape literal apostrophes so the prefix is reversible. */
+const GUARDED_START = /^['=+\-@\t\r]/;
 
 function csvField(value: string): string {
-  const safe = FORMULA_START.test(value) ? `'${value}` : value;
+  const safe = GUARDED_START.test(value) ? `'${value}` : value;
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
 
@@ -84,10 +84,10 @@ const SCOPE_HEADERS = new Set(["scope", "category"]);
 
 export type SuppressionCsvEntry = { line: number; address: string; scope?: string };
 
-/** Undoes the export's formula guard (`'=x@y.com` → `=x@y.com`). */
+/** Undoes one export guard, including the escape for a literal leading apostrophe. */
 function unguard(value: string): string {
   const trimmed = value.trim();
-  return trimmed.startsWith("'") && FORMULA_START.test(trimmed.slice(1))
+  return trimmed.startsWith("'") && GUARDED_START.test(trimmed.slice(1))
     ? trimmed.slice(1)
     : trimmed;
 }
@@ -104,7 +104,9 @@ export function parseSuppressionCsv(text: string): SuppressionCsvEntry[] {
   const first = records[0];
   if (!first) return [];
   const names = first.fields.map((field) => field.trim().toLowerCase());
-  const hasHeader = names.some((name) => ADDRESS_HEADERS.has(name) || SCOPE_HEADERS.has(name));
+  const addressFirst = emailAddressProblem(unguard(first.fields[0] ?? "")) === null;
+  const hasHeader =
+    !addressFirst && names.some((name) => ADDRESS_HEADERS.has(name) || SCOPE_HEADERS.has(name));
   let addressColumn = 0;
   let scopeColumn = 1;
   if (hasHeader) {

@@ -40,6 +40,18 @@ describe("suppression CSV export", () => {
       { line: 3, address: "+tag@example.com", scope: "marketing" },
     ]);
   });
+
+  test.each(["+", "=", "-", "'", "'+", "'=", "'-", "''+", "'tag"])(
+    "round-trips addresses beginning with %s without losing literal apostrophes",
+    (prefix) => {
+      const address = `${prefix}tag@example.com`;
+      const row = suppressionCsvRow({ ...entry, address });
+      expect(row.startsWith(`'${address},`)).toBe(true);
+      expect(parseSuppressionCsv(suppressionCsvHeader() + row)).toEqual([
+        { line: 2, address, scope: "*" },
+      ]);
+    },
+  );
 });
 
 describe("suppression CSV import", () => {
@@ -62,6 +74,16 @@ describe("suppression CSV import", () => {
       ],
     );
   });
+
+  test.each(["category", "scope", "email", "address", "email_address", "email address"])(
+    "treats %s as data when the first column contains an address",
+    (scope) => {
+      expect(parseSuppressionCsv(` user@example.com ,${scope}\nnext@example.com,news`)).toEqual([
+        { line: 1, address: "user@example.com", scope },
+        { line: 2, address: "next@example.com", scope: "news" },
+      ]);
+    },
+  );
 
   test("handles quoted fields with commas, quotes and line breaks", () => {
     expect(
