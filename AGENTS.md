@@ -45,8 +45,9 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
-AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources
-                                               #   and print the SES env vars (needs AWS admin credentials)
+AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources,
+                                               #   per-app IAM policies and (--alert-email) queue alarms, and
+                                               #   print the SES env vars (needs AWS admin credentials)
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -260,7 +261,9 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `maxAttempts: 1` and only throttling is retried. Never adopt an existing SES identity held by another tenant
   (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans COSS
   created get fresh DKIM keys; identities managed outside COSS in the same account are never touched). The most specific verified domain across all orgs
-  decides who may send from a From domain. Use one AWS account (or region) per stage.
+  decides who may send from a From domain. Use one AWS account (or region) per stage. IAM policies live in
+  `apps/worker/scripts/ses-policies.ts` (applied by `ses:bootstrap`): tag conditions can't apply to `SendEmail`
+  (SES authorizes it against the sender address, verified live), only to identity changes.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
