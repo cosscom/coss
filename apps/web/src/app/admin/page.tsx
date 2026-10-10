@@ -15,7 +15,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
-import { SignOutButton } from "@/components/sign-out-button";
+import { SiteHeader } from "@/components/site-header";
 import { auth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { isPlatformAdmin, requireSession } from "@/lib/session";
@@ -35,20 +35,11 @@ export default async function AdminPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
-          <Link className="font-semibold" href={DASHBOARD_PATH}>
-            COSS
-          </Link>
-          <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">
-            Dashboard
-          </Button>
-          <div className="ms-auto flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">{session.user.email}</span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
+      <SiteHeader className="max-w-6xl" session={session}>
+        <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">
+          Dashboard
+        </Button>
+      </SiteHeader>
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
         <PageHeader
           description={`${total} user${total === 1 ? "" : "s"}${total > users.length ? ` (showing the newest ${users.length})` : ""}.`}

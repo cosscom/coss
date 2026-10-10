@@ -17,7 +17,7 @@ import {
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
-import { validateOrgSlug } from "./slugs.ts";
+import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 
 /** Better Auth model name -> TypeID prefix. */
 const MODEL_ID_PREFIX: Record<string, string> = {
@@ -48,9 +48,11 @@ function logDevEmail(kind: string, to: string, url: string): void {
   console.info(`\n[auth] ${kind} for ${to}:\n  ${url}\n`);
 }
 
-function assertValidOrgSlug(slug: string | undefined): void {
-  if (slug === undefined) return;
-  const error = validateOrgSlug(slug);
+/** Validates the name/slug of an organization being created or updated (absent = unchanged). */
+function assertValidOrg(org: { name?: string | undefined; slug?: string | undefined }): void {
+  const error =
+    (org.name === undefined ? null : validateOrgName(org.name)) ??
+    (org.slug === undefined ? null : validateOrgSlug(org.slug));
   if (error) throw new APIError("BAD_REQUEST", { message: error });
 }
 
@@ -112,10 +114,10 @@ export const authOptions = {
       },
       organizationHooks: {
         beforeCreateOrganization: async ({ organization: org }) => {
-          assertValidOrgSlug(org.slug);
+          assertValidOrg(org);
         },
         beforeUpdateOrganization: async ({ organization: org }) => {
-          assertValidOrgSlug(org.slug);
+          assertValidOrg(org);
         },
         // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
         // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.

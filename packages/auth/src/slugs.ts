@@ -235,6 +235,17 @@ export const RESERVED_ORG_SLUGS: ReadonlySet<string> = new Set([
   ...FUTURE_SITE_SEGMENTS,
 ]);
 
+export const ORG_NAME_MAX_LENGTH = 64;
+
+/** Returns an error message, or `null` when the (untrimmed) organization name is valid. */
+export function validateOrgName(name: string): string | null {
+  const trimmed = name.trim();
+  if (trimmed.length === 0 || trimmed.length > ORG_NAME_MAX_LENGTH) {
+    return `Name must be 1-${ORG_NAME_MAX_LENGTH} characters.`;
+  }
+  return null;
+}
+
 export const ORG_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/;
 
 /** Returns an error message, or `null` when the slug is valid. */

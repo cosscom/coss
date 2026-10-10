@@ -1,7 +1,7 @@
 import "server-only";
 import { type OrgPermissions, orgRoleCan } from "@coss/auth/permissions";
 import { getMembership, type Membership } from "@coss/tenancy";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { ForbiddenError } from "./actions";
@@ -9,9 +9,20 @@ import { auth, type Session } from "./auth";
 
 export type OrgContext = Membership & { session: Session };
 
+/**
+ * Request headers for session-bound Better Auth calls made while rendering. The Cookie header comes
+ * from `cookies()`: after a server action replaces the session cookie (e.g. changing the password),
+ * Next re-renders with the new cookies but the original request headers.
+ */
+export async function authHeaders(): Promise<Headers> {
+  const requestHeaders = new Headers(await headers());
+  requestHeaders.set("cookie", (await cookies()).toString());
+  return requestHeaders;
+}
+
 /** The current session (deduplicated per request), or `null` when signed out. */
 export const getSession = cache(async (): Promise<Session | null> => {
-  return auth.api.getSession({ headers: await headers() });
+  return auth.api.getSession({ headers: await authHeaders() });
 });
 
 /** The current session; redirects to /sign-in when signed out. */
