@@ -123,5 +123,5 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
 COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
 carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
-policy allows `ses:SendEmail` on any identity with the COSS configuration set; COSS always sends with the
-organization's tenant, which SES only allows for identities associated with it.
+policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
+denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.

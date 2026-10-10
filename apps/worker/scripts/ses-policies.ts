@@ -6,8 +6,9 @@
  * are only allowed on identities with that tag, so domains managed outside COSS in the same account
  * (e.g. the company's own) can't be changed or deleted by the apps. Sending can't be limited by tag:
  * SES authorizes `SendEmail` against the sender *address* (`identity/hello@acme.com`), which is not
- * a tagged resource. Sends are confined by the configuration set instead, and the app always sends
- * with a `<prefix>-…` tenant, which SES only allows with identities associated with that tenant.
+ * a tagged resource. Sends are confined by the configuration set instead (verified live: another
+ * configuration set, or none so the identity's default applies, is denied), and the app always
+ * sends with a `<prefix>-…` tenant, which SES only allows with identities associated with it.
  */
 import { MANAGED_TAG } from "@coss/email/ses";
 
