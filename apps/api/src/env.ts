@@ -11,6 +11,8 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     // Public origin of this API (OpenAPI `servers`). Falls back to the request origin when unset.
     API_PUBLIC_URL: z.url().optional(),
+    // Encrypts webhook endpoint signing secrets; must be the same value the worker uses.
+    WEBHOOK_SECRETS_KEY: z.string().min(1, "Generate one with `openssl rand -base64 32`."),
     ...emailEnvShape,
   },
   runtimeEnv: process.env,

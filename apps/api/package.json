@@ -13,6 +13,7 @@
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/tenancy": "workspace:*",
+    "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "@t3-oss/env-core": "catalog:",
     "hono": "catalog:",

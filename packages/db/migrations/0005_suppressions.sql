@@ -14,5 +14,6 @@ CREATE TABLE "email_suppression" (
 );
 --> statement-breakpoint
 ALTER TABLE "email" ADD COLUMN "category" text;--> statement-breakpoint
+ALTER TABLE "email_tenant" ADD COLUMN "suppression_migrated_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "email_suppression" ADD CONSTRAINT "email_suppression_environment_fk" FOREIGN KEY ("environment_id","organization_id") REFERENCES "public"."environment"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "email_suppression_environment_id_idx" ON "email_suppression" USING btree ("environment_id","id" DESC NULLS LAST);

@@ -19,7 +19,7 @@ import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import type { AppEnv } from "../types.ts";
-import { commonErrors, errorDoc, requestIdHeader } from "./emails.ts";
+import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
 
 const SuppressionIdParams = z.object({
   id: z.string().meta({

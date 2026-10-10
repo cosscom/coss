@@ -7,7 +7,7 @@ export {
   TENANT_SUPPRESSION,
   tenantNameFor,
 } from "./api.ts";
-export { SesIdentityProvider } from "./identity.ts";
+export { MANAGED_TAG, SesIdentityProvider } from "./identity.ts";
 export { encodeAddress, encodeWords } from "./mime.ts";
 export {
   type ParsedSesMessage,

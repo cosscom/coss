@@ -37,7 +37,7 @@ describe("pollSesEvents", () => {
       dns: null,
       log: false,
     });
-    const domain = await createVerifiedDomain(organizationId);
+    const domain = await createVerifiedDomain(organizationId, { provider: "ses" });
     const tenantName = `${tenantPrefix}-${organizationId}`;
     await db.insert(schema.emailTenant).values({ organizationId, provider: "ses", tenantName });
     const { email } = await runtime.emailService.send({

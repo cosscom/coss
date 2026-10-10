@@ -11,7 +11,9 @@
     "ses:bootstrap": "bun --env-file=../../.env scripts/ses-bootstrap.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudwatch": "catalog:",
     "@aws-sdk/client-eventbridge": "catalog:",
+    "@aws-sdk/client-iam": "catalog:",
     "@aws-sdk/client-sesv2": "catalog:",
     "@aws-sdk/client-sns": "catalog:",
     "@aws-sdk/client-sqs": "catalog:",

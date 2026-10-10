@@ -1,10 +1,18 @@
 /** Bun server entry: `bun src/index.ts` serves the default export (`Bun.serve` options). */
+import { parseSecretsKey } from "@coss/webhooks";
 import { createApp } from "./app.ts";
-import { createDefaultEmailService } from "./email-service.ts";
 import { env } from "./env.ts";
+import { createDefaultEmailRuntime } from "./runtime.ts";
+
+const email = createDefaultEmailRuntime(env);
 
 const app = createApp({
-  emailService: createDefaultEmailService(env),
+  emailService: email.emailService,
+  domainDeps: email.domainDeps,
+  webhookDeps: {
+    secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
+    allowInsecureUrls: process.env.NODE_ENV !== "production",
+  },
   publicUrl: env.API_PUBLIC_URL,
 });
 

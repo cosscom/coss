@@ -1,4 +1,4 @@
-import type { Email, FetchLike } from "../src/index.ts";
+import type { Domain, Email, FetchLike, WebhookEndpoint } from "../src/index.ts";
 
 /** What the SDK handed to `fetch`, normalized for assertions. */
 export interface RecordedCall {
@@ -93,4 +93,42 @@ export const sampleEmail: Email = {
   sandbox: true,
   created_at: "2026-10-09T12:00:00.000Z",
   sent_at: "2026-10-09T12:00:00.100Z",
+};
+
+export const sampleDomain: Domain = {
+  object: "domain",
+  id: "dom_01k5f9yq8re8vb6q2wmz0tb2xd",
+  name: "acme.com",
+  status: "pending",
+  can_send: false,
+  region: "eu-west-1",
+  mail_from_domain: "send.acme.com",
+  mail_from_status: "pending",
+  records: [
+    {
+      purpose: "dkim",
+      type: "CNAME",
+      name: "abc._domainkey.acme.com",
+      value: "abc.dkim.amazonses.com",
+      priority: null,
+      required: true,
+      status: "missing",
+      found: [],
+    },
+  ],
+  created_at: "2026-10-09T12:00:00.000Z",
+  last_checked_at: null,
+  verified_at: null,
+  failed_at: null,
+};
+
+export const sampleEndpoint: WebhookEndpoint = {
+  object: "webhook_endpoint",
+  id: "whep_01k5f9yq8re8vb6q2wmz0tb2xd",
+  url: "https://example.com/webhooks/coss",
+  description: null,
+  event_types: ["email.bounced"],
+  enabled: true,
+  created_at: "2026-10-09T12:00:00.000Z",
+  updated_at: "2026-10-09T12:00:00.000Z",
 };

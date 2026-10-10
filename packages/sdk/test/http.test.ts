@@ -41,6 +41,22 @@ function setup(handlers: Handler[], options: Partial<HttpClientOptions> = {}) {
 }
 
 describe("retries", () => {
+  test.each([
+    ["network error", networkError],
+    ["timeout", hang],
+    ...[409, 429, 500, 503].map(
+      (status) =>
+        [String(status), apiError(status, { type: "api_error", code: "transient" })] as const,
+    ),
+  ] as const)("webhook creation does not retry %s", async (_name, handler) => {
+    const { fetch, calls } = mockFetch(handler, ok);
+    const coss = new Coss({ apiKey: "coss_test_key", fetch, timeout: 10, maxRetries: 3 });
+    const result = await coss.webhookEndpoints.create({ url: "https://example.com/hook" });
+    expect(result.data).toBeNull();
+    expect(result.error).not.toBeNull();
+    expect(calls).toHaveLength(1);
+  });
+
   test("retries a 500, reusing the same Idempotency-Key", async () => {
     const { calls, delays, post } = setup([serverError, ok]);
     const result = await post();

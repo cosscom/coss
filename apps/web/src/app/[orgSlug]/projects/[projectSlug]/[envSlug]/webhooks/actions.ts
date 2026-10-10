@@ -8,7 +8,7 @@ import {
   getWebhookEndpoint,
   retryWebhookDelivery,
   revealWebhookSecret,
-  setWebhookEndpointEnabled,
+  updateWebhookEndpoint,
   WebhookError,
 } from "@coss/webhooks";
 import { refresh } from "next/cache";
@@ -91,11 +91,14 @@ export async function setWebhookEndpointEnabledAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
-    await setWebhookEndpointEnabled({
-      organizationId: context.organization.id,
-      id: endpoint.id,
-      enabled: formString(formData, "enabled") === "true",
-    });
+    await updateWebhookEndpoint(
+      {
+        organizationId: context.organization.id,
+        id: endpoint.id,
+        enabled: formString(formData, "enabled") === "true",
+      },
+      webhookManagementDeps(),
+    );
     refresh();
     return null;
   });

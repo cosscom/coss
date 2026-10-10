@@ -21,6 +21,8 @@ import {
   type GetTenantCommandOutput,
   ListResourceTenantsCommand,
   type ListResourceTenantsCommandOutput,
+  ListTagsForResourceCommand,
+  type ListTagsForResourceCommandOutput,
   PutEmailIdentityMailFromAttributesCommand,
   type PutEmailIdentityMailFromAttributesCommandInput,
   PutTenantSuppressionAttributesCommand,
@@ -64,6 +66,7 @@ export interface SesApi {
     input: DeleteTenantResourceAssociationCommandInput,
   ): Promise<unknown>;
   listResourceTenants(input: { ResourceArn: string }): Promise<ListResourceTenantsCommandOutput>;
+  listTagsForResource(input: { ResourceArn: string }): Promise<ListTagsForResourceCommandOutput>;
   createEmailIdentity(
     input: CreateEmailIdentityCommandInput,
   ): Promise<CreateEmailIdentityCommandOutput>;
@@ -91,6 +94,7 @@ export function createSesApi(region: string): SesApi {
     deleteTenantResourceAssociation: (input) =>
       client.send(new DeleteTenantResourceAssociationCommand(input)),
     listResourceTenants: (input) => client.send(new ListResourceTenantsCommand(input)),
+    listTagsForResource: (input) => client.send(new ListTagsForResourceCommand(input)),
     createEmailIdentity: (input) => client.send(new CreateEmailIdentityCommand(input)),
     getEmailIdentity: (input) => client.send(new GetEmailIdentityCommand(input)),
     deleteEmailIdentity: (input) => client.send(new DeleteEmailIdentityCommand(input)),

@@ -27,7 +27,9 @@ export interface HttpClientOptions {
 }
 
 export interface ApiRequest {
-  method: "GET" | "POST" | "DELETE";
+  /** Disable automatic retries for operations without server-side deduplication. */
+  retry?: boolean;
+  method: "GET" | "POST" | "PATCH" | "DELETE";
   /** Path including the version prefix, e.g. `/v1/emails`. */
   path: string;
   /** Query parameters; `undefined` values are left out. */
@@ -154,7 +156,9 @@ export class HttpClient {
     for (let retry = 0; ; retry++) {
       if (request.signal?.aborted) return { data: null, error: abortedError() };
       const attempt = await this.#attempt<T>(url, init, request.signal);
-      if (!attempt.retry || retry >= this.#maxRetries) return attempt.result;
+      if (request.retry === false || !attempt.retry || retry >= this.#maxRetries) {
+        return attempt.result;
+      }
       const delay = attempt.retryAfterMs ?? backoffDelay(retry);
       if (delay > MAX_RETRY_AFTER_MS) return attempt.result;
       await this.#sleep(delay, request.signal);

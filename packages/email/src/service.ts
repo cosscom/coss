@@ -314,6 +314,7 @@ export function createEmailService(opts: {
     if (!sandbox) {
       try {
         await authorizeLiveSender({
+          provider: opts.liveProvider.name,
           organizationId: environment.organizationId,
           from: params.from,
         });

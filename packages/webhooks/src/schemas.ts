@@ -1,0 +1,115 @@
+/**
+ * Public wire schemas for webhook endpoint management (snake_case). Plain zod, no database
+ * imports: `@coss/webhooks/schemas` is safe to load anywhere.
+ *
+ * The set of subscribable event types belongs to the products, not here, so the request bodies
+ * are built by `webhookEndpointRequests(eventTypes)` — the public API passes `EMAIL_EVENT_TYPES`.
+ */
+import { z } from "zod";
+
+export const WEBHOOK_URL_MAX_LENGTH = 2048;
+export const DESCRIPTION_MAX_LENGTH = 256;
+
+const EVENT_TYPES_DESCRIPTION =
+  "Event types delivered to this endpoint. An empty array means every event type, including " +
+  "ones added later.";
+
+export const WebhookEndpointObject = z
+  .object({
+    object: z.literal("webhook_endpoint"),
+    id: z.string().meta({ example: "whep_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    url: z.string().meta({ example: "https://example.com/webhooks/coss" }),
+    description: z.string().nullable(),
+    event_types: z.array(z.string()).meta({ description: EVENT_TYPES_DESCRIPTION }),
+    enabled: z
+      .boolean()
+      .meta({ description: "A disabled endpoint receives nothing until it is enabled again." }),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+  })
+  .meta({ id: "WebhookEndpoint" });
+
+export type WebhookEndpointObjectOutput = z.output<typeof WebhookEndpointObject>;
+
+export const WebhookEndpointWithSecret = WebhookEndpointObject.extend({
+  secret: z.string().meta({
+    description:
+      "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. " +
+      "Returned only when the endpoint is created — store it now; it cannot be read back " +
+      "through the API.",
+    example: "whsec_6Jk…",
+  }),
+}).meta({ id: "WebhookEndpointWithSecret" });
+
+export type WebhookEndpointWithSecretOutput = z.output<typeof WebhookEndpointWithSecret>;
+
+export const WebhookEndpointList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(WebhookEndpointObject),
+    has_more: z.boolean(),
+  })
+  .meta({ id: "WebhookEndpointList" });
+
+export type WebhookEndpointListOutput = z.output<typeof WebhookEndpointList>;
+
+export const DeletedWebhookEndpoint = z
+  .object({
+    object: z.literal("webhook_endpoint"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({ id: "DeletedWebhookEndpoint" });
+
+export type DeletedWebhookEndpointOutput = z.output<typeof DeletedWebhookEndpoint>;
+
+const Url = z
+  .string()
+  .min(1, "Enter a full URL, like https://example.com/webhooks/coss.")
+  .max(WEBHOOK_URL_MAX_LENGTH, `URLs can be at most ${WEBHOOK_URL_MAX_LENGTH} characters.`)
+  .meta({
+    description: "An `https://` URL COSS posts events to.",
+    example: "https://example.com/webhooks/coss",
+  });
+
+const Description = z
+  .string()
+  .max(DESCRIPTION_MAX_LENGTH, `Can be at most ${DESCRIPTION_MAX_LENGTH} characters.`)
+  .meta({ description: "A note for your own reference. `null` clears it." });
+
+/**
+ * The create and update bodies for one set of subscribable event types. Called once per process
+ * (the schemas carry fixed OpenAPI ids).
+ */
+export function webhookEndpointRequests<const T extends readonly [string, ...string[]]>(
+  eventTypes: T,
+) {
+  const EventTypes = z
+    .array(z.enum(eventTypes))
+    .max(eventTypes.length)
+    .meta({ description: EVENT_TYPES_DESCRIPTION });
+
+  const CreateWebhookEndpointRequest = z
+    .strictObject({
+      url: Url,
+      description: Description.nullish(),
+      event_types: EventTypes.optional().meta({
+        description: `${EVENT_TYPES_DESCRIPTION} Defaults to every event type.`,
+      }),
+    })
+    .meta({ id: "CreateWebhookEndpointRequest" });
+
+  const UpdateWebhookEndpointRequest = z
+    .strictObject({
+      url: Url.optional(),
+      description: Description.nullish(),
+      event_types: EventTypes.optional(),
+      enabled: z.boolean().optional(),
+    })
+    .refine((value) => Object.values(value).some((field) => field !== undefined), {
+      error: "Provide at least one field to update.",
+    })
+    .meta({ id: "UpdateWebhookEndpointRequest" });
+
+  return { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest };
+}

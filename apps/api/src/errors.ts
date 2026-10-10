@@ -2,7 +2,8 @@
  * The public error envelope. Every non-2xx response is
  * `{ "error": { type, code, message, param?, issues?, request_id } }`, built only here.
  */
-import { EmailError } from "@coss/email";
+import { DomainError, EmailError } from "@coss/email";
+import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -170,10 +171,57 @@ function fromEmailError(error: EmailError): ApiError {
   }
 }
 
+function invalidRequest(code: string, message: string, param?: string): ApiError {
+  return new ApiError(422, {
+    type: "invalid_request_error",
+    code,
+    message,
+    ...(param && { param }),
+  });
+}
+
+function fromDomainError(error: DomainError): ApiError {
+  switch (error.code) {
+    case "invalid_domain":
+      return invalidRequest(error.code, error.message, "name");
+    case "domain_taken":
+      // Not a 409: the SDK retries those, and a claimed name does not free up on its own.
+      return invalidRequest(error.code, error.message, "name");
+    case "too_many_pending_domains":
+      return invalidRequest(error.code, error.message);
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "provider_error":
+      // The delivery provider, not the caller, is at fault: retryable.
+      return new ApiError(502, { type: "api_error", code: error.code, message: error.message });
+  }
+}
+
+function fromWebhookError(error: WebhookError): ApiError {
+  switch (error.code) {
+    case "invalid_url":
+      return invalidRequest(error.code, error.message, "url");
+    case "too_many_endpoints":
+      return invalidRequest(error.code, error.message);
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+  }
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof EmailError) return fromEmailError(error);
+  if (error instanceof DomainError) return fromDomainError(error);
+  if (error instanceof WebhookError) return fromWebhookError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;

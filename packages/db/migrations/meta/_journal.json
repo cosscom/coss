@@ -33,22 +33,22 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1791652015908,
-      "tag": "0004_suppressions",
+      "when": 1791650995637,
+      "tag": "0004_api_key_product_permissions",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "7",
-      "when": 1791652022294,
-      "tag": "0005_suppression_key_permissions",
+      "when": 1791657681378,
+      "tag": "0005_suppressions",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "7",
-      "when": 1791653361608,
-      "tag": "0006_suppression_transition",
+      "when": 1791657681807,
+      "tag": "0006_suppression_key_permissions",
       "breakpoints": true
     }
   ]

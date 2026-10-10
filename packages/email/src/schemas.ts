@@ -479,6 +479,114 @@ export const EmailObject = z
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
 
+export const DOMAIN_STATUSES = [
+  "pending",
+  "verified",
+  "temporary_failure",
+  "failed",
+  "deleting",
+] as const;
+
+export const MAIL_FROM_STATUSES = ["pending", "success", "temporary_failure", "failed"] as const;
+
+export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", "dmarc"] as const;
+
+export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
+
+export const DomainRecordObject = z
+  .object({
+    purpose: z.enum(DOMAIN_RECORD_PURPOSES).meta({
+      description:
+        "What the record is for: `dkim` signs messages, `mail_from_mx` and `mail_from_spf` " +
+        "set up the bounce subdomain, `dmarc` is recommended but not required.",
+    }),
+    type: z.enum(["CNAME", "MX", "TXT"]),
+    name: z.string().meta({ description: "The fully qualified record name to create." }),
+    value: z.string(),
+    priority: z.number().int().nullable().meta({ description: "`MX` records only." }),
+    required: z.boolean().meta({ description: "`false` for records that are only recommended." }),
+    status: z.enum(DOMAIN_RECORD_STATUSES).meta({
+      description:
+        "What the last DNS check saw. `not_checked` means DNS has not been consulted yet.",
+    }),
+    found: z.array(z.string()).meta({ description: "What DNS returned when it did not match." }),
+  })
+  .meta({ id: "DomainRecord" });
+
+export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
+
+export const DomainObject = z
+  .object({
+    object: z.literal("domain"),
+    id: z.string().meta({ example: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    name: z.string().meta({ description: "The domain, lower-cased.", example: "acme.com" }),
+    status: z.enum(DOMAIN_STATUSES).meta({
+      description:
+        "`pending` while the records are being checked, `verified` once they are, " +
+        "`temporary_failure` after a transient DNS problem, and `failed` when verification gave " +
+        "up (72 hours) — restart it with the verify endpoint. `deleting` is a removal in progress.",
+    }),
+    can_send: z
+      .boolean()
+      .meta({ description: "Whether live keys may send from this domain right now." }),
+    region: z.string().nullable(),
+    mail_from_domain: z
+      .string()
+      .meta({ description: "The envelope sender subdomain bounces come back to." }),
+    mail_from_status: z.enum(MAIL_FROM_STATUSES),
+    records: z
+      .array(DomainRecordObject)
+      .meta({ description: "The DNS records to publish, with the result of the last check." }),
+    created_at: z.iso.datetime(),
+    last_checked_at: z.iso.datetime().nullable(),
+    verified_at: z.iso.datetime().nullable(),
+    failed_at: z.iso.datetime().nullable(),
+  })
+  .meta({ id: "Domain" });
+
+export type DomainObjectOutput = z.output<typeof DomainObject>;
+
+export const DomainList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(DomainObject),
+    has_more: z.boolean(),
+  })
+  .meta({ id: "DomainList" });
+
+export type DomainListOutput = z.output<typeof DomainList>;
+
+export const DOMAIN_NAME_MAX_LENGTH = 200;
+
+export const CreateDomainRequest = z
+  .strictObject({
+    name: z
+      .string()
+      .min(1, "Enter a domain name, like acme.com.")
+      .max(
+        DOMAIN_NAME_MAX_LENGTH,
+        `Domain names can be at most ${DOMAIN_NAME_MAX_LENGTH} characters.`,
+      )
+      .meta({
+        description:
+          "The domain to send from, without a scheme or path. Subdomains are allowed; " +
+          "internationalized domains must be punycode-encoded.",
+        example: "acme.com",
+      }),
+  })
+  .meta({ id: "CreateDomainRequest" });
+
+export type CreateDomainRequestInput = z.input<typeof CreateDomainRequest>;
+
+export const DeletedDomain = z
+  .object({
+    object: z.literal("domain"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({ id: "DeletedDomain" });
+
+export type DeletedDomainOutput = z.output<typeof DeletedDomain>;
 const SuppressionAddress = z
   .string()
   .superRefine((value, ctx) => {

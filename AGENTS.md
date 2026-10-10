@@ -17,12 +17,12 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
-| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries. |
+| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `globals.css`. |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 
-Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`; `api → tenancy, email, db`;
+Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`; `api → tenancy, email, webhooks, db`;
 `web → auth, tenancy, email, webhooks, db, ui`; `worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`worker → tenancy` (test fixtures — so tenancy must never import email or webhooks) and
 `api`/`worker → coss` (SDK contract tests — turbo builds the SDK before their `typecheck`/`test`).
@@ -45,8 +45,9 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
-AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources
-                                               #   and print the SES env vars (needs AWS admin credentials)
+AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources,
+                                               #   per-app IAM policies and (--alert-email) queue alarms, and
+                                               #   print the SES env vars (needs AWS admin credentials)
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -96,7 +97,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
-| `WEBHOOK_SECRETS_KEY` | web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
+| `WEBHOOK_SECRETS_KEY` | api + web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
 | `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`) |
@@ -107,7 +108,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 ## Public API (`apps/api`)
 
 - `createApp(opts)` (`src/app.ts`) is side-effect free; services are injected via `CreateAppOptions` and `src/index.ts`
-  wires env. Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
+  wires env (`webhookDeps` is required — a throwaway secrets key would make the endpoints it creates
+  undeliverable; `emailService`/`domainDeps` default to the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
   response carries a server-generated `X-Request-Id: req_…` (client values are ignored).
 - Errors are always the envelope `{ error: { type, code, message, param?, issues?, request_id } }`, built only by
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
@@ -115,17 +117,19 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   hand-build error JSON.
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: requireApiKey({ <product>: ["<action>"] }) })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
-  runs before validation (401 beats 422). Tenancy comes only from `c.var.auth`. Document error statuses with
-  `errorDoc`/`commonErrors` (exported by `src/routes/emails.ts`). The root `validationHook` turns zod failures into
-  422 + `issues`; a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI
-  path list.
+  runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
+  `environmentId`, organization-scoped ones (domains) only by `organizationId`. Document responses with
+  `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`). The root `validationHook` turns zod failures into 422 + `issues`;
+  a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 
 ## SDK (`packages/sdk`, published as `coss`)
 
 - `Coss` (`src/client.ts`) → one `HttpClient` (`src/core/http.ts`: bearer auth, JSON, per-attempt timeout, retries on
   network/timeout/409/429/5xx honoring `Retry-After`, an `Idempotency-Key` on every POST reused across retries) → one
-  resource per product (`src/resources/<product>.ts`; sub-resources hang off it, e.g. `coss.email.suppressions`).
-  Methods return `{ data, error }` and never throw for API/network failures.
+  resource per product or managed resource (`src/resources/*.ts`: `email`, `domains`, `webhookEndpoints`;
+  sub-resources hang off their product, e.g. `coss.email.suppressions`). Methods return `{ data, error }` and never
+  throw for API/network failures. Webhook endpoint creation disables
+  automatic retries because the API does not deduplicate it, even with an `Idempotency-Key`.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
   access, zero runtime deps. `isolatedDeclarations` is on (exported functions need explicit types).
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
@@ -133,7 +137,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run
   `bun run --cwd packages/sdk build` before api typecheck/tests. `src/version.ts` must equal `package.json` `version`.
 - `verifyWebhook` (`src/webhooks.ts`, Web Crypto only) is the one SDK function that throws (`WebhookVerificationError`):
-  a failed signature check must not be ignorable. Webhook wire types live in `src/types/webhook.ts`.
+  a failed signature check must not be ignorable. The event body's wire types live in `src/types/webhook.ts`; endpoint
+  management's in `src/types/webhook-endpoint.ts`.
 - **Never publish**: the `coss` npm name is currently owned by a third party (see `packages/sdk/README.md`).
 
 ## Dashboard (`apps/web`)
@@ -187,10 +192,10 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 2. `packages/<product>`: `src/schemas.ts` (zod `strictObject`, snake_case, `.meta({ id })`, no DB imports, exported as
    `./schemas`), provider interface + fake provider, a service taking the authenticated environment, an error class with
    statuses, `bunfig.toml` + `test/setup.ts` preload.
-3. Permissions: add the resource to `orgStatements` and the roles (`packages/auth/src/permissions.ts`) and to the
-   api-key `defaultPermissions` (`packages/auth/src/options.ts`). Permissions are stored per key at creation, so
-   existing keys need an `apikey.permissions` backfill or they get 403 (a custom migration, like
-   `packages/db/migrations/0005_suppression_key_permissions.sql`).
+3. Permissions: add the resource to `orgStatements` and the roles (`packages/auth/src/permissions.ts`) and to
+   `API_KEY_PERMISSIONS` (`packages/auth/src/constants.ts`, the api-key plugin's `defaultPermissions`). Permissions are
+   stored per key at creation, so existing keys need an `apikey.permissions` backfill (`drizzle-kit generate --custom`,
+   as in migrations `0004` and `0006`) or they get 403.
 4. API: `src/routes/<resource>.ts` mounted in `routes/v1.ts`, service injected via `createApp` options, error class
    mapped in `toApiError`, OpenAPI path list in `test/app.test.ts` updated.
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
@@ -261,8 +266,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
   `maxAttempts: 1` and only throttling is retried. Never adopt an existing SES identity held by another tenant
-  (`IdentityTakenError`); orphans are recreated for fresh DKIM keys. The most specific verified domain across all orgs
-  decides who may send from a From domain. Use one AWS account (or region) per stage.
+  (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans COSS
+  created get fresh DKIM keys; identities managed outside COSS in the same account are never touched). The most specific verified domain across all orgs
+  decides who may send from a From domain. Use one AWS account (or region) per stage. IAM policies live in
+  `apps/worker/scripts/ses-policies.ts` (applied by `ses:bootstrap`): tag conditions can't apply to `SendEmail`
+  (SES authorizes it against the sender address, verified live), only to identity changes.
 - **Suppressions** (`packages/email/src/suppressions.ts`, table `email_suppression`, ids `sup_`): one list per
   environment; an entry's `scope` is `*` (`ALL_CATEGORIES`) or a category, matched against the send's `category`.
   COSS keeps the only list: SES tenants and the configuration set are created with suppression off
@@ -304,13 +312,15 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Sends are synchronous. If the process dies after `dispatch` claims an email, the row stays `queued` until the
   worker's stale-claim sweep (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late
   SES `Send` event still repairs it); until then retries with the same `Idempotency-Key` get 409 `request_in_progress`.
-- Webhook deliveries are not ordered (use `data.occurred_at`); SES complaints may list every recipient on the
-  complaining domain (and each of them gets suppressed). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
+- Webhook deliveries are not ordered (use `data.occurred_at`; SES itself may publish a complaint before the
+  delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
+  SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
+  the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
-domains), public API/SDK for domains and webhook endpoints, bulk suppression import/export, attachments/batch/scheduled sends,
+domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.
