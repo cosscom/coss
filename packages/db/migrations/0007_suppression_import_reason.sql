@@ -1,0 +1,1 @@
+ALTER TYPE "public"."email_suppression_reason" ADD VALUE 'import';

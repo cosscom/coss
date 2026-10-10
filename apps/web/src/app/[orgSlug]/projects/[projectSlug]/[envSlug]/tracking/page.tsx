@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { getTrackingSettings } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import {
@@ -36,8 +35,8 @@ export default async function TrackingPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/tracking">) {
   const { orgSlug, projectSlug, envSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { environment: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ environment: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -52,7 +51,7 @@ export default async function TrackingPage({
     projectSlug: project.slug,
     envSlug: environment.slug,
   };
-  const canEdit = orgRoleCan(member.role, { environment: ["update"] });
+  const canEdit = can({ environment: ["update"] });
 
   return (
     <div className="flex flex-col gap-6">

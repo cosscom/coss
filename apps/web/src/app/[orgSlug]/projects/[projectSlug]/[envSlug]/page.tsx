@@ -1,5 +1,4 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { orgRoleCan } from "@coss/auth/permissions";
 import { type EmailObjectOutput, listDomains, listEmails } from "@coss/email";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -65,7 +64,7 @@ export default async function EnvironmentPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]">) {
   const { orgSlug, projectSlug, envSlug } = await params;
-  const { session, organization, member } = await requireOrgMember(orgSlug);
+  const { session, organization, can } = await requireOrgMember(orgSlug);
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -87,10 +86,10 @@ export default async function EnvironmentPage({
     projectSlug: project.slug,
     envSlug: environment.slug,
   };
-  const canCreateKey = orgRoleCan(member.role, { apiKey: ["create"] });
-  const canRevokeKey = orgRoleCan(member.role, { apiKey: ["delete"] });
+  const canCreateKey = can({ apiKey: ["create"] });
+  const canRevokeKey = can({ apiKey: ["delete"] });
   const createRestriction = environment.mode === "live" ? liveKeyRestriction(session) : null;
-  const apiUrl = env.NEXT_PUBLIC_API_URL;
+  const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const curl = quickStartCurl(apiUrl, from);
   const sdkCommand = `COSS_API_KEY=${API_KEY_PREFIX[environment.mode]}… COSS_BASE_URL=${apiUrl} COSS_FROM=${from} bun packages/sdk/examples/send-email.ts`;

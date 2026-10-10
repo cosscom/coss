@@ -8,6 +8,7 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { nextQuery } from "@/lib/safe-redirect";
 
 export function ResetPasswordForm({ token, next }: { token: string; next: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +16,7 @@ export function ResetPasswordForm({ token, next }: { token: string; next: string
   const [done, setDone] = useState(false);
   const [tokenInvalid, setTokenInvalid] = useState(false);
 
-  const query = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+  const query = nextQuery(next);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

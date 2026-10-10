@@ -5,20 +5,24 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, desc, eq, inArray, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lt } from "drizzle-orm";
 import { SIMULATOR_DOMAIN } from "./providers/fake.ts";
 import {
   ALL_CATEGORIES,
   type CheckSuppressionQueryOutput,
+  CreateSuppressionRequest,
   type CreateSuppressionRequestOutput,
   DEFAULT_SUPPRESSION_LIST_LIMIT,
+  type ExportSuppressionsQueryOutput,
   type ListSuppressionsQueryOutput,
   MAX_SUPPRESSION_LIST_LIMIT,
   type SuppressionCheckOutput,
+  type SuppressionImportOutput,
   type SuppressionListOutput,
   type SuppressionOutput,
   type SuppressionReason,
 } from "./schemas.ts";
+import { suppressionCsvHeader, suppressionCsvRow } from "./suppression-csv.ts";
 
 const { emailSuppression } = schema;
 
@@ -59,22 +63,13 @@ export async function addSuppression(
   env: SuppressionEnvironment,
   params: CreateSuppressionRequestOutput,
 ): Promise<{ suppression: SuppressionOutput; created: boolean } | null> {
-  const [environment] = await db
-    .select({ projectId: schema.environment.projectId })
-    .from(schema.environment)
-    .where(
-      and(
-        eq(schema.environment.id, env.environmentId),
-        eq(schema.environment.organizationId, env.organizationId),
-      ),
-    )
-    .limit(1);
-  if (!environment) return null;
+  const projectId = await environmentProject(env);
+  if (!projectId) return null;
   const [inserted] = await db
     .insert(emailSuppression)
     .values({
       organizationId: env.organizationId,
-      projectId: environment.projectId,
+      projectId,
       environmentId: env.environmentId,
       address: params.address,
       scope: params.scope,
@@ -99,6 +94,147 @@ export async function addSuppression(
   // Removed again between the insert and the select: report it as created by this request.
   if (!existing) return addSuppression(env, params);
   return { suppression: toSuppressionObject(existing), created: false };
+}
+
+/** The environment's project, from the environment row; `null` if it is not in the organization. */
+async function environmentProject(env: SuppressionEnvironment): Promise<string | null> {
+  const [environment] = await db
+    .select({ projectId: schema.environment.projectId })
+    .from(schema.environment)
+    .where(
+      and(
+        eq(schema.environment.id, env.environmentId),
+        eq(schema.environment.organizationId, env.organizationId),
+      ),
+    )
+    .limit(1);
+  return environment?.projectId ?? null;
+}
+
+/** One entry of a bulk import, before validation. */
+export type SuppressionImportEntry = { address: string; scope?: string | undefined };
+
+const IMPORT_INSERT_BATCH = 1000;
+
+/**
+ * Adds many entries with reason `import`. Each entry is validated like a single add; invalid ones
+ * are skipped and reported by index, entries already on the list (or repeated) count as `existing`.
+ * All inserts run in one transaction. `null` when the environment is missing.
+ */
+export async function importSuppressions(
+  env: SuppressionEnvironment,
+  entries: SuppressionImportEntry[],
+): Promise<SuppressionImportOutput | null> {
+  const projectId = await environmentProject(env);
+  if (!projectId) return null;
+  const invalid: SuppressionImportOutput["invalid"] = [];
+  const unique = new Map<string, CreateSuppressionRequestOutput>();
+  entries.forEach((entry, index) => {
+    const parsed = CreateSuppressionRequest.safeParse({
+      address: entry.address,
+      scope: entry.scope,
+    });
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const field = issue?.path[0] === "scope" ? "scope" : "address";
+      invalid.push({
+        index,
+        address: entry.address,
+        message: `Invalid ${field}: ${issue?.message ?? "invalid value."}`,
+      });
+      return;
+    }
+    unique.set(`${parsed.data.scope} ${parsed.data.address}`, parsed.data);
+  });
+  const valid = [...unique.values()];
+  let created = 0;
+  await db.transaction(async (tx) => {
+    for (let start = 0; start < valid.length; start += IMPORT_INSERT_BATCH) {
+      const inserted = await tx
+        .insert(emailSuppression)
+        .values(
+          valid.slice(start, start + IMPORT_INSERT_BATCH).map((entry) => ({
+            organizationId: env.organizationId,
+            projectId,
+            environmentId: env.environmentId,
+            address: entry.address,
+            scope: entry.scope,
+            reason: "import" as const,
+          })),
+        )
+        .onConflictDoNothing({
+          target: [
+            emailSuppression.environmentId,
+            emailSuppression.address,
+            emailSuppression.scope,
+          ],
+        })
+        .returning({ id: emailSuppression.id });
+      created += inserted.length;
+    }
+  });
+  return {
+    object: "suppression_import",
+    created,
+    existing: entries.length - invalid.length - created,
+    invalid,
+  };
+}
+
+const EXPORT_PAGE_SIZE = 1000;
+
+/** Every matching entry, oldest first, one page per iteration (keyset pagination, no snapshot). */
+export async function* exportSuppressionPages(
+  env: SuppressionEnvironment,
+  filter: ExportSuppressionsQueryOutput = {},
+): AsyncGenerator<SuppressionOutput[]> {
+  let after: string | undefined;
+  for (;;) {
+    const rows = await db
+      .select()
+      .from(emailSuppression)
+      .where(
+        and(
+          inEnvironment(env),
+          filter.scope === undefined ? undefined : eq(emailSuppression.scope, filter.scope),
+          filter.reason === undefined ? undefined : eq(emailSuppression.reason, filter.reason),
+          after === undefined ? undefined : gt(emailSuppression.id, after),
+        ),
+      )
+      .orderBy(asc(emailSuppression.id))
+      .limit(EXPORT_PAGE_SIZE);
+    if (rows.length > 0) yield rows.map(toSuppressionObject);
+    if (rows.length < EXPORT_PAGE_SIZE) return;
+    after = rows.at(-1)?.id;
+  }
+}
+
+/** The environment's list as a CSV stream (header row first), read from the database page by page. */
+export function suppressionsCsvStream(
+  env: SuppressionEnvironment,
+  filter: ExportSuppressionsQueryOutput = {},
+): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const pages = exportSuppressionPages(env, filter);
+  let headerSent = false;
+  return new ReadableStream({
+    async pull(controller) {
+      if (!headerSent) {
+        headerSent = true;
+        controller.enqueue(encoder.encode(suppressionCsvHeader()));
+        return;
+      }
+      const next = await pages.next();
+      if (next.done) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(encoder.encode(next.value.map(suppressionCsvRow).join("")));
+    },
+    async cancel() {
+      await pages.return(undefined);
+    },
+  });
 }
 
 /** Newest first, paginated by the `after` cursor (the last id of the previous page). */

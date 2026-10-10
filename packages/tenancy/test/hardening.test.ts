@@ -24,21 +24,60 @@ async function sessionHeaders(email: string, password: string): Promise<Headers>
   return new Headers({ cookie });
 }
 
+/** Records every SQL statement sent through the pool; `fail` rejects matching statements. */
+async function withQueryLog<T>(
+  run: (statements: string[]) => Promise<T>,
+  fail?: (sql: string) => boolean,
+): Promise<T> {
+  const statements: string[] = [];
+  const original = pool.query.bind(pool);
+  pool.query = ((text: unknown, ...rest: unknown[]) => {
+    const sql = typeof text === "string" ? text : ((text as { text?: string })?.text ?? "");
+    statements.push(sql);
+    if (fail?.(sql)) return Promise.reject(new Error("simulated outage"));
+    return (original as (...args: unknown[]) => unknown)(text, ...rest);
+  }) as typeof pool.query;
+  try {
+    return await run(statements);
+  } finally {
+    pool.query = original;
+  }
+}
+
 describe("authenticateApiKey", () => {
-  test("an internal failure inside Better Auth's verify is thrown (503), not reported as invalid", async () => {
+  test("reads with one SELECT and writes last_request at most once a minute", async () => {
     const tenant = await createTestTenant();
-    const original = pool.query.bind(pool);
-    // Fail only Better Auth's usage-tracking UPDATE; the initial lookup still succeeds.
-    pool.query = ((text: unknown, ...rest: unknown[]) => {
-      const sql = typeof text === "string" ? text : (text as { text?: string })?.text;
-      if (sql?.startsWith('update "apikey"')) return Promise.reject(new Error("simulated outage"));
-      return (original as (...args: unknown[]) => unknown)(text, ...rest);
-    }) as typeof pool.query;
-    try {
-      await expect(authenticateApiKey(tenant.sandboxKey)).rejects.toThrow();
-    } finally {
-      pool.query = original;
-    }
+    const statements = await withQueryLog(async (log) => {
+      for (let i = 0; i < 5; i++)
+        expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
+      return log;
+    });
+    expect(statements.filter((sql) => sql.startsWith("select"))).toHaveLength(5);
+    const writes = statements.filter((sql) => !sql.startsWith("select"));
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toStartWith('update "apikey" set "last_request"');
+  });
+
+  test("a failed usage write does not fail authentication", async () => {
+    const tenant = await createTestTenant();
+    const result = await withQueryLog(
+      () => authenticateApiKey(tenant.sandboxKey),
+      (sql) => sql.startsWith('update "apikey"'),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  test("a failed lookup is thrown (503), not reported as invalid", async () => {
+    const tenant = await createTestTenant();
+    const error = await withQueryLog(
+      () =>
+        authenticateApiKey(tenant.sandboxKey).then(
+          () => null,
+          (e: unknown) => e,
+        ),
+      (sql) => sql.startsWith("select"),
+    );
+    expect(error).toBeInstanceOf(Error);
     expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
   });
 });
@@ -134,34 +173,34 @@ describe("canceling invitations", () => {
   });
 });
 
-describe("changing member roles", () => {
-  /** A tenant whose owner, admin and member each have a member row and a signed-in session. */
-  async function roleFixture() {
-    const tenant = await createTestTenant();
-    const organizationId = tenant.organization.id;
-    const admin = await createTestUser();
-    const member = await createTestUser();
-    await addMember({ organizationId, userId: admin.id, role: "admin" });
-    await addMember({ organizationId, userId: member.id, role: "member" });
-    const rows = await listOrganizationMembers({ organizationId });
-    const memberId = (user: TestUser) => {
-      const row = rows.find((r) => r.user.id === user.id);
-      if (!row) throw new Error("member row missing");
-      return row.id;
-    };
-    const as = async (user: TestUser) => {
-      const headers = await sessionHeaders(user.email, user.password);
-      return (target: TestUser, role: string) =>
-        auth.api.updateMemberRole({
-          headers,
-          body: { memberId: memberId(target), role, organizationId },
-        });
-    };
-    const roleOf = async (user: TestUser) =>
-      (await getOrganizationMember({ organizationId, memberId: memberId(user) }))?.role;
-    return { owner: tenant.owner, admin, member, as, roleOf };
-  }
+/** A tenant whose owner, admin and member each have a member row and a signed-in session. */
+async function roleFixture() {
+  const tenant = await createTestTenant();
+  const organizationId = tenant.organization.id;
+  const admin = await createTestUser();
+  const member = await createTestUser();
+  await addMember({ organizationId, userId: admin.id, role: "admin" });
+  await addMember({ organizationId, userId: member.id, role: "member" });
+  const rows = await listOrganizationMembers({ organizationId });
+  const memberId = (user: TestUser) => {
+    const row = rows.find((r) => r.user.id === user.id);
+    if (!row) throw new Error("member row missing");
+    return row.id;
+  };
+  const as = async (user: TestUser) => {
+    const headers = await sessionHeaders(user.email, user.password);
+    return (target: TestUser, role: string) =>
+      auth.api.updateMemberRole({
+        headers,
+        body: { memberId: memberId(target), role, organizationId },
+      });
+  };
+  const roleOf = async (user: TestUser) =>
+    (await getOrganizationMember({ organizationId, memberId: memberId(user) }))?.role;
+  return { tenant, organizationId, owner: tenant.owner, admin, member, memberId, as, roleOf };
+}
 
+describe("changing member roles", () => {
   test("admins can switch non-owners between member and admin, but not touch owners", async () => {
     const { owner, admin, member, as, roleOf } = await roleFixture();
     const asAdmin = await as(admin);
@@ -197,5 +236,113 @@ describe("changing member roles", () => {
     expect(await roleOf(admin)).toBe("owner");
     await asOwner(owner, "admin");
     expect(await roleOf(owner)).toBe("admin");
+  });
+});
+
+describe("removing members and leaving", () => {
+  test("admins remove non-owners; only owners remove owners; members remove no one", async () => {
+    const { organizationId, owner, admin, member, memberId, roleOf } = await roleFixture();
+    const remove = async (actor: TestUser, target: TestUser) =>
+      auth.api.removeMember({
+        headers: await sessionHeaders(actor.email, actor.password),
+        body: { memberIdOrEmail: memberId(target), organizationId },
+      });
+
+    await expect(remove(member, admin)).rejects.toThrow();
+    await expect(remove(admin, owner)).rejects.toThrow();
+    expect(await roleOf(admin)).toBe("admin");
+    expect(await roleOf(owner)).toBe("owner");
+
+    await remove(admin, member);
+    expect(await roleOf(member)).toBeUndefined();
+    await remove(owner, admin);
+    expect(await roleOf(admin)).toBeUndefined();
+  });
+
+  test("a member of another organization cannot be removed through this one", async () => {
+    const { organizationId, owner } = await roleFixture();
+    const other = await roleFixture();
+    await expect(
+      auth.api.removeMember({
+        headers: await sessionHeaders(owner.email, owner.password),
+        body: { memberIdOrEmail: other.memberId(other.member), organizationId },
+      }),
+    ).rejects.toThrow();
+    expect(await other.roleOf(other.member)).toBe("member");
+  });
+
+  test("anyone can leave, except the last owner", async () => {
+    const { organizationId, owner, member, roleOf } = await roleFixture();
+    const leave = async (user: TestUser) =>
+      auth.api.leaveOrganization({
+        headers: await sessionHeaders(user.email, user.password),
+        body: { organizationId },
+      });
+
+    await leave(member);
+    expect(await roleOf(member)).toBeUndefined();
+    await expect(leave(owner)).rejects.toThrow();
+    expect(await roleOf(owner)).toBe("owner");
+  });
+});
+
+describe("resending invitations", () => {
+  test("resend keeps the invitation (same id and role) and extends its expiry", async () => {
+    const tenant = await createTestTenant();
+    const headers = await sessionHeaders(tenant.owner.email, tenant.owner.password);
+    const email = `invitee+${uniqueSuffix()}@coss.test`;
+    const body = { email, role: "admin" as const, organizationId: tenant.organization.id };
+    const invitation = await auth.api.createInvitation({ headers, body });
+    if (!invitation) throw new Error("invitation was not created");
+    await db
+      .update(schema.invitation)
+      .set({ expiresAt: new Date(Date.now() + 60_000) })
+      .where(eq(schema.invitation.id, invitation.id));
+
+    await expect(auth.api.createInvitation({ headers, body })).rejects.toThrow();
+    const resent = await auth.api.createInvitation({ headers, body: { ...body, resend: true } });
+    expect(resent?.id).toBe(invitation.id);
+    expect(resent?.role).toBe("admin");
+    expect(resent?.expiresAt.getTime()).toBeGreaterThan(Date.now() + 60 * 60 * 1000);
+  });
+});
+
+describe("updating organizations", () => {
+  test("admins rename the organization and change its slug, with the same rules as creation", async () => {
+    const { organizationId, admin } = await roleFixture();
+    const headers = await sessionHeaders(admin.email, admin.password);
+    const update = (data: { name?: string; slug?: string }) =>
+      auth.api.updateOrganization({ headers, body: { organizationId, data } });
+
+    const slug = `renamed-${uniqueSuffix()}`;
+    const updated = await update({ name: "Renamed", slug });
+    expect(updated?.name).toBe("Renamed");
+    expect(updated?.slug).toBe(slug);
+
+    for (const data of [{ slug: "settings" }, { slug: "Bad Slug" }, { name: "  " }]) {
+      await expect(update(data)).rejects.toThrow();
+    }
+    const other = await createTestTenant();
+    await expect(update({ slug: other.organization.slug })).rejects.toThrow();
+    const [row] = await db
+      .select({ name: schema.organization.name, slug: schema.organization.slug })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, organizationId));
+    expect(row).toEqual({ name: "Renamed", slug });
+  });
+
+  test("members cannot update the organization", async () => {
+    const { organizationId, member } = await roleFixture();
+    await expect(
+      auth.api.updateOrganization({
+        headers: await sessionHeaders(member.email, member.password),
+        body: { organizationId, data: { name: "Hijacked" } },
+      }),
+    ).rejects.toThrow();
+    const [row] = await db
+      .select({ name: schema.organization.name })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, organizationId));
+    expect(row?.name).not.toBe("Hijacked");
   });
 });

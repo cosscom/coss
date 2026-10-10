@@ -9,7 +9,6 @@ import type { EmailEnv, EmailProviderName } from "./env.ts";
 import type { EmailProvider, IdentityProvider } from "./provider.ts";
 import { FakeEmailProvider } from "./providers/fake.ts";
 import { FakeIdentityProvider } from "./providers/fake-identity.ts";
-import { createEmailService, type EmailService } from "./service.ts";
 import { createSesApi, type SesApi, type SesConfig } from "./ses/api.ts";
 import { SesIdentityProvider } from "./ses/identity.ts";
 import { SesEmailProvider } from "./ses/provider.ts";
@@ -22,13 +21,9 @@ export {
   emailWorkerEnvShape,
 } from "./env.ts";
 
-export type EmailRuntimeConfig = (
+export type EmailRuntimeConfig =
   | { provider: "fake"; log?: boolean }
-  | { provider: "ses"; ses: SesConfig; log?: boolean; sesApi?: SesApi; dns?: DnsResolver | null }
-) & {
-  /** Public origin of the API's `/t/*` routes; only the API sends, so only it needs this. */
-  trackingBaseUrl?: string;
-};
+  | { provider: "ses"; ses: SesConfig; log?: boolean; sesApi?: SesApi; dns?: DnsResolver | null };
 
 /** The runtime config for validated app env; `EMAIL_PROVIDER=ses` requires the SES variables. */
 export function emailRuntimeConfig(env: EmailEnv): EmailRuntimeConfig {
@@ -59,7 +54,6 @@ export type EmailRuntime = {
   /** `null` with the fake provider: its domains verify without DNS. */
   dns: DnsResolver | null;
   domainDeps: DomainDeps;
-  emailService: EmailService;
 };
 
 export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
@@ -88,10 +82,5 @@ export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
     identity,
     dns,
     domainDeps: { identity, dns },
-    emailService: createEmailService({
-      liveProvider,
-      sandboxProvider,
-      trackingBaseUrl: config.trackingBaseUrl,
-    }),
   };
 }

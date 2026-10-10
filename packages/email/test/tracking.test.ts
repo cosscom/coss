@@ -9,7 +9,7 @@ import { getEmail, listEmailEvents, listEmailLinks } from "../src/read.ts";
 import { EmailWebhookEvent, type SendEmailRequestInput } from "../src/schemas.ts";
 import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
-import { trackingUrls } from "../src/testing.ts";
+import { memoryDispatchQueue, trackingUrls } from "../src/testing.ts";
 import { recordClick, recordOpen } from "../src/tracking.ts";
 import {
   deleteTrackingRule,
@@ -30,16 +30,19 @@ function envOf(tenant: Tenant) {
 
 async function send(tenant: Tenant, overrides: Partial<SendEmailRequestInput> = {}) {
   const provider = new FakeEmailProvider({ log: false });
+  const queue = memoryDispatchQueue();
   const service = createEmailService({
     liveProvider: provider,
     sandboxProvider: provider,
     trackingBaseUrl: `${BASE}/`,
+    queue,
   });
   const { email } = await service.send({
     environment: sendEnvironment(tenant.development),
     apiKeyId: null,
     params: params({ html: HTML, ...overrides }),
   });
+  await queue.drain(service);
   const html = provider.sent.at(-1)?.html ?? null;
   return { email, html, urls: trackingUrls(html ?? "") };
 }
@@ -264,7 +267,11 @@ describe("recording hits", () => {
   test("a tracked send without a tracking base URL fails loudly", async () => {
     const tenant = await createTestTenant();
     const provider = new FakeEmailProvider({ log: false });
-    const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      queue: memoryDispatchQueue(),
+    });
     await expect(
       service.send({
         environment: sendEnvironment(tenant.development),

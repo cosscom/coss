@@ -52,6 +52,7 @@ const SUPPRESSION_REASON_VARIANT = {
   bounce: "error",
   complaint: "error",
   manual: "secondary",
+  import: "secondary",
 } as const satisfies Record<SuppressionReason, string>;
 
 export function SuppressionReasonBadge({ reason }: { reason: SuppressionReason }) {

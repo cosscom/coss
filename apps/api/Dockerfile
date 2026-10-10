@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1.7
+# Public API (apps/api): Hono on Bun, run from TypeScript source. Build from the repository root:
+#   docker build -f apps/api/Dockerfile .
+# One image for every stage: the server reads and validates its environment when it starts
+# (README.md, "Deploying to AWS"). One-off tasks reuse it, e.g. the first platform admin:
+#   bun packages/tenancy/scripts/create-admin.ts --email you@example.com
+
+# Keep in step with package.json (`packageManager`, `devDependencies.turbo`); infra/test checks.
+ARG BUN_VERSION=1.4.2
+ARG TURBO_VERSION=2.11.7
+
+FROM oven/bun:${BUN_VERSION}-slim AS bun
+
+# The workspaces @coss/api needs at runtime (--production drops dev-only ones, like the SDK used by
+# contract tests), and their slice of bun.lock.
+FROM bun AS prune
+ARG TURBO_VERSION
+ENV TURBO_TELEMETRY_DISABLED=1
+WORKDIR /repo
+COPY . .
+RUN bunx turbo@${TURBO_VERSION} prune @coss/api --docker --production --out-dir /pruned
+
+FROM bun AS install
+WORKDIR /app
+COPY --from=prune /pruned/json/ .
+RUN bun install --frozen-lockfile --production
+COPY --from=prune /pruned/full/ .
+
+FROM bun AS runtime
+# Postgres TLS: DATABASE_URL=…?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem
+ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
+ENV NODE_ENV=production NO_COLOR=1 API_PORT=3001
+# Root-owned and read-only for the app. No .env exists here (.dockerignore), so Bun's automatic
+# .env loading and the scripts' --env-file are no-ops: configuration comes from the task.
+WORKDIR /app
+COPY --from=install /app ./
+USER bun
+EXPOSE 3001
+# SIGTERM: stops accepting connections, finishes in-flight requests, closes the pg pool.
+CMD ["bun", "apps/api/src/index.ts"]

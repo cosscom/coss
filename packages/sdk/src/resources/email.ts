@@ -16,8 +16,10 @@ export class EmailResource {
   }
 
   /**
-   * Sends an email. Safe to retry: the request always carries an `Idempotency-Key` (yours, or a
-   * generated one reused across automatic retries), so the API never sends it twice.
+   * Sends an email. It is returned `queued` and handed to the delivery provider moments later:
+   * `get` it or listen for the `email.sent` / `email.failed` webhooks for the outcome. Safe to
+   * retry: the request always carries an `Idempotency-Key` (yours, or a generated one reused
+   * across automatic retries), so the API never sends it twice.
    */
   send(params: SendEmailParams, options?: RequestOptions): Promise<CossResult<Email>> {
     return this.#http.request<Email>({

@@ -27,10 +27,11 @@ function hit(app: TestApp, url: string, method: "GET" | "HEAD" = "GET") {
 
 async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }, html = HTML) {
   const tenant = await createTestTenant();
-  const { app, sandboxProvider } = createTestApp();
+  const { app, sandboxProvider, dispatch } = createTestApp();
   const res = await sendEmail(app, tenant.sandboxKey, emailBody({ html, tracking }));
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(202);
   const email = (await res.json()) as { id: string; tracking: Record<string, unknown> };
+  await dispatch();
   const urls = trackingUrls(sandboxProvider.sent.at(-1)?.html ?? "");
   return { tenant, app, email, urls };
 }

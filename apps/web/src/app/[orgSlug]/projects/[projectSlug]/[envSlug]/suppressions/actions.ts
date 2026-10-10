@@ -1,12 +1,19 @@
 "use server";
 
-import { addSuppression, getSuppression, removeSuppression } from "@coss/email";
-import { CreateSuppressionRequest } from "@coss/email/schemas";
+import {
+  addSuppression,
+  getSuppression,
+  importSuppressions,
+  parseSuppressionCsv,
+  removeSuppression,
+} from "@coss/email";
+import { CreateSuppressionRequest, SuppressionScope } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
+import { MAX_IMPORT_BYTES, MAX_IMPORT_ROWS, MAX_REPORTED_INVALID_ROWS } from "./import-limits";
 
 /** The environment addressed by the form's slugs, inside the already-authorized organization. */
 async function environmentFromForm(context: OrgContext, formData: FormData) {
@@ -62,5 +69,64 @@ export async function removeSuppressionAction(
     }
     refresh();
     return null;
+  });
+}
+
+export type ImportSuppressionsResult = {
+  created: number;
+  existing: number;
+  invalidCount: number;
+  /** The first skipped rows, by CSV line. */
+  invalid: { line: number; address: string; message: string }[];
+};
+
+/**
+ * Imports a CSV upload (an export of this list, another provider's export with an `email` column,
+ * or one address per line). Rows without a scope get the form's `category`, or `*`.
+ */
+export async function importSuppressionsAction(
+  _previous: ActionResult<ImportSuppressionsResult> | null,
+  formData: FormData,
+): Promise<ActionResult<ImportSuppressionsResult>> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      suppression: ["create"],
+    });
+    const env = await environmentFromForm(context, formData);
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) throw new ActionError("Choose a CSV file.");
+    if (file.size > MAX_IMPORT_BYTES) throw new ActionError("The file is larger than 2 MB.");
+    let rows: ReturnType<typeof parseSuppressionCsv>;
+    try {
+      rows = parseSuppressionCsv(await file.text());
+    } catch (error) {
+      throw new ActionError(error instanceof Error ? error.message : "The file is not valid CSV.");
+    }
+    if (rows.length === 0) throw new ActionError("The file has no addresses.");
+    if (rows.length > MAX_IMPORT_ROWS) {
+      throw new ActionError(
+        `The file has ${rows.length.toLocaleString("en-US")} rows; import at most ${MAX_IMPORT_ROWS.toLocaleString("en-US")} at a time.`,
+      );
+    }
+    const category = formString(formData, "category") || undefined;
+    if (category !== undefined && !SuppressionScope.safeParse(category).success) {
+      throw new ActionError("Category: use ASCII letters, numbers, underscores or dashes.");
+    }
+    const result = await importSuppressions(
+      env,
+      rows.map((row) => ({ address: row.address, scope: row.scope ?? category })),
+    );
+    if (!result) throw new ActionError("Environment not found.");
+    if (result.created > 0) refresh();
+    return {
+      created: result.created,
+      existing: result.existing,
+      invalidCount: result.invalid.length,
+      invalid: result.invalid.slice(0, MAX_REPORTED_INVALID_ROWS).map((entry) => ({
+        line: rows[entry.index]?.line ?? 0,
+        address: entry.address,
+        message: entry.message,
+      })),
+    };
   });
 }

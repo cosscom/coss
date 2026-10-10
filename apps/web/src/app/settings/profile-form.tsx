@@ -1,0 +1,59 @@
+"use client";
+
+import { Button } from "@coss/ui/components/button";
+import { Field, FieldLabel } from "@coss/ui/components/field";
+import { Input } from "@coss/ui/components/input";
+import { useActionState } from "react";
+import { FormError } from "@/components/form-error";
+import { sendVerificationEmailAction, updateNameAction } from "./actions";
+
+export function ProfileForm(props: { name: string; disabled: boolean }) {
+  const [state, formAction, pending] = useActionState(updateNameAction, null);
+
+  return (
+    <form action={formAction} className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <Field className="min-w-64 flex-1">
+          <FieldLabel>Name</FieldLabel>
+          <Input
+            autoComplete="name"
+            defaultValue={props.name}
+            disabled={props.disabled}
+            maxLength={64}
+            name="name"
+            required
+          />
+        </Field>
+        <Button disabled={props.disabled} loading={pending} type="submit">
+          Save
+        </Button>
+      </div>
+      {state?.ok ? (
+        <p className="text-muted-foreground text-sm">Saved.</p>
+      ) : (
+        <FormError message={state?.error} />
+      )}
+    </form>
+  );
+}
+
+export function SendVerificationEmailButton({ disabled }: { disabled: boolean }) {
+  const [state, formAction, pending] = useActionState(sendVerificationEmailAction, null);
+
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      <div>
+        <Button
+          disabled={disabled || state?.ok}
+          loading={pending}
+          size="sm"
+          type="submit"
+          variant="outline"
+        >
+          {state?.ok ? "Verification email sent" : "Send verification email"}
+        </Button>
+      </div>
+      {state && !state.ok ? <FormError message={state.error} /> : null}
+    </form>
+  );
+}

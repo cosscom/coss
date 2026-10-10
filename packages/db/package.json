@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./id": "./src/id.ts",
+    "./jobs": "./src/jobs.ts",
     "./schema": "./src/schema/index.ts",
     "./testing": "./src/testing.ts"
   },
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
+    "pg-boss": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {

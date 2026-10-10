@@ -1,0 +1,42 @@
+---
+title: Errors
+description: The error envelope and what each error type means.
+---
+
+Errors use conventional HTTP status codes and always share one envelope:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "validation_error",
+    "message": "Invalid request body: `subject`: Too small: expected string to have >=1 characters",
+    "param": "subject",
+    "issues": [{ "path": "subject", "message": "Too small: expected string to have >=1 characters" }],
+    "request_id": "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+  }
+}
+```
+
+| Field        | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
+| `type`       | The category of error (below). Branch on this.                |
+| `code`       | A machine-readable reason, such as `invalid_api_key`.         |
+| `message`    | A human-readable explanation. It may change; don't parse it.  |
+| `param`      | The request field or header the error relates to, if any.     |
+| `issues`     | Every validation problem, for `validation_error`.             |
+| `request_id` | Same as the `X-Request-Id` header.                            |
+
+## Error types
+
+| `type`                  | Status          | Meaning                                                                    |
+| ----------------------- | --------------- | -------------------------------------------------------------------------- |
+| `invalid_request_error` | 400 / 413 / 415 / 422 | Malformed JSON, body too large, wrong content type, or failed validation |
+| `authentication_error`  | 401             | The API key is missing, invalid, revoked or expired                        |
+| `permission_error`      | 403             | The key lacks the permission, or sending is paused for the organization    |
+| `not_found_error`       | 404             | No such resource in the key's environment, or no such endpoint             |
+| `idempotency_error`     | 409 / 422       | A request with the key is in progress, or the key was reused with another body |
+| `rate_limit_error`      | 429             | Too many requests                                                          |
+| `api_error`             | 5xx             | Something went wrong on our side; retry with backoff                       |
+
+Each endpoint page lists the codes it can return.
