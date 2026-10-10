@@ -1,7 +1,0 @@
-{
-  "title": "TypeScript SDK",
-  "description": "The coss package",
-  "root": true,
-  "icon": "SquareCode",
-  "pages": ["index", "email", "webhooks", "errors"]
-}

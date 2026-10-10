@@ -26,8 +26,8 @@ Delivery happens per recipient. `recipients` lists every distinct address across
 ## Events
 
 Each change is recorded as an event. List them with
-[`coss.email.listEvents`](/docs/sdk/email#list-events) or
-[`GET /v1/emails/{id}/events`](/docs/api-reference/emails/list-email-events), or receive them as [webhooks](/docs/webhooks).
+`coss.email.listEvents` (see
+[`GET /v1/emails/{id}/events`](/docs/api-reference/emails/list-email-events)), or receive them as [webhooks](/docs/webhooks).
 
 ```ts twoslash
 import { Coss } from "coss";

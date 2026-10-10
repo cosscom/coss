@@ -11,7 +11,7 @@ the macro API, `staticSource` and code-usage APIs are recent.
 
 | Path | What |
 |---|---|
-| `content/docs/` | MDX pages. Top-level folders with `"root": true` are the sidebar tabs: `(guides)` (URL-less group → `/docs/…`), `sdk`, `api-reference`. Order lives in each `meta.json`. |
+| `content/docs/` | MDX pages. Top-level folders with `"root": true` are the sidebar tabs: `(guides)` (URL-less group → `/docs/…`; includes the TypeScript SDK pages at `/docs/sdk/…`) and `api-reference`. Order lives in each `meta.json`. |
 | `src/lib/collections.ts` | `defineDocs` via `fumadocs-mdx/macro` (compiled by the bundler; `dir` must stay a literal). |
 | `source.config.ts` | Global MDX options only: Shiki themes/langs and the Twoslash transformer. |
 | `src/lib/openapi.ts` | `createOpenAPI` over the committed `apps/api/openapi.json` (imported, so it is bundled). |
@@ -32,6 +32,9 @@ the macro API, `staticSource` and code-usage APIs are recent.
 - **New endpoint ⇒ SDK sample.** Add its `METHOD /path` to `SDK_SAMPLES`; `test/sdk-samples.test.ts` fails for
   any operation without one, or a sample naming a method missing from the `Coss` client. Samples and the playground
   start from the schemas' `examples` (see the root AGENTS.md); without them they show `"string"` placeholders.
+- **No per-method SDK pages:** each endpoint's SDK call is its API reference page's TypeScript tab. The SDK pages
+  cover only what isn't an endpoint (client setup, results and errors, retries, `verifyWebhook`); guides show SDK
+  usage in context.
 - **SDK code in MDX uses ` ```ts twoslash `.** Snippets compile against the built `coss` package (resolved from this
   app; turbo builds the SDK before `dev`/`build`, otherwise `bun run --cwd packages/sdk build`) and an unexpected
   type error **fails the build** — fix the snippet or the SDK, don't add `@noErrors`. Use `// ---cut---` to hide

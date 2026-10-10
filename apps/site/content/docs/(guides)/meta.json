@@ -10,6 +10,8 @@
     "environments",
     "webhooks",
     "---Email---",
-    "...email"
+    "...email",
+    "---TypeScript SDK---",
+    "...sdk"
   ]
 }
