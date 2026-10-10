@@ -3,6 +3,7 @@ import {
   CheckSuppressionQuery,
   CreateSuppressionRequest,
   ListSuppressionsQuery,
+  MAX_ATTACHMENTS_BYTES,
   MAX_SCHEDULE_AHEAD_MS,
   SendEmailRequest,
   type SendEmailRequestInput,
@@ -169,8 +170,8 @@ describe("SendEmailRequest: content", () => {
   });
 
   test("rejects unknown fields instead of silently dropping them", () => {
-    expect(issues({ ...base, attachments: [] })).toEqual({
-      "": 'Unrecognized key: "attachments"',
+    expect(issues({ ...base, template: "welcome" })).toEqual({
+      "": 'Unrecognized key: "template"',
     });
   });
 });
@@ -274,6 +275,136 @@ describe("SendEmailRequest: scheduled_at", () => {
     });
     const inTime = new Date(Date.now() + MAX_SCHEDULE_AHEAD_MS - 60_000).toISOString();
     expect(issues({ ...base, scheduled_at: inTime })).toEqual({});
+  });
+});
+
+describe("SendEmailRequest: attachments", () => {
+  const pdf = Buffer.from("%PDF-1.7").toString("base64");
+
+  test("normalizes attachments and infers the content type from the extension", () => {
+    const parsed = expectValid({
+      ...base,
+      attachments: [
+        { filename: "Invoice.PDF", content: pdf },
+        { filename: "logo.png", content: pdf, content_id: "logo@acme" },
+        { filename: "data.bin", content: pdf },
+        { filename: "notes.txt", content: pdf, content_type: "Text/Markdown" },
+      ],
+    });
+    expect(parsed.attachments).toEqual([
+      { filename: "Invoice.PDF", content: pdf, content_type: "application/pdf", content_id: null },
+      { filename: "logo.png", content: pdf, content_type: "image/png", content_id: "logo@acme" },
+      {
+        filename: "data.bin",
+        content: pdf,
+        content_type: "application/octet-stream",
+        content_id: null,
+      },
+      { filename: "notes.txt", content: pdf, content_type: "text/markdown", content_id: null },
+    ]);
+  });
+
+  test.each(["__proto__", "constructor", "unknown"])(
+    "uses the fallback content type for .%s",
+    (extension) => {
+      const parsed = expectValid({
+        ...base,
+        attachments: [{ filename: `file.${extension}`, content: pdf }],
+      });
+      expect(parsed.attachments?.[0]?.content_type).toBe("application/octet-stream");
+    },
+  );
+
+  test("omits the key without attachments", () => {
+    expect(Object.hasOwn(expectValid(base), "attachments")).toBe(false);
+    expect(Object.hasOwn(expectValid({ ...base, attachments: [] }), "attachments")).toBe(false);
+  });
+
+  test("requires canonical, non-empty base64", () => {
+    for (const content of [
+      "not base64!",
+      "QUJD\nREVG",
+      "QUJDRA",
+      "data:application/pdf;base64,QUJD",
+    ]) {
+      expect(issues({ ...base, attachments: [{ filename: "a.pdf", content }] })).toEqual({
+        "attachments.0.content": "Must be base64-encoded (no whitespace or data: prefix).",
+      });
+    }
+    expect(issues({ ...base, attachments: [{ filename: "a.pdf", content: "" }] })).toEqual({
+      "attachments.0.content": "Content must not be empty.",
+    });
+  });
+
+  test("validates filenames", () => {
+    const problem = (filename: string) =>
+      issues({ ...base, attachments: [{ filename, content: pdf }] })["attachments.0.filename"];
+    expect(problem("../etc/passwd.txt")).toBe("Filenames must not contain / or \\.");
+    expect(problem("a\\b.txt")).toBe("Filenames must not contain / or \\.");
+    expect(problem("a\r\nb.txt")).toBe(
+      "Filenames must not contain control or invisible formatting characters.",
+    );
+    expect(problem("invoice\u202Efdp.exe")).toBe(
+      "Filenames must not contain control or invisible formatting characters.",
+    );
+    expect(problem("README")).toBe('Filenames need an extension, e.g. "invoice.pdf".');
+    expect(problem("trailing.")).toBe('Filenames need an extension, e.g. "invoice.pdf".');
+    expect(problem("setup.EXE")).toBe("Attachments with the .exe extension cannot be sent.");
+    expect(problem("x".repeat(252) + ".pdf")).toBe("Filenames can be at most 255 characters.");
+    expect(problem("Rechnung März.pdf")).toBeUndefined();
+  });
+
+  test("validates content types and content ids", () => {
+    expect(
+      issues({
+        ...base,
+        attachments: [
+          { filename: "a.pdf", content: pdf, content_type: "application/pdf; name=x" },
+          { filename: "b.png", content: pdf, content_id: "<logo>" },
+          { filename: "c.png", content: pdf, content_id: "logo" },
+          { filename: "d.png", content: pdf, content_id: "logo" },
+        ],
+      }),
+    ).toEqual({
+      "attachments.0.content_type":
+        'Must be a media type like "application/pdf", without parameters.',
+      "attachments.1.content_id":
+        "Must be 1-100 characters without spaces or angle brackets, e.g. logo@acme.",
+      "attachments.3.content_id": 'Duplicate content_id "logo".',
+    });
+  });
+
+  test("rejects unknown attachment fields", () => {
+    expect(
+      issues({ ...base, attachments: [{ filename: "a.pdf", content: pdf, path: "https://x" }] }),
+    ).toEqual({ "attachments.0": 'Unrecognized key: "path"' });
+  });
+
+  test("limits the count and the decoded total size", () => {
+    const many = Array.from({ length: 21 }, (_, i) => ({ filename: `${i}.pdf`, content: pdf }));
+    expect(issues({ ...base, attachments: many })).toEqual({
+      attachments: "At most 20 attachments are allowed.",
+    });
+
+    // Exactly at the cap is fine; one more byte is not.
+    const half = MAX_ATTACHMENTS_BYTES / 2;
+    const chunk = (bytes: number) => Buffer.alloc(bytes, 1).toString("base64");
+    expectValid({
+      ...base,
+      attachments: [
+        { filename: "a.pdf", content: chunk(half) },
+        { filename: "b.pdf", content: chunk(half) },
+      ],
+    });
+    expect(
+      issues({
+        ...base,
+        attachments: [
+          { filename: "a.pdf", content: chunk(half) },
+          { filename: "b.pdf", content: chunk(half + 1) },
+        ],
+      }),
+    ).toEqual({ attachments: "Attachments can be at most 25 MB combined (decoded)." });
   });
 });
 

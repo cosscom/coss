@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { EmailProvider, OutboundEmail, ProviderEvent, SendResult } from "../provider.ts";
 import { parseEmailAddress } from "../schemas.ts";
 
@@ -105,10 +105,24 @@ export function simulatedEvents(
  * until a real provider is configured. Reports the events SES would (see `simulatedEvents`) and
  * keeps the last 100 messages for tests and debugging.
  */
+/** A message the fake provider accepted, with attachment digests instead of their bytes. */
+export type FakeSentEmail = Omit<OutboundEmail, "attachments"> & {
+  attachments: {
+    filename: string;
+    contentType: string;
+    contentId: string | null;
+    size: number;
+    sha256: string;
+  }[];
+};
+
 export class FakeEmailProvider implements EmailProvider {
   readonly name = "fake";
-  /** Accepted messages, oldest first (bounded). */
-  readonly sent: OutboundEmail[] = [];
+  /**
+   * Accepted messages, oldest first (bounded). Attachments are kept as digests so a long-running
+   * dev server never holds up to 100 × 25 MB of content.
+   */
+  readonly sent: FakeSentEmail[] = [];
   readonly #log: boolean;
   readonly #fail?: (message: OutboundEmail) => boolean;
 
@@ -122,13 +136,21 @@ export class FakeEmailProvider implements EmailProvider {
       throw new Error(`Fake provider rejected ${message.emailId}.`);
     }
     const providerMessageId = `fake_${randomUUID()}`;
-    this.sent.push(message);
+    this.sent.push({
+      ...message,
+      attachments: message.attachments.map(({ content, ...attachment }) => ({
+        ...attachment,
+        size: content.byteLength,
+        sha256: createHash("sha256").update(content).digest("hex"),
+      })),
+    });
     if (this.sent.length > MAX_KEPT) this.sent.splice(0, this.sent.length - MAX_KEPT);
     if (this.#log) {
       const recipients = uniqueRecipients(message).length;
       console.info(
         `[email:fake] ${message.emailId} accepted as ${providerMessageId}: ` +
-          `${JSON.stringify(message.subject)} to ${recipients} recipient(s)`,
+          `${JSON.stringify(message.subject)} to ${recipients} recipient(s)` +
+          (message.attachments.length ? `, ${message.attachments.length} attachment(s)` : ""),
       );
     }
     return { providerMessageId, events: simulatedEvents(message, providerMessageId) };

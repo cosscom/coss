@@ -136,7 +136,7 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - `createApp(opts)` (`src/app.ts`) is side-effect free; services are injected via `CreateAppOptions` and `src/index.ts`
   wires env (`webhookDeps` is required — a throwaway secrets key would make the endpoints it creates
   undeliverable; `emailService` is required — `src/index.ts` builds it on the pg-boss queue; `domainDeps` defaults to
-  the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
+  the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB; `POST /v1/emails` uses its own 40 MB limit after authentication) → `logger` (off under test). Every
   response carries a server-generated `X-Request-Id: req_…` (client values are ignored).
 - The only unauthenticated routes are `/health`, `/openapi.json` and the tracking endpoints `GET /t/o/:token`
   (open pixel, always a GIF) and `GET /t/c/:token/:position` (302 to the stored link, else a plain-text 404)
@@ -435,6 +435,15 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `email.canceled`); repeating it returns the email, any other status is 422 `email_not_cancelable` (not 409: the SDK
   retries those). Scheduled sends are held while their organization is suspended. Cancel needs `email:send`.
   `scheduled_at` is omitted from the parsed request when absent (request hashes).
+
+- **Attachments** (`packages/email/src/attachments.ts`, table `email_attachment`, ids `att_`): base64 in the send
+  request only (COSS never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
+  SES-refused extensions are rejected at validation. Bytes live in `email_attachment.content` (bytea) only while the
+  email is `scheduled` or `queued` — cancellation, sender rejection, delivery, provider-event ingestion and
+  the worker sweeps null them in the transaction that moves it to a terminal status. Reads select metadata columns only; API/SDK/dashboard and webhook payloads never
+  expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
+  it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
+  (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -494,7 +503,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-attachments/batch sends, rescheduling (cancel and send again), webhook delivery logs over the API,
+batch sends, rescheduling (cancel and send again), webhook delivery logs over the API,
 rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 

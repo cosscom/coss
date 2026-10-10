@@ -34,9 +34,19 @@ describe("hashSendRequest", () => {
     expect(hashSendRequest({ ...a, scheduled_at: "2026-10-11T09:00:00.000Z" })).not.toBe(
       hashSendRequest(a),
     );
+    const attachment = {
+      filename: "a.txt",
+      content: "QQ==",
+      content_type: "text/plain",
+      content_id: null,
+    };
+    expect(hashSendRequest({ ...a, attachments: [attachment] })).not.toBe(hashSendRequest(a));
+    expect(hashSendRequest({ ...a, attachments: [{ ...attachment, content: "Qg==" }] })).not.toBe(
+      hashSendRequest({ ...a, attachments: [attachment] }),
+    );
   });
 
-  test("is unchanged for requests without a category or schedule (retries across deploys)", () => {
+  test("is unchanged for requests without a category, schedule or attachments (idempotent retries across deploys)", () => {
     const parsed = SendEmailRequest.parse({
       from: "hello@acme.com",
       to: "user@example.com",
@@ -47,6 +57,8 @@ describe("hashSendRequest", () => {
     expect(canonicalJson(parsed)).not.toContain("category");
     expect(Object.hasOwn(parsed, "scheduled_at")).toBe(false);
     expect(canonicalJson(parsed)).not.toContain("scheduled_at");
+    expect(Object.hasOwn(parsed, "attachments")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("attachments");
   });
 
   test("is unchanged for requests without tracking, and covers the tracking given", () => {

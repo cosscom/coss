@@ -81,6 +81,8 @@ resets) are printed to the dashboard's server console in development.
   domains (Easy DKIM + a `send.` MAIL FROM subdomain); sandbox keys accept any `from`.
 - **Recipients & events** — each email has one recipient per distinct address, whose status follows delivery
   events: `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced`/`suppressed`/`failed`, `complained`.
+- **Attachments** — up to 20 base64 files per send (25 MB combined), inline images via `content_id` (`cid:`).
+  Only metadata is kept once the email is sent.
 - **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
   `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
@@ -172,7 +174,7 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    runs as (role, or credentials as a last resort).
    When upgrading an existing SES deployment, pause sends and domain changes, drain the SES event
    queue with the worker, then run bootstrap before resuming with the new application version.
-   For scheduled sends, first apply migration `0013_chubby_wilson_fisk` with `bun run db:migrate`.
+   For scheduled sends, first apply migration `0014_pretty_thunderbolts` with `bun run db:migrate`.
    Deploy the API and worker from the same release. Rerun bootstrap with the deployment's existing region, name and tenant prefix
    to update the attached `<name>-worker` policy with SES send permissions before starting the new
    worker. Bootstrap makes the updated policy version the default; existing attachments stay in place.

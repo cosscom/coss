@@ -157,6 +157,116 @@ describe("scheduled sends", () => {
     ).toMatchObject({ html, status: "sent", tracking: { opens: true, clicks: true } });
   });
 
+  test.each(["sent", "canceled", "sender_rejected", "all_suppressed"] as const)(
+    "retains scheduled attachment bytes, then purges them on %s",
+    async (outcome) => {
+      const tenant = await createTestTenant();
+      const { service, sandboxProvider, liveProvider } = fakeProviders();
+      const environment = outcome === "sender_rejected" ? tenant.production : tenant.development;
+      const from =
+        outcome === "sender_rejected"
+          ? await verifiedFrom(tenant.organization.id)
+          : "hello@example.com";
+      const { email } = await service.send({
+        environment: sendEnvironment(environment),
+        apiKeyId: null,
+        params: params({
+          from,
+          scheduled_at: inAnHour(),
+          attachments: [
+            {
+              filename: "note.txt",
+              content: Buffer.from("scheduled attachment").toString("base64"),
+            },
+          ],
+        }),
+      });
+      const stored = () =>
+        db
+          .select()
+          .from(schema.emailAttachment)
+          .where(eq(schema.emailAttachment.emailId, email.id));
+      expect((await stored())[0]?.content?.toString()).toBe("scheduled attachment");
+      expect(email.attachments[0]).toMatchObject({ filename: "note.txt", size: 20 });
+      expect(email.attachments[0]).not.toHaveProperty("content");
+      if (outcome === "canceled") {
+        await service.cancel({
+          organizationId: tenant.organization.id,
+          environmentId: environment.id,
+          emailId: email.id,
+        });
+      } else {
+        if (outcome === "sender_rejected") {
+          await db
+            .update(schema.domain)
+            .set({ status: "failed" })
+            .where(eq(schema.domain.organizationId, tenant.organization.id));
+        }
+        if (outcome === "all_suppressed") {
+          await addSuppression(
+            { organizationId: tenant.organization.id, environmentId: environment.id },
+            { address: "user@example.com", scope: "*" },
+          );
+        }
+        await service.dispatchDue({ now: later(), scope: scopeOf(tenant) });
+      }
+      expect((await stored())[0]?.content).toBeNull();
+      expect(
+        (
+          await getEmail({
+            organizationId: tenant.organization.id,
+            environmentId: environment.id,
+            id: email.id,
+          })
+        )?.status,
+      ).toBe(outcome === "sent" || outcome === "canceled" ? outcome : "failed");
+      expect(sandboxProvider.sent.length + liveProvider.sent.length).toBe(
+        outcome === "sent" ? 1 : 0,
+      );
+      if (outcome === "sent")
+        expect(sandboxProvider.sent[0]?.attachments[0]).toMatchObject({
+          filename: "note.txt",
+          size: 20,
+        });
+    },
+  );
+
+  test("bounds concurrent scheduled sends and stops between batches on shutdown", async () => {
+    const tenant = await createTestTenant();
+    const gated = gatedProvider("fake");
+    const service = createEmailService({
+      liveProvider: gated.provider,
+      sandboxProvider: gated.provider,
+      queue: memoryDispatchQueue(),
+    });
+    for (let i = 0; i < 6; i++) {
+      await service.send({
+        environment: sendEnvironment(tenant.development),
+        apiKeyId: null,
+        params: params({ scheduled_at: inAnHour() }),
+      });
+    }
+    const controller = new AbortController();
+    const dispatching = service.dispatchDue({
+      now: later(),
+      scope: scopeOf(tenant),
+      signal: controller.signal,
+    });
+    try {
+      await gated.called;
+      const deadline = Date.now() + 2000;
+      while (gated.sent.length < 5 && Date.now() < deadline) await Bun.sleep(10);
+      expect(gated.sent).toHaveLength(5);
+      controller.abort();
+    } finally {
+      gated.release();
+      await dispatching;
+    }
+    expect(gated.sent).toHaveLength(5);
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(1);
+    expect(gated.sent).toHaveLength(6);
+  });
+
   test("a retry with the same idempotency key replays the scheduled email", async () => {
     const tenant = await createTestTenant();
     const { service } = fakeProviders();

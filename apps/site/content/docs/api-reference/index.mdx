@@ -31,7 +31,7 @@ The key decides the environment: requests only see data from the key's own envir
 
 ## Conventions
 
-- Request and response bodies are JSON (`Content-Type: application/json`), up to 5 MB.
+- Request and response bodies are JSON (`Content-Type: application/json`). Requests are limited to 5 MB, except `POST /v1/emails`, which accepts up to 40 MB (at most 25 MB of decoded attachments).
 - Field names are `snake_case`; timestamps are ISO 8601 strings in UTC.
 - IDs are prefixed with their type: `email_…`, `evt_…`.
 - Every object has an `object` field naming its type (`"email"`, `"email_event"`, `"list"`).

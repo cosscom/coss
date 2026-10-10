@@ -141,6 +141,13 @@
               "$ref": "#/components/schemas/EmailRecipient"
             }
           },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailAttachment"
+            },
+            "description": "Attachment metadata. Content is never returned, and is discarded once sent."
+          },
           "sandbox": {
             "type": "boolean",
             "description": "True when sent from a sandbox environment (never delivered)."
@@ -184,6 +191,7 @@
           "category",
           "status",
           "recipients",
+          "attachments",
           "sandbox",
           "tracking",
           "created_at",
@@ -232,6 +240,7 @@
               "first_clicked_at": null,
               "last_clicked_at": null
             },
+            "attachments": [],
             "created_at": "2026-10-10T12:00:00.000Z",
             "sent_at": "2026-10-10T12:00:01.000Z",
             "scheduled_at": null
@@ -289,6 +298,39 @@
             "status": "delivered",
             "last_event_at": "2026-10-10T12:00:02.000Z"
           }
+        ]
+      },
+      "EmailAttachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "att_01k7c8m4q2f3e9v6t5r1n0p8yz"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "content_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set for inline attachments (`cid:` references)."
+          },
+          "size": {
+            "type": "integer",
+            "description": "Size in bytes."
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "content_type",
+          "content_id",
+          "size"
         ]
       },
       "EmailTracking": {
@@ -558,6 +600,14 @@
             "description": "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days ahead). A time that is not in the future sends immediately. Scheduled emails can be canceled until they are sent.",
             "example": "2026-10-11T09:00:00Z"
           },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SendEmailAttachment"
+            },
+            "maxItems": 20,
+            "description": "Up to 20 files, at most 25 MB combined."
+          },
           "tracking": {
             "$ref": "#/components/schemas/TrackingOptions"
           }
@@ -583,6 +633,36 @@
             "category": "onboarding"
           }
         ]
+      },
+      "SendEmailAttachment": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The file's bytes, base64-encoded."
+          },
+          "content_type": {
+            "type": "string",
+            "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+\\/[!#$%&'*+.^_`|~0-9A-Za-z-]+$",
+            "description": "Defaults from the filename's extension."
+          },
+          "content_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9!#$%&'*+\\-./=?^_`{|}~@]{1,100}$",
+            "description": "Makes the attachment inline: reference it from `html` as `<img src=\"cid:logo@acme\">`."
+          }
+        },
+        "required": [
+          "filename",
+          "content"
+        ],
+        "additionalProperties": false
       },
       "TrackingOptions": {
         "type": "object",
@@ -2084,7 +2164,7 @@
           "Emails"
         ],
         "summary": "Send an email",
-        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. With a future `scheduled_at` the email is stored with the status `scheduled` and sent at that time; the domain and the suppression list are checked again then. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to COSS redirects; the stored `html` stays as sent.",
+        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. With a future `scheduled_at` the email is stored with the status `scheduled` and sent at that time; the domain and the suppression list are checked again then. Attachments are base64-encoded; only metadata is kept after sending. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to COSS redirects; the stored `html` stays as sent.",
         "security": [
           {
             "bearerAuth": []
@@ -2239,7 +2319,7 @@
             }
           },
           "413": {
-            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "description": "The request body is larger than 40 MB (`payload_too_large`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

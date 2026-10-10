@@ -90,6 +90,7 @@ export const sampleEmail: Email = {
       last_event_at: "2026-10-09T12:00:01.000Z",
     },
   ],
+  attachments: [],
   sandbox: true,
   tracking: {
     opens: false,

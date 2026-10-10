@@ -9,6 +9,7 @@ import {
 import type { RateLimitRequest } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
@@ -57,13 +58,18 @@ export const sendEmailRoute = createRoute({
     "the status `suppressed`. With a future `scheduled_at` the email is stored with the status " +
     "`scheduled` and sent at that time; the domain and the suppression list are checked again " +
     "then. " +
+    "Attachments are base64-encoded; only metadata is kept after sending. " +
     "Recipients count against the organization's send quota (per " +
     "second and per day; sandbox environments have their own daily quota). " +
     "With open or click tracking on (the environment's settings, or " +
     "`tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to " +
     "COSS redirects; the stored `html` stays as sent.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ email: ["send"] }), rateLimit("api.send")],
+  middleware: [
+    requireApiKey({ email: ["send"] }),
+    limitBody(SEND_BODY_LIMIT_BYTES),
+    rateLimit("api.send"),
+  ] as const,
   request: {
     headers: SendEmailHeaders,
     body: { required: true, content: { "application/json": { schema: SendEmailRequest } } },
@@ -93,7 +99,7 @@ export const sendEmailRoute = createRoute({
         "(`request_in_progress`). Retry after `Retry-After` seconds.",
       { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
     ),
-    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    413: errorDoc("The request body is larger than 40 MB (`payload_too_large`)."),
     429: errorDoc(
       "Too many requests with this API key (`rate_limited`), or the email's recipients exceed " +
         "the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without " +

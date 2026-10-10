@@ -1,11 +1,22 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
+import {
+  insertAttachments,
+  loadOutboundAttachments,
+  prepareAttachments,
+  purgeAttachmentContent,
+} from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
-import type { EmailProvider, OutboundEmail, ProviderEvent } from "./provider.ts";
+import type {
+  EmailProvider,
+  OutboundAttachment,
+  OutboundEmail,
+  ProviderEvent,
+} from "./provider.ts";
 import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
 import { hashSendRequest } from "./request-hash.ts";
 import {
@@ -56,10 +67,13 @@ export type EmailService = {
 export type DispatchDueOptions = {
   now?: Date;
   limit?: number;
+  signal?: AbortSignal;
   scope?: { organizationIds: string[] };
 };
 
 const DISPATCH_DUE_LIMIT = 50;
+// At most five attachment payloads (up to 25 MB each) in memory at once.
+const DISPATCH_DUE_CONCURRENCY = 5;
 
 /** An idempotency key can be reused for a different request once its email is this old. */
 export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -84,7 +98,11 @@ function bareAddress(value: string): string {
 }
 
 /** The message for the provider, without the recipients COSS suppressed. */
-function toOutbound(row: EmailRow, suppressed: ReadonlySet<string>): OutboundEmail {
+function toOutbound(
+  row: EmailRow,
+  suppressed: ReadonlySet<string>,
+  attachments: OutboundAttachment[],
+): OutboundEmail {
   const keep = (list: string[]) => list.filter((value) => !suppressed.has(bareAddress(value)));
   return {
     emailId: row.id,
@@ -99,6 +117,7 @@ function toOutbound(row: EmailRow, suppressed: ReadonlySet<string>): OutboundEma
     text: row.text,
     headers: row.headers,
     tags: row.tags,
+    attachments,
   };
 }
 
@@ -146,14 +165,16 @@ function cossEvent(
 }
 
 /** The event COSS records when the provider rejects a send. */
-function failedEvent(row: EmailRow, provider: string): ProviderEvent {
+function failedEvent(
+  row: EmailRow,
+  provider: string,
+  failure = { code: "provider_error", message: "The email provider did not accept the email." },
+): ProviderEvent {
   return cossEvent(row, {
     type: "email.failed",
     providerEventType: "ProviderError",
     sourceId: provider,
-    data: {
-      failure: { code: "provider_error", message: "The email provider did not accept the email." },
-    },
+    data: { failure },
   });
 }
 
@@ -240,8 +261,24 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   async function complete(row: EmailRow, provider: EmailProvider): Promise<void> {
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
-    const message = toOutbound(row, await suppressedAddresses(row));
-    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+    const attachments = await loadOutboundAttachments(row);
+    const message = toOutbound(row, await suppressedAddresses(row), attachments ?? []);
+    if (attachments === null) {
+      // Content is only purged once an email leaves `queued`, so this means a bug elsewhere:
+      // never send the email without the attachments it was requested with.
+      outcome = {
+        status: "failed",
+        provider: provider.name,
+        errorCode: "attachments_unavailable",
+        errorMessage: "The email's attachments are no longer stored.",
+      };
+      events = [
+        failedEvent(row, provider.name, {
+          code: "attachments_unavailable",
+          message: "The email's attachments are no longer stored.",
+        }),
+      ];
+    } else if (message.to.length + message.cc.length + message.bcc.length === 0) {
       // Every recipient is suppressed: nothing to hand over. Each one already has its
       // `email.suppressed` event, so no `email.failed` event is added.
       outcome = {
@@ -287,6 +324,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ),
         )
         .returning({ id: email.id });
+      // Either way the email has left `queued`, so its attachments are no longer needed.
+      await purgeAttachmentContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
       for (const event of events) await recordProviderEvent(tx, event);
@@ -326,6 +365,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             .where(stillDue)
             .returning({ id: email.id });
           if (!failed) return;
+          await purgeAttachmentContent(tx, row);
           await recordProviderEvent(
             tx,
             cossEvent(row, {
@@ -395,15 +435,19 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       )
       .orderBy(asc(email.scheduledAt))
       .limit(opts.limit ?? DISPATCH_DUE_LIMIT);
-    const results = await Promise.allSettled(
-      due.map((row) => dispatchScheduled(row.email, row.mode === "sandbox", now)),
-    );
-    for (const [index, result] of results.entries()) {
-      if (result.status === "rejected") {
-        console.error(
-          `[email] dispatching scheduled ${due[index]?.email.id} failed:`,
-          result.reason,
-        );
+    for (let offset = 0; offset < due.length; offset += DISPATCH_DUE_CONCURRENCY) {
+      if (opts.signal?.aborted) break;
+      const batch = due.slice(offset, offset + DISPATCH_DUE_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map((row) => dispatchScheduled(row.email, row.mode === "sandbox", now)),
+      );
+      for (const [index, result] of results.entries()) {
+        if (result.status === "rejected") {
+          console.error(
+            `[email] dispatching scheduled ${batch[index]?.email.id} failed:`,
+            result.reason,
+          );
+        }
       }
     }
     return due.length;
@@ -525,6 +569,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       idempotencyKey,
       requestHash,
     } satisfies typeof email.$inferInsert;
+    // Decoded once, outside the (retried) insert transaction.
+    const attachments = prepareAttachments(params);
 
     if (!sandbox) {
       try {
@@ -564,6 +610,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         row.category,
       );
       await tx.insert(emailRecipient).values(recipients);
+      await insertAttachments(tx, row, attachments);
       if (row.status === "scheduled") {
         await recordProviderEvent(
           tx,
@@ -682,6 +729,7 @@ export async function cancelScheduledEmail(input: {
       )
       .returning({ id: email.id });
     if (!canceled) return;
+    await purgeAttachmentContent(tx, row);
     await recordProviderEvent(
       tx,
       cossEvent(row, {

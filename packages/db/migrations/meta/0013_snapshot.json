@@ -1,5 +1,5 @@
 {
-  "id": "c1c4932e-cb60-4185-af1f-450295834853",
+  "id": "5b91f325-e020-4edd-939b-45fe49daf99e",
   "prevId": "b89650c8-a133-4f52-a488-e1c3ef237fbb",
   "version": "7",
   "dialect": "postgresql",
@@ -1691,12 +1691,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "scheduled_at": {
-          "name": "scheduled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1717,22 +1711,6 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "email_scheduled_at_idx": {
-          "name": "email_scheduled_at_idx",
-          "columns": [
-            {
-              "expression": "scheduled_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"email\".\"scheduled_at\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1794,6 +1772,111 @@
           "columns": [
             "id",
             "organization_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.email_attachment": {
+      "name": "email_attachment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_id": {
+          "name": "email_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "filename": {
+          "name": "filename",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "email_attachment_email_fk": {
+          "name": "email_attachment_email_fk",
+          "tableFrom": "email_attachment",
+          "tableTo": "email",
+          "columnsFrom": [
+            "email_id",
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "email_attachment_email_position_unique": {
+          "name": "email_attachment_email_position_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email_id",
+            "position"
           ]
         }
       },
@@ -3414,8 +3497,6 @@
         "email.complained",
         "email.failed",
         "email.suppressed",
-        "email.scheduled",
-        "email.canceled",
         "email.opened",
         "email.clicked"
       ]
@@ -3440,8 +3521,7 @@
         "bounced",
         "suppressed",
         "complained",
-        "failed",
-        "canceled"
+        "failed"
       ]
     },
     "public.email_status": {
@@ -3450,9 +3530,7 @@
       "values": [
         "queued",
         "sent",
-        "failed",
-        "scheduled",
-        "canceled"
+        "failed"
       ]
     },
     "public.email_suppression_reason": {

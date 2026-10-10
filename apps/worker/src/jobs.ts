@@ -52,7 +52,8 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "scheduled-emails",
       intervalMs: 5000,
       run: async () =>
-        (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH })) === SCHEDULED_BATCH,
+        (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
+        SCHEDULED_BATCH,
     }),
     startLoop({
       name: "stale-claims",

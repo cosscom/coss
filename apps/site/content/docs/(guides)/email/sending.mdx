@@ -53,7 +53,8 @@ if (scheduled) {
 Canceling changes the status to `canceled` and emits `email.canceled`; repeating the cancellation
 returns the same email. Once dispatch starts, cancellation returns `422 email_not_cancelable`.
 Scheduling emits `email.scheduled`. Both events describe the whole email.
-Suspending an organization holds its scheduled emails until the suspension is lifted.
+Suspending an organization holds its scheduled emails until the suspension is lifted. Attachment
+bytes remain stored while an email is scheduled and are deleted when it is sent, fails, or is canceled.
 
 ## Addresses
 

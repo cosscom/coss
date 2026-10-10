@@ -2,6 +2,11 @@
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import {
+  attachmentsByEmail,
+  type EmailAttachmentMetadata,
+  toAttachmentObject,
+} from "./attachments.ts";
 import type { EmailEventOutput, EmailLinkOutput, EmailObjectOutput } from "./schemas.ts";
 
 export type EmailRow = typeof schema.email.$inferSelect;
@@ -20,7 +25,11 @@ const MAX_LINKS = 1000;
 
 export function toEmailObject(
   row: EmailRow,
-  opts: { sandbox: boolean; recipients: EmailRecipientRow[] },
+  opts: {
+    sandbox: boolean;
+    recipients: EmailRecipientRow[];
+    attachments: EmailAttachmentMetadata[];
+  },
 ): EmailObjectOutput {
   return {
     object: "email",
@@ -43,6 +52,7 @@ export function toEmailObject(
       status: recipient.status,
       last_event_at: recipient.lastEventAt?.toISOString() ?? null,
     })),
+    attachments: opts.attachments.map(toAttachmentObject),
     sandbox: opts.sandbox,
     tracking: {
       opens: row.trackOpens,
@@ -108,19 +118,21 @@ export async function recipientsByEmail(
   return grouped;
 }
 
-/** Wire objects for rows of one organization, with their recipients. */
+/** Wire objects for rows of one organization, with their recipients and attachment metadata. */
 export async function toEmailObjects(
   organizationId: string,
   rows: { email: EmailRow; sandbox: boolean }[],
 ): Promise<EmailObjectOutput[]> {
-  const recipients = await recipientsByEmail(
-    organizationId,
-    rows.map((row) => row.email.id),
-  );
+  const ids = rows.map((row) => row.email.id);
+  const [recipients, attachments] = await Promise.all([
+    recipientsByEmail(organizationId, ids),
+    attachmentsByEmail(organizationId, ids),
+  ]);
   return rows.map((row) =>
     toEmailObject(row.email, {
       sandbox: row.sandbox,
       recipients: recipients.get(row.email.id) ?? [],
+      attachments: attachments.get(row.email.id) ?? [],
     }),
   );
 }
