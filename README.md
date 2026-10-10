@@ -47,6 +47,9 @@ bun run db:seed                  # creates demo@coss.local (admin), org "acme" w
 bun run dev                      # dashboard http://localhost:3000 · API http://localhost:3001 · worker
 ```
 
+`db:migrate` also installs the `pgboss` schema: sends return `202` with `status: "queued"` and the worker
+dispatches them moments later, so keep the worker running.
+
 Send an email with the key printed by the seed:
 
 ```sh

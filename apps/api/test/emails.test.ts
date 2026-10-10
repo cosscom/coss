@@ -1,5 +1,6 @@
 import { describe, expect, spyOn, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { EmailError } from "@coss/email";
 import type { EmailObjectOutput } from "@coss/email/schemas";
 import { createTestTenant } from "@coss/tenancy/testing";
 import {
@@ -10,13 +11,12 @@ import {
   getEmailById,
   REQUEST_ID,
   sendEmail,
-  setEmailStatus,
 } from "./helpers.ts";
 
 describe("POST /v1/emails", () => {
-  test("a sandbox key sends through the sandbox provider", async () => {
+  test("a sandbox send is accepted queued and dispatched through the sandbox provider", async () => {
     const tenant = await createTestTenant();
-    const { app, liveProvider, sandboxProvider } = createTestApp();
+    const { app, liveProvider, sandboxProvider, dispatch } = createTestApp();
 
     const res = await sendEmail(
       app,
@@ -24,7 +24,7 @@ describe("POST /v1/emails", () => {
       emailBody({ to: ["a@example.com", "b@example.com"], headers: { "X-Campaign": "fall" } }),
     );
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
     expect(res.headers.get("x-request-id")).toMatch(REQUEST_ID);
     expect(res.headers.get("idempotent-replayed")).toBeNull();
     const email = (await res.json()) as EmailObjectOutput;
@@ -37,26 +37,35 @@ describe("POST /v1/emails", () => {
       text: "Hello!",
       html: null,
       headers: { "x-campaign": "fall" },
-      status: "sent",
+      status: "queued",
       sandbox: true,
+      sent_at: null,
     });
     expect(email.id).toStartWith("email_");
-    expect(email.sent_at).not.toBeNull();
+    // The response never waits for the provider.
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    await dispatch();
+    expect(await (await getEmailById(app, tenant.sandboxKey, email.id)).json()).toMatchObject({
+      status: "sent",
+      sent_at: expect.any(String),
+    });
     expect(sandboxProvider.sent.map((m) => m.emailId)).toEqual([email.id]);
     expect(liveProvider.sent).toHaveLength(0);
   });
 
-  test("a live key sends through the live provider", async () => {
+  test("a live send is dispatched through the live provider", async () => {
     const tenant = await createTestTenant();
-    const { app, liveProvider, sandboxProvider } = createTestApp();
+    const { app, liveProvider, sandboxProvider, dispatch } = createTestApp();
 
     const from = await domainFrom(tenant.organization.id);
 
     const res = await sendEmail(app, tenant.liveKey, emailBody({ from }));
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
     const email = (await res.json()) as EmailObjectOutput;
-    expect(email).toMatchObject({ status: "sent", sandbox: false });
+    expect(email).toMatchObject({ status: "queued", sandbox: false });
+    await dispatch();
     expect(liveProvider.sent.map((m) => m.emailId)).toEqual([email.id]);
     expect(sandboxProvider.sent).toHaveLength(0);
   });
@@ -190,7 +199,7 @@ describe("POST /v1/emails", () => {
 
   test("a repeated Idempotency-Key replays the original email", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const headers = { "Idempotency-Key": `welcome-${crypto.randomUUID()}` };
 
     const first = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
@@ -202,21 +211,28 @@ describe("POST /v1/emails", () => {
       headers,
     );
 
-    expect(first.status).toBe(200);
-    expect(second.status).toBe(200);
+    expect(first.status).toBe(202);
+    expect(second.status).toBe(202);
     expect(first.headers.get("idempotent-replayed")).toBeNull();
     expect(second.headers.get("idempotent-replayed")).toBe("true");
     const original = (await first.json()) as EmailObjectOutput;
+    // Still queued: a retry before dispatch gets the queued email, not a 409.
     expect(await second.json()).toEqual(original);
+
+    await dispatch();
+    const third = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+    expect(third.status).toBe(202);
+    expect(third.headers.get("idempotent-replayed")).toBe("true");
+    expect(await third.json()).toMatchObject({ id: original.id, status: "sent" });
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
   test("an Idempotency-Key reused with a different body is a 422 idempotency_key_reused", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, queue } = createTestApp();
     const headers = { "Idempotency-Key": crypto.randomUUID() };
 
-    expect((await sendEmail(app, tenant.sandboxKey, emailBody(), headers)).status).toBe(200);
+    expect((await sendEmail(app, tenant.sandboxKey, emailBody(), headers)).status).toBe(202);
     const res = await sendEmail(
       app,
       tenant.sandboxKey,
@@ -230,19 +246,25 @@ describe("POST /v1/emails", () => {
       code: "idempotency_key_reused",
       param: "Idempotency-Key",
     });
-    expect(sandboxProvider.sent).toHaveLength(1);
+    expect(queue.jobs).toHaveLength(1);
   });
 
-  test("an Idempotency-Key whose first request is still running is a 409 with Retry-After", async () => {
+  test("request_in_progress is a 409 with Retry-After", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
-    const headers = { "Idempotency-Key": crypto.randomUUID() };
-    const first = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
-    const { id } = (await first.json()) as EmailObjectOutput;
-    // Simulate the first request still being between insert and provider result.
-    await setEmailStatus(id, "queued");
+    const { app } = createTestApp({
+      emailService: {
+        send: async () => {
+          throw new EmailError("request_in_progress", "This idempotency key is busy.");
+        },
+        dispatch: async () => {
+          throw new Error("unused");
+        },
+      },
+    });
 
-    const res = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody(), {
+      "Idempotency-Key": crypto.randomUUID(),
+    });
 
     expect(res.status).toBe(409);
     expect(res.headers.get("retry-after")).toBe("1");
@@ -250,7 +272,6 @@ describe("POST /v1/emails", () => {
       type: "idempotency_error",
       code: "request_in_progress",
     });
-    expect(sandboxProvider.sent).toHaveLength(1);
   });
 
   test("idempotency keys are scoped to the environment", async () => {
@@ -267,8 +288,8 @@ describe("POST /v1/emails", () => {
       headers,
     );
 
-    expect(sandbox.status).toBe(200);
-    expect(live.status).toBe(200);
+    expect(sandbox.status).toBe(202);
+    expect(live.status).toBe(202);
     expect(live.headers.get("idempotent-replayed")).toBeNull();
   });
 

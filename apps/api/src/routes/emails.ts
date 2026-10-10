@@ -20,7 +20,8 @@ const SendEmailHeaders = z.object({
     .meta({
       description:
         "Makes retries safe: a repeated request with the same key and body returns the original " +
-        `email instead of sending again (for 24 hours). 1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
+        "email (with its current status) instead of sending again, for 24 hours. " +
+        `1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
       example: "welcome-user-123",
     }),
 });
@@ -39,7 +40,9 @@ export const sendEmailRoute = createRoute({
   tags: ["Emails"],
   summary: "Send an email",
   description:
-    "Sends an email from the API key's environment. Live (`coss_live_…`) keys must send from a " +
+    'Queues an email from the API key\'s environment and returns it with `status: "queued"`; ' +
+    "it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` " +
+    "or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a " +
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
     "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
     "suppression list (for every email, or for the email's `category`) are skipped and get " +
@@ -51,8 +54,10 @@ export const sendEmailRoute = createRoute({
     body: { required: true, content: { "application/json": { schema: SendEmailRequest } } },
   },
   responses: {
-    200: {
-      description: "The email and its delivery status.",
+    202: {
+      description:
+        "The email, accepted for delivery (`queued`). A replay returns the original email with " +
+        "its current status.",
       headers: {
         "X-Request-Id": requestIdHeader,
         "Idempotent-Replayed": {
@@ -69,8 +74,8 @@ export const sendEmailRoute = createRoute({
     ),
     ...commonErrors,
     409: errorDoc(
-      "A request with this `Idempotency-Key` is still in progress (`request_in_progress`). " +
-        "Retry after `Retry-After` seconds.",
+      "Requests with this `Idempotency-Key` are racing for an expired key " +
+        "(`request_in_progress`). Retry after `Retry-After` seconds.",
       { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
     ),
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
@@ -160,7 +165,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         idempotencyKey,
       });
       if (replayed) c.header("Idempotent-Replayed", "true");
-      return c.json(email, 200);
+      return c.json(email, 202);
     },
     // Replaces the default hook for this route: a bad Idempotency-Key is a 400, not a 422.
     (result) => {

@@ -140,6 +140,8 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
+    index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],

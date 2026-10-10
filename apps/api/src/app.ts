@@ -14,8 +14,8 @@ import { validationHook } from "./validation.ts";
 export const BODY_LIMIT_BYTES = 5 * 1024 * 1024;
 
 export type CreateAppOptions = {
-  /** Defaults to the fake provider for both live and sandbox environments. */
-  emailService?: EmailService;
+  /** Sends store the email and enqueue its dispatch (`createEmailService`). */
+  emailService: EmailService;
   /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
   domainDeps?: DomainDeps;
   /**
@@ -32,10 +32,9 @@ export type CreateAppOptions = {
  * create as many instances as they need and call `app.request()`.
  */
 export function createApp(opts: CreateAppOptions) {
-  // Cheap (two in-memory fakes), and only used for whichever dependency was not injected.
-  const fallback = createDefaultEmailRuntime();
-  const emailService = opts.emailService ?? fallback.emailService;
-  const domainDeps = opts.domainDeps ?? fallback.domainDeps;
+  const { emailService } = opts;
+  // Cheap (in-memory fakes), and only used when no domain dependencies were injected.
+  const domainDeps = opts.domainDeps ?? createDefaultEmailRuntime().domainDeps;
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 

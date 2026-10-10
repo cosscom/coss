@@ -96,7 +96,7 @@ describe("authentication", () => {
       Authorization: `bearer ${tenant.sandboxKey}`,
     });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(202);
   });
 
   test("authentication runs before body validation (401 wins over 422)", async () => {

@@ -1,5 +1,11 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
-import { type DomainDeps, recheckDueDomains, sweepStaleClaims } from "@coss/email";
+import {
+  type DomainDeps,
+  type EmailDispatchQueue,
+  recheckDueDomains,
+  requeueUnclaimedEmails,
+  sweepStaleClaims,
+} from "@coss/email";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
@@ -10,6 +16,8 @@ const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 
 export type WorkerDeps = {
+  /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
+  dispatchQueue: EmailDispatchQueue;
   domains: DomainDeps;
   webhooks: WebhookDeliveryDeps;
   /** Only with `EMAIL_PROVIDER=ses`. */
@@ -34,6 +42,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
+    }),
+    startLoop({
+      name: "requeue-unclaimed",
+      intervalMs: 60_000,
+      // Never "busy": emails waiting behind a backlog stay unclaimed, and rescanning them at once
+      // would only spin.
+      run: () => requeueUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH }),
     }),
   ];
   const ses = deps.sesEvents;

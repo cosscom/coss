@@ -1,17 +1,23 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { ingestProviderEvents } from "../src/events.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
 import { createEmailService } from "../src/service.ts";
-import { STALE_CLAIM_MS, sweepStaleClaims } from "../src/sweeps.ts";
+import {
+  requeueUnclaimedEmails,
+  STALE_CLAIM_MS,
+  sweepStaleClaims,
+  UNCLAIMED_REQUEUE_MS,
+} from "../src/sweeps.ts";
+import { dispatchingEmailService, memoryDispatchQueue } from "../src/testing.ts";
 import { gatedProvider, params, sendEnvironment } from "./helpers.ts";
 
 /** An email claimed by a dispatcher that never came back, as if its process died. */
 async function interruptedEmail(tenant: TestTenant) {
   const gated = gatedProvider("fake");
-  const service = createEmailService({
+  const service = dispatchingEmailService({
     liveProvider: gated.provider,
     sandboxProvider: gated.provider,
   });
@@ -110,5 +116,51 @@ describe("sweepStaleClaims", () => {
       }),
     ).toBe(1);
     release();
+  });
+});
+
+describe("requeueUnclaimedEmails", () => {
+  test("re-enqueues old unclaimed emails only", async () => {
+    const tenant = await createTestTenant();
+    const gated = gatedProvider("fake");
+    gated.release();
+    const sending = memoryDispatchQueue();
+    const service = createEmailService({
+      liveProvider: gated.provider,
+      sandboxProvider: gated.provider,
+      queue: sending,
+    });
+    const send = async () =>
+      (
+        await service.send({
+          environment: sendEnvironment(tenant.development),
+          apiKeyId: null,
+          params: params(),
+        })
+      ).email.id;
+    const lost = await send();
+    const dispatched = await send();
+    await service.dispatch({ organizationId: tenant.organization.id, emailId: dispatched });
+    const interrupted = await interruptedEmail(tenant);
+    const claimed = interrupted.emailId;
+    const recent = await send();
+    await db
+      .update(schema.email)
+      .set({ createdAt: sql`now() - interval '1 hour'` })
+      .where(inArray(schema.email.id, [lost, dispatched, claimed]));
+
+    const sweep = memoryDispatchQueue();
+    const scope = scopeOf(tenant);
+    expect(await requeueUnclaimedEmails(sweep, { scope })).toBe(1);
+    expect(sweep.jobs).toEqual([{ organizationId: tenant.organization.id, emailId: lost }]);
+
+    await sweep.drain(service);
+    expect(gated.sent.map((message) => message.emailId)).toContain(lost);
+    expect(await requeueUnclaimedEmails(sweep, { scope })).toBe(0);
+
+    const later = new Date(Date.now() + UNCLAIMED_REQUEUE_MS + 1000);
+    expect(await requeueUnclaimedEmails(sweep, { scope, now: later })).toBe(1);
+    expect(sweep.jobs.map((job) => job.emailId)).toEqual([recent]);
+    interrupted.release();
   });
 });

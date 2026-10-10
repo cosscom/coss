@@ -1,3 +1,5 @@
+// Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
+export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
   checkRecords,
   type DnsResolver,
@@ -152,4 +154,9 @@ export {
   type SuppressionRow,
   toSuppressionObject,
 } from "./suppressions.ts";
-export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";
+export {
+  requeueUnclaimedEmails,
+  STALE_CLAIM_MS,
+  sweepStaleClaims,
+  UNCLAIMED_REQUEUE_MS,
+} from "./sweeps.ts";

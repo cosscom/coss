@@ -26,7 +26,7 @@ function clientFor(app: TestApp, apiKey: string, options: Partial<CossOptions> =
 describe("coss SDK against the API", () => {
   test("send then get round-trips the same email", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const sent = await coss.email.send({
@@ -46,19 +46,23 @@ describe("coss SDK against the API", () => {
       cc: ["copy@example.com"],
       headers: { "x-campaign": "fall" },
       tags: [{ name: "category", value: "welcome" }],
-      status: "sent",
+      status: "queued",
       sandbox: true,
     });
     if (!sent.data) throw new Error("send failed");
 
     const fetched = await coss.email.get(sent.data.id);
     expect(fetched).toEqual({ data: sent.data, error: null });
+
+    await dispatch();
+    const dispatched = await coss.email.get(sent.data.id);
+    expect(dispatched.data).toMatchObject({ id: sent.data.id, status: "sent" });
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
   test("recipients and events report simulated delivery outcomes", async () => {
     const tenant = await createTestTenant();
-    const { app } = createTestApp();
+    const { app, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const sent = await coss.email.send({
@@ -68,7 +72,9 @@ describe("coss SDK against the API", () => {
       text: "Hi",
     });
     if (!sent.data) throw new Error("send failed");
-    expect(sent.data.recipients.map((r) => [r.address, r.status])).toEqual([
+    await dispatch();
+    const fetched = await coss.email.get(sent.data.id);
+    expect(fetched.data?.recipients.map((r) => [r.address, r.status])).toEqual([
       ["success@simulator.amazonses.com", "delivered"],
       ["bounce@simulator.amazonses.com", "bounced"],
     ]);
@@ -84,7 +90,7 @@ describe("coss SDK against the API", () => {
 
   test("an SDK retry with the same idempotency key does not send twice", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
     const params = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "Hi" };
     const idempotencyKey = crypto.randomUUID();
@@ -93,6 +99,7 @@ describe("coss SDK against the API", () => {
     const second = await coss.email.send(params, { idempotencyKey });
 
     expect(second.data?.id).toBe(first.data?.id ?? "missing");
+    await dispatch();
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
@@ -157,7 +164,7 @@ describe("coss SDK against the API", () => {
 
   test("suppressions: add, check, list, get, remove, and a category send skips the address", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
+    const { app, sandboxProvider, dispatch } = createTestApp();
     const coss = clientFor(app, tenant.sandboxKey);
 
     const added = await coss.email.suppressions.add({
@@ -210,7 +217,14 @@ describe("coss SDK against the API", () => {
       category: "marketing",
     });
     expect(skipped.data?.category).toBe("marketing");
+    // Suppressed at send time, before dispatch.
     expect(skipped.data?.recipients.map((r) => [r.address, r.status])).toEqual([
+      ["jane@example.com", "suppressed"],
+      ["joe@example.com", "queued"],
+    ]);
+    await dispatch();
+    const dispatched = await coss.email.get(skipped.data?.id ?? "");
+    expect(dispatched.data?.recipients.map((r) => [r.address, r.status])).toEqual([
       ["jane@example.com", "suppressed"],
       ["joe@example.com", "delivered"],
     ]);

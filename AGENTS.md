@@ -12,11 +12,11 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 |---|---|---|
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
-| `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), webhook deliveries, domain re-checks, stale-claim/requeue sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `globals.css`. |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
@@ -39,7 +39,8 @@ bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next 
 bun run test                # migrates TEST_DATABASE_URL, then `bun test` in every workspace (uncached; SDK built first)
 bun run build               # next build + SDK build (tsdown, publint, attw)
 bun run db:generate         # drizzle-kit generate after editing packages/db/src/schema/*.ts (or after auth:generate)
-bun run db:migrate          # apply migrations to DATABASE_URL (db:migrate:test → TEST_DATABASE_URL); db:studio
+bun run db:migrate          # apply migrations + install/upgrade the pg-boss schema on DATABASE_URL
+                            #   (db:migrate:test → TEST_DATABASE_URL); db:studio
 bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after changing Better Auth plugins/options,
                             #   then bun run db:generate && bun run db:migrate
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
@@ -109,7 +110,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 
 - `createApp(opts)` (`src/app.ts`) is side-effect free; services are injected via `CreateAppOptions` and `src/index.ts`
   wires env (`webhookDeps` is required — a throwaway secrets key would make the endpoints it creates
-  undeliverable; `emailService`/`domainDeps` default to the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
+  undeliverable; `emailService` is required — `src/index.ts` builds it on the pg-boss queue; `domainDeps` defaults to
+  the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
   response carries a server-generated `X-Request-Id: req_…` (client values are ignored).
 - Errors are always the envelope `{ error: { type, code, message, param?, issues?, request_id } }`, built only by
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
@@ -172,9 +174,12 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   `test/setup.ts`, or the tests hit the dev database.
 - Tests never truncate; every test creates its own uniquely named fixtures: `createTestTenant()` (owner, org, project,
   `production`/`development`, `liveKey`/`sandboxKey`), `createTestUser()`, `addMember()` from `@coss/tenancy/testing`;
-  `uniqueSuffix()` from `@coss/db/testing`. API: `createTestApp()` + `errorOf(res)` (`apps/api/test/helpers.ts`). Email:
+  `uniqueSuffix()` from `@coss/db/testing`. API: `createTestApp()` (sends only enqueue; its `dispatch()` runs the queued
+  jobs) + `errorOf(res)` (`apps/api/test/helpers.ts`). Email: `memoryDispatchQueue()` (records jobs; `drain(service)`
+  dispatches them), `dispatchingEmailService()` (send + dispatch in one call, for tests about what happens after dispatch),
   `FakeEmailProvider({ log: false, fail })`, `gatedProvider()` for races, `createVerifiedDomain(orgId)` (live sends need
-  one), `FakeSesApi`, `fakeDnsResolver()` from `@coss/email/testing`. Webhooks: `webhookReceiver()` (local server),
+  one), `FakeSesApi`, `fakeDnsResolver()` from `@coss/email/testing`. Real pg-boss tests use their own queue name
+  (`packages/email/test/dispatch.test.ts`). Webhooks: `webhookReceiver()` (local server),
   `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Worker-style scans take `scope: { organizationIds }`
   and `now` — always pass `scope` in tests (the test DB is shared and never truncated). Session-bound Better Auth calls: sign in with
   `auth.api.signInEmail({ returnHeaders: true })` and forward the cookie (`packages/tenancy/test/hardening.test.ts`).
@@ -257,11 +262,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
+  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `requeueUnclaimedEmails`
+  (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/ui/*`. `@coss/webhooks` and `@coss/email/{runtime,ses}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/ui/*`. `@coss/webhooks`, `@coss/db/jobs` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -309,9 +315,13 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 
 ## Known limitations (v0)
 
-- Sends are synchronous. If the process dies after `dispatch` claims an email, the row stays `queued` until the
-  worker's stale-claim sweep (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late
-  SES `Send` event still repairs it); until then retries with the same `Idempotency-Key` get 409 `request_in_progress`.
+- Sends are asynchronous: `POST /v1/emails` stores the email and its `email-dispatch` pg-boss job in one transaction
+  and returns 202 `queued`; the worker runs `dispatch`, which claims the email (sets `provider`) before calling the
+  provider, so a job that runs twice never sends twice. Retries with the same `Idempotency-Key` replay the email in its
+  current state (queued included). If a worker dies after the claim, the row stays `queued` until the stale-claim sweep
+  (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late SES `Send` event still
+  repairs it); an email still unclaimed after 10 min (its job exhausted its retries) is re-enqueued. Sends need the
+  worker running.
 - Webhook deliveries are not ordered (use `data.occurred_at`; SES itself may publish a complaint before the
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
@@ -321,7 +331,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
 domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
-rate limiting, async dispatch, org settings,
+rate limiting, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.
 

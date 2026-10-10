@@ -22,8 +22,7 @@ import { DomainError, EmailError } from "../src/errors.ts";
 import { type IdentityProvider, IdentityTakenError } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
-import { createEmailService } from "../src/service.ts";
-import { createVerifiedDomain, fakeDnsResolver } from "../src/testing.ts";
+import { createVerifiedDomain, dispatchingEmailService, fakeDnsResolver } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 const uniqueName = () => `t-${uniqueSuffix()}.coss.test`;
@@ -434,7 +433,7 @@ describe("live sends", () => {
     const tenant = await createTestTenant();
     const organizationId = tenant.organization.id;
     const provider = new FakeEmailProvider({ log: false });
-    const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+    const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
     const environment = sendEnvironment(tenant.production);
 
     await expectError(

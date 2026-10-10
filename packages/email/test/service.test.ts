@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { EmailError } from "../src/errors.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { createEmailService, IDEMPOTENCY_KEY_TTL_MS } from "../src/service.ts";
+import { dispatchingEmailService, memoryDispatchQueue } from "../src/testing.ts";
 import { gatedProvider, params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 async function loadRow(id: string) {
@@ -15,13 +16,16 @@ async function loadRow(id: string) {
   return row;
 }
 
+/** A service whose sends only enqueue (`queue.drain` dispatches them, like the worker). */
 function fakeProviders() {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
+  const queue = memoryDispatchQueue();
   return {
     liveProvider,
     sandboxProvider,
-    service: createEmailService({ liveProvider, sandboxProvider }),
+    queue,
+    service: createEmailService({ liveProvider, sandboxProvider, queue }),
   };
 }
 
@@ -36,9 +40,9 @@ async function expectEmailError(promise: Promise<unknown>, code: EmailError["cod
 }
 
 describe("send", () => {
-  test("stores the email, sends it and records the provider message id", async () => {
+  test("stores the email queued and enqueues its dispatch without calling the provider", async () => {
     const tenant = await createTestTenant();
-    const { service, sandboxProvider } = fakeProviders();
+    const { service, queue, sandboxProvider } = fakeProviders();
     const apiKeyId = newId("key");
 
     const { email, replayed } = await service.send({
@@ -60,24 +64,36 @@ describe("send", () => {
       text: "Hello!",
       headers: { "x-campaign": "fall" },
       tags: [],
-      status: "sent",
+      status: "queued",
+      recipients: [
+        { address: "user@example.com", type: "to", status: "queued" },
+        { address: "copy@example.com", type: "cc", status: "queued" },
+      ],
       sandbox: true,
+      sent_at: null,
     });
     expect(email.id).toStartWith("email_");
     expect(Date.parse(email.created_at)).not.toBeNaN();
-    expect(Date.parse(email.sent_at ?? "")).not.toBeNaN();
-
-    const row = await loadRow(email.id);
-    expect(row).toMatchObject({
+    expect(await loadRow(email.id)).toMatchObject({
       organizationId: tenant.organization.id,
       projectId: tenant.project.id,
       environmentId: tenant.development.id,
       apiKeyId,
+      status: "queued",
+      provider: null,
+      idempotencyKey: null,
+      requestHash: null,
+    });
+    expect(queue.jobs).toEqual([{ organizationId: tenant.organization.id, emailId: email.id }]);
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    await queue.drain(service);
+    const row = await loadRow(email.id);
+    expect(row).toMatchObject({
       status: "sent",
       provider: "fake",
       errorCode: null,
-      idempotencyKey: null,
-      requestHash: null,
+      sentAt: expect.any(Date),
     });
     expect(row.providerMessageId).toMatch(/^fake_[0-9a-f-]{36}$/);
     expect(sandboxProvider.sent).toHaveLength(1);
@@ -94,7 +110,7 @@ describe("send", () => {
     const live = gatedProvider("live-test");
     live.release();
     const sandboxProvider = new FakeEmailProvider({ log: false });
-    const service = createEmailService({ liveProvider: live.provider, sandboxProvider });
+    const service = dispatchingEmailService({ liveProvider: live.provider, sandboxProvider });
 
     const sandboxed = await service.send({
       environment: sendEnvironment(tenant.development),
@@ -122,7 +138,7 @@ describe("send", () => {
   test("records provider failures on the email", async () => {
     const tenant = await createTestTenant();
     const failing = new FakeEmailProvider({ log: false, fail: () => true });
-    const service = createEmailService({ liveProvider: failing, sandboxProvider: failing });
+    const service = dispatchingEmailService({ liveProvider: failing, sandboxProvider: failing });
 
     const { email } = await service.send({
       environment: sendEnvironment(tenant.development),
@@ -146,7 +162,7 @@ describe("send", () => {
 describe("idempotency", () => {
   test("replays the same request without sending again", async () => {
     const tenant = await createTestTenant();
-    const { service, sandboxProvider } = fakeProviders();
+    const { service, queue, sandboxProvider } = fakeProviders();
     const environment = sendEnvironment(tenant.development);
     const idempotencyKey = `key-${uniqueSuffix()}`;
 
@@ -166,7 +182,21 @@ describe("idempotency", () => {
 
     expect(first.replayed).toBe(false);
     expect(second.replayed).toBe(true);
+    // A queued email replays as queued (no 409 while it waits for the worker).
     expect(second.email).toEqual(first.email);
+    expect(second.email.status).toBe("queued");
+    expect(queue.jobs).toHaveLength(1);
+
+    // Once dispatched, a replay returns the email's current state.
+    await queue.drain(service);
+    const third = await service.send({
+      environment,
+      apiKeyId: null,
+      params: params({ to: "user@example.com", headers: { "X-A": "1" } }),
+      idempotencyKey,
+    });
+    expect(third).toMatchObject({ replayed: true, email: { id: first.email.id, status: "sent" } });
+    expect(queue.jobs).toHaveLength(0);
     expect(sandboxProvider.sent).toHaveLength(1);
     expect(await loadRow(first.email.id)).toMatchObject({
       idempotencyKey,
@@ -193,28 +223,26 @@ describe("idempotency", () => {
     expect(error.status).toBe(422);
   });
 
-  test("reports a request that is still in progress", async () => {
+  test("replays an email whose dispatch is in progress", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider();
+    const queue = memoryDispatchQueue();
     const service = createEmailService({
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
+      queue,
     });
     const environment = sendEnvironment(tenant.development);
     const idempotencyKey = `key-${uniqueSuffix()}`;
 
-    const first = service.send({ environment, apiKeyId: null, params: params(), idempotencyKey });
-    await gated.called;
-
-    const error = await expectEmailError(
-      service.send({ environment, apiKeyId: null, params: params(), idempotencyKey }),
-      "request_in_progress",
-    );
-    expect(error.status).toBe(409);
-
-    gated.release();
-    const done = await first;
-    expect(done).toMatchObject({ replayed: false, email: { status: "sent" } });
+    const first = await service.send({
+      environment,
+      apiKeyId: null,
+      params: params(),
+      idempotencyKey,
+    });
+    const dispatching = queue.drain(service);
+    await gated.called; // claimed, inside provider.send
 
     const retried = await service.send({
       environment,
@@ -222,13 +250,17 @@ describe("idempotency", () => {
       params: params(),
       idempotencyKey,
     });
-    expect(retried).toEqual({ email: done.email, replayed: true });
+    expect(retried).toEqual({ email: first.email, replayed: true });
+
+    gated.release();
+    await dispatching;
     expect(gated.sent).toHaveLength(1);
+    expect(queue.jobs).toHaveLength(0);
   });
 
-  test("concurrent requests with one key send exactly once", async () => {
+  test("concurrent requests with one key store and enqueue exactly once", async () => {
     const tenant = await createTestTenant();
-    const { service, sandboxProvider } = fakeProviders();
+    const { service, queue, sandboxProvider } = fakeProviders();
     const environment = sendEnvironment(tenant.development);
     const idempotencyKey = `key-${uniqueSuffix()}`;
 
@@ -240,18 +272,18 @@ describe("idempotency", () => {
 
     const fulfilled = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []));
     const rejected = results.flatMap((r) => (r.status === "rejected" ? [r.reason] : []));
+    // Losers wait for the winner's commit and replay its queued email.
+    expect(rejected).toEqual([]);
     expect(fulfilled.filter((r) => !r.replayed)).toHaveLength(1);
     expect(new Set(fulfilled.map((r) => r.email.id)).size).toBe(1);
-    for (const reason of rejected) {
-      expect(reason).toBeInstanceOf(EmailError);
-      expect((reason as EmailError).code).toBe("request_in_progress");
-    }
+    expect(queue.jobs).toHaveLength(1);
+    await queue.drain(service);
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
   test("an expired key starts a fresh email", async () => {
     const tenant = await createTestTenant();
-    const { service, sandboxProvider } = fakeProviders();
+    const { service, queue } = fakeProviders();
     const environment = sendEnvironment(tenant.development);
     const idempotencyKey = `key-${uniqueSuffix()}`;
 
@@ -276,10 +308,10 @@ describe("idempotency", () => {
 
     expect(second.replayed).toBe(false);
     expect(second.email.id).not.toBe(first.email.id);
-    expect(second.email).toMatchObject({ subject: "Again", status: "sent" });
+    expect(second.email).toMatchObject({ subject: "Again", status: "queued" });
     expect((await loadRow(first.email.id)).idempotencyKey).toBeNull();
     expect((await loadRow(second.email.id)).idempotencyKey).toBe(idempotencyKey);
-    expect(sandboxProvider.sent).toHaveLength(2);
+    expect(queue.jobs.map((job) => job.emailId)).toEqual([first.email.id, second.email.id]);
   });
 
   test("keys are scoped to the environment", async () => {
@@ -309,15 +341,17 @@ describe("dispatch", () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();
     const { service, sandboxProvider } = fakeProviders();
-    const { email } = await service.send({
+    const { email: queued } = await service.send({
       environment: sendEnvironment(tenant.development),
       apiKeyId: null,
       params: params(),
     });
+    const input = { organizationId: tenant.organization.id, emailId: queued.id };
 
-    expect(
-      await service.dispatch({ organizationId: tenant.organization.id, emailId: email.id }),
-    ).toEqual(email);
+    const email = await service.dispatch(input);
+    expect(email).toMatchObject({ id: queued.id, status: "sent" });
+    // A job that runs again (retry, expired lease, sweep) is harmless.
+    expect(await service.dispatch(input)).toEqual(email);
     expect(sandboxProvider.sent).toHaveLength(1);
 
     for (const input of [
@@ -360,6 +394,7 @@ describe("dispatch", () => {
     const service = createEmailService({
       liveProvider: gated.provider,
       sandboxProvider: new FakeEmailProvider({ log: false }),
+      queue: memoryDispatchQueue(),
     });
     const [row] = await db
       .insert(schema.email)
