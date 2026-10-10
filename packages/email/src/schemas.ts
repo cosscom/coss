@@ -152,6 +152,29 @@ const Category = z
   .string()
   .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
 
+export const TrackingOptions = z
+  .strictObject({
+    opens: z.boolean().optional().meta({
+      description: "Add an invisible pixel to the HTML body and record `email.opened` events.",
+    }),
+    clicks: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
+          "`data-coss-no-track` attribute are left alone.",
+      }),
+  })
+  .meta({
+    id: "TrackingOptions",
+    description:
+      "Overrides the environment's tracking settings (its default, or the rule for this " +
+      "email's category) for this email. Omitted fields keep the configured setting.",
+  });
+
+export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -253,6 +276,7 @@ const SendEmailRequestFields = z.strictObject({
       'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
       "(or for every email) are skipped.",
   }),
+  tracking: TrackingOptions.optional(),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -293,6 +317,15 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     // Absent rather than `null` without a category, so request hashes from before categories
     // existed stay valid for idempotent retries.
     ...(value.category === undefined ? {} : { category: value.category }),
+    // Absent when not given, for the same reason.
+    ...(value.tracking === undefined
+      ? {}
+      : {
+          tracking: {
+            ...(value.tracking.opens === undefined ? {} : { opens: value.tracking.opens }),
+            ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
+          },
+        }),
   }))
   .meta({
     id: "SendEmailRequest",
@@ -342,7 +375,15 @@ export const EMAIL_EVENT_TYPES = [
   "email.complained",
   "email.failed",
   "email.suppressed",
+  "email.opened",
+  "email.clicked",
 ] as const;
+
+/** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
+export const ENGAGEMENT_EVENT_TYPES = [
+  "email.opened",
+  "email.clicked",
+] as const satisfies readonly EmailEventType[];
 
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
 
@@ -432,6 +473,21 @@ export const EmailEventData = z
       .object({ id: z.string(), scope: z.string(), reason: SuppressionReasonEnum })
       .optional()
       .meta({ description: "Only for `email.suppressed`: the entry that matched the recipient." }),
+    open: z
+      .object({ user_agent: z.string().nullable() })
+      .optional()
+      .meta({ description: "Only for `email.opened`." }),
+    click: z
+      .object({
+        url: z.string().meta({ description: "The original link that was clicked." }),
+        link_position: z
+          .number()
+          .int()
+          .meta({ description: "Index of the link among the email's tracked links." }),
+        user_agent: z.string().nullable(),
+      })
+      .optional()
+      .meta({ description: "Only for `email.clicked`." }),
   })
   .meta({ id: "EmailEventData", examples: [DELIVERED_EVENT_EXAMPLE.data] });
 
@@ -524,6 +580,74 @@ export const EmailWebhookEvent = z
 
 export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
 
+const TRACKING_EXAMPLE = {
+  opens: false,
+  clicks: false,
+  open_count: 0,
+  first_opened_at: null,
+  last_opened_at: null,
+  click_count: 0,
+  first_clicked_at: null,
+  last_clicked_at: null,
+};
+const LINK_EXAMPLE = {
+  object: "email_link",
+  id: "lnk_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  email_id: EMAIL_ID_EXAMPLE,
+  position: 0,
+  url: "https://acme.com/start",
+  click_count: 0,
+  first_clicked_at: null,
+  last_clicked_at: null,
+};
+
+export const EmailTracking = z
+  .object({
+    opens: z.boolean().meta({ description: "Whether opens are tracked for this email." }),
+    clicks: z.boolean().meta({ description: "Whether link clicks are tracked for this email." }),
+    open_count: z.number().int(),
+    first_opened_at: z.iso.datetime().nullable(),
+    last_opened_at: z.iso.datetime().nullable(),
+    click_count: z.number().int(),
+    first_clicked_at: z.iso.datetime().nullable(),
+    last_clicked_at: z.iso.datetime().nullable(),
+  })
+  .meta({
+    id: "EmailTracking",
+    examples: [TRACKING_EXAMPLE],
+    description:
+      "Open and click tracking, as resolved when the email was sent, with engagement so far. " +
+      "Opens can be inflated by mail clients that prefetch images, clicks by link scanners.",
+  });
+
+export const EmailLink = z
+  .object({
+    object: z.literal("email_link"),
+    id: z.string().meta({ examples: [LINK_EXAMPLE.id] }),
+    email_id: z.string(),
+    position: z.number().int().meta({ description: "Index of the link among the tracked links." }),
+    url: z.string(),
+    click_count: z.number().int(),
+    first_clicked_at: z.iso.datetime().nullable(),
+    last_clicked_at: z.iso.datetime().nullable(),
+  })
+  .meta({ id: "EmailLink", examples: [LINK_EXAMPLE] });
+
+export type EmailLinkOutput = z.output<typeof EmailLink>;
+
+export const EmailLinkList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailLink),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "EmailLinkList",
+    examples: [{ object: "list", data: [LINK_EXAMPLE], has_more: false }],
+  });
+
+export type EmailLinkListOutput = z.output<typeof EmailLinkList>;
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -548,6 +672,7 @@ export const EmailObject = z
     sandbox: z
       .boolean()
       .meta({ description: "True when sent from a sandbox environment (never delivered)." }),
+    tracking: EmailTracking,
     created_at: z.iso.datetime(),
     sent_at: z.iso.datetime().nullable(),
   })
@@ -571,6 +696,7 @@ export const EmailObject = z
         status: "sent",
         recipients: [RECIPIENT_EXAMPLE],
         sandbox: false,
+        tracking: TRACKING_EXAMPLE,
         created_at: "2026-10-10T12:00:00.000Z",
         sent_at: "2026-10-10T12:00:01.000Z",
       },
@@ -883,6 +1009,14 @@ export const DeletedSuppression = z
 
 export type DeletedSuppressionOutput = z.output<typeof DeletedSuppression>;
 
+/** An environment's tracking default (`category: null`) or a category's override. */
+export const TrackingRuleInput = z.strictObject({
+  category: Category.nullable(),
+  opens: z.boolean(),
+  clicks: z.boolean(),
+});
+
+export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
 export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
 
 export const ImportSuppressionsRequest = z

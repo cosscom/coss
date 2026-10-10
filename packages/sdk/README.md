@@ -169,10 +169,35 @@ const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" })
 
 Imported entries have the reason `import`. The dashboard imports and exports the same CSV.
 
+### Open and click tracking
+
+Tracking is off unless the environment turns it on in the dashboard (a default, plus rules per
+category) or a send asks for it. COSS then adds an invisible image to the HTML body and sends its
+links through a redirect. Links with a `data-coss-no-track` attribute are left as they are.
+
+```ts
+const { data: sent } = await coss.email.send({
+  ...params,
+  html: '<p><a href="https://acme.com/start">Get started</a></p>',
+  tracking: { opens: true, clicks: true }, // overrides the environment's settings for this email
+});
+
+const { data: email } = await coss.email.get(sent.id);
+console.log(email?.tracking); // { opens: true, clicks: true, open_count: 1, click_count: 0, … }
+
+const { data: links } = await coss.email.listLinks(sent.id);
+// [{ url: "https://acme.com/start", click_count: 0, … }]
+```
+
+Opens and clicks arrive as `email.opened` and `email.clicked` events (in `listEvents` and in
+webhooks), with `data.open` / `data.click`. They name a recipient only when the email had exactly
+one. Mail clients that preload images and link scanners can inflate the numbers.
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
-`email.bounced`, `email.complained` and `email.failed` events, signed with
+`email.bounced`, `email.complained`, `email.failed`, `email.suppressed`, `email.opened` and
+`email.clicked` events, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts

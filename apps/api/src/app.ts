@@ -13,6 +13,7 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { errorResponse, internalError, notFound, payloadTooLarge, toApiError } from "./errors.ts";
 import { requestId } from "./middleware/request-id.ts";
+import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 import type { AppEnv } from "./types.ts";
@@ -30,7 +31,9 @@ export type CreateAppOptions = {
    * would silently make the endpoints it creates undeliverable.
    */
   webhookDeps: WebhookManagementDeps;
-  /** Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`). */
+  /**
+   * Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`).
+   */
   publicUrl?: string;
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
@@ -80,7 +83,12 @@ export function createApp(opts: CreateAppOptions) {
       credentials: false,
     }),
   );
-  app.use(secureHeaders());
+  const strictHeaders = secureHeaders();
+  // Mail clients and webmail load the open pixel from other origins.
+  const trackingHeaders = secureHeaders({ crossOriginResourcePolicy: "cross-origin" });
+  app.use((c, next) =>
+    (c.req.path.startsWith(TRACKING_PATH_PREFIX) ? trackingHeaders : strictHeaders)(c, next),
+  );
   app.use(
     bodyLimit({
       maxSize: BODY_LIMIT_BYTES,
@@ -104,6 +112,9 @@ export function createApp(opts: CreateAppOptions) {
   );
 
   app.get("/health", (c) => c.json({ ok: true }));
+
+  // Public and unauthenticated (fetched by mail clients); not part of the OpenAPI document.
+  app.route("/t", createTrackingRoutes());
 
   app.route("/v1", createV1Router({ emailService, domainDeps, webhookDeps: opts.webhookDeps }));
 

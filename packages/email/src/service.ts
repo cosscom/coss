@@ -14,6 +14,9 @@ import {
   type SendEmailRequestOutput,
 } from "./schemas.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
+import { newTrackingToken } from "./tracking.ts";
+import { instrumentHtml } from "./tracking-html.ts";
+import { resolveTracking } from "./tracking-settings.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -46,7 +49,7 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email, emailRecipient } = schema;
+const { email, emailLink, emailRecipient } = schema;
 
 function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
@@ -151,11 +154,19 @@ function errorMessage(error: unknown): string {
   return message.slice(0, ERROR_MESSAGE_MAX_LENGTH) || "Unknown provider error.";
 }
 
-export function createEmailService(opts: {
+export type EmailServiceOptions = {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
   queue: EmailDispatchQueue;
-}): EmailService {
+  /**
+   * Public origin of the API's `/t/*` tracking routes (no trailing slash). Without it, sends that
+   * resolve to open or click tracking fail.
+   */
+  trackingBaseUrl?: string;
+};
+
+export function createEmailService(opts: EmailServiceOptions): EmailService {
+  const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
 
@@ -196,7 +207,7 @@ export function createEmailService(opts: {
       events = [];
     } else {
       try {
-        const result = await provider.send(message);
+        const result = await provider.send(await instrument(row, message));
         outcome = {
           status: "sent",
           provider: provider.name,
@@ -235,6 +246,35 @@ export function createEmailService(opts: {
       for (const event of events) await recordProviderEvent(tx, event);
     });
     return currentEmail(row);
+  }
+
+  /**
+   * Adds the open pixel and click redirects to the provider's copy of the HTML (the stored email
+   * keeps the original) and stores the links first, so a click can never beat its link row.
+   */
+  async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
+    if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
+    if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    const { html, links } = instrumentHtml(row.html, {
+      baseUrl: trackingBaseUrl,
+      token: row.trackingToken,
+      opens: row.trackOpens,
+      clicks: row.trackClicks,
+    });
+    if (links.length > 0) {
+      await db
+        .insert(emailLink)
+        .values(
+          links.map((link) => ({
+            organizationId: row.organizationId,
+            emailId: row.id,
+            position: link.position,
+            url: link.url,
+          })),
+        )
+        .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
+    }
+    return { ...message, html };
   }
 
   async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
@@ -294,6 +334,17 @@ export function createEmailService(opts: {
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
 
+    // Resolved once, at send: later changes to the settings never affect a stored email.
+    const tracking = await resolveTracking(
+      db,
+      environment,
+      params.category ?? null,
+      params.tracking,
+    );
+    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
+      throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    }
+
     // Tenancy columns always come from the authenticated environment, never from the request.
     const values = {
       organizationId: environment.organizationId,
@@ -312,6 +363,8 @@ export function createEmailService(opts: {
       headers: params.headers,
       tags: params.tags,
       category: params.category ?? null,
+      trackOpens: tracking.opens,
+      trackClicks: tracking.clicks,
       idempotencyKey,
       requestHash,
     } satisfies typeof email.$inferInsert;
@@ -339,7 +392,10 @@ export function createEmailService(opts: {
     const insertEmail = async (tx: Transaction): Promise<EmailRow | undefined> => {
       const [row] = await tx
         .insert(email)
-        .values(values)
+        .values({
+          ...values,
+          trackingToken: tracking.opens || tracking.clicks ? newTrackingToken() : null,
+        })
         .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
         .returning();
       if (!row) return row;

@@ -11,6 +11,7 @@ import { env } from "./env.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 import { startServer } from "./server.ts";
 
+const publicUrl = env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`;
 const email = createDefaultEmailRuntime(env);
 // Sends only enqueue (the worker dispatches).
 const jobs = await startJobBoss();
@@ -23,6 +24,7 @@ const app = createApp({
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
+    trackingBaseUrl: publicUrl,
   }),
   domainDeps: email.domainDeps,
   webhookDeps: {

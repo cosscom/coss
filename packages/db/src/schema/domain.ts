@@ -119,8 +119,19 @@ export const email = pgTable(
     text: text("text"),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
-    // Matched against category-scoped suppressions.
+    // Matched against category-scoped suppressions and tracking rules.
     category: text("category"),
+    // Open/click tracking, resolved once at send (per-send override, category rule, environment
+    // default). The token names the email in its public `/t/*` URLs; set only when tracking is on.
+    trackOpens: boolean("track_opens").notNull().default(false),
+    trackClicks: boolean("track_clicks").notNull().default(false),
+    trackingToken: text("tracking_token").unique("email_tracking_token_unique"),
+    openCount: integer("open_count").notNull().default(0),
+    firstOpenedAt: timestamp("first_opened_at", { withTimezone: true }),
+    lastOpenedAt: timestamp("last_opened_at", { withTimezone: true }),
+    clickCount: integer("click_count").notNull().default(0),
+    firstClickedAt: timestamp("first_clicked_at", { withTimezone: true }),
+    lastClickedAt: timestamp("last_clicked_at", { withTimezone: true }),
     provider: text("provider"),
     providerMessageId: text("provider_message_id"),
     errorCode: text("error_code"),
@@ -173,6 +184,8 @@ export type EmailEventDetails = {
   delivery?: { smtp_response: string | null };
   failure?: { code: string; message: string };
   suppression?: { id: string; scope: string; reason: EmailSuppressionReason };
+  open?: { user_agent: string | null };
+  click?: { url: string; link_position: number; user_agent: string | null };
 };
 
 /** One row per distinct recipient address of an email; its status is driven by delivery events. */
@@ -212,6 +225,8 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.complained",
   "email.failed",
   "email.suppressed",
+  "email.opened",
+  "email.clicked",
 ]);
 
 /**
@@ -290,6 +305,65 @@ export const emailSuppression = pgTable(
       t.scope,
     ),
     index("email_suppression_environment_id_idx").on(t.environmentId, t.id.desc()),
+  ],
+);
+
+/**
+ * An environment's open/click tracking settings: the row with a NULL category is the environment
+ * default, the others override it for one category. Each field resolves separately (a send's own
+ * `tracking` wins, then its category's rule, then the default, then off).
+ */
+export const emailTrackingRule = pgTable(
+  "email_tracking_rule",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailTrackingRule)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    category: text("category"),
+    opens: boolean("opens").notNull(),
+    clicks: boolean("clicks").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_tracking_rule_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("email_tracking_rule_environment_category_unique")
+      .on(t.environmentId, t.category)
+      .nullsNotDistinct(),
+  ],
+);
+
+/** A link COSS rewrote in a click-tracked email; `position` is its index in the HTML. */
+export const emailLink = pgTable(
+  "email_link",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailLink)),
+    organizationId: text("organization_id").notNull(),
+    emailId: text("email_id").notNull(),
+    position: integer("position").notNull(),
+    url: text("url").notNull(),
+    clickCount: integer("click_count").notNull().default(0),
+    firstClickedAt: timestamp("first_clicked_at", { withTimezone: true }),
+    lastClickedAt: timestamp("last_clicked_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_link_email_fk",
+      columns: [t.emailId, t.organizationId],
+      foreignColumns: [email.id, email.organizationId],
+    }).onDelete("cascade"),
+    unique("email_link_email_position_unique").on(t.emailId, t.position),
   ],
 );
 

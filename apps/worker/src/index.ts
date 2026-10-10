@@ -43,6 +43,7 @@ await workEmailDispatchQueue(
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: dispatchQueue,
+    trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
   }),
 );
 

@@ -6,6 +6,9 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
+    // The public API serves the tracking URLs embedded by the dispatch worker.
+    API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
+    API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
     // Decrypts webhook signing secrets: 32 bytes, base64 (same value as the dashboard's).
     WEBHOOK_SECRETS_KEY: z

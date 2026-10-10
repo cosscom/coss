@@ -91,6 +91,16 @@ export const sampleEmail: Email = {
     },
   ],
   sandbox: true,
+  tracking: {
+    opens: false,
+    clicks: false,
+    open_count: 0,
+    first_opened_at: null,
+    last_opened_at: null,
+    click_count: 0,
+    first_clicked_at: null,
+    last_clicked_at: null,
+  },
   created_at: "2026-10-09T12:00:00.000Z",
   sent_at: "2026-10-09T12:00:00.100Z",
 };

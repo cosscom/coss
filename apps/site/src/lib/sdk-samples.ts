@@ -29,6 +29,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.listEvents",
     args: (request) => [pathId(request)],
   },
+  "GET /v1/emails/{id}/links": {
+    method: "email.listLinks",
+    args: (request) => [pathId(request)],
+  },
   "POST /v1/suppressions": {
     method: "email.suppressions.add",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
