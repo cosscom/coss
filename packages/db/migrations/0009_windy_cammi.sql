@@ -1,0 +1,1 @@
+CREATE INDEX "email_queued_created_at_idx" ON "email" USING btree ("created_at") WHERE "email"."status" = 'queued';

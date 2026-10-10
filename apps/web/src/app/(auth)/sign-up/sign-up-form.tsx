@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { nextQuery } from "@/lib/safe-redirect";
 
 export function SignUpForm({ next }: { next: string }) {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function SignUpForm({ next }: { next: string }) {
     router.refresh();
   }
 
-  const query = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+  const query = nextQuery(next);
 
   return (
     <Card>

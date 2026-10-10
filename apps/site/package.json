@@ -1,0 +1,42 @@
+{
+  "name": "@coss/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3002",
+    "build": "next build",
+    "start": "next start --port 3002",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@coss/api": "workspace:*",
+    "@coss/auth": "workspace:*",
+    "@coss/ui": "workspace:*",
+    "fumadocs-core": "16.17.1",
+    "fumadocs-mdx": "15.4.7",
+    "fumadocs-openapi": "12.4.1",
+    "fumadocs-twoslash": "4.0.2",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@16.17.1",
+    "lucide-react": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "server-only": "catalog:",
+    "shiki": "4.5.0"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@tailwindcss/postcss": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/mdx": "2.0.14",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "coss": "workspace:*",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

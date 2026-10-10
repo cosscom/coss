@@ -28,7 +28,7 @@ const { data, error } = await coss.email.send({
 if (error) {
   console.error(error.type, error.code, error.message, error.request_id);
 } else {
-  console.log(data.id, data.status); // "email_01k…", "sent"
+  console.log(data.id, data.status); // "email_01k…", "queued" (sent moments later)
 }
 
 const { data: email } = await coss.email.get("email_01k…");
@@ -178,10 +178,50 @@ const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // new
 await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
 ```
 
+Move whole lists in and out in bulk. `import` sends 1,000 entries per request and adds up the
+results; invalid entries are skipped and reported by their position, and entries already on the
+list are left unchanged, so importing again is safe:
+
+```ts
+const { data: result } = await coss.email.suppressions.import({
+  suppressions: [{ address: "jane@example.com" }, { address: "joe@example.com", scope: "marketing" }],
+}); // { created: 2, existing: 0, invalid: [] }
+
+// CSV with the columns address,scope,reason,created_at,email_id,id (oldest first).
+const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" });
+```
+
+Imported entries have the reason `import`. The dashboard imports and exports the same CSV.
+
+### Open and click tracking
+
+Tracking is off unless the environment turns it on in the dashboard (a default, plus rules per
+category) or a send asks for it. COSS then adds an invisible image to the HTML body and sends its
+links through a redirect. Links with a `data-coss-no-track` attribute are left as they are.
+
+```ts
+const { data: sent } = await coss.email.send({
+  ...params,
+  html: '<p><a href="https://acme.com/start">Get started</a></p>',
+  tracking: { opens: true, clicks: true }, // overrides the environment's settings for this email
+});
+
+const { data: email } = await coss.email.get(sent.id);
+console.log(email?.tracking); // { opens: true, clicks: true, open_count: 1, click_count: 0, … }
+
+const { data: links } = await coss.email.listLinks(sent.id);
+// [{ url: "https://acme.com/start", click_count: 0, … }]
+```
+
+Opens and clicks arrive as `email.opened` and `email.clicked` events (in `listEvents` and in
+webhooks), with `data.open` / `data.click`. They name a recipient only when the email had exactly
+one. Mail clients that preload images and link scanners can inflate the numbers.
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
-`email.bounced`, `email.complained` and `email.failed` events, signed with
+`email.bounced`, `email.complained`, `email.failed`, `email.suppressed`, `email.opened` and
+`email.clicked` events, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts
@@ -224,8 +264,8 @@ interface CossError {
 | `authentication_error`  | 401               | `missing_api_key` or `invalid_api_key`                            |
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
-| `idempotency_error`     | 409 / 422         | `request_in_progress`, or `idempotency_key_reused` with a different body |
-| `rate_limit_error`      | 429               | Too many requests, or a domain was checked moments ago (`domain_recently_checked`) |
+| `idempotency_error`     | 409 / 422         | `request_in_progress` (retried automatically), or `idempotency_key_reused` with a different body |
+| `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |

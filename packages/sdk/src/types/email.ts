@@ -39,7 +39,10 @@ export interface EmailAttachment {
   size: number;
 }
 
-/** Whether the email was handed to the delivery provider. Delivery is tracked per recipient. */
+/**
+ * Whether the email was handed to the delivery provider: `queued` until then (sends return it
+ * `queued`). Delivery is tracked per recipient.
+ */
 export type EmailStatus = "queued" | "sent" | "failed";
 
 /**
@@ -76,7 +79,11 @@ export type EmailEventType =
   | "email.complained"
   | "email.failed"
   /** A recipient was skipped because of a suppression list entry. */
-  | "email.suppressed";
+  | "email.suppressed"
+  /** The tracking pixel was loaded (open tracking). Never changes a recipient's status. */
+  | "email.opened"
+  /** A tracked link was followed (click tracking). Never changes a recipient's status. */
+  | "email.clicked";
 
 /** Details of an event; which member is present depends on the event type. */
 export interface EmailEventData {
@@ -91,6 +98,10 @@ export interface EmailEventData {
   failure?: { code: string; message: string };
   /** Only for `email.suppressed`: the entry that matched the recipient. */
   suppression?: { id: string; scope: string; reason: SuppressionReason };
+  /** Only for `email.opened`. */
+  open?: { user_agent: string | null };
+  /** Only for `email.clicked`: the original link and its index among the tracked links. */
+  click?: { url: string; link_position: number; user_agent: string | null };
 }
 
 /** A delivery event of an email. */
@@ -99,7 +110,10 @@ export interface EmailEvent {
   id: string;
   email_id: string;
   type: EmailEventType;
-  /** The recipient this event is about; `null` for the whole email (`email.sent`, `email.failed`). */
+  /**
+   * The recipient this event is about; `null` for the whole email (`email.sent`, `email.failed`),
+   * and for opens and clicks of an email with several recipients.
+   */
   recipient: string | null;
   /** ISO 8601 timestamp. */
   occurred_at: string;
@@ -111,6 +125,20 @@ export interface List<T> {
   object: "list";
   data: T[];
   has_more: boolean;
+}
+
+/**
+ * Overrides the environment's tracking settings for one email. Omitted fields keep the configured
+ * setting (the email's category rule, else the environment default, else off).
+ */
+export interface TrackingOptions {
+  /** Add an invisible pixel to the HTML body and record `email.opened` events. */
+  opens?: boolean;
+  /**
+   * Send HTML links through a COSS redirect and record `email.clicked` events. Links with a
+   * `data-coss-no-track` attribute are left alone.
+   */
+  clicks?: boolean;
 }
 
 /** Body of `POST /v1/emails`. */
@@ -134,6 +162,36 @@ export interface SendEmailParams {
    */
   category?: string;
   attachments?: EmailAttachmentParams[];
+  tracking?: TrackingOptions;
+}
+
+/**
+ * Open and click tracking as resolved when the email was sent, with engagement so far. Opens can
+ * be inflated by mail clients that prefetch images, clicks by link scanners.
+ */
+export interface EmailTracking {
+  opens: boolean;
+  clicks: boolean;
+  open_count: number;
+  /** ISO 8601 timestamps, or `null`. */
+  first_opened_at: string | null;
+  last_opened_at: string | null;
+  click_count: number;
+  first_clicked_at: string | null;
+  last_clicked_at: string | null;
+}
+
+/** A link COSS rewrote for click tracking. */
+export interface EmailLink {
+  object: "email_link";
+  id: string;
+  email_id: string;
+  /** Index of the link among the email's tracked links, in document order. */
+  position: number;
+  url: string;
+  click_count: number;
+  first_clicked_at: string | null;
+  last_clicked_at: string | null;
 }
 
 /** An email as returned by the API. Recipient fields are always arrays. */
@@ -159,6 +217,7 @@ export interface Email {
   attachments: EmailAttachment[];
   /** `true` when sent with a sandbox (`coss_test_…`) key: nothing is actually delivered. */
   sandbox: boolean;
+  tracking: EmailTracking;
   /** ISO 8601 timestamp. */
   created_at: string;
   /** ISO 8601 timestamp, or `null` until the provider accepts the message. */

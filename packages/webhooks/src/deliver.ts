@@ -4,12 +4,13 @@
  */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, eq, inArray, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte, ne, notExists, or, sql } from "drizzle-orm";
 import { decryptSecret } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
-const { webhookAttempt, webhookDelivery, webhookEndpoint, webhookMessage } = schema;
+const { organizationSuspension, webhookAttempt, webhookDelivery, webhookEndpoint, webhookMessage } =
+  schema;
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -37,7 +38,10 @@ export type WebhookDeliveryDeps = {
 
 type Claimed = typeof webhookDelivery.$inferSelect;
 
-/** Leases due deliveries (`FOR UPDATE SKIP LOCKED`), so concurrent workers never share one. */
+/**
+ * Leases due deliveries (`FOR UPDATE SKIP LOCKED`), so concurrent workers never share one.
+ * Deliveries of suspended organizations are held (not failed) and resume once it is lifted.
+ */
 async function claimDue(
   now: Date,
   limit: number,
@@ -52,6 +56,12 @@ async function claimDue(
         lte(webhookDelivery.nextAttemptAt, now),
         or(isNull(webhookDelivery.leaseExpiresAt), lt(webhookDelivery.leaseExpiresAt, now)),
         scope ? inArray(webhookDelivery.organizationId, scope.organizationIds) : undefined,
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(organizationSuspension)
+            .where(eq(organizationSuspension.organizationId, webhookDelivery.organizationId)),
+        ),
       ),
     )
     .orderBy(asc(webhookDelivery.nextAttemptAt))

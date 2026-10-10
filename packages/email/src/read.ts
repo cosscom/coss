@@ -7,7 +7,7 @@ import {
   type EmailAttachmentMetadata,
   toAttachmentObject,
 } from "./attachments.ts";
-import type { EmailEventOutput, EmailObjectOutput } from "./schemas.ts";
+import type { EmailEventOutput, EmailLinkOutput, EmailObjectOutput } from "./schemas.ts";
 
 export type EmailRow = typeof schema.email.$inferSelect;
 export type EmailRecipientRow = typeof schema.emailRecipient.$inferSelect;
@@ -18,7 +18,10 @@ const MAX_LIST_LIMIT = 100;
 /** Every event of one email is returned at once; an email has at most 50 recipients. */
 const MAX_EVENTS = 1000;
 
-const { email, emailEvent, emailRecipient, environment } = schema;
+const { email, emailEvent, emailLink, emailRecipient, environment } = schema;
+
+/** Every tracked link of one email is returned at once. */
+const MAX_LINKS = 1000;
 
 export function toEmailObject(
   row: EmailRow,
@@ -51,6 +54,16 @@ export function toEmailObject(
     })),
     attachments: opts.attachments.map(toAttachmentObject),
     sandbox: opts.sandbox,
+    tracking: {
+      opens: row.trackOpens,
+      clicks: row.trackClicks,
+      open_count: row.openCount,
+      first_opened_at: row.firstOpenedAt?.toISOString() ?? null,
+      last_opened_at: row.lastOpenedAt?.toISOString() ?? null,
+      click_count: row.clickCount,
+      first_clicked_at: row.firstClickedAt?.toISOString() ?? null,
+      last_clicked_at: row.lastClickedAt?.toISOString() ?? null,
+    },
     created_at: row.createdAt.toISOString(),
     sent_at: row.sentAt?.toISOString() ?? null,
   };
@@ -201,5 +214,52 @@ export async function listEmailEvents(input: {
   return {
     events: rows.slice(0, MAX_EVENTS).map(toEmailEventObject),
     hasMore: rows.length > MAX_EVENTS,
+  };
+}
+
+export function toEmailLinkObject(row: typeof emailLink.$inferSelect): EmailLinkOutput {
+  return {
+    object: "email_link",
+    id: row.id,
+    email_id: row.emailId,
+    position: row.position,
+    url: row.url,
+    click_count: row.clickCount,
+    first_clicked_at: row.firstClickedAt?.toISOString() ?? null,
+    last_clicked_at: row.lastClickedAt?.toISOString() ?? null,
+  };
+}
+
+/**
+ * Tracked links of one email of an environment, in document order; `null` when the email is not
+ * found. Empty unless the email was sent with click tracking.
+ */
+export async function listEmailLinks(input: {
+  organizationId: string;
+  environmentId: string;
+  emailId: string;
+}): Promise<{ links: EmailLinkOutput[]; hasMore: boolean } | null> {
+  if (!isId("email", input.emailId)) return null;
+  const [found] = await db
+    .select({ id: email.id })
+    .from(email)
+    .where(
+      and(
+        eq(email.organizationId, input.organizationId),
+        eq(email.environmentId, input.environmentId),
+        eq(email.id, input.emailId),
+      ),
+    )
+    .limit(1);
+  if (!found) return null;
+  const rows = await db
+    .select()
+    .from(emailLink)
+    .where(and(eq(emailLink.organizationId, input.organizationId), eq(emailLink.emailId, found.id)))
+    .orderBy(asc(emailLink.position))
+    .limit(MAX_LINKS + 1);
+  return {
+    links: rows.slice(0, MAX_LINKS).map(toEmailLinkObject),
+    hasMore: rows.length > MAX_LINKS,
   };
 }

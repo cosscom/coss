@@ -1,4 +1,6 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
+// Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
+export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
   checkRecords,
   type DnsResolver,
@@ -69,8 +71,10 @@ export {
   type EmailRow,
   getEmail,
   listEmailEvents,
+  listEmailLinks,
   listEmails,
   toEmailEventObject,
+  toEmailLinkObject,
   toEmailObject,
 } from "./read.ts";
 export {
@@ -109,13 +113,24 @@ export {
   type EmailEventListOutput,
   type EmailEventOutput,
   type EmailEventType,
+  EmailLink,
+  EmailLinkList,
+  type EmailLinkListOutput,
+  type EmailLinkOutput,
   EmailObject,
   type EmailObjectOutput,
   EmailRecipient,
   type EmailRecipientStatus,
+  EmailTracking,
   EmailWebhookEvent,
   type EmailWebhookEventOutput,
+  ENGAGEMENT_EVENT_TYPES,
+  ExportSuppressionsQuery,
+  type ExportSuppressionsQueryOutput,
   emailAddressProblem,
+  ImportSuppressionsRequest,
+  type ImportSuppressionsRequestInput,
+  type ImportSuppressionsRequestOutput,
   isReservedHeader,
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
@@ -124,6 +139,7 @@ export {
   MAX_ATTACHMENTS_BYTES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
+  MAX_SUPPRESSION_IMPORT_ENTRIES,
   MAX_TAGS,
   type ParsedEmailAddress,
   parseEmailAddress,
@@ -136,27 +152,70 @@ export {
   Suppression,
   SuppressionCheck,
   type SuppressionCheckOutput,
+  SuppressionImport,
+  type SuppressionImportOutput,
   SuppressionList,
   type SuppressionListOutput,
   type SuppressionOutput,
   type SuppressionReason,
   SuppressionScope,
+  TrackingOptions,
+  type TrackingOptionsOutput,
+  TrackingRuleInput,
+  type TrackingRuleInputOutput,
 } from "./schemas.ts";
 export {
   createEmailService,
   type EmailService,
+  type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,
   type SendEmailInput,
   type SendEnvironment,
 } from "./service.ts";
 export {
+  parseSuppressionCsv,
+  SUPPRESSION_CSV_COLUMNS,
+  type SuppressionCsvEntry,
+  suppressionCsvHeader,
+  suppressionCsvRow,
+} from "./suppression-csv.ts";
+export {
   addSuppression,
   checkSuppression,
+  exportSuppressionPages,
   getSuppression,
+  importSuppressions,
   listSuppressions,
   removeSuppression,
   type SuppressionEnvironment,
+  type SuppressionImportEntry,
   type SuppressionRow,
+  suppressionsCsvStream,
   toSuppressionObject,
 } from "./suppressions.ts";
-export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";
+export {
+  STALE_CLAIM_MS,
+  sweepStaleClaims,
+  sweepUnclaimedEmails,
+  UNCLAIMED_FAIL_MS,
+  UNCLAIMED_REQUEUE_MS,
+} from "./sweeps.ts";
+export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
+export {
+  clickUrl,
+  type InstrumentOptions,
+  instrumentHtml,
+  NO_TRACK_ATTRIBUTE,
+  openPixelUrl,
+  type TrackedLink,
+} from "./tracking-html.ts";
+export {
+  deleteTrackingRule,
+  getTrackingSettings,
+  type ResolvedTracking,
+  resolveTracking,
+  type TrackingEnvironment,
+  type TrackingRuleRow,
+  type TrackingSettings,
+  upsertTrackingRule,
+} from "./tracking-settings.ts";

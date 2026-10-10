@@ -100,3 +100,13 @@ export function assignableOrgRoles(actorRole: string, targetRole: string): OrgRo
   if (hasOrgRole(targetRole, "owner")) return [];
   return ORG_ROLES.filter((role) => role !== "owner");
 }
+
+/**
+ * Whether a member with `actorRole` may remove a member whose role is `targetRole` (someone else —
+ * leaving is separate). Mirrors Better Auth's remove-member rules: it needs `member:delete`, and
+ * only an owner may remove an owner. Better Auth additionally refuses to remove the last owner.
+ */
+export function canRemoveOrgMember(actorRole: string, targetRole: string): boolean {
+  if (!orgRoleCan(actorRole, { member: ["delete"] })) return false;
+  return hasOrgRole(actorRole, "owner") || !hasOrgRole(targetRole, "owner");
+}

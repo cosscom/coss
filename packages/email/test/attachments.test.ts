@@ -9,7 +9,8 @@ import { getEmail } from "../src/read.ts";
 import { CreateSuppressionRequest } from "../src/schemas.ts";
 import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
-import { sweepStaleClaims } from "../src/sweeps.ts";
+import { sweepStaleClaims, sweepUnclaimedEmails, UNCLAIMED_FAIL_MS } from "../src/sweeps.ts";
+import { dispatchingEmailService, memoryDispatchQueue } from "../src/testing.ts";
 import { gatedProvider, params, sendEnvironment } from "./helpers.ts";
 
 const pdf = Buffer.from("%PDF-1.7 invoice");
@@ -37,7 +38,7 @@ async function storedAttachments(emailId: string) {
 function fakeProviders(opts: { fail?: boolean } = {}) {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false, fail: () => opts.fail ?? false });
-  return { sandboxProvider, service: createEmailService({ liveProvider, sandboxProvider }) };
+  return { sandboxProvider, service: dispatchingEmailService({ liveProvider, sandboxProvider }) };
 }
 
 const read = (tenant: TestTenant, id: string) =>
@@ -159,7 +160,7 @@ describe("attachments", () => {
   test("an email whose content is gone is failed instead of sent without it", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
-    const service = createEmailService({
+    const service = dispatchingEmailService({
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });
@@ -197,7 +198,7 @@ describe("attachments", () => {
   test("a queued email keeps its content until dispatch delivers it", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
-    const service = createEmailService({
+    const service = dispatchingEmailService({
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });
@@ -230,7 +231,7 @@ describe("attachments", () => {
   test("are purged when a provider event completes an in-flight send", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
-    const service = createEmailService({
+    const service = dispatchingEmailService({
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });
@@ -274,10 +275,36 @@ describe("attachments", () => {
     }
   });
 
+  test("are purged when an unclaimed email expires", async () => {
+    const tenant = await createTestTenant();
+    const queue = memoryDispatchQueue();
+    const provider = new FakeEmailProvider({ log: false });
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      queue,
+    });
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: withAttachments(),
+    });
+    expect(email.status).toBe("queued");
+    expect(
+      await sweepUnclaimedEmails(queue, {
+        scope: { organizationIds: [tenant.organization.id] },
+        now: new Date(Date.now() + UNCLAIMED_FAIL_MS + 1000),
+      }),
+    ).toEqual({ failed: 1, requeued: 0 });
+    expect((await read(tenant, email.id))?.status).toBe("failed");
+    expect((await storedAttachments(email.id)).map((row) => row.content)).toEqual([null, null]);
+    expect(provider.sent).toHaveLength(0);
+  });
+
   test("are purged when the stale-claim sweep resolves an interrupted send", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
-    const service = createEmailService({
+    const service = dispatchingEmailService({
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });

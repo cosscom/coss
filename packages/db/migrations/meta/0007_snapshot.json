@@ -1,5 +1,5 @@
 {
-  "id": "af2c3c79-087e-4083-a48b-56fa8cc284e0",
+  "id": "55a36cf6-50c6-457c-bc86-a85d2667542e",
   "prevId": "117aa2d8-8e7f-42b1-9717-511e7bf8f68b",
   "version": "7",
   "dialect": "postgresql",
@@ -1333,111 +1333,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.email_attachment": {
-      "name": "email_attachment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email_id": {
-          "name": "email_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "filename": {
-          "name": "filename",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_type": {
-          "name": "content_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_id": {
-          "name": "content_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "email_attachment_email_fk": {
-          "name": "email_attachment_email_fk",
-          "tableFrom": "email_attachment",
-          "tableTo": "email",
-          "columnsFrom": [
-            "email_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "email_attachment_email_position_unique": {
-          "name": "email_attachment_email_position_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email_id",
-            "position"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.email_event": {
       "name": "email_event",
       "schema": "",
@@ -2745,7 +2640,8 @@
       "values": [
         "bounce",
         "complaint",
-        "manual"
+        "manual",
+        "import"
       ]
     },
     "public.environment_mode": {

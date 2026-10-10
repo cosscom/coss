@@ -1,4 +1,4 @@
-import { db, type Executor, schema } from "@coss/db";
+import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, eq, isNull } from "drizzle-orm";
 import {
@@ -7,6 +7,7 @@ import {
   prepareAttachments,
   purgeAttachmentContent,
 } from "./attachments.ts";
+import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
@@ -24,6 +25,9 @@ import {
   type SendEmailRequestOutput,
 } from "./schemas.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
+import { newTrackingToken } from "./tracking.ts";
+import { instrumentHtml } from "./tracking-html.ts";
+import { resolveTracking } from "./tracking-settings.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -41,7 +45,11 @@ export type SendEmailInput = {
 };
 
 export type EmailService = {
+  /** Read a matching replay without creating or dispatching an email. */
+  replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
+  /** Stores the email and enqueues its dispatch; the email is returned `queued`. */
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
+  /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
   dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
 };
 
@@ -52,7 +60,7 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email, emailRecipient } = schema;
+const { email, emailLink, emailRecipient } = schema;
 
 function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
@@ -164,10 +172,19 @@ function errorMessage(error: unknown): string {
   return message.slice(0, ERROR_MESSAGE_MAX_LENGTH) || "Unknown provider error.";
 }
 
-export function createEmailService(opts: {
+export type EmailServiceOptions = {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
-}): EmailService {
+  queue: EmailDispatchQueue;
+  /**
+   * Public origin of the API's `/t/*` tracking routes (no trailing slash). Without it, sends that
+   * resolve to open or click tracking fail.
+   */
+  trackingBaseUrl?: string;
+};
+
+export function createEmailService(opts: EmailServiceOptions): EmailService {
+  const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
 
@@ -176,7 +193,7 @@ export function createEmailService(opts: {
     if (row.status !== "queued") return currentEmail(row);
 
     const provider = providerFor(sandbox);
-    // Claim the email first so concurrent dispatchers (e.g. a future worker) never send it twice.
+    // Claim the email first so concurrent dispatchers (e.g. a retried job) never send it twice.
     // `provider` is only ever set by this claim. A crash after the claim leaves the row `queued`
     // with a provider: the worker's stale-claim sweep resolves it.
     const [claimed] = await db
@@ -224,7 +241,7 @@ export function createEmailService(opts: {
       events = [];
     } else {
       try {
-        const result = await provider.send(message);
+        const result = await provider.send(await instrument(row, message));
         outcome = {
           status: "sent",
           provider: provider.name,
@@ -267,6 +284,35 @@ export function createEmailService(opts: {
     return currentEmail(row);
   }
 
+  /**
+   * Adds the open pixel and click redirects to the provider's copy of the HTML (the stored email
+   * keeps the original) and stores the links first, so a click can never beat its link row.
+   */
+  async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
+    if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
+    if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    const { html, links } = instrumentHtml(row.html, {
+      baseUrl: trackingBaseUrl,
+      token: row.trackingToken,
+      opens: row.trackOpens,
+      clicks: row.trackClicks,
+    });
+    if (links.length > 0) {
+      await db
+        .insert(emailLink)
+        .values(
+          links.map((link) => ({
+            organizationId: row.organizationId,
+            emailId: row.id,
+            position: link.position,
+            url: link.url,
+          })),
+        )
+        .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
+    }
+    return { ...message, html };
+  }
+
   async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
     const [current] = await selectEmailsWithMode(row.organizationId, eq(email.id, row.id), 1);
     if (!current) throw new EmailError("not_found", "Email not found.");
@@ -286,7 +332,7 @@ export function createEmailService(opts: {
     return deliver(found.email, found.sandbox);
   }
 
-  /** The finished email an unexpired idempotency key with the same request hash points at. */
+  /** The email an unexpired idempotency key with the same request hash points at. */
   async function findReplay(
     environment: SendEnvironment,
     idempotencyKey: string,
@@ -305,7 +351,6 @@ export function createEmailService(opts: {
       .limit(1);
     if (
       !existing ||
-      existing.status === "queued" ||
       existing.requestHash !== requestHash ||
       Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
     ) {
@@ -325,6 +370,17 @@ export function createEmailService(opts: {
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
 
+    // Resolved once, at send: later changes to the settings never affect a stored email.
+    const tracking = await resolveTracking(
+      db,
+      environment,
+      params.category ?? null,
+      params.tracking,
+    );
+    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
+      throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    }
+
     // Tenancy columns always come from the authenticated environment, never from the request.
     const values = {
       organizationId: environment.organizationId,
@@ -343,6 +399,8 @@ export function createEmailService(opts: {
       headers: params.headers,
       tags: params.tags,
       category: params.category ?? null,
+      trackOpens: tracking.opens,
+      trackClicks: tracking.clicks,
       idempotencyKey,
       requestHash,
     } satisfies typeof email.$inferInsert;
@@ -365,36 +423,46 @@ export function createEmailService(opts: {
       }
     }
 
-    // Inserts the email and, only if this request won the insert, its recipients: atomically, so
-    // a stored email always has its recipient rows. Recipients on the suppression list are stored
-    // `suppressed` (with an `email.suppressed` event) and never handed to the provider.
-    const insertEmail = async (executor: Executor): Promise<EmailRow | undefined> => {
-      const [row] = await executor
+    // Inserts the email and, only if this request won the insert, its recipients and dispatch job:
+    // atomically, so a stored email always has its recipient rows and is always dispatched.
+    // Recipients on the suppression list are stored `suppressed` (with an `email.suppressed`
+    // event) and never handed to the provider.
+    const insertEmail = async (tx: Transaction): Promise<EmailRow | undefined> => {
+      const [row] = await tx
         .insert(email)
-        .values(values)
+        .values({
+          ...values,
+          trackingToken: tracking.opens || tracking.clicks ? newTrackingToken() : null,
+        })
         .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
         .returning();
       if (!row) return row;
       const recipients = recipientRows(row);
       const suppressed = await suppressedRecipients(
-        executor,
+        tx,
         environment,
         recipients.map((recipient) => recipient.address),
         row.category,
       );
-      await executor.insert(emailRecipient).values(recipients);
-      await insertAttachments(executor, row, attachments);
+      await tx.insert(emailRecipient).values(recipients);
+      await insertAttachments(tx, row, attachments);
       for (const [address, entry] of suppressed) {
-        await recordProviderEvent(executor, suppressedEvent(row, address, entry));
+        await recordProviderEvent(tx, suppressedEvent(row, address, entry));
       }
+      await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
       return row;
     };
     const insertOnce = () => db.transaction((tx) => insertEmail(tx));
+    const stored = async (row: EmailRow, replayed: boolean) => {
+      const [object] = await toEmailObjects(environment.organizationId, [{ email: row, sandbox }]);
+      if (!object) throw new Error("Email serialization produced no object.");
+      return { email: object, replayed };
+    };
 
     if (!idempotencyKey) {
       const row = await insertOnce();
       if (!row) throw new Error("Email insert returned no row.");
-      return { email: await deliver(row, sandbox), replayed: false };
+      return stored(row, false);
     }
 
     const sameKey = and(
@@ -403,7 +471,8 @@ export function createEmailService(opts: {
       eq(email.idempotencyKey, idempotencyKey),
     );
     // The unique (environment_id, idempotency_key) index arbitrates races: exactly one request
-    // inserts, every other one sees `DO NOTHING` and inspects the winner's row.
+    // inserts, every other one waits for its commit, sees `DO NOTHING` and replays the winner's
+    // row (whatever its status: a queued email is replayed as queued).
     let inserted = await insertOnce();
     for (let attempt = 1; !inserted; attempt++) {
       if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
@@ -433,20 +502,15 @@ export function createEmailService(opts: {
           "This idempotency key was already used with a different request body.",
         );
       }
-      if (existing.status === "queued") {
-        throw new EmailError(
-          "request_in_progress",
-          "A request with this idempotency key is still being processed. Retry shortly.",
-        );
-      }
-      const [replayed] = await toEmailObjects(environment.organizationId, [
-        { email: existing, sandbox },
-      ]);
-      if (!replayed) throw new Error("Email replay produced no object.");
-      return { email: replayed, replayed: true };
+      return stored(existing, true);
     }
-    return { email: await deliver(inserted, sandbox), replayed: false };
+    return stored(inserted, false);
   }
 
-  return { send, dispatch };
+  async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
+    if (!input.idempotencyKey) return null;
+    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+  }
+
+  return { send, dispatch, replay };
 }

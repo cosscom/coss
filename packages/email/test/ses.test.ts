@@ -20,7 +20,7 @@ import { SesIdentityProvider } from "../src/ses/identity.ts";
 import { encodeAddress, encodeWords } from "../src/ses/mime.ts";
 import { parseSesMessage } from "../src/ses/parse.ts";
 import { SesEmailProvider } from "../src/ses/provider.ts";
-import { FakeSesApi } from "../src/testing.ts";
+import { dispatchingEmailService, FakeSesApi } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 const config = { region: "eu-west-1", configurationSet: "coss-test", tenantPrefix: "test" };
@@ -512,7 +512,8 @@ describe("SES end to end (fake SES)", () => {
       canSend: true,
     });
 
-    const { email } = await runtime.emailService.send({
+    const service = dispatchingEmailService(runtime);
+    const { email } = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
       params: params({ from: `Acme <hello@${name}>`, to: ["a@example.com", "b@example.com"] }),

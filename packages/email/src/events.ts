@@ -42,7 +42,8 @@ export function statusesBelow(status: EmailRecipientStatus): EmailRecipientStatu
   return EMAIL_RECIPIENT_STATUSES.filter((candidate) => RANK[candidate] < RANK[status]);
 }
 
-const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
+/** `null`: engagement events (opens, clicks) never change a recipient's status or details. */
+const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.sent": "sent",
   "email.delivered": "delivered",
   "email.delivery_delayed": "delivery_delayed",
@@ -50,9 +51,11 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
   "email.complained": "complained",
   "email.failed": "failed",
   "email.suppressed": "suppressed",
+  "email.opened": null,
+  "email.clicked": null,
 };
 
-function recipientStatus(event: ProviderEvent): EmailRecipientStatus {
+function recipientStatus(event: ProviderEvent): EmailRecipientStatus | null {
   if (event.type === "email.bounced" && event.suppressed) return "suppressed";
   return STATUS_BY_EVENT[event.type];
 }
@@ -199,7 +202,7 @@ export async function recordProviderEvent(
     event.recipients === null
       ? [...knownAddresses]
       : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
-  if (affected.length > 0) {
+  if (status && affected.length > 0) {
     await tx
       .update(emailRecipient)
       .set({

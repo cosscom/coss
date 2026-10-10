@@ -36,6 +36,8 @@ export interface ApiRequest {
   query?: Record<string, string | number | undefined>;
   /** Serialized as JSON. */
   body?: unknown;
+  /** `text` returns the raw body of a successful response (e.g. CSV) instead of parsing JSON. */
+  responseType?: "json" | "text";
   idempotencyKey?: string;
   signal?: AbortSignal;
 }
@@ -130,7 +132,7 @@ export class HttpClient {
     const search = query.toString();
     if (search) url += `?${search}`;
     const headers: Record<string, string> = {
-      Accept: "application/json",
+      Accept: request.responseType === "text" ? "*/*" : "application/json",
       Authorization: `Bearer ${this.#apiKey}`,
       "User-Agent": `coss-typescript/${VERSION}`,
     };
@@ -155,7 +157,7 @@ export class HttpClient {
 
     for (let retry = 0; ; retry++) {
       if (request.signal?.aborted) return { data: null, error: abortedError() };
-      const attempt = await this.#attempt<T>(url, init, request.signal);
+      const attempt = await this.#attempt<T>(url, init, request.signal, request.responseType);
       if (request.retry === false || !attempt.retry || retry >= this.#maxRetries) {
         return attempt.result;
       }
@@ -169,6 +171,7 @@ export class HttpClient {
     url: string,
     init: RequestInit,
     callerSignal: AbortSignal | undefined,
+    responseType: ApiRequest["responseType"],
   ): Promise<Attempt<T>> {
     const timeoutSignal = AbortSignal.timeout(this.#timeout);
     const signal = callerSignal ? AbortSignal.any([callerSignal, timeoutSignal]) : timeoutSignal;
@@ -202,6 +205,9 @@ export class HttpClient {
         retry: isRetryableStatus(response.status),
         retryAfterMs: parseRetryAfter(response.headers.get("retry-after")),
       };
+    }
+    if (responseType === "text") {
+      return { result: { data: text as T, error: null }, retry: false, retryAfterMs: null };
     }
     try {
       return {
