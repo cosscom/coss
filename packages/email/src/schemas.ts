@@ -299,6 +299,11 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
 export type SendEmailRequestInput = z.input<typeof SendEmailRequest>;
 export type SendEmailRequestOutput = z.output<typeof SendEmailRequest>;
 
+/** Distinct addresses across to, cc and bcc: what send quotas count. */
+export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
+  return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
+}
+
 export const EMAIL_STATUSES = ["queued", "sent", "failed"] as const;
 
 /** Ordered by precedence: later delivery events never move a recipient to a lower status. */

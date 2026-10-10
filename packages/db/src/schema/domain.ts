@@ -516,3 +516,27 @@ export const webhookAttempt = pgTable(
     index("webhook_attempt_delivery_idx").on(t.deliveryId, t.attemptedAt),
   ],
 );
+
+/**
+ * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
+ * default. Set by platform admins (`bun run ratelimit:set`).
+ */
+export const rateLimitOverride = pgTable(
+  "rate_limit_override",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.rateLimitOverride)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucket: text("bucket").notNull(),
+    limit: integer("limit").notNull(),
+    periodMs: integer("period_ms").notNull(),
+    // Defaults to `limit`.
+    burst: integer("burst"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
+);

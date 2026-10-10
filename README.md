@@ -24,7 +24,7 @@ and the rest.
 ## Stack
 
 Bun workspaces · Turborepo · TypeScript 7 · Biome · Next.js 16 (dashboard) · Hono (public API) ·
-Postgres + Drizzle · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui)
+Postgres + Drizzle · Valkey (rate limits) · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui)
 
 See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
@@ -32,6 +32,7 @@ See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
 - [Bun](https://bun.com) ≥ 1.4.2 and Node.js ≥ 24 (Next.js and the Better Auth CLI run on Node)
 - PostgreSQL 18 (e.g. [Postgres.app](https://postgresapp.com))
+- [Valkey](https://valkey.io) 8 (or Redis) for the test suite, e.g. `brew install valkey && brew services start valkey`
 - VS Code: install the recommended extensions (Biome, TypeScript Native Preview)
 
 ## Setup
@@ -96,6 +97,8 @@ resets) are printed to the dashboard's server console in development.
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
+| `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
+| `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
 
 ## API
 
@@ -114,6 +117,14 @@ resets) are printed to the dashboard's server console in development.
 
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
 `coss.webhookEndpoints`.
+
+Requests are rate limited per API key by route class (reads, writes, sends; responses carry `RateLimit-Limit`,
+`RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the
+organization's quota per second and per day (sandbox environments have a small daily quota of their own).
+Over a limit the API answers `429 rate_limit_error` (`rate_limited` or `quota_exceeded`) with `Retry-After`.
+Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization with
+`bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
+client IP and per email address.
 
 ## Running on Amazon SES
 
@@ -150,3 +161,22 @@ carrying its own tag (enforced in code and by the IAM policies), so domains veri
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
 policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
 denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
+
+## Rate limits on ElastiCache Serverless for Valkey
+
+Rate limit counters live in Valkey (one GCRA bucket per key, updated atomically by a Lua script with the
+server's clock). Without `VALKEY_URL` each process counts in memory, which is fine for development but
+refused in production. If Valkey is unreachable, requests are **allowed** (fail open) and a warning is logged.
+
+1. The cache lives in a VPC: the API and dashboard must run in it, and its security group must allow inbound
+   TCP 6379 from them.
+2. With admin credentials, create it (idempotent; it takes a few minutes the first time):
+   `AWS_REGION=eu-west-1 bun run valkey:bootstrap --subnet-ids subnet-a,subnet-b --security-group-ids sg-… [--name coss] [--max-ecpu 5000] [--max-storage-gb 1]`
+   It creates a password user limited to the `<prefix>:*` keys and the commands the limiter uses, a disabled
+   `default` user, a user group and the serverless cache (Valkey 8, TLS).
+3. Set what it prints (`VALKEY_URL=rediss://…`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX`) for the API
+   and dashboard. The password is only printed when the user is created; `--rotate-password` makes a new one
+   (running processes fail open until they get it).
+4. Set `CLIENT_IP_HEADER` (e.g. `x-forwarded-for`) and `TRUSTED_PROXY_COUNT` (how many of your proxies append
+   to it) to match your load balancers; without them per-IP limits (repeated invalid API keys, dashboard
+   sign-in) are off, because the socket address would be the load balancer's.

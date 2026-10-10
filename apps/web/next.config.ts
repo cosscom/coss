@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     "@coss/db",
     "@coss/email",
     "@coss/webhooks",
+    "@coss/ratelimit",
   ],
 };
 

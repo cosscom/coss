@@ -15,6 +15,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
@@ -48,7 +49,7 @@ export const createDomainRoute = createRoute({
     "The records are checked repeatedly in the background and verification gives up after 72 " +
     "hours; until the domain is `verified`, live keys cannot send from it.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ domain: ["create"] }),
+  middleware: [requireApiKey({ domain: ["create"] }), rateLimit("api.write")],
   request: {
     body: { required: true, content: { "application/json": { schema: CreateDomainRequest } } },
   },
@@ -75,7 +76,7 @@ export const listDomainsRoute = createRoute({
   summary: "List sending domains",
   description: `Every domain of the organization, ordered by name. ${SCOPE_NOTE}`,
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ domain: ["read"] }),
+  middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
   responses: {
     200: jsonDoc("The organization's domains.", DomainList),
     ...commonErrors,
@@ -92,7 +93,7 @@ export const getDomainRoute = createRoute({
     "The domain with the result of the last DNS check, so you can show which records are still " +
     "missing or mismatched.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ domain: ["read"] }),
+  middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
   request: { params: DomainIdParams },
   responses: {
     200: jsonDoc("The domain.", DomainObject),
@@ -112,7 +113,7 @@ export const verifyDomainRoute = createRoute({
     "next background check, and returns the updated domain. A `failed` domain starts verification " +
     "over with fresh DKIM records, which have to be published again.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ domain: ["verify"] }),
+  middleware: [requireApiKey({ domain: ["verify"] }), rateLimit("api.write")],
   request: { params: DomainIdParams },
   responses: {
     200: jsonDoc("The domain, as the check left it.", DomainObject),
@@ -122,8 +123,9 @@ export const verifyDomainRoute = createRoute({
       `${PENDING_LIMIT}, so a \`failed\` one cannot restart (\`too_many_pending_domains\`).`,
     ),
     429: errorDoc(
-      "The domain was checked moments ago (`domain_recently_checked`). Retry after `Retry-After` " +
-        "seconds, or just read the domain.",
+      "The domain was checked moments ago (`domain_recently_checked`), or too many requests " +
+        "with this API key (`rate_limited`). Retry after `Retry-After` seconds, or just read " +
+        "the domain.",
       { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
     ),
     502: errorDoc("The delivery provider could not be reached; retry (`provider_error`)."),
@@ -140,7 +142,7 @@ export const deleteDomainRoute = createRoute({
     "Removes the domain and its provider identity. Emails already sent are unaffected, but live " +
     "keys can no longer send from it and the name becomes available again.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ domain: ["delete"] }),
+  middleware: [requireApiKey({ domain: ["delete"] }), rateLimit("api.write")],
   request: { params: DomainIdParams },
   responses: {
     200: jsonDoc("The domain was removed.", DeletedDomain),

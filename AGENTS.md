@@ -4,7 +4,8 @@ COSS is a unified developer platform: one API key + one SDK (`coss.email.send()`
 scheduling…). This repo holds the dashboard, the public API, shared packages and the public SDK.
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
-drive per-recipient status and signed customer webhooks. Human setup docs (incl. running on SES): [README.md](./README.md).
+drive per-recipient status and signed customer webhooks. Rate limits (per API key, per-org send quotas, dashboard
+auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Human setup docs (incl. running on SES): [README.md](./README.md).
 
 ## Layout
 
@@ -17,19 +18,21 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `globals.css`. |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 
-Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`; `api → tenancy, email, webhooks, db`;
-`web → auth, tenancy, email, webhooks, db, ui`; `worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace.
-Dev-only: `email`/`webhooks`/`worker → tenancy` (test fixtures — so tenancy must never import email or webhooks) and
-`api`/`worker → coss` (SDK contract tests — turbo builds the SDK before their `typecheck`/`test`).
+Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`, `db ← ratelimit`;
+`api → tenancy, email, webhooks, ratelimit, db`; `web → auth, tenancy, email, webhooks, ratelimit, db, ui`;
+`worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace. Dev-only: `email`/`webhooks`/`ratelimit`/`worker →
+tenancy` (test fixtures — so tenancy must never import email, webhooks or ratelimit) and `api`/`worker → coss` (SDK contract tests — turbo builds the SDK before their `typecheck`/`test`).
 
 ## Commands (repo root)
 
-Prerequisites: Bun (version in `packageManager`), Node ≥ 24, Postgres with `coss` and `coss_test` databases.
+Prerequisites: Bun (version in `packageManager`), Node ≥ 24, Postgres with `coss` and `coss_test` databases,
+Valkey (or Redis) at `TEST_VALKEY_URL` for the ratelimit/api tests.
 
 ```sh
 bun install                 # never npm/pnpm/yarn
@@ -48,6 +51,11 @@ bun run admin:create --email you@example.com   # promote an existing user to pla
 AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources,
                                                #   per-app IAM policies and (--alert-email) queue alarms, and
                                                #   print the SES env vars (needs AWS admin credentials)
+AWS_REGION=… bun run valkey:bootstrap --subnet-ids … --security-group-ids …
+                                               # idempotently create the ElastiCache Serverless (Valkey)
+                                               #   cache, its user + user group; prints VALKEY_URL
+bun run ratelimit:set --org acme [--bucket api.read --limit 100 [--period 1s] [--burst 200] | --reset]
+                                               # show/change an org's rate limit overrides (~1 min to apply)
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -97,6 +105,10 @@ from the root or a package — the package script is what loads `.env` and the t
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
+| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
+| `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
+| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
+| `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
@@ -115,11 +127,11 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
   `ERROR_TYPES`, or a product error mapped in `toApiError`; anything else is logged and returned as a generic 500. Never
   hand-build error JSON.
-- New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: requireApiKey({ <product>: ["<action>"] }) })`
+- New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: [requireApiKey({ <product>: ["<action>"] }), rateLimit("api.read" | "api.write" | "api.send")] })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
   `environmentId`, organization-scoped ones (domains) only by `organizationId`. Document responses with
-  `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`). The root `validationHook` turns zod failures into 422 + `issues`;
+  `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`, includes 429). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 
 ## SDK (`packages/sdk`, published as `coss`)
@@ -174,7 +186,9 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   `production`/`development`, `liveKey`/`sandboxKey`), `createTestUser()`, `addMember()` from `@coss/tenancy/testing`;
   `uniqueSuffix()` from `@coss/db/testing`. API: `createTestApp()` + `errorOf(res)` (`apps/api/test/helpers.ts`). Email:
   `FakeEmailProvider({ log: false, fail })`, `gatedProvider()` for races, `createVerifiedDomain(orgId)` (live sends need
-  one), `FakeSesApi`, `fakeDnsResolver()` from `@coss/email/testing`. Webhooks: `webhookReceiver()` (local server),
+  one), `FakeSesApi`, `fakeDnsResolver()` from `@coss/email/testing`. Rate limits: `memoryLimiter({ overrides })`,
+  `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
+  in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
   `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Worker-style scans take `scope: { organizationIds }`
   and `now` — always pass `scope` in tests (the test DB is shared and never truncated). Session-bound Better Auth calls: sign in with
   `auth.api.signInEmail({ returnHeaders: true })` and forward the cookie (`packages/tenancy/test/hardening.test.ts`).
@@ -285,6 +299,17 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
+- **Rate limits** (`@coss/ratelimit`): buckets are defined only in `BUCKETS` (`src/buckets.ts`); GCRA state is one
+  key per bucket, `GCRA_SCRIPT` (Valkey) and `gcraStep` (memory) must stay in step (`test/store.test.ts` runs both).
+  One consume call = one hash tag (`{scope:subject}`), so all its buckets share a scope and a cluster slot. The
+  limiter **fails open** (store errors allow the request and log); never make it throw or block on Valkey. Never
+  `FLUSH*`/`KEYS` (tests use random prefixes). Valkey time (`TIME`) is the clock, not the app's. API key buckets run
+  after `requireApiKey` (a bad key spends no bucket); `api.auth_failure` is per client IP and is checked
+  before the key lookup. Send quotas are charged before `emailService.send` and refunded on replays and thrown errors.
+  Client IPs come only from `clientIpResolver` (`CLIENT_IP_HEADER`, rightmost-trusted `x-forwarded-for` entry) —
+  never trust a raw header. Emails are hashed into keys. Better Auth's built-in limiter stays off
+  (`rateLimit: { enabled: false }`): `apps/web/src/lib/auth-rate-limit.ts` wraps the `/api/auth` POST handler. The
+  ElastiCache user's ACL (`valkey-bootstrap.ts` `APP_ACCESS`) must list every command the client and the script use.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -317,11 +342,14 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
+- Rate limits fail open while Valkey is unreachable (logged), and override changes take up to a minute (per-process
+  cache). Without `CLIENT_IP_HEADER` there are no per-IP limits. Sign-in is also limited per email address, so
+  someone hammering an address delays its owner's sign-in for as long as they keep at it (accepted).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
 domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
-rate limiting, async dispatch, org settings,
+rate limit overrides in the dashboard, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.
 

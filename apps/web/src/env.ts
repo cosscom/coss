@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -8,6 +9,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
     ...emailEnvShape,
+    ...rateLimitEnvShape,
     // Encrypts webhook signing secrets at rest: 32 bytes, base64 (`openssl rand -base64 32`).
     WEBHOOK_SECRETS_KEY: z
       .string()

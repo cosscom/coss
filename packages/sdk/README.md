@@ -201,7 +201,7 @@ interface CossError {
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
 | `idempotency_error`     | 409 / 422         | `request_in_progress`, or `idempotency_key_reused` with a different body |
-| `rate_limit_error`      | 429               | Too many requests, or a domain was checked moments ago (`domain_recently_checked`) |
+| `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |

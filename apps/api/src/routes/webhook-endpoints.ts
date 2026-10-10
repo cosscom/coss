@@ -21,6 +21,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
@@ -61,7 +62,7 @@ export const createWebhookEndpointRoute = createRoute({
     "only place the signing secret is ever returned: store it, and verify every delivery with " +
     "it (`verifyWebhook` in the SDK).",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ webhook: ["create"] }),
+  middleware: [requireApiKey({ webhook: ["create"] }), rateLimit("api.write")],
   request: {
     body: {
       required: true,
@@ -88,7 +89,7 @@ export const listWebhookEndpointsRoute = createRoute({
   summary: "List webhook endpoints",
   description: `Every endpoint of the API key's environment, oldest first. ${SCOPE_NOTE}`,
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ webhook: ["read"] }),
+  middleware: [requireApiKey({ webhook: ["read"] }), rateLimit("api.read")],
   responses: {
     200: jsonDoc("The environment's webhook endpoints.", WebhookEndpointList),
     ...commonErrors,
@@ -103,7 +104,7 @@ export const getWebhookEndpointRoute = createRoute({
   summary: "Retrieve a webhook endpoint",
   description: "The endpoint without its signing secret, which is only returned when created.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ webhook: ["read"] }),
+  middleware: [requireApiKey({ webhook: ["read"] }), rateLimit("api.read")],
   request: { params: EndpointIdParams },
   responses: {
     200: jsonDoc("The webhook endpoint.", WebhookEndpointObject),
@@ -123,7 +124,7 @@ export const updateWebhookEndpointRoute = createRoute({
     "their current value, and the signing secret never changes, so receivers keep verifying " +
     "deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ webhook: ["update"] }),
+  middleware: [requireApiKey({ webhook: ["update"] }), rateLimit("api.write")],
   request: {
     params: EndpointIdParams,
     body: {
@@ -153,7 +154,7 @@ export const deleteWebhookEndpointRoute = createRoute({
     "Removes the endpoint and its delivery log. Deliveries already queued for it are dropped. " +
     "To stop deliveries temporarily, set `enabled` to `false` instead.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ webhook: ["delete"] }),
+  middleware: [requireApiKey({ webhook: ["delete"] }), rateLimit("api.write")],
   request: { params: EndpointIdParams },
   responses: {
     200: jsonDoc("The endpoint was deleted.", DeletedWebhookEndpoint),

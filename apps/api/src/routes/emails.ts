@@ -1,9 +1,16 @@
 import { type EmailService, getEmail, listEmailEvents } from "@coss/email";
-import { EmailEventList, EmailObject, SendEmailRequest } from "@coss/email/schemas";
+import {
+  EmailEventList,
+  EmailObject,
+  SendEmailRequest,
+  uniqueRecipientCount,
+} from "@coss/email/schemas";
+import type { RateLimitRequest } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { validationHook } from "../validation.ts";
 import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
@@ -43,9 +50,10 @@ export const sendEmailRoute = createRoute({
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
     "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
     "suppression list (for every email, or for the email's `category`) are skipped and get " +
-    "the status `suppressed`.",
+    "the status `suppressed`. Recipients count against the organization's send quota (per " +
+    "second and per day; sandbox environments have their own daily quota).",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ email: ["send"] }),
+  middleware: [requireApiKey({ email: ["send"] }), rateLimit("api.send")],
   request: {
     headers: SendEmailHeaders,
     body: { required: true, content: { "application/json": { schema: SendEmailRequest } } },
@@ -74,6 +82,12 @@ export const sendEmailRoute = createRoute({
       { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
     ),
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    429: errorDoc(
+      "Too many requests with this API key (`rate_limited`), or the email's recipients exceed " +
+        "the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without " +
+        "`Retry-After` the email has more recipients than the quota allows at once.",
+      { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
+    ),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     403: errorDoc(
       "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or " +
@@ -96,7 +110,7 @@ export const getEmailRoute = createRoute({
   summary: "Retrieve an email",
   description: "Only emails sent from the API key's own environment can be retrieved.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ email: ["read"] }),
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
   request: { params: EmailIdParams },
   responses: {
     200: {
@@ -121,7 +135,7 @@ export const listEmailEventsRoute = createRoute({
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
     "recipient.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ email: ["read"] }),
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
   request: { params: EmailIdParams },
   responses: {
     200: {
@@ -133,6 +147,29 @@ export const listEmailEventsRoute = createRoute({
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
   },
 });
+
+/**
+ * The recipient quota a send is charged against: the organization's for live keys, the
+ * environment's own (smaller, daily) quota for sandbox keys.
+ */
+function sendQuota(
+  auth: { organizationId: string; environmentId: string; mode: string },
+  recipients: number,
+): RateLimitRequest {
+  return auth.mode === "sandbox"
+    ? {
+        buckets: ["email.sandbox_recipients.day"],
+        subject: auth.environmentId,
+        organizationId: auth.organizationId,
+        cost: recipients,
+      }
+    : {
+        buckets: ["email.recipients.second", "email.recipients.day"],
+        subject: auth.organizationId,
+        organizationId: auth.organizationId,
+        cost: recipients,
+      };
+}
 
 function invalidIdempotencyKey(): ApiError {
   return new ApiError(400, {
@@ -152,14 +189,37 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       const params = c.req.valid("json");
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
       const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
-      // Tenancy always comes from the authenticated key, never from the request.
-      const { email, replayed } = await emailService.send({
-        environment: { organizationId, projectId, environmentId, mode },
-        apiKeyId,
-        params,
-        idempotencyKey,
-      });
-      if (replayed) c.header("Idempotent-Replayed", "true");
+      const quota = sendQuota(c.var.auth, uniqueRecipientCount(params));
+      const decision = await c.var.rateLimiter.consume(quota);
+      if (!decision.allowed) {
+        throw rateLimitError(decision, {
+          code: "quota_exceeded",
+          message:
+            decision.retryAfterMs === null
+              ? "This email has more recipients than the send quota allows at once."
+              : `The send quota (${decision.bucket}) is used up. Retry after \`Retry-After\` seconds.`,
+        });
+      }
+      let result: Awaited<ReturnType<EmailService["send"]>>;
+      try {
+        // Tenancy always comes from the authenticated key, never from the request.
+        result = await emailService.send({
+          environment: { organizationId, projectId, environmentId, mode },
+          apiKeyId,
+          params,
+          idempotencyKey,
+        });
+      } catch (error) {
+        // Rejected before anything was sent (validation, domain, idempotency conflicts).
+        await c.var.rateLimiter.refund(quota);
+        throw error;
+      }
+      const { email, replayed } = result;
+      // A replay sent nothing new (an SDK retry reuses its Idempotency-Key).
+      if (replayed) {
+        await c.var.rateLimiter.refund(quota);
+        c.header("Idempotent-Replayed", "true");
+      }
       return c.json(email, 200);
     },
     // Replaces the default hook for this route: a bad Idempotency-Key is a 400, not a 422.

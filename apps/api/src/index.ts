@@ -1,10 +1,13 @@
 /** Bun server entry: `bun src/index.ts` serves the default export (`Bun.serve` options). */
+import { createRateLimitRuntime } from "@coss/ratelimit";
 import { parseSecretsKey } from "@coss/webhooks";
 import { createApp } from "./app.ts";
 import { env } from "./env.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 
 const email = createDefaultEmailRuntime(env);
+const rateLimits = createRateLimitRuntime(env);
+await rateLimits.ready();
 
 const app = createApp({
   emailService: email.emailService,
@@ -14,6 +17,8 @@ const app = createApp({
     allowInsecureUrls: process.env.NODE_ENV !== "production",
   },
   publicUrl: env.API_PUBLIC_URL,
+  rateLimiter: rateLimits.limiter,
+  clientIp: rateLimits.clientIp,
 });
 
 export default {
