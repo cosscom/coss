@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { asc, eq, sql } from "drizzle-orm";
+import { ingestProviderEvents } from "../src/events.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail } from "../src/read.ts";
 import { CreateSuppressionRequest } from "../src/schemas.ts";
@@ -224,6 +225,53 @@ describe("attachments", () => {
       null,
       null,
     ]);
+  });
+
+  test("are purged when a provider event completes an in-flight send", async () => {
+    const tenant = await createTestTenant();
+    const gated = gatedProvider("fake");
+    const service = createEmailService({
+      liveProvider: gated.provider,
+      sandboxProvider: gated.provider,
+    });
+    const sending = service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: withAttachments(),
+    });
+    await gated.called;
+    try {
+      const [message] = gated.sent;
+      if (!message) throw new Error("not sent");
+      expect((await read(tenant, message.emailId))?.status).toBe("queued");
+      expect((await storedAttachments(message.emailId)).map((row) => row.content)).toEqual([
+        pdf,
+        png,
+      ]);
+      const event = {
+        provider: "fake",
+        providerEventType: "Send",
+        emailId: message.emailId,
+        providerMessageId: "fake_1",
+        type: "email.sent" as const,
+        recipients: null,
+        occurredAt: new Date(),
+        sourceId: crypto.randomUUID(),
+        data: {},
+      };
+      expect(await ingestProviderEvents([event])).toBe(1);
+      const email = await read(tenant, message.emailId);
+      expect(email?.status).toBe("sent");
+      expect(email?.attachments).toHaveLength(2);
+      expect((await storedAttachments(message.emailId)).map((row) => row.content)).toEqual([
+        null,
+        null,
+      ]);
+      expect(await ingestProviderEvents([event])).toBe(0);
+    } finally {
+      gated.release();
+      await sending;
+    }
   });
 
   test("are purged when the stale-claim sweep resolves an interrupted send", async () => {

@@ -288,7 +288,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **Attachments** (`packages/email/src/attachments.ts`, table `email_attachment`, ids `att_`): base64 in the send
   request only (COSS never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
   SES-refused extensions are rejected at validation. Bytes live in `email_attachment.content` (bytea) only while the
-  email is `queued` — `deliver` and the stale-claim sweep null them in the transaction that moves it out of `queued` (an
+  email is `queued` — `deliver`, provider-event ingestion and the stale-claim sweep null them in the transaction that moves it out of `queued` (an
   email never claimed keeps them). Reads select metadata columns only; API/SDK/dashboard and webhook payloads never
   expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
   it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`

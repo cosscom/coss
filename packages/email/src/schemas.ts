@@ -449,8 +449,10 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
             content: attachment.content,
             content_type:
               attachment.content_type?.toLowerCase() ??
-              CONTENT_TYPES_BY_EXTENSION[fileExtension(attachment.filename)] ??
-              DEFAULT_CONTENT_TYPE,
+              (Object.hasOwn(CONTENT_TYPES_BY_EXTENSION, fileExtension(attachment.filename))
+                ? (CONTENT_TYPES_BY_EXTENSION[fileExtension(attachment.filename)] ??
+                  DEFAULT_CONTENT_TYPE)
+                : DEFAULT_CONTENT_TYPE),
             content_id: attachment.content_id ?? null,
           })),
         }

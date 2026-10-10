@@ -275,6 +275,17 @@ describe("SendEmailRequest: attachments", () => {
     ]);
   });
 
+  test.each(["__proto__", "constructor", "unknown"])(
+    "uses the fallback content type for .%s",
+    (extension) => {
+      const parsed = expectValid({
+        ...base,
+        attachments: [{ filename: `file.${extension}`, content: pdf }],
+      });
+      expect(parsed.attachments?.[0]?.content_type).toBe("application/octet-stream");
+    },
+  );
+
   test("omits the key without attachments", () => {
     expect(Object.hasOwn(expectValid(base), "attachments")).toBe(false);
     expect(Object.hasOwn(expectValid({ ...base, attachments: [] }), "attachments")).toBe(false);
