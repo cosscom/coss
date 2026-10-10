@@ -4,6 +4,7 @@ export {
   isSesError,
   type SesApi,
   type SesConfig,
+  TENANT_SUPPRESSION,
   tenantNameFor,
 } from "./api.ts";
 export { MANAGED_TAG, SesIdentityProvider } from "./identity.ts";

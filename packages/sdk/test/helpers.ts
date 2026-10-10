@@ -80,6 +80,7 @@ export const sampleEmail: Email = {
   text: null,
   headers: {},
   tags: [{ name: "category", value: "welcome" }],
+  category: null,
   status: "sent",
   recipients: [
     {

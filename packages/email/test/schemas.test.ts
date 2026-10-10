@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { SendEmailRequest, type SendEmailRequestInput } from "../src/schemas.ts";
+import {
+  CheckSuppressionQuery,
+  CreateSuppressionRequest,
+  ListSuppressionsQuery,
+  SendEmailRequest,
+  type SendEmailRequestInput,
+} from "../src/schemas.ts";
 
 const base: SendEmailRequestInput = {
   from: "Acme <hello@acme.com>",
@@ -228,5 +234,56 @@ describe("SendEmailRequest: tags", () => {
         ],
       }),
     ).toEqual({ "tags.1.name": 'Duplicate tag name "a".' });
+  });
+});
+
+describe("SendEmailRequest: category", () => {
+  test("is optional and uses the tag character set", () => {
+    expect(expectValid({ ...base, category: "marketing" }).category).toBe("marketing");
+    expect(expectValid(base).category).toBeUndefined();
+    const message = "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.";
+    for (const category of ["*", "", "has space", "x".repeat(257)]) {
+      expect(issues({ ...base, category })).toEqual({ category: message });
+    }
+  });
+});
+
+describe("suppression schemas", () => {
+  test("CreateSuppressionRequest normalizes the address and defaults the scope to *", () => {
+    expect(CreateSuppressionRequest.parse({ address: "Jane <Jane@Example.COM>" })).toEqual({
+      address: "jane@example.com",
+      scope: "*",
+    });
+    expect(
+      CreateSuppressionRequest.parse({ address: "jane@example.com", scope: "marketing" }),
+    ).toEqual({ address: "jane@example.com", scope: "marketing" });
+  });
+
+  test("CreateSuppressionRequest rejects bad addresses, scopes and unknown fields", () => {
+    expect(CreateSuppressionRequest.safeParse({ address: "nope" }).success).toBe(false);
+    expect(
+      CreateSuppressionRequest.safeParse({ address: "a@b.co", scope: "news letter" }).success,
+    ).toBe(false);
+    expect(CreateSuppressionRequest.safeParse({ address: "a@b.co", scope: "**" }).success).toBe(
+      false,
+    );
+    expect(
+      CreateSuppressionRequest.safeParse({ address: "a@b.co", reason: "bounce" }).success,
+    ).toBe(false);
+  });
+
+  test("query schemas coerce the limit and normalize addresses", () => {
+    expect(ListSuppressionsQuery.parse({ limit: "10", address: "A@B.co" })).toEqual({
+      limit: 10,
+      address: "a@b.co",
+    });
+    expect(ListSuppressionsQuery.safeParse({ limit: "101" }).success).toBe(false);
+    expect(CheckSuppressionQuery.parse({ address: "A@B.co", category: "news" })).toEqual({
+      address: "a@b.co",
+      category: "news",
+    });
+    expect(CheckSuppressionQuery.safeParse({ address: "a@b.co", category: "*" }).success).toBe(
+      false,
+    );
   });
 });

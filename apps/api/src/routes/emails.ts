@@ -41,7 +41,9 @@ export const sendEmailRoute = createRoute({
   description:
     "Sends an email from the API key's environment. Live (`coss_live_…`) keys must send from a " +
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
-    "never deliver anything; the response has `sandbox: true`.",
+    "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
+    "suppression list (for every email, or for the email's `category`) are skipped and get " +
+    "the status `suppressed`.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["send"] }),
   request: {
@@ -115,8 +117,9 @@ export const listEmailEventsRoute = createRoute({
   summary: "List an email's delivery events",
   description:
     "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the " +
-    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced` and " +
-    "`email.complained` per recipient.",
+    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
+    "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
+    "recipient.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["read"] }),
   request: { params: EmailIdParams },

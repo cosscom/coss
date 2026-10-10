@@ -12,6 +12,7 @@ import {
   parseEmailAddress,
   type SendEmailRequestOutput,
 } from "./schemas.ts";
+import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -42,14 +43,20 @@ const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const { email, emailRecipient } = schema;
 
-function toOutbound(row: EmailRow): OutboundEmail {
+function bareAddress(value: string): string {
+  return parseEmailAddress(value).address.toLowerCase();
+}
+
+/** The message for the provider, without the recipients COSS suppressed. */
+function toOutbound(row: EmailRow, suppressed: ReadonlySet<string>): OutboundEmail {
+  const keep = (list: string[]) => list.filter((value) => !suppressed.has(bareAddress(value)));
   return {
     emailId: row.id,
     organizationId: row.organizationId,
     from: row.from,
-    to: row.to,
-    cc: row.cc,
-    bcc: row.bcc,
+    to: keep(row.to),
+    cc: keep(row.cc),
+    bcc: keep(row.bcc),
     replyTo: row.replyTo,
     subject: row.subject,
     html: row.html,
@@ -59,7 +66,10 @@ function toOutbound(row: EmailRow): OutboundEmail {
   };
 }
 
-/** One recipient row per distinct address; an address listed twice keeps its first kind (to → cc → bcc). */
+/**
+ * One recipient row per distinct address; an address listed twice keeps its first kind (to → cc →
+ * bcc). Rows start `queued`.
+ */
 function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
   const seen = new Set<string>();
   const rows: (typeof emailRecipient.$inferInsert)[] = [];
@@ -69,7 +79,7 @@ function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
     ["bcc", row.bcc],
   ] as const) {
     for (const value of list) {
-      const address = parseEmailAddress(value).address.toLowerCase();
+      const address = bareAddress(value);
       if (seen.has(address)) continue;
       seen.add(address);
       rows.push({
@@ -99,6 +109,36 @@ function failedEvent(row: EmailRow, provider: string): ProviderEvent {
       failure: { code: "provider_error", message: "The email provider did not accept the email." },
     },
   };
+}
+
+/** The event COSS records for a recipient it skipped because of a suppression list entry. */
+function suppressedEvent(row: EmailRow, address: string, entry: SuppressionRow): ProviderEvent {
+  return {
+    provider: COSS_EVENT_SOURCE,
+    providerEventType: "Suppressed",
+    emailId: row.id,
+    providerMessageId: null,
+    type: "email.suppressed",
+    recipients: [address],
+    occurredAt: new Date(),
+    sourceId: entry.id,
+    data: { suppression: { id: entry.id, scope: entry.scope, reason: entry.reason } },
+  };
+}
+
+/** Recipients of an email that a suppression entry made COSS skip. */
+async function suppressedAddresses(row: EmailRow): Promise<Set<string>> {
+  const rows = await db
+    .select({ address: emailRecipient.address })
+    .from(emailRecipient)
+    .where(
+      and(
+        eq(emailRecipient.organizationId, row.organizationId),
+        eq(emailRecipient.emailId, row.id),
+        eq(emailRecipient.status, "suppressed"),
+      ),
+    );
+  return new Set(rows.map((recipient) => recipient.address));
 }
 
 function errorMessage(error: unknown): string {
@@ -137,24 +177,37 @@ export function createEmailService(opts: {
 
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
-    try {
-      const result = await provider.send(toOutbound(row));
-      outcome = {
-        status: "sent",
-        provider: provider.name,
-        providerMessageId: result.providerMessageId,
-        sentAt: new Date(),
-      };
-      events = result.events ?? [];
-    } catch (error) {
-      console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
+    const message = toOutbound(row, await suppressedAddresses(row));
+    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+      // Every recipient is suppressed: nothing to hand over. Each one already has its
+      // `email.suppressed` event, so no `email.failed` event is added.
       outcome = {
         status: "failed",
         provider: provider.name,
-        errorCode: "provider_error",
-        errorMessage: errorMessage(error),
+        errorCode: "all_recipients_suppressed",
+        errorMessage: "Every recipient is on the suppression list.",
       };
-      events = [failedEvent(row, provider.name)];
+      events = [];
+    } else {
+      try {
+        const result = await provider.send(message);
+        outcome = {
+          status: "sent",
+          provider: provider.name,
+          providerMessageId: result.providerMessageId,
+          sentAt: new Date(),
+        };
+        events = result.events ?? [];
+      } catch (error) {
+        console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
+        outcome = {
+          status: "failed",
+          provider: provider.name,
+          errorCode: "provider_error",
+          errorMessage: errorMessage(error),
+        };
+        events = [failedEvent(row, provider.name)];
+      }
     }
 
     await db.transaction(async (tx) => {
@@ -253,6 +306,7 @@ export function createEmailService(opts: {
       text: params.text,
       headers: params.headers,
       tags: params.tags,
+      category: params.category ?? null,
       idempotencyKey,
       requestHash,
     } satisfies typeof email.$inferInsert;
@@ -274,14 +328,26 @@ export function createEmailService(opts: {
     }
 
     // Inserts the email and, only if this request won the insert, its recipients: atomically, so
-    // a stored email always has its recipient rows.
+    // a stored email always has its recipient rows. Recipients on the suppression list are stored
+    // `suppressed` (with an `email.suppressed` event) and never handed to the provider.
     const insertEmail = async (executor: Executor): Promise<EmailRow | undefined> => {
       const [row] = await executor
         .insert(email)
         .values(values)
         .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
         .returning();
-      if (row) await executor.insert(emailRecipient).values(recipientRows(row));
+      if (!row) return row;
+      const recipients = recipientRows(row);
+      const suppressed = await suppressedRecipients(
+        executor,
+        environment,
+        recipients.map((recipient) => recipient.address),
+        row.category,
+      );
+      await executor.insert(emailRecipient).values(recipients);
+      for (const [address, entry] of suppressed) {
+        await recordProviderEvent(executor, suppressedEvent(row, address, entry));
+      }
       return row;
     };
     const insertOnce = () => db.transaction((tx) => insertEmail(tx));

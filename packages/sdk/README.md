@@ -126,6 +126,34 @@ await coss.webhookEndpoints.delete(endpoint!.id);
 `update` only changes the fields you pass, and never the signing secret, so receivers keep
 verifying deliveries. `event_types: []` means every event type, including ones added later.
 
+## Suppressions
+
+Each environment has a suppression list. Sends skip suppressed recipients: they get the status
+`suppressed` and an `email.suppressed` event, and the rest of the email is still sent. Permanent
+bounces and spam complaints add an address for every email (`scope: "*"`) automatically.
+
+An entry can also cover a single category. That makes the list a good backend for unsubscribe
+links:
+
+```ts
+// The recipient unsubscribed from marketing email.
+await coss.email.suppressions.add({ address: "jane@example.com", scope: "marketing" });
+
+// Skipped: the email has the suppressed category.
+await coss.email.send({ ...params, to: "jane@example.com", category: "marketing" });
+// Delivered: receipts are not suppressed.
+await coss.email.send({ ...params, to: "jane@example.com", category: "receipts" });
+
+const { data: check } = await coss.email.suppressions.check({
+  address: "jane@example.com",
+  category: "marketing",
+}); // { suppressed: true, suppressions: [{ id: "sup_01k…", scope: "marketing", … }] }
+
+const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // newest first
+// Next page: list({ after: page.data.at(-1).id }) while page.has_more.
+await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
+```
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,

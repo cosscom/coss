@@ -36,6 +36,20 @@
       "when": 1791650995637,
       "tag": "0004_api_key_product_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791657681378,
+      "tag": "0005_suppressions",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791657681807,
+      "tag": "0006_suppression_key_permissions",
+      "breakpoints": true
     }
   ]
 }

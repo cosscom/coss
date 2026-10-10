@@ -8,7 +8,14 @@ import {
   type MailFromStatus,
   type ProviderTenant,
 } from "../provider.ts";
-import { accountOf, isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
+import {
+  accountOf,
+  isSesError,
+  type SesApi,
+  type SesConfig,
+  TENANT_SUPPRESSION,
+  tenantNameFor,
+} from "./api.ts";
 
 /**
  * Tag on every identity COSS creates (value: the tenant prefix). COSS only ever deletes or
@@ -75,16 +82,13 @@ export class SesIdentityProvider implements IdentityProvider {
     try {
       const created = await this.#api.createTenant({
         TenantName: tenantName,
-        // Bounces and complaints suppress addresses for this organization only.
-        SuppressionAttributes: {
-          SuppressionScope: "TENANT",
-          SuppressedReasons: ["BOUNCE", "COMPLAINT"],
-        },
+        SuppressionAttributes: TENANT_SUPPRESSION,
         Tags: [{ Key: "coss_organization_id", Value: input.organizationId }],
       });
       tenantArn = created.TenantArn;
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
+      // Existing tenants are migrated by ses:bootstrap before their protection is disabled.
     }
     tenantArn ??= await this.#tenantArn({ tenantName, tenantArn: null });
     // A tenant can only send with configuration sets associated with it.

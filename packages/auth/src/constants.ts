@@ -21,4 +21,5 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   email: ["send", "read"],
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
+  suppression: ["create", "read", "delete"],
 };

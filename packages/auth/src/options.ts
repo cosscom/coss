@@ -147,7 +147,7 @@ export const authOptions = {
       // Environment binding lives in our `environment_api_key` table (metadata is client-writable).
       enableMetadata: false,
       // Stored on the key at creation, so adding a resource here needs a backfill for existing
-      // keys (see migration 0004) or they get a 403 from the new endpoints.
+      // keys (see migrations 0004 and 0006) or they get a 403 from the new endpoints.
       permissions: { defaultPermissions: API_KEY_PERMISSIONS },
     }),
   ],

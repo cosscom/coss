@@ -245,6 +245,10 @@ describe("authenticateApiKey", () => {
     expect((await authenticateApiKey(tenant.sandboxKey, { email: ["send", "read"] })).ok).toBe(
       true,
     );
+    expect(
+      (await authenticateApiKey(tenant.sandboxKey, { suppression: ["create", "read", "delete"] }))
+        .ok,
+    ).toBe(true);
     expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toEqual({
       ok: false,
       reason: "forbidden",

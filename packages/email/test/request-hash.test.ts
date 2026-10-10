@@ -30,5 +30,17 @@ describe("hashSendRequest", () => {
     expect(hashSendRequest(a)).toBe(hashSendRequest(b));
     expect(hashSendRequest(a)).toMatch(/^[0-9a-f]{64}$/);
     expect(hashSendRequest({ ...a, subject: "Hi!" })).not.toBe(hashSendRequest(a));
+    expect(hashSendRequest({ ...a, category: "news" })).not.toBe(hashSendRequest(a));
+  });
+
+  test("is unchanged for requests without a category (idempotent retries across deploys)", () => {
+    const parsed = SendEmailRequest.parse({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Hi",
+      text: "x",
+    });
+    expect(Object.hasOwn(parsed, "category")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("category");
   });
 });

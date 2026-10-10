@@ -25,10 +25,13 @@ import {
   type ListTagsForResourceCommandOutput,
   PutEmailIdentityMailFromAttributesCommand,
   type PutEmailIdentityMailFromAttributesCommandInput,
+  PutTenantSuppressionAttributesCommand,
+  type PutTenantSuppressionAttributesCommandInput,
   SESv2Client,
   SendEmailCommand,
   type SendEmailCommandInput,
   type SendEmailCommandOutput,
+  type TenantSuppressionAttributes,
 } from "@aws-sdk/client-sesv2";
 
 export type SesConfig = {
@@ -39,9 +42,22 @@ export type SesConfig = {
   tenantPrefix: string;
 };
 
+/**
+ * COSS keeps the only suppression list (`email_suppression`): SES must never suppress an address
+ * by itself, or removing a COSS entry (or scoping one to a category) would not let mail through.
+ * Tenants keep their own, empty, list rather than the account-wide one shared by every stage.
+ */
+export const TENANT_SUPPRESSION: TenantSuppressionAttributes = {
+  SuppressionScope: "TENANT",
+  SuppressedReasons: [],
+};
+
 export interface SesApi {
   sendEmail(input: SendEmailCommandInput): Promise<SendEmailCommandOutput>;
   createTenant(input: CreateTenantCommandInput): Promise<CreateTenantCommandOutput>;
+  putTenantSuppressionAttributes(
+    input: PutTenantSuppressionAttributesCommandInput,
+  ): Promise<unknown>;
   getTenant(input: { TenantName: string }): Promise<GetTenantCommandOutput>;
   createTenantResourceAssociation(
     input: CreateTenantResourceAssociationCommandInput,
@@ -70,6 +86,8 @@ export function createSesApi(region: string): SesApi {
   return {
     sendEmail: (input) => client.send(new SendEmailCommand(input)),
     createTenant: (input) => client.send(new CreateTenantCommand(input)),
+    putTenantSuppressionAttributes: (input) =>
+      client.send(new PutTenantSuppressionAttributesCommand(input)),
     getTenant: (input) => client.send(new GetTenantCommand(input)),
     createTenantResourceAssociation: (input) =>
       client.send(new CreateTenantResourceAssociationCommand(input)),

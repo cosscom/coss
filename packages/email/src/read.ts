@@ -32,6 +32,7 @@ export function toEmailObject(
     text: row.text,
     headers: row.headers,
     tags: row.tags,
+    category: row.category,
     status: row.status,
     recipients: opts.recipients.map((recipient) => ({
       address: recipient.address,

@@ -6,7 +6,10 @@
  *
  * plus least-privilege IAM policies for the api, dashboard and worker (`<name>-api`, …, under the
  * `/coss/` path) and, with `--alert-email`, CloudWatch alarms on the queues sent to that address.
- * Tenants, domain identities and their associations are created by the app at runtime.
+ * Tenants, domain identities and their associations are created by the app at runtime. COSS keeps
+ * its own suppression lists, so SES suppression is turned off for the configuration set and for
+ * every existing tenant of this stage, after importing existing suppressions into DATABASE_URL.
+ * On upgrades, pause sends/domain changes and drain events before running (see README).
  *
  *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]
  *
@@ -52,8 +55,10 @@ import {
   SetQueueAttributesCommand,
   SQSClient,
 } from "@aws-sdk/client-sqs";
+import { closeDb } from "@coss/db";
 import { SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
 import { cossPolicies, type PolicyDocument } from "./ses-policies.ts";
+import { migrateSesSuppressions } from "./ses-suppression-migration.ts";
 
 const EVENT_DESTINATION = "coss-events";
 const EVENT_TYPES = [
@@ -273,7 +278,16 @@ try {
 }
 step(`SES configuration set ${name} → ${EVENT_TYPES.join(", ")}`);
 
-// 6. Least-privilege IAM policies. A changed document becomes the new default version (IAM keeps
+// 6. Commit historical protection to COSS before disabling any SES lists.
+let tenantsUpdated: number;
+try {
+  tenantsUpdated = await migrateSesSuppressions(ses, { configurationSet: name, tenantPrefix });
+} finally {
+  await closeDb();
+}
+step(`SES suppression off (configuration set and ${tenantsUpdated} existing tenants)`);
+
+// 7. Least-privilege IAM policies. A changed document becomes the new default version (IAM keeps
 //    at most 5, so the oldest non-default one is dropped first).
 const POLICY_PATH = "/coss/";
 async function ensurePolicy(policyName: string, document: PolicyDocument): Promise<string> {
@@ -321,7 +335,7 @@ for (const [app, document] of Object.entries(policies)) {
   step(`IAM policy for the ${app}: ${await ensurePolicy(`${name}-${app}`, document)}`);
 }
 
-// 7. Alarms: anything in the dead-letter queue is a delivery event that was never recorded, and an
+// 8. Alarms: anything in the dead-letter queue is a delivery event that was never recorded, and an
 //    old message in the main queue means the worker isn't consuming.
 const alertEmail = values["alert-email"];
 if (alertEmail) {

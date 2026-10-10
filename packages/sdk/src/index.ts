@@ -3,6 +3,7 @@ export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./cor
 export type { FetchLike, RequestOptions } from "./core/http.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
+export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type {
   CreateDomainParams,
@@ -26,6 +27,15 @@ export type {
   List,
   SendEmailParams,
 } from "./types/email.ts";
+export type {
+  CheckSuppressionParams,
+  CreateSuppressionParams,
+  DeletedSuppression,
+  ListSuppressionsParams,
+  Suppression,
+  SuppressionCheck,
+  SuppressionReason,
+} from "./types/suppression.ts";
 export type { EmailWebhookEventData, WebhookEvent } from "./types/webhook.ts";
 export type {
   CreateWebhookEndpointParams,
