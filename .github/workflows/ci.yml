@@ -35,6 +35,7 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:3001
       API_PORT: "3001"
       EMAIL_PROVIDER: fake
+      WEBHOOK_SECRETS_KEY: Y2ktb25seS13ZWJob29rLXNlY3JldHMta2V5LTMyYnk=
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2

@@ -1,0 +1,32 @@
+{
+  "name": "@coss/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/index.ts",
+    "start": "bun --env-file=../../.env src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test",
+    "ses:bootstrap": "bun --env-file=../../.env scripts/ses-bootstrap.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "catalog:",
+    "@aws-sdk/client-sesv2": "catalog:",
+    "@aws-sdk/client-sns": "catalog:",
+    "@aws-sdk/client-sqs": "catalog:",
+    "@coss/db": "workspace:*",
+    "@coss/email": "workspace:*",
+    "@coss/webhooks": "workspace:*",
+    "@t3-oss/env-core": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tenancy": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "coss": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1,8 +1,10 @@
 import { describe, expect, spyOn, test } from "bun:test";
+import { db, schema } from "@coss/db";
 import type { EmailObjectOutput } from "@coss/email/schemas";
 import { createTestTenant } from "@coss/tenancy/testing";
 import {
   createTestApp,
+  domainFrom,
   emailBody,
   errorOf,
   getEmailById,
@@ -48,13 +50,51 @@ describe("POST /v1/emails", () => {
     const tenant = await createTestTenant();
     const { app, liveProvider, sandboxProvider } = createTestApp();
 
-    const res = await sendEmail(app, tenant.liveKey, emailBody());
+    const from = await domainFrom(tenant.organization.id);
+
+    const res = await sendEmail(app, tenant.liveKey, emailBody({ from }));
 
     expect(res.status).toBe(200);
     const email = (await res.json()) as EmailObjectOutput;
     expect(email).toMatchObject({ status: "sent", sandbox: false });
     expect(liveProvider.sent.map((m) => m.emailId)).toEqual([email.id]);
     expect(sandboxProvider.sent).toHaveLength(0);
+  });
+
+  test("a live key can only send from a verified domain of the organization", async () => {
+    const tenant = await createTestTenant();
+    const { app, liveProvider } = createTestApp();
+
+    const res = await sendEmail(
+      app,
+      tenant.liveKey,
+      emailBody({ from: "hello@unknown.coss.test" }),
+    );
+
+    expect(res.status).toBe(422);
+    expect(await errorOf(res)).toMatchObject({
+      type: "invalid_request_error",
+      code: "domain_not_verified",
+      param: "from",
+    });
+    expect(liveProvider.sent).toHaveLength(0);
+  });
+
+  test("a paused organization can't send with a live key", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const from = await domainFrom(tenant.organization.id);
+    await db.insert(schema.emailTenant).values({
+      organizationId: tenant.organization.id,
+      provider: "fake",
+      tenantName: `fake-${tenant.organization.id}`,
+      sendingStatus: "disabled",
+    });
+
+    const res = await sendEmail(app, tenant.liveKey, emailBody({ from }));
+
+    expect(res.status).toBe(403);
+    expect(await errorOf(res)).toMatchObject({ type: "permission_error", code: "sending_paused" });
   });
 
   test("an invalid body is a 422 validation_error listing every issue", async () => {
@@ -219,7 +259,13 @@ describe("POST /v1/emails", () => {
     const headers = { "Idempotency-Key": crypto.randomUUID() };
 
     const sandbox = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
-    const live = await sendEmail(app, tenant.liveKey, emailBody({ subject: "Other" }), headers);
+    const from = await domainFrom(tenant.organization.id);
+    const live = await sendEmail(
+      app,
+      tenant.liveKey,
+      emailBody({ subject: "Other", from }),
+      headers,
+    );
 
     expect(sandbox.status).toBe(200);
     expect(live.status).toBe(200);

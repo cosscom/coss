@@ -81,6 +81,14 @@ export const sampleEmail: Email = {
   headers: {},
   tags: [{ name: "category", value: "welcome" }],
   status: "sent",
+  recipients: [
+    {
+      address: "delivered@example.com",
+      type: "to",
+      status: "delivered",
+      last_event_at: "2026-10-09T12:00:01.000Z",
+    },
+  ],
   sandbox: true,
   created_at: "2026-10-09T12:00:00.000Z",
   sent_at: "2026-10-09T12:00:00.100Z",

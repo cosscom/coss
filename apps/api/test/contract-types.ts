@@ -2,8 +2,24 @@
  * Compile-time contract between the API's zod schemas and the SDK's hand-written wire types.
  * Checked by `tsc --noEmit` (never executed): a mismatch is a type error in this file.
  */
-import type { EmailObject, SendEmailRequest } from "@coss/email/schemas";
-import type { CossErrorIssue, CossErrorType, Email, SendEmailParams } from "coss";
+import type {
+  EmailEvent,
+  EmailEventList,
+  EmailObject,
+  EmailRecipient,
+  EmailWebhookEvent,
+  SendEmailRequest,
+} from "@coss/email/schemas";
+import type {
+  CossErrorIssue,
+  CossErrorType,
+  Email,
+  List,
+  EmailEvent as SdkEmailEvent,
+  EmailRecipient as SdkEmailRecipient,
+  SendEmailParams,
+  WebhookEvent,
+} from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
@@ -34,6 +50,13 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput, Email>>,
   Assert<MutuallyAssignable<EmailOutput["status"], Email["status"]>>,
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailEvent>, SdkEmailEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailEventList>, List<SdkEmailEvent>>>,
+  // Webhooks: the body COSS sends is exactly the SDK's `WebhookEvent`.
+  Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, WebhookEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], WebhookEvent["data"]>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

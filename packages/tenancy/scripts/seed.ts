@@ -1,6 +1,7 @@
 /**
- * Idempotent local seed (`bun run db:seed`): demo admin user, org `acme`, project `default`,
- * and a fresh development (sandbox) API key printed as `COSS_API_KEY=…`.
+ * Idempotent local seed (`bun run db:seed`): demo admin user, org `acme` with the verified
+ * fake-provider domain `acme.test`, project `default`, and a fresh development (sandbox) API key
+ * printed as `COSS_API_KEY=…`.
  */
 import { auth } from "@coss/auth";
 import { closeDb, db, schema } from "@coss/db";
@@ -18,6 +19,30 @@ const DEMO_NAME = "Demo User";
 const ORG_NAME = "Acme";
 const ORG_SLUG = "acme";
 const PROJECT_NAME = "Default";
+// `.test` never resolves, so this domain only works with the fake provider (EMAIL_PROVIDER=fake).
+const DEMO_DOMAIN = "acme.test";
+
+/** A verified fake-provider domain, inserted directly (tenancy never imports @coss/email). */
+async function ensureDemoDomain(organizationId: string): Promise<void> {
+  const now = new Date();
+  await db
+    .insert(schema.domain)
+    .values({
+      organizationId,
+      name: DEMO_DOMAIN,
+      status: "verified",
+      canSend: true,
+      provider: "fake",
+      region: "us-east-1",
+      dkimTokens: ["seeddkim1", "seeddkim2", "seeddkim3"],
+      dkimHostedZone: "dkim.amazonses.com",
+      mailFromDomain: `send.${DEMO_DOMAIN}`,
+      mailFromStatus: "success",
+      verifiedAt: now,
+      lastCheckedAt: now,
+    })
+    .onConflictDoNothing();
+}
 
 async function ensureDemoUser(password: string): Promise<{ id: string; created: boolean }> {
   const [existing] = await db
@@ -68,6 +93,7 @@ async function main(): Promise<void> {
   const user = await ensureDemoUser(password);
   await promoteToAdmin(DEMO_EMAIL);
   const organization = await ensureOrganization(user.id);
+  await ensureDemoDomain(organization.id);
 
   const project =
     (await getProject({ organizationId: organization.id, slug: "default" })) ??
@@ -92,7 +118,7 @@ async function main(): Promise<void> {
       "Seeded COSS demo data:",
       `  user:         ${DEMO_EMAIL} (platform admin)`,
       `  password:     ${passwordNote}`,
-      `  organization: ${organization.slug}`,
+      `  organization: ${organization.slug} (verified domain ${DEMO_DOMAIN} for live keys)`,
       `  project:      ${project.slug}`,
       `  environment:  ${found.environment.slug} (${found.environment.mode})`,
       "",

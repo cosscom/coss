@@ -1,5 +1,5 @@
-import { type EmailService, getEmail } from "@coss/email";
-import { EmailObject, SendEmailRequest } from "@coss/email/schemas";
+import { type EmailService, getEmail, listEmailEvents } from "@coss/email";
+import { EmailEventList, EmailObject, SendEmailRequest } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, ErrorEnvelope, notFound } from "../errors.ts";
@@ -63,8 +63,9 @@ export const sendEmailRoute = createRoute({
   tags: ["Emails"],
   summary: "Send an email",
   description:
-    "Sends an email from the API key's environment. Sandbox (`coss_test_…`) keys never deliver " +
-    "anything; the response has `sandbox: true`.",
+    "Sends an email from the API key's environment. Live (`coss_live_…`) keys must send from a " +
+    "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
+    "never deliver anything; the response has `sandbox: true`.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["send"] }),
   request: {
@@ -96,9 +97,15 @@ export const sendEmailRoute = createRoute({
     ),
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    403: errorDoc(
+      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or " +
+        "sending is paused for the organization because of its sending reputation " +
+        "(`sending_paused`).",
+    ),
     422: errorDoc(
-      "The body failed validation (`validation_error`, see `issues`), or the `Idempotency-Key` " +
-        "was already used with a different body (`idempotency_key_reused`).",
+      "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +
+        "verified domain of the organization (`domain_not_verified`, live keys only), or the " +
+        "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
     ),
   },
 });
@@ -118,6 +125,30 @@ export const getEmailRoute = createRoute({
       description: "The email.",
       headers: { "X-Request-Id": requestIdHeader },
       content: { "application/json": { schema: EmailObject } },
+    },
+    ...commonErrors,
+    404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+  },
+});
+
+export const listEmailEventsRoute = createRoute({
+  method: "get",
+  path: "/emails/{id}/events",
+  operationId: "listEmailEvents",
+  tags: ["Emails"],
+  summary: "List an email's delivery events",
+  description:
+    "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the " +
+    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced` and " +
+    "`email.complained` per recipient.",
+  security: [{ bearerAuth: [] }],
+  middleware: requireApiKey({ email: ["read"] }),
+  request: { params: EmailIdParams },
+  responses: {
+    200: {
+      description: "The email's events.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "application/json": { schema: EmailEventList } },
     },
     ...commonErrors,
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
@@ -166,6 +197,14 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const email = await getEmail({ organizationId, environmentId, id });
     if (!email) throw notFound("No email with this id exists in this API key's environment.");
     return c.json(email, 200);
+  });
+
+  router.openapi(listEmailEventsRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    const result = await listEmailEvents({ organizationId, environmentId, emailId: id });
+    if (!result) throw notFound("No email with this id exists in this API key's environment.");
+    return c.json({ object: "list" as const, data: result.events, has_more: result.hasMore }, 200);
   });
 
   return router;

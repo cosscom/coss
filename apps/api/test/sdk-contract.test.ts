@@ -56,6 +56,32 @@ describe("coss SDK against the API", () => {
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
+  test("recipients and events report simulated delivery outcomes", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const sent = await coss.email.send({
+      from: "hello@acme.com",
+      to: ["success@simulator.amazonses.com", "bounce@simulator.amazonses.com"],
+      subject: "Hi",
+      text: "Hi",
+    });
+    if (!sent.data) throw new Error("send failed");
+    expect(sent.data.recipients.map((r) => [r.address, r.status])).toEqual([
+      ["success@simulator.amazonses.com", "delivered"],
+      ["bounce@simulator.amazonses.com", "bounced"],
+    ]);
+
+    const events = await coss.email.listEvents(sent.data.id);
+    expect(events.error).toBeNull();
+    expect(events.data?.data.map((e) => [e.type, e.recipient])).toEqual([
+      ["email.sent", null],
+      ["email.delivered", "success@simulator.amazonses.com"],
+      ["email.bounced", "bounce@simulator.amazonses.com"],
+    ]);
+  });
+
   test("an SDK retry with the same idempotency key does not send twice", async () => {
     const tenant = await createTestTenant();
     const { app, sandboxProvider } = createTestApp();

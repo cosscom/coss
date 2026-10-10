@@ -154,6 +154,19 @@ function fromEmailError(error: EmailError): ApiError {
         code: error.code,
         message: error.message,
       });
+    case "domain_not_verified":
+      return new ApiError(error.status, {
+        type: "invalid_request_error",
+        code: error.code,
+        message: error.message,
+        param: "from",
+      });
+    case "sending_paused":
+      return new ApiError(error.status, {
+        type: "permission_error",
+        code: error.code,
+        message: error.message,
+      });
   }
 }
 

@@ -1,0 +1,249 @@
+/**
+ * Delivery-event ingestion. System-level: the organization is resolved from the email the event
+ * names (the `coss_email_id` tag COSS sets on every message), never from the caller, and every
+ * write is scoped by that email's organization. Each new event is queued for the environment's
+ * webhook endpoints in the same transaction (outbox).
+ */
+import { createHash } from "node:crypto";
+import { db, type Executor, schema } from "@coss/db";
+import { isId } from "@coss/db/id";
+import { enqueueWebhookMessage } from "@coss/webhooks";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import type { ProviderEvent } from "./provider.ts";
+import {
+  EMAIL_RECIPIENT_STATUSES,
+  type EmailEventType,
+  type EmailRecipientStatus,
+  type EmailWebhookEventOutput,
+} from "./schemas.ts";
+
+const { email, emailEvent, emailRecipient, environment } = schema;
+
+export type EmailEventRow = typeof emailEvent.$inferSelect;
+
+/** Events COSS itself records (e.g. a provider rejecting a send) rather than a provider. */
+export const COSS_EVENT_SOURCE = "coss";
+
+const RANK: Record<EmailRecipientStatus, number> = {
+  queued: 0,
+  sent: 1,
+  delivery_delayed: 2,
+  delivered: 3,
+  bounced: 4,
+  suppressed: 4,
+  failed: 4,
+  complained: 5,
+};
+
+/** Statuses a recipient may move from to reach `status` (strictly lower precedence). */
+export function statusesBelow(status: EmailRecipientStatus): EmailRecipientStatus[] {
+  return EMAIL_RECIPIENT_STATUSES.filter((candidate) => RANK[candidate] < RANK[status]);
+}
+
+const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
+  "email.sent": "sent",
+  "email.delivered": "delivered",
+  "email.delivery_delayed": "delivery_delayed",
+  "email.bounced": "bounced",
+  "email.complained": "complained",
+  "email.failed": "failed",
+};
+
+function recipientStatus(event: ProviderEvent): EmailRecipientStatus {
+  if (event.type === "email.bounced" && event.suppressed) return "suppressed";
+  return STATUS_BY_EVENT[event.type];
+}
+
+function dedupeKey(event: ProviderEvent, recipient: string | null): string {
+  return createHash("sha256")
+    .update(
+      JSON.stringify([
+        event.provider,
+        event.providerEventType,
+        event.providerMessageId ?? "",
+        recipient ?? "*",
+        event.sourceId,
+      ]),
+    )
+    .digest("hex");
+}
+
+/**
+ * Records one event in `tx`: inserts it (once per recipient, deduplicated), moves recipients to a
+ * higher-precedence status, and marks the email `sent` on `email.sent`. Returns the new rows;
+ * duplicates, unknown emails and mismatched providers record nothing.
+ */
+export async function recordProviderEvent(
+  tx: Executor,
+  event: ProviderEvent,
+): Promise<EmailEventRow[]> {
+  if (!event.emailId || !isId("email", event.emailId)) return [];
+  const [target] = await tx
+    .select({
+      id: email.id,
+      organizationId: email.organizationId,
+      environmentId: email.environmentId,
+      provider: email.provider,
+      providerMessageId: email.providerMessageId,
+      from: email.from,
+      to: email.to,
+      subject: email.subject,
+      tags: email.tags,
+      mode: environment.mode,
+    })
+    .from(email)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, email.environmentId),
+        eq(environment.organizationId, email.organizationId),
+      ),
+    )
+    .where(eq(email.id, event.emailId))
+    .limit(1);
+  if (!target) {
+    console.warn(`[email:events] ignoring ${event.providerEventType} for unknown ${event.emailId}`);
+    return [];
+  }
+  // Only the provider that was handed the email may report on it, and only for its own message.
+  const fromCoss = event.provider === COSS_EVENT_SOURCE;
+  if (
+    (!fromCoss && target.provider !== event.provider) ||
+    (target.providerMessageId &&
+      event.providerMessageId &&
+      target.providerMessageId !== event.providerMessageId)
+  ) {
+    console.warn(
+      `[email:events] ignoring ${event.provider} ${event.providerEventType} for ${target.id}: ` +
+        "provider or message id mismatch",
+    );
+    return [];
+  }
+
+  const scope = and(
+    eq(emailRecipient.organizationId, target.organizationId),
+    eq(emailRecipient.emailId, target.id),
+  );
+  const known = await tx
+    .select({ address: emailRecipient.address })
+    .from(emailRecipient)
+    .where(scope);
+  const knownAddresses = new Set(known.map((row) => row.address));
+  const recipients =
+    event.recipients === null
+      ? [null]
+      : [...new Set(event.recipients.map((value) => value.toLowerCase()))].filter((value) =>
+          knownAddresses.has(value),
+        );
+  if (recipients.length === 0) return [];
+
+  const inserted = await tx
+    .insert(emailEvent)
+    .values(
+      recipients.map((recipient) => ({
+        organizationId: target.organizationId,
+        environmentId: target.environmentId,
+        emailId: target.id,
+        type: event.type,
+        provider: event.provider,
+        providerEventType: event.providerEventType,
+        recipient,
+        occurredAt: event.occurredAt,
+        dedupeKey: dedupeKey(event, recipient),
+        details: event.data,
+      })),
+    )
+    .onConflictDoNothing({ target: [emailEvent.emailId, emailEvent.dedupeKey] })
+    .returning();
+  if (inserted.length === 0) return [];
+
+  if (event.type === "email.sent") {
+    // The provider accepted the message: covers a `Send` event racing the send call, and repairs
+    // an email the stale-claim sweep gave up on (its recipients start over from `queued`).
+    const accepted = {
+      status: "sent" as const,
+      providerMessageId: sql`coalesce(${email.providerMessageId}, ${event.providerMessageId})`,
+      sentAt: sql`coalesce(${email.sentAt}, ${event.occurredAt.toISOString()}::timestamptz)`,
+      errorCode: null,
+      errorMessage: null,
+    };
+    const thisEmail = and(eq(email.id, target.id), eq(email.organizationId, target.organizationId));
+    const [repaired] = await tx
+      .update(email)
+      .set(accepted)
+      .where(
+        and(thisEmail, eq(email.status, "failed"), eq(email.errorCode, "dispatch_interrupted")),
+      )
+      .returning({ id: email.id });
+    if (repaired) {
+      await tx
+        .update(emailRecipient)
+        .set({ status: "queued" })
+        .where(and(scope, eq(emailRecipient.status, "failed")));
+    }
+    await tx
+      .update(email)
+      .set(accepted)
+      .where(and(thisEmail, eq(email.status, "queued")));
+  }
+
+  const status = recipientStatus(event);
+  const affected =
+    event.recipients === null
+      ? [...knownAddresses]
+      : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
+  if (affected.length > 0) {
+    await tx
+      .update(emailRecipient)
+      .set({
+        status,
+        lastEventAt: sql`greatest(${emailRecipient.lastEventAt}, ${event.occurredAt.toISOString()}::timestamptz)`,
+        details: event.data,
+      })
+      .where(
+        and(
+          scope,
+          inArray(emailRecipient.address, affected),
+          inArray(emailRecipient.status, statusesBelow(status)),
+        ),
+      );
+  }
+
+  for (const row of inserted) {
+    const payload: EmailWebhookEventOutput = {
+      id: row.id,
+      object: "event",
+      type: row.type,
+      created_at: row.createdAt.toISOString(),
+      data: {
+        email_id: target.id,
+        from: target.from,
+        to: target.to,
+        subject: target.subject,
+        tags: target.tags,
+        sandbox: target.mode === "sandbox",
+        recipient: row.recipient,
+        occurred_at: row.occurredAt.toISOString(),
+        ...row.details,
+      },
+    };
+    await enqueueWebhookMessage(tx, {
+      id: row.id,
+      organizationId: target.organizationId,
+      environmentId: target.environmentId,
+      type: row.type,
+      payload,
+    });
+  }
+  return inserted;
+}
+
+/** Records events in order, each in its own transaction. Returns how many rows were new. */
+export async function ingestProviderEvents(events: ProviderEvent[]): Promise<number> {
+  let recorded = 0;
+  for (const event of events) {
+    const rows = await db.transaction((tx) => recordProviderEvent(tx, event));
+    recorded += rows.length;
+  }
+  return recorded;
+}

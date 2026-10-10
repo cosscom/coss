@@ -1,13 +1,25 @@
 import { orgRoleCan } from "@coss/auth/permissions";
-import { getEmail } from "@coss/email";
+import { type EmailEventOutput, getEmail, listEmailEvents } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
-import { Card, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@coss/ui/components/table";
+import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@coss/ui/components/table";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { EmailStatusBadge, SandboxBadge } from "@/components/email-badges";
+import {
+  EmailEventBadge,
+  EmailStatusBadge,
+  RecipientStatusBadge,
+  SandboxBadge,
+} from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
@@ -28,6 +40,19 @@ function list(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "—";
 }
 
+/** One-line summary of an event's details. */
+function eventDetail({ data }: EmailEventOutput): string {
+  if (data.bounce) {
+    const { type, sub_type, diagnostic_code } = data.bounce;
+    return [`${type} / ${sub_type}`, diagnostic_code].filter(Boolean).join(": ");
+  }
+  if (data.complaint) return data.complaint.feedback_type ?? "complaint";
+  if (data.delay) return [data.delay.type, data.delay.diagnostic_code].filter(Boolean).join(": ");
+  if (data.delivery) return data.delivery.smtp_response ?? "";
+  if (data.failure) return data.failure.message;
+  return "";
+}
+
 export default async function EmailPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/emails/[emailId]">) {
@@ -43,6 +68,11 @@ export default async function EmailPage({
     id: emailId,
   });
   if (!email) notFound();
+  const events = await listEmailEvents({
+    organizationId: organization.id,
+    environmentId: environment.id,
+    emailId: email.id,
+  });
 
   const rows: [string, ReactNode][] = [
     ["ID", <code key="id">{email.id}</code>],
@@ -93,6 +123,75 @@ export default async function EmailPage({
               ))}
             </TableBody>
           </Table>
+        </CardPanel>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recipients</CardTitle>
+          <CardDescription>Delivery status of each distinct address.</CardDescription>
+        </CardHeader>
+        <CardPanel className="p-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Address</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last event</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {email.recipients.map((recipient) => (
+                <TableRow key={recipient.address}>
+                  <TableCell className="break-all">{recipient.address}</TableCell>
+                  <TableCell>{recipient.type}</TableCell>
+                  <TableCell>
+                    <RecipientStatusBadge status={recipient.status} />
+                  </TableCell>
+                  <TableCell>{formatDateTime(recipient.last_event_at)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardPanel>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Events</CardTitle>
+        </CardHeader>
+        <CardPanel className="p-2">
+          {events && events.events.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Recipient</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="whitespace-nowrap">
+                      {formatDateTime(event.occurred_at)}
+                    </TableCell>
+                    <TableCell>
+                      <EmailEventBadge type={event.type} />
+                    </TableCell>
+                    <TableCell className="break-all">{event.recipient ?? "All"}</TableCell>
+                    <TableCell className="whitespace-normal break-all text-muted-foreground">
+                      {eventDetail(event)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="p-4 text-muted-foreground text-sm">No events yet.</p>
+          )}
         </CardPanel>
       </Card>
 

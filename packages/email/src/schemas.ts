@@ -24,6 +24,8 @@ const QUOTED_NAME = /^"(?:[^"\\]|\\.)*"$/;
 const UNQUOTED_NAME_SPECIALS = /["<>,;:@()[\]\\]/;
 const HEADER_NAME = /^[!-9;-~]{1,126}$/;
 const HEADER_VALUE = /^[ -~]{1,995}$/;
+// SES limit for one header (name + value), which keeps the folded line within RFC 5322's 998.
+const HEADER_LINE_MAX_LENGTH = 996;
 const TAG_PART = /^[A-Za-z0-9_-]{1,256}$/;
 
 /** Headers COSS (or the provider) owns. `x-ses-*` is matched by prefix. */
@@ -209,6 +211,12 @@ const SendEmailRequestFields = z.strictObject({
               message:
                 "Header values must be 1-995 printable ASCII characters without line breaks.",
             });
+          } else if (name.length + value.length > HEADER_LINE_MAX_LENGTH) {
+            ctx.addIssue({
+              code: "custom",
+              path: [name],
+              message: `A header's name and value can be at most ${HEADER_LINE_MAX_LENGTH} characters combined.`,
+            });
           }
         }
       }),
@@ -277,6 +285,127 @@ export type SendEmailRequestOutput = z.output<typeof SendEmailRequest>;
 
 export const EMAIL_STATUSES = ["queued", "sent", "failed"] as const;
 
+/** Ordered by precedence: later delivery events never move a recipient to a lower status. */
+export const EMAIL_RECIPIENT_STATUSES = [
+  "queued",
+  "sent",
+  "delivery_delayed",
+  "delivered",
+  "bounced",
+  "suppressed",
+  "complained",
+  "failed",
+] as const;
+
+export type EmailRecipientStatus = (typeof EMAIL_RECIPIENT_STATUSES)[number];
+
+export const EMAIL_RECIPIENT_TYPES = ["to", "cc", "bcc"] as const;
+
+export const EMAIL_EVENT_TYPES = [
+  "email.sent",
+  "email.delivered",
+  "email.delivery_delayed",
+  "email.bounced",
+  "email.complained",
+  "email.failed",
+] as const;
+
+export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
+
+export const EmailRecipient = z
+  .object({
+    address: z.string().meta({ description: "The bare, lower-cased address." }),
+    type: z.enum(EMAIL_RECIPIENT_TYPES),
+    status: z.enum(EMAIL_RECIPIENT_STATUSES).meta({
+      description:
+        "Delivery status of this recipient. `suppressed` means the address is on the " +
+        "suppression list after an earlier bounce or complaint.",
+    }),
+    last_event_at: z.iso.datetime().nullable(),
+  })
+  .meta({ id: "EmailRecipient" });
+
+export const EmailEventData = z
+  .object({
+    bounce: z
+      .object({
+        type: z.enum(["permanent", "transient", "undetermined"]),
+        sub_type: z.string(),
+        diagnostic_code: z.string().nullable(),
+      })
+      .optional(),
+    complaint: z
+      .object({ feedback_type: z.string().nullable(), sub_type: z.string().nullable() })
+      .optional(),
+    delay: z
+      .object({
+        type: z.string(),
+        expires_at: z.iso.datetime().nullable(),
+        diagnostic_code: z.string().nullable(),
+      })
+      .optional(),
+    delivery: z.object({ smtp_response: z.string().nullable() }).optional(),
+    failure: z.object({ code: z.string(), message: z.string() }).optional(),
+  })
+  .meta({ id: "EmailEventData" });
+
+export type EmailEventDataOutput = z.output<typeof EmailEventData>;
+
+export const EmailEvent = z
+  .object({
+    object: z.literal("email_event"),
+    id: z.string().meta({ example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    email_id: z.string(),
+    type: z.enum(EMAIL_EVENT_TYPES),
+    recipient: z
+      .string()
+      .nullable()
+      .meta({ description: "The recipient this event is about; `null` for the whole email." }),
+    occurred_at: z.iso.datetime(),
+    data: EmailEventData,
+  })
+  .meta({ id: "EmailEvent" });
+
+export type EmailEventOutput = z.output<typeof EmailEvent>;
+
+export const EmailEventList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailEvent),
+    has_more: z.boolean(),
+  })
+  .meta({ id: "EmailEventList" });
+
+export type EmailEventListOutput = z.output<typeof EmailEventList>;
+
+/**
+ * Body of a webhook request. `data` describes the email (never its content, cc or bcc) and
+ * carries the event's details (`bounce`, `complaint`, …) like `EmailEvent.data`.
+ */
+export const EmailWebhookEvent = z
+  .object({
+    id: z.string().meta({
+      description: "The event id: the same as `EmailEvent.id`, and the `webhook-id` header.",
+      example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    }),
+    object: z.literal("event"),
+    type: z.enum(EMAIL_EVENT_TYPES),
+    created_at: z.iso.datetime(),
+    data: EmailEventData.extend({
+      email_id: z.string(),
+      from: z.string(),
+      to: z.array(z.string()),
+      subject: z.string(),
+      tags: z.array(z.object({ name: z.string(), value: z.string() })),
+      sandbox: z.boolean(),
+      recipient: z.string().nullable(),
+      occurred_at: z.iso.datetime(),
+    }),
+  })
+  .meta({ id: "EmailWebhookEvent" });
+
+export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -291,7 +420,11 @@ export const EmailObject = z
     text: z.string().nullable(),
     headers: z.record(z.string(), z.string()),
     tags: z.array(z.object({ name: z.string(), value: z.string() })),
-    status: z.enum(EMAIL_STATUSES),
+    status: z.enum(EMAIL_STATUSES).meta({
+      description:
+        "Whether the email was handed to the delivery provider. Per-recipient delivery is in `recipients`.",
+    }),
+    recipients: z.array(EmailRecipient),
     sandbox: z
       .boolean()
       .meta({ description: "True when sent from a sandbox environment (never delivered)." }),

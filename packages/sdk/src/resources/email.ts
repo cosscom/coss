@@ -1,6 +1,6 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
-import type { Email, SendEmailParams } from "../types/email.ts";
+import type { Email, EmailEvent, List, SendEmailParams } from "../types/email.ts";
 
 /** `coss.email`: transactional email. */
 export class EmailResource {
@@ -30,6 +30,18 @@ export class EmailResource {
     return this.#http.request<Email>({
       method: "GET",
       path: `/v1/emails/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Lists an email's delivery events, oldest first. */
+  listEvents(
+    id: string,
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<List<EmailEvent>>> {
+    return this.#http.request<List<EmailEvent>>({
+      method: "GET",
+      path: `/v1/emails/${encodeURIComponent(id)}/events`,
       signal: options?.signal,
     });
   }

@@ -1,11 +1,17 @@
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, eq, isNull } from "drizzle-orm";
+import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
-import type { EmailProvider, OutboundEmail } from "./provider.ts";
-import { type EmailRow, selectEmailsWithMode, toEmailObject } from "./read.ts";
+import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import type { EmailProvider, OutboundEmail, ProviderEvent } from "./provider.ts";
+import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
 import { hashSendRequest } from "./request-hash.ts";
-import type { EmailObjectOutput, SendEmailRequestOutput } from "./schemas.ts";
+import {
+  type EmailObjectOutput,
+  parseEmailAddress,
+  type SendEmailRequestOutput,
+} from "./schemas.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -34,11 +40,12 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email } = schema;
+const { email, emailRecipient } = schema;
 
 function toOutbound(row: EmailRow): OutboundEmail {
   return {
     emailId: row.id,
+    organizationId: row.organizationId,
     from: row.from,
     to: row.to,
     cc: row.cc,
@@ -49,6 +56,48 @@ function toOutbound(row: EmailRow): OutboundEmail {
     text: row.text,
     headers: row.headers,
     tags: row.tags,
+  };
+}
+
+/** One recipient row per distinct address; an address listed twice keeps its first kind (to → cc → bcc). */
+function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
+  const seen = new Set<string>();
+  const rows: (typeof emailRecipient.$inferInsert)[] = [];
+  for (const [kind, list] of [
+    ["to", row.to],
+    ["cc", row.cc],
+    ["bcc", row.bcc],
+  ] as const) {
+    for (const value of list) {
+      const address = parseEmailAddress(value).address.toLowerCase();
+      if (seen.has(address)) continue;
+      seen.add(address);
+      rows.push({
+        organizationId: row.organizationId,
+        emailId: row.id,
+        address,
+        kind,
+        position: rows.length,
+      });
+    }
+  }
+  return rows;
+}
+
+/** The event COSS records when the provider rejects a send. */
+function failedEvent(row: EmailRow, provider: string): ProviderEvent {
+  return {
+    provider: COSS_EVENT_SOURCE,
+    providerEventType: "ProviderError",
+    emailId: row.id,
+    providerMessageId: null,
+    type: "email.failed",
+    recipients: null,
+    occurredAt: new Date(),
+    sourceId: provider,
+    data: {
+      failure: { code: "provider_error", message: "The email provider did not accept the email." },
+    },
   };
 }
 
@@ -66,12 +115,12 @@ export function createEmailService(opts: {
 
   /** Hands a queued email to its provider and records the outcome. Never throws for provider errors. */
   async function deliver(row: EmailRow, sandbox: boolean): Promise<EmailObjectOutput> {
-    if (row.status !== "queued") return toEmailObject(row, { sandbox });
+    if (row.status !== "queued") return currentEmail(row);
 
     const provider = providerFor(sandbox);
     // Claim the email first so concurrent dispatchers (e.g. a future worker) never send it twice.
     // `provider` is only ever set by this claim. A crash after the claim leaves the row `queued`
-    // with a provider: stale-claim recovery belongs to the async worker.
+    // with a provider: the worker's stale-claim sweep resolves it.
     const [claimed] = await db
       .update(email)
       .set({ provider: provider.name })
@@ -87,9 +136,16 @@ export function createEmailService(opts: {
     if (!claimed) return currentEmail(row);
 
     let outcome: Partial<EmailRow>;
+    let events: ProviderEvent[];
     try {
-      const { providerMessageId } = await provider.send(toOutbound(row));
-      outcome = { status: "sent", provider: provider.name, providerMessageId, sentAt: new Date() };
+      const result = await provider.send(toOutbound(row));
+      outcome = {
+        status: "sent",
+        provider: provider.name,
+        providerMessageId: result.providerMessageId,
+        sentAt: new Date(),
+      };
+      events = result.events ?? [];
     } catch (error) {
       console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
       outcome = {
@@ -98,28 +154,36 @@ export function createEmailService(opts: {
         errorCode: "provider_error",
         errorMessage: errorMessage(error),
       };
+      events = [failedEvent(row, provider.name)];
     }
 
-    // Still guarded on `queued` so a finished email is never overwritten.
-    const [updated] = await db
-      .update(email)
-      .set(outcome)
-      .where(
-        and(
-          eq(email.id, row.id),
-          eq(email.organizationId, row.organizationId),
-          eq(email.status, "queued"),
-        ),
-      )
-      .returning();
-    if (updated) return toEmailObject(updated, { sandbox });
+    await db.transaction(async (tx) => {
+      // Still guarded on `queued` so a finished email is never overwritten (e.g. by a provider
+      // `Send` event that arrived before the send call returned).
+      const [updated] = await tx
+        .update(email)
+        .set(outcome)
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+          ),
+        )
+        .returning({ id: email.id });
+      // A failure only counts if it is the recorded outcome; provider events are facts either way.
+      if (!updated && outcome.status === "failed") return;
+      for (const event of events) await recordProviderEvent(tx, event);
+    });
     return currentEmail(row);
   }
 
   async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
     const [current] = await selectEmailsWithMode(row.organizationId, eq(email.id, row.id), 1);
     if (!current) throw new EmailError("not_found", "Email not found.");
-    return toEmailObject(current.email, { sandbox: current.sandbox });
+    const [object] = await toEmailObjects(row.organizationId, [current]);
+    if (!object) throw new EmailError("not_found", "Email not found.");
+    return object;
   }
 
   async function dispatch(input: {
@@ -131,6 +195,37 @@ export function createEmailService(opts: {
       : [];
     if (!found) throw new EmailError("not_found", "Email not found.");
     return deliver(found.email, found.sandbox);
+  }
+
+  /** The finished email an unexpired idempotency key with the same request hash points at. */
+  async function findReplay(
+    environment: SendEnvironment,
+    idempotencyKey: string,
+    requestHash: string | null,
+  ): Promise<EmailObjectOutput | null> {
+    const [existing] = await db
+      .select()
+      .from(email)
+      .where(
+        and(
+          eq(email.organizationId, environment.organizationId),
+          eq(email.environmentId, environment.environmentId),
+          eq(email.idempotencyKey, idempotencyKey),
+        ),
+      )
+      .limit(1);
+    if (
+      !existing ||
+      existing.status === "queued" ||
+      existing.requestHash !== requestHash ||
+      Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
+    ) {
+      return null;
+    }
+    const [object] = await toEmailObjects(environment.organizationId, [
+      { email: existing, sandbox: environment.mode === "sandbox" },
+    ]);
+    return object ?? null;
   }
 
   async function send(
@@ -162,8 +257,36 @@ export function createEmailService(opts: {
       requestHash,
     } satisfies typeof email.$inferInsert;
 
+    if (!sandbox) {
+      try {
+        await authorizeLiveSender({
+          organizationId: environment.organizationId,
+          from: params.from,
+        });
+      } catch (error) {
+        // A retry of a request that already succeeded still replays, even if the domain changed since.
+        const replay =
+          idempotencyKey && (await findReplay(environment, idempotencyKey, requestHash));
+        if (replay) return { email: replay, replayed: true };
+        throw error;
+      }
+    }
+
+    // Inserts the email and, only if this request won the insert, its recipients: atomically, so
+    // a stored email always has its recipient rows.
+    const insertEmail = async (executor: Executor): Promise<EmailRow | undefined> => {
+      const [row] = await executor
+        .insert(email)
+        .values(values)
+        .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
+        .returning();
+      if (row) await executor.insert(emailRecipient).values(recipientRows(row));
+      return row;
+    };
+    const insertOnce = () => db.transaction((tx) => insertEmail(tx));
+
     if (!idempotencyKey) {
-      const [row] = await db.insert(email).values(values).returning();
+      const row = await insertOnce();
       if (!row) throw new Error("Email insert returned no row.");
       return { email: await deliver(row, sandbox), replayed: false };
     }
@@ -175,14 +298,7 @@ export function createEmailService(opts: {
     );
     // The unique (environment_id, idempotency_key) index arbitrates races: exactly one request
     // inserts, every other one sees `DO NOTHING` and inspects the winner's row.
-    const insertOnce = (executor: Pick<typeof db, "insert"> = db) =>
-      executor
-        .insert(email)
-        .values(values)
-        .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
-        .returning();
-
-    let [inserted] = await insertOnce();
+    let inserted = await insertOnce();
     for (let attempt = 1; !inserted; attempt++) {
       if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
         throw new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly.");
@@ -190,18 +306,18 @@ export function createEmailService(opts: {
       const [existing] = await db.select().from(email).where(sameKey).limit(1);
       if (!existing) {
         // Its owner expired and released the key between our insert and select.
-        [inserted] = await insertOnce();
+        inserted = await insertOnce();
         continue;
       }
       if (Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS) {
         // Expired: move the key to a new email atomically. The compare-and-set on the old row
         // makes concurrent requests with the same expired key queue up behind each other.
-        [inserted] = await db.transaction(async (tx) => {
+        inserted = await db.transaction(async (tx) => {
           await tx
             .update(email)
             .set({ idempotencyKey: null })
             .where(and(eq(email.id, existing.id), eq(email.idempotencyKey, idempotencyKey)));
-          return insertOnce(tx);
+          return insertEmail(tx);
         });
         continue;
       }
@@ -217,7 +333,11 @@ export function createEmailService(opts: {
           "A request with this idempotency key is still being processed. Retry shortly.",
         );
       }
-      return { email: toEmailObject(existing, { sandbox }), replayed: true };
+      const [replayed] = await toEmailObjects(environment.organizationId, [
+        { email: existing, sandbox },
+      ]);
+      if (!replayed) throw new Error("Email replay produced no object.");
+      return { email: replayed, replayed: true };
     }
     return { email: await deliver(inserted, sandbox), replayed: false };
   }

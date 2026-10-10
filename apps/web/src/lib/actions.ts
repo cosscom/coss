@@ -1,4 +1,5 @@
 import "server-only";
+import { DomainError } from "@coss/email";
 import { TenancyError } from "@coss/tenancy";
 import { isAPIError } from "better-auth/api";
 import { unstable_rethrow } from "next/navigation";
@@ -33,7 +34,13 @@ export async function runAction<T>(body: () => Promise<T>): Promise<ActionResult
 }
 
 function userFacingMessage(error: unknown): string {
-  if (error instanceof ActionError || error instanceof TenancyError) return error.message;
+  if (
+    error instanceof ActionError ||
+    error instanceof TenancyError ||
+    error instanceof DomainError
+  ) {
+    return error.message;
+  }
   // Better Auth errors carry end-user messages (e.g. "User is already a member").
   if (isAPIError(error) && error.message) return error.message;
   console.error("[web] Unexpected server action error:", error);

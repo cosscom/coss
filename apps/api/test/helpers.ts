@@ -1,6 +1,7 @@
 import { pool } from "@coss/db";
 import { createEmailService, type EmailService, FakeEmailProvider } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
+import { createVerifiedDomain } from "@coss/email/testing";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { createApp } from "../src/app.ts";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
@@ -27,6 +28,12 @@ export function emailBody(overrides: Partial<SendEmailRequestInput> = {}): SendE
     text: "Hello!",
     ...overrides,
   };
+}
+
+/** A From address on a new verified domain of the organization, as live keys require. */
+export async function domainFrom(organizationId: string): Promise<string> {
+  const domain = await createVerifiedDomain(organizationId);
+  return `Acme <hello@${domain.name}>`;
 }
 
 export function sendEmail(

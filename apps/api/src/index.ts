@@ -4,7 +4,7 @@ import { createDefaultEmailService } from "./email-service.ts";
 import { env } from "./env.ts";
 
 const app = createApp({
-  emailService: createDefaultEmailService(env.EMAIL_PROVIDER),
+  emailService: createDefaultEmailService(env),
   publicUrl: env.API_PUBLIC_URL,
 });
 

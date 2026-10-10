@@ -15,6 +15,10 @@
     ],
     "catalog": {
       "@arethetypeswrong/core": "0.18.5",
+      "@aws-sdk/client-eventbridge": "3.1141.0",
+      "@aws-sdk/client-sesv2": "3.1141.0",
+      "@aws-sdk/client-sns": "3.1141.0",
+      "@aws-sdk/client-sqs": "3.1141.0",
       "@base-ui/react": "1.9.0",
       "@better-auth/api-key": "1.7.7",
       "@better-auth/core": "1.7.7",
@@ -59,6 +63,7 @@
     "db:studio": "bun run --cwd packages/db db:studio",
     "db:seed": "bun run --cwd packages/tenancy db:seed",
     "admin:create": "bun run --cwd packages/tenancy admin:create",
+    "ses:bootstrap": "bun run --cwd apps/worker ses:bootstrap",
     "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts"
   },
   "devDependencies": {

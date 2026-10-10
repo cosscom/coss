@@ -31,6 +31,9 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
             <Button render={<Link href={base} />} size="sm" variant="ghost">
               Projects
             </Button>
+            <Button render={<Link href={`${base}/domains`} />} size="sm" variant="ghost">
+              Domains
+            </Button>
             <Button render={<Link href={`${base}/members`} />} size="sm" variant="ghost">
               Members
             </Button>

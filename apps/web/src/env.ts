@@ -1,3 +1,4 @@
+import { emailEnvShape } from "@coss/email/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -6,6 +7,11 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
+    ...emailEnvShape,
+    // Encrypts webhook signing secrets at rest: 32 bytes, base64 (`openssl rand -base64 32`).
+    WEBHOOK_SECRETS_KEY: z
+      .string()
+      .refine((value) => Buffer.from(value, "base64").length === 32, "Must be 32 bytes, base64."),
   },
   client: {
     NEXT_PUBLIC_API_URL: z.url(),

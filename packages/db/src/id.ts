@@ -16,6 +16,12 @@ export const ID_PREFIXES = {
   project: "proj",
   environment: "env",
   email: "email",
+  emailRecipient: "rcpt",
+  emailEvent: "evt",
+  domain: "dom",
+  webhookEndpoint: "whep",
+  webhookDelivery: "whdel",
+  webhookAttempt: "whatt",
   request: "req",
 } as const;
 

@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { EmailError } from "../src/errors.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { createEmailService, IDEMPOTENCY_KEY_TTL_MS } from "../src/service.ts";
-import { gatedProvider, params, sendEnvironment } from "./helpers.ts";
+import { gatedProvider, params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 async function loadRow(id: string) {
   const [row] = await db.select().from(schema.email).where(eq(schema.email.id, id));
@@ -108,7 +108,7 @@ describe("send", () => {
     const delivered = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
-      params: params(),
+      params: params({ from: await verifiedFrom(tenant.organization.id) }),
     });
     expect(delivered.email).toMatchObject({ status: "sent", sandbox: false });
     expect(live.sent.map((m) => m.emailId)).toEqual([delivered.email.id]);
@@ -296,7 +296,7 @@ describe("idempotency", () => {
     const prod = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
-      params: params({ subject: "Other" }),
+      params: params({ subject: "Other", from: await verifiedFrom(tenant.organization.id) }),
       idempotencyKey,
     });
     expect(prod.replayed).toBe(false);

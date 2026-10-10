@@ -6,6 +6,7 @@ import {
   type SendEmailRequestOutput,
 } from "../src/schemas.ts";
 import type { SendEnvironment } from "../src/service.ts";
+import { createVerifiedDomain } from "../src/testing.ts";
 
 export function sendEnvironment(env: Environment): SendEnvironment {
   return {
@@ -24,6 +25,12 @@ export function params(overrides: Partial<SendEmailRequestInput> = {}): SendEmai
     text: "Hello!",
     ...overrides,
   });
+}
+
+/** A From address on a new verified domain of the organization, as live sends require. */
+export async function verifiedFrom(organizationId: string): Promise<string> {
+  const domain = await createVerifiedDomain(organizationId);
+  return `Acme <hello@${domain.name}>`;
 }
 
 /** A provider whose sends block until `release()`; `called` resolves on the first send. */

@@ -88,7 +88,11 @@ describe("GET /openapi.json", () => {
     expect(doc.openapi).toBe("3.1.0");
     expect(doc.info).toMatchObject({ title: "COSS API", version: "v1" });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
-    expect(Object.keys(doc.paths).sort()).toEqual(["/v1/emails", "/v1/emails/{id}"]);
+    expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/emails",
+      "/v1/emails/{id}",
+      "/v1/emails/{id}/events",
+    ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
       tags: ["Emails"],
@@ -99,12 +103,23 @@ describe("GET /openapi.json", () => {
       operationId: "getEmail",
       parameters: [{ in: "path", name: "id", required: true }],
     });
+    expect(doc.paths["/v1/emails/{id}/events"]?.get).toMatchObject({
+      operationId: "listEmailEvents",
+      parameters: [{ in: "path", name: "id", required: true }],
+    });
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
       scheme: "bearer",
     });
     expect(Object.keys(doc.components.schemas)).toEqual(
-      expect.arrayContaining(["SendEmailRequest", "Email", "Error"]),
+      expect.arrayContaining([
+        "SendEmailRequest",
+        "Email",
+        "EmailRecipient",
+        "EmailEvent",
+        "EmailEventList",
+        "Error",
+      ]),
     );
   });
 });

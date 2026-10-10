@@ -4,7 +4,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmails } from "../src/read.ts";
 import { createEmailService } from "../src/service.ts";
-import { params, sendEnvironment } from "./helpers.ts";
+import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 const provider = new FakeEmailProvider({ log: false });
 const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
@@ -21,7 +21,7 @@ describe("getEmail", () => {
     const { email: live } = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
-      params: params(),
+      params: params({ from: await verifiedFrom(tenant.organization.id) }),
     });
 
     const org = tenant.organization.id;
@@ -73,7 +73,7 @@ describe("listEmails", () => {
     await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
-      params: params({ subject: "Live" }),
+      params: params({ subject: "Live", from: await verifiedFrom(tenant.organization.id) }),
     });
 
     const org = tenant.organization.id;

@@ -17,6 +17,7 @@
     "@coss/email": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",
+    "@coss/webhooks": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "better-auth": "catalog:",
     "lucide-react": "catalog:",

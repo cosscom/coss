@@ -15,8 +15,11 @@ const { data, error } = await coss.email.send({
 });
 ```
 
-Transactional email is the first product. Today it is delivered by a **fake provider** (nothing leaves your
-machine); Amazon SES comes next. Development environments always stay on the sandbox provider.
+Transactional email is the first product, delivered by **Amazon SES** (`EMAIL_PROVIDER=ses`) or a **fake
+provider** for local development (nothing leaves your machine). Development (sandbox) environments always use the
+fake provider, which simulates delivery events like the SES mailbox simulator. Live sends come from verified
+domains; every recipient gets a delivery status, and signed webhooks report `email.delivered`, `email.bounced`
+and the rest.
 
 ## Stack
 
@@ -36,11 +39,12 @@ See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 ```sh
 bun install
 createdb coss && createdb coss_test
-cp .env.example .env             # then set DATABASE_URL, TEST_DATABASE_URL and BETTER_AUTH_SECRET
-                                 # (openssl rand -base64 32)
+cp .env.example .env             # then set DATABASE_URL, TEST_DATABASE_URL, BETTER_AUTH_SECRET and
+                                 # WEBHOOK_SECRETS_KEY (each: openssl rand -base64 32)
 bun run db:migrate
-bun run db:seed                  # creates demo@coss.local (admin), org "acme", a project, and prints a dev API key
-bun run dev                      # dashboard http://localhost:3000 · API http://localhost:3001
+bun run db:seed                  # creates demo@coss.local (admin), org "acme" with the verified domain
+                                 # acme.test, a project, and prints a dev API key
+bun run dev                      # dashboard http://localhost:3000 · API http://localhost:3001 · worker
 ```
 
 Send an email with the key printed by the seed:
@@ -55,8 +59,11 @@ curl -X POST http://localhost:3001/v1/emails \
 COSS_API_KEY=coss_test_... COSS_BASE_URL=http://localhost:3001 bun packages/sdk/examples/send-email.ts
 ```
 
-The email shows up in the dashboard under the project's **Development** environment. Auth emails (email
-verification, invitations, password resets) are printed to the dashboard's server console in development.
+The email shows up in the dashboard under the project's **Development** environment, with per-recipient
+status and events. Send to `bounce@simulator.amazonses.com` (or `complaint@`, `suppressionlist@`) to simulate
+failures. Add a webhook endpoint in the environment's **Webhooks** page (local `http://` URLs are allowed outside
+production) and the worker delivers signed events to it. Auth emails (email verification, invitations, password
+resets) are printed to the dashboard's server console in development.
 
 ## Concepts
 
@@ -64,22 +71,54 @@ verification, invitations, password resets) are printed to the dashboard's serve
 - **Projects** — belong to an organization; each gets two **environments**:
   `production` (mode `live`, keys `coss_live_…`) and `development` (mode `sandbox`, keys `coss_test_…`, never really sends).
 - **API keys** — Better Auth API key plugin, owned by the organization and bound to one environment.
+- **Domains** — owned by the organization and shared by its projects. Live keys can only send from verified
+  domains (Easy DKIM + a `send.` MAIL FROM subdomain); sandbox keys accept any `from`.
+- **Recipients & events** — each email has one recipient per distinct address, whose status follows delivery
+  events: `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced`/`suppressed`/`failed`, `complained`.
+- **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
+  retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
 
 ## Commands
 
 | Command | |
 |---|---|
-| `bun run dev` | Run dashboard + API |
+| `bun run dev` | Run dashboard + API + worker |
 | `bun run lint` / `bun run format` | Biome check / fix |
 | `bun run typecheck` | Type-check every package |
 | `bun run test` | Run all tests (against `coss_test`) |
 | `bun run build` | Build dashboard + SDK |
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
+| `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
 
 ## API
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
-- `GET /v1/emails/{id}` — retrieve an email
+- `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
+- `GET /v1/emails/{id}/events` — list an email's delivery events
 - `GET /openapi.json` — OpenAPI 3.1 document
+
+Domains and webhook endpoints are managed in the dashboard.
+
+## Running on Amazon SES
+
+Each organization gets its own SES **tenant** (isolated reputation, suppression list and pausing), created with
+its first domain. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
+where the worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue.
+
+1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
+   domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request
+   production access in the SES console.
+2. With admin credentials, create the shared resources (idempotent; re-run after upgrades):
+   `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]`
+3. Set what it prints (`EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`,
+   `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, plus AWS credentials (role or env vars).
+4. Least-privilege IAM per app:
+   - **API**: `ses:SendEmail` (on the configuration set, identities and tenants).
+   - **Dashboard**: `ses:CreateTenant`, `ses:GetTenant`, `ses:CreateTenantResourceAssociation`,
+     `ses:DeleteTenantResourceAssociation`, `ses:ListResourceTenants`, `ses:CreateEmailIdentity`,
+     `ses:GetEmailIdentity`, `ses:DeleteEmailIdentity`, `ses:PutEmailIdentityMailFromAttributes`,
+     `ses:TagResource`.
+   - **Worker**: `sqs:ReceiveMessage`, `sqs:DeleteMessage` on the events queue; `ses:GetEmailIdentity`,
+     `ses:GetTenant`, `ses:DeleteEmailIdentity`, `ses:DeleteTenantResourceAssociation`.

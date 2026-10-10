@@ -20,6 +20,8 @@ export const orgStatements = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  domain: ["create", "read", "verify", "delete"],
+  webhook: ["create", "read", "update", "delete"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -29,6 +31,8 @@ const fullCossAccess = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  domain: ["create", "read", "verify", "delete"],
+  webhook: ["create", "read", "update", "delete"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -36,6 +40,8 @@ const readOnlyCossAccess = {
   environment: ["read"],
   apiKey: ["read"],
   email: ["read"],
+  domain: ["read"],
+  webhook: ["read"],
 } as const;
 
 export const orgRoles = {

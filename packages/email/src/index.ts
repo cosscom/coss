@@ -1,11 +1,92 @@
-export { EmailError, type EmailErrorCode } from "./errors.ts";
-export type { EmailProvider, OutboundEmail } from "./provider.ts";
-export { FakeEmailProvider } from "./providers/fake.ts";
-export { type EmailRow, getEmail, listEmails, toEmailObject } from "./read.ts";
 export {
+  checkRecords,
+  type DnsResolver,
+  expectedRecords,
+  publicDnsResolver,
+  RECOMMENDED_DMARC,
+} from "./dns.ts";
+export {
+  applyTenantStatus,
+  authorizeLiveSender,
+  checkDomain,
+  createDomain,
+  type DomainDeps,
+  type DomainRecord,
+  type DomainRow,
+  deleteDomain,
+  domainRecords,
+  type EmailTenantRow,
+  ensureOrgTenant,
+  getDomain,
+  getEmailTenant,
+  listDomains,
+  MAIL_FROM_SUBDOMAIN,
+  MAX_PENDING_DOMAINS,
+  nextCheckAt,
+  normalizeDomainName,
+  recheckDueDomains,
+  restartDomainVerification,
+  VERIFICATION_WINDOW_MS,
+} from "./domains.ts";
+export {
+  DomainError,
+  type DomainErrorCode,
+  EmailError,
+  type EmailErrorCode,
+} from "./errors.ts";
+export {
+  COSS_EVENT_SOURCE,
+  type EmailEventRow,
+  ingestProviderEvents,
+  recordProviderEvent,
+} from "./events.ts";
+export {
+  type DomainIdentity,
+  type DomainIdentityState,
+  type DomainVerificationStatus,
+  type EmailProvider,
+  type IdentityProvider,
+  IdentityTakenError,
+  type MailFromStatus,
+  type OutboundEmail,
+  type ProviderEvent,
+  type ProviderTenant,
+  type SendResult,
+} from "./provider.ts";
+export {
+  FakeEmailProvider,
+  SIMULATOR_DOMAIN,
+  simulatedEvents,
+  uniqueRecipients,
+} from "./providers/fake.ts";
+export { FakeIdentityProvider } from "./providers/fake-identity.ts";
+export {
+  type EmailRecipientRow,
+  type EmailRow,
+  getEmail,
+  listEmailEvents,
+  listEmails,
+  toEmailEventObject,
+  toEmailObject,
+} from "./read.ts";
+export {
+  EMAIL_EVENT_TYPES,
+  EMAIL_RECIPIENT_STATUSES,
+  EMAIL_RECIPIENT_TYPES,
   EMAIL_STATUSES,
+  EmailEvent,
+  EmailEventData,
+  type EmailEventDataOutput,
+  EmailEventList,
+  type EmailEventListOutput,
+  type EmailEventOutput,
+  type EmailEventType,
   EmailObject,
   type EmailObjectOutput,
+  EmailRecipient,
+  type EmailRecipientStatus,
+  EmailWebhookEvent,
+  type EmailWebhookEventOutput,
   emailAddressProblem,
   isReservedHeader,
   MAX_HEADERS,
@@ -26,3 +107,4 @@ export {
   type SendEmailInput,
   type SendEnvironment,
 } from "./service.ts";
+export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";

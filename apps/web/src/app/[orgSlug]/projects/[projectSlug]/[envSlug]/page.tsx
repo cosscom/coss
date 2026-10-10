@@ -1,6 +1,6 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
 import { orgRoleCan } from "@coss/auth/permissions";
-import { listEmails } from "@coss/email";
+import { listDomains, listEmails } from "@coss/email";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -34,13 +34,13 @@ import { RevokeApiKeyButton } from "./revoke-api-key-button";
 
 export const metadata: Metadata = { title: "Environment" };
 
-function quickStartCurl(apiUrl: string): string {
+function quickStartCurl(apiUrl: string, from: string): string {
   return [
     `curl -X POST ${apiUrl}/v1/emails \\`,
     `  -H "Authorization: Bearer $COSS_API_KEY" \\`,
     `  -H "Content-Type: application/json" \\`,
     `  -d '{`,
-    `    "from": "Acme <onboarding@example.com>",`,
+    `    "from": "Acme <${from}>",`,
     `    "to": "delivered@example.com",`,
     `    "subject": "Hello from COSS",`,
     `    "html": "<p>It works!</p>"`,
@@ -62,6 +62,11 @@ export default async function EnvironmentPage({
     listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
     listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
   ]);
+  // Live keys must send from a verified domain; sandbox keys accept any address.
+  const sendingDomain =
+    environment.mode === "live"
+      ? (await listDomains({ organizationId: organization.id })).find((d) => d.canSend)?.name
+      : "example.com";
 
   const projectPath = `/${organization.slug}/projects/${project.slug}`;
   const target = {
@@ -73,8 +78,9 @@ export default async function EnvironmentPage({
   const canRevokeKey = orgRoleCan(member.role, { apiKey: ["delete"] });
   const createRestriction = environment.mode === "live" ? liveKeyRestriction(session) : null;
   const apiUrl = env.NEXT_PUBLIC_API_URL;
-  const curl = quickStartCurl(apiUrl);
-  const sdkCommand = `COSS_API_KEY=${API_KEY_PREFIX[environment.mode]}… COSS_BASE_URL=${apiUrl} bun packages/sdk/examples/send-email.ts`;
+  const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
+  const curl = quickStartCurl(apiUrl, from);
+  const sdkCommand = `COSS_API_KEY=${API_KEY_PREFIX[environment.mode]}… COSS_BASE_URL=${apiUrl} COSS_FROM=${from} bun packages/sdk/examples/send-email.ts`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -223,10 +229,39 @@ export default async function EnvironmentPage({
 
       <Card>
         <CardHeader>
+          <CardTitle>Webhooks</CardTitle>
+          <CardDescription>
+            Get a signed request when emails from this environment are delivered, delayed, bounce or
+            receive complaints.
+          </CardDescription>
+          <CardAction>
+            <Button
+              render={<Link href={`${projectPath}/${environment.slug}/webhooks`} />}
+              size="sm"
+              variant="outline"
+            >
+              Manage webhooks
+            </Button>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Quick start</CardTitle>
           <CardDescription>
             Send an email with the public API. Set <code>COSS_API_KEY</code> to a key from this
             environment.
+            {environment.mode === "live" ? (
+              <>
+                {" "}
+                Live keys send from a{" "}
+                <Link className="underline" href={`/${organization.slug}/domains`}>
+                  verified domain
+                </Link>
+                {sendingDomain ? "" : " (none yet)"}.
+              </>
+            ) : null}
           </CardDescription>
         </CardHeader>
         <CardPanel className="flex flex-col gap-4">

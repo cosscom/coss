@@ -31,11 +31,15 @@ if (error) {
 }
 
 const { data: email } = await coss.email.get("email_01k…");
+console.log(email?.recipients); // [{ address: "user@example.com", type: "to", status: "delivered", … }]
+
+const { data: events } = await coss.email.listEvents("email_01k…"); // email.sent, email.delivered, …
 ```
 
 Keys come in two kinds. `coss_live_…` keys belong to a project's **production** environment and
-deliver email. `coss_test_…` keys belong to **development**: nothing is delivered, and every email
-is recorded with `sandbox: true`.
+deliver email from your organization's verified domains. `coss_test_…` keys belong to
+**development**: nothing is delivered, every email is recorded with `sandbox: true`, and delivery
+events are simulated (send to `bounce@simulator.amazonses.com` or `complaint@…` to test failures).
 
 Request and response fields use the API's snake_case names, such as `reply_to` and `created_at`.
 
@@ -71,6 +75,30 @@ Each method also takes per-request options:
 await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: controller.signal });
 await coss.email.get(id, { signal });
 ```
+
+## Webhooks
+
+Webhook endpoints (set up in the dashboard) receive `email.sent`, `email.delivered`,
+`email.delivery_delayed`, `email.bounced`, `email.complained` and `email.failed` events, signed
+with [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
+
+```ts
+import { verifyWebhook, WebhookVerificationError } from "coss";
+
+export async function POST(request: Request) {
+  try {
+    const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET!);
+    if (event.type === "email.bounced") console.log(event.data.recipient, event.data.bounce);
+    return new Response("ok");
+  } catch (error) {
+    if (error instanceof WebhookVerificationError) return new Response("invalid", { status: 400 });
+    throw error;
+  }
+}
+```
+
+Unlike other methods, `verifyWebhook` throws. Deliveries are retried for about a day and may arrive
+out of order (use `data.occurred_at`) or more than once (deduplicate by `event.id`).
 
 ## Errors
 

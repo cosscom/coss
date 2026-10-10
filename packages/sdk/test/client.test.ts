@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import pkg from "../package.json" with { type: "json" };
-import { Coss, type CossError, type SendEmailParams, VERSION } from "../src/index.ts";
+import {
+  Coss,
+  type CossError,
+  type EmailEvent,
+  type List,
+  type SendEmailParams,
+  VERSION,
+} from "../src/index.ts";
 import { apiError, hang, json, mockFetch, networkError, sampleEmail } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -130,6 +137,32 @@ describe("coss.email.get", () => {
     expect(calls[0]?.body).toBeNull();
     expect(calls[0]?.headers.has("idempotency-key")).toBe(false);
     expect(calls[0]?.headers.has("content-type")).toBe(false);
+  });
+});
+
+describe("coss.email.listEvents", () => {
+  test("GETs the email's events", async () => {
+    const list: List<EmailEvent> = {
+      object: "list",
+      has_more: false,
+      data: [
+        {
+          object: "email_event",
+          id: "evt_01k5f9yq8re8vb6q2wmz0tb2xd",
+          email_id: sampleEmail.id,
+          type: "email.delivered",
+          recipient: "delivered@example.com",
+          occurred_at: "2026-10-09T12:00:01.000Z",
+          data: { delivery: { smtp_response: "250 OK" } },
+        },
+      ],
+    };
+    const { fetch, calls } = mockFetch(json(200, list));
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.listEvents("email_a/b");
+
+    expect(result).toEqual({ data: list, error: null });
+    expect(calls[0]?.method).toBe("GET");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/email_a%2Fb/events");
   });
 });
 

@@ -1,6 +1,6 @@
+import { emailEnvShape } from "@coss/email/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-import { EMAIL_PROVIDERS } from "./email-service.ts";
 
 /** Validated at server start (src/index.ts). Tests never import this; they use `createApp()`. */
 export const env = createEnv({
@@ -11,8 +11,7 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     // Public origin of this API (OpenAPI `servers`). Falls back to the request origin when unset.
     API_PUBLIC_URL: z.url().optional(),
-    // Provider for live environments. Sandbox environments always use the fake provider.
-    EMAIL_PROVIDER: z.enum(EMAIL_PROVIDERS).default("fake"),
+    ...emailEnvShape,
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

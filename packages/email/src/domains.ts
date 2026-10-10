@@ -1,0 +1,522 @@
+/**
+ * Sending domains: organization-owned identities with Easy DKIM and a custom MAIL FROM
+ * subdomain, verified by the provider and re-checked by the worker.
+ */
+import { db, schema } from "@coss/db";
+import { isId } from "@coss/db/id";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  ne,
+  notInArray,
+  or,
+} from "drizzle-orm";
+import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
+import { DomainError, EmailError } from "./errors.ts";
+import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
+import { parseEmailAddress } from "./schemas.ts";
+
+const { domain, emailTenant } = schema;
+
+export type DomainRow = typeof domain.$inferSelect;
+export type EmailTenantRow = typeof emailTenant.$inferSelect;
+export type DomainRecord = DomainRow["records"][number];
+
+export type DomainDeps = { identity: IdentityProvider; dns: DnsResolver | null };
+
+/** Subdomain used as the envelope sender (bounces and complaints come back to it). */
+export const MAIL_FROM_SUBDOMAIN = "send";
+export const MAX_PENDING_DOMAINS = 5;
+/** The provider gives up verifying after 72 hours; so do we. */
+export const VERIFICATION_WINDOW_MS = 72 * 60 * 60 * 1000;
+const DOMAIN_NAME_MAX_LENGTH = 200;
+const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
+const RESERVED_SUFFIXES = ["amazonses.com", "amazonaws.com", "coss.com", "coss.dev"];
+
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+
+/** Lower-cased, trailing-dot-free domain name, or a `DomainError` explaining why it is invalid. */
+export function normalizeDomainName(input: string): string {
+  const name = input.trim().toLowerCase().replace(/\.$/, "");
+  const labels = name.split(".");
+  const invalid = (message: string) => new DomainError("invalid_domain", message);
+  if (!name) throw invalid("Enter a domain name, like acme.com.");
+  if (/\P{ASCII}/u.test(name)) {
+    throw invalid("Internationalized domains must be punycode-encoded (xn--…).");
+  }
+  if (
+    name.length > DOMAIN_NAME_MAX_LENGTH ||
+    labels.length < 2 ||
+    !labels.every((l) => LABEL.test(l))
+  ) {
+    throw invalid(
+      "Enter a valid domain name, like acme.com or mail.acme.com (no https:// or paths).",
+    );
+  }
+  if (/^\d+$/.test(labels.at(-1) ?? "")) throw invalid("IP addresses can't be used as domains.");
+  if (RESERVED_SUFFIXES.some((suffix) => name === suffix || name.endsWith(`.${suffix}`))) {
+    throw invalid("This domain can't be used.");
+  }
+  if (labels[0] === MAIL_FROM_SUBDOMAIN) {
+    throw invalid(`"${MAIL_FROM_SUBDOMAIN}." subdomains are reserved for bounce handling.`);
+  }
+  return name;
+}
+
+/** The DNS records of a domain: the latest check, or what to publish if never checked. */
+export function domainRecords(row: DomainRow): DomainRecord[] {
+  return row.records.length > 0 ? row.records : expectedRecords(row);
+}
+
+/** When the worker should check a domain next (`null`: never). */
+export function nextCheckAt(
+  row: Pick<DomainRow, "status" | "verificationStartedAt">,
+  now: Date,
+): Date | null {
+  switch (row.status) {
+    case "verified":
+      return new Date(now.getTime() + 12 * HOUR);
+    case "pending":
+    case "temporary_failure": {
+      const age = now.getTime() - row.verificationStartedAt.getTime();
+      return new Date(now.getTime() + (age < HOUR ? MINUTE : 10 * MINUTE));
+    }
+    default:
+      return null;
+  }
+}
+
+export async function getEmailTenant(organizationId: string): Promise<EmailTenantRow | null> {
+  const [row] = await db
+    .select()
+    .from(emailTenant)
+    .where(eq(emailTenant.organizationId, organizationId))
+    .limit(1);
+  return row ?? null;
+}
+
+function tenantOf(row: EmailTenantRow): ProviderTenant {
+  return { tenantName: row.tenantName, tenantArn: row.tenantArn };
+}
+
+/** The organization's provider tenant, created on first use. */
+export async function ensureOrgTenant(
+  organizationId: string,
+  identity: IdentityProvider,
+): Promise<ProviderTenant> {
+  const existing = await getEmailTenant(organizationId);
+  if (existing?.provider === identity.name) return tenantOf(existing);
+  const tenant = await identity.ensureTenant({ organizationId });
+  await db
+    .insert(emailTenant)
+    .values({ organizationId, provider: identity.name, ...tenant })
+    .onConflictDoUpdate({
+      target: emailTenant.organizationId,
+      set: { provider: identity.name, ...tenant },
+    });
+  return tenant;
+}
+
+export async function listDomains(input: { organizationId: string }): Promise<DomainRow[]> {
+  return db
+    .select()
+    .from(domain)
+    .where(eq(domain.organizationId, input.organizationId))
+    .orderBy(asc(domain.name));
+}
+
+export async function getDomain(input: {
+  organizationId: string;
+  id: string;
+}): Promise<DomainRow | null> {
+  if (!isId("dom", input.id)) return null;
+  const [row] = await db
+    .select()
+    .from(domain)
+    .where(and(eq(domain.organizationId, input.organizationId), eq(domain.id, input.id)))
+    .limit(1);
+  return row ?? null;
+}
+
+async function requireDomain(input: { organizationId: string; id: string }): Promise<DomainRow> {
+  const row = await getDomain(input);
+  if (!row) throw new DomainError("not_found", "Domain not found.");
+  return row;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string } }).cause;
+  return (error as { code?: string }).code === "23505" || cause?.code === "23505";
+}
+
+async function takenError(organizationId: string, name: string): Promise<DomainError> {
+  const [holder] = await db
+    .select({ organizationId: domain.organizationId })
+    .from(domain)
+    .where(and(eq(domain.name, name), ne(domain.status, "failed")))
+    .limit(1);
+  return new DomainError(
+    "domain_taken",
+    holder?.organizationId === organizationId
+      ? `${name} has already been added.`
+      : `${name} is already in use by another account.`,
+  );
+}
+
+/**
+ * Provisions the provider identity for a claimed (`pending`) row and stores its DKIM tokens.
+ * Releases the claim when the provider refuses: a new row is removed, a restarted one fails again.
+ */
+async function provision(
+  row: DomainRow,
+  deps: DomainDeps,
+  onFailure: "delete" | "fail",
+): Promise<DomainRow> {
+  try {
+    const tenant = await ensureOrgTenant(row.organizationId, deps.identity);
+    const identity = await deps.identity.createDomainIdentity({
+      tenant,
+      domain: row.name,
+      mailFromDomain: row.mailFromDomain,
+    });
+    const now = new Date();
+    const [updated] = await db
+      .update(domain)
+      .set({
+        dkimTokens: identity.dkimTokens,
+        dkimHostedZone: identity.dkimHostedZone,
+        region: identity.region,
+        records: [],
+        nextCheckAt: nextCheckAt({ status: "pending", verificationStartedAt: now }, now),
+      })
+      .where(and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId)))
+      .returning();
+    if (!updated) throw new DomainError("not_found", "Domain not found.");
+    return updated;
+  } catch (error) {
+    const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
+    if (onFailure === "delete") await db.delete(domain).where(scope);
+    else {
+      await db
+        .update(domain)
+        .set({ status: "failed", failedAt: new Date(), nextCheckAt: null })
+        .where(scope);
+    }
+    if (error instanceof DomainError) throw error;
+    if (error instanceof IdentityTakenError) {
+      throw new DomainError("domain_taken", `${row.name} is already in use by another account.`);
+    }
+    console.error(`[email:domains] provisioning ${row.name} failed:`, error);
+    throw new DomainError("provider_error", "The domain could not be set up. Try again shortly.");
+  }
+}
+
+async function assertPendingCapacity(organizationId: string): Promise<void> {
+  const [pending] = await db
+    .select({ value: count() })
+    .from(domain)
+    .where(
+      and(
+        eq(domain.organizationId, organizationId),
+        inArray(domain.status, ["pending", "temporary_failure"]),
+      ),
+    );
+  if ((pending?.value ?? 0) >= MAX_PENDING_DOMAINS) {
+    throw new DomainError(
+      "too_many_pending_domains",
+      `You can have at most ${MAX_PENDING_DOMAINS} domains awaiting verification.`,
+    );
+  }
+}
+
+/** Claims the name for the organization and creates its provider identity. */
+export async function createDomain(
+  input: { organizationId: string; name: string; userId: string | null },
+  deps: DomainDeps,
+): Promise<DomainRow> {
+  const name = normalizeDomainName(input.name);
+  await assertPendingCapacity(input.organizationId);
+  let claimed: DomainRow | undefined;
+  try {
+    [claimed] = await db
+      .insert(domain)
+      .values({
+        organizationId: input.organizationId,
+        name,
+        provider: deps.identity.name,
+        mailFromDomain: `${MAIL_FROM_SUBDOMAIN}.${name}`,
+        createdByUserId: input.userId,
+      })
+      .returning();
+  } catch (error) {
+    if (isUniqueViolation(error)) throw await takenError(input.organizationId, name);
+    throw error;
+  }
+  if (!claimed) throw new Error("Domain insert returned no row.");
+  return provision(claimed, deps, "delete");
+}
+
+/** Starts verification over for a `failed` domain, with a new identity and new DKIM tokens. */
+export async function restartDomainVerification(
+  input: { organizationId: string; id: string },
+  deps: DomainDeps,
+): Promise<DomainRow> {
+  const row = await requireDomain(input);
+  if (row.status !== "failed") return row;
+  await assertPendingCapacity(input.organizationId);
+  let claimed: DomainRow | undefined;
+  try {
+    [claimed] = await db
+      .update(domain)
+      .set({
+        status: "pending",
+        canSend: false,
+        provider: deps.identity.name,
+        mailFromStatus: "pending",
+        records: [],
+        verificationStartedAt: new Date(),
+        failedAt: null,
+      })
+      .where(
+        and(
+          eq(domain.id, row.id),
+          eq(domain.organizationId, row.organizationId),
+          eq(domain.status, "failed"),
+        ),
+      )
+      .returning();
+  } catch (error) {
+    if (isUniqueViolation(error)) throw await takenError(input.organizationId, row.name);
+    throw error;
+  }
+  if (!claimed) return requireDomain(input);
+  return provision(claimed, deps, "fail");
+}
+
+/**
+ * Asks the provider for the identity's state, checks DNS, and stores both. A domain that stays
+ * unverified past the verification window (or whose identity is gone) fails and releases its
+ * identity, so the name can be claimed again.
+ */
+export async function checkDomain(
+  input: { organizationId: string; id: string; now?: Date },
+  deps: DomainDeps,
+): Promise<DomainRow> {
+  const row = await requireDomain(input);
+  if (row.status === "failed" || row.status === "deleting") return row;
+  const now = input.now ?? new Date();
+  const state = await deps.identity.getDomainIdentity(row.name);
+
+  let status: DomainRow["status"] = state?.status ?? "failed";
+  // A domain that never verified gives up after the window; a verified one follows the provider.
+  const expired =
+    !row.verifiedAt && now.getTime() - row.verificationStartedAt.getTime() > VERIFICATION_WINDOW_MS;
+  if (status !== "verified" && expired) status = "failed";
+
+  const identity = {
+    dkimTokens: state?.dkimTokens.length ? state.dkimTokens : row.dkimTokens,
+    dkimHostedZone: state?.dkimHostedZone ?? row.dkimHostedZone,
+    region: state?.region ?? row.region,
+  };
+  const records = await checkRecords(expectedRecords({ ...row, ...identity }), deps.dns);
+
+  if (status === "failed" && state) {
+    try {
+      const tenant = await getEmailTenant(row.organizationId);
+      await deps.identity.deleteDomainIdentity({
+        tenant: tenant ? tenantOf(tenant) : { tenantName: "", tenantArn: null },
+        domain: row.name,
+      });
+    } catch (error) {
+      console.error(`[email:domains] releasing ${row.name} failed:`, error);
+    }
+  }
+
+  const [updated] = await db
+    .update(domain)
+    .set({
+      ...identity,
+      status,
+      canSend: status === "verified" && (state?.canSend ?? false),
+      mailFromStatus: state?.mailFromStatus ?? row.mailFromStatus,
+      records,
+      lastCheckedAt: now,
+      nextCheckAt: nextCheckAt({ status, verificationStartedAt: row.verificationStartedAt }, now),
+      verifiedAt: status === "verified" ? (row.verifiedAt ?? now) : row.verifiedAt,
+      failedAt: status === "failed" ? now : null,
+    })
+    .where(
+      and(
+        eq(domain.id, row.id),
+        eq(domain.organizationId, row.organizationId),
+        notInArray(domain.status, ["failed", "deleting"]),
+      ),
+    )
+    .returning();
+  return updated ?? requireDomain(input);
+}
+
+/** Removes the provider identity, then the domain. Sent emails are unaffected. */
+export async function deleteDomain(
+  input: { organizationId: string; id: string },
+  deps: DomainDeps,
+): Promise<void> {
+  const row = await requireDomain(input);
+  const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
+  if (row.status !== "failed") {
+    // Stops sends from this domain before the identity disappears.
+    await db.update(domain).set({ status: "deleting", canSend: false }).where(scope);
+    try {
+      const tenant = await getEmailTenant(row.organizationId);
+      await deps.identity.deleteDomainIdentity({
+        tenant: tenant ? tenantOf(tenant) : { tenantName: "", tenantArn: null },
+        domain: row.name,
+      });
+    } catch (error) {
+      await db.update(domain).set({ status: row.status, canSend: row.canSend }).where(scope);
+      console.error(`[email:domains] deleting ${row.name} failed:`, error);
+      throw new DomainError(
+        "provider_error",
+        "The domain could not be removed. Try again shortly.",
+      );
+    }
+  }
+  await db.delete(domain).where(scope);
+}
+
+/**
+ * System-level (worker): checks domains that are due, oldest first. Each is leased by moving its
+ * `next_check_at` forward first, so concurrent workers never check the same domain at once.
+ * `scope` limits the scan to some organizations (tests).
+ */
+export async function recheckDueDomains(
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } },
+  deps: DomainDeps,
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const due = await db
+    .select({
+      id: domain.id,
+      organizationId: domain.organizationId,
+      nextCheckAt: domain.nextCheckAt,
+    })
+    .from(domain)
+    .where(
+      and(
+        isNotNull(domain.nextCheckAt),
+        lte(domain.nextCheckAt, now),
+        notInArray(domain.status, ["failed", "deleting"]),
+        opts.scope ? inArray(domain.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(domain.nextCheckAt))
+    .limit(opts.limit ?? 25);
+  let checked = 0;
+  for (const candidate of due) {
+    if (!candidate.nextCheckAt) continue;
+    const [leased] = await db
+      .update(domain)
+      .set({ nextCheckAt: new Date(now.getTime() + 5 * MINUTE) })
+      .where(and(eq(domain.id, candidate.id), eq(domain.nextCheckAt, candidate.nextCheckAt)))
+      .returning({ id: domain.id });
+    if (!leased) continue;
+    try {
+      await checkDomain({ organizationId: candidate.organizationId, id: candidate.id, now }, deps);
+      checked++;
+    } catch (error) {
+      console.error(`[email:domains] checking ${candidate.id} failed:`, error);
+    }
+  }
+  return checked;
+}
+
+/** Every suffix of `name` that is a valid domain (`a.b.c` → `a.b.c`, `b.c`). */
+function domainSuffixes(name: string): string[] {
+  const labels = name.split(".");
+  return labels.slice(0, -1).map((_, index) => labels.slice(index).join("."));
+}
+
+/**
+ * System-level: refuses a live send unless the From domain is covered by a verified domain of the
+ * organization and its tenant is not paused. The most specific matching domain across all
+ * organizations decides, because the provider signs with the most specific identity.
+ */
+export async function authorizeLiveSender(input: {
+  organizationId: string;
+  from: string;
+}): Promise<void> {
+  const address = parseEmailAddress(input.from).address.toLowerCase();
+  const fromDomain = address.slice(address.lastIndexOf("@") + 1);
+  const candidates = await db
+    .select({
+      name: domain.name,
+      organizationId: domain.organizationId,
+      status: domain.status,
+      canSend: domain.canSend,
+      mailFromDomain: domain.mailFromDomain,
+    })
+    .from(domain)
+    .where(and(inArray(domain.name, domainSuffixes(fromDomain)), ne(domain.status, "failed")));
+  const match = candidates.sort((a, b) => b.name.length - a.name.length)[0];
+  const usable =
+    match &&
+    match.organizationId === input.organizationId &&
+    match.status === "verified" &&
+    match.canSend &&
+    fromDomain !== match.mailFromDomain &&
+    !fromDomain.endsWith(`.${match.mailFromDomain}`);
+  if (!usable) {
+    throw new EmailError(
+      "domain_not_verified",
+      `${fromDomain} is not a verified domain of this organization. Add and verify it under ` +
+        "Domains in the dashboard, or use a sandbox key to test.",
+    );
+  }
+  const tenant = await getEmailTenant(input.organizationId);
+  if (tenant?.sendingStatus === "disabled") {
+    throw new EmailError(
+      "sending_paused",
+      "Sending is paused for this organization because of its sending reputation. Contact support.",
+    );
+  }
+}
+
+/**
+ * System-level (worker): records a tenant's sending status reported by the provider (SES pauses
+ * tenants with poor reputation). Only tenants named with `tenantPrefix` (this deployment) are
+ * touched, and an older report never overwrites a newer one. Returns whether a tenant changed.
+ */
+export async function applyTenantStatus(
+  input: {
+    tenantName: string;
+    status: EmailTenantRow["sendingStatus"];
+    cause: string | null;
+    occurredAt: Date;
+  },
+  tenantPrefix: string,
+): Promise<boolean> {
+  if (!input.tenantName.startsWith(`${tenantPrefix}-`)) return false;
+  const [updated] = await db
+    .update(emailTenant)
+    .set({
+      sendingStatus: input.status,
+      statusCause: input.cause,
+      statusUpdatedAt: input.occurredAt,
+    })
+    .where(
+      and(
+        eq(emailTenant.tenantName, input.tenantName),
+        or(isNull(emailTenant.statusUpdatedAt), lt(emailTenant.statusUpdatedAt, input.occurredAt)),
+      ),
+    )
+    .returning({ organizationId: emailTenant.organizationId });
+  return Boolean(updated);
+}
