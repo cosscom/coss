@@ -3,6 +3,11 @@
  * Checked by `tsc --noEmit` (never executed): a mismatch is a type error in this file.
  */
 import type {
+  CreateDomainRequest,
+  DeletedDomain,
+  DomainList,
+  DomainObject,
+  DomainRecordObject,
   EmailEvent,
   EmailEventList,
   EmailObject,
@@ -11,17 +16,36 @@ import type {
   SendEmailRequest,
 } from "@coss/email/schemas";
 import type {
+  DeletedWebhookEndpoint,
+  WebhookEndpointList,
+  WebhookEndpointObject,
+  WebhookEndpointWithSecret,
+} from "@coss/webhooks/schemas";
+import type {
   CossErrorIssue,
   CossErrorType,
+  CreateDomainParams,
+  CreateWebhookEndpointParams,
   Email,
   List,
+  DeletedDomain as SdkDeletedDomain,
+  DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
+  Domain as SdkDomain,
+  DomainRecord as SdkDomainRecord,
   EmailEvent as SdkEmailEvent,
   EmailRecipient as SdkEmailRecipient,
+  WebhookEndpointWithSecret as SdkEndpointWithSecret,
   SendEmailParams,
+  UpdateWebhookEndpointParams,
+  WebhookEndpoint,
   WebhookEvent,
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
+import type {
+  CreateWebhookEndpointRequest,
+  UpdateWebhookEndpointRequest,
+} from "../src/routes/webhook-endpoints.ts";
 
 /** Identical types (stricter than mutual assignability: also catches optionality drift). */
 type Equals<A, B> =
@@ -54,6 +78,24 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>, SdkEmailEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEventList>, List<SdkEmailEvent>>>,
+  // Domains: request and response shapes match the SDK's hand-written types.
+  Assert<MutuallyAssignable<z.input<typeof CreateDomainRequest>, CreateDomainParams>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainObject>["status"], SdkDomain["status"]>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainRecordObject>, SdkDomainRecord>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainList>, List<SdkDomain>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedDomain>, SdkDeletedDomain>>,
+  // Webhook endpoints: same, including the create-only `secret`.
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateWebhookEndpointRequest>, CreateWebhookEndpointParams>
+  >,
+  Assert<
+    MutuallyAssignable<z.input<typeof UpdateWebhookEndpointRequest>, UpdateWebhookEndpointParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointObject>, WebhookEndpoint>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
   // Webhooks: the body COSS sends is exactly the SDK's `WebhookEvent`.
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, WebhookEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], WebhookEvent["data"]>>,

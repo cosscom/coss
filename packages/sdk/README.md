@@ -7,6 +7,7 @@ The official TypeScript SDK for COSS: one API key for email, and soon SMS, video
 > `"coss": "workspace:*"`, or build a tarball with `bun run build && bun pm pack`.
 
 - Zero dependencies, ESM-only, fully typed.
+- `coss.email`, `coss.domains` and `coss.webhookEndpoints` behind one API key.
 - Every method returns `{ data, error }`. API and network failures are returned, never thrown.
 - Retries transient failures automatically, and sends are idempotent.
 
@@ -76,11 +77,60 @@ await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: cont
 await coss.email.get(id, { signal });
 ```
 
+## Domains
+
+Live keys can only send from a verified domain. Domains belong to the **organization**, so a
+`coss_test_…` key manages the same list a `coss_live_…` key does.
+
+```ts
+const { data: domain } = await coss.domains.create({ name: "acme.com" });
+
+// Publish these, then check them. `records` carries the result of the last check.
+for (const record of domain?.records ?? []) {
+  console.log(record.type, record.name, record.value, record.status); // "CNAME", "…", "…", "missing"
+}
+
+const { data: checked } = await coss.domains.verify(domain!.id);
+console.log(checked?.status, checked?.can_send); // "verified", true
+
+await coss.domains.list();
+await coss.domains.get(domain!.id);
+await coss.domains.delete(domain!.id);
+```
+
+`verify` asks the provider and DNS right away instead of waiting for the background check, so it is
+rate limited: a second call within a few seconds answers `429` (the SDK waits out `Retry-After` and
+retries). Verification gives up after 72 hours and the domain becomes `failed`; calling `verify`
+again then starts over with fresh DKIM records, which have to be published too. The `dmarc` record
+is recommended rather than required (`required: false`).
+
+## Webhook endpoints
+
+Endpoints belong to the API key's own **environment**, so sandbox and production receivers stay
+separate. The signing secret is returned only when the endpoint is created.
+
+```ts
+const { data: endpoint } = await coss.webhookEndpoints.create({
+  url: "https://example.com/webhooks/coss",
+  description: "Billing service",
+  event_types: ["email.bounced", "email.complained"], // omit for every event type
+});
+console.log(endpoint?.secret); // "whsec_…" — store it now, it is not returned again
+
+await coss.webhookEndpoints.update(endpoint!.id, { enabled: false }); // pause without deleting
+await coss.webhookEndpoints.list();
+await coss.webhookEndpoints.get(endpoint!.id);
+await coss.webhookEndpoints.delete(endpoint!.id);
+```
+
+`update` only changes the fields you pass, and never the signing secret, so receivers keep
+verifying deliveries. `event_types: []` means every event type, including ones added later.
+
 ## Webhooks
 
-Webhook endpoints (set up in the dashboard) receive `email.sent`, `email.delivered`,
-`email.delivery_delayed`, `email.bounced`, `email.complained` and `email.failed` events, signed
-with [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
+Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
+`email.bounced`, `email.complained` and `email.failed` events, signed with
+[Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts
 import { verifyWebhook, WebhookVerificationError } from "coss";
@@ -123,7 +173,7 @@ interface CossError {
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
 | `idempotency_error`     | 409 / 422         | `request_in_progress`, or `idempotency_key_reused` with a different body |
-| `rate_limit_error`      | 429               | Too many requests                                                 |
+| `rate_limit_error`      | 429               | Too many requests, or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |
@@ -136,12 +186,17 @@ The SDK retries failed requests up to `maxRetries` times (default 2) on:
 
 Other errors are returned immediately.
 
+`webhookEndpoints.create()` never retries automatically, regardless of `maxRetries`: the API does
+not deduplicate endpoint creation, even with an `Idempotency-Key`. If the response is lost, creation
+may still have succeeded. List endpoints and delete the endpoint with the unknown secret before
+creating a replacement.
+
 The wait between attempts grows exponentially (500 ms, 1 s, 2 s, … up to 8 s) with random jitter. When
 the response has a `Retry-After` header, the SDK waits exactly that long instead. If `Retry-After` asks
 for more than 60 s, the SDK returns the error rather than waiting.
 
 Every `POST` carries an `Idempotency-Key` header. It is either the key you pass or a random UUID, and
-the same key is reused on every retry of that call. The API stores the result for 24 hours, so a
+the same key is reused on every retry of that call. For email sends, the API stores the result for 24 hours, so a
 retried send is never delivered twice:
 - A repeat with the same key and the same body returns the original email.
 - A repeat with the same key and a different body fails with `idempotency_key_reused`.

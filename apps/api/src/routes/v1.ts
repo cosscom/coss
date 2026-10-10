@@ -1,13 +1,22 @@
-import type { EmailService } from "@coss/email";
+import type { DomainDeps, EmailService } from "@coss/email";
+import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
+import { createDomainRoutes } from "./domains.ts";
 import { createEmailRoutes } from "./emails.ts";
+import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
 
-export type V1Dependencies = { emailService: EmailService };
+export type V1Dependencies = {
+  emailService: EmailService;
+  domainDeps: DomainDeps;
+  webhookDeps: WebhookManagementDeps;
+};
 
 /** Everything under `/v1`. Each product mounts its routes here. */
 export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   const v1 = new OpenAPIHono<AppEnv>();
   v1.route("/", createEmailRoutes(deps.emailService));
+  v1.route("/", createDomainRoutes(deps.domainDeps));
+  v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
   return v1;
 }

@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { defaultKeyHasher } from "@better-auth/api-key";
 import { auth } from "@coss/auth";
-import { API_KEY_PREFIX, API_KEY_VISIBLE_CHARACTERS } from "@coss/auth/constants";
+import {
+  API_KEY_PERMISSIONS,
+  API_KEY_PREFIX,
+  API_KEY_VISIBLE_CHARACTERS,
+} from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { eq } from "drizzle-orm";
@@ -249,6 +253,13 @@ describe("authenticateApiKey", () => {
       ok: false,
       reason: "forbidden",
     });
+  });
+
+  test("a new key carries every product's default permissions", async () => {
+    const tenant = await createTestTenant();
+    for (const [resource, actions] of Object.entries(API_KEY_PERMISSIONS)) {
+      expect((await authenticateApiKey(tenant.liveKey, { [resource]: actions })).ok).toBe(true);
+    }
   });
 });
 

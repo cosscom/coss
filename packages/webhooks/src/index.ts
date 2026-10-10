@@ -8,7 +8,6 @@ export {
 } from "./deliver.ts";
 export {
   createWebhookEndpoint,
-  DESCRIPTION_MAX_LENGTH,
   deleteWebhookEndpoint,
   getWebhookEndpoint,
   getWebhookMessagePayload,
@@ -16,7 +15,8 @@ export {
   listWebhookEndpoints,
   MAX_ENDPOINTS_PER_ENVIRONMENT,
   revealWebhookSecret,
-  setWebhookEndpointEnabled,
+  toWebhookEndpointObject,
+  updateWebhookEndpoint,
   type WebhookAttemptRow,
   type WebhookDeliveryLogEntry,
   type WebhookDeliveryRow,
@@ -25,6 +25,19 @@ export {
 } from "./endpoints.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export { enqueueWebhookMessage } from "./outbox.ts";
+export {
+  DESCRIPTION_MAX_LENGTH,
+  DeletedWebhookEndpoint,
+  type DeletedWebhookEndpointOutput,
+  WEBHOOK_URL_MAX_LENGTH,
+  WebhookEndpointList,
+  type WebhookEndpointListOutput,
+  WebhookEndpointObject,
+  type WebhookEndpointObjectOutput,
+  WebhookEndpointWithSecret,
+  type WebhookEndpointWithSecretOutput,
+  webhookEndpointRequests,
+} from "./schemas.ts";
 export { decryptSecret, encryptSecret, parseSecretsKey } from "./secrets.ts";
 export {
   createWebhookSender,

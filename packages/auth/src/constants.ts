@@ -11,3 +11,14 @@ export const API_KEY_PREFIX = {
 
 /** Prefix + this many characters are stored/displayed (`coss_live_AbCd`). */
 export const API_KEY_VISIBLE_CHARACTERS = 14;
+
+/**
+ * Permissions every API key is created with: one key covers every product the organization uses.
+ * Stored on the key row at creation time, so changing this only affects new keys — existing ones
+ * need an `apikey.permissions` backfill.
+ */
+export const API_KEY_PERMISSIONS: Record<string, string[]> = {
+  email: ["send", "read"],
+  domain: ["create", "read", "verify", "delete"],
+  webhook: ["create", "read", "update", "delete"],
+};

@@ -26,6 +26,7 @@ export {
   normalizeDomainName,
   recheckDueDomains,
   restartDomainVerification,
+  toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
 export {
@@ -70,6 +71,20 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  CreateDomainRequest,
+  type CreateDomainRequestInput,
+  DeletedDomain,
+  type DeletedDomainOutput,
+  DOMAIN_NAME_MAX_LENGTH,
+  DOMAIN_RECORD_PURPOSES,
+  DOMAIN_RECORD_STATUSES,
+  DOMAIN_STATUSES,
+  DomainList,
+  type DomainListOutput,
+  DomainObject,
+  type DomainObjectOutput,
+  DomainRecordObject,
+  type DomainRecordObjectOutput,
   EMAIL_EVENT_TYPES,
   EMAIL_RECIPIENT_STATUSES,
   EMAIL_RECIPIENT_TYPES,
@@ -89,6 +104,7 @@ export {
   type EmailWebhookEventOutput,
   emailAddressProblem,
   isReservedHeader,
+  MAIL_FROM_STATUSES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
   MAX_TAGS,
