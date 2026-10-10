@@ -73,7 +73,7 @@ describe("app", () => {
 });
 
 describe("GET /openapi.json", () => {
-  test("is an OpenAPI 3.1 document describing the v1 email endpoints", async () => {
+  test("is an OpenAPI 3.1 document describing every v1 endpoint", async () => {
     const { app } = createTestApp();
     const res = await app.request("http://api.test/openapi.json");
 
@@ -89,9 +89,14 @@ describe("GET /openapi.json", () => {
     expect(doc.info).toMatchObject({ title: "COSS API", version: "v1" });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/domains",
+      "/v1/domains/{id}",
+      "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/{id}",
       "/v1/emails/{id}/events",
+      "/v1/webhook_endpoints",
+      "/v1/webhook_endpoints/{id}",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -107,6 +112,30 @@ describe("GET /openapi.json", () => {
       operationId: "listEmailEvents",
       parameters: [{ in: "path", name: "id", required: true }],
     });
+    // Every mutating operation of the management endpoints is documented and authenticated.
+    expect(
+      Object.entries(doc.paths)
+        .flatMap(([path, methods]) =>
+          Object.entries(methods).map(([method, operation]) => [
+            `${method} ${path}`,
+            (operation as { operationId: string }).operationId,
+          ]),
+        )
+        .filter(
+          ([route]) => String(route).includes("domains") || String(route).includes("webhook"),
+        ),
+    ).toEqual([
+      ["post /v1/domains", "createDomain"],
+      ["get /v1/domains", "listDomains"],
+      ["get /v1/domains/{id}", "getDomain"],
+      ["delete /v1/domains/{id}", "deleteDomain"],
+      ["post /v1/domains/{id}/verify", "verifyDomain"],
+      ["post /v1/webhook_endpoints", "createWebhookEndpoint"],
+      ["get /v1/webhook_endpoints", "listWebhookEndpoints"],
+      ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
+      ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
+      ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
+    ]);
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
       scheme: "bearer",
@@ -118,6 +147,17 @@ describe("GET /openapi.json", () => {
         "EmailRecipient",
         "EmailEvent",
         "EmailEventList",
+        "CreateDomainRequest",
+        "Domain",
+        "DomainRecord",
+        "DomainList",
+        "DeletedDomain",
+        "CreateWebhookEndpointRequest",
+        "UpdateWebhookEndpointRequest",
+        "WebhookEndpoint",
+        "WebhookEndpointWithSecret",
+        "WebhookEndpointList",
+        "DeletedWebhookEndpoint",
         "Error",
       ]),
     );

@@ -21,7 +21,7 @@ import {
 import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
-import { parseEmailAddress } from "./schemas.ts";
+import { DOMAIN_NAME_MAX_LENGTH, type DomainObjectOutput, parseEmailAddress } from "./schemas.ts";
 
 const { domain, emailTenant } = schema;
 
@@ -36,7 +36,6 @@ export const MAIL_FROM_SUBDOMAIN = "send";
 export const MAX_PENDING_DOMAINS = 5;
 /** The provider gives up verifying after 72 hours; so do we. */
 export const VERIFICATION_WINDOW_MS = 72 * 60 * 60 * 1000;
-const DOMAIN_NAME_MAX_LENGTH = 200;
 const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
 const RESERVED_SUFFIXES = ["amazonses.com", "amazonaws.com", "coss.com", "coss.dev"];
 
@@ -74,6 +73,25 @@ export function normalizeDomainName(input: string): string {
 /** The DNS records of a domain: the latest check, or what to publish if never checked. */
 export function domainRecords(row: DomainRow): DomainRecord[] {
   return row.records.length > 0 ? row.records : expectedRecords(row);
+}
+
+/** The domain's public wire representation, including the records to publish. */
+export function toDomainObject(row: DomainRow): DomainObjectOutput {
+  return {
+    object: "domain",
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    can_send: row.canSend,
+    region: row.region,
+    mail_from_domain: row.mailFromDomain,
+    mail_from_status: row.mailFromStatus,
+    records: domainRecords(row),
+    created_at: row.createdAt.toISOString(),
+    last_checked_at: row.lastCheckedAt?.toISOString() ?? null,
+    verified_at: row.verifiedAt?.toISOString() ?? null,
+    failed_at: row.failedAt?.toISOString() ?? null,
+  };
 }
 
 /** When the worker should check a domain next (`null`: never). */

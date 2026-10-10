@@ -97,9 +97,14 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery events
+- `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
+  (organization-wide, so every key of the organization sees the same ones)
+- `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the
+  key's own environment; the signing secret is returned only when one is created
 - `GET /openapi.json` — OpenAPI 3.1 document
 
-Domains and webhook endpoints are managed in the dashboard.
+Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
+`coss.webhookEndpoints`.
 
 ## Running on Amazon SES
 

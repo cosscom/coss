@@ -27,7 +27,7 @@ export interface HttpClientOptions {
 }
 
 export interface ApiRequest {
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PATCH" | "DELETE";
   /** Path including the version prefix, e.g. `/v1/emails`. */
   path: string;
   /** Serialized as JSON. */

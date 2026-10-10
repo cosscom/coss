@@ -1,5 +1,7 @@
 import { type FetchLike, HttpClient } from "./core/http.ts";
+import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 
 export interface CossOptions {
   /** Secret API key (`coss_live_…` or `coss_test_…`). Defaults to the `COSS_API_KEY` env variable. */
@@ -60,6 +62,10 @@ function timeoutMs(value: number | undefined): number {
  */
 export class Coss {
   readonly email: EmailResource;
+  /** Sending domains of the organization (`coss.domains.create`, `.verify`, …). */
+  readonly domains: DomainsResource;
+  /** Webhook endpoints of the API key's environment. */
+  readonly webhookEndpoints: WebhookEndpointsResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -94,5 +100,7 @@ export class Coss {
       maxRetries: retries(options.maxRetries),
     });
     this.email = new EmailResource(http);
+    this.domains = new DomainsResource(http);
+    this.webhookEndpoints = new WebhookEndpointsResource(http);
   }
 }

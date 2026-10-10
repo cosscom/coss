@@ -15,6 +15,7 @@ import {
   normalizeDomainName,
   recheckDueDomains,
   restartDomainVerification,
+  toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "../src/domains.ts";
 import { DomainError, EmailError } from "../src/errors.ts";
@@ -205,6 +206,54 @@ describe("createDomain", () => {
     );
     const row = await createDomain({ organizationId, name, userId: null }, deps());
     expect(row.status).toBe("pending");
+  });
+});
+
+describe("toDomainObject", () => {
+  test("is the wire shape, with the records to publish and no provider internals", async () => {
+    const tenant = await createTestTenant();
+    const name = uniqueName();
+    const created = await createDomain(
+      { organizationId: tenant.organization.id, name, userId: tenant.owner.id },
+      deps(new FakeIdentityProvider({ verify: () => false })),
+    );
+
+    const object = toDomainObject(created);
+
+    expect(object).toMatchObject({
+      object: "domain",
+      id: created.id,
+      name,
+      status: "pending",
+      can_send: false,
+      mail_from_domain: `send.${name}`,
+      mail_from_status: "pending",
+      created_at: created.createdAt.toISOString(),
+      last_checked_at: null,
+      verified_at: null,
+      failed_at: null,
+    });
+    // A never-checked domain still shows what to publish.
+    expect(created.records).toEqual([]);
+    expect(object.records).toEqual(expectedRecords(created));
+    // Tenancy and provider bookkeeping stay internal.
+    expect(Object.keys(object)).not.toContain("organization_id");
+    expect(JSON.stringify(object)).not.toContain(tenant.organization.id);
+  });
+
+  test("reports the latest check once there has been one", async () => {
+    const tenant = await createTestTenant();
+    const existing = await createVerifiedDomain(tenant.organization.id);
+    const checked = await checkDomain(
+      { organizationId: tenant.organization.id, id: existing.id },
+      deps(),
+    );
+
+    const object = toDomainObject(checked);
+
+    expect(object).toMatchObject({ status: "verified", can_send: true });
+    expect(object.last_checked_at).toBe(checked.lastCheckedAt?.toISOString() ?? null);
+    expect(object.records).toEqual(checked.records);
   });
 });
 

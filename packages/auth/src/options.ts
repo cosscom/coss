@@ -11,7 +11,11 @@ import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { admin, organization } from "better-auth/plugins";
-import { API_KEY_NAME_MAX_LENGTH, API_KEY_VISIBLE_CHARACTERS } from "./constants.ts";
+import {
+  API_KEY_NAME_MAX_LENGTH,
+  API_KEY_PERMISSIONS,
+  API_KEY_VISIBLE_CHARACTERS,
+} from "./constants.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { validateOrgSlug } from "./slugs.ts";
 
@@ -142,7 +146,9 @@ export const authOptions = {
       rateLimit: { enabled: false },
       // Environment binding lives in our `environment_api_key` table (metadata is client-writable).
       enableMetadata: false,
-      permissions: { defaultPermissions: { email: ["send", "read"] } },
+      // Stored on the key at creation, so adding a resource here needs a backfill for existing
+      // keys (see migration 0004) or they get a 403 from the new endpoints.
+      permissions: { defaultPermissions: API_KEY_PERMISSIONS },
     }),
   ],
 } satisfies BetterAuthOptions;
