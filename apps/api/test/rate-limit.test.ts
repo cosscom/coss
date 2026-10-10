@@ -63,6 +63,26 @@ describe("request rate limits", () => {
     expect(write.headers.get("ratelimit-limit")).toBe("30");
   });
 
+  test("bulk suppression import and export use the write and read buckets", async () => {
+    const { tenant, app } = await setup({
+      "api.write": { limit: 1, periodMs: 60_000 },
+      "api.read": { limit: 1, periodMs: 60_000 },
+    });
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const imported = await apiRequest(app, "POST", "/v1/suppressions/import", {
+        key: tenant.sandboxKey,
+        body: { suppressions: [{ address: "bulk@example.com" }] },
+      });
+      const exported = await apiRequest(app, "GET", "/v1/suppressions/export", {
+        key: tenant.sandboxKey,
+      });
+      expect(imported.status).toBe(attempt === 0 ? 200 : 429);
+      expect(exported.status).toBe(attempt === 0 ? 200 : 429);
+      await imported.text();
+      await exported.text();
+    }
+  });
+
   test("authentication runs first: a bad key never spends a bucket", async () => {
     const { tenant, app } = await setup({ "api.read": { limit: 1, periodMs: 60_000 } });
     const bad = await apiRequest(app, "GET", MISSING_EMAIL, { key: "coss_test_nope" });

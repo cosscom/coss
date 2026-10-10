@@ -28,6 +28,8 @@ export function createTestApp(
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
+
+    corsOrigins?: readonly string[];
   } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
@@ -39,6 +41,8 @@ export function createTestApp(
     webhookDeps: testManagementDeps,
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,
+
+    corsOrigins: opts.corsOrigins,
   });
   return { app, liveProvider, sandboxProvider, identity };
 }

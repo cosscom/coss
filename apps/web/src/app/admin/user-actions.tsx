@@ -1,5 +1,6 @@
 "use client";
 
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { Button } from "@coss/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -70,7 +71,7 @@ export function UserActions(props: { userId: string; isAdmin: boolean; banned: b
               "impersonate",
               () => authClient.admin.impersonateUser({ userId }),
               () => {
-                router.push("/");
+                router.push(DASHBOARD_PATH);
                 router.refresh();
               },
             )

@@ -25,6 +25,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { AddSuppressionDialog } from "./add-suppression-dialog";
+import { ImportSuppressionsDialog } from "./import-suppressions-dialog";
 import { RemoveSuppressionButton } from "./remove-suppression-button";
 
 export const metadata: Metadata = { title: "Suppressions" };
@@ -80,7 +81,20 @@ export default async function SuppressionsPage({
           ← {project.name} · {environment.name}
         </Link>
         <PageHeader
-          actions={canCreate ? <AddSuppressionDialog {...target} /> : null}
+          actions={
+            <div className="flex gap-2">
+              {/* A plain link: the CSV comes from a route handler, not a page. */}
+              <Button
+                render={<a download href={`${listPath}/export`} />}
+                size="sm"
+                variant="outline"
+              >
+                Export CSV
+              </Button>
+              {canCreate ? <ImportSuppressionsDialog {...target} /> : null}
+              {canCreate ? <AddSuppressionDialog {...target} /> : null}
+            </div>
+          }
           description="Emails from this environment skip these addresses. Permanent bounces and complaints are added automatically; entries for a category only apply to emails sent with that category."
           title={
             <span className="flex items-center gap-2">

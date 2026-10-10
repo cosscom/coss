@@ -154,6 +154,21 @@ const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // new
 await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
 ```
 
+Move whole lists in and out in bulk. `import` sends 1,000 entries per request and adds up the
+results; invalid entries are skipped and reported by their position, and entries already on the
+list are left unchanged, so importing again is safe:
+
+```ts
+const { data: result } = await coss.email.suppressions.import({
+  suppressions: [{ address: "jane@example.com" }, { address: "joe@example.com", scope: "marketing" }],
+}); // { created: 2, existing: 0, invalid: [] }
+
+// CSV with the columns address,scope,reason,created_at,email_id,id (oldest first).
+const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" });
+```
+
+Imported entries have the reason `import`. The dashboard imports and exports the same CSV.
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,

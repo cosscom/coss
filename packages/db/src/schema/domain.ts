@@ -249,6 +249,7 @@ export const emailSuppressionReason = pgEnum("email_suppression_reason", [
   "bounce",
   "complaint",
   "manual",
+  "import",
 ]);
 
 export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[number];

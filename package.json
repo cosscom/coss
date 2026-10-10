@@ -11,7 +11,8 @@
     "packages": [
       "apps/*",
       "packages/*",
-      "tooling/*"
+      "tooling/*",
+      "infra"
     ],
     "catalog": {
       "@arethetypeswrong/core": "0.18.5",
@@ -70,7 +71,8 @@
     "ses:bootstrap": "bun run --cwd apps/worker ses:bootstrap",
     "valkey:bootstrap": "bun run --cwd packages/ratelimit valkey:bootstrap",
     "ratelimit:set": "bun run --cwd packages/ratelimit ratelimit:set",
-    "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts"
+    "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts",
+    "openapi:generate": "bun run --cwd apps/api openapi:generate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -5,12 +5,18 @@ import type {
   CheckSuppressionParams,
   CreateSuppressionParams,
   DeletedSuppression,
+  ExportSuppressionsParams,
+  ImportSuppressionsParams,
   ListSuppressionsParams,
   Suppression,
   SuppressionCheck,
+  SuppressionImport,
 } from "../types/suppression.ts";
 
 type ReadOptions = Pick<RequestOptions, "signal">;
+
+/** The API's per-request maximum for imports. */
+const IMPORT_BATCH_SIZE = 1000;
 
 /**
  * `coss.email.suppressions`: the suppression list of the API key's environment. Sends skip
@@ -34,6 +40,58 @@ export class SuppressionResource {
       path: "/v1/suppressions",
       body: params,
       idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Adds many entries at once (reason `import`), 1,000 per request. Invalid entries are skipped
+   * and reported in `invalid`; entries already on the list count as `existing`. If a request
+   * fails, the earlier batches stay imported: importing everything again is safe.
+   */
+  async import(
+    params: ImportSuppressionsParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<SuppressionImport>> {
+    const total: SuppressionImport = {
+      object: "suppression_import",
+      created: 0,
+      existing: 0,
+      invalid: [],
+    };
+    // An empty list still gets one request, so the API reports it like any other invalid input.
+    for (let start = 0; start === 0 || start < params.suppressions.length; ) {
+      const batch = params.suppressions.slice(start, start + IMPORT_BATCH_SIZE);
+      const result = await this.#http.request<SuppressionImport>({
+        method: "POST",
+        path: "/v1/suppressions/import",
+        body: { suppressions: batch },
+        signal: options?.signal,
+      });
+      if (result.error) return result;
+      total.created += result.data.created;
+      total.existing += result.data.existing;
+      for (const entry of result.data.invalid) {
+        total.invalid.push({ ...entry, index: entry.index + start });
+      }
+      start += IMPORT_BATCH_SIZE;
+    }
+    return { data: total, error: null };
+  }
+
+  /**
+   * The whole list as CSV (`address,scope,reason,created_at,email_id,id`, oldest first), which
+   * `import` (or the dashboard) accepts again.
+   */
+  export(
+    params: ExportSuppressionsParams = {},
+    options?: ReadOptions,
+  ): Promise<CossResult<string>> {
+    return this.#http.request<string>({
+      method: "GET",
+      path: "/v1/suppressions/export",
+      query: { ...params },
+      responseType: "text",
       signal: options?.signal,
     });
   }

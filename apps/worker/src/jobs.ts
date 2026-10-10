@@ -13,7 +13,12 @@ export type WorkerDeps = {
   domains: DomainDeps;
   webhooks: WebhookDeliveryDeps;
   /** Only with `EMAIL_PROVIDER=ses`. */
-  sesEvents?: { sqs: SqsApi; tenantPrefix: string; signal: AbortSignal };
+  sesEvents?: { sqs: SqsApi; tenantPrefix: string };
+  /**
+   * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
+   * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
+   */
+  signal: AbortSignal;
 };
 
 export function startJobs(deps: WorkerDeps): Loop[] {
@@ -28,7 +33,8 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "domains",
       intervalMs: 30_000,
       run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH }, deps.domains)) === DOMAIN_BATCH,
+        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
+        DOMAIN_BATCH,
     }),
     startLoop({
       name: "stale-claims",
@@ -44,12 +50,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
         run: async () => {
-          if (ses.signal.aborted) return;
+          if (deps.signal.aborted) return;
           try {
-            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: ses.signal });
+            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: deps.signal });
           } catch (error) {
             // Shutting down aborts the long poll; that's not a failure.
-            if (!ses.signal.aborted) throw error;
+            if (!deps.signal.aborted) throw error;
           }
         },
       }),

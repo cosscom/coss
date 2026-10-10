@@ -3,12 +3,12 @@ import { ErrorEnvelope } from "../errors.ts";
 
 export type HeaderDoc = {
   description: string;
-  schema: { type: "string" | "integer"; enum?: string[]; example?: string };
+  schema: { type: "string" | "integer"; enum?: string[]; examples?: string[] };
 };
 
 export const requestIdHeader: HeaderDoc = {
   description: "Unique id of this request. Include it when contacting support.",
-  schema: { type: "string", example: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" },
+  schema: { type: "string", examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] },
 };
 
 export function errorDoc(description: string, headers: Record<string, HeaderDoc> = {}) {

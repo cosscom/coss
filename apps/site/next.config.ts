@@ -1,0 +1,42 @@
+import path from "node:path";
+import { SITE_ASSET_PREFIX } from "@coss/auth/slugs";
+import { createMDX } from "fumadocs-mdx/next";
+import type { NextConfig } from "next";
+import { securityHeaders } from "./src/lib/security-headers.ts";
+import { DEV_DASHBOARD_ORIGIN } from "./src/lib/site.ts";
+
+// Read when `next build`/`next dev` loads this file: the standalone server reuses the serialized
+// result and never runs it again, so nothing stage-specific may be decided here.
+const dev = process.env.NODE_ENV === "development";
+
+const nextConfig: NextConfig = {
+  // Internal packages ship TypeScript source (no build step).
+  transpilePackages: ["@coss/ui", "@coss/auth"],
+  // Twoslash drives the TypeScript compiler while MDX compiles; it must not be bundled.
+  serverExternalPackages: ["typescript"],
+  // This app is a zone of coss.com next to the dashboard (the default zone, which owns bare
+  // /_next/*): its own assets live under a prefix the load balancer routes here.
+  assetPrefix: SITE_ASSET_PREFIX,
+  // A self-contained server (.next/standalone) for the container image, traced from the monorepo
+  // root so Bun's isolated node_modules (node_modules/.bun) are copied in.
+  output: "standalone",
+  outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
+  // Same build → same id on every instance. The image build passes the commit as
+  // NEXT_DEPLOYMENT_ID, which also turns on Next's version-skew protection.
+  generateBuildId: async () => process.env.NEXT_DEPLOYMENT_ID || null,
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders({ dev }) }];
+  },
+  // In production the dashboard's zone serves /api/auth on the same origin.
+  async rewrites() {
+    if (!dev) return [];
+    return [{ source: "/api/auth/:path*", destination: `${DEV_DASHBOARD_ORIGIN}/api/auth/:path*` }];
+  },
+};
+
+// Collections are declared with `fumadocs-mdx/macro` (src/lib/collections.ts); global MDX options
+// (Shiki, Twoslash) live in source.config.ts. The macro transform only touches modules importing it.
+const withMDX = createMDX();
+
+export default withMDX(nextConfig);

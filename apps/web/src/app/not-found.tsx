@@ -1,3 +1,4 @@
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { Button } from "@coss/ui/components/button";
 import Link from "next/link";
 
@@ -8,7 +9,7 @@ export default function NotFound() {
       <p className="text-muted-foreground text-sm">
         This page doesn't exist, or you don't have access to it.
       </p>
-      <Button render={<Link href="/" />} variant="outline">
+      <Button render={<Link href={DASHBOARD_PATH} />} variant="outline">
         Go to dashboard
       </Button>
     </main>

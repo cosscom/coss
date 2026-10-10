@@ -1,0 +1,21 @@
+{
+  "name": "@coss/infra",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "aws:spec": "bun aws/print.ts"
+  },
+  "dependencies": {
+    "@coss/auth": "workspace:*",
+    "@coss/email": "workspace:*",
+    "@coss/ratelimit": "workspace:*"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

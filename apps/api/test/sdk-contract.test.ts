@@ -256,6 +256,42 @@ describe("coss SDK against the API", () => {
   });
 });
 
+describe("coss.email.suppressions bulk import and export against the API", () => {
+  test("import batches large lists, and export returns CSV that imports again", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const suppressions = Array.from({ length: 1500 }, (_, i) => ({
+      address: `user${i}@example.com`,
+    }));
+    suppressions.push({ address: "nope" }, { address: "user0@example.com" });
+
+    expect(await coss.email.suppressions.import({ suppressions })).toEqual({
+      data: {
+        object: "suppression_import",
+        created: 1500,
+        existing: 1,
+        invalid: [{ index: 1500, address: "nope", message: expect.any(String) }],
+      },
+      error: null,
+    });
+
+    const exported = await coss.email.suppressions.export({ reason: "import" });
+    const lines = exported.data?.trimEnd().split("\r\n") ?? [];
+    expect(lines).toHaveLength(1501);
+    expect(lines[1]).toMatch(/^user\d+@example\.com,\*,import,[^,]+,,sup_\w+$/);
+
+    const other = clientFor(app, tenant.liveKey);
+    const rows = lines.slice(1).map((line) => {
+      const [address = "", scope] = line.split(",");
+      return { address, scope };
+    });
+    expect((await other.email.suppressions.import({ suppressions: rows })).data?.created).toBe(
+      1500,
+    );
+  });
+});
+
 describe("coss.domains against the API", () => {
   test("create, verify, list and delete round-trip a domain", async () => {
     const tenant = await createTestTenant();
