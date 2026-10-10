@@ -1,5 +1,5 @@
 {
-  "id": "bdbd2d1b-490a-474c-838b-81634479c358",
+  "id": "55a36cf6-50c6-457c-bc86-a85d2667542e",
   "prevId": "117aa2d8-8e7f-42b1-9717-511e7bf8f68b",
   "version": "7",
   "dialect": "postgresql",
@@ -1288,22 +1288,6 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "email_queued_created_at_idx": {
-          "name": "email_queued_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"email\".\"status\" = 'queued'",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2656,7 +2640,8 @@
       "values": [
         "bounce",
         "complaint",
-        "manual"
+        "manual",
+        "import"
       ]
     },
     "public.environment_mode": {

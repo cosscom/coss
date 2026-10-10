@@ -23,6 +23,7 @@ export const ID_PREFIXES = {
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
   webhookAttempt: "whatt",
+  rateLimitOverride: "rlo",
   request: "req",
 } as const;
 

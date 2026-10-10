@@ -15,11 +15,12 @@ import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
 import { env } from "./env.ts";
 import { startJobs } from "./jobs.ts";
+import { createShutdown } from "./shutdown.ts";
 import { createSqsApi } from "./sqs.ts";
 
 const config = emailRuntimeConfig(env);
 const email = createEmailRuntime(config);
-const shutdownSignal = new AbortController();
+const controller = new AbortController();
 let sesEvents: Parameters<typeof startJobs>[0]["sesEvents"];
 if (config.provider === "ses") {
   if (!env.SES_EVENTS_QUEUE_URL) {
@@ -30,7 +31,6 @@ if (config.provider === "ses") {
   sesEvents = {
     sqs: createSqsApi(config.ses.region, env.SES_EVENTS_QUEUE_URL),
     tenantPrefix: config.ses.tenantPrefix,
-    signal: shutdownSignal.signal,
   };
 }
 // Email dispatch runs on pg-boss (its own pool, woken by NOTIFY when a send commits).
@@ -49,6 +49,7 @@ await workEmailDispatchQueue(
 const loops = startJobs({
   dispatchQueue,
   sesEvents,
+  signal: controller.signal,
   domains: email.domainDeps,
   webhooks: {
     secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
@@ -58,20 +59,26 @@ const loops = startJobs({
 });
 console.info(`[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")})`);
 
-let stopping = false;
-async function shutdown(signal: string): Promise<void> {
-  if (stopping) return;
-  stopping = true;
-  console.info(`[worker] ${signal}: finishing current runs…`);
-  // Ends the SQS long poll; unrecorded messages simply become visible again.
-  shutdownSignal.abort();
-  // Waits for in-flight dispatches; a send cut off mid-call is resolved by the stale-claim sweep.
-  await Promise.all([
-    jobs.stop({ graceful: true, timeout: 30_000 }),
-    ...loops.map((loop) => loop.stop()),
-  ]);
-  await closeDb();
-  process.exit(0);
+const shutdown = createShutdown({
+  controller,
+  loops: [
+    ...loops,
+    { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
+  ],
+  close: closeDb,
+});
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  process.on(signal, () => {
+    console.info(`[worker] ${signal}: finishing current runs…`);
+    void shutdown().then(
+      () => {
+        console.info("[worker] stopped");
+        process.exit(0);
+      },
+      (error: unknown) => {
+        console.error("[worker] shutdown failed:", error);
+        process.exit(1);
+      },
+    );
+  });
 }
-process.on("SIGTERM", () => void shutdown("SIGTERM"));
-process.on("SIGINT", () => void shutdown("SIGINT"));

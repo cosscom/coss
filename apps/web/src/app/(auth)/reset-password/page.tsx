@@ -2,7 +2,7 @@ import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { safeRedirectPath } from "@/lib/safe-redirect";
+import { nextQuery, safeRedirectPath } from "@/lib/safe-redirect";
 import { ResetPasswordForm } from "./reset-password-form";
 
 // The URL carries the reset token: never leak it to other origins through the Referer header.
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Reset password", referrer: "no-refer
 export default async function ResetPasswordPage({ searchParams }: PageProps<"/reset-password">) {
   const { token, error, next: rawNext } = await searchParams;
   const next = safeRedirectPath(rawNext);
-  const query = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+  const query = nextQuery(next);
 
   if (typeof token !== "string" || token.length === 0 || error !== undefined) {
     return (

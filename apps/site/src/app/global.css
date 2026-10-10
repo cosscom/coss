@@ -1,0 +1,11 @@
+@import "tailwindcss";
+/* coss ui tokens. shadcn.css points Fumadocs' colors at them, so the docs share the theme. */
+@import "@coss/ui/theme.css";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+@import "fumadocs-openapi/css/preset.css";
+@import "fumadocs-twoslash/twoslash.css";
+
+/* This app's components and content (paths relative to this file). */
+@source "../**/*.{ts,tsx}";
+@source "../../content/**/*.mdx";

@@ -31,6 +31,8 @@ export type SendEmailInput = {
 };
 
 export type EmailService = {
+  /** Read a matching replay without creating or dispatching an email. */
+  replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
   /** Stores the email and enqueues its dispatch; the email is returned `queued`. */
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
   /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
@@ -410,5 +412,10 @@ export function createEmailService(opts: {
     return stored(inserted, false);
   }
 
-  return { send, dispatch };
+  async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
+    if (!input.idempotencyKey) return null;
+    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+  }
+
+  return { send, dispatch, replay };
 }

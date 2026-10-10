@@ -154,6 +154,21 @@ const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // new
 await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
 ```
 
+Move whole lists in and out in bulk. `import` sends 1,000 entries per request and adds up the
+results; invalid entries are skipped and reported by their position, and entries already on the
+list are left unchanged, so importing again is safe:
+
+```ts
+const { data: result } = await coss.email.suppressions.import({
+  suppressions: [{ address: "jane@example.com" }, { address: "joe@example.com", scope: "marketing" }],
+}); // { created: 2, existing: 0, invalid: [] }
+
+// CSV with the columns address,scope,reason,created_at,email_id,id (oldest first).
+const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" });
+```
+
+Imported entries have the reason `import`. The dashboard imports and exports the same CSV.
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
@@ -201,7 +216,7 @@ interface CossError {
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
 | `idempotency_error`     | 409 / 422         | `request_in_progress` (retried automatically), or `idempotency_key_reused` with a different body |
-| `rate_limit_error`      | 429               | Too many requests, or a domain was checked moments ago (`domain_recently_checked`) |
+| `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |

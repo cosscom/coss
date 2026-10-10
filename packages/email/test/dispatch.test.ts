@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { db } from "@coss/db";
+import { db, pool } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { type PgBoss, startJobBoss } from "@coss/db/jobs";
 import { uniqueSuffix } from "@coss/db/testing";
@@ -43,6 +43,34 @@ function setup() {
 const jobsFor = (emailId: string) => producer.findJobs<EmailDispatchJob>(name, { key: emailId });
 
 describe("pg-boss dispatch queue", () => {
+  test("cold-cache enqueues complete when transactions occupy the entire app pool", async () => {
+    const coldName = `email-dispatch-test-${uniqueSuffix()}`;
+    await ensureEmailDispatchQueue(producer, coldName);
+    const queue = pgBossDispatchQueue(producer, coldName);
+    const count = pool.options.max;
+    const ready = Promise.withResolvers<void>();
+    let started = 0;
+    // Bound the old deadlock so a regression fails instead of hanging the test process.
+    const previousTimeout = pool.options.connectionTimeoutMillis;
+    pool.options.connectionTimeoutMillis = 1_000;
+    try {
+      const results = await Promise.allSettled(
+        Array.from({ length: count }, () =>
+          db.transaction(async (tx) => {
+            if (++started === count) ready.resolve();
+            await ready.promise;
+            await queue.enqueue(tx, { organizationId: newId("org"), emailId: newId("email") });
+          }),
+        ),
+      );
+      expect(results.every((result) => result.status === "fulfilled")).toBe(true);
+      expect(await producer.findJobs(coldName)).toHaveLength(count);
+    } finally {
+      pool.options.connectionTimeoutMillis = previousTimeout;
+      await producer.deleteQueue(coldName);
+    }
+  });
+
   test("a send commits its dispatch job with the email", async () => {
     const tenant = await createTestTenant();
     const { service, provider } = setup();

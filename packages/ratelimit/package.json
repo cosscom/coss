@@ -1,0 +1,30 @@
+{
+  "name": "@coss/ratelimit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./env": "./src/env.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test",
+    "ratelimit:set": "bun --env-file=../../.env scripts/set-override.ts",
+    "valkey:bootstrap": "bun --env-file=../../.env scripts/valkey-bootstrap.ts"
+  },
+  "dependencies": {
+    "@coss/db": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "iovalkey": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-elasticache": "catalog:",
+    "@coss/tenancy": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

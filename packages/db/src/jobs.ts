@@ -5,7 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import { fromDrizzle, PgBoss } from "pg-boss";
-import { pool, type Transaction } from "./client.ts";
+import type { Transaction } from "./client.ts";
 
 export type { Job, SendOptions } from "pg-boss";
 export { PgBoss } from "pg-boss";
@@ -13,13 +13,13 @@ export { PgBoss } from "pg-boss";
 export type JobBossOptions = {
   /**
    * Workers: run pg-boss maintenance (expiring, retrying and deleting jobs) and wake up on NOTIFY.
-   * This opens a pg-boss pool and one LISTEN connection on `DATABASE_URL`. Producers (the API)
-   * leave it off and share the `@coss/db` pool.
+   * This opens a four-connection pg-boss pool and one LISTEN connection on `DATABASE_URL`.
+   * Producers leave it off and use a separate one-connection pool for queue metadata.
    */
   worker?: boolean;
 };
 
-/** A started pg-boss instance. `stop()` it on shutdown (it never closes the shared pool). */
+/** A started pg-boss instance. `stop()` it on shutdown to close its own pool. */
 export async function startJobBoss(opts: JobBossOptions = {}): Promise<PgBoss> {
   const common = { migrate: false, schedule: false } as const;
   const boss = opts.worker
@@ -34,7 +34,11 @@ export async function startJobBoss(opts: JobBossOptions = {}): Promise<PgBoss> {
     : new PgBoss({
         ...common,
         supervise: false,
-        db: { executeSql: (text, values) => pool.query(text, values) },
+        // send() reads uncached queue metadata outside the supplied transaction. Sharing the
+        // app pool would deadlock when transactions occupy every connection (including max=1).
+        connectionString: process.env.DATABASE_URL,
+        max: 1,
+        application_name: "coss-producer-jobs",
       });
   boss.on("error", (error) => console.error("[jobs] pg-boss error:", error));
   return boss.start();

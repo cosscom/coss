@@ -9,6 +9,7 @@ import {
 } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
+import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { decryptSecret } from "@coss/webhooks";
 import { TEST_SECRETS_KEY, testManagementDeps } from "@coss/webhooks/testing";
@@ -22,7 +23,16 @@ export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
  * memory): `dispatch()` runs the queued jobs, as the worker would. Domains verify without DNS and
  * webhook endpoints may use local `http://` URLs.
  */
-export function createTestApp(opts: { emailService?: EmailService; domainDeps?: DomainDeps } = {}) {
+export function createTestApp(
+  opts: {
+    emailService?: EmailService;
+    domainDeps?: DomainDeps;
+    rateLimiter?: RateLimiter;
+    clientIp?: ClientIpResolver;
+
+    corsOrigins?: readonly string[];
+  } = {},
+) {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const identity = new FakeIdentityProvider();
@@ -33,6 +43,10 @@ export function createTestApp(opts: { emailService?: EmailService; domainDeps?: 
     emailService,
     domainDeps: opts.domainDeps ?? { identity, dns: null },
     webhookDeps: testManagementDeps,
+    rateLimiter: opts.rateLimiter,
+    clientIp: opts.clientIp,
+
+    corsOrigins: opts.corsOrigins,
   });
   const dispatch = () => queue.drain(emailService);
   return { app, liveProvider, sandboxProvider, identity, queue, dispatch };
