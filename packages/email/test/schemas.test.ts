@@ -3,6 +3,7 @@ import {
   CheckSuppressionQuery,
   CreateSuppressionRequest,
   ListSuppressionsQuery,
+  MAX_SCHEDULE_AHEAD_MS,
   SendEmailRequest,
   type SendEmailRequestInput,
 } from "../src/schemas.ts";
@@ -245,6 +246,34 @@ describe("SendEmailRequest: category", () => {
     for (const category of ["*", "", "has space", "x".repeat(257)]) {
       expect(issues({ ...base, category })).toEqual({ category: message });
     }
+  });
+});
+
+describe("SendEmailRequest: scheduled_at", () => {
+  test("is optional and normalized to UTC", () => {
+    expect(Object.hasOwn(expectValid(base), "scheduled_at")).toBe(false);
+    const at = new Date(Date.now() + 60 * 60 * 1000);
+    at.setUTCMilliseconds(0);
+    const withOffset = `${at.toISOString().slice(0, 19)}Z`;
+    expect(expectValid({ ...base, scheduled_at: withOffset }).scheduled_at).toBe(at.toISOString());
+    // The same instant written in another offset.
+    const shifted = new Date(at.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 19);
+    expect(expectValid({ ...base, scheduled_at: `${shifted}+02:00` }).scheduled_at).toBe(
+      at.toISOString(),
+    );
+  });
+
+  test("needs an offset and at most 30 days ahead", () => {
+    const offsetMessage = "Expected an ISO 8601 date-time with a time zone offset.";
+    for (const scheduled_at of ["2026-10-11T09:00:00", "tomorrow", "2026-10-11", ""]) {
+      expect(issues({ ...base, scheduled_at })).toEqual({ scheduled_at: offsetMessage });
+    }
+    const tooFar = new Date(Date.now() + MAX_SCHEDULE_AHEAD_MS + 60_000).toISOString();
+    expect(issues({ ...base, scheduled_at: tooFar })).toEqual({
+      scheduled_at: "An email can be scheduled at most 30 days ahead.",
+    });
+    const inTime = new Date(Date.now() + MAX_SCHEDULE_AHEAD_MS - 60_000).toISOString();
+    expect(issues({ ...base, scheduled_at: inTime })).toEqual({});
   });
 });
 

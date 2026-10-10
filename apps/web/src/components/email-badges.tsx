@@ -11,6 +11,8 @@ const STATUS_VARIANT = {
   queued: "secondary",
   sent: "success",
   failed: "error",
+  scheduled: "info",
+  canceled: "outline",
 } as const satisfies Record<EmailObjectOutput["status"], string>;
 
 export function EmailStatusBadge({ status }: { status: EmailObjectOutput["status"] }) {
@@ -26,6 +28,7 @@ const RECIPIENT_STATUS_VARIANT = {
   suppressed: "error",
   complained: "error",
   failed: "error",
+  canceled: "outline",
 } as const satisfies Record<EmailRecipientStatus, string>;
 
 export function RecipientStatusBadge({ status }: { status: EmailRecipientStatus }) {
@@ -40,6 +43,8 @@ const EVENT_VARIANT = {
   "email.complained": "error",
   "email.failed": "error",
   "email.suppressed": "warning",
+  "email.scheduled": "info",
+  "email.canceled": "outline",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {

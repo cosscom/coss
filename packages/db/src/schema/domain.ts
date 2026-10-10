@@ -93,7 +93,13 @@ export const environmentApiKey = pgTable(
   (t) => [index("environment_api_key_environment_idx").on(t.environmentId)],
 );
 
-export const emailStatus = pgEnum("email_status", ["queued", "sent", "failed"]);
+export const emailStatus = pgEnum("email_status", [
+  "queued",
+  "sent",
+  "failed",
+  "scheduled",
+  "canceled",
+]);
 
 export type EmailTag = { name: string; value: string };
 
@@ -130,6 +136,8 @@ export const email = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
+    // When the email may be handed to the provider; set only for requests with `scheduled_at`.
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
   },
   (t) => [
     foreignKey({
@@ -140,6 +148,9 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // Due-scan for scheduled sends. Not filtered on `status = 'scheduled'`: a new enum value
+    // can't be used in the migration transaction that adds it.
+    index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -157,6 +168,7 @@ export const emailRecipientStatus = pgEnum("email_recipient_status", [
   "suppressed",
   "complained",
   "failed",
+  "canceled",
 ]);
 
 /** Wire-format (snake_case) event details, stored as-is and returned by the API. */
@@ -210,6 +222,8 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.complained",
   "email.failed",
   "email.suppressed",
+  "email.scheduled",
+  "email.canceled",
 ]);
 
 /**

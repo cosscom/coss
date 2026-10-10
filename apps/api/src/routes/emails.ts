@@ -43,7 +43,9 @@ export const sendEmailRoute = createRoute({
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
     "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
     "suppression list (for every email, or for the email's `category`) are skipped and get " +
-    "the status `suppressed`.",
+    "the status `suppressed`. With a future `scheduled_at` the email is stored with the status " +
+    "`scheduled` and sent at that time; the domain and the suppression list are checked again " +
+    "then.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["send"] }),
   request: {
@@ -116,8 +118,8 @@ export const listEmailEventsRoute = createRoute({
   tags: ["Emails"],
   summary: "List an email's delivery events",
   description:
-    "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the " +
-    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
+    "Every delivery event of the email, oldest first: `email.scheduled`, `email.canceled`, " +
+    "`email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
     "recipient.",
   security: [{ bearerAuth: [] }],
@@ -131,6 +133,32 @@ export const listEmailEventsRoute = createRoute({
     },
     ...commonErrors,
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+  },
+});
+
+export const cancelEmailRoute = createRoute({
+  method: "post",
+  path: "/emails/{id}/cancel",
+  operationId: "cancelEmail",
+  tags: ["Emails"],
+  summary: "Cancel a scheduled email",
+  description:
+    "Cancels an email sent with a future `scheduled_at` before it is sent. Canceling an already " +
+    "canceled email returns it unchanged.",
+  security: [{ bearerAuth: [] }],
+  middleware: requireApiKey({ email: ["send"] }),
+  request: { params: EmailIdParams },
+  responses: {
+    200: {
+      description: "The canceled email.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "application/json": { schema: EmailObject } },
+    },
+    ...commonErrors,
+    404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+    422: errorDoc(
+      "The email is not scheduled (it is being sent, was sent or failed): `email_not_cancelable`.",
+    ),
   },
 });
 
@@ -175,6 +203,13 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     // Malformed, unknown, other-environment and other-organization ids are all `null`.
     const email = await getEmail({ organizationId, environmentId, id });
     if (!email) throw notFound("No email with this id exists in this API key's environment.");
+    return c.json(email, 200);
+  });
+
+  router.openapi(cancelEmailRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    const email = await emailService.cancel({ organizationId, environmentId, emailId: id });
     return c.json(email, 200);
   });
 

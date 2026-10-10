@@ -1,6 +1,7 @@
 /**
- * Background worker: delivers webhooks, re-checks domains, recovers interrupted sends and (with
- * `EMAIL_PROVIDER=ses`) ingests SES delivery events. Safe to run several instances.
+ * Background worker: sends scheduled emails, delivers webhooks, re-checks domains, recovers
+ * interrupted sends and (with `EMAIL_PROVIDER=ses`) ingests SES delivery events. Safe to run
+ * several instances.
  */
 import { closeDb } from "@coss/db";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
@@ -28,6 +29,7 @@ if (config.provider === "ses") {
 const loops = startJobs({
   sesEvents,
   domains: email.domainDeps,
+  email: email.emailService,
   webhooks: {
     secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
     // The dashboard accepts local endpoints outside production; let them be reached there too.

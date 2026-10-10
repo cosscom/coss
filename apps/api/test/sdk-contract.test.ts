@@ -82,6 +82,43 @@ describe("coss SDK against the API", () => {
     ]);
   });
 
+  test("a scheduled send can be canceled", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const scheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    const scheduled = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Later",
+      text: "Hi",
+      scheduled_at: scheduledAt,
+    });
+    expect(scheduled.data).toMatchObject({ status: "scheduled", scheduled_at: scheduledAt });
+    if (!scheduled.data) throw new Error("send failed");
+
+    const canceled = await coss.email.cancel(scheduled.data.id);
+    expect(canceled.error).toBeNull();
+    expect(canceled.data).toMatchObject({
+      status: "canceled",
+      recipients: [{ status: "canceled" }],
+    });
+    const events = await coss.email.listEvents(scheduled.data.id);
+    expect(events.data?.data.map((e) => e.type)).toEqual(["email.scheduled", "email.canceled"]);
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    const sent = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Now",
+      text: "Hi",
+    });
+    if (!sent.data) throw new Error("send failed");
+    const refused = await coss.email.cancel(sent.data.id);
+    expect(refused.error).toMatchObject({ code: "email_not_cancelable", status: 422 });
+  });
+
   test("an SDK retry with the same idempotency key does not send twice", async () => {
     const tenant = await createTestTenant();
     const { app, sandboxProvider } = createTestApp();

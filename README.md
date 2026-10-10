@@ -80,6 +80,9 @@ resets) are printed to the dashboard's server console in development.
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
   complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
   suppression is turned off.
+- **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
+  as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
+  suppression list. Until then `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
@@ -102,6 +105,7 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery events
+- `POST /v1/emails/{id}/cancel` — cancel a scheduled email (`scheduled_at` on send)
 - `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
   (organization-wide, so every key of the organization sees the same ones)
 - `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the

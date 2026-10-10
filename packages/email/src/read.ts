@@ -43,6 +43,7 @@ export function toEmailObject(
     sandbox: opts.sandbox,
     created_at: row.createdAt.toISOString(),
     sent_at: row.sentAt?.toISOString() ?? null,
+    scheduled_at: row.scheduledAt?.toISOString() ?? null,
   };
 }
 

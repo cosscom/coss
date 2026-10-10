@@ -3,6 +3,8 @@ import { db, schema } from "@coss/db";
 import type { EmailObjectOutput } from "@coss/email/schemas";
 import { createTestTenant } from "@coss/tenancy/testing";
 import {
+  apiKeyIdForEnvironment,
+  apiRequest,
   createTestApp,
   domainFrom,
   emailBody,
@@ -11,6 +13,7 @@ import {
   REQUEST_ID,
   sendEmail,
   setEmailStatus,
+  setKeyPermissions,
 } from "./helpers.ts";
 
 describe("POST /v1/emails", () => {
@@ -282,6 +285,12 @@ describe("POST /v1/emails", () => {
         dispatch: async () => {
           throw new Error("unused");
         },
+        cancel: async () => {
+          throw new Error("unused");
+        },
+        dispatchDue: async () => {
+          throw new Error("unused");
+        },
       },
     });
     const consoleError = spyOn(console, "error").mockImplementation(() => {});
@@ -353,5 +362,113 @@ describe("GET /v1/emails/{id}", () => {
       expect(res.status).toBe(404);
       expect((await errorOf(res)).code).toBe("not_found");
     }
+  });
+});
+
+const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+describe("scheduled sends", () => {
+  test("a future scheduled_at returns a scheduled email without sending it", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const scheduledAt = inAnHour();
+
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: scheduledAt }));
+
+    expect(res.status).toBe(200);
+    const email = (await res.json()) as EmailObjectOutput;
+    expect(email).toMatchObject({ status: "scheduled", scheduled_at: scheduledAt, sent_at: null });
+    expect(sandboxProvider.sent).toHaveLength(0);
+    expect(await (await getEmailById(app, tenant.sandboxKey, email.id)).json()).toEqual(email);
+  });
+
+  test("scheduled_at needs an offset and at most 30 days ahead", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const tooFar = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString();
+
+    for (const scheduled_at of ["2026-10-11T09:00:00", tooFar]) {
+      const res = await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at }));
+      expect(res.status).toBe(422);
+      const error = await errorOf(res);
+      expect(error.code).toBe("validation_error");
+      expect(error.issues?.map((issue) => issue.path)).toEqual(["scheduled_at"]);
+    }
+  });
+});
+
+describe("POST /v1/emails/{id}/cancel", () => {
+  const cancel = (app: Parameters<typeof apiRequest>[0], key: string, id: string) =>
+    apiRequest(app, "POST", `/v1/emails/${encodeURIComponent(id)}/cancel`, { key });
+
+  test("cancels a scheduled email, and canceling again returns it", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+
+    const res = await cancel(app, tenant.sandboxKey, scheduled.id);
+
+    expect(res.status).toBe(200);
+    const canceled = (await res.json()) as EmailObjectOutput;
+    expect(canceled).toMatchObject({
+      id: scheduled.id,
+      status: "canceled",
+      recipients: [{ status: "canceled" }],
+    });
+    const again = await cancel(app, tenant.sandboxKey, scheduled.id);
+    expect(again.status).toBe(200);
+    expect(await again.json()).toEqual(canceled);
+  });
+
+  test("an email that is not scheduled is a 422 email_not_cancelable", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody())
+    ).json()) as EmailObjectOutput;
+
+    const res = await cancel(app, tenant.sandboxKey, sent.id);
+
+    expect(res.status).toBe(422);
+    expect(await errorOf(res)).toMatchObject({
+      type: "invalid_request_error",
+      code: "email_not_cancelable",
+    });
+  });
+
+  test("emails of other environments and unknown ids are 404", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+
+    for (const [key, id] of [
+      [tenant.liveKey, scheduled.id],
+      [tenant.sandboxKey, "email_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+      [tenant.sandboxKey, "not-an-id"],
+    ] as const) {
+      const res = await cancel(app, key, id);
+      expect(res.status).toBe(404);
+      expect((await errorOf(res)).code).toBe("not_found");
+    }
+  });
+
+  test("needs the email:send permission", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      email: ["read"],
+    });
+
+    const res = await cancel(app, tenant.sandboxKey, scheduled.id);
+
+    expect(res.status).toBe(403);
+    expect((await errorOf(res)).code).toBe("insufficient_permissions");
   });
 });

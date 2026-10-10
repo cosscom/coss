@@ -117,6 +117,7 @@ export {
   MAIL_FROM_STATUSES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
+  MAX_SCHEDULE_AHEAD_MS,
   MAX_TAGS,
   type ParsedEmailAddress,
   parseEmailAddress,
@@ -137,6 +138,7 @@ export {
 } from "./schemas.ts";
 export {
   createEmailService,
+  type DispatchDueOptions,
   type EmailService,
   IDEMPOTENCY_KEY_TTL_MS,
   type SendEmailInput,

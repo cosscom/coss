@@ -12,7 +12,7 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 |---|---|---|
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: scheduled sends, webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
@@ -257,7 +257,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
+  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `EmailService.dispatchDue`. Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
@@ -285,6 +285,14 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
+- **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
+  `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s). `queued`
+  means "in progress" for idempotency (409) and the stale-claim sweep, so a scheduled email must never sit in `queued`
+  unclaimed: `dispatchDue` claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after
+  re-running `authorizeLiveSender` (failure → `failed` + `email.failed`) and, in the claim transaction, the
+  suppression list. `cancel` is a compare-and-set `scheduled` → `canceled` (recipients `canceled`, whole-message
+  `email.canceled`); repeating it returns the email, any other status is 422 `email_not_cancelable` (not 409: the SDK
+  retries those). Cancel needs `email:send`. `scheduled_at` is omitted from the parsed request when absent (request hashes).
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -320,7 +328,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
-domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
+domains), bulk suppression import/export, attachments/batch sends, rescheduling (cancel and send again), webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.
