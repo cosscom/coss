@@ -31,6 +31,9 @@ describe("hashSendRequest", () => {
     expect(hashSendRequest(a)).toMatch(/^[0-9a-f]{64}$/);
     expect(hashSendRequest({ ...a, subject: "Hi!" })).not.toBe(hashSendRequest(a));
     expect(hashSendRequest({ ...a, category: "news" })).not.toBe(hashSendRequest(a));
+    expect(hashSendRequest({ ...a, scheduled_at: "2026-10-11T09:00:00.000Z" })).not.toBe(
+      hashSendRequest(a),
+    );
     const attachment = {
       filename: "a.txt",
       content: "QQ==",
@@ -43,7 +46,7 @@ describe("hashSendRequest", () => {
     );
   });
 
-  test("is unchanged for requests without a category or attachments (idempotent retries across deploys)", () => {
+  test("is unchanged for requests without a category, schedule or attachments (idempotent retries across deploys)", () => {
     const parsed = SendEmailRequest.parse({
       from: "hello@acme.com",
       to: "user@example.com",
@@ -52,6 +55,8 @@ describe("hashSendRequest", () => {
     });
     expect(Object.hasOwn(parsed, "category")).toBe(false);
     expect(canonicalJson(parsed)).not.toContain("category");
+    expect(Object.hasOwn(parsed, "scheduled_at")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("scheduled_at");
     expect(Object.hasOwn(parsed, "attachments")).toBe(false);
     expect(canonicalJson(parsed)).not.toContain("attachments");
   });

@@ -2,6 +2,7 @@
 import {
   type DomainDeps,
   type EmailDispatchQueue,
+  type EmailService,
   recheckDueDomains,
   sweepStaleClaims,
   sweepUnclaimedEmails,
@@ -14,11 +15,14 @@ import { pollSesEvents, type SqsApi } from "./sqs.ts";
 const WEBHOOK_BATCH = 20;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
+const SCHEDULED_BATCH = 50;
 
 export type WorkerDeps = {
   /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
   dispatchQueue: EmailDispatchQueue;
   domains: DomainDeps;
+  /** Dispatches scheduled emails. */
+  email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };
@@ -43,6 +47,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
         DOMAIN_BATCH,
+    }),
+    startLoop({
+      name: "scheduled-emails",
+      intervalMs: 5000,
+      run: async () =>
+        (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
+        SCHEDULED_BATCH,
     }),
     startLoop({
       name: "stale-claims",

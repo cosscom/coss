@@ -92,3 +92,71 @@ describe("sandbox send → webhook", () => {
     }
   });
 });
+
+describe("scheduled send → webhook", () => {
+  test("announces the schedule, then the send once the email is due", async () => {
+    const tenant = await createTestTenant();
+    const scope = { organizationIds: [tenant.organization.id] };
+    const receiver = webhookReceiver();
+    try {
+      const { secret } = await createWebhookEndpoint(
+        {
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          url: receiver.url,
+          eventTypes: ["email.scheduled", "email.sent"],
+          userId: null,
+        },
+        testManagementDeps,
+      );
+      const provider = new FakeEmailProvider({ log: false });
+      const service = createEmailService({
+        liveProvider: provider,
+        sandboxProvider: provider,
+        queue: memoryDispatchQueue(),
+      });
+      const scheduledAt = new Date(Date.now() + 60 * 60 * 1000);
+      const { email } = await service.send({
+        environment: {
+          organizationId: tenant.organization.id,
+          projectId: tenant.project.id,
+          environmentId: tenant.development.id,
+          mode: "sandbox",
+        },
+        apiKeyId: null,
+        params: {
+          from: "Acme <hello@acme.com>",
+          to: ["ok@example.com"],
+          cc: [],
+          bcc: [],
+          reply_to: [],
+          subject: "Later",
+          html: null,
+          text: "Hi",
+          headers: {},
+          tags: [],
+          scheduled_at: scheduledAt.toISOString(),
+        },
+      });
+      const deliverWebhooks = () =>
+        runDueWebhookDeliveries({ scope }, { secretsKey: TEST_SECRETS_KEY, send: testSender() });
+
+      expect(await deliverWebhooks()).toBe(1);
+      expect(
+        await service.dispatchDue({ now: new Date(scheduledAt.getTime() + 1000), scope }),
+      ).toBe(1);
+      expect(await deliverWebhooks()).toBe(1);
+
+      const events = await Promise.all(
+        receiver.received.map((request) => verifyWebhook(request.body, request.headers, secret)),
+      );
+      expect(events.map((event) => [event.type, event.data.email_id])).toEqual([
+        ["email.scheduled", email.id],
+        ["email.sent", email.id],
+      ]);
+      expect(provider.sent.map((message) => message.emailId)).toEqual([email.id]);
+    } finally {
+      receiver.stop();
+    }
+  });
+});

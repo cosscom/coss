@@ -88,6 +88,9 @@ resets) are printed to the dashboard's server console in development.
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
   complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
   suppression is turned off.
+- **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
+  as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
+  suppression list. Until then `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
   dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
@@ -124,6 +127,7 @@ resets) are printed to the dashboard's server console in development.
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery, open and click events
 - `GET /v1/emails/{id}/links` — list an email's tracked links with their click counts
+- `POST /v1/emails/{id}/cancel` — cancel a scheduled email (`scheduled_at` on send)
 - `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
   (organization-wide, so every key of the organization sees the same ones)
 - `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the
@@ -170,6 +174,12 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    runs as (role, or credentials as a last resort).
    When upgrading an existing SES deployment, pause sends and domain changes, drain the SES event
    queue with the worker, then run bootstrap before resuming with the new application version.
+   For scheduled sends, first apply migration `0014_pretty_thunderbolts` with `bun run db:migrate`.
+   Deploy the API and worker from the same release. Rerun bootstrap with the deployment's existing region, name and tenant prefix
+   to update the attached `<name>-worker` policy with SES send permissions before starting the new
+   worker. Bootstrap makes the updated policy version the default; existing attachments stay in place.
+   If you manage IAM policies separately, apply both worker `ses:SendEmail` grants from
+   `apps/worker/scripts/ses-policies.ts` (identities and the COSS configuration set).
    Bootstrap imports historical SES permanent bounces and complaints into their original live
    environments, and conservatively copies the SES account and tenant lists to every live
    environment of each matching organization (SES lists have no environment attribution).
@@ -182,8 +192,8 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
 COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
 carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
-policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
-denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
+and worker policies allow `ses:SendEmail` on any identity but only with the COSS configuration set (another set,
+or none, is denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
 
 ## Rate limits on ElastiCache Serverless for Valkey
 

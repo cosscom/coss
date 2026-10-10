@@ -37,21 +37,20 @@ if (config.provider === "ses") {
 const jobs = await startJobBoss({ worker: true });
 await ensureEmailDispatchQueue(jobs);
 const dispatchQueue = pgBossDispatchQueue(jobs);
-await workEmailDispatchQueue(
-  jobs,
-  createEmailService({
-    liveProvider: email.liveProvider,
-    sandboxProvider: email.sandboxProvider,
-    queue: dispatchQueue,
-    trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
-  }),
-);
+const emailService = createEmailService({
+  liveProvider: email.liveProvider,
+  sandboxProvider: email.sandboxProvider,
+  queue: dispatchQueue,
+  trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+});
+await workEmailDispatchQueue(jobs, emailService);
 
 const loops = startJobs({
   dispatchQueue,
   sesEvents,
   signal: controller.signal,
   domains: email.domainDeps,
+  email: emailService,
   webhooks: {
     secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
     // The dashboard accepts local endpoints outside production; let them be reached there too.

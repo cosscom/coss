@@ -150,6 +150,26 @@ await coss.webhookEndpoints.delete(endpoint!.id);
 `update` only changes the fields you pass, and never the signing secret, so receivers keep
 verifying deliveries. `event_types: []` means every event type, including ones added later.
 
+## Scheduled sends
+
+Pass `scheduled_at` (ISO 8601 with an offset, at most 30 days ahead) to send later. The email
+comes back with the status `scheduled` and is sent at that time; a time that is not in the future
+sends immediately.
+
+```ts
+const { data: email } = await coss.email.send({
+  ...params,
+  scheduled_at: "2026-10-11T09:00:00Z", // or new Date(…).toISOString()
+}); // { status: "scheduled", scheduled_at: "2026-10-11T09:00:00.000Z", … }
+
+// Changed your mind? Cancel it until it is sent; to reschedule, cancel and send again.
+const { error } = await coss.email.cancel(email.id); // status "canceled"
+// error?.code === "email_not_cancelable" once it is being sent or was sent.
+```
+
+Scheduling and canceling are recorded as `email.scheduled` and `email.canceled` events (and
+webhooks).
+
 ## Suppressions
 
 Each environment has a suppression list. Sends skip suppressed recipients: they get the status

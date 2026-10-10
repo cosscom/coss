@@ -24,6 +24,7 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { CancelEmailButton } from "./cancel-email-button";
 
 export const metadata: Metadata = { title: "Email" };
 
@@ -100,6 +101,9 @@ export default async function EmailPage({
     ["Bcc", list(email.bcc)],
     ["Reply-To", list(email.reply_to)],
     ["Created", formatDateTime(email.created_at)],
+    ...(email.scheduled_at
+      ? ([["Scheduled for", formatDateTime(email.scheduled_at)]] as [string, ReactNode][])
+      : []),
     ["Sent", formatDateTime(email.sent_at)],
     ["Category", email.category ?? "—"],
     [
@@ -125,7 +129,19 @@ export default async function EmailPage({
         >
           ← {project.name} · {environment.name}
         </Link>
-        <PageHeader title={email.subject} />
+        <PageHeader
+          actions={
+            email.status === "scheduled" && can({ email: ["send"] }) ? (
+              <CancelEmailButton
+                emailId={email.id}
+                envSlug={environment.slug}
+                orgSlug={organization.slug}
+                projectSlug={project.slug}
+              />
+            ) : null
+          }
+          title={email.subject}
+        />
       </div>
 
       <Card>

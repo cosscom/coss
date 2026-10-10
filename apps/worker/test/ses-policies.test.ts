@@ -55,11 +55,34 @@ describe("cossPolicies", () => {
     }
   });
 
-  test("the worker reads only the events queue and cannot send or create", () => {
+  test("the worker can send scheduled emails with only the COSS configuration set", () => {
+    const sends = policies.worker.Statement.filter((statement) =>
+      statement.Action.includes("ses:SendEmail"),
+    );
+    expect(sends).toEqual([
+      {
+        Sid: "SendFromIdentities",
+        Effect: "Allow",
+        Action: ["ses:SendEmail"],
+        Resource: ["arn:aws:ses:us-east-2:123456789012:identity/*"],
+      },
+      {
+        Sid: "SendWithCossConfigurationSet",
+        Effect: "Allow",
+        Action: ["ses:SendEmail"],
+        Resource: ["arn:aws:ses:us-east-2:123456789012:configuration-set/coss"],
+      },
+    ]);
+    // Sender addresses aren't tagged resources; send grants must have no tag condition.
+    for (const statement of sends) expect(statement.Condition).toBeUndefined();
+  });
+
+  test("the worker reads only the events queue and cannot create identities", () => {
     const actions = policies.worker.Statement.flatMap((statement) => statement.Action);
-    expect(actions).not.toContain("ses:SendEmail");
     expect(actions).not.toContain("ses:CreateEmailIdentity");
-    expect(policies.worker.Statement[0]).toMatchObject({
+    expect(
+      policies.worker.Statement.find((statement) => statement.Sid === "ConsumeSesEvents"),
+    ).toMatchObject({
       Action: ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
       Resource: ["arn:aws:sqs:us-east-2:123456789012:coss-events"],
     });

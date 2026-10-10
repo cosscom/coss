@@ -9,6 +9,8 @@ description: How an email and each of its recipients move through delivery.
 
 | Status   | Meaning                                       |
 | -------- | --------------------------------------------- |
+| `scheduled` | Waiting for `scheduled_at` |
+| `canceled` | Canceled before dispatch |
 | `queued` | Accepted by COSS, not yet handed over          |
 | `sent`   | Accepted by the provider (`sent_at` is set)    |
 | `failed` | Could not be sent; see the `email.failed` event |
@@ -45,5 +47,6 @@ for (const event of events?.data ?? []) {
 }
 ```
 
-`email.sent` and `email.failed` describe the whole email (`recipient` is `null`); the other events
-are about one recipient.
+`email.sent`, `email.failed`, `email.scheduled` and `email.canceled` describe the whole email
+(`recipient` is `null`). Delivery events describe individual recipients. Open and click events
+name a recipient only when the email had exactly one non-suppressed recipient.

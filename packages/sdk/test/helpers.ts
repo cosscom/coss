@@ -104,6 +104,7 @@ export const sampleEmail: Email = {
   },
   created_at: "2026-10-09T12:00:00.000Z",
   sent_at: "2026-10-09T12:00:00.100Z",
+  scheduled_at: null,
 };
 
 export const sampleDomain: Domain = {

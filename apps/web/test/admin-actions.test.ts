@@ -3,7 +3,10 @@ import { newId } from "@coss/db/id";
 
 // Keep this suite DB-free; exercise the actual actions with their external boundaries mocked.
 mock.module("server-only", () => ({}));
-mock.module("@coss/email", () => ({ DomainError: class extends Error {} }));
+mock.module("@coss/email", () => ({
+  DomainError: class extends Error {},
+  EmailError: class extends Error {},
+}));
 mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const audit = mock(async () => {});
 mock.module("@coss/tenancy/admin", () => ({

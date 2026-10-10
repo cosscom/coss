@@ -9,6 +9,8 @@ export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
 export const MAX_TAGS = 50;
 export const SUBJECT_MAX_LENGTH = 998;
+/** How far ahead `scheduled_at` may be. */
+export const MAX_SCHEDULE_AHEAD_MS = 30 * 24 * 60 * 60 * 1000;
 export const MAX_ATTACHMENTS = 20;
 /** Decoded bytes across every attachment of one email (SES caps the whole message at 40 MB). */
 export const MAX_ATTACHMENTS_BYTES = 25 * 1024 * 1024;
@@ -390,6 +392,16 @@ const SendEmailRequestFields = z.strictObject({
       'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
       "(or for every email) are skipped.",
   }),
+  scheduled_at: z.iso
+    .datetime({ offset: true, error: "Expected an ISO 8601 date-time with a time zone offset." })
+    .optional()
+    .meta({
+      description:
+        "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days " +
+        "ahead). A time that is not in the future sends immediately. Scheduled emails can be " +
+        "canceled until they are sent.",
+      example: "2026-10-11T09:00:00Z",
+    }),
   attachments: z
     .array(Attachment)
     .max(MAX_ATTACHMENTS, `At most ${MAX_ATTACHMENTS} attachments are allowed.`)
@@ -442,6 +454,16 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (!value.html && !value.text) {
     ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
   }
+  if (
+    value.scheduled_at !== undefined &&
+    Date.parse(value.scheduled_at) > Date.now() + MAX_SCHEDULE_AHEAD_MS
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["scheduled_at"],
+      message: "An email can be scheduled at most 30 days ahead.",
+    });
+  }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
   // key is present, which also makes the canonical request hash independent of how input was spelled.
@@ -464,6 +486,10 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     // Absent rather than `null` without a category, so request hashes from before categories
     // existed stay valid for idempotent retries.
     ...(value.category === undefined ? {} : { category: value.category }),
+    // Same for `scheduled_at`, normalized to UTC so equivalent offsets hash alike.
+    ...(value.scheduled_at === undefined
+      ? {}
+      : { scheduled_at: new Date(value.scheduled_at).toISOString() }),
     // Absent when there are none, for the same reason.
     ...(value.attachments?.length
       ? {
@@ -512,7 +538,7 @@ export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
   return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
 }
 
-export const EMAIL_STATUSES = ["queued", "sent", "failed"] as const;
+export const EMAIL_STATUSES = ["queued", "sent", "failed", "scheduled", "canceled"] as const;
 
 /** Ordered by precedence: later delivery events never move a recipient to a lower status. */
 export const EMAIL_RECIPIENT_STATUSES = [
@@ -524,6 +550,7 @@ export const EMAIL_RECIPIENT_STATUSES = [
   "suppressed",
   "complained",
   "failed",
+  "canceled",
 ] as const;
 
 export type EmailRecipientStatus = (typeof EMAIL_RECIPIENT_STATUSES)[number];
@@ -538,6 +565,8 @@ export const EMAIL_EVENT_TYPES = [
   "email.complained",
   "email.failed",
   "email.suppressed",
+  "email.scheduled",
+  "email.canceled",
   "email.opened",
   "email.clicked",
 ] as const;
@@ -585,7 +614,7 @@ export const EmailRecipient = z
       description:
         "Delivery status of this recipient. `suppressed` means the address is on the " +
         "environment's suppression list (for every email or for this email's category), so it " +
-        "was skipped.",
+        "was skipped. `canceled` means the scheduled email was canceled before it was sent.",
     }),
     last_event_at: z.iso.datetime().nullable(),
   })
@@ -842,8 +871,9 @@ export const EmailObject = z
     category: z.string().nullable(),
     status: z.enum(EMAIL_STATUSES).meta({
       description:
-        "Whether the email was handed to the delivery provider: `queued` until then (a send " +
-        "returns it `queued`), then `sent` or `failed`. Per-recipient delivery is in `recipients`.",
+        "Whether the email was handed to the delivery provider. `scheduled` emails wait for " +
+        "`scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in " +
+        "`recipients`.",
     }),
     recipients: z.array(EmailRecipient),
     attachments: z.array(EmailAttachmentObject).meta({
@@ -855,6 +885,10 @@ export const EmailObject = z
     tracking: EmailTracking,
     created_at: z.iso.datetime(),
     sent_at: z.iso.datetime().nullable(),
+    scheduled_at: z.iso
+      .datetime()
+      .nullable()
+      .meta({ description: "When the email was scheduled to be sent; `null` if it was not." }),
   })
   .meta({
     id: "Email",
@@ -880,6 +914,7 @@ export const EmailObject = z
         attachments: [],
         created_at: "2026-10-10T12:00:00.000Z",
         sent_at: "2026-10-10T12:00:01.000Z",
+        scheduled_at: null,
       },
     ],
   });

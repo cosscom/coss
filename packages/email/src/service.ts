@@ -1,6 +1,6 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
 import {
   insertAttachments,
   loadOutboundAttachments,
@@ -47,11 +47,33 @@ export type SendEmailInput = {
 export type EmailService = {
   /** Read a matching replay without creating or dispatching an email. */
   replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
-  /** Stores the email and enqueues its dispatch; the email is returned `queued`. */
+  /** Stores the email; immediate sends enqueue a job, future sends wait as `scheduled`. */
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
   /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
   dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
+  /** Cancels a scheduled email; an already canceled one is returned as is. */
+  cancel(input: {
+    organizationId: string;
+    environmentId: string;
+    emailId: string;
+  }): Promise<EmailObjectOutput>;
+  /**
+   * System-level (worker): sends scheduled emails whose time has come, across organizations.
+   * Returns how many due emails it looked at.
+   */
+  dispatchDue(opts?: DispatchDueOptions): Promise<number>;
 };
+
+export type DispatchDueOptions = {
+  now?: Date;
+  limit?: number;
+  signal?: AbortSignal;
+  scope?: { organizationIds: string[] };
+};
+
+const DISPATCH_DUE_LIMIT = 50;
+// At most five attachment payloads (up to 25 MB each) in memory at once.
+const DISPATCH_DUE_CONCURRENCY = 5;
 
 /** An idempotency key can be reused for a different request once its email is this old. */
 export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -60,7 +82,16 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email, emailLink, emailRecipient } = schema;
+const { email, emailLink, emailRecipient, environment, organizationSuspension } = schema;
+
+function organizationActive() {
+  return notExists(
+    db
+      .select({ id: organizationSuspension.organizationId })
+      .from(organizationSuspension)
+      .where(eq(organizationSuspension.organizationId, email.organizationId)),
+  );
+}
 
 function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
@@ -118,23 +149,33 @@ function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
   return rows;
 }
 
-/** The event COSS records when the provider rejects a send (or COSS cannot hand it over). */
+/** A whole-message event COSS itself records about an email. */
+function cossEvent(
+  row: EmailRow,
+  event: Pick<ProviderEvent, "type" | "providerEventType" | "sourceId" | "data">,
+): ProviderEvent {
+  return {
+    ...event,
+    provider: COSS_EVENT_SOURCE,
+    emailId: row.id,
+    providerMessageId: null,
+    recipients: null,
+    occurredAt: new Date(),
+  };
+}
+
+/** The event COSS records when the provider rejects a send. */
 function failedEvent(
   row: EmailRow,
   provider: string,
   failure = { code: "provider_error", message: "The email provider did not accept the email." },
 ): ProviderEvent {
-  return {
-    provider: COSS_EVENT_SOURCE,
-    providerEventType: "ProviderError",
-    emailId: row.id,
-    providerMessageId: null,
+  return cossEvent(row, {
     type: "email.failed",
-    recipients: null,
-    occurredAt: new Date(),
+    providerEventType: "ProviderError",
     sourceId: provider,
     data: { failure },
-  };
+  });
 }
 
 /** The event COSS records for a recipient it skipped because of a suppression list entry. */
@@ -188,7 +229,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
 
-  /** Hands a queued email to its provider and records the outcome. Never throws for provider errors. */
+  /**
+   * Hands a queued email to its provider and records the outcome. Never throws for provider errors.
+   * Any other email (e.g. a `scheduled` one, which the worker dispatches) is returned as is.
+   */
   async function deliver(row: EmailRow, sandbox: boolean): Promise<EmailObjectOutput> {
     if (row.status !== "queued") return currentEmail(row);
 
@@ -209,7 +253,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       )
       .returning({ id: email.id });
     if (!claimed) return currentEmail(row);
+    await complete(row, provider);
+    return currentEmail(row);
+  }
 
+  /** Sends an email this process claimed for `provider` and records the outcome. */
+  async function complete(row: EmailRow, provider: EmailProvider): Promise<void> {
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
     const attachments = await loadOutboundAttachments(row);
@@ -281,7 +330,127 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       if (!updated && outcome.status === "failed") return;
       for (const event of events) await recordProviderEvent(tx, event);
     });
-    return currentEmail(row);
+  }
+
+  /**
+   * Hands one due scheduled email to its provider. The sender and the suppression list are
+   * checked again: either may have changed since the email was scheduled.
+   */
+  async function dispatchScheduled(row: EmailRow, sandbox: boolean, now: Date): Promise<void> {
+    const provider = providerFor(sandbox);
+    // Only a still-scheduled, due email moves on; this compare-and-set is what keeps concurrent
+    // workers (and a cancel) from both acting on it.
+    const stillDue = and(
+      eq(email.id, row.id),
+      eq(email.organizationId, row.organizationId),
+      eq(email.status, "scheduled"),
+      isNull(email.provider),
+      lte(email.scheduledAt, now),
+      organizationActive(),
+    );
+
+    if (!sandbox) {
+      try {
+        await authorizeLiveSender({
+          provider: provider.name,
+          organizationId: row.organizationId,
+          from: row.from,
+        });
+      } catch (error) {
+        if (!(error instanceof EmailError)) throw error;
+        await db.transaction(async (tx) => {
+          const [failed] = await tx
+            .update(email)
+            .set({ status: "failed", errorCode: error.code, errorMessage: error.message })
+            .where(stillDue)
+            .returning({ id: email.id });
+          if (!failed) return;
+          await purgeAttachmentContent(tx, row);
+          await recordProviderEvent(
+            tx,
+            cossEvent(row, {
+              type: "email.failed",
+              providerEventType: "SenderRejected",
+              sourceId: error.code,
+              data: { failure: { code: error.code, message: error.message } },
+            }),
+          );
+        });
+        return;
+      }
+    }
+
+    // Claims straight from `scheduled`, so a crash after this point leaves a claimed `queued`
+    // row for the stale-claim sweep, never an old unclaimed row for the queue-recovery sweep.
+    const claimed = await db.transaction(async (tx) => {
+      const [claimedRow] = await tx
+        .update(email)
+        .set({ status: "queued", provider: provider.name })
+        .where(stillDue)
+        .returning();
+      if (!claimedRow) return undefined;
+      const pending = await tx
+        .select({ address: emailRecipient.address })
+        .from(emailRecipient)
+        .where(
+          and(
+            eq(emailRecipient.organizationId, row.organizationId),
+            eq(emailRecipient.emailId, row.id),
+            eq(emailRecipient.status, "queued"),
+          ),
+        );
+      const suppressed = await suppressedRecipients(
+        tx,
+        claimedRow,
+        pending.map((recipient) => recipient.address),
+        claimedRow.category,
+      );
+      for (const [address, entry] of suppressed) {
+        await recordProviderEvent(tx, suppressedEvent(claimedRow, address, entry));
+      }
+      return claimedRow;
+    });
+    if (claimed) await complete(claimed, provider);
+  }
+
+  async function dispatchDue(opts: DispatchDueOptions = {}): Promise<number> {
+    const now = opts.now ?? new Date();
+    const due = await db
+      .select({ email, mode: environment.mode })
+      .from(email)
+      .innerJoin(
+        environment,
+        and(
+          eq(environment.id, email.environmentId),
+          eq(environment.organizationId, email.organizationId),
+        ),
+      )
+      .where(
+        and(
+          eq(email.status, "scheduled"),
+          lte(email.scheduledAt, now),
+          organizationActive(),
+          opts.scope ? inArray(email.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(email.scheduledAt))
+      .limit(opts.limit ?? DISPATCH_DUE_LIMIT);
+    for (let offset = 0; offset < due.length; offset += DISPATCH_DUE_CONCURRENCY) {
+      if (opts.signal?.aborted) break;
+      const batch = due.slice(offset, offset + DISPATCH_DUE_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map((row) => dispatchScheduled(row.email, row.mode === "sandbox", now)),
+      );
+      for (const [index, result] of results.entries()) {
+        if (result.status === "rejected") {
+          console.error(
+            `[email] dispatching scheduled ${batch[index]?.email.id} failed:`,
+            result.reason,
+          );
+        }
+      }
+    }
+    return due.length;
   }
 
   /**
@@ -311,14 +480,6 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
     }
     return { ...message, html };
-  }
-
-  async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
-    const [current] = await selectEmailsWithMode(row.organizationId, eq(email.id, row.id), 1);
-    if (!current) throw new EmailError("not_found", "Email not found.");
-    const [object] = await toEmailObjects(row.organizationId, [current]);
-    if (!object) throw new EmailError("not_found", "Email not found.");
-    return object;
   }
 
   async function dispatch(input: {
@@ -369,6 +530,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
+    const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
+    // A time that is not in the future sends now (still recorded as `scheduled_at`).
+    const scheduled = scheduledAt !== null && scheduledAt.getTime() > Date.now();
 
     // Resolved once, at send: later changes to the settings never affect a stored email.
     const tracking = await resolveTracking(
@@ -387,7 +551,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       projectId: environment.projectId,
       environmentId: environment.environmentId,
       apiKeyId: input.apiKeyId,
-      status: "queued",
+      status: scheduled ? "scheduled" : "queued",
+      scheduledAt,
       from: params.from,
       to: params.to,
       cc: params.cc,
@@ -446,10 +611,23 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       );
       await tx.insert(emailRecipient).values(recipients);
       await insertAttachments(tx, row, attachments);
+      if (row.status === "scheduled") {
+        await recordProviderEvent(
+          tx,
+          cossEvent(row, {
+            type: "email.scheduled",
+            providerEventType: "Scheduled",
+            sourceId: "scheduled",
+            data: {},
+          }),
+        );
+      }
       for (const [address, entry] of suppressed) {
         await recordProviderEvent(tx, suppressedEvent(row, address, entry));
       }
-      await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
+      if (!scheduled) {
+        await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
+      }
       return row;
     };
     const insertOnce = () => db.transaction((tx) => insertEmail(tx));
@@ -512,5 +690,62 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
   }
 
-  return { send, dispatch, replay };
+  return { send, dispatch, replay, cancel: cancelScheduledEmail, dispatchDue };
+}
+
+async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
+  const [current] = await selectEmailsWithMode(row.organizationId, eq(email.id, row.id), 1);
+  if (!current) throw new EmailError("not_found", "Email not found.");
+  const [object] = await toEmailObjects(row.organizationId, [current]);
+  if (!object) throw new EmailError("not_found", "Email not found.");
+  return object;
+}
+
+export async function cancelScheduledEmail(input: {
+  organizationId: string;
+  environmentId: string;
+  emailId: string;
+}): Promise<EmailObjectOutput> {
+  const [found] = isId("email", input.emailId)
+    ? await selectEmailsWithMode(
+        input.organizationId,
+        and(eq(email.environmentId, input.environmentId), eq(email.id, input.emailId)),
+        1,
+      )
+    : [];
+  if (!found) throw new EmailError("not_found", "Email not found.");
+  const row = found.email;
+  await db.transaction(async (tx) => {
+    const [canceled] = await tx
+      .update(email)
+      .set({ status: "canceled" })
+      .where(
+        and(
+          eq(email.id, row.id),
+          eq(email.organizationId, row.organizationId),
+          eq(email.status, "scheduled"),
+          isNull(email.provider),
+        ),
+      )
+      .returning({ id: email.id });
+    if (!canceled) return;
+    await purgeAttachmentContent(tx, row);
+    await recordProviderEvent(
+      tx,
+      cossEvent(row, {
+        type: "email.canceled",
+        providerEventType: "Canceled",
+        sourceId: "canceled",
+        data: {},
+      }),
+    );
+  });
+  const current = await currentEmail(row);
+  if (current.status !== "canceled") {
+    throw new EmailError(
+      "email_not_cancelable",
+      `Only scheduled emails can be canceled; this email is ${current.status}.`,
+    );
+  }
+  return current;
 }

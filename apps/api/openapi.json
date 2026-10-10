@@ -129,9 +129,11 @@
             "enum": [
               "queued",
               "sent",
-              "failed"
+              "failed",
+              "scheduled",
+              "canceled"
             ],
-            "description": "Whether the email was handed to the delivery provider: `queued` until then (a send returns it `queued`), then `sent` or `failed`. Per-recipient delivery is in `recipients`."
+            "description": "Whether the email was handed to the delivery provider. `scheduled` emails wait for `scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in `recipients`."
           },
           "recipients": {
             "type": "array",
@@ -163,6 +165,14 @@
               "null"
             ],
             "format": "date-time"
+          },
+          "scheduled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the email was scheduled to be sent; `null` if it was not."
           }
         },
         "required": [
@@ -185,7 +195,8 @@
           "sandbox",
           "tracking",
           "created_at",
-          "sent_at"
+          "sent_at",
+          "scheduled_at"
         ],
         "examples": [
           {
@@ -231,7 +242,8 @@
             },
             "attachments": [],
             "created_at": "2026-10-10T12:00:00.000Z",
-            "sent_at": "2026-10-10T12:00:01.000Z"
+            "sent_at": "2026-10-10T12:00:01.000Z",
+            "scheduled_at": null
           }
         ]
       },
@@ -260,9 +272,10 @@
               "bounced",
               "suppressed",
               "complained",
-              "failed"
+              "failed",
+              "canceled"
             ],
-            "description": "Delivery status of this recipient. `suppressed` means the address is on the environment's suppression list (for every email or for this email's category), so it was skipped."
+            "description": "Delivery status of this recipient. `suppressed` means the address is on the environment's suppression list (for every email or for this email's category), so it was skipped. `canceled` means the scheduled email was canceled before it was sent."
           },
           "last_event_at": {
             "type": [
@@ -581,6 +594,12 @@
             "pattern": "^[A-Za-z0-9_-]{1,256}$",
             "description": "What kind of email this is, e.g. \"marketing\". Recipients suppressed for this category (or for every email) are skipped."
           },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days ahead). A time that is not in the future sends immediately. Scheduled emails can be canceled until they are sent.",
+            "example": "2026-10-11T09:00:00Z"
+          },
           "attachments": {
             "type": "array",
             "items": {
@@ -743,6 +762,8 @@
               "email.complained",
               "email.failed",
               "email.suppressed",
+              "email.scheduled",
+              "email.canceled",
               "email.opened",
               "email.clicked"
             ]
@@ -1579,11 +1600,13 @@
                 "email.complained",
                 "email.failed",
                 "email.suppressed",
+                "email.scheduled",
+                "email.canceled",
                 "email.opened",
                 "email.clicked"
               ]
             },
-            "maxItems": 9,
+            "maxItems": 11,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           }
         },
@@ -1753,11 +1776,13 @@
                 "email.complained",
                 "email.failed",
                 "email.suppressed",
+                "email.scheduled",
+                "email.canceled",
                 "email.opened",
                 "email.clicked"
               ]
             },
-            "maxItems": 9,
+            "maxItems": 11,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "enabled": {
@@ -2139,7 +2164,7 @@
           "Emails"
         ],
         "summary": "Send an email",
-        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. Attachments are base64-encoded; only metadata is kept after sending. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to COSS redirects; the stored `html` stays as sent.",
+        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. With a future `scheduled_at` the email is stored with the status `scheduled` and sent at that time; the domain and the suppression list are checked again then. Attachments are base64-encoded; only metadata is kept after sending. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to COSS redirects; the stored `html` stays as sent.",
         "security": [
           {
             "bearerAuth": []
@@ -2174,7 +2199,7 @@
         },
         "responses": {
           "202": {
-            "description": "The email, accepted for delivery (`queued`). A replay returns the original email with its current status.",
+            "description": "The email, accepted for delivery (`queued` or `scheduled`). A replay returns the original email with its current status.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2613,6 +2638,212 @@
         }
       }
     },
+    "/v1/emails/{id}/cancel": {
+      "post": {
+        "operationId": "cancelEmail",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Cancel a scheduled email",
+        "description": "Cancels an email sent with a future `scheduled_at` before it is sent. Canceling an already canceled email returns it unchanged.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The email's id.",
+              "examples": [
+                "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The email's id.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The canceled email.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No email with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The email is not scheduled (it is being sent, was sent or failed): `email_not_cancelable`.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/emails/{id}/events": {
       "get": {
         "operationId": "listEmailEvents",
@@ -2620,7 +2851,7 @@
           "Emails"
         ],
         "summary": "List an email's delivery events",
-        "description": "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained` and `email.suppressed` (skipped because of the suppression list) per recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a recipient only when the email had a single one).",
+        "description": "Every delivery event of the email, oldest first: `email.scheduled`, `email.canceled`, `email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained` and `email.suppressed` (skipped because of the suppression list) per recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a recipient only when the email had a single one).",
         "security": [
           {
             "bearerAuth": []

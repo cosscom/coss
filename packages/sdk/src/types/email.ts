@@ -40,16 +40,16 @@ export interface EmailAttachment {
 }
 
 /**
- * Whether the email was handed to the delivery provider: `queued` until then (sends return it
- * `queued`). Delivery is tracked per recipient.
+ * Whether the email was handed to the delivery provider. `scheduled` emails wait for their
+ * `scheduled_at`; `canceled` ones were canceled before that. Delivery is tracked per recipient.
  */
-export type EmailStatus = "queued" | "sent" | "failed";
+export type EmailStatus = "queued" | "sent" | "failed" | "scheduled" | "canceled";
 
 /**
  * Delivery status of one recipient. It only moves forward: `queued` → `sent` →
  * `delivery_delayed` → `delivered`, then `bounced` / `suppressed` / `failed`, then `complained`.
  * `suppressed` means the address is on the environment's suppression list (for every email or for
- * the email's `category`), so it was skipped.
+ * the email's `category`), so it was skipped. `canceled` means the scheduled email was canceled.
  */
 export type EmailRecipientStatus =
   | "queued"
@@ -59,7 +59,8 @@ export type EmailRecipientStatus =
   | "bounced"
   | "suppressed"
   | "complained"
-  | "failed";
+  | "failed"
+  | "canceled";
 
 /** One distinct recipient address of an email. */
 export interface EmailRecipient {
@@ -80,6 +81,10 @@ export type EmailEventType =
   | "email.failed"
   /** A recipient was skipped because of a suppression list entry. */
   | "email.suppressed"
+  /** The email was scheduled for later (`scheduled_at`). */
+  | "email.scheduled"
+  /** The scheduled email was canceled before it was sent. */
+  | "email.canceled"
   /** The tracking pixel was loaded (open tracking). Never changes a recipient's status. */
   | "email.opened"
   /** A tracked link was followed (click tracking). Never changes a recipient's status. */
@@ -161,6 +166,12 @@ export interface SendEmailParams {
    * for every email) are skipped.
    */
   category?: string;
+  /**
+   * Send at this time instead of now: an ISO 8601 date-time with an offset, e.g.
+   * `"2026-10-11T09:00:00Z"`, at most 30 days ahead. A time that is not in the future sends
+   * immediately. Cancel with `coss.email.cancel(id)` until it is sent.
+   */
+  scheduled_at?: string;
   attachments?: EmailAttachmentParams[];
   tracking?: TrackingOptions;
 }
@@ -222,4 +233,6 @@ export interface Email {
   created_at: string;
   /** ISO 8601 timestamp, or `null` until the provider accepts the message. */
   sent_at: string | null;
+  /** ISO 8601 timestamp the email was scheduled for, or `null` if no schedule was provided. */
+  scheduled_at: string | null;
 }

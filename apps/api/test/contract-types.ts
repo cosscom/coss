@@ -107,6 +107,10 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
   Assert<MutuallyAssignable<EmailOutput["attachments"][number], Email["attachments"][number]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof EmailRecipient>["status"], SdkEmailRecipient["status"]>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof EmailEvent>["type"], SdkEmailEvent["type"]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>, SdkEmailEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEventList>, List<SdkEmailEvent>>>,

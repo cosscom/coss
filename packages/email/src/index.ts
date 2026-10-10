@@ -139,6 +139,7 @@ export {
   MAX_ATTACHMENTS_BYTES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
+  MAX_SCHEDULE_AHEAD_MS,
   MAX_SUPPRESSION_IMPORT_ENTRIES,
   MAX_TAGS,
   type ParsedEmailAddress,
@@ -165,7 +166,9 @@ export {
   type TrackingRuleInputOutput,
 } from "./schemas.ts";
 export {
+  cancelScheduledEmail,
   createEmailService,
+  type DispatchDueOptions,
   type EmailService,
   type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,

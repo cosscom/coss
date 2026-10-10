@@ -227,7 +227,14 @@ export default async function EnvironmentPage({
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <EmailStatusBadge status={email.status} />
+                      <div className="flex flex-col items-start gap-1">
+                        <EmailStatusBadge status={email.status} />
+                        {email.status === "scheduled" && email.scheduled_at ? (
+                          <span className="whitespace-nowrap text-muted-foreground text-xs">
+                            {formatDateTime(email.scheduled_at)}
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {engagement(email)}

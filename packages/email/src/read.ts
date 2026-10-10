@@ -66,6 +66,7 @@ export function toEmailObject(
     },
     created_at: row.createdAt.toISOString(),
     sent_at: row.sentAt?.toISOString() ?? null,
+    scheduled_at: row.scheduledAt?.toISOString() ?? null,
   };
 }
 

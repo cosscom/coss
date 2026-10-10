@@ -1,7 +1,7 @@
 /**
  * Attachment storage. Content lives in `email_attachment.content` only while the email is
- * `queued` (dispatch rebuilds the provider message from it) and is purged once the email is sent
- * or failed. Reads only ever see the metadata.
+ * `scheduled` or `queued` (dispatch rebuilds the provider message from it) and is purged once the
+ * email is sent, failed or canceled. Reads only ever see the metadata.
  */
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
@@ -80,7 +80,7 @@ export async function loadOutboundAttachments(row: {
   return attachments;
 }
 
-/** Drops the content of an email's attachments (call when the email leaves `queued`). */
+/** Drops the content of an email's attachments (call when the email reaches a terminal status). */
 export async function purgeAttachmentContent(
   executor: Executor,
   row: { id: string; organizationId: string },

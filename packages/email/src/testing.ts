@@ -52,6 +52,8 @@ export function dispatchingEmailService(opts: {
   return {
     queue,
     dispatch: service.dispatch,
+    dispatchDue: service.dispatchDue,
+    cancel: service.cancel,
     replay: service.replay,
     async send(input) {
       const result = await service.send(input);

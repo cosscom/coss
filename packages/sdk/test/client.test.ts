@@ -151,6 +151,34 @@ describe("coss.email.get", () => {
   });
 });
 
+describe("coss.email.cancel", () => {
+  test("POSTs to the email's cancel route without a body", async () => {
+    const canceled = { ...sampleEmail, status: "canceled" as const, sent_at: null };
+    const { fetch, calls } = mockFetch(json(200, canceled));
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.cancel("email_a/b");
+
+    expect(result).toEqual({ data: canceled, error: null });
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/email_a%2Fb/cancel");
+    expect(calls[0]?.body).toBeNull();
+  });
+
+  test("an email that is no longer scheduled comes back as an error", async () => {
+    const { fetch, calls } = mockFetch(
+      apiError(422, { type: "invalid_request_error", code: "email_not_cancelable" }),
+    );
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.cancel(sampleEmail.id);
+
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "email_not_cancelable",
+    });
+    // A 422 is final: no retry.
+    expect(calls).toHaveLength(1);
+  });
+});
+
 describe("coss.email.listEvents", () => {
   test("GETs the email's events", async () => {
     const list: List<EmailEvent> = {

@@ -40,6 +40,18 @@ export class EmailResource {
     });
   }
 
+  /**
+   * Cancels a scheduled email. Canceling an already canceled email returns it; any other email
+   * fails with `email_not_cancelable`.
+   */
+  cancel(id: string, options?: Pick<RequestOptions, "signal">): Promise<CossResult<Email>> {
+    return this.#http.request<Email>({
+      method: "POST",
+      path: `/v1/emails/${encodeURIComponent(id)}/cancel`,
+      signal: options?.signal,
+    });
+  }
+
   /** Lists an email's delivery events, oldest first. */
   listEvents(
     id: string,

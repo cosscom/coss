@@ -168,6 +168,8 @@ function fromEmailError(error: EmailError): ApiError {
         code: error.code,
         message: error.message,
       });
+    case "email_not_cancelable":
+      return invalidRequest(error.code, error.message);
   }
 }
 

@@ -103,6 +103,18 @@ export function cossPolicies(
       Version: "2012-10-17",
       Statement: [
         {
+          Sid: "SendFromIdentities",
+          Effect: "Allow",
+          Action: ["ses:SendEmail"],
+          Resource: [identities],
+        },
+        {
+          Sid: "SendWithCossConfigurationSet",
+          Effect: "Allow",
+          Action: ["ses:SendEmail"],
+          Resource: [configurationSet],
+        },
+        {
           Sid: "ConsumeSesEvents",
           Effect: "Allow",
           Action: ["sqs:ReceiveMessage", "sqs:DeleteMessage"],

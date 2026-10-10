@@ -34,6 +34,7 @@ const RANK: Record<EmailRecipientStatus, number> = {
   bounced: 4,
   suppressed: 4,
   failed: 4,
+  canceled: 4,
   complained: 5,
 };
 
@@ -51,6 +52,9 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.complained": "complained",
   "email.failed": "failed",
   "email.suppressed": "suppressed",
+  // Recipients of a scheduled email stay `queued` (nothing ranks below it).
+  "email.scheduled": "queued",
+  "email.canceled": "canceled",
   "email.opened": null,
   "email.clicked": null,
 };
@@ -202,7 +206,8 @@ export async function recordProviderEvent(
     event.recipients === null
       ? [...knownAddresses]
       : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
-  if (status && affected.length > 0) {
+  const below = status ? statusesBelow(status) : [];
+  if (status && affected.length > 0 && below.length > 0) {
     await tx
       .update(emailRecipient)
       .set({
@@ -214,7 +219,7 @@ export async function recordProviderEvent(
         and(
           scope,
           inArray(emailRecipient.address, affected),
-          inArray(emailRecipient.status, statusesBelow(status)),
+          inArray(emailRecipient.status, below),
         ),
       );
   }

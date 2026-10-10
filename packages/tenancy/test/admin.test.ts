@@ -12,7 +12,6 @@ import {
   listOrganizationApiKeysForAdmin,
   listOrganizationsForAdmin,
   listUserMembershipsForAdmin,
-  recordAdminAction,
   revokeApiKeyAsAdmin,
   suspendOrganization,
   unsuspendOrganization,
