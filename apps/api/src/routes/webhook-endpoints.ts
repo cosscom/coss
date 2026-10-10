@@ -32,7 +32,7 @@ export const { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest } =
 const EndpointIdParams = z.object({
   id: z.string().meta({
     description: "The webhook endpoint's id.",
-    example: "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    examples: ["whep_01k7c8m4q2f3e9v6t5r1n0p8yz"],
   }),
 });
 

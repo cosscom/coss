@@ -14,6 +14,7 @@ const app = createApp({
     allowInsecureUrls: process.env.NODE_ENV !== "production",
   },
   publicUrl: env.API_PUBLIC_URL,
+  corsOrigins: env.API_CORS_ORIGINS,
 });
 
 export default {

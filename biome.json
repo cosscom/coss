@@ -8,6 +8,7 @@
       "!!**/dist",
       "!!**/.turbo",
       "!!packages/db/migrations",
+      "!!apps/api/openapi.json",
       "!!packages/ui/src/components",
       "!!packages/ui/src/hooks",
       "!!packages/ui/src/lib"

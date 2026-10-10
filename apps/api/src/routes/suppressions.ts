@@ -24,7 +24,7 @@ import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
 const SuppressionIdParams = z.object({
   id: z.string().meta({
     description: "The suppression's id.",
-    example: "sup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    examples: ["sup_01k7c8m4q2f3e9v6t5r1n0p8yz"],
   }),
 });
 

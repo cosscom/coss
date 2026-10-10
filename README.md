@@ -24,7 +24,8 @@ and the rest.
 ## Stack
 
 Bun workspaces · Turborepo · TypeScript 7 · Biome · Next.js 16 (dashboard) · Hono (public API) ·
-Postgres + Drizzle · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui)
+Postgres + Drizzle · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui) ·
+[Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash)
 
 See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
@@ -44,7 +45,8 @@ cp .env.example .env             # then set DATABASE_URL, TEST_DATABASE_URL, BET
 bun run db:migrate
 bun run db:seed                  # creates demo@coss.local (admin), org "acme" with the verified domain
                                  # acme.test, a project, and prints a dev API key
-bun run dev                      # dashboard http://localhost:3000 · API http://localhost:3001 · worker
+bun run dev                      # dashboard http://localhost:3000 · API http://localhost:3001 ·
+                                 # site + docs http://localhost:3002 · worker
 ```
 
 Send an email with the key printed by the seed:
