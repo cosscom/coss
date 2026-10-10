@@ -80,6 +80,11 @@ resets) are printed to the dashboard's server console in development.
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
   complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
   suppression is turned off.
+- **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
+  dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
+  own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
+  HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
+  (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
@@ -101,7 +106,8 @@ resets) are printed to the dashboard's server console in development.
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
-- `GET /v1/emails/{id}/events` — list an email's delivery events
+- `GET /v1/emails/{id}/events` — list an email's delivery, open and click events
+- `GET /v1/emails/{id}/links` — list an email's tracked links with their click counts
 - `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
   (organization-wide, so every key of the organization sees the same ones)
 - `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the
@@ -111,6 +117,8 @@ resets) are printed to the dashboard's server console in development.
 - `GET /v1/suppressions/check?address=…&category=…` — would a send skip this address?
 - `GET /v1/suppressions/{id}` / `DELETE /v1/suppressions/{id}` — retrieve / remove an entry
 - `GET /openapi.json` — OpenAPI 3.1 document
+- `GET /t/o/{token}`, `GET /t/c/{token}/{position}` — public open-pixel and click-redirect endpoints that tracked
+  emails link to (not part of the documented API)
 
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
 `coss.webhookEndpoints`.

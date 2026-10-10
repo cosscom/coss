@@ -1,6 +1,6 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
-import type { Email, EmailEvent, List, SendEmailParams } from "../types/email.ts";
+import type { Email, EmailEvent, EmailLink, List, SendEmailParams } from "../types/email.ts";
 import { SuppressionResource } from "./suppressions.ts";
 
 /** `coss.email`: transactional email. */
@@ -46,6 +46,18 @@ export class EmailResource {
     return this.#http.request<List<EmailEvent>>({
       method: "GET",
       path: `/v1/emails/${encodeURIComponent(id)}/events`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Lists the links tracked for clicks in an email, in document order, with click counts. */
+  listLinks(
+    id: string,
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<List<EmailLink>>> {
+    return this.#http.request<List<EmailLink>>({
+      method: "GET",
+      path: `/v1/emails/${encodeURIComponent(id)}/links`,
       signal: options?.signal,
     });
   }

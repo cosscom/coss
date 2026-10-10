@@ -43,4 +43,16 @@ describe("hashSendRequest", () => {
     expect(Object.hasOwn(parsed, "category")).toBe(false);
     expect(canonicalJson(parsed)).not.toContain("category");
   });
+
+  test("is unchanged for requests without tracking, and covers the tracking given", () => {
+    const base = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "x" };
+    const parsed = SendEmailRequest.parse(base);
+    expect(Object.hasOwn(parsed, "tracking")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("tracking");
+    const empty = SendEmailRequest.parse({ ...base, tracking: {} });
+    const opens = SendEmailRequest.parse({ ...base, tracking: { opens: true } });
+    expect(canonicalJson(empty)).toContain('"tracking":{}');
+    expect(hashSendRequest(opens)).not.toBe(hashSendRequest(empty));
+    expect(() => SendEmailRequest.parse({ ...base, tracking: { pixels: true } })).toThrow();
+  });
 });

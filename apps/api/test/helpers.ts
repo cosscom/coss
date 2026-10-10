@@ -17,6 +17,9 @@ import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
+/** Origin of the tracking URLs `createTestApp` puts into emails (`app.request` ignores it). */
+export const TRACKING_BASE_URL = "http://api.test";
+
 /**
  * An app whose live and sandbox providers are separate, silent fakes. Domains verify without DNS
  * and webhook endpoints may use local `http://` URLs.
@@ -26,7 +29,9 @@ export function createTestApp(opts: { emailService?: EmailService; domainDeps?: 
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const identity = new FakeIdentityProvider();
   const app = createApp({
-    emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
+    emailService:
+      opts.emailService ??
+      createEmailService({ liveProvider, sandboxProvider, trackingBaseUrl: TRACKING_BASE_URL }),
     domainDeps: opts.domainDeps ?? { identity, dns: null },
     webhookDeps: testManagementDeps,
   });

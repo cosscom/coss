@@ -20,12 +20,15 @@ export type {
   EmailEvent,
   EmailEventData,
   EmailEventType,
+  EmailLink,
   EmailRecipient,
   EmailRecipientStatus,
   EmailStatus,
   EmailTag,
+  EmailTracking,
   List,
   SendEmailParams,
+  TrackingOptions,
 } from "./types/email.ts";
 export type {
   CheckSuppressionParams,

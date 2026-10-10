@@ -4,7 +4,8 @@ import { createApp } from "./app.ts";
 import { env } from "./env.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 
-const email = createDefaultEmailRuntime(env);
+const publicUrl = env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`;
+const email = createDefaultEmailRuntime(env, { trackingBaseUrl: publicUrl });
 
 const app = createApp({
   emailService: email.emailService,

@@ -1,6 +1,6 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
 import { orgRoleCan } from "@coss/auth/permissions";
-import { listDomains, listEmails } from "@coss/email";
+import { type EmailObjectOutput, listDomains, listEmails } from "@coss/email";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -46,6 +46,19 @@ function quickStartCurl(apiUrl: string, from: string): string {
     `    "html": "<p>It works!</p>"`,
     `  }'`,
   ].join("\n");
+}
+
+/** "2 opens · 1 click" for tracked emails, "—" for untracked ones. */
+function engagement({ tracking }: EmailObjectOutput): string {
+  const parts = [
+    tracking.opens
+      ? `${tracking.open_count} ${tracking.open_count === 1 ? "open" : "opens"}`
+      : null,
+    tracking.clicks
+      ? `${tracking.click_count} ${tracking.click_count === 1 ? "click" : "clicks"}`
+      : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "—";
 }
 
 export default async function EnvironmentPage({
@@ -195,6 +208,7 @@ export default async function EnvironmentPage({
                   <TableHead>To</TableHead>
                   <TableHead>Subject</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Engagement</TableHead>
                   <TableHead>Mode</TableHead>
                 </TableRow>
               </TableHeader>
@@ -216,6 +230,9 @@ export default async function EnvironmentPage({
                     <TableCell>
                       <EmailStatusBadge status={email.status} />
                     </TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {engagement(email)}
+                    </TableCell>
                     <TableCell>
                       <SandboxBadge sandbox={email.sandbox} />
                     </TableCell>
@@ -231,8 +248,8 @@ export default async function EnvironmentPage({
         <CardHeader>
           <CardTitle>Webhooks</CardTitle>
           <CardDescription>
-            Get a signed request when emails from this environment are delivered, delayed, bounce or
-            receive complaints.
+            Get a signed request when emails from this environment are delivered, delayed, bounce,
+            receive complaints, or are opened and clicked.
           </CardDescription>
           <CardAction>
             <Button
@@ -241,6 +258,25 @@ export default async function EnvironmentPage({
               variant="outline"
             >
               Manage webhooks
+            </Button>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Open &amp; click tracking</CardTitle>
+          <CardDescription>
+            Record when emails are opened and links are clicked: off by default, configurable for
+            the whole environment, per category, or per send.
+          </CardDescription>
+          <CardAction>
+            <Button
+              render={<Link href={`${projectPath}/${environment.slug}/tracking`} />}
+              size="sm"
+              variant="outline"
+            >
+              Tracking settings
             </Button>
           </CardAction>
         </CardHeader>

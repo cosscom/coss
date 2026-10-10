@@ -22,9 +22,13 @@ export {
   emailWorkerEnvShape,
 } from "./env.ts";
 
-export type EmailRuntimeConfig =
+export type EmailRuntimeConfig = (
   | { provider: "fake"; log?: boolean }
-  | { provider: "ses"; ses: SesConfig; log?: boolean; sesApi?: SesApi; dns?: DnsResolver | null };
+  | { provider: "ses"; ses: SesConfig; log?: boolean; sesApi?: SesApi; dns?: DnsResolver | null }
+) & {
+  /** Public origin of the API's `/t/*` routes; only the API sends, so only it needs this. */
+  trackingBaseUrl?: string;
+};
 
 /** The runtime config for validated app env; `EMAIL_PROVIDER=ses` requires the SES variables. */
 export function emailRuntimeConfig(env: EmailEnv): EmailRuntimeConfig {
@@ -84,6 +88,10 @@ export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
     identity,
     dns,
     domainDeps: { identity, dns },
-    emailService: createEmailService({ liveProvider, sandboxProvider }),
+    emailService: createEmailService({
+      liveProvider,
+      sandboxProvider,
+      trackingBaseUrl: config.trackingBaseUrl,
+    }),
   };
 }

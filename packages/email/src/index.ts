@@ -66,8 +66,10 @@ export {
   type EmailRow,
   getEmail,
   listEmailEvents,
+  listEmailLinks,
   listEmails,
   toEmailEventObject,
+  toEmailLinkObject,
   toEmailObject,
 } from "./read.ts";
 export {
@@ -104,12 +106,18 @@ export {
   type EmailEventListOutput,
   type EmailEventOutput,
   type EmailEventType,
+  EmailLink,
+  EmailLinkList,
+  type EmailLinkListOutput,
+  type EmailLinkOutput,
   EmailObject,
   type EmailObjectOutput,
   EmailRecipient,
   type EmailRecipientStatus,
+  EmailTracking,
   EmailWebhookEvent,
   type EmailWebhookEventOutput,
+  ENGAGEMENT_EVENT_TYPES,
   emailAddressProblem,
   isReservedHeader,
   ListSuppressionsQuery,
@@ -134,10 +142,15 @@ export {
   type SuppressionOutput,
   type SuppressionReason,
   SuppressionScope,
+  TrackingOptions,
+  type TrackingOptionsOutput,
+  TrackingRuleInput,
+  type TrackingRuleInputOutput,
 } from "./schemas.ts";
 export {
   createEmailService,
   type EmailService,
+  type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,
   type SendEmailInput,
   type SendEnvironment,
@@ -153,3 +166,22 @@ export {
   toSuppressionObject,
 } from "./suppressions.ts";
 export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";
+export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
+export {
+  clickUrl,
+  type InstrumentOptions,
+  instrumentHtml,
+  NO_TRACK_ATTRIBUTE,
+  openPixelUrl,
+  type TrackedLink,
+} from "./tracking-html.ts";
+export {
+  deleteTrackingRule,
+  getTrackingSettings,
+  type ResolvedTracking,
+  resolveTracking,
+  type TrackingEnvironment,
+  type TrackingRuleRow,
+  type TrackingSettings,
+  upsertTrackingRule,
+} from "./tracking-settings.ts";

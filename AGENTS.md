@@ -92,7 +92,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `TEST_DATABASE_URL` | must name a `*_test` database; swapped in by `@coss/db/testing`; `db:migrate:test` |
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links) |
-| `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers`, falls back to the request origin) |
+| `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers`, falls back to the request origin; origin of the `/t/*` tracking URLs in emails — required in production, `http://localhost:$API_PORT` otherwise) |
 | `NEXT_PUBLIC_API_URL` | `apps/web` (quick-start snippets) |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
@@ -111,6 +111,11 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   wires env (`webhookDeps` is required — a throwaway secrets key would make the endpoints it creates
   undeliverable; `emailService`/`domainDeps` default to the fake provider). Middleware order: request id → `secureHeaders` → `bodyLimit` (5 MB) → `logger` (off under test). Every
   response carries a server-generated `X-Request-Id: req_…` (client values are ignored).
+- The only unauthenticated routes are `/health`, `/openapi.json` and the tracking endpoints `GET /t/o/:token`
+  (open pixel, always a GIF) and `GET /t/c/:token/:position` (302 to the stored link, else a plain-text 404)
+  (`src/routes/tracking.ts`). They are plain Hono routes outside `/v1` and the OpenAPI document, never return the
+  error envelope, record nothing for HEAD, and get `Cross-Origin-Resource-Policy: cross-origin` (everything else keeps
+  `same-origin`).
 - Errors are always the envelope `{ error: { type, code, message, param?, issues?, request_id } }`, built only by
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
   `ERROR_TYPES`, or a product error mapped in `toApiError`; anything else is logged and returned as a generic 500. Never
@@ -257,7 +262,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
+  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`,
+  `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
@@ -285,6 +291,16 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
+- **Open/click tracking** (`packages/email/src/tracking*.ts`, tables `email_tracking_rule` (ids `etr_`) and
+  `email_link` (ids `lnk_`)): COSS-owned, provider-independent (SES's own open/click tracking stays off — the
+  configuration set must not subscribe to `OPEN`/`CLICK`). Per field, a send's `tracking` wins, then its category's rule,
+  then the environment default (the rule with a NULL category), then off; the result is snapshotted on the `email` row
+  (`track_opens`/`track_clicks` + a random `tracking_token`) at send. `email.html` always keeps the original:
+  `deliver` instruments only the provider's copy (`instrumentHtml` splices the original string — never re-serialize
+  customer HTML), storing the links first. Clicks redirect only to stored URLs. `email.opened`/`email.clicked` go through
+  `recordProviderEvent` (source `coss`, deduplicated per minute and link) and never change a recipient's status;
+  they name a recipient only when the email had exactly one non-suppressed recipient. Events store the user agent,
+  never the IP. Settings need `environment:update`. The parsed send request omits `tracking` when absent (request hashes).
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -316,11 +332,14 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
+- Tracking does not filter bots: mail clients that prefetch images (e.g. Apple Mail Privacy Protection) inflate opens
+  and link scanners inflate clicks. Providers send one message to every recipient, so hits on emails with several
+  recipients have `recipient: null`.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
-domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
+**Not built yet** (don't assume these exist; delete a line when it ships): custom tracking domains, tracking settings
+over the API, bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.

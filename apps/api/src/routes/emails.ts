@@ -1,5 +1,5 @@
-import { type EmailService, getEmail, listEmailEvents } from "@coss/email";
-import { EmailEventList, EmailObject, SendEmailRequest } from "@coss/email/schemas";
+import { type EmailService, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
+import { EmailEventList, EmailLinkList, EmailObject, SendEmailRequest } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, notFound } from "../errors.ts";
@@ -43,7 +43,9 @@ export const sendEmailRoute = createRoute({
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
     "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
     "suppression list (for every email, or for the email's `category`) are skipped and get " +
-    "the status `suppressed`.",
+    "the status `suppressed`. With open or click tracking on (the environment's settings, or " +
+    "`tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to " +
+    "COSS redirects; the stored `html` stays as sent.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["send"] }),
   request: {
@@ -119,7 +121,8 @@ export const listEmailEventsRoute = createRoute({
     "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the " +
     "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
-    "recipient.",
+    "recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a " +
+    "recipient only when the email had a single one).",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["read"] }),
   request: { params: EmailIdParams },
@@ -128,6 +131,29 @@ export const listEmailEventsRoute = createRoute({
       description: "The email's events.",
       headers: { "X-Request-Id": requestIdHeader },
       content: { "application/json": { schema: EmailEventList } },
+    },
+    ...commonErrors,
+    404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+  },
+});
+
+export const listEmailLinksRoute = createRoute({
+  method: "get",
+  path: "/emails/{id}/links",
+  operationId: "listEmailLinks",
+  tags: ["Emails"],
+  summary: "List an email's tracked links",
+  description:
+    "The links COSS rewrote for click tracking, in the order they appear in the HTML, with " +
+    "their click counts. Empty unless the email was sent with click tracking.",
+  security: [{ bearerAuth: [] }],
+  middleware: requireApiKey({ email: ["read"] }),
+  request: { params: EmailIdParams },
+  responses: {
+    200: {
+      description: "The email's tracked links.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "application/json": { schema: EmailLinkList } },
     },
     ...commonErrors,
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
@@ -184,6 +210,14 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const result = await listEmailEvents({ organizationId, environmentId, emailId: id });
     if (!result) throw notFound("No email with this id exists in this API key's environment.");
     return c.json({ object: "list" as const, data: result.events, has_more: result.hasMore }, 200);
+  });
+
+  router.openapi(listEmailLinksRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    const result = await listEmailLinks({ organizationId, environmentId, emailId: id });
+    if (!result) throw notFound("No email with this id exists in this API key's environment.");
+    return c.json({ object: "list" as const, data: result.links, has_more: result.hasMore }, 200);
   });
 
   return router;

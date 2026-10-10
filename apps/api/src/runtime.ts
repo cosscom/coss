@@ -11,6 +11,7 @@ import {
  */
 export function createDefaultEmailRuntime(
   env: EmailEnv = { EMAIL_PROVIDER: "fake" },
+  opts: { trackingBaseUrl: string },
 ): EmailRuntime {
-  return createEmailRuntime(emailRuntimeConfig(env));
+  return createEmailRuntime({ ...emailRuntimeConfig(env), trackingBaseUrl: opts.trackingBaseUrl });
 }
