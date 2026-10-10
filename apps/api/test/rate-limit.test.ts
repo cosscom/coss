@@ -129,7 +129,7 @@ describe("send quota", () => {
         bcc: "c@example.com",
       }),
     );
-    expect(ok.status).toBe(200);
+    expect(ok.status).toBe(202);
 
     const over = await sendEmail(app, tenant.sandboxKey, emailBody({ to: recipients(3, "x") }));
     expect(over.status).toBe(429);
@@ -141,7 +141,7 @@ describe("send quota", () => {
     // What still fits is still accepted.
     expect(
       (await sendEmail(app, tenant.sandboxKey, emailBody({ to: recipients(2, "y") }))).status,
-    ).toBe(200);
+    ).toBe(202);
   });
 
   test("an email larger than the quota's burst has no Retry-After", async () => {
@@ -161,16 +161,16 @@ describe("send quota", () => {
     const from = await domainFrom(tenant.organization.id);
     expect(
       (await sendEmail(app, tenant.liveKey, emailBody({ from, to: recipients(3, "l") }))).status,
-    ).toBe(200);
+    ).toBe(202);
     const over = await sendEmail(app, tenant.liveKey, emailBody({ from }));
     expect(over.status).toBe(429);
     // The sandbox quota is separate.
-    expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(200);
+    expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(202);
   });
 
   for (const mode of ["live", "sandbox"] as const) {
-    test(`${mode} completed replays succeed with exhausted recipient quota`, async () => {
-      const { tenant, app, liveProvider, sandboxProvider } = await setup({
+    test(`${mode} queued and completed replays succeed with exhausted recipient quota`, async () => {
+      const { tenant, app, liveProvider, sandboxProvider, dispatch } = await setup({
         [mode === "live" ? "email.recipients.day" : "email.sandbox_recipients.day"]: {
           limit: 1,
           periodMs: 86_400_000,
@@ -181,12 +181,12 @@ describe("send quota", () => {
       const body = emailBody({ from: await domainFrom(tenant.organization.id) });
       const headers = { "Idempotency-Key": "exhausted-quota-replay" };
       const first = await sendEmail(app, key, body, headers);
-      expect(first.status).toBe(200);
-      const original = await first.json();
+      expect(first.status).toBe(202);
+      const original = (await first.json()) as { id: string };
 
       for (let attempt = 0; attempt < 2; attempt++) {
         const replay = await sendEmail(app, key, body, headers);
-        expect(replay.status).toBe(200);
+        expect(replay.status).toBe(202);
         expect(replay.headers.get("idempotent-replayed")).toBe("true");
         expect(await replay.json()).toEqual(original);
       }
@@ -201,6 +201,13 @@ describe("send quota", () => {
         expect(rejected.status).toBe(429);
         expect(await errorOf(rejected)).toMatchObject({ code: "quota_exceeded" });
       }
+      expect(provider.sent).toHaveLength(0);
+      await dispatch();
+      const completed = await sendEmail(app, key, body, headers);
+      expect(completed.status).toBe(202);
+      expect(completed.headers.get("idempotent-replayed")).toBe("true");
+      expect(await completed.json()).toMatchObject({ id: original.id, status: "sent" });
+      await dispatch();
       expect(provider.sent).toHaveLength(1);
     });
   }
@@ -212,9 +219,9 @@ describe("send quota", () => {
     const from = await domainFrom(tenant.organization.id);
     const body = emailBody({ from, to: recipients(2, "r") });
     const headers = { "Idempotency-Key": "quota-replay" };
-    expect((await sendEmail(app, tenant.liveKey, body, headers)).status).toBe(200);
+    expect((await sendEmail(app, tenant.liveKey, body, headers)).status).toBe(202);
     const replay = await sendEmail(app, tenant.liveKey, body, headers);
-    expect(replay.status).toBe(200);
+    expect(replay.status).toBe(202);
     expect(replay.headers.get("idempotent-replayed")).toBe("true");
 
     // Not a verified domain: 422, and the recipients are given back.
@@ -227,7 +234,7 @@ describe("send quota", () => {
 
     expect(
       (await sendEmail(app, tenant.liveKey, emailBody({ from, to: recipients(2, "s") }))).status,
-    ).toBe(200);
+    ).toBe(202);
     expect((await sendEmail(app, tenant.liveKey, emailBody({ from }))).status).toBe(429);
   });
 });

@@ -1,15 +1,52 @@
 /**
- * Recovery of emails whose send was interrupted (worker). System-level: the scan spans
- * organizations, and every write is scoped by the email's own organization.
+ * Recovery of emails whose dispatch was lost or interrupted (worker). System-level: the scans
+ * span organizations, and every write is scoped by the email's own organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import type { EmailDispatchQueue } from "./dispatch.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 
 const { email, emailEvent } = schema;
 
 /** A claimed email still `queued` after this long was interrupted mid-send. */
 export const STALE_CLAIM_MS = 15 * 60 * 1000;
+
+/** An unclaimed email still `queued` after this long may have lost its dispatch job. */
+export const UNCLAIMED_REQUEUE_MS = 10 * 60 * 1000;
+
+/**
+ * Enqueues dispatch again for emails nobody claimed in time: their job exhausted its retries, or
+ * the email predates async dispatch. Emails still waiting behind a backlog keep their one queued
+ * job (the queue allows one per email), and an extra job for an email being dispatched right now
+ * finds it claimed and does nothing. Returns how many emails were looked at. `scope` limits the
+ * scan to some organizations (tests).
+ */
+export async function requeueUnclaimedEmails(
+  queue: EmailDispatchQueue,
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } },
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const unclaimed = await db
+    .select({ id: email.id, organizationId: email.organizationId })
+    .from(email)
+    .where(
+      and(
+        eq(email.status, "queued"),
+        isNull(email.provider),
+        lt(email.createdAt, new Date(now.getTime() - UNCLAIMED_REQUEUE_MS)),
+        opts.scope ? inArray(email.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(email.createdAt))
+    .limit(opts.limit ?? 100);
+  for (const candidate of unclaimed) {
+    await db.transaction((tx) =>
+      queue.enqueue(tx, { organizationId: candidate.organizationId, emailId: candidate.id }),
+    );
+  }
+  return unclaimed.length;
+}
 
 /**
  * Resolves emails claimed by a dispatcher that never recorded the outcome (e.g. the process died

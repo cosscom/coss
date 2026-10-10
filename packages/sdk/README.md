@@ -28,7 +28,7 @@ const { data, error } = await coss.email.send({
 if (error) {
   console.error(error.type, error.code, error.message, error.request_id);
 } else {
-  console.log(data.id, data.status); // "email_01k…", "sent"
+  console.log(data.id, data.status); // "email_01k…", "queued" (sent moments later)
 }
 
 const { data: email } = await coss.email.get("email_01k…");
@@ -215,7 +215,7 @@ interface CossError {
 | `authentication_error`  | 401               | `missing_api_key` or `invalid_api_key`                            |
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
-| `idempotency_error`     | 409 / 422         | `request_in_progress`, or `idempotency_key_reused` with a different body |
+| `idempotency_error`     | 409 / 422         | `request_in_progress` (retried automatically), or `idempotency_key_reused` with a different body |
 | `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |

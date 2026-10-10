@@ -136,7 +136,7 @@ function fromHttpException(error: HTTPException): ApiError {
 function fromEmailError(error: EmailError): ApiError {
   switch (error.code) {
     case "request_in_progress":
-      // The first request is still running; the SDK retries after Retry-After.
+      // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
       return new ApiError(
         error.status,
         { type: "idempotency_error", code: error.code, message: error.message },

@@ -9,7 +9,6 @@ import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { listEmailEvents } from "../src/read.ts";
 import { CreateSuppressionRequest, EmailWebhookEvent } from "../src/schemas.ts";
-import { createEmailService } from "../src/service.ts";
 import {
   addSuppression,
   checkSuppression,
@@ -21,6 +20,7 @@ import {
   type SuppressionEnvironment,
   suppressionsCsvStream,
 } from "../src/suppressions.ts";
+import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 type Tenant = Awaited<ReturnType<typeof createTestTenant>>;
@@ -37,7 +37,7 @@ function fakeService() {
   const provider = new FakeEmailProvider({ log: false });
   return {
     provider,
-    service: createEmailService({ liveProvider: provider, sandboxProvider: provider }),
+    service: dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider }),
   };
 }
 

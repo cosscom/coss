@@ -50,6 +50,9 @@ bun run dev                      # dashboard http://localhost:3000/dashboard · 
                                  # site + docs http://localhost:3002 · worker
 ```
 
+`db:migrate` also installs the `pgboss` schema: sends return `202` with `status: "queued"` and the worker
+dispatches them moments later, so keep the worker running.
+
 Send an email with the key printed by the seed:
 
 ```sh
@@ -247,9 +250,11 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
     count: API sends (HTML bodies) and dashboard requests routinely exceed its 8 KB limit.
 - **RDS Postgres 18:** private, encrypted, Multi-AZ for production. Apps connect with
   `?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem` (each image ships the RDS CA bundle
-  there). **Pool sizing:** every task opens up to `DATABASE_POOL_MAX` (default 10) connections, so
-  `(max web + max api + max worker tasks) × DATABASE_POOL_MAX + 1 (migrations) + a few for operators` must stay
-  below `max_connections` (`SHOW max_connections;` — on RDS it scales with instance memory, roughly
+  there). **Pool sizing:** every task opens up to `DATABASE_POOL_MAX` (default 10) app connections.
+  Each API task also opens one pg-boss metadata connection; each worker adds up to four pg-boss
+  connections and one LISTEN connection. Budget
+  `(max web + max api + max worker tasks) × DATABASE_POOL_MAX + max api tasks + 5 × max worker tasks`,
+  plus two connections for migrations and a few for operators. Keep the total below `max_connections` (`SHOW max_connections;` — on RDS it scales with instance memory, roughly
   `memory / 9.5 MB`). Lower the pool size or add RDS Proxy before scaling task counts past that.
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).

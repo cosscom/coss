@@ -24,6 +24,9 @@ const { data, error } = await coss.email.send(
 );
 ```
 
+Sends return HTTP `202` with `status: "queued"`. A background worker hands the email to the
+provider. Follow delivery with `coss.email.get()` or the `email.sent` / `email.failed` webhooks.
+
 ## Addresses
 
 `from`, `to`, `cc`, `bcc` and `reply_to` take `"user@example.com"` or

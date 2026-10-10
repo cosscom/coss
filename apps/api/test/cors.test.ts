@@ -51,7 +51,7 @@ describe("CORS", () => {
     const unauthorized = await sendEmail(app, null, emailBody(), origin);
     const invalid = await sendEmail(app, tenant.sandboxKey, emailBody({ subject: "" }), origin);
 
-    expect([ok.status, unauthorized.status, invalid.status]).toEqual([200, 401, 422]);
+    expect([ok.status, unauthorized.status, invalid.status]).toEqual([202, 401, 422]);
     for (const res of [ok, unauthorized, invalid]) {
       expect(res.headers.get("access-control-allow-origin")).toBe(DOCS);
       expect(res.headers.get("access-control-expose-headers")).toBe(

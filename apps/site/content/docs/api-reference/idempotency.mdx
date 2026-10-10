@@ -3,13 +3,13 @@ title: Idempotency
 description: Retry POST requests without sending twice.
 ---
 
-`POST` endpoints accept an `Idempotency-Key` header (1–256 characters). For 24 hours, a repeated
+`POST /v1/emails` accepts an `Idempotency-Key` header (1–256 characters). For 24 hours, a repeated
 request with the same key:
 
-- and the **same body** returns the original response, with an `Idempotent-Replayed: true` header;
+- and the **same body** returns the email with its current status (including `queued`), with an `Idempotent-Replayed: true` header;
 - and a **different body** fails with `422 idempotency_key_reused`;
-- while the first request is **still running** fails with `409 request_in_progress` and a
-  `Retry-After` header.
+- concurrent matching requests wait for the first transaction to commit and replay its email.
+  A busy key can return `409 request_in_progress` with a `Retry-After` header.
 
 ```bash
 curl -X POST https://api.coss.com/v1/emails \

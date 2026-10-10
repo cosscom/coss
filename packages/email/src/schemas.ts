@@ -541,7 +541,8 @@ export const EmailObject = z
     category: z.string().nullable(),
     status: z.enum(EMAIL_STATUSES).meta({
       description:
-        "Whether the email was handed to the delivery provider. Per-recipient delivery is in `recipients`.",
+        "Whether the email was handed to the delivery provider: `queued` until then (a send " +
+        "returns it `queued`), then `sent` or `failed`. Per-recipient delivery is in `recipients`.",
     }),
     recipients: z.array(EmailRecipient),
     sandbox: z

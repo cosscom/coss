@@ -8,7 +8,7 @@ import {
   FakeIdentityProvider,
 } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
-import { createVerifiedDomain } from "@coss/email/testing";
+import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { decryptSecret } from "@coss/webhooks";
@@ -19,8 +19,9 @@ import type { ErrorEnvelopeBody } from "../src/errors.ts";
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
 /**
- * An app whose live and sandbox providers are separate, silent fakes. Domains verify without DNS
- * and webhook endpoints may use local `http://` URLs.
+ * An app whose live and sandbox providers are separate, silent fakes. Sends only enqueue (in
+ * memory): `dispatch()` runs the queued jobs, as the worker would. Domains verify without DNS and
+ * webhook endpoints may use local `http://` URLs.
  */
 export function createTestApp(
   opts: {
@@ -35,8 +36,11 @@ export function createTestApp(
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const identity = new FakeIdentityProvider();
+  const queue = memoryDispatchQueue();
+  const emailService =
+    opts.emailService ?? createEmailService({ liveProvider, sandboxProvider, queue });
   const app = createApp({
-    emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
+    emailService,
     domainDeps: opts.domainDeps ?? { identity, dns: null },
     webhookDeps: testManagementDeps,
     rateLimiter: opts.rateLimiter,
@@ -44,7 +48,8 @@ export function createTestApp(
 
     corsOrigins: opts.corsOrigins,
   });
-  return { app, liveProvider, sandboxProvider, identity };
+  const dispatch = () => queue.drain(emailService);
+  return { app, liveProvider, sandboxProvider, identity, queue, dispatch };
 }
 
 export type TestApp = ReturnType<typeof createTestApp>["app"];
@@ -203,10 +208,6 @@ export async function expireDomainVerification(domainId: string): Promise<void> 
     "update domain set verification_started_at = now() - interval '80 hours' where id = $1",
     [domainId],
   );
-}
-
-export async function setEmailStatus(emailId: string, status: "queued" | "sent" | "failed") {
-  await pool.query("update email set status = $1 where id = $2", [status, emailId]);
 }
 
 export function authContext(overrides: Partial<ApiKeyContext> = {}): ApiKeyContext {

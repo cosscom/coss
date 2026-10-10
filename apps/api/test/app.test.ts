@@ -18,7 +18,7 @@ describe("X-Request-Id", () => {
       await app.request("/health", { headers: spoofed }),
     ];
 
-    expect(responses.map((res) => res.status)).toEqual([200, 401, 404, 200]);
+    expect(responses.map((res) => res.status)).toEqual([202, 401, 404, 200]);
     const ids = responses.map((res) => res.headers.get("x-request-id"));
     for (const id of ids) expect(id).toMatch(REQUEST_ID);
     expect(new Set(ids).size).toBe(ids.length);
