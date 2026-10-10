@@ -48,3 +48,33 @@ if (check?.suppressed) {
 
 Removing an entry lets later sends reach the address again. Remove automatic entries with care:
 repeatedly sending to addresses that bounce or complain hurts your sending reputation.
+
+## Importing and exporting
+
+Move whole lists in and out, for example when you switch from another provider. `import` takes any
+number of entries and sends them 1,000 per request. Each entry is validated on its own: invalid ones
+are skipped and reported by their position, and entries already on the list are left unchanged, so
+importing the same list again is safe. Imported entries have the reason `import`.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: result } = await coss.email.suppressions.import({
+  suppressions: [
+    { address: "ada@example.com" },
+    { address: "grace@example.com", scope: "marketing" },
+  ],
+});
+// result?.created, result?.existing, result?.invalid
+
+// The whole list as CSV: address,scope,reason,created_at,email_id,id (here only bounces).
+const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" });
+```
+
+The dashboard's **Suppressions** page imports a CSV file of up to 10,000 rows and downloads the same
+export. A file needs an `address` (or `email`) column and may have a `scope` (or `category`)
+column; a file without a header row has the address first and an optional scope second. An export
+imports again as is. Cells a spreadsheet would run as a formula (starting with `=`, `+`, `-` or `@`)
+are exported with a leading `'`, which the import removes.
+

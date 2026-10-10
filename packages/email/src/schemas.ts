@@ -382,7 +382,7 @@ export const EmailRecipient = z
   })
   .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
-export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual"] as const;
+export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual", "import"] as const;
 
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
@@ -399,7 +399,7 @@ export const SuppressionScope = z
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
   description:
     "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
-    "`manual`: added through the API or dashboard.",
+    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import.",
 });
 
 export const EmailEventData = z
@@ -876,3 +876,82 @@ export const DeletedSuppression = z
   });
 
 export type DeletedSuppressionOutput = z.output<typeof DeletedSuppression>;
+
+export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
+
+export const ImportSuppressionsRequest = z
+  .strictObject({
+    suppressions: z
+      .array(
+        z.strictObject({
+          address: z.string().meta({ description: "The address to suppress." }),
+          scope: z.string().optional().meta({ description: "`*` (the default) or a category." }),
+        }),
+      )
+      .min(1, "Provide at least one suppression.")
+      .max(
+        MAX_SUPPRESSION_IMPORT_ENTRIES,
+        `At most ${MAX_SUPPRESSION_IMPORT_ENTRIES} suppressions can be imported per request.`,
+      )
+      .meta({
+        description:
+          `1-${MAX_SUPPRESSION_IMPORT_ENTRIES} entries. Each one is validated on its own: invalid ` +
+          "entries are skipped and reported in `invalid`, the rest are imported.",
+      }),
+  })
+  .meta({
+    id: "ImportSuppressionsRequest",
+    examples: [
+      {
+        suppressions: [
+          { address: "user@example.com" },
+          { address: "other@example.com", scope: "marketing" },
+        ],
+      },
+    ],
+  });
+
+export type ImportSuppressionsRequestInput = z.input<typeof ImportSuppressionsRequest>;
+export type ImportSuppressionsRequestOutput = z.output<typeof ImportSuppressionsRequest>;
+
+export const SuppressionImport = z
+  .object({
+    object: z.literal("suppression_import"),
+    created: z.number().int().meta({ description: "Entries added by this import." }),
+    existing: z.number().int().meta({
+      description:
+        "Valid entries that were already on the list (or repeated within this import); unchanged.",
+    }),
+    invalid: z
+      .array(
+        z.object({
+          index: z.number().int().meta({ description: "Position of the entry in the request." }),
+          address: z.string(),
+          message: z.string(),
+        }),
+      )
+      .meta({ description: "Entries that were skipped, with the reason." }),
+  })
+  .meta({
+    id: "SuppressionImport",
+    examples: [
+      {
+        object: "suppression_import",
+        created: 2,
+        existing: 0,
+        invalid: [],
+      },
+    ],
+  });
+
+export type SuppressionImportOutput = z.output<typeof SuppressionImport>;
+
+export const ExportSuppressionsQuery = z.strictObject({
+  scope: SuppressionScope.optional().meta({ description: "Only entries with this scope." }),
+  reason: SuppressionReasonEnum.optional().meta({
+    description: "Only entries with this reason.",
+    examples: ["bounce"],
+  }),
+});
+
+export type ExportSuppressionsQueryOutput = z.output<typeof ExportSuppressionsQuery>;

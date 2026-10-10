@@ -2,9 +2,9 @@
 
 /**
  * Why an address is suppressed. `bounce`: a permanent bounce. `complaint`: a spam complaint.
- * `manual`: added through the API or the dashboard.
+ * `manual`: added one by one through the API or the dashboard. `import`: added by a bulk import.
  */
-export type SuppressionReason = "bounce" | "complaint" | "manual";
+export type SuppressionReason = "bounce" | "complaint" | "manual" | "import";
 
 /** An entry of the API key's environment's suppression list. */
 export interface Suppression {
@@ -60,4 +60,33 @@ export interface DeletedSuppression {
   object: "suppression";
   id: string;
   deleted: true;
+}
+
+/** One entry of `POST /v1/suppressions/import`. */
+export interface ImportSuppressionEntry {
+  address: string;
+  /** `"*"` (the default) or a category. */
+  scope?: string;
+}
+
+/** Input of `coss.email.suppressions.import()`; the SDK sends 1,000 entries per request. */
+export interface ImportSuppressionsParams {
+  suppressions: ImportSuppressionEntry[];
+}
+
+/** What an import did. */
+export interface SuppressionImport {
+  object: "suppression_import";
+  /** Entries added. */
+  created: number;
+  /** Valid entries that were already on the list (or repeated in the import); unchanged. */
+  existing: number;
+  /** Skipped entries; `index` is the entry's position in `suppressions`. */
+  invalid: Array<{ index: number; address: string; message: string }>;
+}
+
+/** Query of `GET /v1/suppressions/export`. */
+export interface ExportSuppressionsParams {
+  scope?: string;
+  reason?: SuppressionReason;
 }

@@ -300,6 +300,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
+  Bulk import/export is synchronous: `importSuppressions` validates each entry on its own (invalid ones are skipped
+  and reported, reason `import`); the API takes 1,000 entries per request (the SDK batches), the dashboard a CSV of
+  up to 10,000 rows (`serverActions.bodySizeLimit` in `apps/web/next.config.ts` leaves room for its 2 MB). Exports
+  stream CSV page by page (`suppressionsCsvStream`, `suppression-csv.ts`) and guard formula-like cells with `'`, which
+  `parseSuppressionCsv` strips again.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -336,7 +341,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, routing coss.com
 between the site and the dashboard (multi-zones / Vercel microfrontends; the dashboard's `/` entry page collides with
-the landing page), open/click tracking (and custom tracking domains), bulk suppression import/export,
+the landing page), open/click tracking (and custom tracking domains),
 attachments/batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, release tooling.
