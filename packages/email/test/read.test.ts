@@ -3,11 +3,11 @@ import { newId } from "@coss/db/id";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmails } from "../src/read.ts";
-import { createEmailService } from "../src/service.ts";
+import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 const provider = new FakeEmailProvider({ log: false });
-const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
 
 describe("getEmail", () => {
   test("is scoped to the organization and environment", async () => {

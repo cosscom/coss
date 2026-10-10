@@ -13,6 +13,7 @@ import {
   authenticateApiKey,
   createEnvironmentApiKey,
   getKeyBinding,
+  LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
   TenancyError,
 } from "../src/index.ts";
@@ -185,7 +186,7 @@ describe("authenticateApiKey", () => {
     expect(await authenticateApiKey(tenant.sandboxKey)).toEqual({ ok: false, reason: "invalid" });
   });
 
-  test("rejects expired keys (enforced by Better Auth)", async () => {
+  test("rejects expired keys", async () => {
     const tenant = await createTestTenant();
     const keyId = await keyIdOf(tenant.sandboxKey);
     await db
@@ -193,16 +194,72 @@ describe("authenticateApiKey", () => {
       .set({ expiresAt: new Date(Date.now() - 60_000) })
       .where(eq(schema.apikey.id, keyId));
     expect(await authenticateApiKey(tenant.sandboxKey)).toEqual({ ok: false, reason: "invalid" });
+
+    await db
+      .update(schema.apikey)
+      .set({ expiresAt: new Date(Date.now() + 60_000) })
+      .where(eq(schema.apikey.id, keyId));
+    expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
   });
 
-  test("records usage through Better Auth", async () => {
+  test("rejects keys with a usage quota (not supported by the read-only check)", async () => {
     const tenant = await createTestTenant();
+    await db
+      .update(schema.apikey)
+      .set({ remaining: 100 })
+      .where(eq(schema.apikey.id, await keyIdOf(tenant.sandboxKey)));
+    expect(await authenticateApiKey(tenant.sandboxKey)).toEqual({ ok: false, reason: "invalid" });
+  });
+
+  test("rejects a key whose stored prefix does not match its environment", async () => {
+    const tenant = await createTestTenant();
+    await db
+      .update(schema.apikey)
+      .set({ prefix: API_KEY_PREFIX.live })
+      .where(eq(schema.apikey.id, await keyIdOf(tenant.sandboxKey)));
+    expect(await authenticateApiKey(tenant.sandboxKey)).toEqual({ ok: false, reason: "invalid" });
+  });
+
+  test("records usage at most once a minute per key", async () => {
+    const tenant = await createTestTenant();
+    const keyId = await keyIdOf(tenant.sandboxKey);
+    const lastRequestOf = async () => {
+      const [row] = await db
+        .select({ lastRequest: schema.apikey.lastRequest, updatedAt: schema.apikey.updatedAt })
+        .from(schema.apikey)
+        .where(eq(schema.apikey.id, keyId));
+      return row;
+    };
+    const before = await lastRequestOf();
+    expect(before?.lastRequest).toBeNull();
+
     expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
+    const first = await lastRequestOf();
+    expect(first?.lastRequest).toBeInstanceOf(Date);
+    // Only `last_request` is written; `updated_at` reflects real changes to the key.
+    expect(first?.updatedAt).toEqual(before?.updatedAt);
+
+    expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
+    expect((await lastRequestOf())?.lastRequest).toEqual(first?.lastRequest);
+
+    const stale = new Date(Date.now() - LAST_USED_RESOLUTION_MS - 1_000);
+    await db.update(schema.apikey).set({ lastRequest: stale }).where(eq(schema.apikey.id, keyId));
+    expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
+    const refreshed = (await lastRequestOf())?.lastRequest;
+    expect(refreshed?.getTime()).toBeGreaterThan(stale.getTime() + LAST_USED_RESOLUTION_MS);
+  });
+
+  test("rejected keys never record usage", async () => {
+    const tenant = await createTestTenant();
+    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toEqual({
+      ok: false,
+      reason: "forbidden",
+    });
     const [summary] = await listEnvironmentApiKeys({
       organizationId: tenant.organization.id,
       environmentId: tenant.development.id,
     });
-    expect(summary?.lastRequest).toBeInstanceOf(Date);
+    expect(summary?.lastRequest).toBeNull();
   });
 
   test("rejects keys without an environment binding", async () => {
@@ -257,6 +314,18 @@ describe("authenticateApiKey", () => {
       ok: false,
       reason: "forbidden",
     });
+  });
+
+  test("malformed stored permissions grant nothing", async () => {
+    const tenant = await createTestTenant();
+    const keyId = await keyIdOf(tenant.sandboxKey);
+    for (const permissions of [null, "not json", "[]", '{"email":"send"}', '{"email":[1]}']) {
+      await db.update(schema.apikey).set({ permissions }).where(eq(schema.apikey.id, keyId));
+      expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toEqual({
+        ok: false,
+        reason: "forbidden",
+      });
+    }
   });
 
   test("a new key carries every product's default permissions", async () => {

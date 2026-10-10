@@ -125,8 +125,19 @@ export const email = pgTable(
     text: text("text"),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
-    // Matched against category-scoped suppressions.
+    // Matched against category-scoped suppressions and tracking rules.
     category: text("category"),
+    // Open/click tracking, resolved once at send (per-send override, category rule, environment
+    // default). The token names the email in its public `/t/*` URLs; set only when tracking is on.
+    trackOpens: boolean("track_opens").notNull().default(false),
+    trackClicks: boolean("track_clicks").notNull().default(false),
+    trackingToken: text("tracking_token").unique("email_tracking_token_unique"),
+    openCount: integer("open_count").notNull().default(0),
+    firstOpenedAt: timestamp("first_opened_at", { withTimezone: true }),
+    lastOpenedAt: timestamp("last_opened_at", { withTimezone: true }),
+    clickCount: integer("click_count").notNull().default(0),
+    firstClickedAt: timestamp("first_clicked_at", { withTimezone: true }),
+    lastClickedAt: timestamp("last_clicked_at", { withTimezone: true }),
     provider: text("provider"),
     providerMessageId: text("provider_message_id"),
     errorCode: text("error_code"),
@@ -151,6 +162,8 @@ export const email = pgTable(
     // Due-scan for scheduled sends. Not filtered on `status = 'scheduled'`: a new enum value
     // can't be used in the migration transaction that adds it.
     index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
+    // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
+    index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -183,6 +196,8 @@ export type EmailEventDetails = {
   delivery?: { smtp_response: string | null };
   failure?: { code: string; message: string };
   suppression?: { id: string; scope: string; reason: EmailSuppressionReason };
+  open?: { user_agent: string | null };
+  click?: { url: string; link_position: number; user_agent: string | null };
 };
 
 /** One row per distinct recipient address of an email; its status is driven by delivery events. */
@@ -224,6 +239,8 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.suppressed",
   "email.scheduled",
   "email.canceled",
+  "email.opened",
+  "email.clicked",
 ]);
 
 /**
@@ -263,6 +280,7 @@ export const emailSuppressionReason = pgEnum("email_suppression_reason", [
   "bounce",
   "complaint",
   "manual",
+  "import",
 ]);
 
 export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[number];
@@ -301,6 +319,65 @@ export const emailSuppression = pgTable(
       t.scope,
     ),
     index("email_suppression_environment_id_idx").on(t.environmentId, t.id.desc()),
+  ],
+);
+
+/**
+ * An environment's open/click tracking settings: the row with a NULL category is the environment
+ * default, the others override it for one category. Each field resolves separately (a send's own
+ * `tracking` wins, then its category's rule, then the default, then off).
+ */
+export const emailTrackingRule = pgTable(
+  "email_tracking_rule",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailTrackingRule)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    category: text("category"),
+    opens: boolean("opens").notNull(),
+    clicks: boolean("clicks").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_tracking_rule_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("email_tracking_rule_environment_category_unique")
+      .on(t.environmentId, t.category)
+      .nullsNotDistinct(),
+  ],
+);
+
+/** A link COSS rewrote in a click-tracked email; `position` is its index in the HTML. */
+export const emailLink = pgTable(
+  "email_link",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailLink)),
+    organizationId: text("organization_id").notNull(),
+    emailId: text("email_id").notNull(),
+    position: integer("position").notNull(),
+    url: text("url").notNull(),
+    clickCount: integer("click_count").notNull().default(0),
+    firstClickedAt: timestamp("first_clicked_at", { withTimezone: true }),
+    lastClickedAt: timestamp("last_clicked_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_link_email_fk",
+      columns: [t.emailId, t.organizationId],
+      foreignColumns: [email.id, email.organizationId],
+    }).onDelete("cascade"),
+    unique("email_link_email_position_unique").on(t.emailId, t.position),
   ],
 );
 
@@ -529,4 +606,74 @@ export const webhookAttempt = pgTable(
     }).onDelete("cascade"),
     index("webhook_attempt_delivery_idx").on(t.deliveryId, t.attemptedAt),
   ],
+);
+
+/**
+ * A platform admin's suspension of an organization; the row's presence is the suspension.
+ * While it exists the organization's API keys are refused, its webhook deliveries are held and
+ * its dashboard is read-only. Lifting it deletes the row (history lives in `admin_audit_event`).
+ */
+export const organizationSuspension = pgTable("organization_suspension", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  // Internal note for platform admins; never shown to the organization.
+  reason: text("reason").notNull(),
+  suspendedByUserId: text("suspended_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: createdAt(),
+});
+
+/**
+ * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
+ * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
+ * actor's email is copied so entries stay readable after the rows they name are gone.
+ */
+export const adminAuditEvent = pgTable(
+  "admin_audit_event",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.adminAuditEvent)),
+    actorUserId: text("actor_user_id"),
+    actorEmail: text("actor_email").notNull(),
+    action: text("action").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    organizationId: text("organization_id"),
+    reason: text("reason"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("admin_audit_event_target_idx").on(t.targetType, t.targetId, t.id.desc()),
+    index("admin_audit_event_organization_idx")
+      .on(t.organizationId, t.id.desc())
+      .where(sql`${t.organizationId} is not null`),
+  ],
+);
+
+/**
+ * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
+ * default. Set by platform admins (`bun run ratelimit:set`).
+ */
+export const rateLimitOverride = pgTable(
+  "rate_limit_override",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.rateLimitOverride)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucket: text("bucket").notNull(),
+    limit: integer("limit").notNull(),
+    periodMs: integer("period_ms").notNull(),
+    // Defaults to `limit`.
+    burst: integer("burst"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
 );

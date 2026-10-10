@@ -1,10 +1,11 @@
 /**
- * End to end in sandbox mode: a send produces delivery events, the outbox queues them for the
- * environment's endpoint, the worker's delivery job posts them, and the published SDK verifies
- * the signature.
+ * End to end in sandbox mode: a send queues the email, its dispatch produces delivery events, the
+ * outbox queues them for the environment's endpoint, the worker's delivery job posts them, and
+ * the published SDK verifies the signature.
  */
 import { describe, expect, test } from "bun:test";
 import { createEmailService, FakeEmailProvider } from "@coss/email";
+import { memoryDispatchQueue } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
@@ -31,7 +32,12 @@ describe("sandbox send → webhook", () => {
         testManagementDeps,
       );
       const provider = new FakeEmailProvider({ log: false });
-      const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+      const queue = memoryDispatchQueue();
+      const service = createEmailService({
+        liveProvider: provider,
+        sandboxProvider: provider,
+        queue,
+      });
       const { email } = await service.send({
         environment: {
           organizationId: tenant.organization.id,
@@ -53,6 +59,14 @@ describe("sandbox send → webhook", () => {
           tags: [],
         },
       });
+      expect(email.status).toBe("queued");
+      expect(
+        await runDueWebhookDeliveries(
+          { scope: { organizationIds: [tenant.organization.id] } },
+          { secretsKey: TEST_SECRETS_KEY, send: testSender() },
+        ),
+      ).toBe(0);
+      await queue.drain(service);
 
       const attempted = await runDueWebhookDeliveries(
         { scope: { organizationIds: [tenant.organization.id] } },
@@ -96,7 +110,11 @@ describe("scheduled send → webhook", () => {
         testManagementDeps,
       );
       const provider = new FakeEmailProvider({ log: false });
-      const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+      const service = createEmailService({
+        liveProvider: provider,
+        sandboxProvider: provider,
+        queue: memoryDispatchQueue(),
+      });
       const scheduledAt = new Date(Date.now() + 60 * 60 * 1000);
       const { email } = await service.send({
         environment: {

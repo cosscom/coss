@@ -1,5 +1,5 @@
-ALTER TYPE "public"."email_event_type" ADD VALUE 'email.scheduled';--> statement-breakpoint
-ALTER TYPE "public"."email_event_type" ADD VALUE 'email.canceled';--> statement-breakpoint
+ALTER TYPE "public"."email_event_type" ADD VALUE 'email.scheduled' BEFORE 'email.opened';--> statement-breakpoint
+ALTER TYPE "public"."email_event_type" ADD VALUE 'email.canceled' BEFORE 'email.opened';--> statement-breakpoint
 ALTER TYPE "public"."email_recipient_status" ADD VALUE 'canceled';--> statement-breakpoint
 ALTER TYPE "public"."email_status" ADD VALUE 'scheduled';--> statement-breakpoint
 ALTER TYPE "public"."email_status" ADD VALUE 'canceled';--> statement-breakpoint

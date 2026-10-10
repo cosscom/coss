@@ -3,7 +3,7 @@ import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { getEmail } from "@coss/email";
 import { createEmailRuntime } from "@coss/email/runtime";
-import { createVerifiedDomain, FakeSesApi } from "@coss/email/testing";
+import { createVerifiedDomain, dispatchingEmailService, FakeSesApi } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
 import { pollSesEvents, type QueueMessage, type SqsApi } from "../src/sqs.ts";
@@ -40,7 +40,7 @@ describe("pollSesEvents", () => {
     const domain = await createVerifiedDomain(organizationId, { provider: "ses" });
     const tenantName = `${tenantPrefix}-${organizationId}`;
     await db.insert(schema.emailTenant).values({ organizationId, provider: "ses", tenantName });
-    const { email } = await runtime.emailService.send({
+    const { email } = await dispatchingEmailService(runtime).send({
       environment: {
         organizationId,
         projectId: tenant.project.id,

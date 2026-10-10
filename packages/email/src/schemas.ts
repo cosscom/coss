@@ -154,6 +154,29 @@ const Category = z
   .string()
   .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
 
+export const TrackingOptions = z
+  .strictObject({
+    opens: z.boolean().optional().meta({
+      description: "Add an invisible pixel to the HTML body and record `email.opened` events.",
+    }),
+    clicks: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
+          "`data-coss-no-track` attribute are left alone.",
+      }),
+  })
+  .meta({
+    id: "TrackingOptions",
+    description:
+      "Overrides the environment's tracking settings (its default, or the rule for this " +
+      "email's category) for this email. Omitted fields keep the configured setting.",
+  });
+
+export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -265,6 +288,7 @@ const SendEmailRequestFields = z.strictObject({
         "canceled until they are sent.",
       example: "2026-10-11T09:00:00Z",
     }),
+  tracking: TrackingOptions.optional(),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -319,11 +343,37 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     ...(value.scheduled_at === undefined
       ? {}
       : { scheduled_at: new Date(value.scheduled_at).toISOString() }),
+    // Absent when not given, for the same reason.
+    ...(value.tracking === undefined
+      ? {}
+      : {
+          tracking: {
+            ...(value.tracking.opens === undefined ? {} : { opens: value.tracking.opens }),
+            ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
+          },
+        }),
   }))
-  .meta({ id: "SendEmailRequest" });
+  .meta({
+    id: "SendEmailRequest",
+    examples: [
+      {
+        from: "Acme <onboarding@acme.com>",
+        to: "user@example.com",
+        subject: "Welcome to Acme",
+        html: "<p>Thanks for signing up!</p>",
+        tags: [{ name: "template", value: "welcome" }],
+        category: "onboarding",
+      },
+    ],
+  });
 
 export type SendEmailRequestInput = z.input<typeof SendEmailRequest>;
 export type SendEmailRequestOutput = z.output<typeof SendEmailRequest>;
+
+/** Distinct addresses across to, cc and bcc: what send quotas count. */
+export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
+  return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
+}
 
 export const EMAIL_STATUSES = ["queued", "sent", "failed", "scheduled", "canceled"] as const;
 
@@ -354,9 +404,44 @@ export const EMAIL_EVENT_TYPES = [
   "email.suppressed",
   "email.scheduled",
   "email.canceled",
+  "email.opened",
+  "email.clicked",
 ] as const;
 
+/** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
+export const ENGAGEMENT_EVENT_TYPES = [
+  "email.opened",
+  "email.clicked",
+] as const satisfies readonly EmailEventType[];
+
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
+
+// Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
+const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const RECIPIENT_EXAMPLE = {
+  address: "user@example.com",
+  type: "to",
+  status: "delivered",
+  last_event_at: "2026-10-10T12:00:02.000Z",
+};
+const SENT_EVENT_EXAMPLE = {
+  object: "email_event",
+  id: "evt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+  email_id: EMAIL_ID_EXAMPLE,
+  type: "email.sent",
+  recipient: null,
+  occurred_at: "2026-10-10T12:00:01.000Z",
+  data: {},
+};
+const DELIVERED_EVENT_EXAMPLE = {
+  object: "email_event",
+  id: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  email_id: EMAIL_ID_EXAMPLE,
+  type: "email.delivered",
+  recipient: "user@example.com",
+  occurred_at: "2026-10-10T12:00:02.000Z",
+  data: { delivery: { smtp_response: "250 2.0.0 OK" } },
+};
 
 export const EmailRecipient = z
   .object({
@@ -370,9 +455,9 @@ export const EmailRecipient = z
     }),
     last_event_at: z.iso.datetime().nullable(),
   })
-  .meta({ id: "EmailRecipient" });
+  .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
-export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual"] as const;
+export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual", "import"] as const;
 
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
@@ -389,7 +474,7 @@ export const SuppressionScope = z
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
   description:
     "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
-    "`manual`: added through the API or dashboard.",
+    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import.",
 });
 
 export const EmailEventData = z
@@ -417,15 +502,30 @@ export const EmailEventData = z
       .object({ id: z.string(), scope: z.string(), reason: SuppressionReasonEnum })
       .optional()
       .meta({ description: "Only for `email.suppressed`: the entry that matched the recipient." }),
+    open: z
+      .object({ user_agent: z.string().nullable() })
+      .optional()
+      .meta({ description: "Only for `email.opened`." }),
+    click: z
+      .object({
+        url: z.string().meta({ description: "The original link that was clicked." }),
+        link_position: z
+          .number()
+          .int()
+          .meta({ description: "Index of the link among the email's tracked links." }),
+        user_agent: z.string().nullable(),
+      })
+      .optional()
+      .meta({ description: "Only for `email.clicked`." }),
   })
-  .meta({ id: "EmailEventData" });
+  .meta({ id: "EmailEventData", examples: [DELIVERED_EVENT_EXAMPLE.data] });
 
 export type EmailEventDataOutput = z.output<typeof EmailEventData>;
 
 export const EmailEvent = z
   .object({
     object: z.literal("email_event"),
-    id: z.string().meta({ example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    id: z.string().meta({ examples: ["evt_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     email_id: z.string(),
     type: z.enum(EMAIL_EVENT_TYPES),
     recipient: z
@@ -435,7 +535,7 @@ export const EmailEvent = z
     occurred_at: z.iso.datetime(),
     data: EmailEventData,
   })
-  .meta({ id: "EmailEvent" });
+  .meta({ id: "EmailEvent", examples: [DELIVERED_EVENT_EXAMPLE] });
 
 export type EmailEventOutput = z.output<typeof EmailEvent>;
 
@@ -445,7 +545,16 @@ export const EmailEventList = z
     data: z.array(EmailEvent),
     has_more: z.boolean(),
   })
-  .meta({ id: "EmailEventList" });
+  .meta({
+    id: "EmailEventList",
+    examples: [
+      {
+        object: "list",
+        data: [SENT_EVENT_EXAMPLE, DELIVERED_EVENT_EXAMPLE],
+        has_more: false,
+      },
+    ],
+  });
 
 export type EmailEventListOutput = z.output<typeof EmailEventList>;
 
@@ -457,7 +566,7 @@ export const EmailWebhookEvent = z
   .object({
     id: z.string().meta({
       description: "The event id: the same as `EmailEvent.id`, and the `webhook-id` header.",
-      example: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+      examples: ["evt_01k7c8m4q2f3e9v6t5r1n0p8yz"],
     }),
     object: z.literal("event"),
     type: z.enum(EMAIL_EVENT_TYPES),
@@ -474,14 +583,104 @@ export const EmailWebhookEvent = z
       occurred_at: z.iso.datetime(),
     }),
   })
-  .meta({ id: "EmailWebhookEvent" });
+  .meta({
+    id: "EmailWebhookEvent",
+    examples: [
+      {
+        id: DELIVERED_EVENT_EXAMPLE.id,
+        object: "event",
+        type: "email.delivered",
+        created_at: "2026-10-10T12:00:03.000Z",
+        data: {
+          email_id: EMAIL_ID_EXAMPLE,
+          from: "Acme <onboarding@acme.com>",
+          to: ["user@example.com"],
+          subject: "Welcome to Acme",
+          tags: [{ name: "template", value: "welcome" }],
+          category: "onboarding",
+          sandbox: false,
+          recipient: "user@example.com",
+          occurred_at: DELIVERED_EVENT_EXAMPLE.occurred_at,
+          delivery: { smtp_response: "250 2.0.0 OK" },
+        },
+      },
+    ],
+  });
 
 export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
+
+const TRACKING_EXAMPLE = {
+  opens: false,
+  clicks: false,
+  open_count: 0,
+  first_opened_at: null,
+  last_opened_at: null,
+  click_count: 0,
+  first_clicked_at: null,
+  last_clicked_at: null,
+};
+const LINK_EXAMPLE = {
+  object: "email_link",
+  id: "lnk_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  email_id: EMAIL_ID_EXAMPLE,
+  position: 0,
+  url: "https://acme.com/start",
+  click_count: 0,
+  first_clicked_at: null,
+  last_clicked_at: null,
+};
+
+export const EmailTracking = z
+  .object({
+    opens: z.boolean().meta({ description: "Whether opens are tracked for this email." }),
+    clicks: z.boolean().meta({ description: "Whether link clicks are tracked for this email." }),
+    open_count: z.number().int(),
+    first_opened_at: z.iso.datetime().nullable(),
+    last_opened_at: z.iso.datetime().nullable(),
+    click_count: z.number().int(),
+    first_clicked_at: z.iso.datetime().nullable(),
+    last_clicked_at: z.iso.datetime().nullable(),
+  })
+  .meta({
+    id: "EmailTracking",
+    examples: [TRACKING_EXAMPLE],
+    description:
+      "Open and click tracking, as resolved when the email was sent, with engagement so far. " +
+      "Opens can be inflated by mail clients that prefetch images, clicks by link scanners.",
+  });
+
+export const EmailLink = z
+  .object({
+    object: z.literal("email_link"),
+    id: z.string().meta({ examples: [LINK_EXAMPLE.id] }),
+    email_id: z.string(),
+    position: z.number().int().meta({ description: "Index of the link among the tracked links." }),
+    url: z.string(),
+    click_count: z.number().int(),
+    first_clicked_at: z.iso.datetime().nullable(),
+    last_clicked_at: z.iso.datetime().nullable(),
+  })
+  .meta({ id: "EmailLink", examples: [LINK_EXAMPLE] });
+
+export type EmailLinkOutput = z.output<typeof EmailLink>;
+
+export const EmailLinkList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailLink),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "EmailLinkList",
+    examples: [{ object: "list", data: [LINK_EXAMPLE], has_more: false }],
+  });
+
+export type EmailLinkListOutput = z.output<typeof EmailLinkList>;
 
 export const EmailObject = z
   .object({
     object: z.literal("email"),
-    id: z.string().meta({ example: "email_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    id: z.string().meta({ examples: [EMAIL_ID_EXAMPLE] }),
     from: z.string(),
     to: z.array(z.string()),
     cc: z.array(z.string()),
@@ -503,6 +702,7 @@ export const EmailObject = z
     sandbox: z
       .boolean()
       .meta({ description: "True when sent from a sandbox environment (never delivered)." }),
+    tracking: EmailTracking,
     created_at: z.iso.datetime(),
     sent_at: z.iso.datetime().nullable(),
     scheduled_at: z.iso
@@ -510,7 +710,33 @@ export const EmailObject = z
       .nullable()
       .meta({ description: "When the email was scheduled to be sent; `null` if it was not." }),
   })
-  .meta({ id: "Email" });
+  .meta({
+    id: "Email",
+    examples: [
+      {
+        object: "email",
+        id: EMAIL_ID_EXAMPLE,
+        from: "Acme <onboarding@acme.com>",
+        to: ["user@example.com"],
+        cc: [],
+        bcc: [],
+        reply_to: [],
+        subject: "Welcome to Acme",
+        html: "<p>Thanks for signing up!</p>",
+        text: null,
+        headers: {},
+        tags: [{ name: "template", value: "welcome" }],
+        category: "onboarding",
+        status: "sent",
+        recipients: [RECIPIENT_EXAMPLE],
+        sandbox: false,
+        tracking: TRACKING_EXAMPLE,
+        created_at: "2026-10-10T12:00:00.000Z",
+        sent_at: "2026-10-10T12:00:01.000Z",
+        scheduled_at: null,
+      },
+    ],
+  });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
 
@@ -527,6 +753,56 @@ export const MAIL_FROM_STATUSES = ["pending", "success", "temporary_failure", "f
 export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", "dmarc"] as const;
 
 export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
+
+const DOMAIN_ID_EXAMPLE = "dom_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const VERIFIED_RECORD = { priority: null, required: true, status: "verified", found: [] } as const;
+const DKIM_RECORD_EXAMPLE = {
+  ...VERIFIED_RECORD,
+  purpose: "dkim",
+  type: "CNAME",
+  name: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e._domainkey.acme.com",
+  value: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e.dkim.amazonses.com",
+} as const;
+const DOMAIN_EXAMPLE = {
+  object: "domain",
+  id: DOMAIN_ID_EXAMPLE,
+  name: "acme.com",
+  status: "verified",
+  can_send: true,
+  region: "us-east-1",
+  mail_from_domain: "send.acme.com",
+  mail_from_status: "success",
+  records: [
+    DKIM_RECORD_EXAMPLE,
+    {
+      ...VERIFIED_RECORD,
+      purpose: "mail_from_mx",
+      type: "MX",
+      name: "send.acme.com",
+      value: "feedback-smtp.us-east-1.amazonses.com",
+      priority: 10,
+    },
+    {
+      ...VERIFIED_RECORD,
+      purpose: "mail_from_spf",
+      type: "TXT",
+      name: "send.acme.com",
+      value: "v=spf1 include:amazonses.com ~all",
+    },
+    {
+      ...VERIFIED_RECORD,
+      purpose: "dmarc",
+      type: "TXT",
+      name: "_dmarc.acme.com",
+      value: "v=DMARC1; p=none;",
+      required: false,
+    },
+  ],
+  created_at: "2026-01-15T09:30:00.000Z",
+  last_checked_at: "2026-01-15T09:42:10.000Z",
+  verified_at: "2026-01-15T09:42:10.000Z",
+  failed_at: null,
+} as const;
 
 export const DomainRecordObject = z
   .object({
@@ -546,15 +822,15 @@ export const DomainRecordObject = z
     }),
     found: z.array(z.string()).meta({ description: "What DNS returned when it did not match." }),
   })
-  .meta({ id: "DomainRecord" });
+  .meta({ id: "DomainRecord", examples: [DKIM_RECORD_EXAMPLE] });
 
 export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
 
 export const DomainObject = z
   .object({
     object: z.literal("domain"),
-    id: z.string().meta({ example: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
-    name: z.string().meta({ description: "The domain, lower-cased.", example: "acme.com" }),
+    id: z.string().meta({ examples: [DOMAIN_ID_EXAMPLE] }),
+    name: z.string().meta({ description: "The domain, lower-cased.", examples: ["acme.com"] }),
     status: z.enum(DOMAIN_STATUSES).meta({
       description:
         "`pending` while the records are being checked, `verified` once they are, " +
@@ -577,7 +853,7 @@ export const DomainObject = z
     verified_at: z.iso.datetime().nullable(),
     failed_at: z.iso.datetime().nullable(),
   })
-  .meta({ id: "Domain" });
+  .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
 export type DomainObjectOutput = z.output<typeof DomainObject>;
 
@@ -587,7 +863,10 @@ export const DomainList = z
     data: z.array(DomainObject),
     has_more: z.boolean(),
   })
-  .meta({ id: "DomainList" });
+  .meta({
+    id: "DomainList",
+    examples: [{ object: "list", data: [DOMAIN_EXAMPLE], has_more: false }],
+  });
 
 export type DomainListOutput = z.output<typeof DomainList>;
 
@@ -606,10 +885,10 @@ export const CreateDomainRequest = z
         description:
           "The domain to send from, without a scheme or path. Subdomains are allowed; " +
           "internationalized domains must be punycode-encoded.",
-        example: "acme.com",
+        examples: ["acme.com"],
       }),
   })
-  .meta({ id: "CreateDomainRequest" });
+  .meta({ id: "CreateDomainRequest", examples: [{ name: "acme.com" }] });
 
 export type CreateDomainRequestInput = z.input<typeof CreateDomainRequest>;
 
@@ -619,7 +898,10 @@ export const DeletedDomain = z
     id: z.string(),
     deleted: z.literal(true),
   })
-  .meta({ id: "DeletedDomain" });
+  .meta({
+    id: "DeletedDomain",
+    examples: [{ object: "domain", id: DOMAIN_ID_EXAMPLE, deleted: true }],
+  });
 
 export type DeletedDomainOutput = z.output<typeof DeletedDomain>;
 const SuppressionAddress = z
@@ -642,7 +924,10 @@ export const CreateSuppressionRequest = z
     }),
   })
   .transform((value) => ({ address: value.address, scope: value.scope ?? ALL_CATEGORIES }))
-  .meta({ id: "CreateSuppressionRequest" });
+  .meta({
+    id: "CreateSuppressionRequest",
+    examples: [{ address: "user@example.com", scope: "marketing" }],
+  });
 
 export type CreateSuppressionRequestInput = z.input<typeof CreateSuppressionRequest>;
 export type CreateSuppressionRequestOutput = z.output<typeof CreateSuppressionRequest>;
@@ -671,7 +956,10 @@ export const ListSuppressionsQuery = z.strictObject({
 export type ListSuppressionsQueryOutput = z.output<typeof ListSuppressionsQuery>;
 
 export const CheckSuppressionQuery = z.strictObject({
-  address: SuppressionAddress.meta({ description: "The address to check." }),
+  address: SuppressionAddress.meta({
+    description: "The address to check.",
+    examples: ["user@example.com"],
+  }),
   category: Category.optional().meta({
     description: "The category of the email you plan to send. Without it, only `*` entries count.",
   }),
@@ -679,10 +967,21 @@ export const CheckSuppressionQuery = z.strictObject({
 
 export type CheckSuppressionQueryOutput = z.output<typeof CheckSuppressionQuery>;
 
+const SUPPRESSION_ID_EXAMPLE = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const SUPPRESSION_EXAMPLE = {
+  object: "suppression",
+  id: SUPPRESSION_ID_EXAMPLE,
+  address: "user@example.com",
+  scope: "marketing",
+  reason: "manual",
+  email_id: null,
+  created_at: "2026-01-15T09:30:00.000Z",
+} as const;
+
 export const Suppression = z
   .object({
     object: z.literal("suppression"),
-    id: z.string().meta({ example: "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    id: z.string().meta({ examples: [SUPPRESSION_ID_EXAMPLE] }),
     address: z.string().meta({ description: "The bare, lower-cased address." }),
     scope: z.string().meta({ description: "`*` (every email) or a category." }),
     reason: SuppressionReasonEnum,
@@ -692,7 +991,7 @@ export const Suppression = z
       .meta({ description: "The email whose bounce or complaint added this entry." }),
     created_at: z.iso.datetime(),
   })
-  .meta({ id: "Suppression" });
+  .meta({ id: "Suppression", examples: [SUPPRESSION_EXAMPLE] });
 
 export type SuppressionOutput = z.output<typeof Suppression>;
 
@@ -702,7 +1001,10 @@ export const SuppressionList = z
     data: z.array(Suppression),
     has_more: z.boolean(),
   })
-  .meta({ id: "SuppressionList" });
+  .meta({
+    id: "SuppressionList",
+    examples: [{ object: "list", data: [SUPPRESSION_EXAMPLE], has_more: false }],
+  });
 
 export type SuppressionListOutput = z.output<typeof SuppressionList>;
 
@@ -715,7 +1017,17 @@ export const SuppressionCheck = z
       .meta({ description: "Whether a send (with the given category) would skip this address." }),
     suppressions: z.array(Suppression).meta({ description: "The entries that match." }),
   })
-  .meta({ id: "SuppressionCheck" });
+  .meta({
+    id: "SuppressionCheck",
+    examples: [
+      {
+        object: "suppression_check",
+        address: "user@example.com",
+        suppressed: true,
+        suppressions: [SUPPRESSION_EXAMPLE],
+      },
+    ],
+  });
 
 export type SuppressionCheckOutput = z.output<typeof SuppressionCheck>;
 
@@ -725,6 +1037,96 @@ export const DeletedSuppression = z
     id: z.string(),
     deleted: z.literal(true),
   })
-  .meta({ id: "DeletedSuppression" });
+  .meta({
+    id: "DeletedSuppression",
+    examples: [{ object: "suppression", id: SUPPRESSION_ID_EXAMPLE, deleted: true }],
+  });
 
 export type DeletedSuppressionOutput = z.output<typeof DeletedSuppression>;
+
+/** An environment's tracking default (`category: null`) or a category's override. */
+export const TrackingRuleInput = z.strictObject({
+  category: Category.nullable(),
+  opens: z.boolean(),
+  clicks: z.boolean(),
+});
+
+export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
+export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
+
+export const ImportSuppressionsRequest = z
+  .strictObject({
+    suppressions: z
+      .array(
+        z.strictObject({
+          address: z.string().meta({ description: "The address to suppress." }),
+          scope: z.string().optional().meta({ description: "`*` (the default) or a category." }),
+        }),
+      )
+      .min(1, "Provide at least one suppression.")
+      .max(
+        MAX_SUPPRESSION_IMPORT_ENTRIES,
+        `At most ${MAX_SUPPRESSION_IMPORT_ENTRIES} suppressions can be imported per request.`,
+      )
+      .meta({
+        description:
+          `1-${MAX_SUPPRESSION_IMPORT_ENTRIES} entries. Each one is validated on its own: invalid ` +
+          "entries are skipped and reported in `invalid`, the rest are imported.",
+      }),
+  })
+  .meta({
+    id: "ImportSuppressionsRequest",
+    examples: [
+      {
+        suppressions: [
+          { address: "user@example.com" },
+          { address: "other@example.com", scope: "marketing" },
+        ],
+      },
+    ],
+  });
+
+export type ImportSuppressionsRequestInput = z.input<typeof ImportSuppressionsRequest>;
+export type ImportSuppressionsRequestOutput = z.output<typeof ImportSuppressionsRequest>;
+
+export const SuppressionImport = z
+  .object({
+    object: z.literal("suppression_import"),
+    created: z.number().int().meta({ description: "Entries added by this import." }),
+    existing: z.number().int().meta({
+      description:
+        "Valid entries that were already on the list (or repeated within this import); unchanged.",
+    }),
+    invalid: z
+      .array(
+        z.object({
+          index: z.number().int().meta({ description: "Position of the entry in the request." }),
+          address: z.string(),
+          message: z.string(),
+        }),
+      )
+      .meta({ description: "Entries that were skipped, with the reason." }),
+  })
+  .meta({
+    id: "SuppressionImport",
+    examples: [
+      {
+        object: "suppression_import",
+        created: 2,
+        existing: 0,
+        invalid: [],
+      },
+    ],
+  });
+
+export type SuppressionImportOutput = z.output<typeof SuppressionImport>;
+
+export const ExportSuppressionsQuery = z.strictObject({
+  scope: SuppressionScope.optional().meta({ description: "Only entries with this scope." }),
+  reason: SuppressionReasonEnum.optional().meta({
+    description: "Only entries with this reason.",
+    examples: ["bounce"],
+  }),
+});
+
+export type ExportSuppressionsQueryOutput = z.output<typeof ExportSuppressionsQuery>;

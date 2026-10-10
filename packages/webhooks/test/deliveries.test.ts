@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
-import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
+import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
 import {
   MAX_ATTEMPTS,
@@ -382,6 +383,32 @@ describe("runDueWebhookDeliveries", () => {
         endpointId: endpoint.id,
       });
       expect(delivery).toMatchObject({ status: "failed", lastError: "The endpoint is disabled." });
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("a suspended organization's deliveries are held until the suspension is lifted", async () => {
+    const tenant = await createTestTenant();
+    const admin = await createTestUser();
+    const actor = { userId: admin.id, email: admin.email };
+    const receiver = webhookReceiver();
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      await enqueue(tenant);
+      await suspendOrganization({ organizationId: tenant.organization.id, reason: "Test", actor });
+
+      expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(0);
+      expect(receiver.received).toHaveLength(0);
+      const [held] = await listWebhookDeliveries({
+        organizationId: tenant.organization.id,
+        endpointId: endpoint.id,
+      });
+      expect(held).toMatchObject({ status: "pending", attemptCount: 0 });
+
+      await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
+      expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(1);
+      expect(receiver.received).toHaveLength(1);
     } finally {
       receiver.stop();
     }

@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { getEmailTenant, listDomains } from "@coss/email";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import {
@@ -23,13 +22,13 @@ export const metadata: Metadata = { title: "Domains" };
 
 export default async function DomainsPage({ params }: PageProps<"/[orgSlug]/domains">) {
   const { orgSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { domain: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ domain: ["read"] })) notFound();
   const [domains, tenant] = await Promise.all([
     listDomains({ organizationId: organization.id }),
     getEmailTenant(organization.id),
   ]);
-  const canCreate = orgRoleCan(member.role, { domain: ["create"] });
+  const canCreate = can({ domain: ["create"] });
 
   return (
     <div className="flex flex-col gap-6">

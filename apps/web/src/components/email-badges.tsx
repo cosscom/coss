@@ -45,6 +45,8 @@ const EVENT_VARIANT = {
   "email.suppressed": "warning",
   "email.scheduled": "info",
   "email.canceled": "outline",
+  "email.opened": "secondary",
+  "email.clicked": "secondary",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {
@@ -55,6 +57,7 @@ const SUPPRESSION_REASON_VARIANT = {
   bounce: "error",
   complaint: "error",
   manual: "secondary",
+  import: "secondary",
 } as const satisfies Record<SuppressionReason, string>;
 
 export function SuppressionReasonBadge({ reason }: { reason: SuppressionReason }) {
@@ -82,4 +85,9 @@ export function ModeBadge({ mode }: { mode: EnvironmentMode }) {
   ) : (
     <Badge variant="info">Sandbox</Badge>
   );
+}
+
+/** Whether a kind of tracking is on: for settings and for a sent email. */
+export function TrackingBadge({ on }: { on: boolean }) {
+  return on ? <Badge variant="success">On</Badge> : <Badge variant="outline">Off</Badge>;
 }

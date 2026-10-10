@@ -4,6 +4,7 @@ import {
   Coss,
   type CossError,
   type EmailEvent,
+  type EmailLink,
   type List,
   type SendEmailParams,
   VERSION,
@@ -191,6 +192,33 @@ describe("coss.email.listEvents", () => {
     expect(result).toEqual({ data: list, error: null });
     expect(calls[0]?.method).toBe("GET");
     expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/email_a%2Fb/events");
+  });
+});
+
+describe("coss.email.listLinks", () => {
+  test("GETs the email's tracked links", async () => {
+    const list: List<EmailLink> = {
+      object: "list",
+      has_more: false,
+      data: [
+        {
+          object: "email_link",
+          id: "lnk_01k5f9yq8re8vb6q2wmz0tb2xd",
+          email_id: sampleEmail.id,
+          position: 0,
+          url: "https://example.com/welcome",
+          click_count: 2,
+          first_clicked_at: "2026-10-09T12:01:00.000Z",
+          last_clicked_at: "2026-10-09T12:05:00.000Z",
+        },
+      ],
+    };
+    const { fetch, calls } = mockFetch(json(200, list));
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.listLinks("email_a/b");
+
+    expect(result).toEqual({ data: list, error: null });
+    expect(calls[0]?.method).toBe("GET");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/email_a%2Fb/links");
   });
 });
 

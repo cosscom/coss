@@ -7,7 +7,8 @@ import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
 import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
-import { sweepStaleClaims } from "../src/sweeps.ts";
+import { sweepStaleClaims, sweepUnclaimedEmails } from "../src/sweeps.ts";
+import { memoryDispatchQueue, trackingUrls } from "../src/testing.ts";
 import { gatedProvider, params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 const HOUR = 60 * 60 * 1000;
@@ -21,7 +22,7 @@ function fakeProviders() {
   return {
     liveProvider,
     sandboxProvider,
-    service: createEmailService({ liveProvider, sandboxProvider }),
+    service: createEmailService({ liveProvider, sandboxProvider, queue: memoryDispatchQueue() }),
   };
 }
 
@@ -71,6 +72,91 @@ describe("scheduled sends", () => {
     expect(await service.dispatchDue({ scope: scopeOf(tenant) })).toBe(0);
   });
 
+  test("scheduled emails have no immediate job and are excluded from unclaimed recovery", async () => {
+    const tenant = await createTestTenant();
+    const provider = new FakeEmailProvider({ log: false });
+    const queue = memoryDispatchQueue();
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      queue,
+    });
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    expect(queue.jobs).toHaveLength(0);
+    await service.dispatch({ organizationId: tenant.organization.id, emailId: email.id });
+    expect(provider.sent).toHaveLength(0);
+    expect(await sweepUnclaimedEmails(queue, { now: later(), scope: scopeOf(tenant) })).toEqual({
+      failed: 0,
+      requeued: 0,
+    });
+    expect(await sweepStaleClaims({ now: later(), scope: scopeOf(tenant) })).toBe(0);
+    expect(queue.jobs).toHaveLength(0);
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(1);
+    expect(provider.sent).toHaveLength(1);
+  });
+
+  test("suspended organizations hold scheduled emails until suspension is lifted", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider } = fakeProviders();
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    await db
+      .insert(schema.organizationSuspension)
+      .values({ organizationId: tenant.organization.id, reason: "test" });
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(0);
+    expect(sandboxProvider.sent).toHaveLength(0);
+    expect(
+      (
+        await getEmail({
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          id: email.id,
+        })
+      )?.status,
+    ).toBe("scheduled");
+    await db
+      .delete(schema.organizationSuspension)
+      .where(eq(schema.organizationSuspension.organizationId, tenant.organization.id));
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(1);
+    expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("scheduled sends instrument the provider HTML and retain the original", async () => {
+    const tenant = await createTestTenant();
+    const provider = new FakeEmailProvider({ log: false });
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      queue: memoryDispatchQueue(),
+      trackingBaseUrl: "https://api.coss.test",
+    });
+    const html = '<p><a href="https://example.com/start">Start</a></p>';
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ html, tracking: { opens: true, clicks: true }, scheduled_at: inAnHour() }),
+    });
+    expect(provider.sent).toHaveLength(0);
+    await service.dispatchDue({ now: later(), scope: scopeOf(tenant) });
+    const urls = trackingUrls(provider.sent[0]?.html ?? "");
+    expect(urls.open).toStartWith("https://api.coss.test/t/o/");
+    expect(urls.clicks).toHaveLength(1);
+    expect(
+      await getEmail({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        id: email.id,
+      }),
+    ).toMatchObject({ html, status: "sent", tracking: { opens: true, clicks: true } });
+  });
+
   test("a retry with the same idempotency key replays the scheduled email", async () => {
     const tenant = await createTestTenant();
     const { service } = fakeProviders();
@@ -101,7 +187,8 @@ describe("scheduled sends", () => {
       params: params({ scheduled_at: past }),
     });
 
-    expect(email).toMatchObject({ status: "sent", scheduled_at: past });
+    expect(email).toMatchObject({ status: "queued", scheduled_at: past });
+    await service.dispatch({ organizationId: tenant.organization.id, emailId: email.id });
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
@@ -131,6 +218,7 @@ describe("scheduled sends", () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
     const service = createEmailService({
+      queue: memoryDispatchQueue(),
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });
@@ -224,6 +312,7 @@ describe("scheduled sends", () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
     const service = createEmailService({
+      queue: memoryDispatchQueue(),
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });
@@ -294,6 +383,7 @@ describe("cancel", () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
     const service = createEmailService({
+      queue: memoryDispatchQueue(),
       liveProvider: gated.provider,
       sandboxProvider: gated.provider,
     });

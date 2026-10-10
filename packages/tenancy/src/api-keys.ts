@@ -3,12 +3,12 @@ import { auth } from "@coss/auth";
 import { API_KEY_NAME_MAX_LENGTH, API_KEY_PREFIX } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { isAPIError } from "better-auth/api";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
 import type { EnvironmentMode } from "./types.ts";
 
-const { apikey, environment, environmentApiKey } = schema;
+const { apikey, environment, environmentApiKey, organizationSuspension } = schema;
 
 export type EnvironmentApiKeySummary = {
   id: string;
@@ -33,7 +33,8 @@ export type ApiKeyContext = {
 
 export type AuthenticateResult =
   | { ok: true; context: ApiKeyContext }
-  | { ok: false; reason: "invalid" | "forbidden" };
+  /** `suspended`: a valid key of an organization a platform admin has suspended. */
+  | { ok: false; reason: "invalid" | "forbidden" | "suspended" };
 
 /** Better Auth generates 64 letters after our prefix (see `defaultKeyGenerator`). */
 const API_KEY_FORMAT = /^coss_(live|test)_[A-Za-z]{64}$/;
@@ -54,6 +55,9 @@ export async function createEnvironmentApiKey(input: {
     environmentId: input.environmentId,
   });
   if (!env) throw new TenancyError("not_found", "Environment not found.");
+  if (await isSuspended(env.organizationId)) {
+    throw new TenancyError("forbidden", "This organization is suspended.");
+  }
 
   const name = input.name.trim();
   if (name.length === 0 || name.length > API_KEY_NAME_MAX_LENGTH) {
@@ -156,20 +160,52 @@ export async function getKeyBinding(input: {
   return row ?? null;
 }
 
-function hasPermissions(granted: KeyPermissions | null | undefined, required: KeyPermissions) {
+/** Parses the stored `apikey.permissions` JSON; anything malformed grants nothing. */
+function parsePermissions(stored: string | null): KeyPermissions | null {
+  if (!stored) return null;
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return null;
+    const entries = Object.entries(parsed);
+    const valid = entries.every(
+      ([, actions]) => Array.isArray(actions) && actions.every((a) => typeof a === "string"),
+    );
+    return valid ? (parsed as KeyPermissions) : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasPermissions(granted: KeyPermissions | null, required: KeyPermissions) {
   return Object.entries(required).every(([resource, actions]) => {
     const allowed = granted?.[resource];
     return allowed !== undefined && actions.every((action) => allowed.includes(action));
   });
 }
 
+async function isSuspended(organizationId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ organizationId: organizationSuspension.organizationId })
+    .from(organizationSuspension)
+    .where(eq(organizationSuspension.organizationId, organizationId))
+    .limit(1);
+  return row !== undefined;
+}
+
 const INVALID: AuthenticateResult = { ok: false, reason: "invalid" };
 const FORBIDDEN: AuthenticateResult = { ok: false, reason: "forbidden" };
+const SUSPENDED: AuthenticateResult = { ok: false, reason: "suspended" };
+
+/** `apikey.last_request` is refreshed at most this often per key (the dashboard's "Last used"). */
+export const LAST_USED_RESOLUTION_MS = 60_000;
 
 /**
- * Authenticates a raw `coss_(live|test)_…` key for the public API. Unknown and unbound keys are
- * rejected with one indexed lookup before Better Auth is involved; Better Auth then enforces
- * enabled/expiry and tracks usage. Database errors are thrown (an outage is not a 401).
+ * Authenticates a raw `coss_(live|test)_…` key for the public API with one indexed SELECT — no
+ * Better Auth call, so requests sharing a key never queue on its row. Enforces what Better Auth's
+ * verify would for our keys (enabled, expiry) and fails closed on what we don't support (usage
+ * quotas) or on any disagreement between the key, its organization and its environment's mode.
+ * The only write is a guarded `last_request` refresh, at most once a minute per key. Database
+ * errors are thrown (an outage is not a 401).
  */
 export async function authenticateApiKey(
   rawKey: string | null | undefined,
@@ -181,50 +217,76 @@ export async function authenticateApiKey(
   const [row] = await db
     .select({
       apiKeyId: apikey.id,
+      referenceId: apikey.referenceId,
+      prefix: apikey.prefix,
       enabled: apikey.enabled,
+      expiresAt: apikey.expiresAt,
+      remaining: apikey.remaining,
+      permissions: apikey.permissions,
+      lastRequest: apikey.lastRequest,
       organizationId: environment.organizationId,
       projectId: environment.projectId,
       environmentId: environment.id,
       mode: environment.mode,
+      suspendedAt: organizationSuspension.createdAt,
     })
     .from(apikey)
     .innerJoin(environmentApiKey, eq(environmentApiKey.apiKeyId, apikey.id))
     .innerJoin(environment, eq(environment.id, environmentApiKey.environmentId))
+    .leftJoin(
+      organizationSuspension,
+      eq(organizationSuspension.organizationId, environment.organizationId),
+    )
     .where(eq(apikey.key, hashed))
     .limit(1);
-  // Better Auth would reject a disabled key too, but logs an error for every attempt.
-  if (!row || row.enabled === false) return INVALID;
+  if (!row) return INVALID;
 
-  const verified = await auth.api.verifyApiKey({ body: { key: rawKey } });
-  if (!verified.valid || !verified.key) {
-    // Key problems (disabled, expired, exhausted…) have their own codes. Better Auth also reports
-    // internal failures inside verify (e.g. a failed UPDATE) as INVALID_API_KEY, so re-read the row:
-    // a key that still looks valid hit an internal error, which must surface as a retryable 503.
-    if (verified.error?.code !== "INVALID_API_KEY") return INVALID;
-    const [current] = await db
-      .select({ enabled: apikey.enabled, expiresAt: apikey.expiresAt })
-      .from(apikey)
-      .where(eq(apikey.id, row.apiKeyId))
-      .limit(1);
-    if (!current || current.enabled === false) return INVALID;
-    if (current.expiresAt && current.expiresAt.getTime() <= Date.now()) return INVALID;
-    throw new Error("API key verification failed unexpectedly; see the Better Auth error log.");
-  }
-  const key = verified.key;
+  const now = new Date();
+  // `enabled` is nullable; NULL means the default (enabled). Keys are never created with a usage
+  // quota (`remaining`), which a read-only check can't consume, so such a key is rejected.
+  if (row.enabled === false || row.remaining !== null) return INVALID;
+  if (row.expiresAt && row.expiresAt.getTime() <= now.getTime()) return INVALID;
 
   // Fail closed if the key, its organization and its environment's mode disagree.
   const prefix = API_KEY_PREFIX[row.mode];
   if (
-    key.id !== row.apiKeyId ||
-    key.referenceId !== row.organizationId ||
-    key.prefix !== prefix ||
+    row.referenceId !== row.organizationId ||
+    row.prefix !== prefix ||
     !rawKey.startsWith(prefix)
   ) {
     return INVALID;
   }
 
-  if (required && !hasPermissions(key.permissions, required)) return FORBIDDEN;
+  // Checked only once the key itself is proven valid, so a guessed key learns nothing.
+  if (row.suspendedAt !== null) return SUSPENDED;
+  if (required && !hasPermissions(parsePermissions(row.permissions), required)) return FORBIDDEN;
+
+  if (!row.lastRequest || now.getTime() - row.lastRequest.getTime() >= LAST_USED_RESOLUTION_MS) {
+    await touchLastUsed(row.apiKeyId, now);
+  }
 
   const { apiKeyId, organizationId, projectId, environmentId, mode } = row;
   return { ok: true, context: { apiKeyId, organizationId, projectId, environmentId, mode } };
+}
+
+/**
+ * Records usage for the dashboard. The guard repeats the staleness check in SQL so concurrent
+ * requests at a minute boundary write once (the others re-check after the row lock and skip).
+ * Best effort: "last used" is informational, so a failed write never fails the request.
+ */
+async function touchLastUsed(apiKeyId: string, now: Date): Promise<void> {
+  const staleBefore = new Date(now.getTime() - LAST_USED_RESOLUTION_MS);
+  try {
+    await db
+      .update(apikey)
+      .set({ lastRequest: now })
+      .where(
+        and(
+          eq(apikey.id, apiKeyId),
+          or(isNull(apikey.lastRequest), lte(apikey.lastRequest, staleBefore)),
+        ),
+      );
+  } catch (error) {
+    console.error(`[tenancy] Failed to record API key usage (key=${apiKeyId}):`, error);
+  }
 }

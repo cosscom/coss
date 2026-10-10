@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { assignableOrgRoles, orgRoleCan, orgRoles } from "../src/permissions.ts";
+import {
+  assignableOrgRoles,
+  canRemoveOrgMember,
+  orgRoleCan,
+  orgRoles,
+} from "../src/permissions.ts";
 
 describe("org roles", () => {
   test("owner keeps Better Auth defaults and gets full COSS access", () => {
@@ -76,5 +81,26 @@ describe("assignableOrgRoles", () => {
   test("comma-joined actor roles use their most privileged role", () => {
     expect(assignableOrgRoles("member,owner", "owner")).toEqual(["member", "admin", "owner"]);
     expect(assignableOrgRoles("member,admin", "member")).toEqual(["member", "admin"]);
+  });
+});
+
+describe("canRemoveOrgMember", () => {
+  test("owners may remove anyone, including other owners", () => {
+    expect(canRemoveOrgMember("owner", "member")).toBe(true);
+    expect(canRemoveOrgMember("owner", "admin")).toBe(true);
+    expect(canRemoveOrgMember("owner", "owner")).toBe(true);
+  });
+
+  test("admins may remove non-owners only", () => {
+    expect(canRemoveOrgMember("admin", "member")).toBe(true);
+    expect(canRemoveOrgMember("admin", "admin")).toBe(true);
+    expect(canRemoveOrgMember("admin", "owner")).toBe(false);
+    expect(canRemoveOrgMember("admin", "member,owner")).toBe(false);
+  });
+
+  test("members and unknown roles may not remove anyone", () => {
+    expect(canRemoveOrgMember("member", "member")).toBe(false);
+    expect(canRemoveOrgMember("nope", "member")).toBe(false);
+    expect(canRemoveOrgMember(" owner", "member")).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 {
-  "id": "18ba7404-e4a6-4598-8f51-bfde24be2171",
+  "id": "55a36cf6-50c6-457c-bc86-a85d2667542e",
   "prevId": "117aa2d8-8e7f-42b1-9717-511e7bf8f68b",
   "version": "7",
   "dialect": "postgresql",
@@ -1268,12 +1268,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "scheduled_at": {
-          "name": "scheduled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1294,22 +1288,6 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "email_scheduled_at_idx": {
-          "name": "email_scheduled_at_idx",
-          "columns": [
-            {
-              "expression": "scheduled_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"email\".\"scheduled_at\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2621,9 +2599,7 @@
         "email.bounced",
         "email.complained",
         "email.failed",
-        "email.suppressed",
-        "email.scheduled",
-        "email.canceled"
+        "email.suppressed"
       ]
     },
     "public.email_recipient_kind": {
@@ -2646,8 +2622,7 @@
         "bounced",
         "suppressed",
         "complained",
-        "failed",
-        "canceled"
+        "failed"
       ]
     },
     "public.email_status": {
@@ -2656,9 +2631,7 @@
       "values": [
         "queued",
         "sent",
-        "failed",
-        "scheduled",
-        "canceled"
+        "failed"
       ]
     },
     "public.email_suppression_reason": {
@@ -2667,7 +2640,8 @@
       "values": [
         "bounce",
         "complaint",
-        "manual"
+        "manual",
+        "import"
       ]
     },
     "public.environment_mode": {

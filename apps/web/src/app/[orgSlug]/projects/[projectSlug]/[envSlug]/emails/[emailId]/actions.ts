@@ -1,10 +1,10 @@
 "use server";
 
+import { cancelScheduledEmail } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
-import { emailRuntime } from "@/lib/email-runtime";
 import { requireOrgPermission } from "@/lib/session";
 
 /** Cancels a scheduled email of the environment addressed by the form's slugs. */
@@ -23,7 +23,7 @@ export async function cancelEmailAction(
     });
     if (!found) throw new ActionError("Environment not found.");
     // Scoped to this environment (and so this organization): other emails are "not found".
-    await emailRuntime().emailService.cancel({
+    await cancelScheduledEmail({
       organizationId: context.organization.id,
       environmentId: found.environment.id,
       emailId: formString(formData, "emailId"),

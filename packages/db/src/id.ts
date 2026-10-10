@@ -13,17 +13,23 @@ export const ID_PREFIXES = {
   member: "member",
   invitation: "invite",
   apiKey: "key",
+  twoFactor: "tfa",
+  passkey: "passkey",
   project: "proj",
   environment: "env",
   email: "email",
   emailRecipient: "rcpt",
   emailEvent: "evt",
   emailSuppression: "sup",
+  emailTrackingRule: "etr",
+  emailLink: "lnk",
   domain: "dom",
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
   webhookAttempt: "whatt",
+  rateLimitOverride: "rlo",
   request: "req",
+  adminAuditEvent: "audit",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];
