@@ -9,7 +9,7 @@ import type { RequestData } from "fumadocs-openapi/requests";
 export type SampleRequest = RequestData & { url: string };
 
 export interface SdkSample {
-  /** The `Coss` method, e.g. `email.send`. */
+  /** The `Coss` method, e.g. `email.send` or `email.suppressions.add`. */
   method: string;
   /** TypeScript source of each argument; trailing `undefined`s are dropped. */
   args: (request: SampleRequest) => (string | undefined)[];
@@ -23,11 +23,50 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
   "GET /v1/emails/{id}": {
     method: "email.get",
-    args: (request) => [tsValue(request.path.id?.value ?? "")],
+    args: (request) => [pathId(request)],
   },
   "GET /v1/emails/{id}/events": {
     method: "email.listEvents",
-    args: (request) => [tsValue(request.path.id?.value ?? "")],
+    args: (request) => [pathId(request)],
+  },
+  "POST /v1/suppressions": {
+    method: "email.suppressions.add",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/suppressions": {
+    method: "email.suppressions.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/suppressions/check": {
+    method: "email.suppressions.check",
+    args: (request) => [queryParams(request) ?? "{}"],
+  },
+  "GET /v1/suppressions/{id}": { method: "email.suppressions.get", args: (r) => [pathId(r)] },
+  "DELETE /v1/suppressions/{id}": { method: "email.suppressions.remove", args: (r) => [pathId(r)] },
+  "POST /v1/domains": {
+    method: "domains.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/domains": { method: "domains.list", args: () => [] },
+  "GET /v1/domains/{id}": { method: "domains.get", args: (r) => [pathId(r)] },
+  "POST /v1/domains/{id}/verify": {
+    method: "domains.verify",
+    args: (request) => [pathId(request), requestOptions(request)],
+  },
+  "DELETE /v1/domains/{id}": { method: "domains.delete", args: (r) => [pathId(r)] },
+  "POST /v1/webhook_endpoints": {
+    method: "webhookEndpoints.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/webhook_endpoints": { method: "webhookEndpoints.list", args: () => [] },
+  "GET /v1/webhook_endpoints/{id}": { method: "webhookEndpoints.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/webhook_endpoints/{id}": {
+    method: "webhookEndpoints.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/webhook_endpoints/{id}": {
+    method: "webhookEndpoints.delete",
+    args: (r) => [pathId(r)],
   },
 };
 
@@ -60,6 +99,26 @@ const coss = new Coss({
 });
 
 const { data, error } = await coss.${sample.method}(${args.map((arg) => arg ?? "undefined").join(", ")});`;
+}
+
+function pathId(request: SampleRequest): string {
+  return tsValue(request.path.id?.value ?? "");
+}
+
+/**
+ * The example's query parameters as one params object, or nothing when there are none. They
+ * arrive encoded as strings; integers (`limit`) become numbers again, as the SDK types them.
+ */
+function queryParams(request: SampleRequest): string | undefined {
+  const entries = Object.entries(request.query)
+    .map(([name, param]) => {
+      const values = (param?.values ?? []).map((value) =>
+        /^\d+$/.test(value) ? Number(value) : value,
+      );
+      return [name, values.length > 1 ? values : values[0]] as const;
+    })
+    .filter(([, value]) => value !== undefined && value !== "");
+  return entries.length > 0 ? tsValue(Object.fromEntries(entries)) : undefined;
 }
 
 function requestOptions(request: SampleRequest): string | undefined {

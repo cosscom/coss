@@ -1,13 +1,14 @@
-import type { EmailService } from "@coss/email";
+import type { DomainDeps, EmailService } from "@coss/email";
+import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
-import { createDefaultEmailService } from "./email-service.ts";
 import { errorResponse, internalError, notFound, payloadTooLarge, toApiError } from "./errors.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { createV1Router } from "./routes/v1.ts";
+import { createDefaultEmailRuntime } from "./runtime.ts";
 import type { AppEnv } from "./types.ts";
 import { validationHook } from "./validation.ts";
 
@@ -16,6 +17,13 @@ export const BODY_LIMIT_BYTES = 5 * 1024 * 1024;
 export type CreateAppOptions = {
   /** Defaults to the fake provider for both live and sandbox environments. */
   emailService?: EmailService;
+  /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
+  domainDeps?: DomainDeps;
+  /**
+   * Encrypts webhook endpoint signing secrets (`WEBHOOK_SECRETS_KEY`). Required: a throwaway key
+   * would silently make the endpoints it creates undeliverable.
+   */
+  webhookDeps: WebhookManagementDeps;
   /** Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`). */
   publicUrl?: string;
   /**
@@ -33,8 +41,11 @@ const CORS_EXPOSE_HEADERS = ["X-Request-Id", "Idempotent-Replayed", "Retry-After
  * Builds the public API. Free of side effects (no env validation, no server), so tests can
  * create as many instances as they need and call `app.request()`.
  */
-export function createApp(opts: CreateAppOptions = {}) {
-  const emailService = opts.emailService ?? createDefaultEmailService();
+export function createApp(opts: CreateAppOptions) {
+  // Cheap (two in-memory fakes), and only used for whichever dependency was not injected.
+  const fallback = createDefaultEmailRuntime();
+  const emailService = opts.emailService ?? fallback.emailService;
+  const domainDeps = opts.domainDeps ?? fallback.domainDeps;
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
@@ -76,7 +87,7 @@ export function createApp(opts: CreateAppOptions = {}) {
 
   app.get("/health", (c) => c.json({ ok: true }));
 
-  app.route("/v1", createV1Router({ emailService }));
+  app.route("/v1", createV1Router({ emailService, domainDeps, webhookDeps: opts.webhookDeps }));
 
   app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
     type: "http",
@@ -103,10 +114,23 @@ export function openApiDocumentConfig(serverUrl: string) {
     info: {
       title: "COSS API",
       version: "v1",
-      description: "One API key for every COSS product. Errors share one envelope: `Error`.",
+      description:
+        "One API key for every COSS product. Errors share one envelope: `Error`. Every request " +
+        "is scoped to the environment the key belongs to; domains are organization-wide.",
     },
     servers: [{ url: serverUrl }],
-    tags: [{ name: "Emails", description: "Send transactional email and follow its delivery." }],
+    tags: [
+      { name: "Emails", description: "Send transactional email and follow its delivery." },
+      {
+        name: "Suppressions",
+        description: "Addresses that sends skip, added by bounces, complaints or you.",
+      },
+      { name: "Domains", description: "The organization's verified sending domains." },
+      {
+        name: "Webhook endpoints",
+        description: "URLs that receive the environment's delivery events, signed.",
+      },
+    ],
   };
 }
 

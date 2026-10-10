@@ -1,24 +1,43 @@
 import { pool } from "@coss/db";
-import { createEmailService, type EmailService, FakeEmailProvider } from "@coss/email";
+import { uniqueSuffix } from "@coss/db/testing";
+import {
+  createEmailService,
+  type DomainDeps,
+  type EmailService,
+  FakeEmailProvider,
+  FakeIdentityProvider,
+} from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain } from "@coss/email/testing";
 import type { ApiKeyContext } from "@coss/tenancy";
+import { decryptSecret } from "@coss/webhooks";
+import { TEST_SECRETS_KEY, testManagementDeps } from "@coss/webhooks/testing";
 import { createApp } from "../src/app.ts";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
-/** An app whose live and sandbox providers are separate, silent fakes. */
+/**
+ * An app whose live and sandbox providers are separate, silent fakes. Domains verify without DNS
+ * and webhook endpoints may use local `http://` URLs.
+ */
 export function createTestApp(
-  opts: { emailService?: EmailService; corsOrigins?: readonly string[] } = {},
+  opts: {
+    emailService?: EmailService;
+    domainDeps?: DomainDeps;
+    corsOrigins?: readonly string[];
+  } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
+  const identity = new FakeIdentityProvider();
   const app = createApp({
     emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
+    domainDeps: opts.domainDeps ?? { identity, dns: null },
+    webhookDeps: testManagementDeps,
     corsOrigins: opts.corsOrigins,
   });
-  return { app, liveProvider, sandboxProvider };
+  return { app, liveProvider, sandboxProvider, identity };
 }
 
 export type TestApp = ReturnType<typeof createTestApp>["app"];
@@ -56,6 +75,37 @@ export function sendEmail(
       body: typeof body === "string" ? body : JSON.stringify(body),
     }),
   );
+}
+
+/**
+ * A request to the API with an API key (`key: null` sends none). Bodies are JSON; a string body
+ * is sent verbatim, so tests can post malformed JSON.
+ */
+export function apiRequest(
+  app: TestApp,
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  path: string,
+  opts: { key?: string | null; body?: unknown; headers?: Record<string, string> } = {},
+): Promise<Response> {
+  const key = opts.key ?? null;
+  return Promise.resolve(
+    app.request(path, {
+      method,
+      headers: {
+        ...(opts.body !== undefined && { "Content-Type": "application/json" }),
+        ...(key === null ? {} : { Authorization: `Bearer ${key}` }),
+        ...opts.headers,
+      },
+      ...(opts.body !== undefined && {
+        body: typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body),
+      }),
+    }),
+  );
+}
+
+/** A domain name no other test uses (tests never truncate). */
+export function uniqueDomainName(): string {
+  return `t-${uniqueSuffix()}.coss.test`;
 }
 
 export function getEmailById(app: TestApp, key: string, id: string): Promise<Response> {
@@ -109,6 +159,43 @@ export async function setKeyEnabled(apiKeyId: string, enabled: boolean): Promise
 
 export async function deleteKey(apiKeyId: string): Promise<void> {
   await pool.query("delete from apikey where id = $1", [apiKeyId]);
+}
+
+/** A webhook endpoint as stored, including the signing secret the API only returns on create. */
+export async function endpointRow(id: string): Promise<{
+  url: string;
+  description: string | null;
+  eventTypes: string[];
+  enabled: boolean;
+  secret: string;
+}> {
+  const { rows } = await pool.query<{
+    url: string;
+    description: string | null;
+    event_types: string[];
+    enabled: boolean;
+    secret_ciphertext: string;
+  }>(
+    "select url, description, event_types, enabled, secret_ciphertext from webhook_endpoint where id = $1",
+    [id],
+  );
+  const row = rows[0];
+  if (!row) throw new Error(`no webhook endpoint ${id}`);
+  return {
+    url: row.url,
+    description: row.description,
+    eventTypes: row.event_types,
+    enabled: row.enabled,
+    secret: decryptSecret(row.secret_ciphertext, TEST_SECRETS_KEY),
+  };
+}
+
+/** Backdates a domain's verification window, so the next check gives up on it. */
+export async function expireDomainVerification(domainId: string): Promise<void> {
+  await pool.query(
+    "update domain set verification_started_at = now() - interval '80 hours' where id = $1",
+    [domainId],
+  );
 }
 
 export async function setEmailStatus(emailId: string, status: "queued" | "sent" | "failed") {

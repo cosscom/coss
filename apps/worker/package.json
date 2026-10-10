@@ -11,7 +11,9 @@
     "ses:bootstrap": "bun --env-file=../../.env scripts/ses-bootstrap.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudwatch": "catalog:",
     "@aws-sdk/client-eventbridge": "catalog:",
+    "@aws-sdk/client-iam": "catalog:",
     "@aws-sdk/client-sesv2": "catalog:",
     "@aws-sdk/client-sns": "catalog:",
     "@aws-sdk/client-sqs": "catalog:",
@@ -19,6 +21,7 @@
     "@coss/email": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@t3-oss/env-core": "catalog:",
+    "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -26,7 +29,6 @@
     "@coss/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "coss": "workspace:*",
-    "drizzle-orm": "catalog:",
     "typescript": "catalog:"
   }
 }

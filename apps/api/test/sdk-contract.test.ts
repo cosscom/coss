@@ -6,7 +6,7 @@
 import { describe, expect, test } from "bun:test";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
-import { createTestApp, REQUEST_ID, type TestApp } from "./helpers.ts";
+import { createTestApp, REQUEST_ID, type TestApp, uniqueDomainName } from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   // bun-types has no `new Request(URL)` overload.
@@ -151,6 +151,219 @@ describe("coss SDK against the API", () => {
       text: "Hi",
     });
     const result = await live.email.get(sent.data?.id ?? "missing");
+
+    expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
+  });
+
+  test("suppressions: add, check, list, get, remove, and a category send skips the address", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const added = await coss.email.suppressions.add({
+      address: "Jane <Jane@Example.com>",
+      scope: "marketing",
+    });
+    expect(added.error).toBeNull();
+    expect(added.data).toMatchObject({
+      object: "suppression",
+      address: "jane@example.com",
+      scope: "marketing",
+      reason: "manual",
+      email_id: null,
+    });
+    if (!added.data) throw new Error("add failed");
+    expect(
+      (await coss.email.suppressions.add({ address: "jane@example.com", scope: "marketing" })).data,
+    ).toEqual(added.data);
+
+    const check = await coss.email.suppressions.check({
+      address: "jane@example.com",
+      category: "marketing",
+    });
+    expect(check).toEqual({
+      data: {
+        object: "suppression_check",
+        address: "jane@example.com",
+        suppressed: true,
+        suppressions: [added.data],
+      },
+      error: null,
+    });
+    expect(
+      (await coss.email.suppressions.check({ address: "jane@example.com" })).data?.suppressed,
+    ).toBe(false);
+    expect(await coss.email.suppressions.list({ scope: "marketing", limit: 10 })).toEqual({
+      data: { object: "list", data: [added.data], has_more: false },
+      error: null,
+    });
+    expect(await coss.email.suppressions.get(added.data.id)).toEqual({
+      data: added.data,
+      error: null,
+    });
+
+    const skipped = await coss.email.send({
+      from: "hello@acme.com",
+      to: ["jane@example.com", "joe@example.com"],
+      subject: "Sale",
+      text: "Sale",
+      category: "marketing",
+    });
+    expect(skipped.data?.category).toBe("marketing");
+    expect(skipped.data?.recipients.map((r) => [r.address, r.status])).toEqual([
+      ["jane@example.com", "suppressed"],
+      ["joe@example.com", "delivered"],
+    ]);
+    expect(sandboxProvider.sent.at(-1)?.to).toEqual(["joe@example.com"]);
+    const events = await coss.email.listEvents(skipped.data?.id ?? "");
+    expect(events.data?.data.find((e) => e.type === "email.suppressed")).toMatchObject({
+      recipient: "jane@example.com",
+      data: { suppression: { id: added.data.id, scope: "marketing", reason: "manual" } },
+    });
+
+    expect(await coss.email.suppressions.remove(added.data.id)).toEqual({
+      data: { object: "suppression", id: added.data.id, deleted: true },
+      error: null,
+    });
+    const gone = await coss.email.suppressions.get(added.data.id);
+    expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
+    const validation = await coss.email.suppressions.add({ address: "nope", scope: "*" });
+    expect(validation.error).toMatchObject({ type: "invalid_request_error", param: "address" });
+  });
+});
+
+describe("coss.domains against the API", () => {
+  test("create, verify, list and delete round-trip a domain", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey);
+    const name = uniqueDomainName();
+
+    const created = await coss.domains.create({ name });
+    expect(created.error).toBeNull();
+    expect(created.data).toMatchObject({ object: "domain", name, status: "pending" });
+    if (!created.data) throw new Error("create failed");
+    expect(created.data.records.map((record) => record.purpose)).toContain("dkim");
+
+    const verified = await coss.domains.verify(created.data.id);
+    expect(verified.data).toMatchObject({
+      id: created.data.id,
+      status: "verified",
+      can_send: true,
+    });
+
+    const fetched = await coss.domains.get(created.data.id);
+    expect(fetched.data).toEqual(verified.data);
+
+    const listed = await coss.domains.list();
+    expect(listed.data?.data.map((domain) => domain.id)).toEqual([created.data.id]);
+
+    const deleted = await coss.domains.delete(created.data.id);
+    expect(deleted.data).toEqual({ object: "domain", id: created.data.id, deleted: true });
+    expect((await coss.domains.get(created.data.id)).error).toMatchObject({
+      type: "not_found_error",
+      status: 404,
+    });
+  });
+
+  test("an invalid name maps to invalid_request_error with the param", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey, { maxRetries: 0 });
+
+    const result = await coss.domains.create({ name: "not a domain" });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "invalid_domain",
+      status: 422,
+      param: "name",
+    });
+    expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+});
+
+describe("coss.webhookEndpoints against the API", () => {
+  test("a lost creation response does not create a duplicate endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    let attempts = 0;
+    let createdId: string | undefined;
+    let creationStatus: number | undefined;
+    const coss = clientFor(app, tenant.sandboxKey, {
+      maxRetries: 3,
+      fetch: async (input, init) => {
+        attempts++;
+        const response = await app.fetch(toRequest(input, init));
+        creationStatus = response.status;
+        const created = (await response.json()) as { id: string };
+        createdId = created.id;
+        throw new TypeError("Connection lost after creation committed");
+      },
+    });
+
+    const result = await coss.webhookEndpoints.create(
+      { url: "https://example.com/hook" },
+      { idempotencyKey: crypto.randomUUID() },
+    );
+
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe("network_error");
+    expect(attempts).toBe(1);
+    expect(creationStatus).toBe(200);
+    if (!createdId) throw new Error("creation did not commit");
+    const listed = await clientFor(app, tenant.sandboxKey).webhookEndpoints.list();
+    expect(listed.error).toBeNull();
+    expect(listed.data?.data.map((endpoint) => endpoint.id)).toEqual([createdId]);
+  });
+
+  test("create, update, list and delete round-trip an endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const created = await coss.webhookEndpoints.create({
+      url: "https://example.com/webhooks/coss",
+      description: "Receiver",
+      event_types: ["email.bounced", "email.complained"],
+    });
+    expect(created.error).toBeNull();
+    expect(created.data).toMatchObject({
+      object: "webhook_endpoint",
+      url: "https://example.com/webhooks/coss",
+      description: "Receiver",
+      event_types: ["email.bounced", "email.complained"],
+      enabled: true,
+    });
+    if (!created.data) throw new Error("create failed");
+    expect(created.data.secret).toStartWith("whsec_");
+
+    const updated = await coss.webhookEndpoints.update(created.data.id, { enabled: false });
+    expect(updated.data).toMatchObject({ id: created.data.id, enabled: false });
+    if (!updated.data) throw new Error("update failed");
+
+    const listed = await coss.webhookEndpoints.list();
+    expect(listed.data?.data).toEqual([updated.data]);
+    // The secret is returned once, by create, and is never part of a read.
+    expect(listed.data?.data[0]).not.toHaveProperty("secret");
+
+    const deleted = await coss.webhookEndpoints.delete(created.data.id);
+    expect(deleted.data).toEqual({
+      object: "webhook_endpoint",
+      id: created.data.id,
+      deleted: true,
+    });
+  });
+
+  test("an endpoint of the other environment maps to not_found_error", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sandbox = clientFor(app, tenant.sandboxKey);
+    const live = clientFor(app, tenant.liveKey, { maxRetries: 0 });
+
+    const created = await sandbox.webhookEndpoints.create({ url: "https://example.com/hook" });
+    const result = await live.webhookEndpoints.get(created.data?.id ?? "missing");
 
     expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
   });

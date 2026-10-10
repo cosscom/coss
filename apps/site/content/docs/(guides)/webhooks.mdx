@@ -4,8 +4,21 @@ description: Get told when something happens, instead of polling.
 icon: Webhook
 ---
 
-Add webhook endpoints per environment in the dashboard (**Webhooks**). Each endpoint subscribes
-to event types and has its own `whsec_…` signing secret.
+Add webhook endpoints per environment in the dashboard (**Webhooks**) or through the API. Each
+endpoint subscribes to event types (all of them by default) and has its own `whsec_…` signing
+secret.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: endpoint, error } = await coss.webhookEndpoints.create({
+  url: "https://example.com/webhooks/coss",
+  event_types: ["email.delivered", "email.bounced"],
+});
+// Store the secret now: it is only returned when the endpoint is created.
+const secret = endpoint?.secret;
+```
 
 ## Events
 
@@ -17,9 +30,10 @@ to event types and has its own `whsec_…` signing secret.
 | `email.bounced`          | A recipient's mail server rejected it                   |
 | `email.complained`       | A recipient marked it as spam                           |
 | `email.failed`           | The email could not be sent at all                      |
+| `email.suppressed`       | A recipient was skipped because it is suppressed        |
 
 The request body is a JSON event. Payloads describe the email (`email_id`, `from`, `to`, `subject`,
-`tags`) but never include its content, headers, cc or bcc.
+`tags`, `category`) but never include its content, headers, cc or bcc.
 
 ```json
 {
@@ -33,6 +47,7 @@ The request body is a JSON event. Payloads describe the email (`email_id`, `from
     "to": ["user@example.com"],
     "subject": "Welcome",
     "tags": [],
+    "category": null,
     "sandbox": false,
     "recipient": "user@example.com",
     "occurred_at": "2026-10-10T12:00:00.000Z",

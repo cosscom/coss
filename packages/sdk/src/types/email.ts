@@ -2,6 +2,7 @@
  * Email wire types. Hand-written to mirror the API's snake_case JSON 1:1 (the API's contract test
  * asserts they stay assignable to and from its zod schemas).
  */
+import type { SuppressionReason } from "./suppression.ts";
 
 /** A `name`/`value` pair attached to an email for your own filtering and analytics. */
 export interface EmailTag {
@@ -15,7 +16,8 @@ export type EmailStatus = "queued" | "sent" | "failed";
 /**
  * Delivery status of one recipient. It only moves forward: `queued` → `sent` →
  * `delivery_delayed` → `delivered`, then `bounced` / `suppressed` / `failed`, then `complained`.
- * `suppressed` means the address is on the suppression list after an earlier bounce or complaint.
+ * `suppressed` means the address is on the environment's suppression list (for every email or for
+ * the email's `category`), so it was skipped.
  */
 export type EmailRecipientStatus =
   | "queued"
@@ -43,7 +45,9 @@ export type EmailEventType =
   | "email.delivery_delayed"
   | "email.bounced"
   | "email.complained"
-  | "email.failed";
+  | "email.failed"
+  /** A recipient was skipped because of a suppression list entry. */
+  | "email.suppressed";
 
 /** Details of an event; which member is present depends on the event type. */
 export interface EmailEventData {
@@ -56,6 +60,8 @@ export interface EmailEventData {
   delay?: { type: string; expires_at: string | null; diagnostic_code: string | null };
   delivery?: { smtp_response: string | null };
   failure?: { code: string; message: string };
+  /** Only for `email.suppressed`: the entry that matched the recipient. */
+  suppression?: { id: string; scope: string; reason: SuppressionReason };
 }
 
 /** A delivery event of an email. */
@@ -93,6 +99,11 @@ export interface SendEmailParams {
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
   tags?: EmailTag[];
+  /**
+   * What kind of email this is, e.g. `"marketing"`. Recipients suppressed for this category (or
+   * for every email) are skipped.
+   */
+  category?: string;
 }
 
 /** An email as returned by the API. Recipient fields are always arrays. */
@@ -110,6 +121,7 @@ export interface Email {
   /** Header names are lower-cased. */
   headers: Record<string, string>;
   tags: EmailTag[];
+  category: string | null;
   status: EmailStatus;
   /** Every distinct recipient across `to`, `cc` and `bcc`, with its delivery status. */
   recipients: EmailRecipient[];

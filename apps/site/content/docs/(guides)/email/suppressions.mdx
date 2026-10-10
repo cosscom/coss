@@ -1,0 +1,50 @@
+---
+title: Suppressions
+description: Addresses that sends skip, after a bounce, a complaint or an unsubscribe.
+---
+
+Each environment has its own suppression list. When you send, every recipient (`to`, `cc` and `bcc`)
+with a matching entry is skipped: it gets the status `suppressed` and an `email.suppressed` event, and
+is never handed to the mail provider. If no recipient is left, the email fails with
+`all_recipients_suppressed`.
+
+## Scopes
+
+An entry's `scope` is `*` (every email) or a [category](/docs/email/sending#categories). A send with
+`category: "marketing"` skips addresses suppressed for `*` or `marketing`; a send without a category
+only skips `*` entries.
+
+## Automatic entries
+
+A permanent bounce or a complaint adds a `*` entry for that address, with `reason` `bounce` or
+`complaint` and the `email_id` that caused it. Mailbox simulator addresses
+(`@simulator.amazonses.com`) are never suppressed, so they keep working for tests.
+
+## Managing the list
+
+Manage entries in the dashboard (**Suppressions**) or through the API. Adding an entry for an address
+and scope that already has one returns the existing entry.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// A recipient unsubscribed from marketing email.
+await coss.email.suppressions.add({ address: "ada@example.com", scope: "marketing" });
+
+// Would a marketing email reach them?
+const { data: check } = await coss.email.suppressions.check({
+  address: "ada@example.com",
+  category: "marketing",
+});
+
+// They resubscribed.
+if (check?.suppressed) {
+  for (const entry of check.suppressions) {
+    await coss.email.suppressions.remove(entry.id);
+  }
+}
+```
+
+Removing an entry lets later sends reach the address again. Remove automatic entries with care:
+repeatedly sending to addresses that bounce or complain hurts your sending reputation.

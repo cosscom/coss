@@ -8,7 +8,21 @@ import {
   type MailFromStatus,
   type ProviderTenant,
 } from "../provider.ts";
-import { accountOf, isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
+import {
+  accountOf,
+  isSesError,
+  type SesApi,
+  type SesConfig,
+  TENANT_SUPPRESSION,
+  tenantNameFor,
+} from "./api.ts";
+
+/**
+ * Tag on every identity COSS creates (value: the tenant prefix). COSS only ever deletes or
+ * recreates identities carrying its own tag, so identities managed outside COSS in the same
+ * account (e.g. the company's own domain) are never touched.
+ */
+export const MANAGED_TAG = "coss_managed";
 
 const DKIM_STATUS: Record<string, DomainVerificationStatus> = {
   SUCCESS: "verified",
@@ -68,16 +82,13 @@ export class SesIdentityProvider implements IdentityProvider {
     try {
       const created = await this.#api.createTenant({
         TenantName: tenantName,
-        // Bounces and complaints suppress addresses for this organization only.
-        SuppressionAttributes: {
-          SuppressionScope: "TENANT",
-          SuppressedReasons: ["BOUNCE", "COMPLAINT"],
-        },
+        SuppressionAttributes: TENANT_SUPPRESSION,
         Tags: [{ Key: "coss_organization_id", Value: input.organizationId }],
       });
       tenantArn = created.TenantArn;
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
+      // Existing tenants are migrated by ses:bootstrap before their protection is disabled.
     }
     tenantArn ??= await this.#tenantArn({ tenantName, tenantArn: null });
     // A tenant can only send with configuration sets associated with it.
@@ -90,8 +101,20 @@ export class SesIdentityProvider implements IdentityProvider {
       EmailIdentity: domain,
       ConfigurationSetName: this.#config.configurationSet,
       DkimSigningAttributes: { NextSigningKeyLength: "RSA_2048_BIT" },
+      Tags: [{ Key: MANAGED_TAG, Value: this.#config.tenantPrefix }],
     });
     return created.DkimAttributes;
+  }
+
+  /** Whether this deployment created the identity (`null`: it doesn't exist). */
+  async #managedByUs(identityArn: string): Promise<boolean | null> {
+    try {
+      const { Tags = [] } = await this.#api.listTagsForResource({ ResourceArn: identityArn });
+      return Tags.some((tag) => tag.Key === MANAGED_TAG && tag.Value === this.#config.tenantPrefix);
+    } catch (error) {
+      if (isSesError(error, "NotFoundException")) return null;
+      throw error;
+    }
   }
 
   async createDomainIdentity(input: {
@@ -106,8 +129,9 @@ export class SesIdentityProvider implements IdentityProvider {
       dkim = await this.#create(input.domain);
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
-      // Never adopt an identity another tenant holds; an orphan is recreated so its DKIM keys
-      // (and so its DNS records) are new and can only be published by whoever controls DNS now.
+      // Never adopt an identity another tenant holds, nor one managed outside COSS. An orphan COSS
+      // created (e.g. a released claim) is recreated, so its DKIM keys (and so its DNS records)
+      // are new and can only be published by whoever controls DNS now.
       const { ResourceTenants = [] } = await this.#api.listResourceTenants({
         ResourceArn: identityArn,
       });
@@ -116,9 +140,11 @@ export class SesIdentityProvider implements IdentityProvider {
       }
       if (ResourceTenants.length > 0) {
         dkim = (await this.#api.getEmailIdentity({ EmailIdentity: input.domain })).DkimAttributes;
-      } else {
+      } else if (await this.#managedByUs(identityArn)) {
         await this.#api.deleteEmailIdentity({ EmailIdentity: input.domain });
         dkim = await this.#create(input.domain);
+      } else {
+        throw new IdentityTakenError(input.domain);
       }
     }
     await this.#api.putEmailIdentityMailFromAttributes({
@@ -157,17 +183,21 @@ export class SesIdentityProvider implements IdentityProvider {
   }
 
   async deleteDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void> {
-    if (input.tenant.tenantName) {
-      try {
-        const account = accountOf(await this.#tenantArn(input.tenant));
-        await this.#api.deleteTenantResourceAssociation({
-          TenantName: input.tenant.tenantName,
-          ResourceArn: this.#identityArn(account, input.domain),
-        });
-      } catch (error) {
-        if (!isSesError(error, "NotFoundException")) throw error;
-      }
+    if (!input.tenant.tenantName) return;
+    const identityArn = this.#identityArn(
+      accountOf(await this.#tenantArn(input.tenant)),
+      input.domain,
+    );
+    try {
+      await this.#api.deleteTenantResourceAssociation({
+        TenantName: input.tenant.tenantName,
+        ResourceArn: identityArn,
+      });
+    } catch (error) {
+      if (!isSesError(error, "NotFoundException")) throw error;
     }
+    // Only identities this deployment created are deleted; others merely lose the association.
+    if (!(await this.#managedByUs(identityArn))) return;
     try {
       await this.#api.deleteEmailIdentity({ EmailIdentity: input.domain });
     } catch (error) {

@@ -50,6 +50,10 @@ function eventDetail({ data }: EmailEventOutput): string {
   if (data.delay) return [data.delay.type, data.delay.diagnostic_code].filter(Boolean).join(": ");
   if (data.delivery) return data.delivery.smtp_response ?? "";
   if (data.failure) return data.failure.message;
+  if (data.suppression) {
+    const scope = data.suppression.scope === "*" ? "all emails" : data.suppression.scope;
+    return `on the suppression list (${scope}, ${data.suppression.reason})`;
+  }
   return "";
 }
 
@@ -85,6 +89,7 @@ export default async function EmailPage({
     ["Reply-To", list(email.reply_to)],
     ["Created", formatDateTime(email.created_at)],
     ["Sent", formatDateTime(email.sent_at)],
+    ["Category", email.category ?? "—"],
     [
       "Tags",
       email.tags.length > 0 ? email.tags.map((t) => `${t.name}=${t.value}`).join(", ") : "—",

@@ -1,6 +1,6 @@
 ---
 title: Sending email
-description: Addresses, content, headers, tags and safe retries.
+description: Addresses, content, headers, tags, categories and safe retries.
 ---
 
 ```ts twoslash
@@ -17,7 +17,8 @@ const { data, error } = await coss.email.send(
     html: "<p>Your invoice is attached to your account.</p>",
     text: "Your invoice is attached to your account.",
     headers: { "X-Entity-Ref-ID": "invoice-123" },
-    tags: [{ name: "category", value: "invoice" }],
+    tags: [{ name: "invoice_id", value: "invoice-123" }],
+    category: "billing",
   },
   { idempotencyKey: "invoice-123" },
 );
@@ -42,6 +43,12 @@ improves deliverability.
   `subject` are rejected.
 - `tags`: up to 50 `name`/`value` pairs (letters, digits, `_` and `-`) for your own filtering. They are
   included in webhook payloads.
+
+## Categories
+
+`category` says what kind of email this is, such as `"billing"` or `"marketing"` (letters, digits,
+`_` and `-`). Recipients [suppressed](/docs/email/suppressions) for that category, or for every
+email, are skipped. It is stored on the email and included in webhook payloads.
 
 ## Retrying safely
 

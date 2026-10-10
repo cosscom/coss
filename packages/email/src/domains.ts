@@ -21,7 +21,7 @@ import {
 import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
-import { parseEmailAddress } from "./schemas.ts";
+import { DOMAIN_NAME_MAX_LENGTH, type DomainObjectOutput, parseEmailAddress } from "./schemas.ts";
 
 const { domain, emailTenant } = schema;
 
@@ -36,7 +36,6 @@ export const MAIL_FROM_SUBDOMAIN = "send";
 export const MAX_PENDING_DOMAINS = 5;
 /** The provider gives up verifying after 72 hours; so do we. */
 export const VERIFICATION_WINDOW_MS = 72 * 60 * 60 * 1000;
-const DOMAIN_NAME_MAX_LENGTH = 200;
 const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
 const RESERVED_SUFFIXES = ["amazonses.com", "amazonaws.com", "coss.com", "coss.dev"];
 
@@ -74,6 +73,25 @@ export function normalizeDomainName(input: string): string {
 /** The DNS records of a domain: the latest check, or what to publish if never checked. */
 export function domainRecords(row: DomainRow): DomainRecord[] {
   return row.records.length > 0 ? row.records : expectedRecords(row);
+}
+
+/** The domain's public wire representation, including the records to publish. */
+export function toDomainObject(row: DomainRow): DomainObjectOutput {
+  return {
+    object: "domain",
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    can_send: row.canSend,
+    region: row.region,
+    mail_from_domain: row.mailFromDomain,
+    mail_from_status: row.mailFromStatus,
+    records: domainRecords(row),
+    created_at: row.createdAt.toISOString(),
+    last_checked_at: row.lastCheckedAt?.toISOString() ?? null,
+    verified_at: row.verifiedAt?.toISOString() ?? null,
+    failed_at: row.failedAt?.toISOString() ?? null,
+  };
 }
 
 /** When the worker should check a domain next (`null`: never). */
@@ -311,7 +329,10 @@ export async function checkDomain(
   deps: DomainDeps,
 ): Promise<DomainRow> {
   const row = await requireDomain(input);
-  if (row.status === "failed" || row.status === "deleting") return row;
+  // Another provider's domain (e.g. a fake one after switching to SES) can't be checked here.
+  if (row.status === "failed" || row.status === "deleting" || row.provider !== deps.identity.name) {
+    return row;
+  }
   const now = input.now ?? new Date();
   const state = await deps.identity.getDomainIdentity(row.name);
 
@@ -414,6 +435,7 @@ export async function recheckDueDomains(
         isNotNull(domain.nextCheckAt),
         lte(domain.nextCheckAt, now),
         notInArray(domain.status, ["failed", "deleting"]),
+        eq(domain.provider, deps.identity.name),
         opts.scope ? inArray(domain.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
@@ -445,13 +467,15 @@ function domainSuffixes(name: string): string[] {
 }
 
 /**
- * System-level: refuses a live send unless the From domain is covered by a verified domain of the
- * organization and its tenant is not paused. The most specific matching domain across all
+ * System-level: refuses a live send unless the From domain is covered by a domain of the
+ * organization verified by the live provider, and its tenant is not paused. The most specific matching domain across all
  * organizations decides, because the provider signs with the most specific identity.
  */
 export async function authorizeLiveSender(input: {
   organizationId: string;
   from: string;
+  /** The live provider: only domains it verified count. */
+  provider: string;
 }): Promise<void> {
   const address = parseEmailAddress(input.from).address.toLowerCase();
   const fromDomain = address.slice(address.lastIndexOf("@") + 1);
@@ -461,6 +485,7 @@ export async function authorizeLiveSender(input: {
       organizationId: domain.organizationId,
       status: domain.status,
       canSend: domain.canSend,
+      provider: domain.provider,
       mailFromDomain: domain.mailFromDomain,
     })
     .from(domain)
@@ -471,6 +496,7 @@ export async function authorizeLiveSender(input: {
     match.organizationId === input.organizationId &&
     match.status === "verified" &&
     match.canSend &&
+    match.provider === input.provider &&
     fromDomain !== match.mailFromDomain &&
     !fromDomain.endsWith(`.${match.mailFromDomain}`);
   if (!usable) {

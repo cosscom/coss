@@ -3,25 +3,62 @@
  * Checked by `tsc --noEmit` (never executed): a mismatch is a type error in this file.
  */
 import type {
+  CheckSuppressionQuery,
+  CreateDomainRequest,
+  CreateSuppressionRequest,
+  DeletedDomain,
+  DeletedSuppression,
+  DomainList,
+  DomainObject,
+  DomainRecordObject,
   EmailEvent,
   EmailEventList,
   EmailObject,
   EmailRecipient,
   EmailWebhookEvent,
+  ListSuppressionsQuery,
   SendEmailRequest,
+  Suppression,
+  SuppressionCheck,
+  SuppressionList,
 } from "@coss/email/schemas";
 import type {
+  DeletedWebhookEndpoint,
+  WebhookEndpointList,
+  WebhookEndpointObject,
+  WebhookEndpointWithSecret,
+} from "@coss/webhooks/schemas";
+import type {
+  CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
+  CreateDomainParams,
+  CreateSuppressionParams,
+  CreateWebhookEndpointParams,
   Email,
   List,
+  ListSuppressionsParams,
+  DeletedDomain as SdkDeletedDomain,
+  DeletedSuppression as SdkDeletedSuppression,
+  DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
+  Domain as SdkDomain,
+  DomainRecord as SdkDomainRecord,
   EmailEvent as SdkEmailEvent,
   EmailRecipient as SdkEmailRecipient,
+  WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  Suppression as SdkSuppression,
+  SuppressionCheck as SdkSuppressionCheck,
   SendEmailParams,
+  UpdateWebhookEndpointParams,
+  WebhookEndpoint,
   WebhookEvent,
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
+import type {
+  CreateWebhookEndpointRequest,
+  UpdateWebhookEndpointRequest,
+} from "../src/routes/webhook-endpoints.ts";
 
 /** Identical types (stricter than mutual assignability: also catches optionality drift). */
 type Equals<A, B> =
@@ -54,9 +91,40 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>, SdkEmailEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEventList>, List<SdkEmailEvent>>>,
+  // Domains: request and response shapes match the SDK's hand-written types.
+  Assert<MutuallyAssignable<z.input<typeof CreateDomainRequest>, CreateDomainParams>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainObject>["status"], SdkDomain["status"]>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainRecordObject>, SdkDomainRecord>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainList>, List<SdkDomain>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedDomain>, SdkDeletedDomain>>,
+  // Webhook endpoints: same, including the create-only `secret`.
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateWebhookEndpointRequest>, CreateWebhookEndpointParams>
+  >,
+  Assert<
+    MutuallyAssignable<z.input<typeof UpdateWebhookEndpointRequest>, UpdateWebhookEndpointParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointObject>, WebhookEndpoint>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
   // Webhooks: the body COSS sends is exactly the SDK's `WebhookEvent`.
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, WebhookEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], WebhookEvent["data"]>>,
+  // Suppressions: request bodies and queries (the SDK sends `limit` as a number), and responses.
+  Assert<MutuallyAssignable<z.input<typeof CreateSuppressionRequest>, CreateSuppressionParams>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListSuppressionsQuery>, "limit"> & { limit?: number },
+      ListSuppressionsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.input<typeof CheckSuppressionQuery>, CheckSuppressionParams>>,
+  Assert<MutuallyAssignable<z.output<typeof Suppression>, SdkSuppression>>,
+  Assert<MutuallyAssignable<z.output<typeof SuppressionList>, List<SdkSuppression>>>,
+  Assert<MutuallyAssignable<z.output<typeof SuppressionCheck>, SdkSuppressionCheck>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedSuppression>, SdkDeletedSuppression>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

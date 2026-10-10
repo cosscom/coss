@@ -26,9 +26,13 @@ describe("SDK samples", () => {
   test("name methods that exist on the client", () => {
     const client = new Coss({ apiKey: "coss_test_docs" });
     for (const { method } of Object.values(SDK_SAMPLES)) {
-      const [resource = "", name = ""] = method.split(".");
-      const target = (client as unknown as Record<string, Record<string, unknown>>)[resource];
-      expect({ method, type: typeof target?.[name] }).toEqual({ method, type: "function" });
+      const target = method
+        .split(".")
+        .reduce<unknown>(
+          (value, key) => (value as Record<string, unknown> | undefined)?.[key],
+          client,
+        );
+      expect({ method, type: typeof target }).toEqual({ method, type: "function" });
     }
   });
 
@@ -105,5 +109,19 @@ describe("SDK samples", () => {
     expect(tsValue({ a: 'say "hi"', "b-c": [], d: {} })).toBe(
       '{\n  a: "say \\"hi\\"",\n  "b-c": [],\n  d: {},\n}',
     );
+  });
+
+  test("pass query parameters as one params object", () => {
+    const code = renderSdkSample(
+      request({
+        method: "get",
+        url: "https://api.coss.com/v1/suppressions/check",
+        query: { address: { values: ["user@example.com"] }, limit: { values: ["10"] } },
+      }),
+    );
+    expect(code).toEndWith(`await coss.email.suppressions.check({
+  address: "user@example.com",
+  limit: 10,
+});`);
   });
 });

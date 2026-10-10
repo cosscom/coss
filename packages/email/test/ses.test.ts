@@ -122,7 +122,7 @@ describe("SesEmailProvider", () => {
 });
 
 describe("SesIdentityProvider", () => {
-  test("creates the tenant once, with tenant-level suppression and the configuration set", async () => {
+  test("creates the tenant once, with SES suppression off and the configuration set", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
 
@@ -132,16 +132,17 @@ describe("SesIdentityProvider", () => {
       tenantArn: "arn:aws:ses:eu-west-1:123456789012:tenant/test-org_a/t-1",
     });
     expect(api.calls[0]?.input).toMatchObject({
-      SuppressionAttributes: {
-        SuppressionScope: "TENANT",
-        SuppressedReasons: ["BOUNCE", "COMPLAINT"],
-      },
+      SuppressionAttributes: { SuppressionScope: "TENANT", SuppressedReasons: [] },
     });
     expect(
       api.associations.get("arn:aws:ses:eu-west-1:123456789012:configuration-set/coss-test"),
     ).toEqual(new Set(["test-org_a"]));
 
     expect(await identity.ensureTenant({ organizationId: "org_a" })).toEqual(tenant);
+    // Runtime setup must not disable protection before bootstrap migrates the old list.
+    expect(api.calls.some((call) => call.operation === "putTenantSuppressionAttributes")).toBe(
+      false,
+    );
   });
 
   test("creates domain identities with MAIL FROM, associated with the tenant", async () => {
@@ -163,6 +164,7 @@ describe("SesIdentityProvider", () => {
     expect(api.calls.find((c) => c.operation === "createEmailIdentity")?.input).toMatchObject({
       ConfigurationSetName: "coss-test",
       DkimSigningAttributes: { NextSigningKeyLength: "RSA_2048_BIT" },
+      Tags: [{ Key: "coss_managed", Value: "test" }],
     });
     expect(api.identities.get("acme.com")?.mailFrom).toBe("send.acme.com");
     expect(api.associations.get(api.identityArn("acme.com"))).toEqual(new Set(["test-org_a"]));
@@ -206,8 +208,11 @@ describe("SesIdentityProvider", () => {
       }),
     ).rejects.toBeInstanceOf(IdentityTakenError);
 
-    // An identity left behind without a tenant.
-    await api.createEmailIdentity({ EmailIdentity: "orphan.com" });
+    // An identity COSS created, left behind without a tenant: recreated with new keys.
+    await api.createEmailIdentity({
+      EmailIdentity: "orphan.com",
+      Tags: [{ Key: "coss_managed", Value: "test" }],
+    });
     const oldTokens = api.identities.get("orphan.com")?.tokens;
     const recreated = await identity.createDomainIdentity({
       tenant: b,
@@ -216,6 +221,30 @@ describe("SesIdentityProvider", () => {
     });
     expect(recreated.dkimTokens).not.toEqual(oldTokens);
     expect(api.operations()).toContain("deleteEmailIdentity");
+  });
+
+  test("never touches identities managed outside COSS (or by another deployment)", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const tenant = await identity.ensureTenant({ organizationId: "org_a" });
+    // The company's own domain, verified by hand in the same account.
+    await api.createEmailIdentity({ EmailIdentity: "company.com" });
+    await api.createEmailIdentity({
+      EmailIdentity: "staging.com",
+      Tags: [{ Key: "coss_managed", Value: "staging" }],
+    });
+    const tokens = api.identities.get("company.com")?.tokens;
+
+    for (const domain of ["company.com", "staging.com"]) {
+      await expect(
+        identity.createDomainIdentity({ tenant, domain, mailFromDomain: `send.${domain}` }),
+      ).rejects.toBeInstanceOf(IdentityTakenError);
+      await identity.deleteDomainIdentity({ tenant, domain });
+    }
+    expect(api.identities.get("company.com")?.tokens).toEqual(tokens ?? []);
+    expect(api.identities.has("staging.com")).toBe(true);
+    expect(api.operations()).not.toContain("deleteEmailIdentity");
+    expect(api.identities.get("company.com")?.mailFrom).toBeNull();
   });
 });
 
@@ -410,6 +439,9 @@ describe("parseSesMessage", () => {
     expect(parseSesMessage(JSON.stringify({ Type: "SubscriptionConfirmation" })).kind).toBe(
       "ignored",
     );
+    expect(
+      parseSesMessage("Successfully validated SNS topic for Amazon SES event publishing."),
+    ).toEqual({ kind: "ignored", reason: "not JSON" });
     expect(() => parseSesMessage("{nope")).toThrow();
   });
 });
@@ -431,7 +463,7 @@ describe("SES end to end (fake SES)", () => {
     const domain = await createDomain({ organizationId, name, userId: null }, runtime.domainDeps);
     expect(domain).toMatchObject({ provider: "ses", status: "pending", region: "eu-west-1" });
     await expect(
-      authorizeLiveSender({ organizationId, from: `hello@${name}` }),
+      authorizeLiveSender({ organizationId, from: `hello@${name}`, provider: "ses" }),
     ).rejects.toBeInstanceOf(EmailError);
     api.verify(name);
     expect(await checkDomain({ organizationId, id: domain.id }, runtime.domainDeps)).toMatchObject({
@@ -528,7 +560,7 @@ describe("SES end to end (fake SES)", () => {
       ),
     ).toBe(false);
     await expect(
-      authorizeLiveSender({ organizationId, from: `hello@${name}` }),
+      authorizeLiveSender({ organizationId, from: `hello@${name}`, provider: "ses" }),
     ).rejects.toMatchObject({ code: "sending_paused" });
 
     await deleteDomain({ organizationId, id: domain.id }, runtime.domainDeps);

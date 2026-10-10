@@ -16,6 +16,7 @@ import {
   type EmailRecipientStatus,
   type EmailWebhookEventOutput,
 } from "./schemas.ts";
+import { autoSuppress } from "./suppressions.ts";
 
 const { email, emailEvent, emailRecipient, environment } = schema;
 
@@ -47,6 +48,7 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
   "email.bounced": "bounced",
   "email.complained": "complained",
   "email.failed": "failed",
+  "email.suppressed": "suppressed",
 };
 
 function recipientStatus(event: ProviderEvent): EmailRecipientStatus {
@@ -82,6 +84,7 @@ export async function recordProviderEvent(
     .select({
       id: email.id,
       organizationId: email.organizationId,
+      projectId: email.projectId,
       environmentId: email.environmentId,
       provider: email.provider,
       providerMessageId: email.providerMessageId,
@@ -89,6 +92,7 @@ export async function recordProviderEvent(
       to: email.to,
       subject: email.subject,
       tags: email.tags,
+      category: email.category,
       mode: environment.mode,
     })
     .from(email)
@@ -209,6 +213,30 @@ export async function recordProviderEvent(
       );
   }
 
+  // Permanent bounces and complaints suppress the address for every email of the environment.
+  // SES-suppressed bounces are not counted: the address was never attempted.
+  const suppressReason =
+    event.type === "email.complained"
+      ? "complaint"
+      : event.type === "email.bounced" &&
+          event.data.bounce?.type === "permanent" &&
+          !event.suppressed
+        ? "bounce"
+        : null;
+  if (suppressReason) {
+    for (const row of inserted) {
+      if (!row.recipient) continue;
+      await autoSuppress(tx, {
+        organizationId: target.organizationId,
+        projectId: target.projectId,
+        environmentId: target.environmentId,
+        address: row.recipient,
+        reason: suppressReason,
+        emailId: target.id,
+      });
+    }
+  }
+
   for (const row of inserted) {
     const payload: EmailWebhookEventOutput = {
       id: row.id,
@@ -221,6 +249,7 @@ export async function recordProviderEvent(
         to: target.to,
         subject: target.subject,
         tags: target.tags,
+        category: target.category,
         sandbox: target.mode === "sandbox",
         recipient: row.recipient,
         occurred_at: row.occurredAt.toISOString(),

@@ -8,8 +8,20 @@ organization and are shared by all of its projects.
 
 ## Adding a domain
 
-Add the domain in the dashboard (**Domains**), then publish the DNS records it shows at your DNS
-provider:
+Add the domain in the dashboard (**Domains**) or through the API, then publish the DNS records it
+returns at your DNS provider:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: domain, error } = await coss.domains.create({ name: "acme.com" });
+
+for (const record of domain?.records ?? []) {
+  console.log(record.type, record.name, record.value);
+}
+```
+
 
 | Purpose              | Type    | Name                              | Value                                    |
 | -------------------- | ------- | --------------------------------- | ---------------------------------------- |
@@ -18,13 +30,16 @@ provider:
 | MAIL FROM SPF        | `TXT`   | `send.example.com`                | `v=spf1 include:amazonses.com ~all`      |
 | DMARC (recommended)  | `TXT`   | `_dmarc.example.com`              | `v=DMARC1; p=none;`                      |
 
-Copy the exact values from the dashboard: the DKIM tokens and region are specific to your domain.
+Copy the exact values from the dashboard or the `records` array: the DKIM tokens and region are
+specific to your domain.
 
 ## Verification
 
-COSS checks the records automatically and the dashboard shows the status of each one. Verification
+COSS checks the records automatically; the dashboard and each record's `status` show the result of
+the last check, and `can_send` says whether live keys may send from the domain. Verification
 usually takes minutes, but DNS changes can take longer to propagate. If a domain is not verified
-within 72 hours, verification fails. Restarting it issues new DKIM records to publish.
+within 72 hours, verification fails. Restarting it (**Verify** in the dashboard, or
+`coss.domains.verify(id)`) issues new DKIM records to publish.
 
 When several organizations verify overlapping domains, the most specific one decides who may send:
 verifying `mail.example.com` lets you send from `@mail.example.com` even if someone else verified

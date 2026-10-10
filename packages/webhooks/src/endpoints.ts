@@ -3,6 +3,7 @@ import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { WebhookError } from "./errors.ts";
+import { DESCRIPTION_MAX_LENGTH, type WebhookEndpointObjectOutput } from "./schemas.ts";
 import { decryptSecret, encryptSecret } from "./secrets.ts";
 import { validateWebhookUrl, WebhookUrlError } from "./sender.ts";
 import { generateSigningSecret } from "./signing.ts";
@@ -14,7 +15,6 @@ export type WebhookDeliveryRow = typeof webhookDelivery.$inferSelect;
 export type WebhookAttemptRow = typeof webhookAttempt.$inferSelect;
 
 export const MAX_ENDPOINTS_PER_ENVIRONMENT = 10;
-export const DESCRIPTION_MAX_LENGTH = 256;
 
 export type WebhookManagementDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKey`). */
@@ -22,6 +22,24 @@ export type WebhookManagementDeps = {
   /** Accept `http:` and private hosts (local development only). */
   allowInsecureUrls: boolean;
 };
+
+/** The endpoint's public wire representation. Never includes the signing secret. */
+export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpointObjectOutput {
+  return {
+    object: "webhook_endpoint",
+    id: row.id,
+    url: row.url,
+    description: row.description,
+    event_types: row.eventTypes,
+    enabled: row.enabled,
+    created_at: row.createdAt.toISOString(),
+    updated_at: row.updatedAt.toISOString(),
+  };
+}
+
+function normalizeDescription(value: string | null | undefined): string | null {
+  return value?.trim().slice(0, DESCRIPTION_MAX_LENGTH) || null;
+}
 
 function checkedUrl(value: string, deps: WebhookManagementDeps): string {
   try {
@@ -79,7 +97,7 @@ export async function createWebhookEndpoint(
       projectId: env.projectId,
       environmentId: input.environmentId,
       url,
-      description: input.description?.trim().slice(0, DESCRIPTION_MAX_LENGTH) || null,
+      description: normalizeDescription(input.description),
       eventTypes: [...new Set(input.eventTypes)].sort(),
       secretCiphertext: encryptSecret(secret, deps.secretsKey),
       createdByUserId: input.userId,
@@ -123,20 +141,44 @@ export async function getWebhookEndpoint(input: {
   return row ?? null;
 }
 
-export async function setWebhookEndpointEnabled(input: {
-  organizationId: string;
-  id: string;
-  enabled: boolean;
-}): Promise<void> {
-  await db
-    .update(webhookEndpoint)
-    .set({ enabled: input.enabled })
-    .where(
-      and(
-        eq(webhookEndpoint.organizationId, input.organizationId),
-        eq(webhookEndpoint.id, input.id),
-      ),
-    );
+/**
+ * Changes an endpoint's URL, description, subscribed event types or enabled flag. Fields left
+ * `undefined` keep their current value; `description: null` clears it. The signing secret never
+ * changes, so existing receivers keep verifying deliveries.
+ */
+export async function updateWebhookEndpoint(
+  input: {
+    organizationId: string;
+    id: string;
+    url?: string;
+    description?: string | null;
+    eventTypes?: string[];
+    enabled?: boolean;
+  },
+  deps: WebhookManagementDeps,
+): Promise<WebhookEndpointRow> {
+  const changes = {
+    ...(input.url !== undefined && { url: checkedUrl(input.url, deps) }),
+    ...(input.description !== undefined && {
+      description: normalizeDescription(input.description),
+    }),
+    ...(input.eventTypes !== undefined && { eventTypes: [...new Set(input.eventTypes)].sort() }),
+    ...(input.enabled !== undefined && { enabled: input.enabled }),
+  };
+  const scope = and(
+    eq(webhookEndpoint.organizationId, input.organizationId),
+    eq(webhookEndpoint.id, input.id),
+  );
+  // An update with nothing to change still has to report a missing endpoint (Drizzle refuses an
+  // empty SET), so read the row instead of writing.
+  if (Object.keys(changes).length === 0) {
+    const existing = await getWebhookEndpoint(input);
+    if (!existing) throw new WebhookError("not_found", "Webhook endpoint not found.");
+    return existing;
+  }
+  const [updated] = await db.update(webhookEndpoint).set(changes).where(scope).returning();
+  if (!updated) throw new WebhookError("not_found", "Webhook endpoint not found.");
+  return updated;
 }
 
 export async function deleteWebhookEndpoint(input: {

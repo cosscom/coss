@@ -14,7 +14,8 @@ import {
   listWebhookDeliveries,
   MAX_ENDPOINTS_PER_ENVIRONMENT,
   revealWebhookSecret,
-  setWebhookEndpointEnabled,
+  toWebhookEndpointObject,
+  updateWebhookEndpoint,
 } from "../src/endpoints.ts";
 import { WebhookError } from "../src/errors.ts";
 import { enqueueWebhookMessage } from "../src/outbox.ts";
@@ -112,17 +113,131 @@ describe("endpoints", () => {
   });
 });
 
+describe("updateWebhookEndpoint", () => {
+  test("changes only the fields given, keeping the secret", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint, secret } = await endpointFor(tenant, "https://example.com/hook", [
+      "email.sent",
+    ]);
+
+    const updated = await updateWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        id: endpoint.id,
+        url: "https://example.com/other",
+        eventTypes: ["email.bounced", "email.sent", "email.bounced"],
+        enabled: false,
+      },
+      testManagementDeps,
+    );
+
+    expect(updated).toMatchObject({
+      url: "https://example.com/other",
+      // Deduplicated and sorted, like on create.
+      eventTypes: ["email.bounced", "email.sent"],
+      enabled: false,
+      description: null,
+    });
+    expect(revealWebhookSecret(updated, TEST_SECRETS_KEY)).toBe(secret);
+  });
+
+  test("trims a description and clears it with null", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    const scope = { organizationId: tenant.organization.id, id: endpoint.id };
+
+    const described = await updateWebhookEndpoint(
+      { ...scope, description: "  Receiver  " },
+      testManagementDeps,
+    );
+    const cleared = await updateWebhookEndpoint(
+      { ...scope, description: null },
+      testManagementDeps,
+    );
+
+    expect(described.description).toBe("Receiver");
+    expect(cleared.description).toBeNull();
+    // Everything else is untouched by a description-only update.
+    expect(cleared.url).toBe(endpoint.url);
+  });
+
+  test("with nothing to change still reports a missing endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    const scope = { organizationId: tenant.organization.id };
+
+    const unchanged = await updateWebhookEndpoint(
+      { ...scope, id: endpoint.id },
+      testManagementDeps,
+    );
+
+    expect(unchanged).toEqual(endpoint);
+    await expect(
+      updateWebhookEndpoint(
+        { ...scope, id: "whep_01k7c8m4q2f3e9v6t5r1n0p8yz" },
+        testManagementDeps,
+      ),
+    ).rejects.toMatchObject({ code: "not_found" });
+  });
+
+  test("rejects an unusable URL and another organization's endpoint", async () => {
+    const tenant = await createTestTenant();
+    const other = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+
+    await expect(
+      updateWebhookEndpoint(
+        { organizationId: tenant.organization.id, id: endpoint.id, url: "ftp://example.com" },
+        testManagementDeps,
+      ),
+    ).rejects.toMatchObject({ code: "invalid_url" });
+    await expect(
+      updateWebhookEndpoint(
+        { organizationId: other.organization.id, id: endpoint.id, enabled: false },
+        testManagementDeps,
+      ),
+    ).rejects.toMatchObject({ code: "not_found" });
+    // The rejected URL was never stored.
+    const [row] = await db
+      .select()
+      .from(schema.webhookEndpoint)
+      .where(eq(schema.webhookEndpoint.id, endpoint.id));
+    expect(row?.url).toBe("https://example.com/hook");
+    expect(row?.enabled).toBe(true);
+  });
+});
+
+describe("toWebhookEndpointObject", () => {
+  test("is the wire shape, without the secret", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook", ["email.sent"]);
+
+    const object = toWebhookEndpointObject(endpoint);
+
+    expect(object).toEqual({
+      object: "webhook_endpoint",
+      id: endpoint.id,
+      url: "https://example.com/hook",
+      description: null,
+      event_types: ["email.sent"],
+      enabled: true,
+      created_at: endpoint.createdAt.toISOString(),
+      updated_at: endpoint.updatedAt.toISOString(),
+    });
+    expect(JSON.stringify(object)).not.toContain("whsec_");
+  });
+});
+
 describe("enqueueWebhookMessage", () => {
   test("fans out to enabled endpoints subscribed to the type, once per message", async () => {
     const tenant = await createTestTenant();
     await endpointFor(tenant, "https://example.com/all");
     await endpointFor(tenant, "https://example.com/bounces", ["email.bounced"]);
     const { endpoint: disabled } = await endpointFor(tenant, "https://example.com/off");
-    await setWebhookEndpointEnabled({
-      organizationId: tenant.organization.id,
-      id: disabled.id,
-      enabled: false,
-    });
+    await updateWebhookEndpoint(
+      { organizationId: tenant.organization.id, id: disabled.id, enabled: false },
+      testManagementDeps,
+    );
 
     expect((await enqueue(tenant, "email.delivered")).queued).toBe(1);
     expect((await enqueue(tenant, "email.bounced")).queued).toBe(2);
@@ -254,11 +369,10 @@ describe("runDueWebhookDeliveries", () => {
     try {
       const { endpoint } = await endpointFor(tenant, receiver.url);
       await enqueue(tenant);
-      await setWebhookEndpointEnabled({
-        organizationId: tenant.organization.id,
-        id: endpoint.id,
-        enabled: false,
-      });
+      await updateWebhookEndpoint(
+        { organizationId: tenant.organization.id, id: endpoint.id, enabled: false },
+        testManagementDeps,
+      );
 
       await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps);
 

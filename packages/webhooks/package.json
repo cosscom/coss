@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./schemas": "./src/schemas.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {
@@ -13,7 +14,8 @@
   },
   "dependencies": {
     "@coss/db": "workspace:*",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@coss/tenancy": "workspace:*",

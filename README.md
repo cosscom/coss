@@ -77,6 +77,11 @@ resets) are printed to the dashboard's server console in development.
   domains (Easy DKIM + a `send.` MAIL FROM subdomain); sandbox keys accept any `from`.
 - **Recipients & events** — each email has one recipient per distinct address, whose status follows delivery
   events: `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced`/`suppressed`/`failed`, `complained`.
+- **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
+  `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
+  (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
+  complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
+  suppression is turned off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
@@ -99,28 +104,51 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery events
+- `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
+  (organization-wide, so every key of the organization sees the same ones)
+- `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the
+  key's own environment; the signing secret is returned only when one is created
+- `POST /v1/suppressions` — suppress an address (`scope`: `*` or a category)
+- `GET /v1/suppressions` — list the environment's suppressions (`address`, `scope`, `limit`, `after`)
+- `GET /v1/suppressions/check?address=…&category=…` — would a send skip this address?
+- `GET /v1/suppressions/{id}` / `DELETE /v1/suppressions/{id}` — retrieve / remove an entry
 - `GET /openapi.json` — OpenAPI 3.1 document
 
-Domains and webhook endpoints are managed in the dashboard.
+Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
+`coss.webhookEndpoints`.
 
 ## Running on Amazon SES
 
-Each organization gets its own SES **tenant** (isolated reputation, suppression list and pausing), created with
-its first domain. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
+Each organization gets its own SES **tenant** (isolated reputation and pausing), created with its first domain.
+SES suppression is off for tenants and the configuration set: COSS's own suppression lists decide who is skipped. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
 where the worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue.
 
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
    domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request
    production access in the SES console.
-2. With admin credentials, create the shared resources (idempotent; re-run after upgrades):
-   `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]`
+2. Apply `bun run db:migrate`, then with admin credentials and this stage's `DATABASE_URL`, create the shared
+   resources (idempotent; re-run after upgrades):
+   `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]`
+   This also creates least-privilege IAM policies `<name>-api`, `<name>-dashboard` and `<name>-worker` (path
+   `/coss/`, defined in `apps/worker/scripts/ses-policies.ts`) and, with `--alert-email`, CloudWatch alarms
+   (`<name>-events-dead-letters`: events failed to be recorded; `<name>-events-backlog`: the worker isn't
+   consuming) sent to that address once its SNS subscription is confirmed.
 3. Set what it prints (`EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`,
-   `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, plus AWS credentials (role or env vars).
-4. Least-privilege IAM per app:
-   - **API**: `ses:SendEmail` (on the configuration set, identities and tenants).
-   - **Dashboard**: `ses:CreateTenant`, `ses:GetTenant`, `ses:CreateTenantResourceAssociation`,
-     `ses:DeleteTenantResourceAssociation`, `ses:ListResourceTenants`, `ses:CreateEmailIdentity`,
-     `ses:GetEmailIdentity`, `ses:DeleteEmailIdentity`, `ses:PutEmailIdentityMailFromAttributes`,
-     `ses:TagResource`.
-   - **Worker**: `sqs:ReceiveMessage`, `sqs:DeleteMessage` on the events queue; `ses:GetEmailIdentity`,
-     `ses:GetTenant`, `ses:DeleteEmailIdentity`, `ses:DeleteTenantResourceAssociation`.
+   `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, and attach each app's policy to the identity it
+   runs as (role, or credentials as a last resort).
+   When upgrading an existing SES deployment, pause sends and domain changes, drain the SES event
+   queue with the worker, then run bootstrap before resuming with the new application version.
+   Bootstrap imports historical SES permanent bounces and complaints into their original live
+   environments, and conservatively copies the SES account and tenant lists to every live
+   environment of each matching organization (SES lists have no environment attribution).
+   Sandbox lists are untouched. The database records completion per tenant in the same transaction;
+   reruns preserve later COSS removals. All imports must succeed before bootstrap disables any SES
+   suppression. Keep traffic paused if bootstrap fails, correct the error, and rerun it.
+   Bootstrap needs `ses:ListSuppressedDestinations` for both account and tenant lists in addition
+   to its infrastructure permissions; an unmapped SES tenant stops the transition.
+
+COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
+carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
+are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
+policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
+denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.

@@ -15,6 +15,7 @@ import {
   normalizeDomainName,
   recheckDueDomains,
   restartDomainVerification,
+  toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "../src/domains.ts";
 import { DomainError, EmailError } from "../src/errors.ts";
@@ -208,6 +209,54 @@ describe("createDomain", () => {
   });
 });
 
+describe("toDomainObject", () => {
+  test("is the wire shape, with the records to publish and no provider internals", async () => {
+    const tenant = await createTestTenant();
+    const name = uniqueName();
+    const created = await createDomain(
+      { organizationId: tenant.organization.id, name, userId: tenant.owner.id },
+      deps(new FakeIdentityProvider({ verify: () => false })),
+    );
+
+    const object = toDomainObject(created);
+
+    expect(object).toMatchObject({
+      object: "domain",
+      id: created.id,
+      name,
+      status: "pending",
+      can_send: false,
+      mail_from_domain: `send.${name}`,
+      mail_from_status: "pending",
+      created_at: created.createdAt.toISOString(),
+      last_checked_at: null,
+      verified_at: null,
+      failed_at: null,
+    });
+    // A never-checked domain still shows what to publish.
+    expect(created.records).toEqual([]);
+    expect(object.records).toEqual(expectedRecords(created));
+    // Tenancy and provider bookkeeping stay internal.
+    expect(Object.keys(object)).not.toContain("organization_id");
+    expect(JSON.stringify(object)).not.toContain(tenant.organization.id);
+  });
+
+  test("reports the latest check once there has been one", async () => {
+    const tenant = await createTestTenant();
+    const existing = await createVerifiedDomain(tenant.organization.id);
+    const checked = await checkDomain(
+      { organizationId: tenant.organization.id, id: existing.id },
+      deps(),
+    );
+
+    const object = toDomainObject(checked);
+
+    expect(object).toMatchObject({ status: "verified", can_send: true });
+    expect(object.last_checked_at).toBe(checked.lastCheckedAt?.toISOString() ?? null);
+    expect(object.records).toEqual(checked.records);
+  });
+});
+
 describe("checkDomain", () => {
   test("stores the provider's verdict and schedules the next check", async () => {
     const tenant = await createTestTenant();
@@ -341,15 +390,18 @@ describe("authorizeLiveSender", () => {
     const other = await createTestTenant();
     const organizationId = tenant.organization.id;
     const verified = await createVerifiedDomain(organizationId);
-    const allowed = (from: string) => authorizeLiveSender({ organizationId, from });
+    const allowed = (from: string, provider = "fake") =>
+      authorizeLiveSender({ organizationId, from, provider });
 
     await allowed(`Acme <hello@${verified.name}>`);
     await allowed(`hello@News.${verified.name}`);
+    // Verified by another provider (e.g. the fake one before switching to SES).
+    await expectError(allowed(`hello@${verified.name}`, "ses"), EmailError, "domain_not_verified");
     await expectError(allowed("hello@unknown.coss.test"), EmailError, "domain_not_verified");
     // Reserved for bounces.
     await expectError(allowed(`hello@send.${verified.name}`), EmailError, "domain_not_verified");
     // Another organization's more specific domain wins.
-    await createVerifiedDomain(other.organization.id, `mail.${verified.name}`);
+    await createVerifiedDomain(other.organization.id, { name: `mail.${verified.name}` });
     await expectError(allowed(`hello@mail.${verified.name}`), EmailError, "domain_not_verified");
     // Pending domains don't count.
     const pending = await createDomain(
@@ -370,7 +422,7 @@ describe("authorizeLiveSender", () => {
       .where(eq(schema.emailTenant.organizationId, organizationId));
 
     await expectError(
-      authorizeLiveSender({ organizationId, from: `hello@${verified.name}` }),
+      authorizeLiveSender({ organizationId, from: `hello@${verified.name}`, provider: "fake" }),
       EmailError,
       "sending_paused",
     );
@@ -415,5 +467,24 @@ describe("live sends", () => {
       "domain_not_verified",
     );
     expect(provider.sent).toHaveLength(1);
+  });
+});
+
+describe("provider switches", () => {
+  test("domains of another provider are neither checked nor leased", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const row = await createDomain({ organizationId, name: uniqueName(), userId: null }, deps());
+    const ses = { ...new FakeIdentityProvider(), name: "ses" } as unknown as IdentityProvider;
+    const sesDeps: DomainDeps = { identity: ses, dns: null };
+
+    expect(await checkDomain({ organizationId, id: row.id }, sesDeps)).toEqual(row);
+    const later = new Date(Date.now() + 2 * 60 * 1000);
+    expect(
+      await recheckDueDomains(
+        { now: later, scope: { organizationIds: [organizationId] } },
+        sesDeps,
+      ),
+    ).toBe(0);
   });
 });

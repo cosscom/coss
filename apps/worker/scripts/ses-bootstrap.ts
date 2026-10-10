@@ -4,9 +4,14 @@
  *   SES configuration set ──events──▶ SNS topic ──raw──▶ SQS queue (+ dead-letter queue) ◀── worker
  *   EventBridge rule (tenant sending status) ─────────────▶ same queue
  *
- * Tenants, domain identities and their associations are created by the app at runtime.
+ * plus least-privilege IAM policies for the api, dashboard and worker (`<name>-api`, …, under the
+ * `/coss/` path) and, with `--alert-email`, CloudWatch alarms on the queues sent to that address.
+ * Tenants, domain identities and their associations are created by the app at runtime. COSS keeps
+ * its own suppression lists, so SES suppression is turned off for the configuration set and for
+ * every existing tenant of this stage, after importing existing suppressions into DATABASE_URL.
+ * On upgrades, pause sends/domain changes and drain events before running (see README).
  *
- *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]
+ *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]
  *
  * Needs credentials allowed to manage SES, SNS, SQS and EventBridge (the default AWS credential
  * chain: env vars, profile or role). Prints the env vars the apps need. Use one AWS account (or at
@@ -14,7 +19,21 @@
  */
 
 import { parseArgs } from "node:util";
+import {
+  CloudWatchClient,
+  PutMetricAlarmCommand,
+  type PutMetricAlarmCommandInput,
+} from "@aws-sdk/client-cloudwatch";
 import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from "@aws-sdk/client-eventbridge";
+import {
+  CreatePolicyCommand,
+  CreatePolicyVersionCommand,
+  DeletePolicyVersionCommand,
+  GetPolicyCommand,
+  GetPolicyVersionCommand,
+  IAMClient,
+  ListPolicyVersionsCommand,
+} from "@aws-sdk/client-iam";
 import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
@@ -36,7 +55,10 @@ import {
   SetQueueAttributesCommand,
   SQSClient,
 } from "@aws-sdk/client-sqs";
+import { closeDb } from "@coss/db";
 import { SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
+import { cossPolicies, type PolicyDocument } from "./ses-policies.ts";
+import { migrateSesSuppressions } from "./ses-suppression-migration.ts";
 
 const EVENT_DESTINATION = "coss-events";
 const EVENT_TYPES = [
@@ -54,6 +76,7 @@ const { values } = parseArgs({
   options: {
     name: { type: "string", default: process.env.SES_CONFIGURATION_SET ?? "coss" },
     "tenant-prefix": { type: "string", default: process.env.SES_TENANT_PREFIX ?? "coss" },
+    "alert-email": { type: "string" },
   },
 });
 const region = process.env.AWS_REGION;
@@ -69,6 +92,8 @@ const ses = new SESv2Client({ region });
 const sns = new SNSClient({ region });
 const sqs = new SQSClient({ region });
 const events = new EventBridgeClient({ region });
+const iam = new IAMClient({ region });
+const cloudwatch = new CloudWatchClient({ region });
 
 function step(message: string): void {
   console.info(`• ${message}`);
@@ -253,6 +278,121 @@ try {
 }
 step(`SES configuration set ${name} → ${EVENT_TYPES.join(", ")}`);
 
+// 6. Commit historical protection to COSS before disabling any SES lists.
+let tenantsUpdated: number;
+try {
+  tenantsUpdated = await migrateSesSuppressions(ses, { configurationSet: name, tenantPrefix });
+} finally {
+  await closeDb();
+}
+step(`SES suppression off (configuration set and ${tenantsUpdated} existing tenants)`);
+
+// 7. Least-privilege IAM policies. A changed document becomes the new default version (IAM keeps
+//    at most 5, so the oldest non-default one is dropped first).
+const POLICY_PATH = "/coss/";
+async function ensurePolicy(policyName: string, document: PolicyDocument): Promise<string> {
+  const arn = `arn:aws:iam::${account}:policy${POLICY_PATH}${policyName}`;
+  const json = JSON.stringify(document);
+  let defaultVersion: string | undefined;
+  try {
+    defaultVersion = (await iam.send(new GetPolicyCommand({ PolicyArn: arn }))).Policy
+      ?.DefaultVersionId;
+  } catch (error) {
+    if (!isNamed(error, "NoSuchEntityException", "NoSuchEntity")) throw error;
+    await iam.send(
+      new CreatePolicyCommand({
+        PolicyName: policyName,
+        Path: POLICY_PATH,
+        PolicyDocument: json,
+        Description: "COSS email (SES) least-privilege access, managed by ses:bootstrap",
+      }),
+    );
+    return `${arn} (created)`;
+  }
+  const { PolicyVersion } = await iam.send(
+    new GetPolicyVersionCommand({ PolicyArn: arn, VersionId: defaultVersion }),
+  );
+  const current = JSON.parse(decodeURIComponent(PolicyVersion?.Document ?? "{}"));
+  if (JSON.stringify(current) === json) return `${arn} (unchanged)`;
+  const { Versions = [] } = await iam.send(new ListPolicyVersionsCommand({ PolicyArn: arn }));
+  if (Versions.length >= 5) {
+    const oldest = Versions.filter((v) => !v.IsDefaultVersion).sort(
+      (a, b) => (a.CreateDate?.getTime() ?? 0) - (b.CreateDate?.getTime() ?? 0),
+    )[0];
+    if (oldest?.VersionId) {
+      await iam.send(
+        new DeletePolicyVersionCommand({ PolicyArn: arn, VersionId: oldest.VersionId }),
+      );
+    }
+  }
+  await iam.send(
+    new CreatePolicyVersionCommand({ PolicyArn: arn, PolicyDocument: json, SetAsDefault: true }),
+  );
+  return `${arn} (updated)`;
+}
+const policies = cossPolicies({ region, account, name, tenantPrefix, queueArn: queue.arn });
+for (const [app, document] of Object.entries(policies)) {
+  step(`IAM policy for the ${app}: ${await ensurePolicy(`${name}-${app}`, document)}`);
+}
+
+// 8. Alarms: anything in the dead-letter queue is a delivery event that was never recorded, and an
+//    old message in the main queue means the worker isn't consuming.
+const alertEmail = values["alert-email"];
+if (alertEmail) {
+  const { TopicArn: alertsArn } = await sns.send(
+    new CreateTopicCommand({ Name: `${name}-alerts` }),
+  );
+  if (!alertsArn) throw new Error("CreateTopic returned no ARN.");
+  // Idempotent for the same address; AWS emails a confirmation link until it is confirmed.
+  await sns.send(
+    new SubscribeCommand({
+      TopicArn: alertsArn,
+      Protocol: "email",
+      Endpoint: alertEmail,
+      ReturnSubscriptionArn: true,
+    }),
+  );
+  const alarm = (
+    input: Omit<PutMetricAlarmCommandInput, "Namespace" | "AlarmActions" | "OKActions">,
+  ) =>
+    cloudwatch.send(
+      new PutMetricAlarmCommand({
+        Namespace: "AWS/SQS",
+        AlarmActions: [alertsArn],
+        OKActions: [alertsArn],
+        TreatMissingData: "notBreaching",
+        ...input,
+      }),
+    );
+  await alarm({
+    AlarmName: `${name}-events-dead-letters`,
+    AlarmDescription:
+      "COSS: SES delivery events failed to be recorded 5 times and were dead-lettered. Inspect " +
+      `${name}-events-dlq, fix the cause, then redrive the messages to ${name}-events.`,
+    MetricName: "ApproximateNumberOfMessagesVisible",
+    Dimensions: [{ Name: "QueueName", Value: `${name}-events-dlq` }],
+    Statistic: "Maximum",
+    Period: 300,
+    EvaluationPeriods: 1,
+    Threshold: 0,
+    ComparisonOperator: "GreaterThanThreshold",
+  });
+  await alarm({
+    AlarmName: `${name}-events-backlog`,
+    AlarmDescription:
+      `COSS: the oldest SES event in ${name}-events is over 15 minutes old; the worker is not ` +
+      "consuming (down, or missing SQS permissions). Recipient statuses and webhooks are stale.",
+    MetricName: "ApproximateAgeOfOldestMessage",
+    Dimensions: [{ Name: "QueueName", Value: `${name}-events` }],
+    Statistic: "Maximum",
+    Period: 300,
+    EvaluationPeriods: 2,
+    Threshold: 900,
+    ComparisonOperator: "GreaterThanThreshold",
+  });
+  step(`Alarms ${name}-events-dead-letters, ${name}-events-backlog → ${alertEmail}`);
+}
+
 console.info(
   [
     "",
@@ -264,6 +404,10 @@ console.info(
     `SES_TENANT_PREFIX=${tenantPrefix}`,
     `SES_EVENTS_QUEUE_URL=${queue.url}`,
     "",
+    `Attach the IAM policies under ${POLICY_PATH}: ${name}-api, ${name}-dashboard, ${name}-worker.`,
+    alertEmail
+      ? `Confirm the alert subscription from the email AWS sent to ${alertEmail}.`
+      : "Pass --alert-email to get alarms when SES events fail or the worker stops consuming.",
     "New AWS accounts start in the SES sandbox: request production access in the SES console.",
   ].join("\n"),
 );

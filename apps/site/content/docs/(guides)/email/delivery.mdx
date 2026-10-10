@@ -21,7 +21,9 @@ Delivery happens per recipient. `recipients` lists every distinct address across
 `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced` / `suppressed` / `failed`, then
 `complained`.
 
-`suppressed` means the address is on the suppression list after an earlier bounce or complaint.
+`suppressed` means the recipient was skipped because it is on the environment's
+[suppression list](/docs/email/suppressions), or the provider reported it as suppressed. An email
+whose recipients are all suppressed fails with `all_recipients_suppressed`.
 
 ## Events
 

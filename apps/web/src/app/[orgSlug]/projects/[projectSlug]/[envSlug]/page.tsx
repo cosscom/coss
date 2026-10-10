@@ -248,6 +248,25 @@ export default async function EnvironmentPage({
 
       <Card>
         <CardHeader>
+          <CardTitle>Suppressions</CardTitle>
+          <CardDescription>
+            Addresses emails from this environment skip: added automatically after permanent bounces
+            and complaints, or by you (for every email or one category).
+          </CardDescription>
+          <CardAction>
+            <Button
+              render={<Link href={`${projectPath}/${environment.slug}/suppressions`} />}
+              size="sm"
+              variant="outline"
+            >
+              Manage suppressions
+            </Button>
+          </CardAction>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Quick start</CardTitle>
           <CardDescription>
             Send an email with the public API. Set <code>COSS_API_KEY</code> to a key from this

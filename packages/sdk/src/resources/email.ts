@@ -1,14 +1,18 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { Email, EmailEvent, List, SendEmailParams } from "../types/email.ts";
+import { SuppressionResource } from "./suppressions.ts";
 
 /** `coss.email`: transactional email. */
 export class EmailResource {
   readonly #http: HttpClient;
+  /** The environment's suppression list. */
+  readonly suppressions: SuppressionResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
     this.#http = http;
+    this.suppressions = new SuppressionResource(http);
   }
 
   /**

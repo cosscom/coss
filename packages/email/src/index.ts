@@ -26,6 +26,7 @@ export {
   normalizeDomainName,
   recheckDueDomains,
   restartDomainVerification,
+  toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
 export {
@@ -70,6 +71,28 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  ALL_CATEGORIES,
+  CheckSuppressionQuery,
+  type CheckSuppressionQueryOutput,
+  CreateDomainRequest,
+  type CreateDomainRequestInput,
+  CreateSuppressionRequest,
+  type CreateSuppressionRequestInput,
+  type CreateSuppressionRequestOutput,
+  DeletedDomain,
+  type DeletedDomainOutput,
+  DeletedSuppression,
+  type DeletedSuppressionOutput,
+  DOMAIN_NAME_MAX_LENGTH,
+  DOMAIN_RECORD_PURPOSES,
+  DOMAIN_RECORD_STATUSES,
+  DOMAIN_STATUSES,
+  DomainList,
+  type DomainListOutput,
+  DomainObject,
+  type DomainObjectOutput,
+  DomainRecordObject,
+  type DomainRecordObjectOutput,
   EMAIL_EVENT_TYPES,
   EMAIL_RECIPIENT_STATUSES,
   EMAIL_RECIPIENT_TYPES,
@@ -89,6 +112,9 @@ export {
   type EmailWebhookEventOutput,
   emailAddressProblem,
   isReservedHeader,
+  ListSuppressionsQuery,
+  type ListSuppressionsQueryOutput,
+  MAIL_FROM_STATUSES,
   MAX_HEADERS,
   MAX_RECIPIENTS,
   MAX_TAGS,
@@ -99,6 +125,15 @@ export {
   type SendEmailRequestInput,
   type SendEmailRequestOutput,
   SUBJECT_MAX_LENGTH,
+  SUPPRESSION_REASONS,
+  Suppression,
+  SuppressionCheck,
+  type SuppressionCheckOutput,
+  SuppressionList,
+  type SuppressionListOutput,
+  type SuppressionOutput,
+  type SuppressionReason,
+  SuppressionScope,
 } from "./schemas.ts";
 export {
   createEmailService,
@@ -107,4 +142,14 @@ export {
   type SendEmailInput,
   type SendEnvironment,
 } from "./service.ts";
+export {
+  addSuppression,
+  checkSuppression,
+  getSuppression,
+  listSuppressions,
+  removeSuppression,
+  type SuppressionEnvironment,
+  type SuppressionRow,
+  toSuppressionObject,
+} from "./suppressions.ts";
 export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";

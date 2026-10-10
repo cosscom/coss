@@ -5,6 +5,13 @@
 import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
+  CreateDomainRequest,
+  CreateSuppressionRequest,
+  DeletedDomain,
+  DeletedSuppression,
+  DomainList,
+  DomainObject,
+  DomainRecordObject,
   EmailEvent,
   EmailEventData,
   EmailEventList,
@@ -12,6 +19,9 @@ import {
   EmailRecipient,
   EmailWebhookEvent,
   SendEmailRequest,
+  Suppression,
+  SuppressionCheck,
+  SuppressionList,
 } from "../src/schemas.ts";
 
 const SCHEMAS: Record<string, z.ZodType> = {
@@ -22,6 +32,16 @@ const SCHEMAS: Record<string, z.ZodType> = {
   EmailEventData,
   EmailEventList,
   EmailWebhookEvent,
+  Domain: DomainObject,
+  DomainRecord: DomainRecordObject,
+  DomainList,
+  CreateDomainRequest,
+  DeletedDomain,
+  Suppression,
+  SuppressionList,
+  SuppressionCheck,
+  CreateSuppressionRequest,
+  DeletedSuppression,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

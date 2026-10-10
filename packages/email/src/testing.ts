@@ -16,12 +16,14 @@ import type { SesApi } from "./ses/api.ts";
 
 /**
  * A verified, sendable domain of the organization, inserted directly (no provider involved).
- * Live sends must use a From address on it, e.g. `hello@${domain.name}`.
+ * Live sends must use a From address on it, e.g. `hello@${domain.name}`, through a live provider
+ * named `provider` (default `fake`).
  */
 export async function createVerifiedDomain(
   organizationId: string,
-  name = `t-${uniqueSuffix()}.coss.test`,
+  opts: { name?: string; provider?: string } = {},
 ): Promise<DomainRow> {
+  const name = opts.name ?? `t-${uniqueSuffix()}.coss.test`;
   const now = new Date();
   const [row] = await db
     .insert(schema.domain)
@@ -30,7 +32,7 @@ export async function createVerifiedDomain(
       name,
       status: "verified",
       canSend: true,
-      provider: "fake",
+      provider: opts.provider ?? "fake",
       region: "us-east-1",
       dkimTokens: ["token1", "token2", "token3"],
       dkimHostedZone: "dkim.amazonses.com",
@@ -76,6 +78,8 @@ export class FakeSesApi implements SesApi {
     string,
     { tokens: string[]; status: string; canSend: boolean; mailFrom: string | null }
   >();
+  /** `resourceArn` → tags. */
+  readonly tags = new Map<string, { Key: string; Value: string }[]>();
   /** `resourceArn` → tenant names. */
   readonly associations = new Map<string, Set<string>>();
   /** Queue errors (by operation) to throw on the next calls. */
@@ -117,6 +121,12 @@ export class FakeSesApi implements SesApi {
     return { TenantName: name, TenantArn: arn, SendingStatus: "ENABLED" as const, $metadata: {} };
   }
 
+  async putTenantSuppressionAttributes(input: { TenantName?: string }) {
+    this.#record("putTenantSuppressionAttributes", input);
+    if (!this.tenants.has(input.TenantName ?? "")) throw sesError("NotFoundException");
+    return {};
+  }
+
   async getTenant(input: { TenantName: string }) {
     this.#record("getTenant", input);
     const tenant = this.tenants.get(input.TenantName);
@@ -152,6 +162,10 @@ export class FakeSesApi implements SesApi {
     if (this.identities.has(domain)) throw sesError("AlreadyExistsException");
     const tokens = [1, 2, 3].map((n) => `${domain.replaceAll(".", "")}tok${n}${this.calls.length}`);
     this.identities.set(domain, { tokens, status: "PENDING", canSend: false, mailFrom: null });
+    this.tags.set(
+      this.identityArn(domain),
+      (input.Tags ?? []).map((tag) => ({ Key: tag.Key ?? "", Value: tag.Value ?? "" })),
+    );
     return {
       IdentityType: "DOMAIN" as const,
       VerifiedForSendingStatus: false,
@@ -185,7 +199,15 @@ export class FakeSesApi implements SesApi {
   async deleteEmailIdentity(input: { EmailIdentity: string }) {
     this.#record("deleteEmailIdentity", input);
     if (!this.identities.delete(input.EmailIdentity)) throw sesError("NotFoundException");
+    this.tags.delete(this.identityArn(input.EmailIdentity));
     return {};
+  }
+
+  async listTagsForResource(input: { ResourceArn: string }) {
+    this.#record("listTagsForResource", input);
+    const domain = input.ResourceArn.split("identity/")[1] ?? "";
+    if (!this.identities.has(domain)) throw sesError("NotFoundException");
+    return { Tags: this.tags.get(input.ResourceArn) ?? [], $metadata: {} };
   }
 
   async putEmailIdentityMailFromAttributes(input: {
