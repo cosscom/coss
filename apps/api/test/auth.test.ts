@@ -1,6 +1,7 @@
 import { describe, expect, spyOn, test } from "bun:test";
 import { createEnvironmentApiKey } from "@coss/tenancy";
-import { createTestTenant } from "@coss/tenancy/testing";
+import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
+import { createTestTenant, createTestUser } from "@coss/tenancy/testing";
 import { Hono } from "hono";
 import { errorResponse, toApiError } from "../src/errors.ts";
 import { type Authenticate, requireApiKey } from "../src/middleware/api-key.ts";
@@ -127,6 +128,38 @@ describe("authentication", () => {
     const get = await getEmailById(app, created.key, "email_01k7c8m4q2f3e9v6t5r1n0p8yz");
     expect(get.status).toBe(403);
     expect((await errorOf(get)).message).toContain("email:read");
+  });
+
+  test("keys of a suspended organization are 403 organization_suspended until it is lifted", async () => {
+    const tenant = await createTestTenant();
+    const admin = await createTestUser();
+    const actor = { userId: admin.id, email: admin.email };
+    const { app, sandboxProvider } = createTestApp();
+
+    await suspendOrganization({
+      organizationId: tenant.organization.id,
+      reason: "Abuse report",
+      actor,
+    });
+    for (const key of [tenant.sandboxKey, tenant.liveKey]) {
+      const res = await sendEmail(app, key, emailBody());
+      expect(res.status).toBe(403);
+      const error = await errorOf(res);
+      expect(error).toMatchObject({ type: "permission_error", code: "organization_suspended" });
+      // The internal reason is never shown to the organization.
+      expect(error.message).not.toContain("Abuse");
+    }
+    const read = await getEmailById(app, tenant.sandboxKey, "email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+    expect((await errorOf(read)).code).toBe("organization_suspended");
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    // A wrong key still looks wrong: the suspension is only revealed to valid keys.
+    expect(await errorOf(await sendEmail(app, UNKNOWN_KEY, emailBody()))).toMatchObject({
+      code: "invalid_api_key",
+    });
+
+    await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
+    expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(200);
   });
 
   test("permissions are checked per endpoint", async () => {

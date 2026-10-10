@@ -15,7 +15,7 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | `apps/worker` | `@coss/worker` | Bun background worker: webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures; `./admin`: platform admin (suspensions, audit log, cross-org reads). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `globals.css`. |
@@ -144,7 +144,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 ## Dashboard (`apps/web`)
 
 - Pages use the generated `PageProps<"/…">`/`LayoutProps` globals and `await params`. Call `requireOrgMember(orgSlug)`
-  (`src/lib/session.ts`; non-members get a 404) and gate controls with `orgRoleCan(member.role, …)`. Read data straight
+  (`src/lib/session.ts`; non-members get a 404) and gate controls with its `can(…)` (the role check, read-only while
+  the org is suspended). Read data straight
   from `@coss/tenancy` / `@coss/email` (the dashboard never calls the public API). Server code uses `auth` from
   `@/lib/auth`; client code uses `authClient` from `@/lib/auth-client`.
 - Mutations live in a colocated `actions.ts` (`"use server"`): `(prev: ActionResult<T> | null, formData) => runAction(…)`
@@ -240,9 +241,13 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. Revocation: `getKeyBinding`
     ownership check, then `auth.api.deleteApiKey` with session headers.
   - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/update` and
-    `/admin/remove-user` (server-side `auth.api.*` still works). Never re-enable them to "simplify" things.
+    every admin-plugin mutation (`/admin/{create-user,update-user,remove-user,set-role,set-user-password,ban-user,
+    unban-user,impersonate-user,revoke-user-session,revoke-user-sessions}`) (server-side `auth.api.*` still works).
+    Admin mutations go only through `apps/web/src/app/admin/actions.ts`, which records the audit log. Never re-enable
+    them to "simplify" things.
   - `organizationHooks` validate org slugs on create/update, only allow canonical roles (`INVITABLE_ORG_ROLES`,
-    `isOrgRole`) and only cancel `pending` invitations (Better Auth would rewrite accepted ones); `orgRoleCan` matches
+    `isOrgRole`), only cancel `pending` invitations (Better Auth would rewrite accepted ones) and refuse invitations,
+    accepting them and role changes while the org is suspended; `orgRoleCan` matches
     role names exactly, like Better Auth (no trimming). `assignableOrgRoles` mirrors Better Auth's update-member-role
     rules (only owners change owners or grant owner; Better Auth alone enforces "the last owner can't step down").
   - Password reset: `sendResetPassword` emails Better Auth's `/api/auth/reset-password/:token` link, which redirects to
@@ -254,7 +259,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.
 - **Tenancy rule:** every tenancy/email/webhooks function that touches tenant data takes `organizationId` and scopes its
   SQL by it; writes derive org/project from the environment row. Only `getMembership` (by slug), `authenticateApiKey`
-  (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
+  (from the key's binding), the platform-level `@coss/tenancy/admin` module (call it only after
+  `requirePlatformAdmin*`), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
@@ -289,6 +295,16 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
   `WEBHOOK_SECRETS_KEY`.
+- **Platform admin** (`/admin`, `@coss/tenancy/admin`): every admin page calls `requirePlatformAdmin()` itself — Next
+  renders layouts and pages in parallel, so the layout's check alone would still stream the page's data to non-admins
+  (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
+  actor's email is copied); suspension/key revocation write it in the same transaction. Admins can't act on
+  themselves; never send session tokens to the browser (revoke-one looks the token up server-side).
+- **Organization suspension** (`organization_suspension`, presence = suspended; reason is admin-internal): enforced in
+  `authenticateApiKey` (`suspended` → 403 `organization_suspended`, only for otherwise-valid keys),
+  `createEnvironmentApiKey`, webhook `claimDue` (held, not failed), the org hooks above, and the dashboard
+  (`OrgContext.can()` / `requireOrgPermission` allow only reads). New write paths must respect it. Domain re-checks and
+  SES event ingestion keep running. Gate dashboard controls with `can(…)` from `requireOrgMember`, not `orgRoleCan`.
 - **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating (`liveKeyRestriction`,
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
@@ -317,7 +333,9 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
-- Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
+- Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
+  are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself (the API is the only
+  send path); sends already past authentication finish.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
 domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,

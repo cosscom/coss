@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { OrgSwitcher } from "@/components/org-switcher";
 import { SignOutButton } from "@/components/sign-out-button";
+import { SuspendedAlert } from "@/components/suspended-alert";
 import { auth } from "@/lib/auth";
 import { isPlatformAdmin, requireOrgMember } from "@/lib/session";
 
 export default async function OrganizationLayout({ children, params }: LayoutProps<"/[orgSlug]">) {
   const { orgSlug } = await params;
-  const { session, organization } = await requireOrgMember(orgSlug);
+  const { session, organization, suspended } = await requireOrgMember(orgSlug);
   const organizations = (await auth.api.listOrganizations({ headers: await headers() }))
     .map(({ name, slug }) => ({ name, slug }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
@@ -38,7 +39,11 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
               Members
             </Button>
             {isPlatformAdmin(session) ? (
-              <Button render={<Link href="/admin" />} size="sm" variant="ghost">
+              <Button
+                render={<Link href={`/admin/organizations/${organization.id}`} />}
+                size="sm"
+                variant="ghost"
+              >
                 Admin
               </Button>
             ) : null}
@@ -49,7 +54,10 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">{children}</main>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
+        {suspended ? <SuspendedAlert /> : null}
+        <div>{children}</div>
+      </main>
     </div>
   );
 }

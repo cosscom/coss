@@ -11,6 +11,7 @@ import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { admin, organization } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
@@ -54,6 +55,16 @@ function assertValidOrgSlug(slug: string | undefined): void {
   if (error) throw new APIError("BAD_REQUEST", { message: error });
 }
 
+/** Membership changes are frozen while a platform admin has the organization suspended. */
+async function assertOrgNotSuspended(organizationId: string): Promise<void> {
+  const [row] = await db
+    .select({ organizationId: schema.organizationSuspension.organizationId })
+    .from(schema.organizationSuspension)
+    .where(eq(schema.organizationSuspension.organizationId, organizationId))
+    .limit(1);
+  if (row) throw new APIError("FORBIDDEN", { message: "This organization is suspended." });
+}
+
 export const authOptions = {
   appName: "COSS",
   baseURL: process.env.BETTER_AUTH_URL,
@@ -85,6 +96,7 @@ export const authOptions = {
   },
   // Block these HTTP routes (server-side `auth.api.*` calls still work). API keys are only
   // created/listed/revoked through our server code so every key gets an environment binding.
+  // Admin mutations go through the dashboard's server actions, which record the audit log.
   disabledPaths: [
     "/api-key/create",
     "/api-key/update",
@@ -93,6 +105,15 @@ export const authOptions = {
     "/api-key/delete",
     "/organization/update",
     "/admin/remove-user",
+    "/admin/create-user",
+    "/admin/update-user",
+    "/admin/set-role",
+    "/admin/set-user-password",
+    "/admin/ban-user",
+    "/admin/unban-user",
+    "/admin/impersonate-user",
+    "/admin/revoke-user-session",
+    "/admin/revoke-user-sessions",
   ],
   plugins: [
     organization({
@@ -120,6 +141,10 @@ export const authOptions = {
           if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
             throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
           }
+          await assertOrgNotSuspended(invitation.organizationId);
+        },
+        beforeAcceptInvitation: async ({ organization: org }) => {
+          await assertOrgNotSuspended(org.id);
         },
         // Better Auth cancels invitations in any status, which would rewrite an accepted (or
         // already canceled) one; only pending invitations can be canceled.
@@ -128,10 +153,11 @@ export const authOptions = {
             throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
           }
         },
-        beforeUpdateMemberRole: async ({ newRole }) => {
+        beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
           if (!newRole.split(",").every(isOrgRole)) {
             throw new APIError("BAD_REQUEST", { message: "Unknown role." });
           }
+          await assertOrgNotSuspended(org.id);
         },
       },
     }),

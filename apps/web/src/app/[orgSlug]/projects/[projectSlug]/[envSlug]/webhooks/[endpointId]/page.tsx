@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -47,8 +46,8 @@ export default async function WebhookEndpointPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/webhooks/[endpointId]">) {
   const { orgSlug, projectSlug, envSlug, endpointId } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { webhook: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ webhook: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -58,8 +57,8 @@ export default async function WebhookEndpointPage({
     organizationId: organization.id,
     endpointId: endpoint.id,
   });
-  const canUpdate = orgRoleCan(member.role, { webhook: ["update"] });
-  const canDelete = orgRoleCan(member.role, { webhook: ["delete"] });
+  const canUpdate = can({ webhook: ["update"] });
+  const canDelete = can({ webhook: ["delete"] });
   const target = {
     orgSlug: organization.slug,
     projectSlug: project.slug,

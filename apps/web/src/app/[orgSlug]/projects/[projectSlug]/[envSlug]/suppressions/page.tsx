@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { listSuppressions } from "@coss/email";
 import { ListSuppressionsQuery } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
@@ -42,8 +41,8 @@ export default async function SuppressionsPage({
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/suppressions">) {
   const { orgSlug, projectSlug, envSlug } = await params;
   const search = await searchParams;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { suppression: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ suppression: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -65,8 +64,8 @@ export default async function SuppressionsPage({
     projectSlug: project.slug,
     envSlug: environment.slug,
   };
-  const canCreate = orgRoleCan(member.role, { suppression: ["create"] });
-  const canDelete = orgRoleCan(member.role, { suppression: ["delete"] });
+  const canCreate = can({ suppression: ["create"] });
+  const canDelete = can({ suppression: ["delete"] });
   const last = page?.data.at(-1);
   const nextPage =
     page?.has_more && last

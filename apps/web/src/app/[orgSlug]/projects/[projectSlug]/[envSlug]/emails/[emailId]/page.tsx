@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { type EmailEventOutput, getEmail, listEmailEvents } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -61,8 +60,8 @@ export default async function EmailPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/emails/[emailId]">) {
   const { orgSlug, projectSlug, envSlug, emailId } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { email: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ email: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;

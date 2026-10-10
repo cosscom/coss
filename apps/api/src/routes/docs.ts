@@ -22,7 +22,10 @@ export function errorDoc(description: string, headers: Record<string, HeaderDoc>
 /** The errors every authenticated endpoint can return. */
 export const commonErrors = {
   401: errorDoc("The API key is missing, invalid, revoked or expired (`authentication_error`)."),
-  403: errorDoc("The API key lacks the permission this endpoint needs (`permission_error`)."),
+  403: errorDoc(
+    "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or its " +
+      "organization is suspended (`organization_suspended`).",
+  ),
   500: errorDoc("Unexpected server error (`api_error` / `internal_error`)."),
   503: errorDoc("The API key could not be verified right now; retry (`service_unavailable`)."),
 };

@@ -1,13 +1,28 @@
 import "server-only";
 import { type OrgPermissions, orgRoleCan } from "@coss/auth/permissions";
 import { getMembership, type Membership } from "@coss/tenancy";
+import type { AdminActor } from "@coss/tenancy/admin";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
-import { ForbiddenError } from "./actions";
+import { ActionError, ForbiddenError } from "./actions";
 import { auth, type Session } from "./auth";
 
-export type OrgContext = Membership & { session: Session };
+export type OrgContext = Membership & {
+  session: Session;
+  /**
+   * Whether the member may do this: their role allows it and, while the organization is
+   * suspended, it only reads. Use it to gate controls; actions re-check via `requireOrgPermission`.
+   */
+  can: (permissions: OrgPermissions) => boolean;
+};
+
+/** A suspended organization keeps read access only. */
+function onlyReads(permissions: OrgPermissions): boolean {
+  return Object.values(permissions).every((actions) =>
+    (actions as string[]).every((action) => action === "read"),
+  );
+}
 
 /** The current session (deduplicated per request), or `null` when signed out. */
 export const getSession = cache(async (): Promise<Session | null> => {
@@ -29,20 +44,54 @@ export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContex
   const session = await requireSession();
   const membership = await getMembership({ userId: session.user.id, organizationSlug: orgSlug });
   if (!membership) notFound();
-  return { session, ...membership };
+  const can = (permissions: OrgPermissions) =>
+    orgRoleCan(membership.member.role, permissions) &&
+    (!membership.suspended || onlyReads(permissions));
+  return { session, ...membership, can };
 });
 
-/** `requireOrgMember` plus a role check; throws `ForbiddenError` (an action error) if denied. */
+/**
+ * `requireOrgMember` plus a role check; throws `ForbiddenError` (an action error) if denied, or
+ * an `ActionError` for anything but reads while the organization is suspended.
+ */
 export async function requireOrgPermission(
   orgSlug: string,
   permissions: OrgPermissions,
 ): Promise<OrgContext> {
   const context = await requireOrgMember(orgSlug);
   if (!orgRoleCan(context.member.role, permissions)) throw new ForbiddenError();
+  if (!context.can(permissions)) {
+    throw new ActionError("This organization is suspended, so changes are disabled.");
+  }
   return context;
 }
 
 /** Platform admin (Better Auth admin plugin role; roles may be comma-joined). */
 export function isPlatformAdmin(session: Session): boolean {
   return (session.user.role ?? "").split(",").some((role) => role.trim() === "admin");
+}
+
+export type AdminContext = { session: Session; actor: AdminActor };
+
+function adminContext(session: Session): AdminContext {
+  return { session, actor: { userId: session.user.id, email: session.user.email } };
+}
+
+/**
+ * The signed-in platform admin, for /admin pages. Everyone else gets a 404 so the console's
+ * existence isn't revealed. An impersonation session is the impersonated user's, so it fails too.
+ */
+export async function requirePlatformAdmin(): Promise<AdminContext> {
+  const session = await requireSession();
+  if (!isPlatformAdmin(session)) notFound();
+  return adminContext(session);
+}
+
+/** `requirePlatformAdmin` for server actions: throws `ForbiddenError` instead of a 404. */
+export async function requirePlatformAdminAction(): Promise<AdminContext> {
+  const session = await getSession();
+  if (!session || !isPlatformAdmin(session)) {
+    throw new ForbiddenError("Only platform admins can do that.");
+  }
+  return adminContext(session);
 }

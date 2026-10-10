@@ -8,7 +8,7 @@ import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
 import type { EnvironmentMode } from "./types.ts";
 
-const { apikey, environment, environmentApiKey } = schema;
+const { apikey, environment, environmentApiKey, organizationSuspension } = schema;
 
 export type EnvironmentApiKeySummary = {
   id: string;
@@ -33,7 +33,8 @@ export type ApiKeyContext = {
 
 export type AuthenticateResult =
   | { ok: true; context: ApiKeyContext }
-  | { ok: false; reason: "invalid" | "forbidden" };
+  /** `suspended`: a valid key of an organization a platform admin has suspended. */
+  | { ok: false; reason: "invalid" | "forbidden" | "suspended" };
 
 /** Better Auth generates 64 letters after our prefix (see `defaultKeyGenerator`). */
 const API_KEY_FORMAT = /^coss_(live|test)_[A-Za-z]{64}$/;
@@ -54,6 +55,9 @@ export async function createEnvironmentApiKey(input: {
     environmentId: input.environmentId,
   });
   if (!env) throw new TenancyError("not_found", "Environment not found.");
+  if (await isSuspended(env.organizationId)) {
+    throw new TenancyError("forbidden", "This organization is suspended.");
+  }
 
   const name = input.name.trim();
   if (name.length === 0 || name.length > API_KEY_NAME_MAX_LENGTH) {
@@ -163,13 +167,23 @@ function hasPermissions(granted: KeyPermissions | null | undefined, required: Ke
   });
 }
 
+async function isSuspended(organizationId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ organizationId: organizationSuspension.organizationId })
+    .from(organizationSuspension)
+    .where(eq(organizationSuspension.organizationId, organizationId))
+    .limit(1);
+  return row !== undefined;
+}
+
 const INVALID: AuthenticateResult = { ok: false, reason: "invalid" };
 const FORBIDDEN: AuthenticateResult = { ok: false, reason: "forbidden" };
+const SUSPENDED: AuthenticateResult = { ok: false, reason: "suspended" };
 
 /**
  * Authenticates a raw `coss_(live|test)_…` key for the public API. Unknown and unbound keys are
  * rejected with one indexed lookup before Better Auth is involved; Better Auth then enforces
- * enabled/expiry and tracks usage. Database errors are thrown (an outage is not a 401).
+ * enabled/expiry and tracks usage. Keys of a suspended organization are refused. Database errors are thrown (an outage is not a 401).
  */
 export async function authenticateApiKey(
   rawKey: string | null | undefined,
@@ -186,10 +200,15 @@ export async function authenticateApiKey(
       projectId: environment.projectId,
       environmentId: environment.id,
       mode: environment.mode,
+      suspendedAt: organizationSuspension.createdAt,
     })
     .from(apikey)
     .innerJoin(environmentApiKey, eq(environmentApiKey.apiKeyId, apikey.id))
     .innerJoin(environment, eq(environment.id, environmentApiKey.environmentId))
+    .leftJoin(
+      organizationSuspension,
+      eq(organizationSuspension.organizationId, environment.organizationId),
+    )
     .where(eq(apikey.key, hashed))
     .limit(1);
   // Better Auth would reject a disabled key too, but logs an error for every attempt.
@@ -223,6 +242,8 @@ export async function authenticateApiKey(
     return INVALID;
   }
 
+  // Checked only once the key itself is proven valid, so a guessed key learns nothing.
+  if (row.suspendedAt !== null) return SUSPENDED;
   if (required && !hasPermissions(key.permissions, required)) return FORBIDDEN;
 
   const { apiKeyId, organizationId, projectId, environmentId, mode } = row;
