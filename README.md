@@ -140,6 +140,11 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    runs as (role, or credentials as a last resort).
    When upgrading an existing SES deployment, pause sends and domain changes, drain the SES event
    queue with the worker, then run bootstrap before resuming with the new application version.
+   For scheduled sends, rerun bootstrap with the deployment's existing region, name and tenant prefix
+   to update the attached `<name>-worker` policy with SES send permissions before starting the new
+   worker. Bootstrap makes the updated policy version the default; existing attachments stay in place.
+   If you manage IAM policies separately, apply both worker `ses:SendEmail` grants from
+   `apps/worker/scripts/ses-policies.ts` (identities and the COSS configuration set).
    Bootstrap imports historical SES permanent bounces and complaints into their original live
    environments, and conservatively copies the SES account and tenant lists to every live
    environment of each matching organization (SES lists have no environment attribution).
@@ -152,5 +157,5 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
 COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
 carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
-policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
+and worker policies allow `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
 denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
