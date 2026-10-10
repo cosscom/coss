@@ -1,5 +1,6 @@
 import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
+import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -21,7 +22,7 @@ import {
   TrackingBadge,
 } from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
-import { formatDateTime } from "@/lib/format";
+import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Email" };
@@ -172,6 +173,46 @@ export default async function EmailPage({
           </Table>
         </CardPanel>
       </Card>
+
+      {email.attachments.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Attachments</CardTitle>
+            <CardDescription>
+              Only metadata is kept: COSS discards the content once the email is sent.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel className="p-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Filename</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Size</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {email.attachments.map((attachment) => (
+                  <TableRow key={attachment.id}>
+                    <TableCell className="break-all">
+                      <span className="flex flex-wrap items-center gap-2">
+                        {attachment.filename}
+                        {attachment.content_id !== null ? (
+                          <Badge variant="outline">inline · cid:{attachment.content_id}</Badge>
+                        ) : null}
+                      </span>
+                    </TableCell>
+                    <TableCell className="break-all">{attachment.content_type}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatBytes(attachment.size)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardPanel>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

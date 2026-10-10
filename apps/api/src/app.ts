@@ -7,19 +7,17 @@ import {
 } from "@coss/ratelimit";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
-import { errorResponse, internalError, notFound, payloadTooLarge, toApiError } from "./errors.ts";
+import { BODY_LIMIT_BYTES, hasOwnBodyLimit, limitBody } from "./body-limit.ts";
+import { errorResponse, internalError, notFound, toApiError } from "./errors.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 import type { AppEnv } from "./types.ts";
 import { validationHook } from "./validation.ts";
-
-export const BODY_LIMIT_BYTES = 5 * 1024 * 1024;
 
 export type CreateAppOptions = {
   /** Sends store the email and enqueue its dispatch (`createEmailService`). */
@@ -89,12 +87,8 @@ export function createApp(opts: CreateAppOptions) {
   app.use((c, next) =>
     (c.req.path.startsWith(TRACKING_PATH_PREFIX) ? trackingHeaders : strictHeaders)(c, next),
   );
-  app.use(
-    bodyLimit({
-      maxSize: BODY_LIMIT_BYTES,
-      onError: (c) => errorResponse(c, payloadTooLarge()),
-    }),
-  );
+  const defaultBodyLimit = limitBody(BODY_LIMIT_BYTES);
+  app.use((c, next) => (hasOwnBodyLimit(c) ? next() : defaultBodyLimit(c, next)));
   if (process.env.NODE_ENV !== "test") app.use(logger());
 
   app.onError((error, c) => {

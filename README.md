@@ -81,6 +81,8 @@ resets) are printed to the dashboard's server console in development.
   domains (Easy DKIM + a `send.` MAIL FROM subdomain); sandbox keys accept any `from`.
 - **Recipients & events** — each email has one recipient per distinct address, whose status follows delivery
   events: `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced`/`suppressed`/`failed`, `complained`.
+- **Attachments** — up to 20 base64 files per send (25 MB combined), inline images via `content_id` (`cid:`).
+  Only metadata is kept once the email is sent.
 - **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
   `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and

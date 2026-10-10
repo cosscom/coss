@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  customType,
   foreignKey,
   index,
   integer,
@@ -214,6 +215,42 @@ export const emailRecipient = pgTable(
       foreignColumns: [email.id, email.organizationId],
     }).onDelete("cascade"),
     unique("email_recipient_email_address_unique").on(t.emailId, t.address),
+  ],
+);
+
+/** Postgres `bytea` (drizzle 0.x has no builder for it); node-postgres returns a `Buffer`. */
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/**
+ * One row per attachment of an email. `content` is only kept until the email is sent or fails,
+ * then set to null; the metadata stays.
+ */
+export const emailAttachment = pgTable(
+  "email_attachment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailAttachment)),
+    organizationId: text("organization_id").notNull(),
+    emailId: text("email_id").notNull(),
+    position: integer("position").notNull(),
+    filename: text("filename").notNull(),
+    contentType: text("content_type").notNull(),
+    // Set for inline attachments (referenced from the HTML as `cid:<content_id>`).
+    contentId: text("content_id"),
+    size: integer("size").notNull(),
+    // Hex SHA-256 of the content, kept after the content is purged.
+    sha256: text("sha256").notNull(),
+    content: bytea("content"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_attachment_email_fk",
+      columns: [t.emailId, t.organizationId],
+      foreignColumns: [email.id, email.organizationId],
+    }).onDelete("cascade"),
+    unique("email_attachment_email_position_unique").on(t.emailId, t.position),
   ],
 );
 

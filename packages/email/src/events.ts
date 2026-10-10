@@ -9,6 +9,7 @@ import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { purgeAttachmentContent } from "./attachments.ts";
 import type { ProviderEvent } from "./provider.ts";
 import {
   EMAIL_RECIPIENT_STATUSES,
@@ -188,10 +189,12 @@ export async function recordProviderEvent(
         .set({ status: "queued" })
         .where(and(scope, eq(emailRecipient.status, "failed")));
     }
-    await tx
+    const [sent] = await tx
       .update(email)
       .set(accepted)
-      .where(and(thisEmail, eq(email.status, "queued")));
+      .where(and(thisEmail, eq(email.status, "queued")))
+      .returning({ id: email.id });
+    if (sent || repaired) await purgeAttachmentContent(tx, target);
   }
 
   const status = recipientStatus(event);

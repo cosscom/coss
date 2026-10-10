@@ -1,11 +1,22 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, eq, isNull } from "drizzle-orm";
+import {
+  insertAttachments,
+  loadOutboundAttachments,
+  prepareAttachments,
+  purgeAttachmentContent,
+} from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
-import type { EmailProvider, OutboundEmail, ProviderEvent } from "./provider.ts";
+import type {
+  EmailProvider,
+  OutboundAttachment,
+  OutboundEmail,
+  ProviderEvent,
+} from "./provider.ts";
 import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
 import { hashSendRequest } from "./request-hash.ts";
 import {
@@ -56,7 +67,11 @@ function bareAddress(value: string): string {
 }
 
 /** The message for the provider, without the recipients COSS suppressed. */
-function toOutbound(row: EmailRow, suppressed: ReadonlySet<string>): OutboundEmail {
+function toOutbound(
+  row: EmailRow,
+  suppressed: ReadonlySet<string>,
+  attachments: OutboundAttachment[],
+): OutboundEmail {
   const keep = (list: string[]) => list.filter((value) => !suppressed.has(bareAddress(value)));
   return {
     emailId: row.id,
@@ -71,6 +86,7 @@ function toOutbound(row: EmailRow, suppressed: ReadonlySet<string>): OutboundEma
     text: row.text,
     headers: row.headers,
     tags: row.tags,
+    attachments,
   };
 }
 
@@ -102,8 +118,12 @@ function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
   return rows;
 }
 
-/** The event COSS records when the provider rejects a send. */
-function failedEvent(row: EmailRow, provider: string): ProviderEvent {
+/** The event COSS records when the provider rejects a send (or COSS cannot hand it over). */
+function failedEvent(
+  row: EmailRow,
+  provider: string,
+  failure = { code: "provider_error", message: "The email provider did not accept the email." },
+): ProviderEvent {
   return {
     provider: COSS_EVENT_SOURCE,
     providerEventType: "ProviderError",
@@ -113,9 +133,7 @@ function failedEvent(row: EmailRow, provider: string): ProviderEvent {
     recipients: null,
     occurredAt: new Date(),
     sourceId: provider,
-    data: {
-      failure: { code: "provider_error", message: "The email provider did not accept the email." },
-    },
+    data: { failure },
   };
 }
 
@@ -194,8 +212,24 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
-    const message = toOutbound(row, await suppressedAddresses(row));
-    if (message.to.length + message.cc.length + message.bcc.length === 0) {
+    const attachments = await loadOutboundAttachments(row);
+    const message = toOutbound(row, await suppressedAddresses(row), attachments ?? []);
+    if (attachments === null) {
+      // Content is only purged once an email leaves `queued`, so this means a bug elsewhere:
+      // never send the email without the attachments it was requested with.
+      outcome = {
+        status: "failed",
+        provider: provider.name,
+        errorCode: "attachments_unavailable",
+        errorMessage: "The email's attachments are no longer stored.",
+      };
+      events = [
+        failedEvent(row, provider.name, {
+          code: "attachments_unavailable",
+          message: "The email's attachments are no longer stored.",
+        }),
+      ];
+    } else if (message.to.length + message.cc.length + message.bcc.length === 0) {
       // Every recipient is suppressed: nothing to hand over. Each one already has its
       // `email.suppressed` event, so no `email.failed` event is added.
       outcome = {
@@ -241,6 +275,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ),
         )
         .returning({ id: email.id });
+      // Either way the email has left `queued`, so its attachments are no longer needed.
+      await purgeAttachmentContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
       for (const event of events) await recordProviderEvent(tx, event);
@@ -368,6 +404,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       idempotencyKey,
       requestHash,
     } satisfies typeof email.$inferInsert;
+    // Decoded once, outside the (retried) insert transaction.
+    const attachments = prepareAttachments(params);
 
     if (!sandbox) {
       try {
@@ -407,6 +445,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         row.category,
       );
       await tx.insert(emailRecipient).values(recipients);
+      await insertAttachments(tx, row, attachments);
       for (const [address, entry] of suppressed) {
         await recordProviderEvent(tx, suppressedEvent(row, address, entry));
       }

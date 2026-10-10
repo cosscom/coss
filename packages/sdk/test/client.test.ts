@@ -110,6 +110,16 @@ describe("coss.email.send", () => {
     );
   });
 
+  test("sends attachments as given (base64 JSON)", async () => {
+    const { fetch, calls } = mockFetch(json(200, sampleEmail));
+    const withAttachment = {
+      ...params,
+      attachments: [{ filename: "a.txt", content: btoa("hi"), content_id: "a@x" }],
+    };
+    await new Coss({ apiKey: API_KEY, fetch }).email.send(withAttachment);
+    expect(JSON.parse(calls[0]?.body ?? "")).toEqual(withAttachment);
+  });
+
   test("uses the caller's idempotency key", async () => {
     const { fetch, calls } = mockFetch(json(200, sampleEmail));
     await new Coss({ apiKey: API_KEY, fetch }).email.send(params, { idempotencyKey: "order-42" });
