@@ -173,7 +173,7 @@ describe("GET /v1/domains", () => {
     const [mine, theirs] = await Promise.all([createTestTenant(), createTestTenant()]);
     const { app } = createTestApp();
     const names = [`b-${uniqueDomainName()}`, `a-${uniqueDomainName()}`];
-    await Promise.all(names.map((name) => createVerifiedDomain(mine.organization.id, name)));
+    await Promise.all(names.map((name) => createVerifiedDomain(mine.organization.id, { name })));
     await createVerifiedDomain(theirs.organization.id);
 
     const res = await apiRequest(app, "GET", "/v1/domains", { key: mine.liveKey });
