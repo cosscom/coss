@@ -117,6 +117,12 @@ export class FakeSesApi implements SesApi {
     return { TenantName: name, TenantArn: arn, SendingStatus: "ENABLED" as const, $metadata: {} };
   }
 
+  async putTenantSuppressionAttributes(input: { TenantName?: string }) {
+    this.#record("putTenantSuppressionAttributes", input);
+    if (!this.tenants.has(input.TenantName ?? "")) throw sesError("NotFoundException");
+    return {};
+  }
+
   async getTenant(input: { TenantName: string }) {
     this.#record("getTenant", input);
     const tenant = this.tenants.get(input.TenantName);

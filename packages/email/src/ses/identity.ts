@@ -8,7 +8,14 @@ import {
   type MailFromStatus,
   type ProviderTenant,
 } from "../provider.ts";
-import { accountOf, isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
+import {
+  accountOf,
+  isSesError,
+  type SesApi,
+  type SesConfig,
+  TENANT_SUPPRESSION,
+  tenantNameFor,
+} from "./api.ts";
 
 const DKIM_STATUS: Record<string, DomainVerificationStatus> = {
   SUCCESS: "verified",
@@ -68,16 +75,17 @@ export class SesIdentityProvider implements IdentityProvider {
     try {
       const created = await this.#api.createTenant({
         TenantName: tenantName,
-        // Bounces and complaints suppress addresses for this organization only.
-        SuppressionAttributes: {
-          SuppressionScope: "TENANT",
-          SuppressedReasons: ["BOUNCE", "COMPLAINT"],
-        },
+        SuppressionAttributes: TENANT_SUPPRESSION,
         Tags: [{ Key: "coss_organization_id", Value: input.organizationId }],
       });
       tenantArn = created.TenantArn;
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
+      // A tenant created before COSS owned suppression may still suppress on its own.
+      await this.#api.putTenantSuppressionAttributes({
+        TenantName: tenantName,
+        ...TENANT_SUPPRESSION,
+      });
     }
     tenantArn ??= await this.#tenantArn({ tenantName, tenantArn: null });
     // A tenant can only send with configuration sets associated with it.

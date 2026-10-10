@@ -154,4 +154,80 @@ describe("coss SDK against the API", () => {
 
     expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
   });
+
+  test("suppressions: add, check, list, get, remove, and a category send skips the address", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const added = await coss.email.suppressions.add({
+      address: "Jane <Jane@Example.com>",
+      scope: "marketing",
+    });
+    expect(added.error).toBeNull();
+    expect(added.data).toMatchObject({
+      object: "suppression",
+      address: "jane@example.com",
+      scope: "marketing",
+      reason: "manual",
+      email_id: null,
+    });
+    if (!added.data) throw new Error("add failed");
+    expect(
+      (await coss.email.suppressions.add({ address: "jane@example.com", scope: "marketing" })).data,
+    ).toEqual(added.data);
+
+    const check = await coss.email.suppressions.check({
+      address: "jane@example.com",
+      category: "marketing",
+    });
+    expect(check).toEqual({
+      data: {
+        object: "suppression_check",
+        address: "jane@example.com",
+        suppressed: true,
+        suppressions: [added.data],
+      },
+      error: null,
+    });
+    expect(
+      (await coss.email.suppressions.check({ address: "jane@example.com" })).data?.suppressed,
+    ).toBe(false);
+    expect(await coss.email.suppressions.list({ scope: "marketing", limit: 10 })).toEqual({
+      data: { object: "list", data: [added.data], has_more: false },
+      error: null,
+    });
+    expect(await coss.email.suppressions.get(added.data.id)).toEqual({
+      data: added.data,
+      error: null,
+    });
+
+    const skipped = await coss.email.send({
+      from: "hello@acme.com",
+      to: ["jane@example.com", "joe@example.com"],
+      subject: "Sale",
+      text: "Sale",
+      category: "marketing",
+    });
+    expect(skipped.data?.category).toBe("marketing");
+    expect(skipped.data?.recipients.map((r) => [r.address, r.status])).toEqual([
+      ["jane@example.com", "suppressed"],
+      ["joe@example.com", "delivered"],
+    ]);
+    expect(sandboxProvider.sent.at(-1)?.to).toEqual(["joe@example.com"]);
+    const events = await coss.email.listEvents(skipped.data?.id ?? "");
+    expect(events.data?.data.find((e) => e.type === "email.suppressed")).toMatchObject({
+      recipient: "jane@example.com",
+      data: { suppression: { id: added.data.id, scope: "marketing", reason: "manual" } },
+    });
+
+    expect(await coss.email.suppressions.remove(added.data.id)).toEqual({
+      data: { object: "suppression", id: added.data.id, deleted: true },
+      error: null,
+    });
+    const gone = await coss.email.suppressions.get(added.data.id);
+    expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
+    const validation = await coss.email.suppressions.add({ address: "nope", scope: "*" });
+    expect(validation.error).toMatchObject({ type: "invalid_request_error", param: "address" });
+  });
 });

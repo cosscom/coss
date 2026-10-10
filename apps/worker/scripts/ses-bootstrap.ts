@@ -4,7 +4,9 @@
  *   SES configuration set ──events──▶ SNS topic ──raw──▶ SQS queue (+ dead-letter queue) ◀── worker
  *   EventBridge rule (tenant sending status) ─────────────▶ same queue
  *
- * Tenants, domain identities and their associations are created by the app at runtime.
+ * Tenants, domain identities and their associations are created by the app at runtime. COSS keeps
+ * its own suppression lists, so SES suppression is turned off for the configuration set and for
+ * every existing tenant of this stage.
  *
  *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]
  *
@@ -19,7 +21,10 @@ import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
   type EventDestinationDefinition,
+  ListTenantsCommand,
   PutConfigurationSetReputationOptionsCommand,
+  PutConfigurationSetSuppressionOptionsCommand,
+  PutTenantSuppressionAttributesCommand,
   SESv2Client,
   UpdateConfigurationSetEventDestinationCommand,
 } from "@aws-sdk/client-sesv2";
@@ -37,6 +42,7 @@ import {
   SQSClient,
 } from "@aws-sdk/client-sqs";
 import { SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
+import { TENANT_SUPPRESSION, tenantNameFor } from "@coss/email/ses";
 
 const EVENT_DESTINATION = "coss-events";
 const EVENT_TYPES = [
@@ -252,6 +258,33 @@ try {
   );
 }
 step(`SES configuration set ${name} → ${EVENT_TYPES.join(", ")}`);
+
+// 6. SES never suppresses on its own: COSS keeps the suppression lists (`email_suppression`).
+// The configuration set overrides the account-level list; tenants get their own, empty, list.
+await ses.send(
+  new PutConfigurationSetSuppressionOptionsCommand({
+    ConfigurationSetName: name,
+    ...TENANT_SUPPRESSION,
+  }),
+);
+const ownTenant = tenantNameFor(tenantPrefix, "");
+let tenantsUpdated = 0;
+let nextToken: string | undefined;
+do {
+  const page = await ses.send(new ListTenantsCommand({ NextToken: nextToken, PageSize: 100 }));
+  for (const tenant of page.Tenants ?? []) {
+    if (!tenant.TenantName?.startsWith(ownTenant)) continue;
+    await ses.send(
+      new PutTenantSuppressionAttributesCommand({
+        TenantName: tenant.TenantName,
+        ...TENANT_SUPPRESSION,
+      }),
+    );
+    tenantsUpdated++;
+  }
+  nextToken = page.NextToken;
+} while (nextToken);
+step(`SES suppression off (configuration set and ${tenantsUpdated} existing tenants)`);
 
 console.info(
   [

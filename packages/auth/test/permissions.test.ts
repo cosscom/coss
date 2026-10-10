@@ -28,6 +28,15 @@ describe("org roles", () => {
     expect(orgRoles.member.authorize({ project: ["create"] }).success).toBe(false);
     expect(orgRoles.member.authorize({ invitation: ["create"] }).success).toBe(false);
   });
+
+  test("members can read suppressions; admins can also add and remove them", () => {
+    expect(orgRoles.member.authorize({ suppression: ["read"] }).success).toBe(true);
+    expect(orgRoles.member.authorize({ suppression: ["create"] }).success).toBe(false);
+    expect(orgRoles.member.authorize({ suppression: ["delete"] }).success).toBe(false);
+    expect(orgRoles.admin.authorize({ suppression: ["create", "read", "delete"] }).success).toBe(
+      true,
+    );
+  });
 });
 
 describe("orgRoleCan", () => {

@@ -27,6 +27,10 @@ const HEADER_VALUE = /^[ -~]{1,995}$/;
 // SES limit for one header (name + value), which keeps the folded line within RFC 5322's 998.
 const HEADER_LINE_MAX_LENGTH = 996;
 const TAG_PART = /^[A-Za-z0-9_-]{1,256}$/;
+const CATEGORY = TAG_PART;
+
+/** The suppression scope that matches every email, whatever its category. */
+export const ALL_CATEGORIES = "*";
 
 /** Headers COSS (or the provider) owns. `x-ses-*` is matched by prefix. */
 export const RESERVED_HEADERS: ReadonlySet<string> = new Set([
@@ -144,6 +148,10 @@ const TagPart = z
 
 const Tag = z.strictObject({ name: TagPart, value: TagPart });
 
+const Category = z
+  .string()
+  .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -240,6 +248,11 @@ const SendEmailRequestFields = z.strictObject({
       }
     })
     .optional(),
+  category: Category.optional().meta({
+    description:
+      'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
+      "(or for every email) are skipped.",
+  }),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -277,6 +290,9 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
       ]),
     ),
     tags: value.tags ?? [],
+    // Absent rather than `null` without a category, so request hashes from before categories
+    // existed stay valid for idempotent retries.
+    ...(value.category === undefined ? {} : { category: value.category }),
   }))
   .meta({ id: "SendEmailRequest" });
 
@@ -308,6 +324,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.bounced",
   "email.complained",
   "email.failed",
+  "email.suppressed",
 ] as const;
 
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
@@ -319,11 +336,32 @@ export const EmailRecipient = z
     status: z.enum(EMAIL_RECIPIENT_STATUSES).meta({
       description:
         "Delivery status of this recipient. `suppressed` means the address is on the " +
-        "suppression list after an earlier bounce or complaint.",
+        "environment's suppression list (for every email or for this email's category), so it " +
+        "was skipped.",
     }),
     last_event_at: z.iso.datetime().nullable(),
   })
   .meta({ id: "EmailRecipient" });
+
+export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual"] as const;
+
+export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
+
+export const SuppressionScope = z
+  .union([z.literal(ALL_CATEGORIES), Category], {
+    error: 'Expected "*" or a category (ASCII letters, numbers, underscores or dashes).',
+  })
+  .meta({
+    id: "SuppressionScope",
+    description:
+      "`*` suppresses every email; a category only suppresses emails with that category.",
+  });
+
+const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
+  description:
+    "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
+    "`manual`: added through the API or dashboard.",
+});
 
 export const EmailEventData = z
   .object({
@@ -346,6 +384,10 @@ export const EmailEventData = z
       .optional(),
     delivery: z.object({ smtp_response: z.string().nullable() }).optional(),
     failure: z.object({ code: z.string(), message: z.string() }).optional(),
+    suppression: z
+      .object({ id: z.string(), scope: z.string(), reason: SuppressionReasonEnum })
+      .optional()
+      .meta({ description: "Only for `email.suppressed`: the entry that matched the recipient." }),
   })
   .meta({ id: "EmailEventData" });
 
@@ -397,6 +439,7 @@ export const EmailWebhookEvent = z
       to: z.array(z.string()),
       subject: z.string(),
       tags: z.array(z.object({ name: z.string(), value: z.string() })),
+      category: z.string().nullable(),
       sandbox: z.boolean(),
       recipient: z.string().nullable(),
       occurred_at: z.iso.datetime(),
@@ -420,6 +463,7 @@ export const EmailObject = z
     text: z.string().nullable(),
     headers: z.record(z.string(), z.string()),
     tags: z.array(z.object({ name: z.string(), value: z.string() })),
+    category: z.string().nullable(),
     status: z.enum(EMAIL_STATUSES).meta({
       description:
         "Whether the email was handed to the delivery provider. Per-recipient delivery is in `recipients`.",
@@ -434,3 +478,110 @@ export const EmailObject = z
   .meta({ id: "Email" });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
+
+const SuppressionAddress = z
+  .string()
+  .superRefine((value, ctx) => {
+    const problem = emailAddressProblem(value);
+    if (problem) ctx.addIssue({ code: "custom", message: problem });
+  })
+  .transform(addressKey);
+
+export const CreateSuppressionRequest = z
+  .strictObject({
+    address: SuppressionAddress.meta({
+      description:
+        "The address to suppress. Display names are ignored; matching is case-insensitive.",
+    }),
+    scope: SuppressionScope.optional().meta({
+      description:
+        'Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.',
+    }),
+  })
+  .transform((value) => ({ address: value.address, scope: value.scope ?? ALL_CATEGORIES }))
+  .meta({ id: "CreateSuppressionRequest" });
+
+export type CreateSuppressionRequestInput = z.input<typeof CreateSuppressionRequest>;
+export type CreateSuppressionRequestOutput = z.output<typeof CreateSuppressionRequest>;
+
+export const DEFAULT_SUPPRESSION_LIST_LIMIT = 50;
+export const MAX_SUPPRESSION_LIST_LIMIT = 100;
+
+export const ListSuppressionsQuery = z.strictObject({
+  address: SuppressionAddress.optional().meta({ description: "Only entries for this address." }),
+  scope: SuppressionScope.optional().meta({ description: "Only entries with this scope." }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_SUPPRESSION_LIST_LIMIT)
+    .optional()
+    .meta({
+      description: `1-${MAX_SUPPRESSION_LIST_LIMIT}, default ${DEFAULT_SUPPRESSION_LIST_LIMIT}.`,
+    }),
+  after: z
+    .string()
+    .optional()
+    .meta({ description: "Cursor: the `id` of the last entry of the previous page." }),
+});
+
+export type ListSuppressionsQueryOutput = z.output<typeof ListSuppressionsQuery>;
+
+export const CheckSuppressionQuery = z.strictObject({
+  address: SuppressionAddress.meta({ description: "The address to check." }),
+  category: Category.optional().meta({
+    description: "The category of the email you plan to send. Without it, only `*` entries count.",
+  }),
+});
+
+export type CheckSuppressionQueryOutput = z.output<typeof CheckSuppressionQuery>;
+
+export const Suppression = z
+  .object({
+    object: z.literal("suppression"),
+    id: z.string().meta({ example: "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    address: z.string().meta({ description: "The bare, lower-cased address." }),
+    scope: z.string().meta({ description: "`*` (every email) or a category." }),
+    reason: SuppressionReasonEnum,
+    email_id: z
+      .string()
+      .nullable()
+      .meta({ description: "The email whose bounce or complaint added this entry." }),
+    created_at: z.iso.datetime(),
+  })
+  .meta({ id: "Suppression" });
+
+export type SuppressionOutput = z.output<typeof Suppression>;
+
+export const SuppressionList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(Suppression),
+    has_more: z.boolean(),
+  })
+  .meta({ id: "SuppressionList" });
+
+export type SuppressionListOutput = z.output<typeof SuppressionList>;
+
+export const SuppressionCheck = z
+  .object({
+    object: z.literal("suppression_check"),
+    address: z.string(),
+    suppressed: z
+      .boolean()
+      .meta({ description: "Whether a send (with the given category) would skip this address." }),
+    suppressions: z.array(Suppression).meta({ description: "The entries that match." }),
+  })
+  .meta({ id: "SuppressionCheck" });
+
+export type SuppressionCheckOutput = z.output<typeof SuppressionCheck>;
+
+export const DeletedSuppression = z
+  .object({
+    object: z.literal("suppression"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({ id: "DeletedSuppression" });
+
+export type DeletedSuppressionOutput = z.output<typeof DeletedSuppression>;

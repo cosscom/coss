@@ -116,15 +116,16 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: requireApiKey({ <product>: ["<action>"] }) })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth`. Document error statuses with
-  `errorDoc`/`commonErrors` (`src/routes/emails.ts`). The root `validationHook` turns zod failures into 422 + `issues`;
-  a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
+  `errorDoc`/`commonErrors` (exported by `src/routes/emails.ts`). The root `validationHook` turns zod failures into
+  422 + `issues`; a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI
+  path list.
 
 ## SDK (`packages/sdk`, published as `coss`)
 
 - `Coss` (`src/client.ts`) → one `HttpClient` (`src/core/http.ts`: bearer auth, JSON, per-attempt timeout, retries on
   network/timeout/409/429/5xx honoring `Retry-After`, an `Idempotency-Key` on every POST reused across retries) → one
-  resource per product (`src/resources/<product>.ts`). Methods return `{ data, error }` and never throw for API/network
-  failures.
+  resource per product (`src/resources/<product>.ts`; sub-resources hang off it, e.g. `coss.email.suppressions`).
+  Methods return `{ data, error }` and never throw for API/network failures.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
   access, zero runtime deps. `isolatedDeclarations` is on (exported functions need explicit types).
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
@@ -188,7 +189,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
    statuses, `bunfig.toml` + `test/setup.ts` preload.
 3. Permissions: add the resource to `orgStatements` and the roles (`packages/auth/src/permissions.ts`) and to the
    api-key `defaultPermissions` (`packages/auth/src/options.ts`). Permissions are stored per key at creation, so
-   existing keys need an `apikey.permissions` backfill or they get 403.
+   existing keys need an `apikey.permissions` backfill or they get 403 (a custom migration, like
+   `packages/db/migrations/0005_suppression_key_permissions.sql`).
 4. API: `src/routes/<resource>.ts` mounted in `routes/v1.ts`, service injected via `createApp` options, error class
    mapped in `toApiError`, OpenAPI path list in `test/app.test.ts` updated.
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
@@ -226,7 +228,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
-    `environment_api_key`; metadata is client-writable), `defaultPermissions: { email: ["send", "read"] }`, prefixes
+    `environment_api_key`; metadata is client-writable),
+    `defaultPermissions: { email: ["send", "read"], suppression: ["create", "read", "delete"] }`, prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. Revocation: `getKeyBinding`
@@ -260,6 +263,15 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `maxAttempts: 1` and only throttling is retried. Never adopt an existing SES identity held by another tenant
   (`IdentityTakenError`); orphans are recreated for fresh DKIM keys. The most specific verified domain across all orgs
   decides who may send from a From domain. Use one AWS account (or region) per stage.
+- **Suppressions** (`packages/email/src/suppressions.ts`, table `email_suppression`, ids `sup_`): one list per
+  environment; an entry's `scope` is `*` (`ALL_CATEGORIES`) or a category, matched against the send's `category`.
+  COSS keeps the only list: SES tenants and the configuration set are created with suppression off
+  (`TENANT_SUPPRESSION`; `ses:bootstrap` also fixes existing tenants) — never turn SES suppression back on, or removing
+  a COSS entry or scoping one to a category stops working. Sends store suppressed recipients as `suppressed` with a
+  COSS-source `email.suppressed` event (in the insert transaction) and `deliver` leaves them out of the provider
+  message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
+  `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
+  `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -288,12 +300,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   worker's stale-claim sweep (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late
   SES `Send` event still repairs it); until then retries with the same `Idempotency-Key` get 409 `request_in_progress`.
 - Webhook deliveries are not ordered (use `data.occurred_at`); SES complaints may list every recipient on the
-  complaining domain. Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
+  complaining domain (and each of them gets suppressed). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
-domains), public API/SDK for domains and webhook endpoints, a suppression-list API, attachments/batch/scheduled sends,
+domains), public API/SDK for domains and webhook endpoints, bulk suppression import/export, attachments/batch/scheduled sends,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
 UI, release tooling.

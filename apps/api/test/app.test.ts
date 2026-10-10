@@ -92,6 +92,9 @@ describe("GET /openapi.json", () => {
       "/v1/emails",
       "/v1/emails/{id}",
       "/v1/emails/{id}/events",
+      "/v1/suppressions",
+      "/v1/suppressions/check",
+      "/v1/suppressions/{id}",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -107,6 +110,26 @@ describe("GET /openapi.json", () => {
       operationId: "listEmailEvents",
       parameters: [{ in: "path", name: "id", required: true }],
     });
+    expect(doc.paths["/v1/suppressions"]?.post).toMatchObject({ operationId: "createSuppression" });
+    expect(doc.paths["/v1/suppressions"]?.get).toMatchObject({
+      operationId: "listSuppressions",
+      parameters: expect.arrayContaining([
+        expect.objectContaining({ in: "query", name: "after", required: false }),
+      ]),
+    });
+    expect(doc.paths["/v1/suppressions/check"]?.get).toMatchObject({
+      operationId: "checkSuppression",
+      parameters: expect.arrayContaining([
+        expect.objectContaining({ in: "query", name: "address", required: true }),
+      ]),
+    });
+    expect(doc.paths["/v1/suppressions/{id}"]?.get).toMatchObject({
+      operationId: "getSuppression",
+    });
+    expect(doc.paths["/v1/suppressions/{id}"]?.delete).toMatchObject({
+      operationId: "deleteSuppression",
+      security: [{ bearerAuth: [] }],
+    });
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
       scheme: "bearer",
@@ -118,6 +141,11 @@ describe("GET /openapi.json", () => {
         "EmailRecipient",
         "EmailEvent",
         "EmailEventList",
+        "Suppression",
+        "SuppressionList",
+        "SuppressionCheck",
+        "CreateSuppressionRequest",
+        "DeletedSuppression",
         "Error",
       ]),
     );

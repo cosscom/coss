@@ -8,6 +8,7 @@ export interface EmailWebhookEventData extends EmailEventData {
   to: string[];
   subject: string;
   tags: EmailTag[];
+  category: string | null;
   /** `true` for emails sent with a sandbox (`coss_test_…`) key. */
   sandbox: boolean;
   /** The recipient this event is about; `null` for the whole email. */

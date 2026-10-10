@@ -3,20 +3,33 @@
  * Checked by `tsc --noEmit` (never executed): a mismatch is a type error in this file.
  */
 import type {
+  CheckSuppressionQuery,
+  CreateSuppressionRequest,
+  DeletedSuppression,
   EmailEvent,
   EmailEventList,
   EmailObject,
   EmailRecipient,
   EmailWebhookEvent,
+  ListSuppressionsQuery,
   SendEmailRequest,
+  Suppression,
+  SuppressionCheck,
+  SuppressionList,
 } from "@coss/email/schemas";
 import type {
+  CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
+  CreateSuppressionParams,
   Email,
   List,
+  ListSuppressionsParams,
+  DeletedSuppression as SdkDeletedSuppression,
   EmailEvent as SdkEmailEvent,
   EmailRecipient as SdkEmailRecipient,
+  Suppression as SdkSuppression,
+  SuppressionCheck as SdkSuppressionCheck,
   SendEmailParams,
   WebhookEvent,
 } from "coss";
@@ -57,6 +70,19 @@ export type Contract = [
   // Webhooks: the body COSS sends is exactly the SDK's `WebhookEvent`.
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, WebhookEvent>>,
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], WebhookEvent["data"]>>,
+  // Suppressions: request bodies and queries (the SDK sends `limit` as a number), and responses.
+  Assert<MutuallyAssignable<z.input<typeof CreateSuppressionRequest>, CreateSuppressionParams>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListSuppressionsQuery>, "limit"> & { limit?: number },
+      ListSuppressionsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.input<typeof CheckSuppressionQuery>, CheckSuppressionParams>>,
+  Assert<MutuallyAssignable<z.output<typeof Suppression>, SdkSuppression>>,
+  Assert<MutuallyAssignable<z.output<typeof SuppressionList>, List<SdkSuppression>>>,
+  Assert<MutuallyAssignable<z.output<typeof SuppressionCheck>, SdkSuppressionCheck>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedSuppression>, SdkDeletedSuppression>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

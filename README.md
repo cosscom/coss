@@ -75,6 +75,11 @@ resets) are printed to the dashboard's server console in development.
   domains (Easy DKIM + a `send.` MAIL FROM subdomain); sandbox keys accept any `from`.
 - **Recipients & events** — each email has one recipient per distinct address, whose status follows delivery
   events: `queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced`/`suppressed`/`failed`, `complained`.
+- **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
+  `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
+  (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
+  complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
+  suppression is turned off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
@@ -97,14 +102,18 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery events
+- `POST /v1/suppressions` — suppress an address (`scope`: `*` or a category)
+- `GET /v1/suppressions` — list the environment's suppressions (`address`, `scope`, `limit`, `after`)
+- `GET /v1/suppressions/check?address=…&category=…` — would a send skip this address?
+- `GET /v1/suppressions/{id}` / `DELETE /v1/suppressions/{id}` — retrieve / remove an entry
 - `GET /openapi.json` — OpenAPI 3.1 document
 
 Domains and webhook endpoints are managed in the dashboard.
 
 ## Running on Amazon SES
 
-Each organization gets its own SES **tenant** (isolated reputation, suppression list and pausing), created with
-its first domain. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
+Each organization gets its own SES **tenant** (isolated reputation and pausing), created with its first domain.
+SES suppression is off for tenants and the configuration set: COSS's own suppression lists decide who is skipped. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
 where the worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue.
 
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same

@@ -142,7 +142,13 @@ export const authOptions = {
       rateLimit: { enabled: false },
       // Environment binding lives in our `environment_api_key` table (metadata is client-writable).
       enableMetadata: false,
-      permissions: { defaultPermissions: { email: ["send", "read"] } },
+      permissions: {
+        // Stored per key at creation: changing this needs an `apikey.permissions` backfill.
+        defaultPermissions: {
+          email: ["send", "read"],
+          suppression: ["create", "read", "delete"],
+        },
+      },
     }),
   ],
 } satisfies BetterAuthOptions;

@@ -70,6 +70,14 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  ALL_CATEGORIES,
+  CheckSuppressionQuery,
+  type CheckSuppressionQueryOutput,
+  CreateSuppressionRequest,
+  type CreateSuppressionRequestInput,
+  type CreateSuppressionRequestOutput,
+  DeletedSuppression,
+  type DeletedSuppressionOutput,
   EMAIL_EVENT_TYPES,
   EMAIL_RECIPIENT_STATUSES,
   EMAIL_RECIPIENT_TYPES,
@@ -89,6 +97,8 @@ export {
   type EmailWebhookEventOutput,
   emailAddressProblem,
   isReservedHeader,
+  ListSuppressionsQuery,
+  type ListSuppressionsQueryOutput,
   MAX_HEADERS,
   MAX_RECIPIENTS,
   MAX_TAGS,
@@ -99,6 +109,15 @@ export {
   type SendEmailRequestInput,
   type SendEmailRequestOutput,
   SUBJECT_MAX_LENGTH,
+  SUPPRESSION_REASONS,
+  Suppression,
+  SuppressionCheck,
+  type SuppressionCheckOutput,
+  SuppressionList,
+  type SuppressionListOutput,
+  type SuppressionOutput,
+  type SuppressionReason,
+  SuppressionScope,
 } from "./schemas.ts";
 export {
   createEmailService,
@@ -107,4 +126,14 @@ export {
   type SendEmailInput,
   type SendEnvironment,
 } from "./service.ts";
+export {
+  addSuppression,
+  checkSuppression,
+  getSuppression,
+  listSuppressions,
+  removeSuppression,
+  type SuppressionEnvironment,
+  type SuppressionRow,
+  toSuppressionObject,
+} from "./suppressions.ts";
 export { STALE_CLAIM_MS, sweepStaleClaims } from "./sweeps.ts";

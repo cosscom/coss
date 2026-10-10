@@ -119,6 +119,8 @@ export const email = pgTable(
     text: text("text"),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
+    // Matched against category-scoped suppressions.
+    category: text("category"),
     provider: text("provider"),
     providerMessageId: text("provider_message_id"),
     errorCode: text("error_code"),
@@ -168,6 +170,7 @@ export type EmailEventDetails = {
   delay?: { type: string; expires_at: string | null; diagnostic_code: string | null };
   delivery?: { smtp_response: string | null };
   failure?: { code: string; message: string };
+  suppression?: { id: string; scope: string; reason: EmailSuppressionReason };
 };
 
 /** One row per distinct recipient address of an email; its status is driven by delivery events. */
@@ -206,6 +209,7 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.bounced",
   "email.complained",
   "email.failed",
+  "email.suppressed",
 ]);
 
 /**
@@ -238,6 +242,51 @@ export const emailEvent = pgTable(
     }).onDelete("cascade"),
     unique("email_event_email_dedupe_unique").on(t.emailId, t.dedupeKey),
     index("email_event_email_occurred_at_idx").on(t.emailId, t.occurredAt),
+  ],
+);
+
+export const emailSuppressionReason = pgEnum("email_suppression_reason", [
+  "bounce",
+  "complaint",
+  "manual",
+]);
+
+export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[number];
+
+/**
+ * An environment's suppression list: sends skip a recipient whose address has an entry with scope
+ * `*` or with the email's category. Permanent bounces and complaints add `*` entries.
+ */
+export const emailSuppression = pgTable(
+  "email_suppression",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailSuppression)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // Bare address, lower-cased (no display name).
+    address: text("address").notNull(),
+    // `*` (every email) or a category.
+    scope: text("scope").notNull(),
+    reason: emailSuppressionReason("reason").notNull(),
+    // The email whose bounce or complaint added the entry. No FK: the entry outlives the email.
+    emailId: text("email_id"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_suppression_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("email_suppression_environment_address_scope_unique").on(
+      t.environmentId,
+      t.address,
+      t.scope,
+    ),
+    index("email_suppression_environment_id_idx").on(t.environmentId, t.id.desc()),
   ],
 );
 

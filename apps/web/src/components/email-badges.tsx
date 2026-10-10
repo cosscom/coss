@@ -1,4 +1,9 @@
-import type { EmailEventType, EmailObjectOutput, EmailRecipientStatus } from "@coss/email";
+import type {
+  EmailEventType,
+  EmailObjectOutput,
+  EmailRecipientStatus,
+  SuppressionReason,
+} from "@coss/email";
 import type { EnvironmentMode } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 
@@ -34,10 +39,32 @@ const EVENT_VARIANT = {
   "email.bounced": "error",
   "email.complained": "error",
   "email.failed": "error",
+  "email.suppressed": "warning",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {
   return <Badge variant={EVENT_VARIANT[type]}>{type}</Badge>;
+}
+
+const SUPPRESSION_REASON_VARIANT = {
+  bounce: "error",
+  complaint: "error",
+  manual: "secondary",
+} as const satisfies Record<SuppressionReason, string>;
+
+export function SuppressionReasonBadge({ reason }: { reason: SuppressionReason }) {
+  return <Badge variant={SUPPRESSION_REASON_VARIANT[reason]}>{reason}</Badge>;
+}
+
+/** `*` reads as "All emails"; anything else is a category. */
+export function SuppressionScopeBadge({ scope }: { scope: string }) {
+  return scope === "*" ? (
+    <Badge variant="outline">All emails</Badge>
+  ) : (
+    <Badge className="font-mono" variant="secondary">
+      {scope}
+    </Badge>
+  );
 }
 
 export function SandboxBadge({ sandbox }: { sandbox: boolean }) {

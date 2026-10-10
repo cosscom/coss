@@ -76,6 +76,34 @@ await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: cont
 await coss.email.get(id, { signal });
 ```
 
+## Suppressions
+
+Each environment has a suppression list. Sends skip suppressed recipients: they get the status
+`suppressed` and an `email.suppressed` event, and the rest of the email is still sent. Permanent
+bounces and spam complaints add an address for every email (`scope: "*"`) automatically.
+
+An entry can also cover a single category. That makes the list a good backend for unsubscribe
+links:
+
+```ts
+// The recipient unsubscribed from marketing email.
+await coss.email.suppressions.add({ address: "jane@example.com", scope: "marketing" });
+
+// Skipped: the email has the suppressed category.
+await coss.email.send({ ...params, to: "jane@example.com", category: "marketing" });
+// Delivered: receipts are not suppressed.
+await coss.email.send({ ...params, to: "jane@example.com", category: "receipts" });
+
+const { data: check } = await coss.email.suppressions.check({
+  address: "jane@example.com",
+  category: "marketing",
+}); // { suppressed: true, suppressions: [{ id: "sup_01k…", scope: "marketing", … }] }
+
+const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // newest first
+// Next page: list({ after: page.data.at(-1).id }) while page.has_more.
+await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
+```
+
 ## Webhooks
 
 Webhook endpoints (set up in the dashboard) receive `email.sent`, `email.delivered`,

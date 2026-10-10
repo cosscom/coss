@@ -14,12 +14,12 @@ type HeaderDoc = {
   schema: { type: "string" | "integer"; enum?: string[]; example?: string };
 };
 
-const requestIdHeader: HeaderDoc = {
+export const requestIdHeader: HeaderDoc = {
   description: "Unique id of this request. Include it when contacting support.",
   schema: { type: "string", example: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" },
 };
 
-function errorDoc(description: string, headers: Record<string, HeaderDoc> = {}) {
+export function errorDoc(description: string, headers: Record<string, HeaderDoc> = {}) {
   return {
     description,
     headers: { "X-Request-Id": requestIdHeader, ...headers },
@@ -27,7 +27,7 @@ function errorDoc(description: string, headers: Record<string, HeaderDoc> = {}) 
   };
 }
 
-const commonErrors = {
+export const commonErrors = {
   401: errorDoc("The API key is missing, invalid, revoked or expired (`authentication_error`)."),
   403: errorDoc("The API key lacks the permission this endpoint needs (`permission_error`)."),
   500: errorDoc("Unexpected server error (`api_error` / `internal_error`)."),
@@ -65,7 +65,9 @@ export const sendEmailRoute = createRoute({
   description:
     "Sends an email from the API key's environment. Live (`coss_live_…`) keys must send from a " +
     "verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and " +
-    "never deliver anything; the response has `sandbox: true`.",
+    "never deliver anything; the response has `sandbox: true`. Recipients on the environment's " +
+    "suppression list (for every email, or for the email's `category`) are skipped and get " +
+    "the status `suppressed`.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["send"] }),
   request: {
@@ -139,8 +141,9 @@ export const listEmailEventsRoute = createRoute({
   summary: "List an email's delivery events",
   description:
     "Every delivery event of the email, oldest first: `email.sent` and `email.failed` for the " +
-    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced` and " +
-    "`email.complained` per recipient.",
+    "whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
+    "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
+    "recipient.",
   security: [{ bearerAuth: [] }],
   middleware: requireApiKey({ email: ["read"] }),
   request: { params: EmailIdParams },

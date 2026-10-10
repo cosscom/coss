@@ -27,9 +27,11 @@ export interface HttpClientOptions {
 }
 
 export interface ApiRequest {
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "DELETE";
   /** Path including the version prefix, e.g. `/v1/emails`. */
   path: string;
+  /** Query parameters; `undefined` values are left out. */
+  query?: Record<string, string | number | undefined>;
   /** Serialized as JSON. */
   body?: unknown;
   idempotencyKey?: string;
@@ -118,7 +120,13 @@ export class HttpClient {
   }
 
   async request<T>(request: ApiRequest): Promise<CossResult<T>> {
-    const url = `${this.#baseUrl}${request.path}`;
+    let url = `${this.#baseUrl}${request.path}`;
+    const query = new URLSearchParams();
+    for (const [name, value] of Object.entries(request.query ?? {})) {
+      if (value !== undefined) query.set(name, String(value));
+    }
+    const search = query.toString();
+    if (search) url += `?${search}`;
     const headers: Record<string, string> = {
       Accept: "application/json",
       Authorization: `Bearer ${this.#apiKey}`,

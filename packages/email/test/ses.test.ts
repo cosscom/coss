@@ -122,7 +122,7 @@ describe("SesEmailProvider", () => {
 });
 
 describe("SesIdentityProvider", () => {
-  test("creates the tenant once, with tenant-level suppression and the configuration set", async () => {
+  test("creates the tenant once, with SES suppression off and the configuration set", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
 
@@ -132,16 +132,21 @@ describe("SesIdentityProvider", () => {
       tenantArn: "arn:aws:ses:eu-west-1:123456789012:tenant/test-org_a/t-1",
     });
     expect(api.calls[0]?.input).toMatchObject({
-      SuppressionAttributes: {
-        SuppressionScope: "TENANT",
-        SuppressedReasons: ["BOUNCE", "COMPLAINT"],
-      },
+      SuppressionAttributes: { SuppressionScope: "TENANT", SuppressedReasons: [] },
     });
     expect(
       api.associations.get("arn:aws:ses:eu-west-1:123456789012:configuration-set/coss-test"),
     ).toEqual(new Set(["test-org_a"]));
 
     expect(await identity.ensureTenant({ organizationId: "org_a" })).toEqual(tenant);
+    // An existing tenant gets suppression turned off too (it may predate COSS suppression lists).
+    expect(
+      api.calls.find((call) => call.operation === "putTenantSuppressionAttributes")?.input,
+    ).toEqual({
+      TenantName: "test-org_a",
+      SuppressionScope: "TENANT",
+      SuppressedReasons: [],
+    });
   });
 
   test("creates domain identities with MAIL FROM, associated with the tenant", async () => {
