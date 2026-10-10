@@ -26,10 +26,10 @@ async function setup(overrides: Partial<Record<BucketName, LimitRule>>) {
   for (const [bucket, rule] of Object.entries(overrides)) {
     await setRateLimitOverride({ organizationId: tenant.organization.id, bucket, rule });
   }
-  const { app } = createTestApp({
+  const testApp = createTestApp({
     rateLimiter: memoryLimiter({ overrides: cachedOverrides() }),
   });
-  return { tenant, app };
+  return { tenant, ...testApp };
 }
 
 function recipients(count: number, tag: string): string[] {
@@ -147,6 +147,43 @@ describe("send quota", () => {
     // The sandbox quota is separate.
     expect((await sendEmail(app, tenant.sandboxKey, emailBody())).status).toBe(200);
   });
+
+  for (const mode of ["live", "sandbox"] as const) {
+    test(`${mode} completed replays succeed with exhausted recipient quota`, async () => {
+      const { tenant, app, liveProvider, sandboxProvider } = await setup({
+        [mode === "live" ? "email.recipients.day" : "email.sandbox_recipients.day"]: {
+          limit: 1,
+          periodMs: 86_400_000,
+        },
+      });
+      const key = mode === "live" ? tenant.liveKey : tenant.sandboxKey;
+      const provider = mode === "live" ? liveProvider : sandboxProvider;
+      const body = emailBody({ from: await domainFrom(tenant.organization.id) });
+      const headers = { "Idempotency-Key": "exhausted-quota-replay" };
+      const first = await sendEmail(app, key, body, headers);
+      expect(first.status).toBe(200);
+      const original = await first.json();
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const replay = await sendEmail(app, key, body, headers);
+        expect(replay.status).toBe(200);
+        expect(replay.headers.get("idempotent-replayed")).toBe("true");
+        expect(await replay.json()).toEqual(original);
+      }
+
+      // Replays must neither dispatch again nor refund quota they did not consume.
+      for (const [requestBody, requestHeaders] of [
+        [body, {}],
+        [body, { "Idempotency-Key": "new-send" }],
+        [{ ...body, subject: "Different request" }, headers],
+      ] as const) {
+        const rejected = await sendEmail(app, key, requestBody, requestHeaders);
+        expect(rejected.status).toBe(429);
+        expect(await errorOf(rejected)).toMatchObject({ code: "quota_exceeded" });
+      }
+      expect(provider.sent).toHaveLength(1);
+    });
+  }
 
   test("idempotent replays and rejected sends are not charged", async () => {
     const { tenant, app } = await setup({

@@ -189,9 +189,22 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       const params = c.req.valid("json");
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
       const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
+      // Tenancy always comes from the authenticated key, never from the request.
+      const input = {
+        environment: { organizationId, projectId, environmentId, mode },
+        apiKeyId,
+        params,
+        idempotencyKey,
+      };
       const quota = sendQuota(c.var.auth, uniqueRecipientCount(params));
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
+        // A completed replay needs no quota. This lookup cannot create or dispatch a send.
+        const replay = await emailService.replay(input);
+        if (replay) {
+          c.header("Idempotent-Replayed", "true");
+          return c.json(replay, 200);
+        }
         throw rateLimitError(decision, {
           code: "quota_exceeded",
           message:
@@ -202,13 +215,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       }
       let result: Awaited<ReturnType<EmailService["send"]>>;
       try {
-        // Tenancy always comes from the authenticated key, never from the request.
-        result = await emailService.send({
-          environment: { organizationId, projectId, environmentId, mode },
-          apiKeyId,
-          params,
-          idempotencyKey,
-        });
+        result = await emailService.send(input);
       } catch (error) {
         // Rejected before anything was sent (validation, domain, idempotency conflicts).
         await c.var.rateLimiter.refund(quota);
