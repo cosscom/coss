@@ -267,8 +267,8 @@ describe("sweepUnclaimedEmails", () => {
 
   test("emails that can never be dispatched don't starve newer lost ones", async () => {
     const tenant = await createTestTenant();
-    const { send } = queuingService();
-    const stuck = [await send(tenant), await send(tenant)];
+    const { service, sent, send } = queuingService();
+    const stuck = [await send(tenant), await send(tenant), await send(tenant)];
     const lost = await send(tenant);
     await backdate(stuck, "3 hours");
     await backdate([lost], "20 minutes");
@@ -279,5 +279,17 @@ describe("sweepUnclaimedEmails", () => {
       requeued: 1,
     });
     expect(sweep.jobs.map((job) => job.emailId)).toEqual([lost]);
+    await sweep.drain(service);
+    expect(sent.map((message) => message.emailId)).toEqual([lost]);
+
+    expect(await sweepUnclaimedEmails(sweep, { scope: scopeOf(tenant), limit: 2 })).toEqual({
+      failed: 1,
+      requeued: 0,
+    });
+    const rows = await db.select().from(schema.email).where(inArray(schema.email.id, stuck));
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row).toMatchObject({ status: "failed", errorCode: "dispatch_failed", provider: null });
+    }
   });
 });

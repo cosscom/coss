@@ -3,7 +3,7 @@
  * span organizations, and every write is scoped by the email's own organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNotNull, isNull, lt } from "drizzle-orm";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 
@@ -20,8 +20,8 @@ export const UNCLAIMED_FAIL_MS = 60 * 60 * 1000;
 
 type Scope = { organizationIds: string[] };
 
-/** Unclaimed `queued` emails created before `before`, oldest first. */
-function unclaimedBefore(before: Date, limit: number, scope: Scope | undefined) {
+/** Unclaimed `queued` emails created before `before`, optionally since `since`, oldest first. */
+function unclaimedBefore(before: Date, limit: number, scope: Scope | undefined, since?: Date) {
   return db
     .select({ id: email.id, organizationId: email.organizationId })
     .from(email)
@@ -30,6 +30,7 @@ function unclaimedBefore(before: Date, limit: number, scope: Scope | undefined) 
         eq(email.status, "queued"),
         isNull(email.provider),
         lt(email.createdAt, before),
+        since ? gte(email.createdAt, since) : undefined,
         scope ? inArray(email.organizationId, scope.organizationIds) : undefined,
       ),
     )
@@ -53,13 +54,10 @@ export async function sweepUnclaimedEmails(
 ): Promise<{ failed: number; requeued: number }> {
   const now = opts.now ?? new Date();
   const limit = opts.limit ?? 100;
+  const failureThreshold = new Date(now.getTime() - UNCLAIMED_FAIL_MS);
 
   let failed = 0;
-  const expired = await unclaimedBefore(
-    new Date(now.getTime() - UNCLAIMED_FAIL_MS),
-    limit,
-    opts.scope,
-  );
+  const expired = await unclaimedBefore(failureThreshold, limit, opts.scope);
   for (const candidate of expired) {
     const done = await db.transaction(async (tx) => {
       const [updated] = await tx
@@ -104,6 +102,7 @@ export async function sweepUnclaimedEmails(
     new Date(now.getTime() - UNCLAIMED_REQUEUE_MS),
     limit,
     opts.scope,
+    failureThreshold,
   );
   for (const candidate of unclaimed) {
     await db.transaction((tx) =>
