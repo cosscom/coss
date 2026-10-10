@@ -24,21 +24,60 @@ async function sessionHeaders(email: string, password: string): Promise<Headers>
   return new Headers({ cookie });
 }
 
+/** Records every SQL statement sent through the pool; `fail` rejects matching statements. */
+async function withQueryLog<T>(
+  run: (statements: string[]) => Promise<T>,
+  fail?: (sql: string) => boolean,
+): Promise<T> {
+  const statements: string[] = [];
+  const original = pool.query.bind(pool);
+  pool.query = ((text: unknown, ...rest: unknown[]) => {
+    const sql = typeof text === "string" ? text : ((text as { text?: string })?.text ?? "");
+    statements.push(sql);
+    if (fail?.(sql)) return Promise.reject(new Error("simulated outage"));
+    return (original as (...args: unknown[]) => unknown)(text, ...rest);
+  }) as typeof pool.query;
+  try {
+    return await run(statements);
+  } finally {
+    pool.query = original;
+  }
+}
+
 describe("authenticateApiKey", () => {
-  test("an internal failure inside Better Auth's verify is thrown (503), not reported as invalid", async () => {
+  test("reads with one SELECT and writes last_request at most once a minute", async () => {
     const tenant = await createTestTenant();
-    const original = pool.query.bind(pool);
-    // Fail only Better Auth's usage-tracking UPDATE; the initial lookup still succeeds.
-    pool.query = ((text: unknown, ...rest: unknown[]) => {
-      const sql = typeof text === "string" ? text : (text as { text?: string })?.text;
-      if (sql?.startsWith('update "apikey"')) return Promise.reject(new Error("simulated outage"));
-      return (original as (...args: unknown[]) => unknown)(text, ...rest);
-    }) as typeof pool.query;
-    try {
-      await expect(authenticateApiKey(tenant.sandboxKey)).rejects.toThrow();
-    } finally {
-      pool.query = original;
-    }
+    const statements = await withQueryLog(async (log) => {
+      for (let i = 0; i < 5; i++)
+        expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
+      return log;
+    });
+    expect(statements.filter((sql) => sql.startsWith("select"))).toHaveLength(5);
+    const writes = statements.filter((sql) => !sql.startsWith("select"));
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toStartWith('update "apikey" set "last_request"');
+  });
+
+  test("a failed usage write does not fail authentication", async () => {
+    const tenant = await createTestTenant();
+    const result = await withQueryLog(
+      () => authenticateApiKey(tenant.sandboxKey),
+      (sql) => sql.startsWith('update "apikey"'),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  test("a failed lookup is thrown (503), not reported as invalid", async () => {
+    const tenant = await createTestTenant();
+    const error = await withQueryLog(
+      () =>
+        authenticateApiKey(tenant.sandboxKey).then(
+          () => null,
+          (e: unknown) => e,
+        ),
+      (sql) => sql.startsWith("select"),
+    );
+    expect(error).toBeInstanceOf(Error);
     expect((await authenticateApiKey(tenant.sandboxKey)).ok).toBe(true);
   });
 });

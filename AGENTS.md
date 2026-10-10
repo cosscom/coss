@@ -237,7 +237,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
     `defaultPermissions: { email: ["send", "read"], suppression: ["create", "read", "delete"] }`, prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
-    `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. Revocation: `getKeyBinding`
+    `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
+    Better Auth's `verifyApiKey` (it writes the key row on every request): one SELECT checks enabled, expiry, org,
+    prefix/mode and permissions, rejects keys with a usage quota (`remaining`), and refreshes `last_request` at most
+    once a minute (`LAST_USED_RESOLUTION_MS`). Re-check it against `validateApiKey` when bumping Better Auth or
+    using a new key option (quotas, refills, per-key rate limits). Revocation: `getKeyBinding`
     ownership check, then `auth.api.deleteApiKey` with session headers.
   - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/update` and
     `/admin/remove-user` (server-side `auth.api.*` still works). Never re-enable them to "simplify" things.
@@ -316,7 +320,6 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
-- Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
