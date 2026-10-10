@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
@@ -32,6 +33,7 @@ export const env = createEnv({
     // Encrypts webhook endpoint signing secrets; must be the same value the worker uses.
     WEBHOOK_SECRETS_KEY: z.string().min(1, "Generate one with `openssl rand -base64 32`."),
     ...emailEnvShape,
+    ...rateLimitEnvShape,
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

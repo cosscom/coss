@@ -26,6 +26,14 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       # CI-only values. No .env file exists in CI; turbo passes these via globalEnv.
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/coss_test
@@ -36,6 +44,7 @@ jobs:
       API_PORT: "3001"
       EMAIL_PROVIDER: fake
       WEBHOOK_SECRETS_KEY: Y2ktb25seS13ZWJob29rLXNlY3JldHMta2V5LTMyYnk=
+      TEST_VALKEY_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2

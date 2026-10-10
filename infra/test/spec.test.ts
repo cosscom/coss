@@ -6,6 +6,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
+import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { albListenerRules, cossComCacheBehaviours } from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
 
@@ -16,7 +17,11 @@ const read = (file: string) => readFileSync(path.join(ROOT, file), "utf8");
 function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] {
   const source = read(envFile);
   const own = [...source.matchAll(/^ {4}([A-Z][A-Z0-9_]+):/gm)].map((match) => match[1] ?? "");
-  return [...own, ...(source.includes("...email") ? Object.keys(spread) : [])];
+  return [
+    ...own,
+    ...(source.includes("...email") ? Object.keys(spread) : []),
+    ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
+  ];
 }
 
 const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {

@@ -1,4 +1,10 @@
 import type { DomainDeps, EmailService } from "@coss/email";
+import {
+  type ClientIpResolver,
+  createRateLimiter,
+  MemoryStore,
+  type RateLimiter,
+} from "@coss/ratelimit";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { bodyLimit } from "hono/body-limit";
@@ -26,6 +32,11 @@ export type CreateAppOptions = {
   webhookDeps: WebhookManagementDeps;
   /** Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`). */
   publicUrl?: string;
+  /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
+  rateLimiter?: RateLimiter;
+  /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */
+  clientIp?: ClientIpResolver;
+
   /**
    * Browser origins allowed to call `/v1/*` (`API_CORS_ORIGINS`): the docs' API playground. None by
    * default. Never with credentials: the API authenticates with bearer keys only, never cookies.
@@ -46,10 +57,18 @@ export function createApp(opts: CreateAppOptions) {
   const fallback = createDefaultEmailRuntime();
   const emailService = opts.emailService ?? fallback.emailService;
   const domainDeps = opts.domainDeps ?? fallback.domainDeps;
+  const rateLimiter = opts.rateLimiter ?? createRateLimiter({ store: new MemoryStore() });
+  const clientIp = opts.clientIp ?? (() => null);
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
   app.use(requestId);
+  app.use(async (c, next) => {
+    c.set("rateLimiter", rateLimiter);
+    c.set("clientIp", clientIp(c.req.raw.headers));
+    await next();
+  });
+
   // Before everything else that can answer, so preflights and error responses carry the headers.
   app.use(
     "/v1/*",

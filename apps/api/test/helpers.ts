@@ -9,6 +9,7 @@ import {
 } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain } from "@coss/email/testing";
+import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { decryptSecret } from "@coss/webhooks";
 import { TEST_SECRETS_KEY, testManagementDeps } from "@coss/webhooks/testing";
@@ -25,6 +26,9 @@ export function createTestApp(
   opts: {
     emailService?: EmailService;
     domainDeps?: DomainDeps;
+    rateLimiter?: RateLimiter;
+    clientIp?: ClientIpResolver;
+
     corsOrigins?: readonly string[];
   } = {},
 ) {
@@ -35,6 +39,9 @@ export function createTestApp(
     emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
     domainDeps: opts.domainDeps ?? { identity, dns: null },
     webhookDeps: testManagementDeps,
+    rateLimiter: opts.rateLimiter,
+    clientIp: opts.clientIp,
+
     corsOrigins: opts.corsOrigins,
   });
   return { app, liveProvider, sandboxProvider, identity };

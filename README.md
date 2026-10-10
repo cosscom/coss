@@ -24,7 +24,7 @@ and the rest.
 ## Stack
 
 Bun workspaces · Turborepo · TypeScript 7 · Biome · Next.js 16 (dashboard) · Hono (public API) ·
-Postgres + Drizzle · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui) ·
+Postgres + Drizzle · Valkey (rate limits) · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui) ·
 [Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash)
 
 See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
@@ -33,6 +33,7 @@ See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
 - [Bun](https://bun.com) ≥ 1.4.2 and Node.js ≥ 24 (Next.js and the Better Auth CLI run on Node)
 - PostgreSQL 18 (e.g. [Postgres.app](https://postgresapp.com))
+- [Valkey](https://valkey.io) 8 (or Redis) for the test suite, e.g. `brew install valkey && brew services start valkey`
 - VS Code: install the recommended extensions (Biome, TypeScript Native Preview)
 
 ## Setup
@@ -98,6 +99,8 @@ resets) are printed to the dashboard's server console in development.
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
+| `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
+| `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
 
 ## API
 
@@ -118,6 +121,14 @@ resets) are printed to the dashboard's server console in development.
 
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
 `coss.webhookEndpoints`.
+
+Requests are rate limited per API key by route class (reads, writes, sends; responses carry `RateLimit-Limit`,
+`RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the
+organization's quota per second and per day (sandbox environments have a small daily quota of their own).
+Over a limit the API answers `429 rate_limit_error` (`rate_limited` or `quota_exceeded`) with `Retry-After`.
+Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization with
+`bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
+client IP and per email address.
 
 ## Running on Amazon SES
 
@@ -155,6 +166,25 @@ are left alone. Sending can't be limited by tag (SES authorizes sends against th
 policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
 denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
 
+## Rate limits on ElastiCache Serverless for Valkey
+
+Rate limit counters live in Valkey (one GCRA bucket per key, updated atomically by a Lua script with the
+server's clock). Without `VALKEY_URL` each process counts in memory, which is fine for development but
+refused in production. If Valkey is unreachable, requests are **allowed** (fail open) and a warning is logged.
+
+1. The cache lives in a VPC: the API and dashboard must run in it, and its security group must allow inbound
+   TCP 6379 from them.
+2. With admin credentials, create it (idempotent; it takes a few minutes the first time):
+   `AWS_REGION=eu-west-1 bun run valkey:bootstrap --subnet-ids subnet-a,subnet-b --security-group-ids sg-… [--name coss] [--max-ecpu 5000] [--max-storage-gb 1]`
+   It creates a password user limited to the `<prefix>:*` keys and the commands the limiter uses, a disabled
+   `default` user, a user group and the serverless cache (Valkey 8, TLS).
+3. Set what it prints (`VALKEY_URL=rediss://…`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX`) for the API
+   and dashboard. The password is only printed when the user is created; `--rotate-password` makes a new one
+   (running processes fail open until they get it).
+4. Set `CLIENT_IP_HEADER` (e.g. `x-forwarded-for`) and `TRUSTED_PROXY_COUNT` (how many of your proxies append
+   to it) to match your load balancers; without them per-IP limits (repeated invalid API keys, dashboard
+   sign-in) are off, because the socket address would be the load balancer's.
+
 ## Deploying to AWS
 
 Everything runs on AWS; nothing is provisioned yet. The repository holds what provisioning needs: one
@@ -176,7 +206,7 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 - **Network:** a VPC over 2+ AZs; public subnets for the ALB and the NAT gateway, private subnets for tasks and
   RDS. Security groups: ALB inbound 443 only from the managed prefix list
   `com.amazonaws.global.cloudfront.origin-facing`; each service's tasks inbound only from the ALB on their port;
-  RDS 5432 only from the web, api and worker tasks.
+  RDS 5432 only from the web, api and worker tasks; ElastiCache Serverless 6379 only from web and api.
 - **NAT gateway (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and
   domain verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. The site
   needs no egress. **Cost trap:** NAT charges per GB processed, so keep AWS traffic off it with VPC endpoints:
@@ -228,14 +258,14 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 ### Secrets and environment
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
-`DATABASE_URL`, `BETTER_AUTH_SECRET`, `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
+`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
 last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
 rules, then CloudFront, then removing the old one). Plain values per service:
 
 | Service | Variables |
 |---|---|
-| web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX` |
+| web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
 | api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
 | worker | `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL` |
 | site | none (static; everything it needs is in the image) |
@@ -264,7 +294,7 @@ if it is wrong. AWS credentials come from the task role.
    (Next and the API finish in-flight requests, the worker finishes each loop's current item).
 4. Invalidate `/*` on the coss.com distribution once the site is stable.
 
-First deployment of a stage: network, RDS and secrets → images → migrate → `ses-bootstrap` one-off task
+First deployment of a stage: network, RDS, ElastiCache (`valkey:bootstrap`) and secrets → images → migrate → `ses-bootstrap` one-off task
 (`bun apps/worker/scripts/ses-bootstrap.ts --name coss --tenant-prefix coss`, prints the SES variables) → services,
 ALB, CloudFront, WAF, DNS → sign up on the dashboard → `create-admin` one-off task from the api image
 (`bun packages/tenancy/scripts/create-admin.ts --email you@example.com`, with the api's environment) → request SES
@@ -272,7 +302,5 @@ production access.
 
 ### Known gaps
 
-- Better Auth's built-in rate limiter keeps its counters in each process's memory, so limits apply per task, not
-  across tasks. Shared rate limiting (Redis) is a separate task; until then WAF's rate-based rule is the backstop.
 - Next's data cache is per task (in memory and on local disk). Nothing uses `revalidateTag`/ISR today; a shared
   `cacheHandler` is needed before anything does.

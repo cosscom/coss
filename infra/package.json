@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@coss/auth": "workspace:*",
-    "@coss/email": "workspace:*"
+    "@coss/email": "workspace:*",
+    "@coss/ratelimit": "workspace:*"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

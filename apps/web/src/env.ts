@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -25,6 +26,7 @@ export const env = createEnv({
     // Public origin of the API, shown in the quick-start snippets.
     API_PUBLIC_URL: z.url(),
     ...emailEnvShape,
+    ...rateLimitEnvShape,
     // Encrypts webhook signing secrets at rest: 32 bytes, base64 (`openssl rand -base64 32`).
     WEBHOOK_SECRETS_KEY: base64Key(32),
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must

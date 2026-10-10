@@ -80,6 +80,44 @@ const email: EnvVar[] = [
   },
 ];
 
+const rateLimits: EnvVar[] = [
+  {
+    name: "VALKEY_URL",
+    kind: "secret",
+    required: true,
+    description:
+      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api.",
+  },
+  {
+    name: "VALKEY_CLUSTER",
+    kind: "plain",
+    required: true,
+    value: "true",
+    description: "ElastiCache Serverless uses the cluster protocol.",
+  },
+  {
+    name: "RATE_LIMIT_KEY_PREFIX",
+    kind: "plain",
+    required: false,
+    value: "coss",
+    description: "Counter namespace; must match the cache user's ACL.",
+  },
+  {
+    name: "CLIENT_IP_HEADER",
+    kind: "plain",
+    required: true,
+    value: "x-forwarded-for",
+    description: "Enables per-IP limits using the trusted proxy chain.",
+  },
+  {
+    name: "TRUSTED_PROXY_COUNT",
+    kind: "plain",
+    required: true,
+    value: "2",
+    description: "CloudFront and ALB append to X-Forwarded-For.",
+  },
+];
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -129,6 +167,7 @@ export const SERVICES: Service[] = [
     env: [
       ...db,
       ...auth,
+      ...rateLimits,
       apiPublicUrl,
       ...email,
       webhookKey,
@@ -197,6 +236,7 @@ export const SERVICES: Service[] = [
     env: [
       ...db,
       ...auth,
+      ...rateLimits,
       apiPublicUrl,
       {
         name: "API_CORS_ORIGINS",

@@ -4,6 +4,8 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
 import { createTestApp, REQUEST_ID, type TestApp, uniqueDomainName } from "./helpers.ts";
@@ -114,6 +116,28 @@ describe("coss SDK against the API", () => {
       status: 401,
     });
     expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+
+  test("a used-up send quota maps to rate_limit_error without waiting", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "email.sandbox_recipients.day",
+      rule: { limit: 1, periodMs: 86_400_000 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    // Default retries: a Retry-After of hours is returned, not slept on.
+    const coss = clientFor(app, tenant.sandboxKey);
+    const email = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "Hi" };
+
+    expect((await coss.email.send(email)).error).toBeNull();
+    const result = await coss.email.send(email);
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "rate_limit_error",
+      code: "quota_exceeded",
+      status: 429,
+    });
   });
 
   test("validation errors map param and issues", async () => {

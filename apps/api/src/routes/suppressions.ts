@@ -24,6 +24,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
 
@@ -58,7 +59,7 @@ export const createSuppressionRoute = createRoute({
     "back an unsubscribe link). Adding an address that is already suppressed with the same " +
     "scope returns the existing entry with status 200.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["create"] }),
+  middleware: [requireApiKey({ suppression: ["create"] }), rateLimit("api.write")],
   request: {
     body: {
       required: true,
@@ -86,7 +87,7 @@ export const listSuppressionsRoute = createRoute({
     "The suppression list of the API key's environment, newest first. Pass the last `id` as " +
     "`after` to get the next page while `has_more` is true.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["read"] }),
+  middleware: [requireApiKey({ suppression: ["read"] }), rateLimit("api.read")],
   request: { query: ListSuppressionsQuery },
   responses: {
     200: json("A page of entries.", SuppressionList),
@@ -105,7 +106,7 @@ export const checkSuppressionRoute = createRoute({
     "Whether a send to `address` (with `category`, if given) would skip it, and the entries " +
     "that match: those with scope `*` and, with a `category`, those for that category.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["read"] }),
+  middleware: [requireApiKey({ suppression: ["read"] }), rateLimit("api.read")],
   request: { query: CheckSuppressionQuery },
   responses: {
     200: json("The result.", SuppressionCheck),
@@ -125,7 +126,7 @@ export const importSuppressionsRoute = createRoute({
     "entry is validated on its own: invalid ones are skipped and listed in `invalid`, entries " +
     "already on the list are left unchanged and counted in `existing`. Importing again is safe.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["create"] }),
+  middleware: [requireApiKey({ suppression: ["create"] }), rateLimit("api.write")],
   request: {
     body: {
       required: true,
@@ -155,7 +156,7 @@ export const exportSuppressionsRoute = createRoute({
     "first, as CSV with the columns `address,scope,reason,created_at,email_id,id`. The file can " +
     "be imported again as is. Values a spreadsheet would run as a formula are prefixed with `'`.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["read"] }),
+  middleware: [requireApiKey({ suppression: ["read"] }), rateLimit("api.read")],
   request: { query: ExportSuppressionsQuery },
   responses: {
     200: {
@@ -175,7 +176,7 @@ export const getSuppressionRoute = createRoute({
   tags: ["Suppressions"],
   summary: "Retrieve a suppression",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["read"] }),
+  middleware: [requireApiKey({ suppression: ["read"] }), rateLimit("api.read")],
   request: { params: SuppressionIdParams },
   responses: {
     200: json("The entry.", Suppression),
@@ -194,7 +195,7 @@ export const deleteSuppressionRoute = createRoute({
     "Removes the entry, so later sends reach the address again (unless another entry still " +
     "matches). Entries added for bounces and complaints can be removed too.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ suppression: ["delete"] }),
+  middleware: [requireApiKey({ suppression: ["delete"] }), rateLimit("api.write")],
   request: { params: SuppressionIdParams },
   responses: {
     200: json("The entry was removed.", DeletedSuppression),
