@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     "@coss/email",
     "@coss/webhooks",
   ],
+  experimental: {
+    // Suppression CSV imports upload up to 2 MB (`import-limits.ts`) plus multipart overhead.
+    serverActions: { bodySizeLimit: "3mb" },
+  },
 };
 
 export default nextConfig;

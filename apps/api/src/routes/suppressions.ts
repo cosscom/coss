@@ -2,16 +2,22 @@ import {
   addSuppression,
   checkSuppression,
   getSuppression,
+  importSuppressions,
   listSuppressions,
   removeSuppression,
+  suppressionsCsvStream,
 } from "@coss/email";
 import {
   CheckSuppressionQuery,
   CreateSuppressionRequest,
   DeletedSuppression,
+  ExportSuppressionsQuery,
+  ImportSuppressionsRequest,
   ListSuppressionsQuery,
+  MAX_SUPPRESSION_IMPORT_ENTRIES,
   Suppression,
   SuppressionCheck,
+  SuppressionImport,
   SuppressionList,
 } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
@@ -108,6 +114,60 @@ export const checkSuppressionRoute = createRoute({
   },
 });
 
+export const importSuppressionsRoute = createRoute({
+  method: "post",
+  path: "/suppressions/import",
+  operationId: "importSuppressions",
+  tags: ["Suppressions"],
+  summary: "Import suppressions in bulk",
+  description:
+    `Adds up to ${MAX_SUPPRESSION_IMPORT_ENTRIES} entries at once, with reason \`import\`. Each ` +
+    "entry is validated on its own: invalid ones are skipped and listed in `invalid`, entries " +
+    "already on the list are left unchanged and counted in `existing`. Importing again is safe.",
+  security: [{ bearerAuth: [] }],
+  middleware: requireApiKey({ suppression: ["create"] }),
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: ImportSuppressionsRequest } },
+    },
+  },
+  responses: {
+    200: json("What the import did.", SuppressionImport),
+    400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+    ...commonErrors,
+    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    422: errorDoc(
+      "The body is not a list of 1-1000 `{ address, scope? }` objects (`validation_error`).",
+    ),
+  },
+});
+
+export const exportSuppressionsRoute = createRoute({
+  method: "get",
+  path: "/suppressions/export",
+  operationId: "exportSuppressions",
+  tags: ["Suppressions"],
+  summary: "Export the suppression list as CSV",
+  description:
+    "The whole suppression list of the API key's environment (optionally filtered), oldest " +
+    "first, as CSV with the columns `address,scope,reason,created_at,email_id,id`. The file can " +
+    "be imported again as is. Values a spreadsheet would run as a formula are prefixed with `'`.",
+  security: [{ bearerAuth: [] }],
+  middleware: requireApiKey({ suppression: ["read"] }),
+  request: { query: ExportSuppressionsQuery },
+  responses: {
+    200: {
+      description: "The CSV file.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "text/csv": { schema: z.string() } },
+    },
+    ...commonErrors,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
+  },
+});
+
 export const getSuppressionRoute = createRoute({
   method: "get",
   path: "/suppressions/{id}",
@@ -168,6 +228,25 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
     const query = c.req.valid("query");
     const { organizationId, environmentId } = c.var.auth;
     return c.json(await checkSuppression({ organizationId, environmentId }, query), 200);
+  });
+
+  router.openapi(importSuppressionsRoute, async (c) => {
+    const { suppressions } = c.req.valid("json");
+    const { organizationId, environmentId } = c.var.auth;
+    const result = await importSuppressions({ organizationId, environmentId }, suppressions);
+    if (!result) throw new Error(`Environment ${environmentId} not found.`);
+    return c.json(result, 200);
+  });
+
+  // Like `check`, registered before `/suppressions/{id}`.
+  router.openapi(exportSuppressionsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const { organizationId, environmentId } = c.var.auth;
+    return c.body(suppressionsCsvStream({ organizationId, environmentId }, query), 200, {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="suppressions-${environmentId}.csv"`,
+      "Cache-Control": "no-store",
+    });
   });
 
   router.openapi(getSuppressionRoute, async (c) => {
