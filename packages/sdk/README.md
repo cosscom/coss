@@ -186,12 +186,17 @@ The SDK retries failed requests up to `maxRetries` times (default 2) on:
 
 Other errors are returned immediately.
 
+`webhookEndpoints.create()` never retries automatically, regardless of `maxRetries`: the API does
+not deduplicate endpoint creation, even with an `Idempotency-Key`. If the response is lost, creation
+may still have succeeded. List endpoints and delete the endpoint with the unknown secret before
+creating a replacement.
+
 The wait between attempts grows exponentially (500 ms, 1 s, 2 s, … up to 8 s) with random jitter. When
 the response has a `Retry-After` header, the SDK waits exactly that long instead. If `Retry-After` asks
 for more than 60 s, the SDK returns the error rather than waiting.
 
 Every `POST` carries an `Idempotency-Key` header. It is either the key you pass or a random UUID, and
-the same key is reused on every retry of that call. The API stores the result for 24 hours, so a
+the same key is reused on every retry of that call. For email sends, the API stores the result for 24 hours, so a
 retried send is never delivered twice:
 - A repeat with the same key and the same body returns the original email.
 - A repeat with the same key and a different body fails with `idempotency_key_reused`.

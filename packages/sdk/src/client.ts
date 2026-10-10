@@ -12,7 +12,7 @@ export interface CossOptions {
   fetch?: FetchLike;
   /** Per-attempt timeout in milliseconds. Default `30000`. */
   timeout?: number;
-  /** Retries for connection errors, timeouts, 409, 429 and 5xx responses. Default `2`. */
+  /** Retries for connection errors, timeouts, 409, 429 and 5xx. Default `2`; excludes webhook creation. */
   maxRetries?: number;
   /**
    * Allow use where a `document` global exists. Off by default because shipping a secret API key

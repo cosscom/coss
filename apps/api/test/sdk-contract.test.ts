@@ -209,6 +209,39 @@ describe("coss.domains against the API", () => {
 });
 
 describe("coss.webhookEndpoints against the API", () => {
+  test("a lost creation response does not create a duplicate endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    let attempts = 0;
+    let createdId: string | undefined;
+    let creationStatus: number | undefined;
+    const coss = clientFor(app, tenant.sandboxKey, {
+      maxRetries: 3,
+      fetch: async (input, init) => {
+        attempts++;
+        const response = await app.fetch(toRequest(input, init));
+        creationStatus = response.status;
+        const created = (await response.json()) as { id: string };
+        createdId = created.id;
+        throw new TypeError("Connection lost after creation committed");
+      },
+    });
+
+    const result = await coss.webhookEndpoints.create(
+      { url: "https://example.com/hook" },
+      { idempotencyKey: crypto.randomUUID() },
+    );
+
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe("network_error");
+    expect(attempts).toBe(1);
+    expect(creationStatus).toBe(200);
+    if (!createdId) throw new Error("creation did not commit");
+    const listed = await clientFor(app, tenant.sandboxKey).webhookEndpoints.list();
+    expect(listed.error).toBeNull();
+    expect(listed.data?.data.map((endpoint) => endpoint.id)).toEqual([createdId]);
+  });
+
   test("create, update, list and delete round-trip an endpoint", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();

@@ -25,7 +25,9 @@ export class WebhookEndpointsResource {
 
   /**
    * Creates an endpoint. The result is the only place its `secret` is returned — store it and
-   * pass it to `verifyWebhook` for every delivery.
+   * pass it to `verifyWebhook` for every delivery. Creation is never automatically retried:
+   * the API does not deduplicate it, even with an idempotency key. After a lost response,
+   * list endpoints and remove the endpoint with the unknown secret before creating a replacement.
    */
   create(
     params: CreateWebhookEndpointParams,
@@ -34,6 +36,7 @@ export class WebhookEndpointsResource {
     return this.#http.request<WebhookEndpointWithSecret>({
       method: "POST",
       path: "/v1/webhook_endpoints",
+      retry: false,
       body: params,
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,

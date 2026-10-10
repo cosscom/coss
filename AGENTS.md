@@ -126,7 +126,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
 - `Coss` (`src/client.ts`) → one `HttpClient` (`src/core/http.ts`: bearer auth, JSON, per-attempt timeout, retries on
   network/timeout/409/429/5xx honoring `Retry-After`, an `Idempotency-Key` on every POST reused across retries) → one
   resource per product or managed resource (`src/resources/*.ts`: `email`, `domains`, `webhookEndpoints`). Methods
-  return `{ data, error }` and never throw for API/network failures.
+  return `{ data, error }` and never throw for API/network failures. Webhook endpoint creation disables
+  automatic retries because the API does not deduplicate it, even with an `Idempotency-Key`.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
   access, zero runtime deps. `isolatedDeclarations` is on (exported functions need explicit types).
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
