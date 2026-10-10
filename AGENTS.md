@@ -22,9 +22,11 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
+| `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`; `api → tenancy, email, webhooks, db`;
-`web → auth, tenancy, email, webhooks, db, ui`; `site → ui` + `@coss/api/openapi.json` (data only, never api code);
+`web → auth, tenancy, email, webhooks, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
+`@coss/api/openapi.json` (data only, never api code); `infra → auth, email` (`slugs`, `env` only);
 `worker → email, webhooks, db`; `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`worker → tenancy` (test fixtures — so tenancy must never import email or webhooks) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
@@ -78,11 +80,13 @@ from the root or a package — the package script is what loads `.env` and the t
   workspaces live in the root `workspaces.catalog` (`"catalog:"`); single-use deps may pin directly. The SDK uses explicit
   versions mirroring the catalog (no `workspace:`/`catalog:`) — bump both together.
 - Env: one root `.env` (copy `.env.example`). Package scripts load it with `--env-file=../../.env` (a missing file is a
-  no-op, so real env vars win in CI/production); `process.loadEnvFile` loads it for Next (`apps/web/load-root-env.ts`,
+  no-op, so real env vars win in CI/production; images never contain one, see `.dockerignore`); `process.loadEnvFile` loads it for Next (`apps/web/load-root-env.ts`,
   imported first by `next.config.ts`) and drizzle-kit (`packages/db/drizzle.config.ts`). Packages don't validate env but
   **read it at import time** (`@coss/db` builds its pool from `DATABASE_URL`; `@coss/auth/options` reads `BETTER_AUTH_*`),
   so load env before importing them. Apps validate with t3-env (`apps/api/src/env.ts` — imported only by `src/index.ts`;
-  `apps/web/src/env.ts` — imported by `next.config.ts`).
+  `apps/web/src/env.ts` — imported by `next.config.ts` for dev/build and by `src/instrumentation.ts` when a server
+  starts: the standalone server never runs `next.config.ts`). No `NEXT_PUBLIC_*` variables: they are inlined at build
+  time, and images are built once for every stage.
 - Library docs matching the installed versions live in the consuming workspace's `node_modules` (isolated linker):
   Next `apps/web/node_modules/next/dist/docs/` (see `apps/web/AGENTS.md`), Base UI
   `packages/ui/node_modules/@base-ui/react/docs/`, Turborepo `node_modules/turbo/docs/` (block at the end of this file).
@@ -96,19 +100,23 @@ from the root or a package — the package script is what loads `.env` and the t
 | `TEST_DATABASE_URL` | must name a `*_test` database; swapped in by `@coss/db/testing`; `db:migrate:test` |
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links) |
-| `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers`, falls back to the request origin) |
+| `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers`, falls back to the request origin outside production); `API_PUBLIC_URL` also `apps/web` (quick-start snippets, read at runtime) |
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
-| `NEXT_PUBLIC_API_URL` | `apps/web` (quick-start snippets) |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
-| `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env |
+| `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env (image builds set it) |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
+| `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
+| `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
+| `PORT`, `HOSTNAME`, `KEEP_ALIVE_TIMEOUT` | set by the Next images (standalone `server.js`) |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
 | `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`) |
 
-Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `experimental__runtimeEnv`), **`turbo.json`
-`globalEnv`** (strict env mode drops undeclared vars from tasks — CI has no `.env`), and `ci.yml` if CI needs it.
+Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalEnv`** (strict env mode drops undeclared vars
+from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails otherwise), and
+`ci.yml` if CI needs it.
 
 ## Public API (`apps/api`)
 
@@ -170,11 +178,48 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   dashboard-specific compositions go in `apps/web/src/components`.
 - Routes: a new top-level segment must be added to `RESERVED_ORG_SLUGS` (`packages/auth/src/slugs.ts`), a new static
   segment under `[orgSlug]` to the allow-list in `apps/web/test/reserved-slugs.test.ts`, signed-out pages to
-  `PUBLIC_PATH_PREFIXES` (`src/proxy.ts`).
+  `PUBLIC_PATH_PREFIXES` (`src/proxy.ts`). The entry page is `/dashboard` (`DASHBOARD_PATH`), never `/` (the site's
+  landing page): use it for every "go to the dashboard" link and as the post-sign-in default (`safeRedirectPath`).
+  The dashboard has no root files (icon, robots, sitemap): the site serves them.
 - Domain management uses `emailRuntime().domainDeps` (`src/lib/email-runtime.ts`) and webhook management
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
 - When driving the dashboard in a browser, wait for hydration before typing or submitting.
+
+## coss.com zones
+
+- coss.com is shared by Next.js multi-zones, routed by the ALB (not Next rewrites): the dashboard is the default zone
+  (org slugs, `/dashboard`, `/api/*`, bare `/_next/*`); the site and the coss ui app get the paths in **`ZONE_ROUTES`**
+  (`@coss/auth/slugs`, client-safe), from which `RESERVED_ORG_SLUGS`, the ALB rules and CloudFront behaviours
+  (`infra/aws/routing.ts`) are derived. Adding a site page = a `ZONE_ROUTES` entry (unless `/docs` etc. covers it) +
+  the route; `apps/site/test/reserved-slugs.test.ts` fails otherwise. The site's assets live under its
+  `assetPrefix` (`SITE_ASSET_PREFIX`, `/site-assets`); its search is `/docs/search.json`.
+- Org slugs can't be taken back once used, so plausible future site pages (pricing, blog, products, legal, …) are
+  reserved up front in `slugs.ts`. Slugs are ≥ 3 characters, so a localized site must use 2-letter prefixes
+  (`/de/…`), never `xx-yy` codes (valid slugs). Reserve a new marketing path before any org can take it.
+- Same origin: any script on the site can act as the signed-in dashboard user. Both apps send a CSP without
+  third-party script origins and deny framing (`src/lib/security-headers.ts` in each); see `apps/site/AGENTS.md`.
+- Local dev keeps separate ports: `localhost:3000` redirects `/` to `/dashboard` and proxies `/icon.svg` to the site;
+  the site proxies `/api/auth/*` to :3000 and links with `dashboardUrl()`.
+
+## Containers and deployment (AWS)
+
+- `apps/{web,site,api,worker}/Dockerfile`, built from the repository root (`docker build -f apps/web/Dockerfile .`):
+  `turbo prune --docker` (works with `bun.lock` and the isolated linker) → `bun install --frozen-lockfile` → build →
+  a small non-root runtime image. Bun/Node/turbo versions are `ARG`s that `infra/test` keeps equal to `package.json`.
+- Next apps use `output: "standalone"` with `outputFileTracingRoot` at the monorepo root; the traced
+  `node_modules/.bun` keeps relative symlinks, which resolve after copying (verified). They run `node
+  apps/<app>/server.js` on Node 24. `generateBuildId` uses `NEXT_DEPLOYMENT_ID` (Next sets it to `""` when unset,
+  hence `||`). api and worker run their TypeScript source on Bun from a `--production` prune.
+- Build once, deploy to any stage: nothing stage-specific at build time (`SKIP_ENV_VALIDATION`), validation at
+  startup. `next.config.ts` runs only at build/dev time and is serialized into the standalone server: decide nothing
+  there from runtime env.
+- Health checks: `/api/health` (web, site; public in `proxy.ts`), `/health` (api); none touch the database.
+- SIGTERM: Next drains itself; the API (`src/server.ts`) stops accepting, finishes in-flight requests, closes the pg
+  pool; the worker (`src/shutdown.ts`) aborts the SQS poll and long runs between items, waits for each loop's current
+  run, closes the pool. Idle keep-alive timeouts (75 s) exceed the ALB's 60 s.
+- Migrations: `bun packages/db/src/migrate.ts` (drizzle-orm's migrator, no drizzle-kit) as a one-off task from the
+  worker image. Runbook, resources, IAM and deploy order: README.md, "Deploying to AWS"; machine-readable: `infra/`.
 
 ## Tests
 
@@ -332,11 +377,13 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
+- Better Auth's built-in rate limiter counts in each process's memory: with several dashboard tasks, limits apply
+  per task (shared rate limiting with Redis is a separate task). Next's cache is per task too (nothing uses ISR or
+  `revalidateTag` yet; add a shared `cacheHandler` first).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, routing coss.com
-between the site and the dashboard (multi-zones / Vercel microfrontends; the dashboard's `/` entry page collides with
-the landing page), open/click tracking (and custom tracking domains), bulk suppression import/export,
+**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
+infrastructure itself (only its spec, images and runbook exist), open/click tracking (and custom tracking domains), bulk suppression import/export,
 attachments/batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
 removing members / leaving an org, resending invitations, signed-in password change, API version header, release tooling.

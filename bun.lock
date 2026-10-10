@@ -17,6 +17,7 @@
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/tenancy": "workspace:*",
+        "@coss/webhooks": "workspace:*",
         "@hono/zod-openapi": "catalog:",
         "@t3-oss/env-core": "catalog:",
         "hono": "catalog:",
@@ -34,6 +35,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/api": "workspace:*",
+        "@coss/auth": "workspace:*",
         "@coss/ui": "workspace:*",
         "fumadocs-core": "16.17.1",
         "fumadocs-mdx": "15.4.7",
@@ -48,7 +50,6 @@
         "shiki": "4.5.0",
       },
       "devDependencies": {
-        "@coss/auth": "workspace:*",
         "@coss/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@types/bun": "catalog:",
@@ -117,6 +118,19 @@
         "@coss/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
         "coss": "workspace:*",
+        "typescript": "catalog:",
+      },
+    },
+    "infra": {
+      "name": "@coss/infra",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/auth": "workspace:*",
+        "@coss/email": "workspace:*",
+      },
+      "devDependencies": {
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -231,6 +245,7 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "drizzle-orm": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@coss/tenancy": "workspace:*",
@@ -468,6 +483,8 @@
     "@coss/db": ["@coss/db@workspace:packages/db"],
 
     "@coss/email": ["@coss/email@workspace:packages/email"],
+
+    "@coss/infra": ["@coss/infra@workspace:infra"],
 
     "@coss/site": ["@coss/site@workspace:apps/site"],
 

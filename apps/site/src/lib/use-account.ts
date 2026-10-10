@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 export type Account =
   | { status: "loading" }
   | { status: "signed-out" }
-  | { status: "signed-in"; name: string; dashboardPath: string };
+  | { status: "signed-in"; name: string };
 
 const SIGNED_OUT: Account = { status: "signed-out" };
 let pending: Promise<Account> | undefined;
@@ -33,15 +33,7 @@ export function useAccount(): Account {
 export async function loadAccount(): Promise<Account> {
   const session = await getJson<{ user?: { name?: string } } | null>("/api/auth/get-session");
   if (!session?.user) return SIGNED_OUT;
-  // Same choice as the dashboard's own entry page: the first organization by name.
-  const organizations =
-    (await getJson<{ name: string; slug: string }[]>("/api/auth/organization/list")) ?? [];
-  const [first] = organizations.toSorted((a, b) => a.name.localeCompare(b.name));
-  return {
-    status: "signed-in",
-    name: session.user.name ?? "",
-    dashboardPath: first ? `/${first.slug}` : "/onboarding",
-  };
+  return { status: "signed-in", name: session.user.name ?? "" };
 }
 
 async function getJson<T>(path: string): Promise<T | null> {

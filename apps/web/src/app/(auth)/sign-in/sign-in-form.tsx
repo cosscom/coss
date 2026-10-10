@@ -8,6 +8,7 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { nextQuery } from "@/lib/safe-redirect";
 
 export function SignInForm({ next }: { next: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export function SignInForm({ next }: { next: string }) {
     }
   }
 
-  const query = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+  const query = nextQuery(next);
 
   return (
     <Card>

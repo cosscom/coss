@@ -1,3 +1,4 @@
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
@@ -36,10 +37,10 @@ export default async function AdminPage() {
     <div className="flex min-h-dvh flex-col">
       <header className="border-b">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
-          <Link className="font-semibold" href="/">
+          <Link className="font-semibold" href={DASHBOARD_PATH}>
             COSS
           </Link>
-          <Button render={<Link href="/" />} size="sm" variant="ghost">
+          <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">
             Dashboard
           </Button>
           <div className="ms-auto flex items-center gap-2">

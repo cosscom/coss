@@ -1,3 +1,4 @@
+import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { isId } from "@coss/db/id";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -79,7 +80,7 @@ export default async function AcceptInvitationPage({
         description={`${error.message || "This invitation is not available."} You are signed in as ${session.user.email}.`}
         title="Invitation unavailable"
       >
-        <Button render={<Link href="/" />} variant="outline">
+        <Button render={<Link href={DASHBOARD_PATH} />} variant="outline">
           Go to dashboard
         </Button>
         <SignOutButton redirectTo={`/sign-in?next=${encodeURIComponent(here)}`} />

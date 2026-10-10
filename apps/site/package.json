@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@coss/api": "workspace:*",
+    "@coss/auth": "workspace:*",
     "@coss/ui": "workspace:*",
     "fumadocs-core": "16.17.1",
     "fumadocs-mdx": "15.4.7",
@@ -26,7 +27,6 @@
     "shiki": "4.5.0"
   },
   "devDependencies": {
-    "@coss/auth": "workspace:*",
     "@coss/tsconfig": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@types/bun": "catalog:",

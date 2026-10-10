@@ -9,8 +9,9 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     BETTER_AUTH_SECRET: z.string().min(32, "Generate one with `openssl rand -base64 32`."),
     BETTER_AUTH_URL: z.url(),
-    // Public origin of this API (OpenAPI `servers`). Falls back to the request origin when unset.
-    API_PUBLIC_URL: z.url().optional(),
+    // Public origin of this API (OpenAPI `servers`). Required in production: the request-origin
+    // fallback sees the load balancer's http hop, not the client's https URL.
+    API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Comma-separated browser origins allowed to call /v1 (the docs' API playground).
     API_CORS_ORIGINS: z
       .string()
