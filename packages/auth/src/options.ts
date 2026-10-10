@@ -63,6 +63,9 @@ export const authOptions = {
   advanced: {
     database: { generateId: generateAuthId },
   },
+  // Off: it counts per process and trusts any x-forwarded-for. The dashboard limits the credential
+  // endpoints itself, in Valkey (apps/web/src/lib/auth-rate-limit.ts).
+  rateLimit: { enabled: false },
   emailAndPassword: {
     enabled: true,
     // v0: sign-up does not require verification (accepts sign-up email enumeration).

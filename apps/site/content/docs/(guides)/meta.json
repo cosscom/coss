@@ -1,0 +1,17 @@
+{
+  "title": "Guides",
+  "description": "Concepts and how-tos",
+  "root": true,
+  "icon": "BookOpen",
+  "pages": [
+    "index",
+    "quickstart",
+    "---Concepts---",
+    "environments",
+    "webhooks",
+    "---Email---",
+    "...email",
+    "---TypeScript SDK---",
+    "...sdk"
+  ]
+}

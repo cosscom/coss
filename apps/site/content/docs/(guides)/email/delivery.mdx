@@ -1,0 +1,49 @@
+---
+title: Delivery status
+description: How an email and each of its recipients move through delivery.
+---
+
+## Email status
+
+`status` on the email says whether it was handed to the delivery provider:
+
+| Status   | Meaning                                       |
+| -------- | --------------------------------------------- |
+| `queued` | Accepted by COSS, not yet handed over          |
+| `sent`   | Accepted by the provider (`sent_at` is set)    |
+| `failed` | Could not be sent; see the `email.failed` event |
+
+## Recipient status
+
+Delivery happens per recipient. `recipients` lists every distinct address across `to`, `cc` and
+`bcc`, each with its own `status`. A status only moves forward:
+
+`queued` → `sent` → `delivery_delayed` → `delivered`, then `bounced` / `suppressed` / `failed`, then
+`complained`.
+
+`suppressed` means the recipient was skipped because it is on the environment's
+[suppression list](/docs/email/suppressions), or the provider reported it as suppressed. An email
+whose recipients are all suppressed fails with `all_recipients_suppressed`.
+
+## Events
+
+Each change is recorded as an event. List them with
+`coss.email.listEvents` (see
+[`GET /v1/emails/{id}/events`](/docs/api-reference/emails/list-email-events)), or receive them as [webhooks](/docs/webhooks).
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: events } = await coss.email.listEvents("email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+
+for (const event of events?.data ?? []) {
+  if (event.type === "email.bounced") {
+    console.log(event.recipient, event.data.bounce?.type);
+    //                                          ^?
+  }
+}
+```
+
+`email.sent` and `email.failed` describe the whole email (`recipient` is `null`); the other events
+are about one recipient.

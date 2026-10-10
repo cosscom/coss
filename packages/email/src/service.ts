@@ -30,6 +30,8 @@ export type SendEmailInput = {
 };
 
 export type EmailService = {
+  /** Read a completed, matching replay without creating or dispatching an email. */
+  replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
   dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
 };
@@ -409,5 +411,10 @@ export function createEmailService(opts: {
     return { email: await deliver(inserted, sandbox), replayed: false };
   }
 
-  return { send, dispatch };
+  async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
+    if (!input.idempotencyKey) return null;
+    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+  }
+
+  return { send, dispatch, replay };
 }

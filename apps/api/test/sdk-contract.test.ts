@@ -4,6 +4,8 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
 import { createTestApp, REQUEST_ID, type TestApp, uniqueDomainName } from "./helpers.ts";
@@ -114,6 +116,28 @@ describe("coss SDK against the API", () => {
       status: 401,
     });
     expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+
+  test("a used-up send quota maps to rate_limit_error without waiting", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "email.sandbox_recipients.day",
+      rule: { limit: 1, periodMs: 86_400_000 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    // Default retries: a Retry-After of hours is returned, not slept on.
+    const coss = clientFor(app, tenant.sandboxKey);
+    const email = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "Hi" };
+
+    expect((await coss.email.send(email)).error).toBeNull();
+    const result = await coss.email.send(email);
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "rate_limit_error",
+      code: "quota_exceeded",
+      status: 429,
+    });
   });
 
   test("validation errors map param and issues", async () => {
@@ -229,6 +253,42 @@ describe("coss SDK against the API", () => {
     expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
     const validation = await coss.email.suppressions.add({ address: "nope", scope: "*" });
     expect(validation.error).toMatchObject({ type: "invalid_request_error", param: "address" });
+  });
+});
+
+describe("coss.email.suppressions bulk import and export against the API", () => {
+  test("import batches large lists, and export returns CSV that imports again", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const suppressions = Array.from({ length: 1500 }, (_, i) => ({
+      address: `user${i}@example.com`,
+    }));
+    suppressions.push({ address: "nope" }, { address: "user0@example.com" });
+
+    expect(await coss.email.suppressions.import({ suppressions })).toEqual({
+      data: {
+        object: "suppression_import",
+        created: 1500,
+        existing: 1,
+        invalid: [{ index: 1500, address: "nope", message: expect.any(String) }],
+      },
+      error: null,
+    });
+
+    const exported = await coss.email.suppressions.export({ reason: "import" });
+    const lines = exported.data?.trimEnd().split("\r\n") ?? [];
+    expect(lines).toHaveLength(1501);
+    expect(lines[1]).toMatch(/^user\d+@example\.com,\*,import,[^,]+,,sup_\w+$/);
+
+    const other = clientFor(app, tenant.liveKey);
+    const rows = lines.slice(1).map((line) => {
+      const [address = "", scope] = line.split(",");
+      return { address, scope };
+    });
+    expect((await other.email.suppressions.import({ suppressions: rows })).data?.created).toBe(
+      1500,
+    );
   });
 });
 

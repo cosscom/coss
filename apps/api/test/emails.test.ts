@@ -276,6 +276,7 @@ describe("POST /v1/emails", () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp({
       emailService: {
+        replay: async () => null,
         send: async () => {
           throw new Error("secret internal detail");
         },
