@@ -341,15 +341,18 @@ describe("authorizeLiveSender", () => {
     const other = await createTestTenant();
     const organizationId = tenant.organization.id;
     const verified = await createVerifiedDomain(organizationId);
-    const allowed = (from: string) => authorizeLiveSender({ organizationId, from });
+    const allowed = (from: string, provider = "fake") =>
+      authorizeLiveSender({ organizationId, from, provider });
 
     await allowed(`Acme <hello@${verified.name}>`);
     await allowed(`hello@News.${verified.name}`);
+    // Verified by another provider (e.g. the fake one before switching to SES).
+    await expectError(allowed(`hello@${verified.name}`, "ses"), EmailError, "domain_not_verified");
     await expectError(allowed("hello@unknown.coss.test"), EmailError, "domain_not_verified");
     // Reserved for bounces.
     await expectError(allowed(`hello@send.${verified.name}`), EmailError, "domain_not_verified");
     // Another organization's more specific domain wins.
-    await createVerifiedDomain(other.organization.id, `mail.${verified.name}`);
+    await createVerifiedDomain(other.organization.id, { name: `mail.${verified.name}` });
     await expectError(allowed(`hello@mail.${verified.name}`), EmailError, "domain_not_verified");
     // Pending domains don't count.
     const pending = await createDomain(
@@ -370,7 +373,7 @@ describe("authorizeLiveSender", () => {
       .where(eq(schema.emailTenant.organizationId, organizationId));
 
     await expectError(
-      authorizeLiveSender({ organizationId, from: `hello@${verified.name}` }),
+      authorizeLiveSender({ organizationId, from: `hello@${verified.name}`, provider: "fake" }),
       EmailError,
       "sending_paused",
     );
@@ -415,5 +418,24 @@ describe("live sends", () => {
       "domain_not_verified",
     );
     expect(provider.sent).toHaveLength(1);
+  });
+});
+
+describe("provider switches", () => {
+  test("domains of another provider are neither checked nor leased", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const row = await createDomain({ organizationId, name: uniqueName(), userId: null }, deps());
+    const ses = { ...new FakeIdentityProvider(), name: "ses" } as unknown as IdentityProvider;
+    const sesDeps: DomainDeps = { identity: ses, dns: null };
+
+    expect(await checkDomain({ organizationId, id: row.id }, sesDeps)).toEqual(row);
+    const later = new Date(Date.now() + 2 * 60 * 1000);
+    expect(
+      await recheckDueDomains(
+        { now: later, scope: { organizationIds: [organizationId] } },
+        sesDeps,
+      ),
+    ).toBe(0);
   });
 });

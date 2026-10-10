@@ -119,6 +119,10 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    - **Dashboard**: `ses:CreateTenant`, `ses:GetTenant`, `ses:CreateTenantResourceAssociation`,
      `ses:DeleteTenantResourceAssociation`, `ses:ListResourceTenants`, `ses:CreateEmailIdentity`,
      `ses:GetEmailIdentity`, `ses:DeleteEmailIdentity`, `ses:PutEmailIdentityMailFromAttributes`,
-     `ses:TagResource`.
+     `ses:TagResource`, `ses:ListTagsForResource`.
    - **Worker**: `sqs:ReceiveMessage`, `sqs:DeleteMessage` on the events queue; `ses:GetEmailIdentity`,
-     `ses:GetTenant`, `ses:DeleteEmailIdentity`, `ses:DeleteTenantResourceAssociation`.
+     `ses:GetTenant`, `ses:DeleteEmailIdentity`, `ses:DeleteTenantResourceAssociation`,
+     `ses:ListTagsForResource`.
+
+   COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes
+   identities carrying its own tag, so domains verified by hand in the same account are left alone.
