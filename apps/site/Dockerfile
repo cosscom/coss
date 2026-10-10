@@ -31,7 +31,7 @@ COPY --from=prune /pruned/full/ .
 # The commit: Next's build id and version-skew protection (deploymentId). Not stage-specific.
 ARG NEXT_DEPLOYMENT_ID=""
 ENV NEXT_DEPLOYMENT_ID=${NEXT_DEPLOYMENT_ID} SKIP_ENV_VALIDATION=1
-RUN bunx turbo run build --filter=@coss/site
+RUN bun x turbo run build --filter=@coss/site
 
 # Only the traced server (.next/standalone keeps Bun's isolated node_modules as relative symlinks)
 # and the static assets. No package manager, no sources.

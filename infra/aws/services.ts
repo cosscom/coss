@@ -32,7 +32,7 @@ export type Service = {
   cpu: number;
   memory: number;
   minTasks: number;
-  /** Customer webhooks go to arbitrary public URLs: needs a NAT gateway (VPC endpoints can't). */
+  /** Public DNS checks and customer webhooks need a NAT gateway (VPC endpoints can't serve them). */
   needsInternet: boolean;
   /** IAM policy created by `ses:bootstrap` (path /coss/, `<name>-…`) to attach to the task role. */
   taskRolePolicy?: string;
@@ -124,7 +124,7 @@ export const SERVICES: Service[] = [
     cpu: 512,
     memory: 1024,
     minTasks: 2,
-    needsInternet: false,
+    needsInternet: true,
     taskRolePolicy: "dashboard",
     env: [
       ...db,
@@ -192,7 +192,7 @@ export const SERVICES: Service[] = [
     cpu: 512,
     memory: 1024,
     minTasks: 2,
-    needsInternet: false,
+    needsInternet: true,
     taskRolePolicy: "api",
     env: [
       ...db,
