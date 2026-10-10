@@ -18,9 +18,11 @@ import {
   EmailObject,
   EmailRecipient,
   EmailWebhookEvent,
+  ImportSuppressionsRequest,
   SendEmailRequest,
   Suppression,
   SuppressionCheck,
+  SuppressionImport,
   SuppressionList,
 } from "../src/schemas.ts";
 
@@ -42,6 +44,8 @@ const SCHEMAS: Record<string, z.ZodType> = {
   SuppressionCheck,
   CreateSuppressionRequest,
   DeletedSuppression,
+  ImportSuppressionsRequest,
+  SuppressionImport,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

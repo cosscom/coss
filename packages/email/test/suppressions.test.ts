@@ -13,10 +13,13 @@ import { createEmailService } from "../src/service.ts";
 import {
   addSuppression,
   checkSuppression,
+  exportSuppressionPages,
   getSuppression,
+  importSuppressions,
   listSuppressions,
   removeSuppression,
   type SuppressionEnvironment,
+  suppressionsCsvStream,
 } from "../src/suppressions.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
@@ -161,6 +164,106 @@ describe("managing the list", () => {
     expect(await removeSuppression(env, id)).toBe(true);
     expect(await removeSuppression(env, id)).toBe(false);
     expect(await getSuppression(env, id)).toBeNull();
+  });
+});
+
+describe("bulk import and export", () => {
+  test("imports valid entries, counts existing and repeated ones, and reports invalid ones", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const manual = await suppress(env, "known@example.com");
+
+    const result = await importSuppressions(env, [
+      { address: "Jane <Jane@Example.com>" },
+      { address: "jane@example.com", scope: "*" },
+      { address: "jane@example.com", scope: "marketing" },
+      { address: "not-an-address" },
+      { address: "known@example.com" },
+      { address: "joe@example.com", scope: "has space" },
+    ]);
+    expect(result).toEqual({
+      object: "suppression_import",
+      created: 2,
+      existing: 2,
+      invalid: [
+        {
+          index: 3,
+          address: "not-an-address",
+          message: expect.stringContaining("Invalid address"),
+        },
+        {
+          index: 5,
+          address: "joe@example.com",
+          message: expect.stringContaining("Invalid scope"),
+        },
+      ],
+    });
+    const listed = await listSuppressions(env);
+    expect(listed.data.map((s) => [s.address, s.scope, s.reason]).sort()).toEqual([
+      ["jane@example.com", "*", "import"],
+      ["jane@example.com", "marketing", "import"],
+      ["known@example.com", "*", "manual"],
+    ]);
+    // Existing entries are left alone, and importing again changes nothing.
+    expect((await getSuppression(env, manual?.suppression.id ?? ""))?.reason).toBe("manual");
+    expect(
+      await importSuppressions(env, [{ address: "jane@example.com" }, { address: "x" }]),
+    ).toMatchObject({ created: 0, existing: 1, invalid: [{ index: 1 }] });
+  });
+
+  test("imports only into the given environment of the given organization", async () => {
+    const tenant = await createTestTenant();
+    const other = await createTestTenant();
+    await importSuppressions(envOf(tenant), [{ address: "jane@example.com" }]);
+    expect((await listSuppressions(envOf(tenant, "production"))).data).toEqual([]);
+    expect(
+      await importSuppressions(
+        { organizationId: other.organization.id, environmentId: tenant.development.id },
+        [{ address: "x@example.com" }],
+      ),
+    ).toBeNull();
+  });
+
+  test("exports every entry in pages of 1,000, with filters", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const addresses = Array.from({ length: 1001 }, (_, i) => ({ address: `user${i}@example.com` }));
+    expect((await importSuppressions(env, addresses))?.created).toBe(1001);
+    await suppress(env, "news@example.com", "news");
+
+    const pages: number[] = [];
+    const exported: string[] = [];
+    for await (const page of exportSuppressionPages(env)) {
+      pages.push(page.length);
+      exported.push(...page.map((s) => s.address));
+    }
+    expect(pages).toEqual([1000, 2]);
+    expect(exported).toContain("news@example.com");
+    expect(new Set(exported).size).toBe(1002);
+
+    const news: string[] = [];
+    for await (const page of exportSuppressionPages(env, { scope: "news" })) {
+      news.push(...page.map((s) => s.address));
+    }
+    expect(news).toEqual(["news@example.com"]);
+    const manual: string[] = [];
+    for await (const page of exportSuppressionPages(env, { reason: "manual" })) {
+      manual.push(...page.map((s) => s.address));
+    }
+    expect(manual).toEqual(["news@example.com"]);
+  });
+
+  test("the CSV stream starts with the header and is empty for an empty list", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    expect(await new Response(suppressionsCsvStream(env)).text()).toBe(
+      "address,scope,reason,created_at,email_id,id\r\n",
+    );
+    const added = await suppress(env, "jane@example.com", "news");
+    const csv = await new Response(suppressionsCsvStream(env)).text();
+    expect(csv.split("\r\n")[1]).toBe(
+      `jane@example.com,news,manual,${added?.suppression.created_at},,${added?.suppression.id}`,
+    );
   });
 });
 

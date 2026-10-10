@@ -31,9 +31,13 @@ export type {
   CheckSuppressionParams,
   CreateSuppressionParams,
   DeletedSuppression,
+  ExportSuppressionsParams,
+  ImportSuppressionEntry,
+  ImportSuppressionsParams,
   ListSuppressionsParams,
   Suppression,
   SuppressionCheck,
+  SuppressionImport,
   SuppressionReason,
 } from "./types/suppression.ts";
 export type { EmailWebhookEventData, WebhookEvent } from "./types/webhook.ts";

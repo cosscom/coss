@@ -45,6 +45,10 @@ const nextConfig: NextConfig = {
     if (!dev) return [];
     return [{ source: "/icon.svg", destination: `${DEV_SITE_ORIGIN}/icon.svg` }];
   },
+  experimental: {
+    // Suppression CSV imports upload up to 2 MB (`import-limits.ts`) plus multipart overhead.
+    serverActions: { bodySizeLimit: "3mb" },
+  },
 };
 
 export default nextConfig;

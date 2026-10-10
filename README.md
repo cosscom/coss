@@ -112,6 +112,8 @@ resets) are printed to the dashboard's server console in development.
 - `GET /v1/suppressions` — list the environment's suppressions (`address`, `scope`, `limit`, `after`)
 - `GET /v1/suppressions/check?address=…&category=…` — would a send skip this address?
 - `GET /v1/suppressions/{id}` / `DELETE /v1/suppressions/{id}` — retrieve / remove an entry
+- `POST /v1/suppressions/import` — add up to 1,000 entries at once (invalid ones are skipped and reported)
+- `GET /v1/suppressions/export` — the whole list as CSV (`scope`, `reason` filters); it imports again as is
 - `GET /openapi.json` — OpenAPI 3.1 document
 
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and

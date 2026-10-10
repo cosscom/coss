@@ -41,6 +41,15 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.suppressions.check",
     args: (request) => [queryParams(request) ?? "{}"],
   },
+  // Before `/v1/suppressions/{id}`, which would also match these paths.
+  "POST /v1/suppressions/import": {
+    method: "email.suppressions.import",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/suppressions/export": {
+    method: "email.suppressions.export",
+    args: (request) => [queryParams(request)],
+  },
   "GET /v1/suppressions/{id}": { method: "email.suppressions.get", args: (r) => [pathId(r)] },
   "DELETE /v1/suppressions/{id}": { method: "email.suppressions.remove", args: (r) => [pathId(r)] },
   "POST /v1/domains": {
