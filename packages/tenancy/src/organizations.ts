@@ -45,6 +45,13 @@ const organizationColumns = {
   createdAt: organization.createdAt,
 };
 
+const memberColumns = {
+  id: member.id,
+  role: member.role,
+  createdAt: member.createdAt,
+  user: { id: user.id, name: user.name, email: user.email },
+};
+
 /** The user's membership in the organization with this slug, or `null` if they are not a member. */
 export async function getMembership(input: {
   userId: string;
@@ -73,16 +80,39 @@ export async function listOrganizationMembers(input: {
   organizationId: string;
 }): Promise<OrganizationMember[]> {
   return db
-    .select({
-      id: member.id,
-      role: member.role,
-      createdAt: member.createdAt,
-      user: { id: user.id, name: user.name, email: user.email },
-    })
+    .select(memberColumns)
     .from(member)
     .innerJoin(user, eq(user.id, member.userId))
     .where(eq(member.organizationId, input.organizationId))
     .orderBy(asc(member.createdAt), asc(member.id));
+}
+
+/** One member of the organization (ownership check before changing it), or `null`. */
+export async function getOrganizationMember(input: {
+  organizationId: string;
+  memberId: string;
+}): Promise<OrganizationMember | null> {
+  const [row] = await db
+    .select(memberColumns)
+    .from(member)
+    .innerJoin(user, eq(user.id, member.userId))
+    .where(and(eq(member.id, input.memberId), eq(member.organizationId, input.organizationId)))
+    .limit(1);
+  return row ?? null;
+}
+
+const invitationColumns = {
+  id: invitation.id,
+  email: invitation.email,
+  role: invitation.role,
+  inviterId: invitation.inviterId,
+  expiresAt: invitation.expiresAt,
+  createdAt: invitation.createdAt,
+};
+
+/** Can still be accepted: status `pending` and not expired. */
+function isPending() {
+  return and(eq(invitation.status, "pending"), gt(invitation.expiresAt, new Date()));
 }
 
 /** Invitations that can still be accepted (status `pending`, not expired), newest first. */
@@ -90,21 +120,27 @@ export async function listPendingInvitations(input: {
   organizationId: string;
 }): Promise<PendingInvitation[]> {
   return db
-    .select({
-      id: invitation.id,
-      email: invitation.email,
-      role: invitation.role,
-      inviterId: invitation.inviterId,
-      expiresAt: invitation.expiresAt,
-      createdAt: invitation.createdAt,
-    })
+    .select(invitationColumns)
+    .from(invitation)
+    .where(and(eq(invitation.organizationId, input.organizationId), isPending()))
+    .orderBy(desc(invitation.createdAt), desc(invitation.id));
+}
+
+/** One pending invitation of the organization (ownership check before canceling it), or `null`. */
+export async function getPendingInvitation(input: {
+  organizationId: string;
+  invitationId: string;
+}): Promise<PendingInvitation | null> {
+  const [row] = await db
+    .select(invitationColumns)
     .from(invitation)
     .where(
       and(
+        eq(invitation.id, input.invitationId),
         eq(invitation.organizationId, input.organizationId),
-        eq(invitation.status, "pending"),
-        gt(invitation.expiresAt, new Date()),
+        isPending(),
       ),
     )
-    .orderBy(desc(invitation.createdAt), desc(invitation.id));
+    .limit(1);
+  return row ?? null;
 }

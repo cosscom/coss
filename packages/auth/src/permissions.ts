@@ -50,12 +50,20 @@ export type OrgPermissions = {
   [Resource in keyof typeof orgStatements]?: (typeof orgStatements)[Resource][number][];
 };
 
+/** Every static role, least privileged first (the order role pickers use). */
+export const ORG_ROLES = ["member", "admin", "owner"] as const satisfies readonly OrgRole[];
+
 /** Roles an organization admin may grant through invitations (owner is never invitable). */
 export const INVITABLE_ORG_ROLES = ["admin", "member"] as const;
 export type InvitableOrgRole = (typeof INVITABLE_ORG_ROLES)[number];
 
 export function isOrgRole(name: string): name is OrgRole {
   return Object.hasOwn(orgRoles, name);
+}
+
+/** Whether a (possibly comma-joined) role string includes `name`, matched exactly. */
+function hasOrgRole(role: string, name: OrgRole): boolean {
+  return role.split(",").includes(name);
 }
 
 /**
@@ -68,4 +76,18 @@ export function orgRoleCan(role: string | null | undefined, permissions: OrgPerm
   return role
     .split(",")
     .some((name) => isOrgRole(name) && orgRoles[name].authorize(permissions).success);
+}
+
+/**
+ * Roles that a member with `actorRole` may give a member whose role is `targetRole` (empty when
+ * they may not change it at all). Mirrors Better Auth's update-member-role rules so the dashboard
+ * only offers what the server accepts: it needs `member:update`, and only an owner may change an
+ * owner or grant owner. Better Auth additionally refuses to demote the last owner; that needs the
+ * member list, so it is left to Better Auth.
+ */
+export function assignableOrgRoles(actorRole: string, targetRole: string): OrgRole[] {
+  if (!orgRoleCan(actorRole, { member: ["update"] })) return [];
+  if (hasOrgRole(actorRole, "owner")) return [...ORG_ROLES];
+  if (hasOrgRole(targetRole, "owner")) return [];
+  return ORG_ROLES.filter((role) => role !== "owner");
 }

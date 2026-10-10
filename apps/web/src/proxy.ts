@@ -2,7 +2,14 @@ import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
 /** Reachable without a session cookie. /accept-invitation renders its own signed-out state. */
-const PUBLIC_PATH_PREFIXES = ["/sign-in", "/sign-up", "/api/auth", "/accept-invitation"];
+const PUBLIC_PATH_PREFIXES = [
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+  "/reset-password",
+  "/api/auth",
+  "/accept-invitation",
+];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some(

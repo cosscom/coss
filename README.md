@@ -56,7 +56,7 @@ COSS_API_KEY=coss_test_... COSS_BASE_URL=http://localhost:3001 bun packages/sdk/
 ```
 
 The email shows up in the dashboard under the project's **Development** environment. Auth emails (email
-verification, invitations) are printed to the dashboard's server console in development.
+verification, invitations, password resets) are printed to the dashboard's server console in development.
 
 ## Concepts
 

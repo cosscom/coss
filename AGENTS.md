@@ -132,8 +132,8 @@ Adding one: `.env.example`, the app's t3-env schema (`NEXT_PUBLIC_*` also in `ex
   `@/lib/auth`; client code uses `authClient` from `@/lib/auth-client`.
 - Mutations live in a colocated `actions.ts` (`"use server"`): `(prev: ActionResult<T> | null, formData) => runAction(…)`
   (`src/lib/actions.ts`). Start with `requireOrgPermission(formString(formData, "orgSlug"), {…})`, re-check that target
-  ids belong to that org (e.g. `getKeyBinding`), `refresh()` after writes. Throw `ActionError` for user-facing messages.
-  Clients use `useActionState(action, null)` + `<FormError>`. Hidden inputs carry slugs/ids only.
+  ids belong to that org (`getKeyBinding`, `getOrganizationMember`, `getPendingInvitation`), `refresh()` after writes.
+  Throw `ActionError` for user-facing messages. Clients use `useActionState(action, null)` + `<FormError>`. Hidden inputs carry slugs/ids only.
 - coss ui is **Base UI, not Radix**: compose with `render` (`<DialogTrigger render={<Button />}>`), never `asChild`.
   A `<form>` inside `DialogPopup`/`AlertDialogPopup` needs `className="contents"` (otherwise the footer renders outside the
   popup). Popups unmount on close. Add components with `bunx shadcn@latest add @coss/<name>` from `packages/ui`;
@@ -213,8 +213,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
     ownership check, then `auth.api.deleteApiKey` with session headers.
   - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/update` and
     `/admin/remove-user` (server-side `auth.api.*` still works). Never re-enable them to "simplify" things.
-  - `organizationHooks` validate org slugs on create/update and only allow canonical roles (`INVITABLE_ORG_ROLES`,
-    `isOrgRole`); `orgRoleCan` matches role names exactly, like Better Auth (no trimming).
+  - `organizationHooks` validate org slugs on create/update, only allow canonical roles (`INVITABLE_ORG_ROLES`,
+    `isOrgRole`) and only cancel `pending` invitations (Better Auth would rewrite accepted ones); `orgRoleCan` matches
+    role names exactly, like Better Auth (no trimming). `assignableOrgRoles` mirrors Better Auth's update-member-role
+    rules (only owners change owners or grant owner; Better Auth alone enforces "the last owner can't step down").
+  - Password reset: `sendResetPassword` emails Better Auth's `/api/auth/reset-password/:token` link, which redirects to
+    the dashboard's `/reset-password?token=…` (the client passes `redirectTo`); `revokeSessionsOnPasswordReset: true`.
   - Org roles spread `ownerAc.statements` / `adminAc.statements` / `memberAc.statements` (custom roles replace defaults).
   - `requireEmailVerificationOnInvitation: true` must stay on (custom ids make invitation ids predictable).
   - Never add NOT NULL columns to Better Auth tables (runtime schema validation rejects every auth request).
@@ -231,8 +235,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
   `PREVIEW_HEAD` prepended to `srcDoc`. Never add `allow-scripts` or `allow-same-origin`.
-- **Dev-only auth emails:** `logDevEmail` (`packages/auth/src/options.ts`) prints verification/invitation links to the
-  server console (the dashboard's, as `[auth] …` lines) and throws whenever `NODE_ENV=production`.
+- **Dev-only auth emails:** `logDevEmail` (`packages/auth/src/options.ts`) prints verification/invitation/password-reset
+  links to the server console (the dashboard's, as `[auth] …` lines) and throws whenever `NODE_ENV=production`.
 
 ## Local dev
 
@@ -250,8 +254,9 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): SES provider + delivery events/webhooks,
-domains/DNS verification, attachments/batch/scheduled sends, rate limiting, async dispatch, password reset, org
-settings, member role management, cancelling invitations, API version header, OpenAPI docs UI, release tooling.
+domains/DNS verification, attachments/batch/scheduled sends, rate limiting, async dispatch, org settings,
+removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
+UI, release tooling.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

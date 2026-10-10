@@ -63,6 +63,14 @@ export const authOptions = {
     enabled: true,
     // v0: sign-up does not require verification (accepts sign-up email enumeration).
     requireEmailVerification: false,
+    // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
+    // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
+    sendResetPassword: async ({ user, url }) => {
+      logDevEmail("Reset password", user.email, url);
+    },
+    // Reset links expire after Better Auth's default of one hour. A reset signs out every session,
+    // including any opened with the old (possibly compromised) password.
+    revokeSessionsOnPasswordReset: true,
   },
   emailVerification: {
     sendOnSignUp: true,
@@ -107,6 +115,13 @@ export const authOptions = {
         beforeCreateInvitation: async ({ invitation }) => {
           if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
             throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
+          }
+        },
+        // Better Auth cancels invitations in any status, which would rewrite an accepted (or
+        // already canceled) one; only pending invitations can be canceled.
+        beforeCancelInvitation: async ({ invitation }) => {
+          if (invitation.status !== "pending") {
+            throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
           }
         },
         beforeUpdateMemberRole: async ({ newRole }) => {

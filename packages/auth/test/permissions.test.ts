@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { orgRoleCan, orgRoles } from "../src/permissions.ts";
+import { assignableOrgRoles, orgRoleCan, orgRoles } from "../src/permissions.ts";
 
 describe("org roles", () => {
   test("owner keeps Better Auth defaults and gets full COSS access", () => {
@@ -42,5 +42,30 @@ describe("orgRoleCan", () => {
     expect(orgRoleCan(" owner", { apiKey: ["create"] })).toBe(false);
     expect(orgRoleCan("owner ", { apiKey: ["create"] })).toBe(false);
     expect(orgRoleCan("constructor", { project: ["read"] })).toBe(false);
+  });
+});
+
+describe("assignableOrgRoles", () => {
+  test("owners may assign every role to anyone, including other owners and themselves", () => {
+    expect(assignableOrgRoles("owner", "member")).toEqual(["member", "admin", "owner"]);
+    expect(assignableOrgRoles("owner", "owner")).toEqual(["member", "admin", "owner"]);
+  });
+
+  test("admins may switch non-owners between member and admin, but never touch an owner", () => {
+    expect(assignableOrgRoles("admin", "member")).toEqual(["member", "admin"]);
+    expect(assignableOrgRoles("admin", "admin")).toEqual(["member", "admin"]);
+    expect(assignableOrgRoles("admin", "owner")).toEqual([]);
+    expect(assignableOrgRoles("admin", "member,owner")).toEqual([]);
+  });
+
+  test("members and unknown roles may not change anyone", () => {
+    expect(assignableOrgRoles("member", "member")).toEqual([]);
+    expect(assignableOrgRoles("nope", "member")).toEqual([]);
+    expect(assignableOrgRoles(" owner", "member")).toEqual([]);
+  });
+
+  test("comma-joined actor roles use their most privileged role", () => {
+    expect(assignableOrgRoles("member,owner", "owner")).toEqual(["member", "admin", "owner"]);
+    expect(assignableOrgRoles("member,admin", "member")).toEqual(["member", "admin"]);
   });
 });

@@ -18,6 +18,8 @@ export {
 export { TenancyError, type TenancyErrorCode } from "./errors.ts";
 export {
   getMembership,
+  getOrganizationMember,
+  getPendingInvitation,
   listOrganizationMembers,
   listPendingInvitations,
   type Membership,
