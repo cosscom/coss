@@ -45,6 +45,9 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
           </nav>
           <div className="ms-auto flex items-center gap-2">
             <span className="text-muted-foreground text-sm">{session.user.email}</span>
+            <Button render={<Link href="/settings" />} size="sm" variant="ghost">
+              Account
+            </Button>
             <SignOutButton />
           </div>
         </div>

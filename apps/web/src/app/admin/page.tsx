@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import type { UserWithRole } from "better-auth/plugins";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -18,6 +19,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { auth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { isPlatformAdmin, requireSession } from "@/lib/session";
+import { ResetTwoFactorButton } from "./reset-two-factor-button";
 import { UserActions } from "./user-actions";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -27,10 +29,14 @@ export default async function AdminPage() {
   const session = await requireSession();
   if (!isPlatformAdmin(session)) notFound();
 
-  const { users, total } = await auth.api.listUsers({
+  const { users, total } = (await auth.api.listUsers({
     headers: await headers(),
     query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
-  });
+  })) as {
+    // The admin plugin's type omits other plugins' user fields; the rows include them.
+    users: (UserWithRole & { twoFactorEnabled?: boolean | null })[];
+    total: number;
+  };
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -62,6 +68,7 @@ export default async function AdminPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Two-factor</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -90,6 +97,13 @@ export default async function AdminPage() {
                         <Badge variant="success">active</Badge>
                       )}
                     </TableCell>
+                    <TableCell>
+                      {user.twoFactorEnabled ? (
+                        <Badge variant="success">on</Badge>
+                      ) : (
+                        <Badge variant="outline">off</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDateTime(user.createdAt)}
                     </TableCell>
@@ -97,11 +111,16 @@ export default async function AdminPage() {
                       {user.id === session.user.id ? (
                         <span className="text-muted-foreground text-sm">You</span>
                       ) : (
-                        <UserActions
-                          banned={Boolean(user.banned)}
-                          isAdmin={user.role === "admin"}
-                          userId={user.id}
-                        />
+                        <div className="flex justify-end gap-1">
+                          {user.twoFactorEnabled ? (
+                            <ResetTwoFactorButton email={user.email} userId={user.id} />
+                          ) : null}
+                          <UserActions
+                            banned={Boolean(user.banned)}
+                            isAdmin={user.role === "admin"}
+                            userId={user.id}
+                          />
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>

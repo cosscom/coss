@@ -14,7 +14,7 @@ drive per-recipient status and signed customer webhooks. Human setup docs (incl.
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: webhook deliveries, domain re-checks, stale-claim sweep, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard. |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
@@ -228,8 +228,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **Drizzle 0.x** (see catalog): the drizzle.team docs default to v1 — don't use `defineRelations`, `drizzle-orm/zod`,
   `getColumns` until the catalog moves to 1.x.
 - **Biome** is pinned exactly; keep the `$schema` URL in `biome.json` and `apps/web/biome.json` in step with it.
-- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key` and `auth` (CLI) stay on one identical
-  exact version (catalog) — bump them together.
+- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey` and `auth` (CLI)
+  stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
@@ -250,11 +250,21 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   - Org roles spread `ownerAc.statements` / `adminAc.statements` / `memberAc.statements` (custom roles replace defaults).
   - `requireEmailVerificationOnInvitation: true` must stay on (custom ids make invitation ids predictable).
   - Never add NOT NULL columns to Better Auth tables (runtime schema validation rejects every auth request).
+  - **Two-factor / passkeys:** TOTP + backup codes only (no email/SMS OTP). The challenge only guards password sign-in
+    (`/sign-in/email`), so nothing else may create a session for a password user: `autoSignInAfterVerification` stays
+    `false`. Passkey sign-in skips TOTP, so `assertUserVerified` (both `afterVerification` hooks) rejects ceremonies
+    without user verification — the plugin itself passes `requireUserVerification: false`. Passkey `rpID`/`origin`
+    come from `BETTER_AUTH_URL` (changing its host invalidates every passkey). The `hooks.before` guard refuses
+    `FACTOR_MANAGEMENT_PATHS` to impersonation sessions; add new factor-changing endpoints there.
+  - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
+    `setOrganizationTwoFactorRequired`, which needs `organization:update` and an actor with 2FA). `requireOrgMember`
+    redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it (the password still
+    works without a code). API keys are unaffected.
   - `packages/auth` must not import `next/*` or `"server-only"` (the `auth` CLI loads `src/auth.ts` on Node).
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.
 - **Tenancy rule:** every tenancy/email/webhooks function that touches tenant data takes `organizationId` and scopes its
   SQL by it; writes derive org/project from the environment row. Only `getMembership` (by slug), `authenticateApiKey`
-  (from the key's binding), the platform-level `promoteToAdmin`, and these system-level functions resolve the org
+  (from the key's binding), the platform-level `promoteToAdmin` and `resetUserTwoFactor` (admin recovery), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`. Server actions take only slugs +
@@ -322,7 +332,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 **Not built yet** (don't assume these exist; delete a line when it ships): open/click tracking (and custom tracking
 domains), bulk suppression import/export, attachments/batch/scheduled sends, webhook delivery logs over the API,
 rate limiting, async dispatch, org settings,
-removing members / leaving an org, resending invitations, signed-in password change, API version header, OpenAPI docs
+removing members / leaving an org, resending invitations, signed-in password change, email/SMS two-factor codes,
+"trust this device" for 2FA, renaming passkeys, API version header, OpenAPI docs
 UI, release tooling.
 
 <!-- BEGIN:turborepo-agent-rules -->

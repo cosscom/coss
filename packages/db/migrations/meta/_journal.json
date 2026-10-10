@@ -50,6 +50,13 @@
       "when": 1791657681807,
       "tag": "0006_suppression_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791669381589,
+      "tag": "0007_two_factor_passkeys",
+      "breakpoints": true
     }
   ]
 }

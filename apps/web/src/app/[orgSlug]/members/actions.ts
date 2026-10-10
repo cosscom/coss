@@ -6,7 +6,11 @@ import {
   type InvitableOrgRole,
   isOrgRole,
 } from "@coss/auth/permissions";
-import { getOrganizationMember, getPendingInvitation } from "@coss/tenancy";
+import {
+  getOrganizationMember,
+  getPendingInvitation,
+  setOrganizationTwoFactorRequired,
+} from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -97,6 +101,28 @@ export async function updateMemberRoleAction(
       headers: await headers(),
       body: { memberId: target.id, role, organizationId: organization.id },
     });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Turns the organization's two-factor requirement on or off. Members without it are sent to
+ * /settings on their next request. Only someone who has two-factor themselves can turn it on.
+ */
+export async function setTwoFactorRequirementAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      organization: ["update"],
+    });
+    const required = formString(formData, "required") === "true";
+    if (required && !session.user.twoFactorEnabled) {
+      throw new ActionError("Set up two-factor authentication for your own account first.");
+    }
+    await setOrganizationTwoFactorRequired({ organizationId: organization.id, required });
     refresh();
     return null;
   });
