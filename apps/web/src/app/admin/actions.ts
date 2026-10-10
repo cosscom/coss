@@ -2,6 +2,7 @@
 
 import { isId } from "@coss/db/id";
 import {
+  ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
   recordAdminAction,
   revokeApiKeyAsAdmin,
@@ -42,8 +43,16 @@ function formOrganizationId(formData: FormData): string {
   return organizationId;
 }
 
-function requiredReason(formData: FormData): string {
+function optionalReason(formData: FormData): string | null {
   const reason = formString(formData, "reason");
+  if (reason.length > ADMIN_REASON_MAX_LENGTH) {
+    throw new ActionError(`The reason must be at most ${ADMIN_REASON_MAX_LENGTH} characters.`);
+  }
+  return reason || null;
+}
+
+function requiredReason(formData: FormData): string {
+  const reason = optionalReason(formData);
   if (!reason) throw new ActionError("Enter a reason. It is kept in the audit log.");
   return reason;
 }
@@ -97,7 +106,7 @@ export async function unbanUserAction(
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
     const userId = formUserId(formData);
-    const reason = formString(formData, "reason") || null;
+    const reason = optionalReason(formData);
     const email = await targetEmail(userId);
     await auth.api.unbanUser({ headers: await headers(), body: { userId } });
     await recordAdminAction({
@@ -123,7 +132,7 @@ export async function setUserRoleAction(
     assertNotSelf(actor, userId);
     const role = formString(formData, "role");
     if (role !== "admin" && role !== "user") throw new ActionError("Choose a role.");
-    const reason = formString(formData, "reason") || null;
+    const reason = optionalReason(formData);
 
     const email = await targetEmail(userId);
     await auth.api.setRole({ headers: await headers(), body: { userId, role } });
@@ -148,13 +157,14 @@ export async function revokeUserSessionsAction(
     const { actor } = await requirePlatformAdminAction();
     const userId = formUserId(formData);
     assertNotSelf(actor, userId);
+    const reason = optionalReason(formData);
     const email = await targetEmail(userId);
     await auth.api.revokeUserSessions({ headers: await headers(), body: { userId } });
     await recordAdminAction({
       actor,
       action: "user.revoke_sessions",
       target: { type: "user", id: userId },
-      reason: formString(formData, "reason") || null,
+      reason,
       metadata: { email },
     });
     refresh();
@@ -173,6 +183,7 @@ export async function revokeUserSessionAction(
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
     const userId = formUserId(formData);
+    const reason = optionalReason(formData);
     const sessionId = formString(formData, "sessionId");
     const requestHeaders = await headers();
     const { sessions } = await auth.api.listUserSessions({
@@ -189,7 +200,7 @@ export async function revokeUserSessionAction(
       actor,
       action: "user.revoke_session",
       target: { type: "user", id: userId },
-      reason: formString(formData, "reason") || null,
+      reason,
       metadata: { sessionId, impersonatedBy: target.impersonatedBy ?? null },
     });
     refresh();
@@ -249,7 +260,7 @@ export async function unsuspendOrganizationAction(
     const { actor } = await requirePlatformAdminAction();
     await unsuspendOrganization({
       organizationId: formOrganizationId(formData),
-      reason: formString(formData, "reason") || null,
+      reason: optionalReason(formData),
       actor,
     });
     refresh();

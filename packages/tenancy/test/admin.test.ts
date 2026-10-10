@@ -159,6 +159,49 @@ describe("organization suspension", () => {
     ).toBe(false);
   });
 
+  test.each(["owner", "admin"] as const)(
+    "blocks invitation cancellation over HTTP for a suspended org's %s",
+    async (role) => {
+      const tenant = await createTestTenant();
+      const actor = await adminActor();
+      const organizationId = tenant.organization.id;
+      const caller = role === "owner" ? tenant.owner : await createTestUser();
+      if (role === "admin") await addMember({ organizationId, userId: caller.id, role });
+      const headers = await sessionHeaders(caller.email, caller.password);
+      const invitation = await auth.api.createInvitation({
+        headers,
+        body: { email: `invite-${uniqueSuffix()}@coss.test`, role: "member", organizationId },
+      });
+      const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+      headers.set("origin", base);
+      headers.set("content-type", "application/json");
+      const cancel = () =>
+        auth.handler(
+          new Request(`${base}/api/auth/organization/cancel-invitation`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ invitationId: invitation.id }),
+          }),
+        );
+      await suspendOrganization({ organizationId, reason: "Abuse", actor });
+      const response = await cancel();
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ message: "This organization is suspended." });
+      const [pending] = await db
+        .select()
+        .from(schema.invitation)
+        .where(eq(schema.invitation.id, invitation.id));
+      expect(pending?.status).toBe("pending");
+      await unsuspendOrganization({ organizationId, actor });
+      expect((await cancel()).status).toBe(200);
+      const [canceled] = await db
+        .select()
+        .from(schema.invitation)
+        .where(eq(schema.invitation.id, invitation.id));
+      expect(canceled?.status).toBe("canceled");
+    },
+  );
+
   test("freezes invitations, accepting them and role changes in Better Auth", async () => {
     const tenant = await createTestTenant();
     const actor = await adminActor();

@@ -149,6 +149,7 @@ export const authOptions = {
         // Better Auth cancels invitations in any status, which would rewrite an accepted (or
         // already canceled) one; only pending invitations can be canceled.
         beforeCancelInvitation: async ({ invitation }) => {
+          await assertOrgNotSuspended(invitation.organizationId);
           if (invitation.status !== "pending") {
             throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
           }
