@@ -24,7 +24,7 @@ export const MANUAL_CHECK_INTERVAL_MS = 10_000;
 const DomainIdParams = z.object({
   id: z
     .string()
-    .meta({ description: "The domain's id.", example: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+    .meta({ description: "The domain's id.", examples: ["dom_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
 });
 
 const SCOPE_NOTE =

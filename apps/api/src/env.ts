@@ -11,6 +11,23 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     // Public origin of this API (OpenAPI `servers`). Falls back to the request origin when unset.
     API_PUBLIC_URL: z.url().optional(),
+    // Comma-separated browser origins allowed to call /v1 (the docs' API playground).
+    API_CORS_ORIGINS: z
+      .string()
+      .default("https://coss.com")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((origin) => origin.trim())
+          .filter(Boolean),
+      )
+      .pipe(
+        z.array(
+          z.url().refine((origin) => new URL(origin).origin === origin, {
+            message: "Use bare origins like https://coss.com (no path or trailing slash).",
+          }),
+        ),
+      ),
     // Encrypts webhook endpoint signing secrets; must be the same value the worker uses.
     WEBHOOK_SECRETS_KEY: z.string().min(1, "Generate one with `openssl rand -base64 32`."),
     ...emailEnvShape,

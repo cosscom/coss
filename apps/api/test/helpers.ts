@@ -21,7 +21,13 @@ export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
  * An app whose live and sandbox providers are separate, silent fakes. Domains verify without DNS
  * and webhook endpoints may use local `http://` URLs.
  */
-export function createTestApp(opts: { emailService?: EmailService; domainDeps?: DomainDeps } = {}) {
+export function createTestApp(
+  opts: {
+    emailService?: EmailService;
+    domainDeps?: DomainDeps;
+    corsOrigins?: readonly string[];
+  } = {},
+) {
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const identity = new FakeIdentityProvider();
@@ -29,6 +35,7 @@ export function createTestApp(opts: { emailService?: EmailService; domainDeps?: 
     emailService: opts.emailService ?? createEmailService({ liveProvider, sandboxProvider }),
     domainDeps: opts.domainDeps ?? { identity, dns: null },
     webhookDeps: testManagementDeps,
+    corsOrigins: opts.corsOrigins,
   });
   return { app, liveProvider, sandboxProvider, identity };
 }

@@ -1,0 +1,7 @@
+{
+  "title": "API Reference",
+  "description": "The HTTP API",
+  "root": true,
+  "icon": "Braces",
+  "pages": ["index", "errors", "idempotency", "---Endpoints---", "..."]
+}
