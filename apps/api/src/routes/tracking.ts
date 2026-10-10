@@ -58,11 +58,13 @@ export function createTrackingRoutes(): Hono<AppEnv> {
           return null;
         })
       : null;
-    if (!url) {
+    const destination = url ? URL.parse(url) : null;
+    if (!destination) {
       return c.text("This link is not valid.", 404, { "Cache-Control": NO_STORE });
     }
     c.header("Cache-Control", NO_STORE);
-    return c.redirect(url, 302);
+    // Encode Unicode without making Hono double-encode existing percent escapes.
+    return c.redirect(destination.href, 302);
   });
 
   return router;

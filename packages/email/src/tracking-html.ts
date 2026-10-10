@@ -59,6 +59,7 @@ export function instrumentHtml(
   const document = parse(html, { sourceCodeLocationInfo: true });
   const edits: Edit[] = [];
   const links: TrackedLink[] = [];
+  const seenAttributes = new Set<string>();
   let bodyEnd: number | null = null;
 
   for (const element of elements(document)) {
@@ -66,6 +67,12 @@ export function instrumentHtml(
     if (element.tagName === "body" && location?.endTag) bodyEnd = location.endTag.startOffset;
     if (!opts.clicks || element.tagName !== "a" || !location?.attrs) continue;
     const noTrack = location.attrs[NO_TRACK_ATTRIBUTE];
+    const attributeLocation = noTrack ?? location.attrs.href;
+    if (!attributeLocation) continue;
+    // parse5 can reconstruct multiple anchors from the same source attribute.
+    const range = `${attributeLocation.startOffset}:${attributeLocation.endOffset}`;
+    if (seenAttributes.has(range)) continue;
+    seenAttributes.add(range);
     if (noTrack) {
       edits.push({ start: noTrack.startOffset, end: noTrack.endOffset, text: "" });
       continue;

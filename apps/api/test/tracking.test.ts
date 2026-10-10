@@ -25,10 +25,10 @@ function hit(app: TestApp, url: string, method: "GET" | "HEAD" = "GET") {
   );
 }
 
-async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }) {
+async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }, html = HTML) {
   const tenant = await createTestTenant();
   const { app, sandboxProvider } = createTestApp();
-  const res = await sendEmail(app, tenant.sandboxKey, emailBody({ html: HTML, tracking }));
+  const res = await sendEmail(app, tenant.sandboxKey, emailBody({ html, tracking }));
   expect(res.status).toBe(200);
   const email = (await res.json()) as { id: string; tracking: Record<string, unknown> };
   const urls = trackingUrls(sandboxProvider.sent.at(-1)?.html ?? "");
@@ -36,6 +36,21 @@ async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }) {
 }
 
 describe("tracking endpoints", () => {
+  test("Unicode redirects preserve existing percent escapes for GET and HEAD", async () => {
+    const { app, urls } = await sendTracked(
+      { clicks: true },
+      '<a href="https://example.com/日本?q=a%26b&amp;path=%2F#日本%20">link</a>',
+    );
+    expect(urls.clicks).toHaveLength(1);
+    for (const method of ["HEAD", "GET"] as const) {
+      const res = await hit(app, urls.clicks[0] ?? "", method);
+      expect(res.status).toBe(302);
+      expect(res.headers.get("location")).toBe(
+        "https://example.com/%E6%97%A5%E6%9C%AC?q=a%26b&path=%2F#%E6%97%A5%E6%9C%AC%20",
+      );
+    }
+  });
+
   test("the pixel is a cross-origin, uncacheable GIF and records one open", async () => {
     const { tenant, app, email, urls } = await sendTracked({ opens: true });
     expect(email.tracking).toMatchObject({ opens: true, clicks: false, open_count: 0 });
@@ -112,6 +127,15 @@ describe("tracking endpoints", () => {
       expect(res.headers.get("content-type")).toStartWith("text/plain");
       expect(res.headers.get("location")).toBeNull();
     }
+  });
+
+  test("malformed stored destinations are a plain 404", async () => {
+    const { app, urls } = await sendTracked({ clicks: true }, '<a href="https://[">link</a>');
+    expect(urls.clicks).toHaveLength(1);
+    const res = await hit(app, urls.clicks[0] ?? "");
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toStartWith("text/plain");
+    expect(res.headers.get("location")).toBeNull();
   });
 
   test("tracking endpoints are not in the OpenAPI document", async () => {

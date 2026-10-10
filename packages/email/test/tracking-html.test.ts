@@ -6,6 +6,27 @@ const TOKEN = "t".repeat(32);
 const both = { baseUrl: BASE, token: TOKEN, opens: true, clicks: true };
 
 describe("instrumentHtml", () => {
+  test("edits reconstructed anchors once and keeps distinct links numbered consecutively", () => {
+    const html =
+      '<p><a href="https://example.com">one<p>two</a>' + '<a href="https://example.com">three</a>';
+    const out = instrumentHtml(html, { ...both, opens: false });
+    expect(out.links).toEqual([
+      { position: 0, url: "https://example.com" },
+      { position: 1, url: "https://example.com" },
+    ]);
+    expect(out.html).toBe(
+      `<p><a href="${BASE}/t/c/${TOKEN}/0">one<p>two</a>` +
+        `<a href="${BASE}/t/c/${TOKEN}/1">three</a>`,
+    );
+  });
+
+  test("removes a reconstructed anchor's opt-out attribute only once", () => {
+    const html = '<p><a data-coss-no-track href="https://example.com">one<p>two</a>';
+    const out = instrumentHtml(html, { ...both, opens: false });
+    expect(out.links).toEqual([]);
+    expect(out.html).toBe(html.replace("data-coss-no-track", ""));
+  });
+
   test("rewrites http(s) links in order and stores their decoded targets", () => {
     const html =
       '<html><body><a href="https://acme.com/a?x=1&amp;y=2">A</a> ' +
