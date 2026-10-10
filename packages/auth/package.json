@@ -1,0 +1,31 @@
+{
+  "name": "@coss/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/auth.ts",
+    "./options": "./src/options.ts",
+    "./permissions": "./src/permissions.ts",
+    "./slugs": "./src/slugs.ts",
+    "./constants": "./src/constants.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test",
+    "auth:generate": "auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts --yes"
+  },
+  "dependencies": {
+    "@better-auth/api-key": "catalog:",
+    "@better-auth/core": "catalog:",
+    "@coss/db": "workspace:*",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "auth": "catalog:",
+    "typescript": "catalog:"
+  }
+}

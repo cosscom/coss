@@ -1,0 +1,16 @@
+node_modules
+.turbo
+.next
+dist
+coverage
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.local
+.env.*.local
+*.tgz
+.DS_Store
+
+# Personal Claude Code files
+CLAUDE.local.md
+.claude/settings.local.json

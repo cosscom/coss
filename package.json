@@ -1,0 +1,69 @@
+{
+  "name": "coss-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "engines": {
+    "bun": ">=1.4.2",
+    "node": ">=24"
+  },
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "tooling/*"
+    ],
+    "catalog": {
+      "@arethetypeswrong/core": "0.18.5",
+      "@base-ui/react": "1.9.0",
+      "@better-auth/api-key": "1.7.7",
+      "@better-auth/core": "1.7.7",
+      "@hono/zod-openapi": "1.6.3",
+      "@t3-oss/env-core": "0.13.11",
+      "@t3-oss/env-nextjs": "0.13.11",
+      "@tailwindcss/postcss": "4.3.3",
+      "@types/bun": "1.4.2",
+      "@types/node": "^24",
+      "@types/pg": "8.23.1",
+      "@types/react": "19.3.0",
+      "@types/react-dom": "19.3.0",
+      "auth": "1.7.7",
+      "better-auth": "1.7.7",
+      "drizzle-kit": "0.31.11",
+      "drizzle-orm": "0.45.4",
+      "hono": "4.13.13",
+      "lucide-react": "1.54.0",
+      "next": "16.4.0",
+      "pg": "8.23.1",
+      "postcss": "8.5.29",
+      "publint": "0.3.25",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "server-only": "0.0.1",
+      "tailwindcss": "4.3.3",
+      "tsdown": "0.23.0",
+      "typescript": "7.0.2",
+      "zod": "4.6.5"
+    }
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "bun run db:migrate:test && turbo run test",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
+    "db:generate": "bun run --cwd packages/db db:generate",
+    "db:migrate": "bun run --cwd packages/db db:migrate",
+    "db:migrate:test": "bun run --cwd packages/db db:migrate:test",
+    "db:studio": "bun run --cwd packages/db db:studio",
+    "db:seed": "bun run --cwd packages/tenancy db:seed",
+    "admin:create": "bun run --cwd packages/tenancy admin:create",
+    "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "turbo": "2.11.7",
+    "typescript": "catalog:"
+  }
+}

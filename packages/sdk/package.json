@@ -1,0 +1,33 @@
+{
+  "name": "coss",
+  "version": "0.0.0",
+  "description": "The official TypeScript SDK for COSS: email, SMS, video, scheduling and more behind one API key.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "0.18.5",
+    "@types/bun": "1.4.2",
+    "publint": "0.3.25",
+    "tsdown": "0.23.0",
+    "typescript": "7.0.2"
+  }
+}

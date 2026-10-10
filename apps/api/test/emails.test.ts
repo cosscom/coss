@@ -1,0 +1,311 @@
+import { describe, expect, spyOn, test } from "bun:test";
+import type { EmailObjectOutput } from "@coss/email/schemas";
+import { createTestTenant } from "@coss/tenancy/testing";
+import {
+  createTestApp,
+  emailBody,
+  errorOf,
+  getEmailById,
+  REQUEST_ID,
+  sendEmail,
+  setEmailStatus,
+} from "./helpers.ts";
+
+describe("POST /v1/emails", () => {
+  test("a sandbox key sends through the sandbox provider", async () => {
+    const tenant = await createTestTenant();
+    const { app, liveProvider, sandboxProvider } = createTestApp();
+
+    const res = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ to: ["a@example.com", "b@example.com"], headers: { "X-Campaign": "fall" } }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-request-id")).toMatch(REQUEST_ID);
+    expect(res.headers.get("idempotent-replayed")).toBeNull();
+    const email = (await res.json()) as EmailObjectOutput;
+    expect(email).toMatchObject({
+      object: "email",
+      from: "Acme <hello@acme.com>",
+      to: ["a@example.com", "b@example.com"],
+      cc: [],
+      subject: "Welcome",
+      text: "Hello!",
+      html: null,
+      headers: { "x-campaign": "fall" },
+      status: "sent",
+      sandbox: true,
+    });
+    expect(email.id).toStartWith("email_");
+    expect(email.sent_at).not.toBeNull();
+    expect(sandboxProvider.sent.map((m) => m.emailId)).toEqual([email.id]);
+    expect(liveProvider.sent).toHaveLength(0);
+  });
+
+  test("a live key sends through the live provider", async () => {
+    const tenant = await createTestTenant();
+    const { app, liveProvider, sandboxProvider } = createTestApp();
+
+    const res = await sendEmail(app, tenant.liveKey, emailBody());
+
+    expect(res.status).toBe(200);
+    const email = (await res.json()) as EmailObjectOutput;
+    expect(email).toMatchObject({ status: "sent", sandbox: false });
+    expect(liveProvider.sent.map((m) => m.emailId)).toEqual([email.id]);
+    expect(sandboxProvider.sent).toHaveLength(0);
+  });
+
+  test("an invalid body is a 422 validation_error listing every issue", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, {
+      from: "Acme <hello@acme.com>",
+      to: ["ok@example.com", "not-an-email"],
+      subject: "",
+      text: "Hi",
+      attachments: [],
+    });
+
+    expect(res.status).toBe(422);
+    const error = await errorOf(res);
+    expect(error).toMatchObject({ type: "invalid_request_error", code: "validation_error" });
+    const paths = error.issues?.map((issue) => issue.path);
+    expect(paths).toContain("to.1");
+    expect(paths).toContain("subject");
+    expect(paths).toContain("attachments");
+    expect(error.param).toBe(error.issues?.[0]?.path);
+    expect(error.message).toStartWith("Invalid request body: ");
+    expect(sandboxProvider.sent).toHaveLength(0);
+  });
+
+  test("a missing body field is reported at its path", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody({ text: undefined }));
+
+    expect(res.status).toBe(422);
+    const error = await errorOf(res);
+    expect(error.param).toBe("html");
+    expect(error.issues).toEqual([{ path: "html", message: "Provide `html`, `text`, or both." }]);
+  });
+
+  test("malformed JSON is a 400 invalid_json", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, '{"from": ');
+
+    expect(res.status).toBe(400);
+    expect(await errorOf(res)).toMatchObject({
+      type: "invalid_request_error",
+      code: "invalid_json",
+    });
+  });
+
+  test("a non-JSON content type is a 415 unsupported_media_type", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, "from=a@b.com", {
+      "Content-Type": "application/x-www-form-urlencoded",
+    });
+
+    expect(res.status).toBe(415);
+    expect(await errorOf(res)).toMatchObject({
+      type: "invalid_request_error",
+      code: "unsupported_media_type",
+    });
+  });
+
+  test("an Idempotency-Key longer than 256 characters is a 400 invalid_idempotency_key", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody(), {
+      "Idempotency-Key": "k".repeat(257),
+    });
+
+    expect(res.status).toBe(400);
+    expect(await errorOf(res)).toMatchObject({
+      type: "invalid_request_error",
+      code: "invalid_idempotency_key",
+      param: "Idempotency-Key",
+    });
+    expect(sandboxProvider.sent).toHaveLength(0);
+  });
+
+  test("an empty Idempotency-Key is a 400 invalid_idempotency_key", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody(), { "Idempotency-Key": "" });
+
+    expect(res.status).toBe(400);
+    expect((await errorOf(res)).code).toBe("invalid_idempotency_key");
+  });
+
+  test("a repeated Idempotency-Key replays the original email", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const headers = { "Idempotency-Key": `welcome-${crypto.randomUUID()}` };
+
+    const first = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+    // Same request spelled differently: recipients normalize to the same canonical body.
+    const second = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ to: ["user@example.com"] }),
+      headers,
+    );
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.headers.get("idempotent-replayed")).toBeNull();
+    expect(second.headers.get("idempotent-replayed")).toBe("true");
+    const original = (await first.json()) as EmailObjectOutput;
+    expect(await second.json()).toEqual(original);
+    expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("an Idempotency-Key reused with a different body is a 422 idempotency_key_reused", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const headers = { "Idempotency-Key": crypto.randomUUID() };
+
+    expect((await sendEmail(app, tenant.sandboxKey, emailBody(), headers)).status).toBe(200);
+    const res = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ subject: "Something else" }),
+      headers,
+    );
+
+    expect(res.status).toBe(422);
+    expect(await errorOf(res)).toMatchObject({
+      type: "idempotency_error",
+      code: "idempotency_key_reused",
+      param: "Idempotency-Key",
+    });
+    expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("an Idempotency-Key whose first request is still running is a 409 with Retry-After", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const headers = { "Idempotency-Key": crypto.randomUUID() };
+    const first = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+    const { id } = (await first.json()) as EmailObjectOutput;
+    // Simulate the first request still being between insert and provider result.
+    await setEmailStatus(id, "queued");
+
+    const res = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+
+    expect(res.status).toBe(409);
+    expect(res.headers.get("retry-after")).toBe("1");
+    expect(await errorOf(res)).toMatchObject({
+      type: "idempotency_error",
+      code: "request_in_progress",
+    });
+    expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("idempotency keys are scoped to the environment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const headers = { "Idempotency-Key": crypto.randomUUID() };
+
+    const sandbox = await sendEmail(app, tenant.sandboxKey, emailBody(), headers);
+    const live = await sendEmail(app, tenant.liveKey, emailBody({ subject: "Other" }), headers);
+
+    expect(sandbox.status).toBe(200);
+    expect(live.status).toBe(200);
+    expect(live.headers.get("idempotent-replayed")).toBeNull();
+  });
+
+  test("an unexpected failure is a generic 500 that does not leak details", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp({
+      emailService: {
+        send: async () => {
+          throw new Error("secret internal detail");
+        },
+        dispatch: async () => {
+          throw new Error("unused");
+        },
+      },
+    });
+    const consoleError = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const res = await sendEmail(app, tenant.sandboxKey, emailBody());
+
+      expect(res.status).toBe(500);
+      const error = await errorOf(res);
+      expect(error).toMatchObject({ type: "api_error", code: "internal_error" });
+      expect(JSON.stringify(error)).not.toContain("secret internal detail");
+      expect(String(consoleError.mock.calls[0]?.[0])).toContain(error.request_id);
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+});
+
+describe("GET /v1/emails/{id}", () => {
+  test("returns an email sent from the same environment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody())
+    ).json()) as EmailObjectOutput;
+
+    const res = await getEmailById(app, tenant.sandboxKey, sent.id);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-request-id")).toMatch(REQUEST_ID);
+    expect(await res.json()).toEqual(sent);
+  });
+
+  test("an email from another environment of the same project is 404", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody())
+    ).json()) as EmailObjectOutput;
+
+    const res = await getEmailById(app, tenant.liveKey, sent.id);
+
+    expect(res.status).toBe(404);
+    expect(await errorOf(res)).toMatchObject({ type: "not_found_error", code: "not_found" });
+  });
+
+  test("an email from another organization is 404", async () => {
+    const [tenant, other] = await Promise.all([createTestTenant(), createTestTenant()]);
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody())
+    ).json()) as EmailObjectOutput;
+
+    const res = await getEmailById(app, other.sandboxKey, sent.id);
+
+    expect(res.status).toBe(404);
+    expect((await errorOf(res)).type).toBe("not_found_error");
+  });
+
+  test("unknown and malformed ids are 404", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    for (const id of [
+      "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+      "not-an-id",
+      "proj_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ]) {
+      const res = await getEmailById(app, tenant.sandboxKey, id);
+      expect(res.status).toBe(404);
+      expect((await errorOf(res)).code).toBe("not_found");
+    }
+  });
+});

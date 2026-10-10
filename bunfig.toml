@@ -1,0 +1,6 @@
+[install]
+# Bun's default for new workspaces: pnpm-style, every workspace must declare what it imports.
+# Fallback if a tool assumes a flat node_modules: linker = "hoisted"
+linker = "isolated"
+
+# Never set `[run] bun = true`: it would make Next.js (and the Better Auth CLI) run on Bun instead of Node.

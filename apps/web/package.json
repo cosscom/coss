@@ -1,0 +1,41 @@
+{
+  "name": "@coss/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@better-auth/core": "catalog:",
+    "@coss/auth": "workspace:*",
+    "@coss/db": "workspace:*",
+    "@coss/email": "workspace:*",
+    "@coss/tenancy": "workspace:*",
+    "@coss/ui": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
+    "better-auth": "catalog:",
+    "lucide-react": "catalog:",
+    "next": "catalog:",
+    "pg": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "server-only": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@tailwindcss/postcss": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}

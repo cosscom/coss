@@ -1,0 +1,110 @@
+/**
+ * Read-only organization queries for the dashboard. Better Auth owns writes to these tables;
+ * reading them directly keeps lookups explicit (by slug or id) instead of relying on the
+ * session's active organization.
+ */
+import { db, schema } from "@coss/db";
+import { and, asc, desc, eq, gt } from "drizzle-orm";
+
+const { invitation, member, organization, user } = schema;
+
+export type OrganizationSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  createdAt: Date;
+};
+
+export type Membership = {
+  organization: OrganizationSummary;
+  member: { id: string; organizationId: string; userId: string; role: string; createdAt: Date };
+};
+
+export type OrganizationMember = {
+  id: string;
+  role: string;
+  createdAt: Date;
+  user: { id: string; name: string; email: string };
+};
+
+export type PendingInvitation = {
+  id: string;
+  email: string;
+  role: string | null;
+  inviterId: string;
+  expiresAt: Date;
+  createdAt: Date;
+};
+
+const organizationColumns = {
+  id: organization.id,
+  name: organization.name,
+  slug: organization.slug,
+  logo: organization.logo,
+  createdAt: organization.createdAt,
+};
+
+/** The user's membership in the organization with this slug, or `null` if they are not a member. */
+export async function getMembership(input: {
+  userId: string;
+  organizationSlug: string;
+}): Promise<Membership | null> {
+  const [row] = await db
+    .select({
+      organization: organizationColumns,
+      member: {
+        id: member.id,
+        organizationId: member.organizationId,
+        userId: member.userId,
+        role: member.role,
+        createdAt: member.createdAt,
+      },
+    })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(and(eq(organization.slug, input.organizationSlug), eq(member.userId, input.userId)))
+    .limit(1);
+  return row ?? null;
+}
+
+/** Members of an organization with their user's name and email, oldest first. */
+export async function listOrganizationMembers(input: {
+  organizationId: string;
+}): Promise<OrganizationMember[]> {
+  return db
+    .select({
+      id: member.id,
+      role: member.role,
+      createdAt: member.createdAt,
+      user: { id: user.id, name: user.name, email: user.email },
+    })
+    .from(member)
+    .innerJoin(user, eq(user.id, member.userId))
+    .where(eq(member.organizationId, input.organizationId))
+    .orderBy(asc(member.createdAt), asc(member.id));
+}
+
+/** Invitations that can still be accepted (status `pending`, not expired), newest first. */
+export async function listPendingInvitations(input: {
+  organizationId: string;
+}): Promise<PendingInvitation[]> {
+  return db
+    .select({
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      inviterId: invitation.inviterId,
+      expiresAt: invitation.expiresAt,
+      createdAt: invitation.createdAt,
+    })
+    .from(invitation)
+    .where(
+      and(
+        eq(invitation.organizationId, input.organizationId),
+        eq(invitation.status, "pending"),
+        gt(invitation.expiresAt, new Date()),
+      ),
+    )
+    .orderBy(desc(invitation.createdAt), desc(invitation.id));
+}
