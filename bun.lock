@@ -74,6 +74,7 @@
         "@coss/email": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@t3-oss/env-core": "catalog:",
+        "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -81,7 +82,6 @@
         "@coss/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
         "coss": "workspace:*",
-        "drizzle-orm": "catalog:",
         "typescript": "catalog:",
       },
     },

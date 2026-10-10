@@ -343,15 +343,7 @@ export function createEmailService(opts: {
         recipients.map((recipient) => recipient.address),
         row.category,
       );
-      await executor
-        .insert(emailRecipient)
-        .values(
-          recipients.map((recipient) =>
-            suppressed.has(recipient.address)
-              ? { ...recipient, status: "suppressed" as const }
-              : recipient,
-          ),
-        );
+      await executor.insert(emailRecipient).values(recipients);
       for (const [address, entry] of suppressed) {
         await recordProviderEvent(executor, suppressedEvent(row, address, entry));
       }

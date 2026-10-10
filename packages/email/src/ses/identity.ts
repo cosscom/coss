@@ -81,11 +81,7 @@ export class SesIdentityProvider implements IdentityProvider {
       tenantArn = created.TenantArn;
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
-      // A tenant created before COSS owned suppression may still suppress on its own.
-      await this.#api.putTenantSuppressionAttributes({
-        TenantName: tenantName,
-        ...TENANT_SUPPRESSION,
-      });
+      // Existing tenants are migrated by ses:bootstrap before their protection is disabled.
     }
     tenantArn ??= await this.#tenantArn({ tenantName, tenantArn: null });
     // A tenant can only send with configuration sets associated with it.

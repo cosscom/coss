@@ -119,10 +119,21 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
    domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request
    production access in the SES console.
-2. With admin credentials, create the shared resources (idempotent; re-run after upgrades):
+2. Apply `bun run db:migrate`, then with admin credentials and this stage's `DATABASE_URL`,
+   create the shared resources (idempotent; re-run after upgrades):
    `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]`
 3. Set what it prints (`EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`,
    `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, plus AWS credentials (role or env vars).
+   When upgrading an existing SES deployment, pause sends and domain changes, drain the SES event
+   queue with the worker, then run bootstrap before resuming with the new application version.
+   Bootstrap imports historical SES permanent bounces and complaints into their original live
+   environments, and conservatively copies the SES account and tenant lists to every live
+   environment of each matching organization (SES lists have no environment attribution).
+   Sandbox lists are untouched. The database records completion per tenant in the same transaction;
+   reruns preserve later COSS removals. All imports must succeed before bootstrap disables any SES
+   suppression. Keep traffic paused if bootstrap fails, correct the error, and rerun it.
+   Bootstrap needs `ses:ListSuppressedDestinations` for both account and tenant lists in addition
+   to its infrastructure permissions; an unmapped SES tenant stops the transition.
 4. Least-privilege IAM per app:
    - **API**: `ses:SendEmail` (on the configuration set, identities and tenants).
    - **Dashboard**: `ses:CreateTenant`, `ses:GetTenant`, `ses:CreateTenantResourceAssociation`,

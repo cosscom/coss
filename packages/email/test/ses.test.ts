@@ -139,14 +139,10 @@ describe("SesIdentityProvider", () => {
     ).toEqual(new Set(["test-org_a"]));
 
     expect(await identity.ensureTenant({ organizationId: "org_a" })).toEqual(tenant);
-    // An existing tenant gets suppression turned off too (it may predate COSS suppression lists).
-    expect(
-      api.calls.find((call) => call.operation === "putTenantSuppressionAttributes")?.input,
-    ).toEqual({
-      TenantName: "test-org_a",
-      SuppressionScope: "TENANT",
-      SuppressedReasons: [],
-    });
+    // Runtime setup must not disable protection before bootstrap migrates the old list.
+    expect(api.calls.some((call) => call.operation === "putTenantSuppressionAttributes")).toBe(
+      false,
+    );
   });
 
   test("creates domain identities with MAIL FROM, associated with the tenant", async () => {

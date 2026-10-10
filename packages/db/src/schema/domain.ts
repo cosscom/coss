@@ -308,6 +308,8 @@ export const emailTenant = pgTable("email_tenant", {
   tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
   tenantArn: text("tenant_arn"),
   sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
+  // Bootstrap commits the imported lists and this marker together before disabling SES suppression.
+  suppressionMigratedAt: timestamp("suppression_migrated_at", { withTimezone: true }),
   statusCause: text("status_cause"),
   statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }),
   createdAt: createdAt(),

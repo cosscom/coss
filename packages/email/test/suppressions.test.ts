@@ -3,7 +3,7 @@ import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
@@ -199,6 +199,21 @@ describe("sending", () => {
     expect(suppressedEvents.find((e) => e.recipient === "blocked@example.com")?.data).toEqual({
       suppression: { id: entry?.suppression.id ?? "", scope: "*", reason: "manual" },
     });
+
+    for (const event of suppressedEvents) {
+      const recipient = email.recipients.find((r) => r.address === event.recipient);
+      expect(recipient?.last_event_at).toBe(event.occurred_at);
+      const [stored] = await db
+        .select()
+        .from(schema.emailRecipient)
+        .where(
+          and(
+            eq(schema.emailRecipient.emailId, email.id),
+            eq(schema.emailRecipient.address, event.recipient ?? ""),
+          ),
+        );
+      expect(stored?.details).toEqual(event.data);
+    }
 
     const messages = await db
       .select({ payload: schema.webhookMessage.payload })

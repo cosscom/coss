@@ -266,8 +266,13 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **Suppressions** (`packages/email/src/suppressions.ts`, table `email_suppression`, ids `sup_`): one list per
   environment; an entry's `scope` is `*` (`ALL_CATEGORIES`) or a category, matched against the send's `category`.
   COSS keeps the only list: SES tenants and the configuration set are created with suppression off
-  (`TENANT_SUPPRESSION`; `ses:bootstrap` also fixes existing tenants) — never turn SES suppression back on, or removing
-  a COSS entry or scoping one to a category stops working. Sends store suppressed recipients as `suppressed` with a
+  (`TENANT_SUPPRESSION`; `ses:bootstrap` migrates existing tenants before disabling their protection) —
+  never turn SES suppression back on, or removing
+  a COSS entry or scoping one to a category stops working. Bootstrap imports historical SES events and
+  account/tenant lists into live environments, atomically marking `email_tenant.suppression_migrated_at`
+  so reruns preserve removals; pause sends/domain changes and drain events for the upgrade (README).
+  Runtime domain setup must not disable an existing tenant's protection. Sends store suppressed recipients as
+  `suppressed` with a
   COSS-source `email.suppressed` event (in the insert transaction) and `deliver` leaves them out of the provider
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for

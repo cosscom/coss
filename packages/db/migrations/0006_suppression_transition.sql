@@ -1,0 +1,1 @@
+ALTER TABLE "email_tenant" ADD COLUMN "suppression_migrated_at" timestamp with time zone;

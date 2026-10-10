@@ -43,6 +43,13 @@
       "when": 1791652022294,
       "tag": "0005_suppression_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791653361608,
+      "tag": "0006_suppression_transition",
+      "breakpoints": true
     }
   ]
 }
