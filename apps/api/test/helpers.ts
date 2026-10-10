@@ -18,6 +18,9 @@ import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
+/** Origin of the tracking URLs `createTestApp` puts into emails (`app.request` ignores it). */
+export const TRACKING_BASE_URL = "http://api.test";
+
 /**
  * An app whose live and sandbox providers are separate, silent fakes. Sends only enqueue (in
  * memory): `dispatch()` runs the queued jobs, as the worker would. Domains verify without DNS and
@@ -38,7 +41,13 @@ export function createTestApp(
   const identity = new FakeIdentityProvider();
   const queue = memoryDispatchQueue();
   const emailService =
-    opts.emailService ?? createEmailService({ liveProvider, sandboxProvider, queue });
+    opts.emailService ??
+    createEmailService({
+      liveProvider,
+      sandboxProvider,
+      queue,
+      trackingBaseUrl: TRACKING_BASE_URL,
+    });
   const app = createApp({
     emailService,
     domainDeps: opts.domainDeps ?? { identity, dns: null },

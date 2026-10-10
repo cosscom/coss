@@ -149,7 +149,7 @@ const apiPublicUrl: EnvVar = {
   kind: "plain",
   required: true,
   value: "https://api.coss.com",
-  description: "The API's public origin (OpenAPI servers; the dashboard's quick-start snippets).",
+  description: "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs).",
 };
 
 export const SERVICES: Service[] = [
@@ -264,6 +264,14 @@ export const SERVICES: Service[] = [
     env: [
       ...db,
       ...email,
+      apiPublicUrl,
+      {
+        name: "API_PORT",
+        kind: "plain",
+        required: false,
+        value: "3001",
+        description: "Development fallback port when API_PUBLIC_URL is unset.",
+      },
       {
         name: "SES_EVENTS_QUEUE_URL",
         kind: "plain",

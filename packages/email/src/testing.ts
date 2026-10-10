@@ -285,3 +285,12 @@ export class FakeSesApi implements SesApi {
     return this.calls.map((call) => call.operation);
   }
 }
+
+/** The tracking URLs `instrumentHtml` put into an outbound HTML body, in document order. */
+export function trackingUrls(html: string): { open: string | null; clicks: string[] } {
+  const open = /src="([^"]*\/t\/o\/[A-Za-z0-9_-]+)"/.exec(html)?.[1] ?? null;
+  const clicks = [...html.matchAll(/href="([^"]*\/t\/c\/[A-Za-z0-9_-]+\/\d+)"/g)].map(
+    (match) => match[1] ?? "",
+  );
+  return { open, clicks };
+}

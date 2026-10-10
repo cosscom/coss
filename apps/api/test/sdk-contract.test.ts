@@ -4,11 +4,18 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { trackingUrls } from "@coss/email/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
-import { createTestApp, REQUEST_ID, type TestApp, uniqueDomainName } from "./helpers.ts";
+import {
+  createTestApp,
+  REQUEST_ID,
+  type TestApp,
+  TRACKING_BASE_URL,
+  uniqueDomainName,
+} from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   // bun-types has no `new Request(URL)` overload.
@@ -87,6 +94,43 @@ describe("coss SDK against the API", () => {
       ["email.sent", null],
       ["email.delivered", "success@simulator.amazonses.com"],
       ["email.bounced", "bounce@simulator.amazonses.com"],
+    ]);
+  });
+
+  test("tracking: send, hit the pixel and a link, then read engagement back", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const sent = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Hi",
+      html: '<p><a href="https://acme.com/start">Start</a></p>',
+      tracking: { opens: true, clicks: true },
+    });
+    if (!sent.data) throw new Error("send failed");
+    expect(sent.data.tracking).toMatchObject({ opens: true, clicks: true, open_count: 0 });
+    await dispatch();
+    const { open, clicks } = trackingUrls(sandboxProvider.sent.at(-1)?.html ?? "");
+    for (const url of [open ?? "", clicks[0] ?? ""]) {
+      await app.request(url.slice(TRACKING_BASE_URL.length));
+    }
+
+    const fetched = await coss.email.get(sent.data.id);
+    expect(fetched.data?.tracking).toMatchObject({ open_count: 1, click_count: 1 });
+    const events = await coss.email.listEvents(sent.data.id);
+    expect(events.data?.data.map((e) => e.type)).toEqual(
+      expect.arrayContaining(["email.opened", "email.clicked"]),
+    );
+    const links = await coss.email.listLinks(sent.data.id);
+    expect(links.error).toBeNull();
+    expect(links.data?.data).toEqual([
+      expect.objectContaining({
+        object: "email_link",
+        url: "https://acme.com/start",
+        click_count: 1,
+      }),
     ]);
   });
 

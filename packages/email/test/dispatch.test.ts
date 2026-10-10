@@ -12,8 +12,9 @@ import {
   workEmailDispatchQueue,
 } from "../src/dispatch.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
-import { getEmail } from "../src/read.ts";
+import { getEmail, listEmailLinks } from "../src/read.ts";
 import { createEmailService } from "../src/service.ts";
+import { trackingUrls } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 // A queue of our own: the test database is shared, and other runs' jobs must not reach us.
@@ -33,10 +34,15 @@ afterAll(async () => {
   await producer.stop({ graceful: false });
 });
 
-function setup() {
+function setup(trackingBaseUrl?: string) {
   const provider = new FakeEmailProvider({ log: false });
   const queue = pgBossDispatchQueue(producer, name);
-  const service = createEmailService({ liveProvider: provider, sandboxProvider: provider, queue });
+  const service = createEmailService({
+    liveProvider: provider,
+    sandboxProvider: provider,
+    queue,
+    trackingBaseUrl,
+  });
   return { provider, queue, service };
 }
 
@@ -110,13 +116,14 @@ describe("pg-boss dispatch queue", () => {
 
   test("the worker dispatches queued emails", async () => {
     const tenant = await createTestTenant();
-    const { service, provider } = setup();
+    const { service, provider } = setup("https://api.coss.test");
     await workEmailDispatchQueue(worker, service, { name, concurrency: 2 });
 
+    const html = '<p><a href="https://example.com">one<p>two</a>';
     const { email } = await service.send({
       environment: sendEnvironment(tenant.development),
       apiKeyId: null,
-      params: params(),
+      params: params({ html, tracking: { opens: true, clicks: true } }),
     });
 
     const read = () =>
@@ -132,6 +139,19 @@ describe("pg-boss dispatch queue", () => {
     expect(await read()).toMatchObject({ status: "sent", recipients: [{ status: "delivered" }] });
     // The queue also holds the earlier tests' jobs; each email is sent once.
     expect(provider.sent.filter((message) => message.emailId === email.id)).toHaveLength(1);
+    const delivered = provider.sent.find((message) => message.emailId === email.id);
+    const urls = trackingUrls(delivered?.html ?? "");
+    expect(urls.open).toStartWith("https://api.coss.test/t/o/");
+    expect(urls.clicks).toHaveLength(1);
+    expect((await read())?.html).toBe(html);
+    const links = await listEmailLinks({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      emailId: email.id,
+    });
+    expect(links?.links).toEqual([
+      expect.objectContaining({ position: 0, url: "https://example.com" }),
+    ]);
   });
 
   test("a job for an email that no longer exists completes", async () => {

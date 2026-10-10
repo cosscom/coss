@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { auth } from "@coss/auth";
 import { db, schema } from "@coss/db";
+import { ID_PREFIXES, newId } from "@coss/db/id";
 import { uniqueSuffix } from "@coss/db/testing";
 import { eq } from "drizzle-orm";
 import {
@@ -386,9 +387,19 @@ describe("admin reads and key revocation", () => {
   test("pages through audit entries newest first", async () => {
     const actor = await adminActor();
     const target = { type: "user" as const, id: `user_${uniqueSuffix()}` };
-    for (const action of ["user.ban", "user.unban", "user.set_role"] as const) {
-      await recordAdminAction({ actor, action, target });
-    }
+    const start = Date.now();
+    // UUIDv7's random suffix does not preserve insertion order within one millisecond.
+    // Give the pagination fixtures distinct times, and insert them out of order.
+    const entries = ["user.ban", "user.unban", "user.set_role"].map((action, index) => ({
+      id: newId(ID_PREFIXES.adminAuditEvent, start + index),
+      actorUserId: actor.userId,
+      actorEmail: actor.email,
+      action,
+      targetType: target.type,
+      targetId: target.id,
+      createdAt: new Date(start + index),
+    }));
+    await db.insert(schema.adminAuditEvent).values(entries.reverse());
     const first = await listAdminAuditEvents({ target, limit: 2 });
     expect(first.events.map((e) => e.action)).toEqual(["user.set_role", "user.unban"]);
     expect(first.nextBefore).toBe(first.events[1]?.id ?? "");

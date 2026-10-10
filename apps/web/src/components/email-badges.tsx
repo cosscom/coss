@@ -40,6 +40,8 @@ const EVENT_VARIANT = {
   "email.complained": "error",
   "email.failed": "error",
   "email.suppressed": "warning",
+  "email.opened": "secondary",
+  "email.clicked": "secondary",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {
@@ -78,4 +80,9 @@ export function ModeBadge({ mode }: { mode: EnvironmentMode }) {
   ) : (
     <Badge variant="info">Sandbox</Badge>
   );
+}
+
+/** Whether a kind of tracking is on: for settings and for a sent email. */
+export function TrackingBadge({ on }: { on: boolean }) {
+  return on ? <Badge variant="success">On</Badge> : <Badge variant="outline">Off</Badge>;
 }

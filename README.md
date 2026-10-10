@@ -86,6 +86,11 @@ resets) are printed to the dashboard's server console in development.
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
   complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
   suppression is turned off.
+- **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
+  dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
+  own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
+  HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
+  (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
@@ -115,7 +120,8 @@ resets) are printed to the dashboard's server console in development.
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
-- `GET /v1/emails/{id}/events` — list an email's delivery events
+- `GET /v1/emails/{id}/events` — list an email's delivery, open and click events
+- `GET /v1/emails/{id}/links` — list an email's tracked links with their click counts
 - `POST|GET /v1/domains`, `GET|DELETE /v1/domains/{id}`, `POST /v1/domains/{id}/verify` — sending domains
   (organization-wide, so every key of the organization sees the same ones)
 - `POST|GET /v1/webhook_endpoints`, `GET|PATCH|DELETE /v1/webhook_endpoints/{id}` — webhook endpoints of the
@@ -127,6 +133,8 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/suppressions/import` — add up to 1,000 entries at once (invalid ones are skipped and reported)
 - `GET /v1/suppressions/export` — the whole list as CSV (`scope`, `reason` filters); it imports again as is
 - `GET /openapi.json` — OpenAPI 3.1 document
+- `GET /t/o/{token}`, `GET /t/c/{token}/{position}` — public open-pixel and click-redirect endpoints that tracked
+  emails link to (not part of the documented API)
 
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
 `coss.webhookEndpoints`.
@@ -278,7 +286,7 @@ rules, then CloudFront, then removing the old one). Plain values per service:
 |---|---|
 | web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
 | api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
-| worker | `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL` |
+| worker | `API_PUBLIC_URL=https://api.coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL` |
 | site | none (static; everything it needs is in the image) |
 
 Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing
