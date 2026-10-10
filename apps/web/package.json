@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@better-auth/core": "catalog:",
+    "@better-auth/passkey": "catalog:",
     "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
@@ -27,6 +28,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "server-only": "catalog:",
+    "uqr": "0.1.3",
     "zod": "catalog:"
   },
   "devDependencies": {

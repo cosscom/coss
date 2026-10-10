@@ -38,6 +38,7 @@ import { requirePlatformAdmin } from "@/lib/session";
 import {
   banUserAction,
   impersonateUserAction,
+  resetTwoFactorAction,
   revokeUserSessionAction,
   revokeUserSessionsAction,
   setUserRoleAction,
@@ -105,6 +106,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
             <Detail label="Email">
               {user.emailVerified ? "Verified" : <Badge variant="warning">unverified</Badge>}
             </Detail>
+            <Detail label="Two-factor">{user.twoFactorEnabled ? "On" : "Off"}</Detail>
             <Detail label="Active sessions">{sessions.length}</Detail>
             {user.banned ? (
               <>
@@ -194,6 +196,19 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                 title="Impersonate this user?"
                 triggerLabel="Impersonate"
               />
+              {user.twoFactorEnabled ? (
+                <AdminActionDialog
+                  action={resetTwoFactorAction}
+                  description={`${user.email}'s authenticator app and backup codes stop working and their password alone signs them in. Only do this after confirming their identity; organizations that require two-factor ask them to set it up again.`}
+                  destructive
+                  fields={fields}
+                  reason="required"
+                  reasonPlaceholder="e.g. Lost phone, identity confirmed in ticket #1234"
+                  submitLabel="Reset two-factor"
+                  title="Reset two-factor authentication?"
+                  triggerLabel="Reset 2FA"
+                />
+              ) : null}
               <AdminActionDialog
                 action={revokeUserSessionsAction}
                 description={`Signs ${user.email} out on every device.`}

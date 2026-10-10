@@ -44,6 +44,7 @@ export const ADMIN_ACTIONS = [
   "user.impersonate",
   "user.revoke_session",
   "user.revoke_sessions",
+  "user.reset_two_factor",
   "organization.suspend",
   "organization.unsuspend",
   "api_key.revoke",
@@ -358,6 +359,7 @@ export type AdminUserRow = {
   banned: boolean;
   banReason: string | null;
   banExpires: Date | null;
+  twoFactorEnabled: boolean;
   createdAt: Date;
 };
 
@@ -370,6 +372,7 @@ const userColumns = {
   banned: user.banned,
   banReason: user.banReason,
   banExpires: user.banExpires,
+  twoFactorEnabled: sql<boolean>`coalesce(${user.twoFactorEnabled}, false)`,
   createdAt: user.createdAt,
 };
 
@@ -417,6 +420,37 @@ export async function listUsersForAdmin(
 export async function getUserForAdmin(userId: string): Promise<AdminUserRow | null> {
   const [row] = await db.select(userColumns).from(user).where(eq(user.id, userId)).limit(1);
   return row ? toAdminUser(row) : null;
+}
+
+/**
+ * Account recovery for a user who lost their authenticator and backup codes: removes their TOTP
+ * secret and turns two-factor off, so their password alone signs them in. Passkeys and sessions
+ * are left alone; organizations that require two-factor ask them to set it up again.
+ */
+export async function resetUserTwoFactor(input: {
+  userId: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<void> {
+  const reason = normalizeReason(input.reason, true);
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(user)
+      .set({ twoFactorEnabled: false })
+      .where(and(eq(user.id, input.userId), eq(user.twoFactorEnabled, true)))
+      .returning({ id: user.id });
+    if (!updated) throw new TenancyError("not_found", "This user doesn't have two-factor enabled.");
+    await tx.delete(schema.twoFactor).where(eq(schema.twoFactor.userId, input.userId));
+    await recordAdminAction(
+      {
+        actor: input.actor,
+        action: "user.reset_two_factor",
+        target: { type: "user", id: updated.id },
+        reason,
+      },
+      tx,
+    );
+  });
 }
 
 export type AdminSessionRow = {

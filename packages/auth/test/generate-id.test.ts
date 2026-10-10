@@ -7,5 +7,7 @@ test("Better Auth models get TypeID prefixes", () => {
   expect(isId("org", generateAuthId({ model: "organization" }))).toBe(true);
   expect(isId("invite", generateAuthId({ model: "invitation" }))).toBe(true);
   expect(isId("user", generateAuthId({ model: "user" }))).toBe(true);
+  expect(isId("tfa", generateAuthId({ model: "twoFactor" }))).toBe(true);
+  expect(isId("passkey", generateAuthId({ model: "passkey" }))).toBe(true);
   expect(isId("id", generateAuthId({ model: "somethingNew" }))).toBe(true);
 });

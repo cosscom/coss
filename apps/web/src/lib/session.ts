@@ -50,11 +50,16 @@ export async function requireSession(): Promise<Session> {
 /**
  * Resolves the organization from the URL slug and the signed-in user's membership in it.
  * Non-members get a 404 so org slugs can't be probed. Never uses the session's active org.
+ * Members without two-factor authentication are sent to /settings when the organization
+ * requires it (this guards every org page, layout and server action).
  */
 export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContext> => {
   const session = await requireSession();
   const membership = await getMembership({ userId: session.user.id, organizationSlug: orgSlug });
   if (!membership) notFound();
+  if (membership.organization.requireTwoFactor && !session.user.twoFactorEnabled) {
+    redirect("/settings");
+  }
   const can = (permissions: OrgPermissions) =>
     orgRoleCan(membership.member.role, permissions) &&
     (!membership.suspended || onlyReads(permissions));

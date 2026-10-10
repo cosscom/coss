@@ -6,6 +6,7 @@ import {
   ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
   recordAdminAction,
+  resetUserTwoFactor,
   revokeApiKeyAsAdmin,
   suspendOrganization,
   unsuspendOrganization,
@@ -144,6 +145,24 @@ export async function setUserRoleAction(
       reason,
       metadata: { email, role },
     });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Account recovery for a user who lost their authenticator and backup codes: turns their
+ * two-factor authentication off so their password alone signs them in.
+ */
+export async function resetTwoFactorAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const userId = formUserId(formData);
+    assertNotSelf(actor, userId);
+    await resetUserTwoFactor({ userId, reason: requiredReason(formData), actor });
     refresh();
     return null;
   });

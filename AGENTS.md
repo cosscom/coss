@@ -16,7 +16,7 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key plugins), org permissions, slug rules. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey plugins), org permissions, slug rules. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures; `./admin`: suspensions, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -320,8 +320,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **Drizzle 0.x** (see catalog): the drizzle.team docs default to v1 — don't use `defineRelations`, `drizzle-orm/zod`,
   `getColumns` until the catalog moves to 1.x.
 - **Biome** is pinned exactly; keep the `$schema` URL in `biome.json` and `apps/web/biome.json` in step with it.
-- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key` and `auth` (CLI) stay on one identical
-  exact version (catalog) — bump them together.
+- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey` and `auth` (CLI)
+  stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
@@ -351,6 +351,18 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   - Org roles spread `ownerAc.statements` / `adminAc.statements` / `memberAc.statements` (custom roles replace defaults).
   - `requireEmailVerificationOnInvitation: true` must stay on (custom ids make invitation ids predictable).
   - Never add NOT NULL columns to Better Auth tables (runtime schema validation rejects every auth request).
+  - **Two-factor / passkeys:** TOTP + backup codes only (no email/SMS OTP). The challenge only guards password sign-in
+    (`/sign-in/email`), so nothing else may create a session for a password user: `autoSignInAfterVerification` stays
+    `false`. Passkey sign-in skips TOTP, so `assertUserVerified` (both `afterVerification` hooks) rejects ceremonies
+    without user verification — the plugin itself passes `requireUserVerification: false`. Passkey `rpID`/`origin`
+    come from `BETTER_AUTH_URL` (changing its host invalidates every passkey). The `hooks.before` guard refuses
+    `FACTOR_MANAGEMENT_PATHS` to impersonation sessions; add new factor-changing endpoints there. Code and passkey
+    verification are limited per IP in `auth-rate-limit.ts` (Better Auth also locks an account for 15 min after 10
+    failed codes).
+  - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
+    `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
+    `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
+    (the password still works without a code). API keys are unaffected. Admin recovery: `resetUserTwoFactor` (audited).
   - `packages/auth` must not import `next/*` or `"server-only"` (the `auth` CLI loads `src/auth.ts` on Node).
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.
 - **Tenancy rule:** every tenancy/email/webhooks function that touches tenant data takes `organizationId` and scopes its
@@ -475,7 +487,8 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
 attachments/batch/scheduled sends, webhook delivery logs over the API,
-rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling.
+rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling,
+email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

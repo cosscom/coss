@@ -9,6 +9,7 @@ const audit = mock(async () => {});
 mock.module("@coss/tenancy/admin", () => ({
   ADMIN_REASON_MAX_LENGTH: 500,
   recordAdminAction: audit,
+  resetUserTwoFactor: mock(async () => {}),
   revokeApiKeyAsAdmin: mock(),
   suspendOrganization: mock(),
   unsuspendOrganization: mock(),
@@ -44,6 +45,9 @@ mock.module("@/lib/auth", () => ({
     },
   },
 }));
+const { resetUserTwoFactor } = (await import("@coss/tenancy/admin")) as unknown as {
+  resetUserTwoFactor: ReturnType<typeof mock>;
+};
 const actions = await import("../src/app/admin/actions");
 const cases = [
   ["ban", actions.banUserAction, true],
@@ -92,3 +96,33 @@ for (const [name, action, required] of cases) {
     });
   });
 }
+
+describe("reset two-factor", () => {
+  function form(userId: string, reason: string) {
+    const data = new FormData();
+    data.set("userId", userId);
+    data.set("reason", reason);
+    return data;
+  }
+
+  beforeEach(() => resetUserTwoFactor.mockClear());
+
+  test("requires a reason and passes it, with the actor, to the audited reset", async () => {
+    expect((await actions.resetTwoFactorAction(null, form(newId("user"), "  "))).ok).toBe(false);
+    expect(resetUserTwoFactor).not.toHaveBeenCalled();
+
+    const userId = newId("user");
+    expect(await actions.resetTwoFactorAction(null, form(userId, " Lost phone "))).toEqual({
+      ok: true,
+      data: null,
+    });
+    expect(resetUserTwoFactor).toHaveBeenCalledWith(
+      expect.objectContaining({ userId, reason: "Lost phone", actor: expect.any(Object) }),
+    );
+  });
+
+  test("rejects anything but a user id", async () => {
+    expect((await actions.resetTwoFactorAction(null, form("org_x", "Lost phone"))).ok).toBe(false);
+    expect(resetUserTwoFactor).not.toHaveBeenCalled();
+  });
+});

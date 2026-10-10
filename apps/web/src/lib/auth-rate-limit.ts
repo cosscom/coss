@@ -20,6 +20,9 @@ export const AUTH_RATE_LIMITS: Readonly<Record<string, AuthLimits>> = {
     email: "auth.verification_email.email",
   },
   "/reset-password": { ip: "auth.reset_password.ip" },
+  "/two-factor/verify-totp": { ip: "auth.two_factor.ip" },
+  "/two-factor/verify-backup-code": { ip: "auth.two_factor.ip" },
+  "/passkey/verify-authentication": { ip: "auth.passkey.ip" },
 };
 
 const AUTH_BASE_PATH = "/api/auth";

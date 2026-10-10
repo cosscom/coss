@@ -13,6 +13,8 @@ export const ID_PREFIXES = {
   member: "member",
   invitation: "invite",
   apiKey: "key",
+  twoFactor: "tfa",
+  passkey: "passkey",
   project: "proj",
   environment: "env",
   email: "email",

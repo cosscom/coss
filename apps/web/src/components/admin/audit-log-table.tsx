@@ -18,6 +18,7 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "user.impersonate": { label: "Impersonated user", variant: "info" },
   "user.revoke_session": { label: "Revoked a session", variant: "info" },
   "user.revoke_sessions": { label: "Revoked all sessions", variant: "info" },
+  "user.reset_two_factor": { label: "Reset two-factor", variant: "error" },
   "organization.suspend": { label: "Suspended organization", variant: "error" },
   "organization.unsuspend": { label: "Lifted suspension", variant: "success" },
   "api_key.revoke": { label: "Revoked API key", variant: "error" },

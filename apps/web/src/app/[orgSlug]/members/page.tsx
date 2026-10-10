@@ -65,6 +65,7 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Two-factor</TableHead>
                 <TableHead>Joined</TableHead>
                 {canManageMembers ? <TableHead className="text-right">Actions</TableHead> : null}
               </TableRow>
@@ -84,6 +85,15 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                     <TableCell>{row.user.email}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{row.role}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {row.user.twoFactorEnabled ? (
+                        <Badge variant="success">on</Badge>
+                      ) : (
+                        <Badge variant={organization.requireTwoFactor ? "warning" : "outline"}>
+                          off
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDateTime(row.createdAt)}

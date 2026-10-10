@@ -4,13 +4,14 @@
  * Must not import "server-only" (it breaks the `auth` CLI loader).
  */
 import { apiKey } from "@better-auth/api-key";
+import { passkey } from "@better-auth/passkey";
 import { db } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
 import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import { admin, organization } from "better-auth/plugins";
+import { admin, organization, twoFactor } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
 import {
   API_KEY_NAME_MAX_LENGTH,
@@ -30,6 +31,8 @@ const MODEL_ID_PREFIX: Record<string, string> = {
   member: ID_PREFIXES.member,
   invitation: ID_PREFIXES.invitation,
   apikey: ID_PREFIXES.apiKey,
+  twoFactor: ID_PREFIXES.twoFactor,
+  passkey: ID_PREFIXES.passkey,
 };
 
 export function generateAuthId({ model }: { model: string }): string {
@@ -67,6 +70,39 @@ async function assertOrgNotSuspended(organizationId: string): Promise<void> {
   if (row) throw new APIError("FORBIDDEN", { message: "This organization is suspended." });
 }
 
+/**
+ * Endpoints that add, change or remove a sign-in factor. An impersonating admin must not be able
+ * to enroll a factor the real user doesn't know about (or remove theirs), so these refuse
+ * impersonation sessions — like live API keys (`liveKeyRestriction` in apps/web).
+ */
+const FACTOR_MANAGEMENT_PATHS: ReadonlySet<string> = new Set([
+  "/two-factor/enable",
+  "/two-factor/disable",
+  "/two-factor/verify-totp", // with a session, this is the step that turns TOTP on
+  "/two-factor/get-totp-uri",
+  "/two-factor/generate-backup-codes",
+  "/passkey/generate-register-options",
+  "/passkey/verify-registration",
+  "/passkey/update-passkey",
+  "/passkey/delete-passkey",
+]);
+
+/** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
+const dashboardUrl = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL) : undefined;
+
+/**
+ * Better Auth's passkey plugin verifies assertions with `requireUserVerification: false`. A
+ * passkey sign-in skips the TOTP challenge, so it must prove both possession and the user
+ * (biometric or PIN) — reject any ceremony the authenticator didn't user-verify.
+ */
+function assertUserVerified(userVerified: boolean): void {
+  if (!userVerified) {
+    throw new APIError("UNAUTHORIZED", {
+      message: "Your passkey must verify you with a PIN, fingerprint or face to be used here.",
+    });
+  }
+}
+
 export const authOptions = {
   appName: "COSS",
   baseURL: process.env.BETTER_AUTH_URL,
@@ -94,7 +130,8 @@ export const authOptions = {
   },
   emailVerification: {
     sendOnSignUp: true,
-    autoSignInAfterVerification: true,
+    // Off: a verification link must never create a session, which would skip the TOTP challenge.
+    autoSignInAfterVerification: false,
     sendVerificationEmail: async ({ user, url }) => {
       logDevEmail("Verify email", user.email, url);
     },
@@ -121,8 +158,18 @@ export const authOptions = {
     "/admin/revoke-user-sessions",
   ],
   hooks: {
-    // Better Auth skips beforeCreateInvitation on resend, and leave has no organization hook.
     before: createAuthMiddleware(async (ctx) => {
+      if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {
+        const session = await getSessionFromCtx(ctx);
+        if (session?.session.impersonatedBy) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "Two-factor settings and passkeys can't be changed while impersonating a user.",
+          });
+        }
+        return;
+      }
+      // Better Auth skips beforeCreateInvitation on resend, and leave has no organization hook.
       if (ctx.path !== "/organization/invite-member" && ctx.path !== "/organization/leave") return;
       const session = await getSessionFromCtx(ctx);
       if (!session) return;
@@ -149,6 +196,20 @@ export const authOptions = {
       roles: orgRoles,
       creatorRole: "owner",
       disableOrganizationDeletion: true,
+      schema: {
+        organization: {
+          additionalFields: {
+            // Members without TOTP are sent to /settings until they set it up (apps/web
+            // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
+            requireTwoFactor: {
+              type: "boolean",
+              required: false,
+              defaultValue: false,
+              input: false,
+            },
+          },
+        },
+      },
       // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
       // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
       requireEmailVerificationOnInvitation: true,
@@ -195,6 +256,27 @@ export const authOptions = {
       },
     }),
     admin(),
+    twoFactor({
+      // Only TOTP (authenticator apps) and backup codes: there is no email/SMS OTP delivery.
+      // Enabling needs the password and a verified code; disabling needs the password and a
+      // fresh session. Sign-in challenges lock the account for 15 min after 10 failed codes.
+      issuer: "COSS",
+    }),
+    passkey({
+      rpName: "COSS",
+      rpID: dashboardUrl?.hostname,
+      origin: dashboardUrl?.origin,
+      // Discoverable credentials power the "Sign in with a passkey" button and autofill.
+      authenticatorSelection: { residentKey: "required", userVerification: "required" },
+      registration: {
+        afterVerification: ({ verification }) =>
+          assertUserVerified(verification.registrationInfo?.userVerified ?? false),
+      },
+      authentication: {
+        afterVerification: ({ verification }) =>
+          assertUserVerified(verification.authenticationInfo.userVerified),
+      },
+    }),
     apiKey({
       // Keys belong to the organization (referenceId = organization id), not to their creator.
       references: "organization",

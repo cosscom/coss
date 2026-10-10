@@ -1,5 +1,7 @@
+import { getAuthenticatorName } from "@better-auth/passkey";
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
-import { Alert, AlertDescription } from "@coss/ui/components/alert";
+import { listOrganizationsRequiringTwoFactor } from "@coss/tenancy";
+import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -26,13 +28,18 @@ import { auth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { authHeaders, requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
+import { type PasskeyRow, PasskeysCard } from "./passkeys-card";
 import { PasswordForm } from "./password-form";
 import { ProfileForm, SendVerificationEmailButton } from "./profile-form";
 import { RevokeOtherSessionsButton, RevokeSessionButton } from "./session-buttons";
+import { TwoFactorCard } from "./two-factor-card";
 
 export const metadata: Metadata = { title: "Account settings" };
 
-/** The signed-in user's own account: profile, email verification, password and sessions. */
+/**
+ * The signed-in user's own account: profile, email verification, password, two-factor, passkeys
+ * and sessions. Organizations that require two-factor send members without it here.
+ */
 export default async function AccountSettingsPage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
@@ -48,6 +55,23 @@ export default async function AccountSettingsPage() {
     }))
     .toSorted((a, b) => Number(b.current) - Number(a.current) || +b.createdAt - +a.createdAt);
   const otherSessions = sessions.filter((row) => !row.current).length;
+  const [requiredBy, passkeys] = await Promise.all([
+    listOrganizationsRequiringTwoFactor({ userId: session.user.id }),
+    auth.api.listPasskeys({ headers: await authHeaders() }),
+  ]);
+  const twoFactorEnabled = Boolean(session.user.twoFactorEnabled);
+  // Mirrors the Better Auth hook in @coss/auth/options, which enforces it.
+  const factorRestriction = impersonating
+    ? "Two-factor settings and passkeys can't be changed while impersonating a user."
+    : null;
+  const passkeyRows: PasskeyRow[] = passkeys
+    .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .map((passkey) => ({
+      id: passkey.id,
+      name: passkey.name || getAuthenticatorName(passkey.aaguid) || "Passkey",
+      synced: passkey.backedUp,
+      createdAt: formatDateTime(passkey.createdAt),
+    }));
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -57,7 +81,21 @@ export default async function AccountSettingsPage() {
         </Button>
       </SiteHeader>
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-8">
-        <PageHeader description="Your profile, password and signed-in sessions." title="Account" />
+        <PageHeader
+          description="Your profile, sign-in methods and signed-in sessions."
+          title="Account"
+        />
+
+        {requiredBy.length > 0 && !twoFactorEnabled ? (
+          <Alert variant="warning">
+            <AlertTitle>Two-factor authentication required</AlertTitle>
+            <AlertDescription>
+              {requiredBy.map((org) => org.name).join(", ")}{" "}
+              {requiredBy.length === 1 ? "requires" : "require"} members to use an authenticator
+              app. Set one up below to continue.
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         {impersonating ? (
           <Alert variant="warning">
@@ -112,6 +150,14 @@ export default async function AccountSettingsPage() {
             <PasswordForm disabled={impersonating} />
           </CardPanel>
         </Card>
+
+        <TwoFactorCard
+          enabled={twoFactorEnabled}
+          requiredBy={requiredBy.map((org) => org.name)}
+          restriction={factorRestriction}
+        />
+
+        <PasskeysCard passkeys={passkeyRows} restriction={factorRestriction} />
 
         <Card>
           <CardHeader>

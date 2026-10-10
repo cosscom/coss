@@ -62,6 +62,10 @@ export const BUCKETS = {
     overridable: false,
   },
   "auth.reset_password.ip": { scope: "ip", limit: 10, periodMs: HOUR, overridable: false },
+  // Second factor (TOTP / backup code) and passkey sign-ins. Better Auth also locks an account
+  // for 15 minutes after 10 failed codes, and each challenge allows 5 attempts.
+  "auth.two_factor.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
+  "auth.passkey.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;
