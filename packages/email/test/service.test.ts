@@ -108,7 +108,7 @@ describe("send", () => {
     const delivered = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
-      params: params({ from: await verifiedFrom(tenant.organization.id) }),
+      params: params({ from: await verifiedFrom(tenant.organization.id, "live-test") }),
     });
     expect(delivered.email).toMatchObject({ status: "sent", sandbox: false });
     expect(live.sent.map((m) => m.emailId)).toEqual([delivered.email.id]);

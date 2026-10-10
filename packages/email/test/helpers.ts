@@ -28,8 +28,8 @@ export function params(overrides: Partial<SendEmailRequestInput> = {}): SendEmai
 }
 
 /** A From address on a new verified domain of the organization, as live sends require. */
-export async function verifiedFrom(organizationId: string): Promise<string> {
-  const domain = await createVerifiedDomain(organizationId);
+export async function verifiedFrom(organizationId: string, provider = "fake"): Promise<string> {
+  const domain = await createVerifiedDomain(organizationId, { provider });
   return `Acme <hello@${domain.name}>`;
 }
 

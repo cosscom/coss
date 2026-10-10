@@ -45,8 +45,9 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
-AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources
-                                               #   and print the SES env vars (needs AWS admin credentials)
+AWS_REGION=… bun run ses:bootstrap             # idempotently create the shared SES/SNS/SQS/EventBridge resources,
+                                               #   per-app IAM policies and (--alert-email) queue alarms, and
+                                               #   print the SES env vars (needs AWS admin credentials)
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -263,8 +264,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
   `maxAttempts: 1` and only throttling is retried. Never adopt an existing SES identity held by another tenant
-  (`IdentityTakenError`); orphans are recreated for fresh DKIM keys. The most specific verified domain across all orgs
-  decides who may send from a From domain. Use one AWS account (or region) per stage.
+  (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans COSS
+  created get fresh DKIM keys; identities managed outside COSS in the same account are never touched). The most specific verified domain across all orgs
+  decides who may send from a From domain. Use one AWS account (or region) per stage. IAM policies live in
+  `apps/worker/scripts/ses-policies.ts` (applied by `ses:bootstrap`): tag conditions can't apply to `SendEmail`
+  (SES authorizes it against the sender address, verified live), only to identity changes.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -292,8 +296,10 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Sends are synchronous. If the process dies after `dispatch` claims an email, the row stays `queued` until the
   worker's stale-claim sweep (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late
   SES `Send` event still repairs it); until then retries with the same `Idempotency-Key` get 409 `request_in_progress`.
-- Webhook deliveries are not ordered (use `data.occurred_at`); SES complaints may list every recipient on the
-  complaining domain. Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
+- Webhook deliveries are not ordered (use `data.occurred_at`; SES itself may publish a complaint before the
+  delivery). SES complaints may list every recipient on the complaining domain. SES never suppresses mailbox-simulator
+  addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
+  the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
 - Better Auth's key verification writes to the `apikey` row on every request (swap in a read-only verifier when it matters).
 - Accepted: sign-up email enumeration; an admin ban does not cut off an org's API keys; org deletion is disabled.
 

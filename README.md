@@ -116,14 +116,17 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request
    production access in the SES console.
 2. With admin credentials, create the shared resources (idempotent; re-run after upgrades):
-   `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss]`
+   `AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]`
+   This also creates least-privilege IAM policies `<name>-api`, `<name>-dashboard` and `<name>-worker` (path
+   `/coss/`, defined in `apps/worker/scripts/ses-policies.ts`) and, with `--alert-email`, CloudWatch alarms
+   (`<name>-events-dead-letters`: events failed to be recorded; `<name>-events-backlog`: the worker isn't
+   consuming) sent to that address once its SNS subscription is confirmed.
 3. Set what it prints (`EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`,
-   `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, plus AWS credentials (role or env vars).
-4. Least-privilege IAM per app:
-   - **API**: `ses:SendEmail` (on the configuration set, identities and tenants).
-   - **Dashboard**: `ses:CreateTenant`, `ses:GetTenant`, `ses:CreateTenantResourceAssociation`,
-     `ses:DeleteTenantResourceAssociation`, `ses:ListResourceTenants`, `ses:CreateEmailIdentity`,
-     `ses:GetEmailIdentity`, `ses:DeleteEmailIdentity`, `ses:PutEmailIdentityMailFromAttributes`,
-     `ses:TagResource`.
-   - **Worker**: `sqs:ReceiveMessage`, `sqs:DeleteMessage` on the events queue; `ses:GetEmailIdentity`,
-     `ses:GetTenant`, `ses:DeleteEmailIdentity`, `ses:DeleteTenantResourceAssociation`.
+   `SES_EVENTS_QUEUE_URL`) for the API, dashboard and worker, and attach each app's policy to the identity it
+   runs as (role, or credentials as a last resort).
+
+COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
+carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
+are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
+policy allows `ses:SendEmail` on any identity but only with the COSS configuration set (another set, or none, is
+denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.

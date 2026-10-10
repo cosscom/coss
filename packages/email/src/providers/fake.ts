@@ -17,8 +17,9 @@ export function uniqueRecipients(message: Pick<OutboundEmail, "to" | "cc" | "bcc
 
 /**
  * The delivery events SES would publish for this message, with `success@`, `bounce@`,
- * `complaint@`, `suppressionlist@` and `ooto@simulator.amazonses.com` behaving like the SES mailbox
- * simulator. Every other address is delivered.
+ * `complaint@` and `ooto@simulator.amazonses.com` behaving like the SES mailbox simulator. Every
+ * other address is delivered. `suppressionlist@` simulates an address on the tenant's suppression
+ * list (real SES treats it as a plain hard bounce under tenant-level suppression).
  */
 export function simulatedEvents(
   message: OutboundEmail,

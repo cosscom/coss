@@ -257,8 +257,13 @@ function parseEventBridge(envelope: Json): ParsedSesMessage {
   return { kind: "ignored", reason: `unhandled EventBridge event ${detailType}` };
 }
 
-/** Parses one SQS message body. Throws only on malformed JSON (the message is then redriven). */
+/**
+ * Parses one SQS message body. Plain-text notices (SES confirms a new event destination with
+ * "Successfully validated SNS topic …") are ignored; malformed JSON throws (the message is redriven,
+ * then dead-lettered).
+ */
 export function parseSesMessage(body: string): ParsedSesMessage {
+  if (!body.trimStart().startsWith("{")) return { kind: "ignored", reason: "not JSON" };
   const message = object(JSON.parse(body));
   if (!message) return { kind: "ignored", reason: "not a JSON object" };
   if (message.Type === "Notification" && typeof message.Message === "string") {

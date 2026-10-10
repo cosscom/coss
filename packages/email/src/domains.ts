@@ -329,7 +329,10 @@ export async function checkDomain(
   deps: DomainDeps,
 ): Promise<DomainRow> {
   const row = await requireDomain(input);
-  if (row.status === "failed" || row.status === "deleting") return row;
+  // Another provider's domain (e.g. a fake one after switching to SES) can't be checked here.
+  if (row.status === "failed" || row.status === "deleting" || row.provider !== deps.identity.name) {
+    return row;
+  }
   const now = input.now ?? new Date();
   const state = await deps.identity.getDomainIdentity(row.name);
 
@@ -432,6 +435,7 @@ export async function recheckDueDomains(
         isNotNull(domain.nextCheckAt),
         lte(domain.nextCheckAt, now),
         notInArray(domain.status, ["failed", "deleting"]),
+        eq(domain.provider, deps.identity.name),
         opts.scope ? inArray(domain.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
@@ -463,13 +467,15 @@ function domainSuffixes(name: string): string[] {
 }
 
 /**
- * System-level: refuses a live send unless the From domain is covered by a verified domain of the
- * organization and its tenant is not paused. The most specific matching domain across all
+ * System-level: refuses a live send unless the From domain is covered by a domain of the
+ * organization verified by the live provider, and its tenant is not paused. The most specific matching domain across all
  * organizations decides, because the provider signs with the most specific identity.
  */
 export async function authorizeLiveSender(input: {
   organizationId: string;
   from: string;
+  /** The live provider: only domains it verified count. */
+  provider: string;
 }): Promise<void> {
   const address = parseEmailAddress(input.from).address.toLowerCase();
   const fromDomain = address.slice(address.lastIndexOf("@") + 1);
@@ -479,6 +485,7 @@ export async function authorizeLiveSender(input: {
       organizationId: domain.organizationId,
       status: domain.status,
       canSend: domain.canSend,
+      provider: domain.provider,
       mailFromDomain: domain.mailFromDomain,
     })
     .from(domain)
@@ -489,6 +496,7 @@ export async function authorizeLiveSender(input: {
     match.organizationId === input.organizationId &&
     match.status === "verified" &&
     match.canSend &&
+    match.provider === input.provider &&
     fromDomain !== match.mailFromDomain &&
     !fromDomain.endsWith(`.${match.mailFromDomain}`);
   if (!usable) {
