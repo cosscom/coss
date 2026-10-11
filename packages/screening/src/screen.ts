@@ -38,6 +38,11 @@ export type ScreeningDeps = {
   now?: () => Date;
   /** Drives the random part of sampling (tests). */
   random?: () => number;
+  /**
+   * COSS's own organization (account and notification emails): a block verdict only flags its
+   * message, so screening never refuses those emails or suspends the organization sending them.
+   */
+  systemOrganizationId?: string | null;
 };
 
 export type ScreenInput = {
@@ -107,7 +112,7 @@ export async function screenMessage(
   }
 
   const top = topCategory(verdict.scores);
-  const outcome = classify(top.score, policy);
+  const outcome = classify(top.score, policy, input.organizationId === deps.systemOrganizationId);
   const createdAt = now();
   const screening = await db.transaction(async (tx) => {
     const row = await insertScreening(tx, input, {
@@ -143,8 +148,12 @@ export async function screenMessage(
   return { action: policy.enforce && outcome === "blocked" ? "block" : "send", screening };
 }
 
-function classify(score: number, policy: ContentScreeningPolicy): ScreeningVerdict {
-  if (score >= policy.blockThreshold) return "blocked";
+function classify(
+  score: number,
+  policy: ContentScreeningPolicy,
+  isSystemOrganization: boolean,
+): ScreeningVerdict {
+  if (score >= policy.blockThreshold) return isSystemOrganization ? "flagged" : "blocked";
   if (score >= policy.flagThreshold) return "flagged";
   return "clean";
 }

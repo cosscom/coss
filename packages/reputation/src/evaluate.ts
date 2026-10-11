@@ -20,7 +20,14 @@ export const EVALUATION_LEASE_MS = 5 * MINUTE;
 /** While warned, re-evaluate this often so a recovery clears the warning. */
 export const WARNING_RECHECK_MS = 60 * MINUTE;
 
-export type ReputationDeps = { checks: ReputationCheck[] };
+export type ReputationDeps = {
+  checks: ReputationCheck[];
+  /**
+   * COSS's own organization (the one sending account and notification emails): the guard only
+   * ever warns it. Suspending it would stop every sign-up, password reset and invitation email.
+   */
+  systemOrganizationId?: string | null;
+};
 
 export type EvaluationOutcome = {
   status: ReputationStandingRow["status"];
@@ -65,7 +72,9 @@ export async function evaluateOrganization(
       checks,
     };
     const current = { status: row?.status ?? "good", reason: row?.reason ?? null };
-    const decision = decide(current, checks);
+    const decision = decide(current, checks, {
+      canSuspend: organizationId !== deps.systemOrganizationId,
+    });
 
     const outcome = await db.transaction(async (tx) => {
       const [latest] = await tx

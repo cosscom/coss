@@ -252,6 +252,19 @@ const sentryRelease: EnvVar = {
   description: "Sentry release of every event.",
 };
 
+/** COSS's own live environment (worker: sends from it; dashboard: never suspends its org). */
+const notificationsEnvironment: EnvVar = {
+  name: "NOTIFICATIONS_ENVIRONMENT_ID",
+  kind: "plain",
+  required: false,
+  value: "env_… (a live environment of COSS's own organization)",
+  description:
+    "Sends account emails (sign-up verification, password resets, invitations) and " +
+    "reputation notifications through COSS itself (worker); neither the worker nor admins " +
+    "(dashboard) may suspend its organization. Unset until COSS's organization has a " +
+    "verified domain: both are held, and nobody can verify their email address.",
+};
+
 export const SERVICES: Service[] = [
   {
     name: "web",
@@ -271,6 +284,7 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       ...email,
       webhookKey,
+      notificationsEnvironment,
       {
         name: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
         kind: "secret",
@@ -411,16 +425,7 @@ export const SERVICES: Service[] = [
         value: "https://coss.com",
         description: "The dashboard's origin, for links in reputation notification emails.",
       },
-      {
-        name: "NOTIFICATIONS_ENVIRONMENT_ID",
-        kind: "plain",
-        required: false,
-        value: "env_… (a live environment of COSS's own organization)",
-        description:
-          "Sends account emails (sign-up verification, password resets, invitations) and " +
-          "reputation notifications through COSS itself. Unset until COSS's organization has a " +
-          "verified domain: both are held, and nobody can verify their email address.",
-      },
+      notificationsEnvironment,
       {
         name: "NOTIFICATIONS_FROM",
         kind: "plain",

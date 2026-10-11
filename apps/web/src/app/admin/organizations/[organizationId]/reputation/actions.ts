@@ -12,6 +12,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { supportAudit } from "@/lib/audit";
 import { requirePlatformAdminAction } from "@/lib/session";
+import { isSystemOrganization, SYSTEM_ORGANIZATION_MESSAGE } from "@/lib/system-organization";
 
 /** The organization named by the form (platform admins act across organizations). */
 async function organizationFromForm(formData: FormData): Promise<string> {
@@ -54,6 +55,9 @@ export async function suspendOrganizationAction(
   return runAction(async () => {
     const admin = await requirePlatformAdminAction();
     const organizationId = await organizationFromForm(formData);
+    if (await isSystemOrganization(organizationId)) {
+      throw new ActionError(SYSTEM_ORGANIZATION_MESSAGE);
+    }
     const event = await suspendOrganization({
       organizationId,
       trigger: "manual",

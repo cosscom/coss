@@ -168,6 +168,23 @@ describe("runDueReputationEvaluations", () => {
     ]);
   });
 
+  test("COSS's own organization is only ever warned", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const { deps } = controlledCheck("suspend");
+    const system = { ...deps, systemOrganizationId: orgId };
+    expect(await evaluateOrganization(orgId, system)).toMatchObject({
+      status: "warning",
+      transitioned: true,
+    });
+    expect(await evaluateOrganization(orgId, system)).toMatchObject({
+      status: "warning",
+      transitioned: false,
+    });
+    expect(await isSuspended(orgId)).toBe(false);
+    expect((await getReputationStanding(orgId))?.reason).toBe("bounce_rate");
+  });
+
   test("is not run for organizations that are not due", async () => {
     const tenant = await createTestTenant();
     const { state, deps } = controlledCheck("suspend");

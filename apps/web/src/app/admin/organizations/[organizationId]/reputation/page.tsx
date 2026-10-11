@@ -17,6 +17,7 @@ import {
 } from "@/components/reputation";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
+import { isSystemOrganization } from "@/lib/system-organization";
 import { ContentScreenings } from "./screenings";
 import { PolicyForm, ReinstateButton, SuspendButton } from "./standing-actions";
 
@@ -34,6 +35,7 @@ export default async function AdminOrganizationPage({
     listScreenings(organization.organizationId, { limit: 50 }),
   ]);
   const { standing } = organization;
+  const isSystem = await isSystemOrganization(organization.organizationId);
   const overrides = ReputationPolicyOverrides.safeParse(standing?.policyOverrides ?? {});
 
   return (
@@ -49,6 +51,10 @@ export default async function AdminOrganizationPage({
           actions={
             standing?.status === "suspended" ? (
               <ReinstateButton organizationId={organization.organizationId} />
+            ) : isSystem ? (
+              <span className="text-muted-foreground text-sm">
+                COSS's own organization: can't be suspended
+              </span>
             ) : (
               <SuspendButton organizationId={organization.organizationId} />
             )

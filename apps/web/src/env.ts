@@ -45,6 +45,9 @@ export const env = createEnv({
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,
+    // A live environment of COSS's own organization (the worker sends account emails from it):
+    // admins can't suspend that organization.
+    NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
   },
   client: {},
   experimental__runtimeEnv: {},

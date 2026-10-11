@@ -39,7 +39,23 @@ mock.module("next/navigation", () => ({
 mock.module("@/lib/session", () => ({
   requirePlatformAdminAction: async () => ({
     actor: { userId: newId("user"), email: "admin@test.local" },
+    session: { user: { id: newId("user") } },
   }),
+}));
+const systemOrgId = newId("org");
+const SYSTEM_ORGANIZATION_MESSAGE = "COSS's own organization";
+mock.module("@/lib/system-organization", () => ({
+  SYSTEM_ORGANIZATION_MESSAGE,
+  isSystemOrganization: async (organizationId: string) => organizationId === systemOrgId,
+}));
+const suspendSending = mock(async () => ({ id: "repev" }));
+const reputationModule = await import("@coss/reputation");
+mock.module("@coss/reputation", () => ({
+  ...reputationModule,
+  getOrganizationStanding: async () => ({}),
+  reinstateOrganization: mock(),
+  suspendOrganization: suspendSending,
+  updateReputationPolicy: mock(),
 }));
 const supportAudit = mock(async () => {});
 mock.module("@/lib/audit", () => ({ supportAudit }));
@@ -320,5 +336,50 @@ describe("rate limit overrides", () => {
     expect((await actions.resetRateLimitOverrideAction(null, form({ bucket: "x" }))).ok).toBe(
       false,
     );
+  });
+});
+
+const { suspendOrganization } = (await import("@coss/tenancy/admin")) as unknown as Record<
+  "suspendOrganization",
+  ReturnType<typeof mock>
+>;
+const reputation = await import(
+  "../src/app/admin/organizations/[organizationId]/reputation/actions"
+);
+
+describe("COSS's own organization", () => {
+  function form(organizationId: string) {
+    const data = new FormData();
+    data.set("organizationId", organizationId);
+    data.set("reason", "Phishing");
+    data.set("note", "Phishing");
+    return data;
+  }
+
+  beforeEach(() => {
+    suspendOrganization.mockClear();
+    suspendSending.mockClear();
+  });
+
+  test("can't be suspended by an admin", async () => {
+    for (const action of [
+      actions.suspendOrganizationAction,
+      reputation.suspendOrganizationAction,
+    ]) {
+      expect(await action(null, form(systemOrgId))).toEqual({
+        ok: false,
+        error: SYSTEM_ORGANIZATION_MESSAGE,
+      });
+    }
+    expect(suspendOrganization).not.toHaveBeenCalled();
+    expect(suspendSending).not.toHaveBeenCalled();
+  });
+
+  test("other organizations still can", async () => {
+    const organizationId = newId("org");
+    expect((await actions.suspendOrganizationAction(null, form(organizationId))).ok).toBe(true);
+    expect((await reputation.suspendOrganizationAction(null, form(organizationId))).ok).toBe(true);
+    expect(suspendOrganization).toHaveBeenCalledTimes(1);
+    expect(suspendSending).toHaveBeenCalledTimes(1);
   });
 });

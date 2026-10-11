@@ -21,17 +21,19 @@ export function worstResult(results: CheckResult[]): CheckResult | null {
 /**
  * What the guard does on its own given the checks' results. A suspension is never lifted
  * automatically (only an admin reinstates), and a warning clears once every check is `ok`.
+ * With `canSuspend: false` (COSS's own organization) a `suspend` result only warns.
  */
 export function decide(
   current: { status: ReputationStatus; reason: string | null },
   results: CheckResult[],
+  opts: { canSuspend?: boolean } = {},
 ): AutomaticTransition | null {
   if (current.status === "suspended") return null;
   const worst = worstResult(results);
-  if (worst?.severity === "suspend") {
+  if (worst?.severity === "suspend" && opts.canSuspend !== false) {
     return { to: "suspended", type: "suspended", trigger: worst.trigger };
   }
-  if (worst?.severity === "warning") {
+  if (worst?.severity === "warning" || worst?.severity === "suspend") {
     return current.status === "good"
       ? { to: "warning", type: "warning_raised", trigger: worst.trigger }
       : null;
