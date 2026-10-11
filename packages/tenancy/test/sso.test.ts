@@ -25,6 +25,7 @@ import {
   getOrganizationSsoProvider,
   listOrganizationsRequiringSso,
   listOwnersWithoutPassword,
+  requestOrganizationDeletion,
   setOrganizationSsoRequired,
   syncSsoDomainVerification,
   userHasPassword,
@@ -409,8 +410,12 @@ describe("SSO requirement and recovery", () => {
     ).rejects.toThrow("This organization doesn't require SSO.");
 
     await setOrganizationSsoRequired({ organizationId, required: true });
+    const signedIn = await ssoSignIn(`grace-${uniqueSuffix()}@${tenant.domain}`);
+    expect(await sessionOf(signedIn.cookies)).not.toBeNull();
     await disableOrganizationSso({ organizationId, reason: "IdP compromised", actor });
     expect((await getOrganizationSsoProvider({ organizationId }))?.active).toBe(false);
+    // The compromised IdP's sessions are signed out (they would still count as SSO).
+    expect(await sessionOf(signedIn.cookies)).toBeNull();
     expect((await ssoSignIn(`ada@${tenant.domain}`)).status).toBe(401);
     const { events } = await listAdminAuditEvents({ organizationId });
     expect(events.map((event) => event.action)).toEqual([
@@ -435,6 +440,36 @@ describe("SSO requirement and recovery", () => {
     expect(
       (await getOrganizationSsoProvider({ organizationId: tenant.organization.id }))?.active,
     ).toBe(false);
+  });
+});
+
+describe("organization deletion", () => {
+  test("removes the provider, its accounts and sessions, and refuses sign-ins under way", async () => {
+    const tenant = await createSsoTenant();
+    const organizationId = tenant.organization.id;
+    const email = `leaving-${uniqueSuffix()}@${tenant.domain}`;
+    const signedIn = await ssoSignIn(email);
+    expect(signedIn.location).toBe("/dashboard");
+    const member = await userByEmail(email);
+    expect(member).not.toBeNull();
+
+    await requestOrganizationDeletion({
+      organizationId,
+      actor: { userId: tenant.owner.id, email: tenant.owner.email },
+    });
+    expect(await getOrganizationSsoProvider({ organizationId })).toBeNull();
+    expect(await sessionOf(signedIn.cookies)).toBeNull();
+    const accounts = await db
+      .select({ id: schema.account.id })
+      .from(schema.account)
+      .where(eq(schema.account.providerId, tenant.providerId));
+    expect(accounts).toEqual([]);
+    expect(
+      await getMembership({ userId: member?.id ?? "", organizationSlug: tenant.organization.slug }),
+    ).toBeNull();
+    // The user remains (they may belong to other organizations).
+    expect(await userByEmail(email)).not.toBeNull();
+    expect((await ssoSignIn(email)).status).not.toBe(302);
   });
 });
 

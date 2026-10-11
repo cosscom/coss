@@ -15,10 +15,10 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only). |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization deletion (request + the worker's teardown; imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
@@ -34,7 +34,8 @@ Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, db`;
 `web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
+`worker → email, reputation, screening, webhooks, ratelimit, db, tenancy` (only `@coss/tenancy/deletion`: the
+rest loads Better Auth, which needs the dashboard's env); `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks, screening or ratelimit) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
@@ -390,6 +391,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (server-side `auth.api.*` still works).
     Admin mutations go only through `apps/web/src/app/admin/actions.ts`, which records the audit log. Never re-enable
     them to "simplify" things.
+  - Invitations follow their inviter (`packages/auth/src/invitations.ts`): Better Auth accepts any pending one,
+    so `beforeAcceptInvitation` refuses it unless the inviter is still a member allowed to invite, and
+    `cancelStaleInvitations` cancels the rest after a member is removed, demoted (`afterRemoveMember`,
+    `afterUpdateMemberRole`) or leaves (a `hooks.after` on `/organization/leave`, which has no org hook).
   - `organizationHooks` validate org slugs on create/update, only allow canonical roles (`INVITABLE_ORG_ROLES`,
     `isOrgRole`), only cancel `pending` invitations (Better Auth would rewrite accepted ones) and refuse invitations,
     accepting/canceling them, organization updates and member changes while the org is suspended;
@@ -432,7 +437,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     see a banner; impersonation sessions are exempt. An SSO session from the org's own provider also satisfies its
     `requireTwoFactor` (the IdP owns MFA); another org's provider satisfies neither. API keys are unaffected.
     Admin recovery (audited, `@coss/tenancy/admin`): `unlinkUserSso`, `disableOrganizationSsoRequirement`,
-    `disableOrganizationSso` (clears `domainVerified`; saving again re-enables).
+    `disableOrganizationSso` (clears `domainVerified`; saving again re-enables). A domain the org's provider
+    lists can't be deleted (`deleteDomain` → `domain_in_use_by_sso`, 422): it would end SSO sign-in and, with
+    `requireSso`, lock members out; it must come off the provider first. Disabling or removing a provider
+    also signs out the sessions it created (`revokeSsoProviderSessions`): Better Auth keeps them, they would still
+    count as SSO for the org's requirements, and a later provider gets the same derived id.
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
     `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
@@ -445,7 +454,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `requirePlatformAdmin*`), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
+  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -597,6 +606,21 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   scores are admin-only (customers see `content_rejected` and the standing, never an oracle). The AI adapter asks one
   boolean question per category with `experimental_decide` (renamed from `experimental_evaluate`), passes the message
   as JSON state with "untrusted data" in every instruction, and always requests Gateway `zeroDataRetention`.
+- **Organization deletion** (`packages/tenancy/src/deletion.ts`, table `organization_deletion`, ids `orgdel_`; no
+  FKs, names copied, so it outlives the organization as the record): Better Auth's own delete stays off
+  (`disableOrganizationDeletion: true`) — it would drop the row without any teardown. `requestOrganizationDeletion`
+  (owners from settings, `organization:delete`, typed slug, not while suspended or impersonating; admins via
+  `deleteOrganizationAsAdmin`, audited, suspended included) inserts the row and runs `revokeOrganizationAccess` in
+  one transaction: API keys (no FK to the org), the SSO provider with its linked accounts and the sessions it
+  created, invitations and members. From then on scheduled sends never dispatch (`organizationActive` in the
+  email service), webhook deliveries are held, and the Better Auth org hooks / `resolveSsoUser` refuse it. The
+  worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
+  repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
+  `deleting`, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
+  per environment in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
+  (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
+  organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
+  belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
 - **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating or reputation-suspended (`liveKeyRestriction`,
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
@@ -644,7 +668,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   SAML errors after the IdP step land on the callback URL (`?error=`), not on `/sso`. The SAML path is covered by
   Better Auth's own tests only (ours drive OIDC against oauth2-mock-server).
 - Next's cache is per task (nothing uses ISR or `revalidateTag` yet; add a shared `cacheHandler` first).
-- Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
+- Accepted: sign-up email enumeration. A user ban does not cut off their orgs' API keys (keys
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
@@ -658,7 +682,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
 rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
-org logos/deletion, email change, npm publishing of the SDK,
+org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
+would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 
 <!-- BEGIN:turborepo-agent-rules -->

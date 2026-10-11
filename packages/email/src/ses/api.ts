@@ -13,6 +13,7 @@ import {
   CreateTenantResourceAssociationCommand,
   type CreateTenantResourceAssociationCommandInput,
   DeleteEmailIdentityCommand,
+  DeleteTenantCommand,
   DeleteTenantResourceAssociationCommand,
   type DeleteTenantResourceAssociationCommandInput,
   GetEmailIdentityCommand,
@@ -59,6 +60,7 @@ export interface SesApi {
     input: PutTenantSuppressionAttributesCommandInput,
   ): Promise<unknown>;
   getTenant(input: { TenantName: string }): Promise<GetTenantCommandOutput>;
+  deleteTenant(input: { TenantName: string }): Promise<unknown>;
   createTenantResourceAssociation(
     input: CreateTenantResourceAssociationCommandInput,
   ): Promise<unknown>;
@@ -89,6 +91,7 @@ export function createSesApi(region: string): SesApi {
     putTenantSuppressionAttributes: (input) =>
       client.send(new PutTenantSuppressionAttributesCommand(input)),
     getTenant: (input) => client.send(new GetTenantCommand(input)),
+    deleteTenant: (input) => client.send(new DeleteTenantCommand(input)),
     createTenantResourceAssociation: (input) =>
       client.send(new CreateTenantResourceAssociationCommand(input)),
     deleteTenantResourceAssociation: (input) =>

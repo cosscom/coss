@@ -41,6 +41,7 @@ export type DomainErrorCode =
   | "domain_taken"
   | "too_many_pending_domains"
   | "not_found"
+  | "domain_in_use_by_sso"
   | "provider_error";
 
 /** Expected failures of domain management; messages are safe to show to the user. */

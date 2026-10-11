@@ -205,6 +205,14 @@ export class FakeSesApi implements SesApi {
     return { Tenant: { TenantName: input.TenantName, TenantArn: tenant.arn }, $metadata: {} };
   }
 
+  async deleteTenant(input: { TenantName: string }) {
+    this.#record("deleteTenant", input);
+    if (!this.tenants.delete(input.TenantName)) throw sesError("NotFoundException");
+    // SES removes the tenant's resource associations with it.
+    for (const tenants of this.associations.values()) tenants.delete(input.TenantName);
+    return {};
+  }
+
   async createTenantResourceAssociation(input: { TenantName?: string; ResourceArn?: string }) {
     this.#record("createTenantResourceAssociation", input);
     const tenants = this.associations.get(input.ResourceArn ?? "") ?? new Set<string>();

@@ -9,6 +9,7 @@ import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/page-header";
 import { requireOrgMember } from "@/lib/session";
 import { UpgradeApiVersionButton } from "./api-version-form";
+import { DeleteOrganizationButton } from "./delete-organization-button";
 import { LeaveOrganizationButton } from "./leave-organization-button";
 import { OrganizationForm } from "./organization-form";
 import { TwoFactorRequirementForm } from "./two-factor-requirement";
@@ -21,6 +22,7 @@ export default async function OrganizationSettingsPage({
   const { orgSlug } = await params;
   const { organization, member, can, suspended, session } = await requireOrgMember(orgSlug);
   const canUpdate = can({ organization: ["update"] });
+  const canDelete = can({ organization: ["delete"] });
   const canReadSso = can({ sso: ["read"] });
   const members = await listOrganizationMembers({ organizationId: organization.id });
   const isOwner = member.role.split(",").includes("owner");
@@ -172,6 +174,24 @@ export default async function OrganizationSettingsPage({
           </CardPanel>
         )}
       </Card>
+
+      {isOwner ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Delete organization</CardTitle>
+            <CardDescription>
+              {suspended
+                ? "A suspended organization can't be deleted. Contact support."
+                : "Permanently delete this organization with its projects, emails, domains, suppression lists and webhooks. Members lose access and API keys stop working immediately."}
+            </CardDescription>
+          </CardHeader>
+          {canDelete ? (
+            <CardPanel>
+              <DeleteOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
+            </CardPanel>
+          ) : null}
+        </Card>
+      ) : null}
     </div>
   );
 }

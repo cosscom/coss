@@ -175,6 +175,95 @@ describe("canceling invitations", () => {
   });
 });
 
+describe("invitations follow their inviter", () => {
+  async function invitationStatus(id: string) {
+    const [row] = await db
+      .select({ status: schema.invitation.status })
+      .from(schema.invitation)
+      .where(eq(schema.invitation.id, id));
+    return row?.status;
+  }
+
+  async function inviteAs(user: TestUser, organizationId: string, role: "admin" | "member") {
+    const invitee = await createTestUser();
+    const invitation = await auth.api.createInvitation({
+      headers: await sessionHeaders(user.email, user.password),
+      body: { email: invitee.email, role, organizationId },
+    });
+    if (!invitation) throw new Error("invitation was not created");
+    return { invitation, invitee };
+  }
+
+  async function memberIdOf(organizationId: string, user: TestUser) {
+    const row = (await listOrganizationMembers({ organizationId })).find(
+      (r) => r.user.id === user.id,
+    );
+    if (!row) throw new Error("member row missing");
+    return row.id;
+  }
+
+  test("removing, demoting or leaving cancels what an admin sent", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const owner = await sessionHeaders(tenant.owner.email, tenant.owner.password);
+    const [removed, demoted, leaver] = await Promise.all([
+      createTestUser(),
+      createTestUser(),
+      createTestUser(),
+    ]);
+    for (const user of [removed, demoted, leaver]) {
+      await addMember({ organizationId, userId: user.id, role: "admin" });
+    }
+    const fromRemoved = await inviteAs(removed, organizationId, "admin");
+    const fromDemoted = await inviteAs(demoted, organizationId, "member");
+    const fromLeaver = await inviteAs(leaver, organizationId, "member");
+    const fromOwner = await inviteAs(tenant.owner, organizationId, "member");
+
+    await auth.api.removeMember({
+      headers: owner,
+      body: { memberIdOrEmail: await memberIdOf(organizationId, removed), organizationId },
+    });
+    expect(await invitationStatus(fromRemoved.invitation.id)).toBe("canceled");
+    expect(await invitationStatus(fromDemoted.invitation.id)).toBe("pending");
+
+    await auth.api.updateMemberRole({
+      headers: owner,
+      body: { memberId: await memberIdOf(organizationId, demoted), role: "member", organizationId },
+    });
+    expect(await invitationStatus(fromDemoted.invitation.id)).toBe("canceled");
+
+    await auth.api.leaveOrganization({
+      headers: await sessionHeaders(leaver.email, leaver.password),
+      body: { organizationId },
+    });
+    expect(await invitationStatus(fromLeaver.invitation.id)).toBe("canceled");
+    expect(await invitationStatus(fromOwner.invitation.id)).toBe("pending");
+  });
+
+  test("an invitation whose inviter may no longer invite can't be accepted", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const admin = await createTestUser();
+    await addMember({ organizationId, userId: admin.id, role: "admin" });
+    const { invitation, invitee } = await inviteAs(admin, organizationId, "admin");
+    // Demoted behind Better Auth's back (no hook ran): accepting re-checks the inviter anyway.
+    await db
+      .update(schema.member)
+      .set({ role: "member" })
+      .where(eq(schema.member.userId, admin.id));
+
+    await expect(
+      auth.api.acceptInvitation({
+        headers: await sessionHeaders(invitee.email, invitee.password),
+        body: { invitationId: invitation.id },
+      }),
+    ).rejects.toThrow("This invitation is no longer valid.");
+    expect(await invitationStatus(invitation.id)).toBe("pending");
+    const members = await listOrganizationMembers({ organizationId });
+    expect(members.some((row) => row.user.id === invitee.id)).toBe(false);
+  });
+});
+
 /** A tenant whose owner, admin and member each have a member row and a signed-in session. */
 async function roleFixture() {
   const tenant = await createTestTenant();

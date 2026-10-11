@@ -28,6 +28,7 @@ export {
   nextCheckAt,
   normalizeDomainName,
   recheckDueDomains,
+  releaseOrganizationEmailResources,
   restartDomainVerification,
   toDomainObject,
   VERIFICATION_WINDOW_MS,

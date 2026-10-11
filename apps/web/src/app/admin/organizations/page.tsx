@@ -81,7 +81,10 @@ export default async function AdminOrganizationsPage({
                   <TableCell className="text-muted-foreground">{organization.slug}</TableCell>
                   <TableCell className="tabular-nums">{organization.memberCount}</TableCell>
                   <TableCell>
-                    <OrganizationStatusBadge suspended={organization.suspendedAt !== null} />
+                    <OrganizationStatusBadge
+                      deleting={organization.deleting}
+                      suspended={organization.suspendedAt !== null}
+                    />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDateTime(organization.createdAt)}

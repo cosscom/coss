@@ -12,6 +12,7 @@ import {
 import {
   ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
+  deleteOrganizationAsAdmin,
   disableOrganizationSso,
   disableOrganizationSsoRequirement,
   recordAdminAction,
@@ -309,6 +310,27 @@ export async function unsuspendOrganizationAction(
     await unsuspendOrganization({
       organizationId: formOrganizationId(formData),
       reason: optionalReason(formData),
+      actor,
+    });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Deletes an organization, suspended or not (audited). Members, invitations, API keys and the SSO
+ * provider go at once; the worker deletes the rest.
+ */
+export async function deleteOrganizationAdminAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    await deleteOrganizationAsAdmin({
+      organizationId: formOrganizationId(formData),
+      confirmSlug: formString(formData, "confirm"),
+      reason: requiredReason(formData),
       actor,
     });
     refresh();

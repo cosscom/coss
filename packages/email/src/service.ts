@@ -103,15 +103,36 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email, emailBatch, emailLink, emailRecipient, environment, organizationSuspension } =
-  schema;
+const {
+  email,
+  emailBatch,
+  emailLink,
+  emailRecipient,
+  environment,
+  organizationDeletion,
+  organizationSuspension,
+} = schema;
 
+/** Scheduled sends wait while the organization is suspended, and never go once it is being deleted. */
 function organizationActive() {
-  return notExists(
-    db
-      .select({ id: organizationSuspension.organizationId })
-      .from(organizationSuspension)
-      .where(eq(organizationSuspension.organizationId, email.organizationId)),
+  return and(
+    notExists(
+      db
+        .select({ id: organizationSuspension.organizationId })
+        .from(organizationSuspension)
+        .where(eq(organizationSuspension.organizationId, email.organizationId)),
+    ),
+    notExists(
+      db
+        .select({ id: organizationDeletion.id })
+        .from(organizationDeletion)
+        .where(
+          and(
+            eq(organizationDeletion.organizationId, email.organizationId),
+            eq(organizationDeletion.status, "pending"),
+          ),
+        ),
+    ),
   );
 }
 

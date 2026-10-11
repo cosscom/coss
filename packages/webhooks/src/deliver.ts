@@ -10,8 +10,14 @@ import { decryptSecret } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
-const { organizationSuspension, webhookAttempt, webhookDelivery, webhookEndpoint, webhookMessage } =
-  schema;
+const {
+  organizationDeletion,
+  organizationSuspension,
+  webhookAttempt,
+  webhookDelivery,
+  webhookEndpoint,
+  webhookMessage,
+} = schema;
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -65,7 +71,8 @@ type Claimed = typeof webhookDelivery.$inferSelect;
 
 /**
  * Leases due deliveries (`FOR UPDATE SKIP LOCKED`), so concurrent workers never share one.
- * Deliveries of suspended organizations are held (not failed) and resume once it is lifted.
+ * Deliveries of suspended organizations are held (not failed) and resume once it is lifted; those
+ * of organizations being deleted are held until the worker deletes them.
  */
 async function claimDue(
   now: Date,
@@ -86,6 +93,18 @@ async function claimDue(
             .select({ one: sql`1` })
             .from(organizationSuspension)
             .where(eq(organizationSuspension.organizationId, webhookDelivery.organizationId)),
+        ),
+        // The worker deletes them shortly; nothing more goes out to a deleted organization.
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(organizationDeletion)
+            .where(
+              and(
+                eq(organizationDeletion.organizationId, webhookDelivery.organizationId),
+                eq(organizationDeletion.status, "pending"),
+              ),
+            ),
         ),
       ),
     )

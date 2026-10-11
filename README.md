@@ -122,6 +122,11 @@ resets) are printed to the dashboard's server console in development.
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
   (or `spam`, `malware`, `fraud`; `[coss-test:spam:0.8]` sets the score).
+- **Organization deletion** — owners delete an organization from its Settings by typing its slug (not while it
+  is suspended; platform admins can, from `/admin`, audited). Members, invitations, API keys, the SSO provider and
+  the sessions it created go at once and scheduled emails never send; the worker then removes the organization's
+  SES identities and tenant, deletes its data in batches and finally the organization, which frees its slug. A
+  record of the deletion (who, when) is kept. There is no undo.
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403
@@ -207,6 +212,8 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    worker. Bootstrap makes the updated policy version the default; existing attachments stay in place.
    If you manage IAM policies separately, apply both worker `ses:SendEmail` grants from
    `apps/worker/scripts/ses-policies.ts` (identities and the COSS configuration set).
+   Organization deletion needs `ses:DeleteTenant` in the `<name>-worker` policy: rerun bootstrap (or add it)
+   before deploying that release, or deletions retry until it is there.
    Bootstrap imports historical SES permanent bounces and complaints into their original live
    environments, and conservatively copies the SES account and tenant lists to every live
    environment of each matching organization (SES lists have no environment attribution).

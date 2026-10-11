@@ -187,6 +187,7 @@ describe("createDomain", () => {
         },
         getDomainIdentity: (domain) => fake.getDomainIdentity(domain),
         deleteDomainIdentity: (input) => fake.deleteDomainIdentity(input),
+        deleteTenant: () => fake.deleteTenant(),
       };
     };
 
@@ -300,6 +301,7 @@ describe("checkDomain", () => {
       deleteDomainIdentity: async () => {
         throw new Error("must not release a verified domain");
       },
+      deleteTenant: async () => {},
     };
 
     const later = new Date(Date.now() + 2 * VERIFICATION_WINDOW_MS);

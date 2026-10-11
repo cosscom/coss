@@ -104,6 +104,11 @@ export interface IdentityProvider {
   getDomainIdentity(domain: string): Promise<DomainIdentityState | null>;
   /** Removes the identity (and its tenant association). Missing identities are fine. */
   deleteDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void>;
+  /**
+   * Removes the organization's tenant (when its organization is deleted, after its domains).
+   * A missing tenant is fine.
+   */
+  deleteTenant(tenant: ProviderTenant): Promise<void>;
 }
 
 /** The provider already has this identity for another tenant; it is never adopted. */

@@ -191,6 +191,7 @@ function fromDomainError(error: DomainError): ApiError {
       // Not a 409: the SDK retries those, and a claimed name does not free up on its own.
       return invalidRequest(error.code, error.message, "name");
     case "too_many_pending_domains":
+    case "domain_in_use_by_sso":
       return invalidRequest(error.code, error.message);
     case "not_found":
       return new ApiError(404, {

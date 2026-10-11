@@ -5,6 +5,7 @@ import {
   type EmailService,
   emailReputationChecks,
   recheckDueDomains,
+  releaseOrganizationEmailResources,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -14,6 +15,7 @@ import {
   runDueReputationNotifications,
 } from "@coss/reputation";
 import { contentScreeningCheck } from "@coss/screening";
+import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
@@ -25,6 +27,7 @@ const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const SCHEDULED_BATCH = 50;
+const DELETION_BATCH = 5;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
@@ -83,6 +86,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { limit: REPUTATION_BATCH },
           { checks: REPUTATION_CHECKS },
         )) === REPUTATION_BATCH,
+    }),
+    startLoop({
+      // Organization deletions: releases domains and the SES tenant, then deletes the data.
+      name: "organization-deletions",
+      intervalMs: 10_000,
+      run: async () =>
+        (await runDueOrganizationDeletions(
+          { limit: DELETION_BATCH, signal: deps.signal },
+          {
+            releaseProviderResources: (organizationId) =>
+              releaseOrganizationEmailResources(organizationId, deps.domains),
+          },
+        )) === DELETION_BATCH,
     }),
     startLoop({
       name: "unclaimed",
