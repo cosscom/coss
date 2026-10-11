@@ -1,0 +1,26 @@
+{
+  "name": "@coss/observability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./browser": "./src/browser.ts",
+    "./build": "./src/build.ts",
+    "./env": "./src/env.ts",
+    "./tunnel": "./src/tunnel.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@sentry/core": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

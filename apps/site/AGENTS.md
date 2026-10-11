@@ -24,6 +24,7 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `src/app/docs/search.json`, `src/app/api/health` | Docs search (Fumadocs, `SEARCH_API`); the load balancer's health check (never routed on coss.com). |
 | `src/app/{icon.svg,robots.ts,sitemap.ts}` | coss.com's root files: the site owns them (the dashboard links to `/icon.svg`). |
 | `src/lib/sdk-samples.ts` | `METHOD /path` → `coss` method + argument builders for the SDK tab. |
+| `src/instrumentation-client.ts`, `src/app/global-error.tsx` | Browser error monitoring (Sentry): configuration from the dashboard's `/api/monitoring` (same origin on coss.com; `next.config.ts` proxies it in `next dev`), events tunnelled through it to the dashboard's `web` project. The server reports nothing. |
 | `src/app/(home)` | Placeholder landing page (coss ui components), the legal pages and `SiteFooter`. |
 | `content/legal/`, `src/lib/legal.ts`, `src/app/(home)/legal` | Terms, Privacy Policy, Acceptable Use Policy, Data Processing Addendum (incorporated into the Terms) at `/legal/…` (Cal.com, Inc. is the legal entity). Their own `defineDocs` collection + `loader`, so they stay out of the docs' sidebar, search and `/llms.txt`; frontmatter needs `lastUpdated` (YYYY-MM-DD). The sign-up form links to `/legal/terms` and `/legal/privacy`. |
 

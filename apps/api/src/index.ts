@@ -1,5 +1,7 @@
 /** Server entry: `bun src/index.ts`. Validates the environment, serves the API, drains on SIGTERM. */
 
+// First: monitoring must be set up before the server starts.
+import "./instrument.ts";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
@@ -7,6 +9,7 @@ import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispa
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { parseSecretsKey } from "@coss/webhooks";
+import * as Sentry from "@sentry/bun";
 import { createApp } from "./app.ts";
 import { env } from "./env.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -46,7 +49,7 @@ const server = startServer({
   port: env.API_PORT,
   onDrained: async () => {
     await Promise.all([jobs.stop({ graceful: true }), logWriter.close()]);
-    await Promise.all([closeDb(), rateLimits.limiter.close()]);
+    await Promise.all([closeDb(), rateLimits.limiter.close(), Sentry.close(2_000)]);
   },
 });
 console.info(`[api] listening on ${server.url}`);
