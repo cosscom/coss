@@ -70,7 +70,8 @@ AWS_REGION=… bun run valkey:bootstrap --subnet-ids … --security-group-ids �
                                                # idempotently create the ElastiCache Serverless (Valkey)
                                                #   cache, its user + user group; prints VALKEY_URL
 bun run ratelimit:set --org acme [--bucket api.read --limit 100 [--period 1s] [--burst 200] | --reset]
-                                               # show/change an org's rate limit overrides (~1 min to apply)
+                                               # show/change an org's rate limit overrides (~1 min to apply;
+                                               #   not audited — prefer the admin console's organization page)
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -487,6 +488,9 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   never trust a raw header. Emails are hashed into keys. Better Auth's built-in limiter stays off
   (`rateLimit: { enabled: false }`): `apps/web/src/lib/auth-rate-limit.ts` wraps the `/api/auth` POST handler. The
   ElastiCache user's ACL (`valkey-bootstrap.ts` `APP_ACCESS`) must list every command the client and the script use.
+  Per-org overrides are changed in the admin console's organization page through `changeRateLimitOverride`, which
+  records a `rate_limit.override_*` audit event (bucket, previous and new rule) in the same transaction (the
+  `ratelimit:set` script writes without one). Rule values are stored as `integer` (`MAX_RULE_VALUE`).
 
 - **Open/click tracking** (`packages/email/src/tracking*.ts`, tables `email_tracking_rule` (ids `etr_`) and
   `email_link` (ids `lnk_`)): COSS-owned, provider-independent (SES's own open/click tracking stays off — the
@@ -629,7 +633,7 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
 batch sends, rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
-rate limit overrides in the dashboard, org logos/deletion, email change, npm publishing of the SDK,
+org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 
 <!-- BEGIN:turborepo-agent-rules -->

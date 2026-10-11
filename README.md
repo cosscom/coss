@@ -173,7 +173,8 @@ Requests are rate limited per API key by route class (reads, writes, sends; resp
 `RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the
 organization's quota per second and per day (sandbox environments have a small daily quota of their own).
 Over a limit the API answers `429 rate_limit_error` (`rate_limited` or `quota_exceeded`) with `Retry-After`.
-Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization with
+Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization on the
+organization's page in the admin console (`/admin/organizations`, recorded in the audit log) or with
 `bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
 client IP and per email address.
 

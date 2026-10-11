@@ -1,4 +1,13 @@
 import { getEmailTenant, listDomains } from "@coss/email";
+import {
+  BUCKET_NAMES,
+  BUCKETS,
+  type BucketName,
+  describeRule,
+  formatPeriod,
+  type LimitRule,
+  listRateLimitOverrides,
+} from "@coss/ratelimit";
 import { listOrganizationMembers } from "@coss/tenancy";
 import {
   getOrganizationForAdmin,
@@ -16,6 +25,8 @@ import {
   CardPanel,
   CardTitle,
 } from "@coss/ui/components/card";
+import { Field, FieldLabel } from "@coss/ui/components/field";
+import { Input } from "@coss/ui/components/input";
 import {
   Table,
   TableBody,
@@ -37,12 +48,26 @@ import { requirePlatformAdmin } from "@/lib/session";
 import {
   disableOrganizationSsoAction,
   disableOrganizationSsoRequirementAction,
+  resetRateLimitOverrideAction,
   revokeApiKeyAction,
+  setRateLimitOverrideAction,
   suspendOrganizationAction,
   unsuspendOrganizationAction,
 } from "../../actions";
 
 export const metadata: Metadata = { title: "Organization · Admin" };
+
+/** What each overridable bucket counts, in the console's words. */
+const BUCKET_LABELS: Partial<Record<BucketName, string>> = {
+  "api.read": "API reads, per key",
+  "api.write": "API writes, per key",
+  "api.send": "API send requests, per key",
+  "email.recipients.second": "Live recipients per second, per organization",
+  "email.recipients.day": "Live recipients per day, per organization",
+  "email.sandbox_recipients.day": "Sandbox recipients per day, per environment",
+};
+
+const OVERRIDABLE_BUCKETS = BUCKET_NAMES.filter((name) => BUCKETS[name].overridable);
 
 export default async function AdminOrganizationPage({
   params,
@@ -52,12 +77,13 @@ export default async function AdminOrganizationPage({
   const detail = await getOrganizationForAdmin(organizationId);
   if (!detail) notFound();
   const { organization, suspension } = detail;
-  const [members, keys, domains, tenant, sso, { events }] = await Promise.all([
+  const [members, keys, domains, tenant, sso, rateLimits, { events }] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
     listDomains({ organizationId: organization.id }),
     getEmailTenant(organization.id),
     getOrganizationSsoForAdmin(organization.id),
+    listRateLimitOverrides(organization.id),
     listAdminAuditEvents({ organizationId: organization.id, limit: 25 }),
   ]);
   const fields = { organizationId: organization.id };
@@ -330,6 +356,115 @@ export default async function AdminOrganizationPage({
               </TableBody>
             </Table>
           )}
+        </CardPanel>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Rate limits</CardTitle>
+          <CardDescription>
+            Each bucket holds “burst” requests (or recipients) and refills “limit” per period.
+            Changes apply within a minute and are kept in the admin audit log.
+          </CardDescription>
+        </CardHeader>
+        <CardPanel className="p-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Bucket</TableHead>
+                <TableHead>Default</TableHead>
+                <TableHead>This organization</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {OVERRIDABLE_BUCKETS.map((bucket) => {
+                const override = rateLimits[bucket];
+                const rule: LimitRule = override ?? BUCKETS[bucket];
+                return (
+                  <TableRow key={bucket}>
+                    <TableCell>
+                      <code className="text-xs">{bucket}</code>
+                      <div className="text-muted-foreground text-xs">{BUCKET_LABELS[bucket]}</div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {describeRule(BUCKETS[bucket])}
+                    </TableCell>
+                    <TableCell>
+                      {override ? (
+                        <span className="flex flex-wrap items-center gap-2">
+                          {describeRule(override)} <Badge variant="info">override</Badge>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Default</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="inline-flex gap-2">
+                        <AdminActionDialog
+                          action={setRateLimitOverrideAction}
+                          description={
+                            bucket === "email.recipients.second"
+                              ? "A burst below 50 rejects emails with more recipients than the burst outright."
+                              : `Default: ${describeRule(BUCKETS[bucket])}.`
+                          }
+                          fields={{ ...fields, bucket }}
+                          reason="required"
+                          reasonPlaceholder="e.g. Volume increase agreed in ticket #1234"
+                          submitLabel="Save rate limit"
+                          title={`Change ${bucket} for ${organization.name}`}
+                          triggerLabel="Change"
+                        >
+                          <div className="grid gap-4 sm:grid-cols-3">
+                            <Field>
+                              <FieldLabel>Limit</FieldLabel>
+                              <Input
+                                defaultValue={String(rule.limit)}
+                                inputMode="numeric"
+                                name="limit"
+                                required
+                              />
+                            </Field>
+                            <Field>
+                              <FieldLabel>Per</FieldLabel>
+                              <Input
+                                defaultValue={formatPeriod(rule.periodMs)}
+                                name="period"
+                                required
+                              />
+                            </Field>
+                            <Field>
+                              <FieldLabel>Burst</FieldLabel>
+                              <Input
+                                defaultValue={rule.burst === undefined ? "" : String(rule.burst)}
+                                inputMode="numeric"
+                                name="burst"
+                                placeholder="= limit"
+                              />
+                            </Field>
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            Periods like 1s, 5m, 1h or 1d. An empty burst equals the limit.
+                          </p>
+                        </AdminActionDialog>
+                        {override ? (
+                          <AdminActionDialog
+                            action={resetRateLimitOverrideAction}
+                            description={`Back to ${describeRule(BUCKETS[bucket])}, within a minute.`}
+                            fields={{ ...fields, bucket }}
+                            reason="optional"
+                            submitLabel="Reset to default"
+                            title={`Reset ${bucket} for ${organization.name}?`}
+                            triggerLabel="Reset"
+                          />
+                        ) : null}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </CardPanel>
       </Card>
 

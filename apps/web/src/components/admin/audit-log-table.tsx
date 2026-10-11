@@ -1,3 +1,4 @@
+import { formatPeriod } from "@coss/ratelimit";
 import type { AdminAuditEvent } from "@coss/tenancy/admin";
 import { Badge } from "@coss/ui/components/badge";
 import {
@@ -25,6 +26,8 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },
   "reputation.policy_updated": { label: "Changed reputation policy", variant: "info" },
   "api_key.revoke": { label: "Revoked API key", variant: "error" },
+  "rate_limit.override_set": { label: "Changed a rate limit", variant: "info" },
+  "rate_limit.override_reset": { label: "Reset a rate limit", variant: "info" },
 };
 
 function targetHref(event: AdminAuditEvent): string | null {
@@ -44,7 +47,19 @@ function describe(event: AdminAuditEvent): string {
   if (typeof meta.duration === "string") parts.push(meta.duration);
   if (typeof meta.name === "string") parts.push(`“${meta.name}”`);
   if (typeof meta.start === "string") parts.push(`${meta.start}…`);
+  if (typeof meta.bucket === "string") parts.push(meta.bucket + ruleChange(meta));
   return parts.join(" · ") || event.targetId;
+}
+
+/** `" 50/1s → 100/1s"` from a rate limit override's previous and new rules. */
+function ruleChange(meta: Record<string, unknown>): string {
+  const rule = (value: unknown) => {
+    if (!value || typeof value !== "object") return "default";
+    const { limit, periodMs, burst } = value as Record<string, unknown>;
+    if (typeof limit !== "number" || typeof periodMs !== "number") return "?";
+    return `${limit}/${formatPeriod(periodMs)}${burst !== limit ? ` (burst ${burst})` : ""}`;
+  };
+  return `: ${rule(meta.previous)} → ${rule(meta.rule)}`;
 }
 
 export function AuditLogTable({ events }: { events: AdminAuditEvent[] }) {

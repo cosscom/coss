@@ -8,8 +8,10 @@ export {
   isBucketName,
   isOverridableBucket,
   type LimitRule,
+  MAX_RULE_VALUE,
 } from "./buckets.ts";
 export { type ClientIpConfig, type ClientIpResolver, clientIpResolver } from "./client-ip.ts";
+export { describeRule, formatPeriod, parsePeriod } from "./format.ts";
 export type { ConsumeOptions, ConsumeResult, LimitSpec, LimitState } from "./gcra.ts";
 export {
   createRateLimiter,
@@ -21,9 +23,11 @@ export {
 } from "./limiter.ts";
 export {
   cachedOverrides,
+  changeRateLimitOverride,
   deleteRateLimitOverride,
   listRateLimitOverrides,
   noOverrides,
+  type OverrideActor,
   type OverrideRules,
   type OverrideSource,
   setRateLimitOverride,
