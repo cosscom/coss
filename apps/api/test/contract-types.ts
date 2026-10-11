@@ -36,6 +36,10 @@ import type {
 } from "@coss/reputation/schemas";
 import type {
   DeletedWebhookEndpoint,
+  ListWebhookDeliveriesQuery,
+  WebhookAttemptObject,
+  WebhookDeliveryList,
+  WebhookDeliveryObject,
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
@@ -53,6 +57,7 @@ import type {
   ImportSuppressionsParams,
   List,
   ListSuppressionsParams,
+  ListWebhookDeliveriesParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   DeletedDomain as SdkDeletedDomain,
   DeletedSuppression as SdkDeletedSuppression,
@@ -70,6 +75,8 @@ import type {
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
+  WebhookAttempt as SdkWebhookAttempt,
+  WebhookDelivery as SdkWebhookDelivery,
   SendEmailParams,
   TrackingOptions,
   UpdateWebhookEndpointParams,
@@ -153,6 +160,16 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
+  // Delivery logs (the SDK sends `limit` as a number).
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListWebhookDeliveriesQuery>, "limit"> & { limit?: number },
+      ListWebhookDeliveriesParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookAttemptObject>, SdkWebhookAttempt>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookDeliveryObject>, SdkWebhookDelivery>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookDeliveryList>, List<SdkWebhookDelivery>>>,
   // Webhooks: every body COSS sends is exactly one member of the SDK's `WebhookEvent`.
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, SdkEmailWebhookEvent>>,
   Assert<

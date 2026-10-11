@@ -2,9 +2,14 @@ import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import {
   createWebhookEndpoint,
   deleteWebhookEndpoint,
+  getWebhookDelivery,
   getWebhookEndpoint,
   listWebhookEndpoints,
+  MAX_ATTEMPTS,
   MAX_ENDPOINTS_PER_ENVIRONMENT,
+  pageWebhookDeliveries,
+  retryWebhookDelivery,
+  toWebhookDeliveryObject,
   toWebhookEndpointObject,
   updateWebhookEndpoint,
   type WebhookEndpointRow,
@@ -12,6 +17,9 @@ import {
 } from "@coss/webhooks";
 import {
   DeletedWebhookEndpoint,
+  ListWebhookDeliveriesQuery,
+  WebhookDeliveryList,
+  WebhookDeliveryObject,
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
@@ -34,6 +42,13 @@ const EndpointIdParams = z.object({
   id: z.string().meta({
     description: "The webhook endpoint's id.",
     examples: ["whep_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+  }),
+});
+
+const DeliveryParams = EndpointIdParams.extend({
+  delivery_id: z.string().meta({
+    description: "The delivery's id.",
+    examples: ["whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"],
   }),
 });
 
@@ -163,6 +178,72 @@ export const deleteWebhookEndpointRoute = createRoute({
   },
 });
 
+const deliveryNotFound = errorDoc(
+  "No webhook endpoint with this id exists in the API key's environment, or the endpoint has " +
+    "no delivery with this id (`not_found`).",
+);
+
+export const listWebhookDeliveriesRoute = createRoute({
+  method: "get",
+  path: "/webhook_endpoints/{id}/deliveries",
+  operationId: "listWebhookDeliveries",
+  tags: ["Webhook endpoints"],
+  summary: "List an endpoint's deliveries",
+  description:
+    "The endpoint's delivery log, newest first: one delivery per event sent to it, with every " +
+    "HTTP attempt and the payload as sent. Pass the last `id` as `after` to get the next page " +
+    "while `has_more` is true. Deleting the endpoint deletes its log.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ webhook: ["read"] }), rateLimit("api.read")],
+  request: { params: EndpointIdParams, query: ListWebhookDeliveriesQuery },
+  responses: {
+    200: jsonDoc("A page of deliveries.", WebhookDeliveryList),
+    ...commonErrors,
+    404: endpointNotFound,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
+  },
+});
+
+export const getWebhookDeliveryRoute = createRoute({
+  method: "get",
+  path: "/webhook_endpoints/{id}/deliveries/{delivery_id}",
+  operationId: "getWebhookDelivery",
+  tags: ["Webhook endpoints"],
+  summary: "Retrieve a delivery",
+  description: "One delivery of the endpoint, with every HTTP attempt and the payload as sent.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ webhook: ["read"] }), rateLimit("api.read")],
+  request: { params: DeliveryParams },
+  responses: {
+    200: jsonDoc("The delivery.", WebhookDeliveryObject),
+    ...commonErrors,
+    404: deliveryNotFound,
+  },
+});
+
+export const retryWebhookDeliveryRoute = createRoute({
+  method: "post",
+  path: "/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
+  operationId: "retryWebhookDelivery",
+  tags: ["Webhook endpoints"],
+  summary: "Retry a delivery",
+  description:
+    "Queues a finished delivery (`succeeded` or `failed`) for one more attempt, made within " +
+    "seconds, signed with the endpoint's current secret and sent to its current URL. A delivery " +
+    "that is still `pending` is returned unchanged: it is already scheduled for " +
+    `\`next_attempt_at\` (automatic retries stop after ${MAX_ATTEMPTS} attempts).`,
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ webhook: ["update"] }), rateLimit("api.write")],
+  request: { params: DeliveryParams },
+  responses: {
+    200: jsonDoc("The delivery, now `pending`.", WebhookDeliveryObject),
+    ...commonErrors,
+    404: deliveryNotFound,
+  },
+});
+
+const DELIVERY_NOT_FOUND_MESSAGE = "This webhook endpoint has no delivery with this id.";
+
 export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
@@ -233,6 +314,50 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
     const row = await requireEndpoint(c.var.auth, c.req.valid("param").id);
     await deleteWebhookEndpoint({ organizationId: row.organizationId, id: row.id });
     return c.json({ object: "webhook_endpoint" as const, id: row.id, deleted: true as const }, 200);
+  });
+
+  router.openapi(listWebhookDeliveriesRoute, async (c) => {
+    const query = c.req.valid("query");
+    const endpoint = await requireEndpoint(c.var.auth, c.req.valid("param").id);
+    const page = await pageWebhookDeliveries({
+      organizationId: endpoint.organizationId,
+      endpointId: endpoint.id,
+      status: query.status,
+      eventId: query.event_id,
+      limit: query.limit,
+      after: query.after,
+    });
+    return c.json(
+      {
+        object: "list" as const,
+        data: page.deliveries.map(toWebhookDeliveryObject),
+        has_more: page.hasMore,
+      },
+      200,
+    );
+  });
+
+  router.openapi(getWebhookDeliveryRoute, async (c) => {
+    const { id, delivery_id } = c.req.valid("param");
+    const endpoint = await requireEndpoint(c.var.auth, id);
+    const delivery = await getWebhookDelivery({
+      organizationId: endpoint.organizationId,
+      endpointId: endpoint.id,
+      id: delivery_id,
+    });
+    if (!delivery) throw notFound(DELIVERY_NOT_FOUND_MESSAGE);
+    return c.json(toWebhookDeliveryObject(delivery), 200);
+  });
+
+  router.openapi(retryWebhookDeliveryRoute, async (c) => {
+    const { id, delivery_id } = c.req.valid("param");
+    const endpoint = await requireEndpoint(c.var.auth, id);
+    const target = { organizationId: endpoint.organizationId, endpointId: endpoint.id };
+    // Pending deliveries are unchanged; requests after completion can queue another replay.
+    await retryWebhookDelivery({ ...target, id: delivery_id });
+    const delivery = await getWebhookDelivery({ ...target, id: delivery_id });
+    if (!delivery) throw notFound(DELIVERY_NOT_FOUND_MESSAGE);
+    return c.json(toWebhookDeliveryObject(delivery), 200);
   });
 
   return router;
