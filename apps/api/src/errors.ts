@@ -170,6 +170,7 @@ function fromEmailError(error: EmailError): ApiError {
         message: error.message,
       });
     case "email_not_cancelable":
+    case "email_not_reschedulable":
       return invalidRequest(error.code, error.message);
   }
 }

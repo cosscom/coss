@@ -15,6 +15,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { emailRuntime } from "@/lib/email-runtime";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 
@@ -48,6 +49,11 @@ export async function addDomainAction(
       },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "domain.created",
+      target: { type: "domain", id: domain.id, label: domain.name },
+    });
     redirect(`/${context.organization.slug}/domains/${domain.id}`);
   });
 }
@@ -166,6 +172,11 @@ export async function deleteDomainAction(
       { organizationId: domain.organizationId, id: domain.id },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "domain.deleted",
+      target: { type: "domain", id: domain.id, label: domain.name },
+    });
     redirect(`/${context.organization.slug}/domains`);
   });
 }

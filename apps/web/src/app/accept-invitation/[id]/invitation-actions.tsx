@@ -29,7 +29,7 @@ export function SendVerificationEmailButton(props: { email: string; callbackURL:
       </Button>
       {sent ? (
         <p className="text-muted-foreground text-sm">
-          In development the link is logged to the web server console.
+          Check your inbox for the link. In development it is logged to the web server console.
         </p>
       ) : null}
       <FormError message={error} />

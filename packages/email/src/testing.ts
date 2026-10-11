@@ -58,6 +58,7 @@ export function dispatchingEmailService(opts: {
     dispatch: service.dispatch,
     dispatchDue: service.dispatchDue,
     cancel: service.cancel,
+    reschedule: service.reschedule,
     replay: service.replay,
     replayBatch: service.replayBatch,
     async sendBatch(input) {

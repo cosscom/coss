@@ -44,6 +44,7 @@ export {
   ingestProviderEvents,
   recordProviderEvent,
 } from "./events.ts";
+export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DomainIdentity,
   type DomainIdentityState,
@@ -83,7 +84,6 @@ export {
   type SendingCounts,
   sendingCounts,
 } from "./reputation-checks.ts";
-export { emailReputationNotifier, notificationEnvironment } from "./reputation-notifier.ts";
 export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,
@@ -157,6 +157,9 @@ export {
   type ParsedEmailAddress,
   parseEmailAddress,
   RESERVED_HEADERS,
+  RescheduleEmailRequest,
+  type RescheduleEmailRequestInput,
+  type RescheduleEmailRequestOutput,
   SendEmailBatchRequest,
   type SendEmailBatchRequestInput,
   type SendEmailBatchRequestOutput,
@@ -192,6 +195,7 @@ export {
   type EmailService,
   type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,
+  rescheduleEmail,
   type SendEmailBatchInput,
   type SendEmailInput,
   type SendEnvironment,

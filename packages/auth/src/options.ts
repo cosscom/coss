@@ -14,11 +14,13 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { admin, organization, twoFactor } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
+import { recordOrgAudit } from "./audit.ts";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
+import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 import { resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
@@ -45,14 +47,6 @@ export function generateAuthId({ model }: { model: string }): string {
     return newId("id");
   }
   return newId(prefix);
-}
-
-/** Dev-only "email" delivery: logs links to the server console. Refuses to run in production. */
-function logDevEmail(kind: string, to: string, url: string): void {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(`[auth] No email delivery configured for "${kind}" in production.`);
-  }
-  console.info(`\n[auth] ${kind} for ${to}:\n  ${url}\n`);
 }
 
 /** Validates the name/slug of an organization being created or updated (absent = unchanged). */
@@ -124,19 +118,34 @@ export const authOptions = {
     requireEmailVerification: false,
     // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
     // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
+    // Account emails are queued (`./emails.ts`) and sent by the worker through COSS itself.
     sendResetPassword: async ({ user, url }) => {
-      logDevEmail("Reset password", user.email, url);
+      await enqueueAuthEmail({
+        kind: "reset_password",
+        to: user.email,
+        userId: user.id,
+        url,
+        expiresAt: new Date(Date.now() + RESET_PASSWORD_LINK_TTL_S * 1000),
+      });
     },
-    // Reset links expire after Better Auth's default of one hour. A reset signs out every session,
-    // including any opened with the old (possibly compromised) password.
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_LINK_TTL_S,
+    // A reset signs out every session, including any opened with the old (possibly compromised)
+    // password.
     revokeSessionsOnPasswordReset: true,
   },
   emailVerification: {
     sendOnSignUp: true,
     // Off: a verification link must never create a session, which would skip the TOTP challenge.
     autoSignInAfterVerification: false,
+    expiresIn: VERIFICATION_LINK_TTL_S,
     sendVerificationEmail: async ({ user, url }) => {
-      logDevEmail("Verify email", user.email, url);
+      await enqueueAuthEmail({
+        kind: "verify_email",
+        to: user.email,
+        userId: user.id,
+        url,
+        expiresAt: new Date(Date.now() + VERIFICATION_LINK_TTL_S * 1000),
+      });
     },
   },
   // Block these HTTP routes (server-side `auth.api.*` calls still work). API keys are only
@@ -262,9 +271,21 @@ export const authOptions = {
       // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
       // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
       requireEmailVerificationOnInvitation: true,
-      sendInvitationEmail: async ({ id, email, organization: org, role }) => {
-        const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
-        logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
+      sendInvitationEmail: async ({ id, email, organization: org, role, invitation, inviter }) => {
+        await enqueueAuthEmail({
+          kind: "invitation",
+          to: email,
+          url: `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`,
+          expiresAt: invitation.expiresAt,
+          data: {
+            invitationId: id,
+            organizationName: org.name,
+            inviterName: inviter.user.name,
+            inviterEmail: inviter.user.email,
+            role,
+            expiresAt: invitation.expiresAt.toISOString(),
+          },
+        });
       },
       organizationHooks: {
         beforeCreateOrganization: async ({ organization: org }) => {
@@ -284,6 +305,23 @@ export const authOptions = {
         },
         beforeAcceptInvitation: async ({ organization: org }) => {
           await assertOrgNotSuspended(org.id);
+        },
+        afterAcceptInvitation: async ({ invitation, user, organization: org }) => {
+          await recordOrgAudit({
+            organizationId: org.id,
+            actor: { type: "user", id: user.id, label: user.email },
+            action: "invitation.accepted",
+            target: { type: "invitation", id: invitation.id, label: invitation.email },
+            metadata: { role: invitation.role },
+          });
+        },
+        afterRejectInvitation: async ({ invitation, user, organization: org }) => {
+          await recordOrgAudit({
+            organizationId: org.id,
+            actor: { type: "user", id: user.id, label: user.email },
+            action: "invitation.rejected",
+            target: { type: "invitation", id: invitation.id, label: invitation.email },
+          });
         },
         // Better Auth cancels invitations in any status, which would rewrite an accepted (or
         // already canceled) one; only pending invitations can be canceled.
