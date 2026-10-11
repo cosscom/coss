@@ -5,6 +5,7 @@ import {
   API_VERSIONS,
   Coss,
   type CossError,
+  type EmailBatch,
   type EmailEvent,
   type EmailLink,
   type List,
@@ -136,6 +137,35 @@ describe("coss.email.send", () => {
     expect(calls[0]?.headers.get("idempotency-key")).not.toBe(
       calls[1]?.headers.get("idempotency-key"),
     );
+  });
+});
+
+describe("coss.email.sendBatch", () => {
+  test("POSTs the emails as one batch with one idempotency key", async () => {
+    const batch: EmailBatch = {
+      object: "email_batch",
+      id: "batch_1",
+      data: [sampleEmail],
+      created_at: sampleEmail.created_at,
+    };
+    const { fetch, calls } = mockFetch(json(202, batch));
+    const second = { ...params, to: "other@example.com" };
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.sendBatch([params, second], {
+      idempotencyKey: "digest-2026-10-10",
+    });
+
+    expect(result).toEqual({ data: batch, error: null });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/batch");
+    expect(JSON.parse(calls[0]?.body ?? "")).toEqual({ emails: [params, second] });
+    expect(calls[0]?.headers.get("idempotency-key")).toBe("digest-2026-10-10");
+  });
+
+  test("generates an idempotency key when none is given", async () => {
+    const { fetch, calls } = mockFetch(json(202, { object: "email_batch", data: [] }));
+    await new Coss({ apiKey: API_KEY, fetch }).email.sendBatch([params]);
+    expect(calls[0]?.headers.get("idempotency-key")).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
 

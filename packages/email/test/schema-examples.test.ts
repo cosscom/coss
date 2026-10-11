@@ -12,6 +12,7 @@ import {
   DomainList,
   DomainObject,
   DomainRecordObject,
+  EmailBatchObject,
   EmailEvent,
   EmailEventData,
   EmailEventList,
@@ -22,6 +23,7 @@ import {
   EmailTracking,
   EmailWebhookEvent,
   ImportSuppressionsRequest,
+  SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
   SuppressionCheck,
@@ -31,7 +33,9 @@ import {
 
 const SCHEMAS: Record<string, z.ZodType> = {
   SendEmailRequest,
+  SendEmailBatchRequest,
   Email: EmailObject,
+  EmailBatch: EmailBatchObject,
   EmailLink,
   EmailLinkList,
   EmailTracking,

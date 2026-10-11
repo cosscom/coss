@@ -162,6 +162,13 @@
       "when": 1791687722453,
       "tag": "0022_known_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791688159628,
+      "tag": "0023_wooden_warhawk",
+      "breakpoints": true
     }
   ]
 }

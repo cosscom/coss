@@ -186,6 +186,40 @@ describe("coss SDK against the API", () => {
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
+  test("sendBatch sends every email once, even when retried with the same key", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const emails = [
+      { from: "hello@acme.com", to: "a@example.com", subject: "Hi", text: "Hi" },
+      { from: "hello@acme.com", to: "b@example.com", subject: "Hi", text: "Hi" },
+    ];
+    const idempotencyKey = crypto.randomUUID();
+
+    const first = await coss.email.sendBatch(emails, { idempotencyKey });
+    const second = await coss.email.sendBatch(emails, { idempotencyKey });
+
+    expect(first.error).toBeNull();
+    expect(first.data).toMatchObject({ object: "email_batch" });
+    expect(first.data?.data.map((email) => [email.to, email.batch_id])).toEqual([
+      [["a@example.com"], first.data?.id ?? "missing"],
+      [["b@example.com"], first.data?.id ?? "missing"],
+    ]);
+    expect(second.data?.id).toBe(first.data?.id ?? "missing");
+    await dispatch();
+    expect(sandboxProvider.sent).toHaveLength(2);
+
+    const invalid = await coss.email.sendBatch([
+      { from: "hello@acme.com", to: "a@example.com", subject: "Hi", text: "Hi" },
+      { from: "hello@acme.com", to: "nope", subject: "Hi", text: "Hi" },
+    ]);
+    expect(invalid.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "validation_error",
+    });
+    expect(invalid.error?.issues?.map((issue) => issue.path)).toEqual(["emails.1.to"]);
+  });
+
   test("an invalid key maps to authentication_error with the request id", async () => {
     const { app } = createTestApp();
     const coss = clientFor(app, `coss_test_${"z".repeat(64)}`, { maxRetries: 0 });

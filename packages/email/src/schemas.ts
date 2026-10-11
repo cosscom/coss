@@ -16,6 +16,8 @@ export const MAX_SCHEDULE_AHEAD_MS = 30 * 24 * 60 * 60 * 1000;
 export const MAX_ATTACHMENTS = 20;
 /** Decoded bytes across every attachment of one email (SES caps the whole message at 40 MB). */
 export const MAX_ATTACHMENTS_BYTES = 25 * 1024 * 1024;
+/** Emails per `POST /v1/emails/batch` request. */
+export const MAX_BATCH_EMAILS = 100;
 const FILENAME_MAX_LENGTH = 255;
 
 const ADDRESS_MAX_LENGTH = 254;
@@ -535,6 +537,45 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
 export type SendEmailRequestInput = z.input<typeof SendEmailRequest>;
 export type SendEmailRequestOutput = z.output<typeof SendEmailRequest>;
 
+export const SendEmailBatchRequest = z
+  .strictObject({
+    emails: z
+      .array(SendEmailRequest)
+      .min(1)
+      .max(MAX_BATCH_EMAILS)
+      .meta({
+        description:
+          `Up to ${MAX_BATCH_EMAILS} emails, each accepted by \`POST /v1/emails\`. The batch is ` +
+          "accepted or rejected as a whole.",
+      }),
+  })
+  .meta({
+    id: "SendEmailBatchRequest",
+    examples: [
+      {
+        emails: [
+          {
+            from: "Acme <notifications@acme.com>",
+            to: "ada@example.com",
+            subject: "Your weekly summary",
+            html: "<p>Hi Ada, here is your week.</p>",
+            category: "digest",
+          },
+          {
+            from: "Acme <notifications@acme.com>",
+            to: "grace@example.com",
+            subject: "Your weekly summary",
+            html: "<p>Hi Grace, here is your week.</p>",
+            category: "digest",
+          },
+        ],
+      },
+    ],
+  });
+
+export type SendEmailBatchRequestInput = z.input<typeof SendEmailBatchRequest>;
+export type SendEmailBatchRequestOutput = z.output<typeof SendEmailBatchRequest>;
+
 /** Distinct addresses across to, cc and bcc: what send quotas count. */
 export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
   return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
@@ -904,6 +945,10 @@ export const EmailObject = z
       .datetime()
       .nullable()
       .meta({ description: "When the email was scheduled to be sent; `null` if it was not." }),
+    batch_id: z
+      .string()
+      .nullable()
+      .meta({ description: "The batch that sent the email; `null` if it was sent on its own." }),
   })
   .meta({
     id: "Email",
@@ -930,11 +975,64 @@ export const EmailObject = z
         created_at: "2026-10-10T12:00:00.000Z",
         sent_at: "2026-10-10T12:00:01.000Z",
         scheduled_at: null,
+        batch_id: null,
       },
     ],
   });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
+
+const BATCH_EXAMPLE_ID = "batch_01k8d0n6x5f3w2e1r9t7y4u6i8";
+
+export const EmailBatchObject = z
+  .object({
+    object: z.literal("email_batch"),
+    id: z.string().meta({ examples: [BATCH_EXAMPLE_ID] }),
+    data: z
+      .array(EmailObject)
+      .meta({ description: "The batch's emails, in the order of the request." }),
+    created_at: z.iso.datetime(),
+  })
+  .meta({
+    id: "EmailBatch",
+    examples: [
+      {
+        object: "email_batch",
+        id: BATCH_EXAMPLE_ID,
+        data: [
+          {
+            object: "email",
+            id: EMAIL_ID_EXAMPLE,
+            from: "Acme <notifications@acme.com>",
+            to: ["ada@example.com"],
+            cc: [],
+            bcc: [],
+            reply_to: [],
+            subject: "Your weekly summary",
+            html: "<p>Hi Ada, here is your week.</p>",
+            text: null,
+            headers: {},
+            tags: [],
+            category: "digest",
+            status: "queued",
+            recipients: [
+              { address: "ada@example.com", type: "to", status: "queued", last_event_at: null },
+            ],
+            sandbox: false,
+            tracking: TRACKING_EXAMPLE,
+            attachments: [],
+            created_at: "2026-10-10T12:00:00.000Z",
+            sent_at: null,
+            scheduled_at: null,
+            batch_id: BATCH_EXAMPLE_ID,
+          },
+        ],
+        created_at: "2026-10-10T12:00:00.000Z",
+      },
+    ],
+  });
+
+export type EmailBatchObjectOutput = z.output<typeof EmailBatchObject>;
 
 export const DOMAIN_STATUSES = [
   "pending",

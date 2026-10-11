@@ -106,6 +106,34 @@ export const emailStatus = pgEnum("email_status", [
 
 export type EmailTag = { name: string; value: string };
 
+// One `POST /v1/emails/batch` request. Holds the batch's idempotency key; its emails' keys are NULL.
+export const emailBatch = pgTable(
+  "email_batch",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailBatch)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // No FK: Better Auth hard-deletes expired keys, and email history must survive that.
+    apiKeyId: text("api_key_id"),
+    idempotencyKey: text("idempotency_key"),
+    requestHash: text("request_hash"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_batch_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
+    unique("email_batch_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
+    unique("email_batch_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
 export const email = pgTable(
   "email",
   {
@@ -147,6 +175,9 @@ export const email = pgTable(
     errorMessage: text("error_message"),
     idempotencyKey: text("idempotency_key"),
     requestHash: text("request_hash"),
+    // Set for emails sent by `POST /v1/emails/batch`; the index is the email's position in it.
+    batchId: text("batch_id"),
+    batchIndex: integer("batch_index"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
@@ -159,6 +190,12 @@ export const email = pgTable(
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
+    foreignKey({
+      name: "email_batch_fk",
+      columns: [t.batchId, t.organizationId],
+      foreignColumns: [emailBatch.id, emailBatch.organizationId],
+    }),
+    index("email_batch_idx").on(t.batchId, t.batchIndex).where(sql`${t.batchId} is not null`),
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),

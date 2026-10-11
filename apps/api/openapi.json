@@ -173,6 +173,13 @@
             ],
             "format": "date-time",
             "description": "When the email was scheduled to be sent; `null` if it was not."
+          },
+          "batch_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The batch that sent the email; `null` if it was sent on its own."
           }
         },
         "required": [
@@ -196,7 +203,8 @@
           "tracking",
           "created_at",
           "sent_at",
-          "scheduled_at"
+          "scheduled_at",
+          "batch_id"
         ],
         "examples": [
           {
@@ -243,7 +251,8 @@
             "attachments": [],
             "created_at": "2026-10-10T12:00:00.000Z",
             "sent_at": "2026-10-10T12:00:01.000Z",
-            "scheduled_at": null
+            "scheduled_at": null,
+            "batch_id": null
           }
         ]
       },
@@ -678,6 +687,129 @@
         },
         "additionalProperties": false,
         "description": "Overrides the environment's tracking settings (its default, or the rule for this email's category) for this email. Omitted fields keep the configured setting."
+      },
+      "EmailBatch": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email_batch"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            },
+            "description": "The batch's emails, in the order of the request."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "data",
+          "created_at"
+        ],
+        "examples": [
+          {
+            "object": "email_batch",
+            "id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
+            "data": [
+              {
+                "object": "email",
+                "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "from": "Acme <notifications@acme.com>",
+                "to": [
+                  "ada@example.com"
+                ],
+                "cc": [],
+                "bcc": [],
+                "reply_to": [],
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Ada, here is your week.</p>",
+                "text": null,
+                "headers": {},
+                "tags": [],
+                "category": "digest",
+                "status": "queued",
+                "recipients": [
+                  {
+                    "address": "ada@example.com",
+                    "type": "to",
+                    "status": "queued",
+                    "last_event_at": null
+                  }
+                ],
+                "sandbox": false,
+                "tracking": {
+                  "opens": false,
+                  "clicks": false,
+                  "open_count": 0,
+                  "first_opened_at": null,
+                  "last_opened_at": null,
+                  "click_count": 0,
+                  "first_clicked_at": null,
+                  "last_clicked_at": null
+                },
+                "attachments": [],
+                "created_at": "2026-10-10T12:00:00.000Z",
+                "sent_at": null,
+                "scheduled_at": null,
+                "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"
+              }
+            ],
+            "created_at": "2026-10-10T12:00:00.000Z"
+          }
+        ]
+      },
+      "SendEmailBatchRequest": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SendEmailRequest"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Up to 100 emails, each accepted by `POST /v1/emails`. The batch is accepted or rejected as a whole."
+          }
+        },
+        "required": [
+          "emails"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "emails": [
+              {
+                "from": "Acme <notifications@acme.com>",
+                "to": "ada@example.com",
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Ada, here is your week.</p>",
+                "category": "digest"
+              },
+              {
+                "from": "Acme <notifications@acme.com>",
+                "to": "grace@example.com",
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Grace, here is your week.</p>",
+                "category": "digest"
+              }
+            ]
+          }
+        ]
       },
       "EmailEventList": {
         "type": "object",
@@ -2866,6 +2998,314 @@
           },
           "429": {
             "description": "Too many requests with this API key (`rate_limited`), or the email's recipients exceed the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without `Retry-After` the email has more recipients than the quota allows at once.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/emails/batch": {
+      "post": {
+        "operationId": "sendEmailBatch",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Send a batch of emails",
+        "description": "Queues up to 100 emails in one request. Each email is handled exactly as by `POST /v1/emails` (sender checks, suppressions, scheduling, attachments, tracking), but the batch is all or nothing: if any email is invalid, or any `from` is not a verified domain (live keys), nothing is stored and the error names the email (e.g. `emails.3.to`). One `Idempotency-Key` covers the whole batch. The emails' recipients are charged against the send quota together, so a batch with more recipients than the quota allows at once is refused (`quota_exceeded` without `Retry-After`): split it. The request body shares the 40 MB limit of a single send.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
+              "examples": [
+                "welcome-user-123"
+              ]
+            },
+            "required": false,
+            "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
+            "name": "Idempotency-Key",
+            "in": "header"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The batch, accepted for delivery, with its emails in request order. A replay returns the original batch with the emails' current statuses.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBatch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its organization is suspended (`organization_suspended`), live sending is suspended (`account_suspended`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Requests with this `Idempotency-Key` are racing for an expired key (`request_in_progress`). Retry after `Retry-After` seconds.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 40 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`, see `issues`), a `from` domain is not a verified domain of the organization (`domain_not_verified`, live keys only; `param` names the email), or the `Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or the batch's recipients exceed the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without `Retry-After` the batch has more recipients than the quota allows at once.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

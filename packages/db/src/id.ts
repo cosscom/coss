@@ -21,6 +21,7 @@ export const ID_PREFIXES = {
   project: "proj",
   environment: "env",
   email: "email",
+  emailBatch: "batch",
   emailRecipient: "rcpt",
   emailAttachment: "att",
   emailEvent: "evt",

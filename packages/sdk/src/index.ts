@@ -22,6 +22,7 @@ export type {
   Email,
   EmailAttachment,
   EmailAttachmentParams,
+  EmailBatch,
   EmailEvent,
   EmailEventData,
   EmailEventType,

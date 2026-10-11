@@ -21,6 +21,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.send",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
   },
+  "POST /v1/emails/batch": {
+    method: "email.sendBatch",
+    args: (request) => [tsValue(batchEmails(request.body)), requestOptions(request)],
+  },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/emails/{id}": {
     method: "email.get",
@@ -157,6 +161,12 @@ function queryParams(request: SampleRequest): string | undefined {
     })
     .filter(([, value]) => value !== undefined && value !== "");
   return entries.length > 0 ? tsValue(Object.fromEntries(entries)) : undefined;
+}
+
+/** `sendBatch` takes the body's `emails` array itself, not `{ emails }`. */
+function batchEmails(body: unknown): unknown[] {
+  const emails = body !== null && typeof body === "object" && "emails" in body ? body.emails : [];
+  return Array.isArray(emails) ? emails : [];
 }
 
 function requestOptions(request: SampleRequest): string | undefined {

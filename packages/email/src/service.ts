@@ -19,8 +19,9 @@ import type {
   ProviderEvent,
 } from "./provider.ts";
 import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
-import { hashSendRequest } from "./request-hash.ts";
+import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
 import {
+  type EmailBatchObjectOutput,
   type EmailObjectOutput,
   parseEmailAddress,
   type SendEmailRequestOutput,
@@ -48,11 +49,27 @@ export type SendEmailInput = {
   idempotencyRetentionMs?: number;
 };
 
+export type SendEmailBatchInput = {
+  environment: SendEnvironment;
+  apiKeyId: string | null;
+  emails: SendEmailRequestOutput[];
+  idempotencyKey?: string | null;
+};
+
 export type EmailService = {
   /** Read a matching replay without creating or dispatching an email. */
   replay(input: SendEmailInput): Promise<EmailObjectOutput | null>;
   /** Stores the email; immediate sends enqueue a job, future sends wait as `scheduled`. */
   send(input: SendEmailInput): Promise<{ email: EmailObjectOutput; replayed: boolean }>;
+  /** Read a matching batch replay without creating or dispatching anything. */
+  replayBatch(input: SendEmailBatchInput): Promise<EmailBatchObjectOutput | null>;
+  /**
+   * Stores every email of the batch, as `send` would, in one transaction: all of them or none.
+   * One idempotency key covers the whole batch.
+   */
+  sendBatch(
+    input: SendEmailBatchInput,
+  ): Promise<{ batch: EmailBatchObjectOutput; replayed: boolean }>;
   /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
   dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
   /** Cancels a scheduled email; an already canceled one is returned as is. */
@@ -86,7 +103,8 @@ export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
-const { email, emailLink, emailRecipient, environment, organizationSuspension } = schema;
+const { email, emailBatch, emailLink, emailRecipient, environment, organizationSuspension } =
+  schema;
 
 function organizationActive() {
   return notExists(
@@ -543,25 +561,138 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const [existing] = await db
       .select()
       .from(email)
-      .where(
-        and(
-          eq(email.organizationId, environment.organizationId),
-          eq(email.environmentId, environment.environmentId),
-          eq(email.idempotencyKey, idempotencyKey),
-        ),
-      )
+      .where(sameEmailKey(environment, idempotencyKey))
       .limit(1);
-    if (
-      !existing ||
-      existing.requestHash !== requestHash ||
-      Date.now() - existing.createdAt.getTime() > retentionMs
-    ) {
-      return null;
-    }
+    if (!existing || !isReplayOf(existing, requestHash, retentionMs)) return null;
     const [object] = await toEmailObjects(environment.organizationId, [
       { email: existing, sandbox: environment.mode === "sandbox" },
     ]);
     return object ?? null;
+  }
+
+  /** The batch an unexpired idempotency key with the same request hash points at. */
+  async function findBatchReplay(
+    environment: SendEnvironment,
+    idempotencyKey: string,
+    requestHash: string | null,
+  ): Promise<EmailBatchObjectOutput | null> {
+    const [existing] = await db
+      .select()
+      .from(emailBatch)
+      .where(sameBatchKey(environment, idempotencyKey))
+      .limit(1);
+    if (!existing || !isReplayOf(existing, requestHash)) return null;
+    return toEmailBatchObject(existing, environment.mode === "sandbox");
+  }
+
+  /**
+   * Everything about one email that is decided before its insert transaction (which may be
+   * retried): tracking, status, row values and decoded attachments.
+   */
+  async function prepareSend(
+    environment: SendEnvironment,
+    apiKeyId: string | null,
+    params: SendEmailRequestOutput,
+    trackingCache: Map<string, Promise<{ opens: boolean; clicks: boolean }>>,
+  ): Promise<PreparedSend> {
+    const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
+    // A time that is not in the future sends now (still recorded as `scheduled_at`).
+    const scheduled = scheduledAt !== null && scheduledAt.getTime() > Date.now();
+
+    // Resolved once, at send: later changes to the settings never affect a stored email.
+    const trackingKey = canonicalJson([params.category ?? null, params.tracking ?? null]);
+    let resolving = trackingCache.get(trackingKey);
+    if (!resolving) {
+      resolving = resolveTracking(db, environment, params.category ?? null, params.tracking);
+      trackingCache.set(trackingKey, resolving);
+    }
+    const tracking = await resolving;
+    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
+      throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    }
+
+    return {
+      // Tenancy columns always come from the authenticated environment, never from the request.
+      values: {
+        organizationId: environment.organizationId,
+        projectId: environment.projectId,
+        environmentId: environment.environmentId,
+        apiKeyId,
+        status: scheduled ? "scheduled" : "queued",
+        scheduledAt,
+        from: params.from,
+        to: params.to,
+        cc: params.cc,
+        bcc: params.bcc,
+        replyTo: params.reply_to,
+        subject: params.subject,
+        html: params.html,
+        text: params.text,
+        headers: params.headers,
+        tags: params.tags,
+        category: params.category ?? null,
+        trackOpens: tracking.opens,
+        trackClicks: tracking.clicks,
+      },
+      scheduled,
+      // Decoded once, outside the (retried) insert transaction.
+      attachments: prepareAttachments(params),
+    };
+  }
+
+  /**
+   * Inserts a prepared email and, only if this request won the insert, its recipients and
+   * dispatch job: atomically, so a stored email always has its recipient rows and is always
+   * dispatched. Recipients on the suppression list are stored `suppressed` (with an
+   * `email.suppressed` event) and never handed to the provider.
+   */
+  async function insertPrepared(
+    tx: Transaction,
+    environment: SendEnvironment,
+    prepared: PreparedSend,
+    extra: Pick<
+      typeof email.$inferInsert,
+      "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
+    >,
+  ): Promise<EmailRow | undefined> {
+    const tracked = prepared.values.trackOpens || prepared.values.trackClicks;
+    const [row] = await tx
+      .insert(email)
+      .values({
+        ...prepared.values,
+        ...extra,
+        trackingToken: tracked ? newTrackingToken() : null,
+      })
+      .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
+      .returning();
+    if (!row) return row;
+    const recipients = recipientRows(row);
+    const suppressed = await suppressedRecipients(
+      tx,
+      environment,
+      recipients.map((recipient) => recipient.address),
+      row.category,
+    );
+    await tx.insert(emailRecipient).values(recipients);
+    await insertAttachments(tx, row, prepared.attachments);
+    if (row.status === "scheduled") {
+      await recordProviderEvent(
+        tx,
+        cossEvent(row, {
+          type: "email.scheduled",
+          providerEventType: "Scheduled",
+          sourceId: "scheduled",
+          data: {},
+        }),
+      );
+    }
+    for (const [address, entry] of suppressed) {
+      await recordProviderEvent(tx, suppressedEvent(row, address, entry));
+    }
+    if (!prepared.scheduled) {
+      await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
+    }
+    return row;
   }
 
   async function send(
@@ -572,47 +703,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
-    const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
-    // A time that is not in the future sends now (still recorded as `scheduled_at`).
-    const scheduled = scheduledAt !== null && scheduledAt.getTime() > Date.now();
-
-    // Resolved once, at send: later changes to the settings never affect a stored email.
-    const tracking = await resolveTracking(
-      db,
-      environment,
-      params.category ?? null,
-      params.tracking,
-    );
-    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
-      throw new Error("Tracking requires the email service's trackingBaseUrl.");
-    }
-
-    // Tenancy columns always come from the authenticated environment, never from the request.
-    const values = {
-      organizationId: environment.organizationId,
-      projectId: environment.projectId,
-      environmentId: environment.environmentId,
-      apiKeyId: input.apiKeyId,
-      status: scheduled ? "scheduled" : "queued",
-      scheduledAt,
-      from: params.from,
-      to: params.to,
-      cc: params.cc,
-      bcc: params.bcc,
-      replyTo: params.reply_to,
-      subject: params.subject,
-      html: params.html,
-      text: params.text,
-      headers: params.headers,
-      tags: params.tags,
-      category: params.category ?? null,
-      trackOpens: tracking.opens,
-      trackClicks: tracking.clicks,
-      idempotencyKey,
-      requestHash,
-    } satisfies typeof email.$inferInsert;
-    // Decoded once, outside the (retried) insert transaction.
-    const attachments = prepareAttachments(params);
+    const prepared = await prepareSend(environment, input.apiKeyId, params, new Map());
 
     if (!sandbox) {
       try {
@@ -631,101 +722,133 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       }
     }
 
-    // Inserts the email and, only if this request won the insert, its recipients and dispatch job:
-    // atomically, so a stored email always has its recipient rows and is always dispatched.
-    // Recipients on the suppression list are stored `suppressed` (with an `email.suppressed`
-    // event) and never handed to the provider.
-    const insertEmail = async (tx: Transaction): Promise<EmailRow | undefined> => {
-      const [row] = await tx
-        .insert(email)
-        .values({
-          ...values,
-          trackingToken: tracking.opens || tracking.clicks ? newTrackingToken() : null,
-        })
-        .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
-        .returning();
-      if (!row) return row;
-      const recipients = recipientRows(row);
-      const suppressed = await suppressedRecipients(
-        tx,
-        environment,
-        recipients.map((recipient) => recipient.address),
-        row.category,
-      );
-      await tx.insert(emailRecipient).values(recipients);
-      await insertAttachments(tx, row, attachments);
-      if (row.status === "scheduled") {
-        await recordProviderEvent(
-          tx,
-          cossEvent(row, {
-            type: "email.scheduled",
-            providerEventType: "Scheduled",
-            sourceId: "scheduled",
-            data: {},
-          }),
-        );
-      }
-      for (const [address, entry] of suppressed) {
-        await recordProviderEvent(tx, suppressedEvent(row, address, entry));
-      }
-      if (!scheduled) {
-        await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
-      }
-      return row;
-    };
-    const insertOnce = () => db.transaction((tx) => insertEmail(tx));
+    const insertEmail = (tx: Transaction) =>
+      insertPrepared(tx, environment, prepared, { idempotencyKey, requestHash });
     const stored = async (row: EmailRow, replayed: boolean) => {
       const [object] = await toEmailObjects(environment.organizationId, [{ email: row, sandbox }]);
       if (!object) throw new Error("Email serialization produced no object.");
       return { email: object, replayed };
     };
 
-    if (!idempotencyKey) {
-      const row = await insertOnce();
+    if (!idempotencyKey || !requestHash) {
+      const row = await db.transaction((tx) => insertEmail(tx));
       if (!row) throw new Error("Email insert returned no row.");
       return stored(row, false);
     }
 
-    const sameKey = and(
-      eq(email.organizationId, environment.organizationId),
-      eq(email.environmentId, environment.environmentId),
-      eq(email.idempotencyKey, idempotencyKey),
-    );
-    // The unique (environment_id, idempotency_key) index arbitrates races: exactly one request
-    // inserts, every other one waits for its commit, sees `DO NOTHING` and replays the winner's
-    // row (whatever its status: a queued email is replayed as queued).
-    let inserted = await insertOnce();
-    for (let attempt = 1; !inserted; attempt++) {
-      if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
-        throw new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly.");
-      }
-      const [existing] = await db.select().from(email).where(sameKey).limit(1);
-      if (!existing) {
-        // Its owner expired and released the key between our insert and select.
-        inserted = await insertOnce();
-        continue;
-      }
-      if (Date.now() - existing.createdAt.getTime() > retentionMs) {
-        // Expired: move the key to a new email atomically. The compare-and-set on the old row
-        // makes concurrent requests with the same expired key queue up behind each other.
-        inserted = await db.transaction(async (tx) => {
-          await tx
-            .update(email)
-            .set({ idempotencyKey: null })
-            .where(and(eq(email.id, existing.id), eq(email.idempotencyKey, idempotencyKey)));
-          return insertEmail(tx);
-        });
-        continue;
-      }
-      if (existing.requestHash !== requestHash) {
-        throw new EmailError(
-          "idempotency_key_reused",
-          "This idempotency key was already used with a different request body.",
-        );
-      }
-      return stored(existing, true);
+    const { row, replayed } = await withIdempotencyKey({
+      requestHash,
+      retentionMs,
+      insert: insertEmail,
+      existing: async () => {
+        const [existing] = await db
+          .select()
+          .from(email)
+          .where(sameEmailKey(environment, idempotencyKey))
+          .limit(1);
+        return existing;
+      },
+      release: (tx, existing) =>
+        tx
+          .update(email)
+          .set({ idempotencyKey: null })
+          .where(and(eq(email.id, existing.id), eq(email.idempotencyKey, idempotencyKey))),
+    });
+    return stored(row, replayed);
+  }
+
+  async function sendBatch(
+    input: SendEmailBatchInput,
+  ): Promise<{ batch: EmailBatchObjectOutput; replayed: boolean }> {
+    const { environment, emails: items } = input;
+    const sandbox = environment.mode === "sandbox";
+    const idempotencyKey = input.idempotencyKey || null;
+    const requestHash = idempotencyKey ? hashSendBatchRequest(items) : null;
+    const trackingCache = new Map<string, Promise<{ opens: boolean; clicks: boolean }>>();
+    const prepared: PreparedSend[] = [];
+    for (const params of items) {
+      prepared.push(await prepareSend(environment, input.apiKeyId, params, trackingCache));
     }
-    return stored(inserted, false);
+
+    if (!sandbox) {
+      // Every sender is checked before anything is stored: the batch is accepted as a whole.
+      const senders = new Map<string, number>();
+      items.forEach((params, index) => {
+        if (!senders.has(params.from)) senders.set(params.from, index);
+      });
+      try {
+        for (const [from, index] of senders) {
+          try {
+            await authorizeLiveSender({
+              provider: opts.liveProvider.name,
+              organizationId: environment.organizationId,
+              from,
+            });
+          } catch (error) {
+            if (error instanceof EmailError && error.code === "domain_not_verified") {
+              throw new EmailError(error.code, error.message, { param: `emails.${index}.from` });
+            }
+            throw error;
+          }
+        }
+      } catch (error) {
+        // A retry of a request that already succeeded still replays, even if a domain changed since.
+        const replay =
+          idempotencyKey && (await findBatchReplay(environment, idempotencyKey, requestHash));
+        if (replay) return { batch: replay, replayed: true };
+        throw error;
+      }
+    }
+
+    // The batch row and every email (with its recipients, events and dispatch job) commit
+    // together: a batch is never partially stored.
+    const insertBatch = async (tx: Transaction): Promise<EmailBatchRow | undefined> => {
+      const [batch] = await tx
+        .insert(emailBatch)
+        .values({
+          organizationId: environment.organizationId,
+          projectId: environment.projectId,
+          environmentId: environment.environmentId,
+          apiKeyId: input.apiKeyId,
+          idempotencyKey,
+          requestHash,
+        })
+        .onConflictDoNothing({ target: [emailBatch.environmentId, emailBatch.idempotencyKey] })
+        .returning();
+      if (!batch) return batch;
+      for (const [batchIndex, item] of prepared.entries()) {
+        const row = await insertPrepared(tx, environment, item, { batchId: batch.id, batchIndex });
+        if (!row) throw new Error("Batch email insert returned no row.");
+      }
+      return batch;
+    };
+
+    if (!idempotencyKey || !requestHash) {
+      const batch = await db.transaction((tx) => insertBatch(tx));
+      if (!batch) throw new Error("Email batch insert returned no row.");
+      return { batch: await toEmailBatchObject(batch, sandbox), replayed: false };
+    }
+
+    const { row, replayed } = await withIdempotencyKey({
+      requestHash,
+      insert: insertBatch,
+      existing: async () => {
+        const [existing] = await db
+          .select()
+          .from(emailBatch)
+          .where(sameBatchKey(environment, idempotencyKey))
+          .limit(1);
+        return existing;
+      },
+      release: (tx, existing) =>
+        tx
+          .update(emailBatch)
+          .set({ idempotencyKey: null })
+          .where(
+            and(eq(emailBatch.id, existing.id), eq(emailBatch.idempotencyKey, idempotencyKey)),
+          ),
+    });
+    return { batch: await toEmailBatchObject(row, sandbox), replayed };
   }
 
   async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
@@ -738,7 +861,127 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     );
   }
 
-  return { send, dispatch, replay, cancel: cancelScheduledEmail, dispatchDue };
+  async function replayBatch(input: SendEmailBatchInput): Promise<EmailBatchObjectOutput | null> {
+    if (!input.idempotencyKey) return null;
+    return findBatchReplay(
+      input.environment,
+      input.idempotencyKey,
+      hashSendBatchRequest(input.emails),
+    );
+  }
+
+  return {
+    send,
+    sendBatch,
+    dispatch,
+    replay,
+    replayBatch,
+    cancel: cancelScheduledEmail,
+    dispatchDue,
+  };
+}
+
+type EmailBatchRow = typeof emailBatch.$inferSelect;
+
+type PreparedSend = {
+  values: Omit<
+    typeof email.$inferInsert,
+    "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
+  >;
+  scheduled: boolean;
+  attachments: ReturnType<typeof prepareAttachments>;
+};
+
+function sameEmailKey(environment: SendEnvironment, idempotencyKey: string) {
+  return and(
+    eq(email.organizationId, environment.organizationId),
+    eq(email.environmentId, environment.environmentId),
+    eq(email.idempotencyKey, idempotencyKey),
+  );
+}
+
+function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
+  return and(
+    eq(emailBatch.organizationId, environment.organizationId),
+    eq(emailBatch.environmentId, environment.environmentId),
+    eq(emailBatch.idempotencyKey, idempotencyKey),
+  );
+}
+
+function isReplayOf(
+  existing: { createdAt: Date; requestHash: string | null },
+  requestHash: string | null,
+  retentionMs = IDEMPOTENCY_KEY_TTL_MS,
+): boolean {
+  return (
+    existing.requestHash === requestHash && Date.now() - existing.createdAt.getTime() <= retentionMs
+  );
+}
+
+/**
+ * Inserts under an idempotency key, or replays the row that already holds it. The unique
+ * (environment_id, idempotency_key) index arbitrates races: exactly one request inserts, every
+ * other one waits for its commit, sees `DO NOTHING` (`insert` returns nothing) and replays the
+ * winner's row, whatever its status (a queued email is replayed as queued).
+ */
+async function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(op: {
+  requestHash: string;
+  retentionMs?: number;
+  insert: (tx: Transaction) => Promise<Row | undefined>;
+  existing: () => Promise<Row | undefined>;
+  /** Compare-and-set the key off an expired row. */
+  release: (tx: Transaction, existing: Row) => Promise<unknown>;
+}): Promise<{ row: Row; replayed: boolean }> {
+  let inserted = await db.transaction((tx) => op.insert(tx));
+  for (let attempt = 1; !inserted; attempt++) {
+    if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
+      throw new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly.");
+    }
+    const existing = await op.existing();
+    if (!existing) {
+      // Its owner expired and released the key between our insert and select.
+      inserted = await db.transaction((tx) => op.insert(tx));
+      continue;
+    }
+    if (Date.now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
+      // Expired: move the key to a new row atomically. The compare-and-set on the old row makes
+      // concurrent requests with the same expired key queue up behind each other.
+      inserted = await db.transaction(async (tx) => {
+        await op.release(tx, existing);
+        return op.insert(tx);
+      });
+      continue;
+    }
+    if (existing.requestHash !== op.requestHash) {
+      throw new EmailError(
+        "idempotency_key_reused",
+        "This idempotency key was already used with a different request body.",
+      );
+    }
+    return { row: existing, replayed: true };
+  }
+  return { row: inserted, replayed: false };
+}
+
+/** A batch with its emails in request order. */
+async function toEmailBatchObject(
+  batch: EmailBatchRow,
+  sandbox: boolean,
+): Promise<EmailBatchObjectOutput> {
+  const rows = await db
+    .select()
+    .from(email)
+    .where(and(eq(email.organizationId, batch.organizationId), eq(email.batchId, batch.id)))
+    .orderBy(asc(email.batchIndex));
+  return {
+    object: "email_batch",
+    id: batch.id,
+    data: await toEmailObjects(
+      batch.organizationId,
+      rows.map((row) => ({ email: row, sandbox })),
+    ),
+    created_at: batch.createdAt.toISOString(),
+  };
 }
 
 async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {

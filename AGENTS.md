@@ -512,6 +512,15 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `email.canceled`); repeating it returns the email, any other status is 422 `email_not_cancelable` (not 409: the SDK
   retries those). Scheduled sends are held while their organization is suspended. Cancel needs `email:send`.
   `scheduled_at` is omitted from the parsed request when absent (request hashes).
+- **Batch sends** (`POST /v1/emails/batch`, `EmailService.sendBatch`, table `email_batch`, ids `batch_`): ≤ 100
+  emails (`MAX_BATCH_EMAILS`), each a full `SendEmailRequest`, all or nothing. Every distinct `from` is authorized
+  first (a failure names `emails.N.from`), then the batch row and every email go through the same
+  `insertPrepared` as a single send, in **one transaction**. The batch row holds the `Idempotency-Key` and request
+  hash (`hashSendBatchRequest`, same TTL/loop via `withIdempotencyKey`); its emails' own keys stay NULL, so batch and
+  single-send keys never collide. Emails carry `batch_id` + `batch_index` (request order). The route shares the 40 MB
+  send body limit (`hasOwnBodyLimit`) and charges the recipients of every email as **one** quota consume (refunded on
+  replays/errors), so a batch above a bucket's burst (live default: 100 recipients/s) is refused without
+  `Retry-After`. The SDK's `sendBatch` never chunks (that would break atomicity under one key).
 
 - **Attachments** (`packages/email/src/attachments.ts`, table `email_attachment`, ids `att_`): base64 in the send
   request only (COSS never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
@@ -647,7 +656,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-batch sends, rescheduling (cancel and send again), SCIM/directory sync,
+rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

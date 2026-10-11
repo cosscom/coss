@@ -11,6 +11,7 @@ import type {
   DomainList,
   DomainObject,
   DomainRecordObject,
+  EmailBatchObject,
   EmailEvent,
   EmailEventList,
   EmailLink,
@@ -21,6 +22,7 @@ import type {
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   ListSuppressionsQuery,
+  SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
   SuppressionCheck,
@@ -51,6 +53,7 @@ import type {
   CreateSuppressionParams,
   CreateWebhookEndpointParams,
   Email,
+  EmailBatch,
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
@@ -137,6 +140,12 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["tracking"], SdkEmailTracking>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLink>, SdkEmailLink>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
+  // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
+  Assert<
+    MutuallyAssignable<z.input<typeof SendEmailBatchRequest>["emails"][number], SendEmailParams>
+  >,
+  Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
+  Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,
   // Domains: request and response shapes match the SDK's hand-written types.
   Assert<MutuallyAssignable<z.input<typeof CreateDomainRequest>, CreateDomainParams>>,
   Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
