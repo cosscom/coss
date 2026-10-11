@@ -1,4 +1,5 @@
 import { emailWorkerEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { screeningEnvShape } from "@coss/screening/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -13,6 +14,8 @@ export const env = createEnv({
     ...emailWorkerEnvShape,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Days of environment logs kept (@coss/logs); expired days are dropped hourly.
+    LOG_RETENTION_DAYS: z.coerce.number().int().min(1).max(31).default(30),
     // Reputation notification emails (warnings, suspensions) to organization owners and admins,
     // sent from a live environment of COSS's own organization with an address on one of its
     // verified domains. Unset: printed in development, held (not sent) in production.
@@ -24,6 +27,10 @@ export const env = createEnv({
     WEBHOOK_SECRETS_KEY: z
       .string()
       .refine((value) => Buffer.from(value, "base64").length === 32, "Must be 32 bytes, base64."),
+    // Error monitoring; read by src/instrument.ts before this schema runs.
+    ...sentryEnvShape,
+    // The image's commit (Dockerfile build argument), Sentry's release.
+    SENTRY_RELEASE: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

@@ -12,6 +12,7 @@ import { getEnvironment } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 import { MAX_IMPORT_BYTES, MAX_IMPORT_ROWS, MAX_REPORTED_INVALID_ROWS } from "./import-limits";
 
@@ -24,6 +25,29 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
   });
   if (!found) throw new ActionError("Environment not found.");
   return { organizationId: context.organization.id, environmentId: found.environment.id };
+}
+
+/** Records a change to this environment's settings in the organization's audit log. */
+async function audit(
+  context: OrgContext,
+  formData: FormData,
+  input: {
+    action: string;
+    target?: { type: string; id: string | null; label?: string | null };
+    metadata?: Record<string, unknown>;
+  },
+) {
+  const found = await getEnvironment({
+    organizationId: context.organization.id,
+    projectSlug: formString(formData, "projectSlug"),
+    envSlug: formString(formData, "envSlug"),
+  });
+  await recordAudit(context.session, {
+    ...input,
+    organizationId: context.organization.id,
+    projectId: found?.project.id ?? null,
+    environmentId: found?.environment.id ?? null,
+  });
 }
 
 /** Adds an address for every email, or for one category when `category` is filled in. */
@@ -48,6 +72,17 @@ export async function addSuppressionAction(
     }
     const result = await addSuppression(env, parsed.data);
     if (!result) throw new ActionError("Environment not found.");
+    if (result.created) {
+      await audit(context, formData, {
+        action: "suppression.created",
+        target: {
+          type: "suppression",
+          id: result.suppression.id,
+          label: result.suppression.address,
+        },
+        metadata: { scope: result.suppression.scope },
+      });
+    }
     refresh();
     return { created: result.created };
   });
@@ -67,6 +102,11 @@ export async function removeSuppressionAction(
     if (!suppression || !(await removeSuppression(env, suppression.id))) {
       throw new ActionError("Suppression not found.");
     }
+    await audit(context, formData, {
+      action: "suppression.deleted",
+      target: { type: "suppression", id: suppression.id, label: suppression.address },
+      metadata: { scope: suppression.scope, reason: suppression.reason },
+    });
     refresh();
     return null;
   });
@@ -117,6 +157,15 @@ export async function importSuppressionsAction(
       rows.map((row) => ({ address: row.address, scope: row.scope ?? category })),
     );
     if (!result) throw new ActionError("Environment not found.");
+    await audit(context, formData, {
+      action: "suppression.imported",
+      metadata: {
+        file: file.name,
+        created: result.created,
+        existing: result.existing,
+        invalid: result.invalid.length,
+      },
+    });
     if (result.created > 0) refresh();
     return {
       created: result.created,

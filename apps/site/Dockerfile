@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1.7
 # Site (apps/site: coss.com's landing page and docs): the Next.js standalone server on Node. Build
 # from the repository root:
-#   docker build -f apps/site/Dockerfile --build-arg NEXT_DEPLOYMENT_ID="$(git rev-parse HEAD)" .
+#   docker build -f apps/site/Dockerfile --build-arg NEXT_DEPLOYMENT_ID="$(git rev-parse HEAD)" \
+#     --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .
+# The Sentry token (optional) uploads source maps to Sentry; they are deleted from the image.
 # One image for every stage: the site is static and reads no environment (README.md, "Deploying
 # to AWS").
 
@@ -31,7 +33,10 @@ COPY --from=prune /pruned/full/ .
 # The commit: Next's build id and version-skew protection (deploymentId). Not stage-specific.
 ARG NEXT_DEPLOYMENT_ID=""
 ENV NEXT_DEPLOYMENT_ID=${NEXT_DEPLOYMENT_ID} SKIP_ENV_VALIDATION=1
-RUN bun x turbo run build --filter=@coss/site
+# The commit is also the Sentry release. The token is a BuildKit secret: never in a layer.
+RUN --mount=type=secret,id=sentry_auth_token,required=false \
+    SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)" \
+    bun x turbo run build --filter=@coss/site
 
 # Only the traced server (.next/standalone keeps Bun's isolated node_modules as relative symlinks)
 # and the static assets. No package manager, no sources.

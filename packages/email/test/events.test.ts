@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
@@ -279,5 +280,49 @@ describe("listEmailEvents", () => {
         emailId: "not-an-id",
       }),
     ).toBeNull();
+  });
+});
+
+describe("environment log", () => {
+  async function logLines(tenant: Awaited<ReturnType<typeof createTestTenant>>, emailId: string) {
+    const page = await queryLogs({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      from: new Date(Date.now() - 3_600_000),
+      to: new Date(Date.now() + 3_600_000),
+      filters: { resourceId: emailId },
+      limit: 100,
+    });
+    return page.data.reverse();
+  }
+
+  test("every new event is logged once, deduplicated with the event", async () => {
+    const { tenant, email } = await sendSandbox();
+    const bounce = event(email.id, {
+      type: "email.bounced",
+      providerEventType: "Bounce",
+      occurredAt: new Date(Date.now() + 1000),
+      data: { bounce: { type: "permanent", sub_type: "General", diagnostic_code: null } },
+    });
+    expect(await ingestProviderEvents([bounce, bounce])).toBe(1);
+
+    const lines = await logLines(tenant, email.id);
+    expect(lines.map((line) => [line.type, line.level])).toEqual([
+      ["email.sent", "info"],
+      ["email.delivered", "info"],
+      ["email.bounced", "error"],
+    ]);
+    expect(lines[2]).toMatchObject({
+      source: "email",
+      message: "Bounced: user@example.com (permanent, General)",
+      recipient: "user@example.com",
+      resource_type: "email",
+      attributes: expect.objectContaining({
+        provider: "fake",
+        provider_event_type: "Bounce",
+        subject: "Welcome",
+        bounce: { type: "permanent", sub_type: "General", diagnostic_code: null },
+      }),
+    });
   });
 });

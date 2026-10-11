@@ -39,7 +39,7 @@ export function CancelEmailButton(props: {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel this scheduled email?</AlertDialogTitle>
             <AlertDialogDescription>
-              It will not be sent. To send it later, send it again with a new time.
+              It will not be sent. To send it at another time, reschedule it instead.
             </AlertDialogDescription>
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </AlertDialogHeader>

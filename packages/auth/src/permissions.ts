@@ -27,6 +27,10 @@ export const orgStatements = {
   // password (break-glass) access while it is on.
   sso: ["read", "update", "require"],
   reputation: ["read"],
+  // Environment logs (API requests, email events, webhook attempts).
+  log: ["read"],
+  // The organization's audit log: owners and admins.
+  audit: ["read"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -40,6 +44,7 @@ const fullCossAccess = {
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
   reputation: ["read"],
+  log: ["read"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -51,6 +56,7 @@ const readOnlyCossAccess = {
   webhook: ["read"],
   suppression: ["read"],
   reputation: ["read"],
+  log: ["read"],
 } as const;
 
 export const orgRoles = {
@@ -58,8 +64,14 @@ export const orgRoles = {
     ...ownerAc.statements,
     ...fullCossAccess,
     sso: ["read", "update", "require"],
+    audit: ["read"],
   }),
-  admin: orgAc.newRole({ ...adminAc.statements, ...fullCossAccess, sso: ["read", "update"] }),
+  admin: orgAc.newRole({
+    ...adminAc.statements,
+    ...fullCossAccess,
+    sso: ["read", "update"],
+    audit: ["read"],
+  }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
 };
 

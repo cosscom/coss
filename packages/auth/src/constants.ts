@@ -23,4 +23,5 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
   reputation: ["read"],
+  log: ["read"],
 };

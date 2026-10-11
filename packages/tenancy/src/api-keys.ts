@@ -3,7 +3,7 @@ import { auth } from "@coss/auth";
 import { API_KEY_NAME_MAX_LENGTH, API_KEY_PREFIX } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { isAPIError } from "better-auth/api";
-import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { getOrganizationApiVersion } from "./api-versions.ts";
 import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
@@ -37,8 +37,15 @@ export type ApiKeyContext = {
 
 export type AuthenticateResult =
   | { ok: true; context: ApiKeyContext }
-  /** `suspended`: a valid key of an organization a platform admin has suspended. */
-  | { ok: false; reason: "invalid" | "forbidden" | "suspended" };
+  | { ok: false; reason: "invalid" }
+  /**
+   * The key is valid but refused: `forbidden` lacks a permission, `suspended` belongs to an
+   * organization a platform admin has suspended. `context` lets the API log the refusal.
+   */
+  | { ok: false; reason: "forbidden" | "suspended"; context: RefusedKeyContext };
+
+/** Who a refused key belongs to (no API version: a refusal never pins the organization's). */
+export type RefusedKeyContext = Omit<ApiKeyContext, "apiVersion">;
 
 /** Better Auth generates 64 letters after our prefix (see `defaultKeyGenerator`). */
 const API_KEY_FORMAT = /^coss_(live|test)_[A-Za-z]{64}$/;
@@ -139,14 +146,31 @@ export async function listEnvironmentApiKeys(input: {
   return rows.map((row) => ({ ...row, enabled: row.enabled !== false }));
 }
 
-/** Ownership check before revoking/inspecting a key from the dashboard. */
-export async function getKeyBinding(input: {
+/** Names of the organization's keys among `ids` (deleted and foreign keys are left out). */
+export async function apiKeyNames(input: {
   organizationId: string;
-  keyId: string;
-}): Promise<{ apiKeyId: string; environmentId: string; projectId: string } | null> {
+  ids: readonly string[];
+}): Promise<Record<string, string>> {
+  const ids = [...new Set(input.ids)];
+  if (ids.length === 0) return {};
+  const rows = await db
+    .select({ id: apikey.id, name: apikey.name })
+    .from(apikey)
+    .where(and(inArray(apikey.id, ids), eq(apikey.referenceId, input.organizationId)));
+  return Object.fromEntries(rows.map((row) => [row.id, row.name ?? row.id]));
+}
+
+/** Ownership check before revoking/inspecting a key from the dashboard. */
+export async function getKeyBinding(input: { organizationId: string; keyId: string }): Promise<{
+  apiKeyId: string;
+  name: string | null;
+  environmentId: string;
+  projectId: string;
+} | null> {
   const [row] = await db
     .select({
       apiKeyId: environmentApiKey.apiKeyId,
+      name: apikey.name,
       environmentId: environment.id,
       projectId: environment.projectId,
     })
@@ -197,8 +221,6 @@ async function isSuspended(organizationId: string): Promise<boolean> {
 }
 
 const INVALID: AuthenticateResult = { ok: false, reason: "invalid" };
-const FORBIDDEN: AuthenticateResult = { ok: false, reason: "forbidden" };
-const SUSPENDED: AuthenticateResult = { ok: false, reason: "suspended" };
 
 /** `apikey.last_request` is refreshed at most this often per key (the dashboard's "Last used"). */
 export const LAST_USED_RESOLUTION_MS = 60_000;
@@ -266,20 +288,23 @@ export async function authenticateApiKey(
     return INVALID;
   }
 
+  const { apiKeyId, organizationId, projectId, environmentId, mode } = row;
+  const context = { apiKeyId, organizationId, projectId, environmentId, mode };
   // Checked only once the key itself is proven valid, so a guessed key learns nothing.
-  if (row.suspendedAt !== null) return SUSPENDED;
-  if (required && !hasPermissions(parsePermissions(row.permissions), required)) return FORBIDDEN;
+  if (row.suspendedAt !== null) return { ok: false, reason: "suspended", context };
+  if (required && !hasPermissions(parsePermissions(row.permissions), required)) {
+    return { ok: false, reason: "forbidden", context };
+  }
 
   if (!row.lastRequest || now.getTime() - row.lastRequest.getTime() >= LAST_USED_RESOLUTION_MS) {
     await touchLastUsed(row.apiKeyId, now);
   }
 
-  const { apiKeyId, organizationId, projectId, environmentId, mode } = row;
   // Organizations are pinned on their first authenticated request.
   const apiVersion = row.apiVersion ?? (await getOrganizationApiVersion({ organizationId }));
   return {
     ok: true,
-    context: { apiKeyId, organizationId, projectId, environmentId, mode, apiVersion },
+    context: { ...context, apiVersion },
   };
 }
 

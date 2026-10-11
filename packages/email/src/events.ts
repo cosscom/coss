@@ -2,15 +2,17 @@
  * Delivery-event ingestion. System-level: the organization is resolved from the email the event
  * names (the `coss_email_id` tag COSS sets on every message), never from the caller, and every
  * write is scoped by that email's organization. Each new event is queued for the environment's
- * webhook endpoints in the same transaction (outbox).
+ * webhook endpoints in the same transaction (outbox) and appended to its log (`@coss/logs`).
  */
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
+import { appendLogEntries } from "@coss/logs";
 import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { purgeAttachmentContent } from "./attachments.ts";
+import { purgeSendContent } from "./attachments.ts";
+import { emailEventLogEntries } from "./event-logs.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
@@ -59,6 +61,7 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.canceled": "canceled",
   "email.opened": null,
   "email.clicked": null,
+  "email.rescheduled": "queued",
 };
 
 function recipientStatus(event: ProviderEvent): EmailRecipientStatus | null {
@@ -171,6 +174,8 @@ export async function recordProviderEvent(
     .onConflictDoNothing({ target: [emailEvent.emailId, emailEvent.dedupeKey] })
     .returning();
   if (inserted.length === 0) return [];
+  // The environment's log gets the same events, in the same transaction.
+  await appendLogEntries(tx, emailEventLogEntries(target, event, inserted));
   // Whether the event changed the reputation counts of the email's hour (recipient statuses).
   let recipientsChanged = false;
 
@@ -204,7 +209,7 @@ export async function recordProviderEvent(
       .set(accepted)
       .where(and(thisEmail, eq(email.status, "queued")))
       .returning({ id: email.id });
-    if (sent || repaired) await purgeAttachmentContent(tx, target);
+    if (sent || repaired) await purgeSendContent(tx, target);
   }
 
   const status = recipientStatus(event);

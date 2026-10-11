@@ -9,7 +9,9 @@
     "./permissions": "./src/permissions.ts",
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
-    "./sso": "./src/sso.ts"
+    "./emails": "./src/emails.ts",
+    "./sso": "./src/sso.ts",
+    "./audit": "./src/audit.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -26,6 +26,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { supportAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { requirePlatformAdminAction } from "@/lib/session";
 
@@ -290,11 +291,9 @@ export async function suspendOrganizationAction(
 ): Promise<ActionResult> {
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
-    await suspendOrganization({
-      organizationId: formOrganizationId(formData),
-      reason: requiredReason(formData),
-      actor,
-    });
+    const organizationId = formOrganizationId(formData);
+    await suspendOrganization({ organizationId, reason: requiredReason(formData), actor });
+    await supportAudit(organizationId, "organization.suspended");
     refresh();
     return null;
   });
@@ -306,11 +305,9 @@ export async function unsuspendOrganizationAction(
 ): Promise<ActionResult> {
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
-    await unsuspendOrganization({
-      organizationId: formOrganizationId(formData),
-      reason: optionalReason(formData),
-      actor,
-    });
+    const organizationId = formOrganizationId(formData);
+    await unsuspendOrganization({ organizationId, reason: optionalReason(formData), actor });
+    await supportAudit(organizationId, "organization.unsuspended");
     refresh();
     return null;
   });
@@ -323,12 +320,10 @@ export async function revokeApiKeyAction(
 ): Promise<ActionResult> {
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
-    await revokeApiKeyAsAdmin({
-      organizationId: formOrganizationId(formData),
-      keyId: formString(formData, "keyId"),
-      reason: requiredReason(formData),
-      actor,
-    });
+    const organizationId = formOrganizationId(formData);
+    const keyId = formString(formData, "keyId");
+    await revokeApiKeyAsAdmin({ organizationId, keyId, reason: requiredReason(formData), actor });
+    await supportAudit(organizationId, "api_key.revoked", { type: "api_key", id: keyId });
     refresh();
     return null;
   });
@@ -341,11 +336,13 @@ export async function disableOrganizationSsoRequirementAction(
 ): Promise<ActionResult> {
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
+    const organizationId = formOrganizationId(formData);
     await disableOrganizationSsoRequirement({
-      organizationId: formOrganizationId(formData),
+      organizationId,
       reason: requiredReason(formData),
       actor,
     });
+    await supportAudit(organizationId, "sso_requirement.disabled");
     refresh();
     return null;
   });
@@ -358,11 +355,9 @@ export async function disableOrganizationSsoAction(
 ): Promise<ActionResult> {
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
-    await disableOrganizationSso({
-      organizationId: formOrganizationId(formData),
-      reason: requiredReason(formData),
-      actor,
-    });
+    const organizationId = formOrganizationId(formData);
+    await disableOrganizationSso({ organizationId, reason: requiredReason(formData), actor });
+    await supportAudit(organizationId, "sso.disabled");
     refresh();
     return null;
   });

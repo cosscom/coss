@@ -3,6 +3,8 @@ import "./load-root-env.ts";
 import "./src/env.ts";
 import path from "node:path";
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
+import { sentryBuildOptions } from "@coss/observability/build";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 import { securityHeaders } from "./src/lib/security-headers.ts";
 
@@ -22,10 +24,12 @@ const nextConfig: NextConfig = {
     "@coss/reputation",
     "@coss/db",
     "@coss/email",
+    "@coss/logs",
     "@coss/webhooks",
     "@coss/ratelimit",
     "@coss/screening",
     "@coss/versioning",
+    "@coss/observability",
   ],
   // A self-contained server (.next/standalone) for the container image. Tracing starts at the
   // monorepo root so workspace packages and Bun's isolated node_modules (node_modules/.bun) are
@@ -45,7 +49,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     // In production `/` is the site's landing page. Locally, the dashboard's port opens the dashboard.
     if (!dev) return [];
-    return [{ source: "/", destination: DASHBOARD_PATH, permanent: false }];
+    return [
+      { source: "/", destination: DASHBOARD_PATH, permanent: false },
+      // The site's legal pages (linked from sign-up), on its own port locally.
+      { source: "/legal/:path*", destination: `${DEV_SITE_ORIGIN}/legal/:path*`, permanent: false },
+    ];
   },
   async rewrites() {
     // The site owns the icon (see ZONE_ROUTES); locally it runs on its own port.
@@ -58,4 +66,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Injects the release, uploads source maps (with SENTRY_AUTH_TOKEN) and instruments the server.
+// Sentry itself is configured at runtime: src/instrumentation.ts and src/instrumentation-client.ts.
+export default withSentryConfig(nextConfig, sentryBuildOptions());

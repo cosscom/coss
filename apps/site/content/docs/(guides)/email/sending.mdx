@@ -27,7 +27,7 @@ const { data, error } = await coss.email.send(
 Sends return HTTP `202` with `status: "queued"`. A background worker hands the email to the
 provider. Follow delivery with `coss.email.get()` or the `email.sent` / `email.failed` webhooks.
 
-## Scheduling and cancellation
+## Scheduling, rescheduling and cancellation
 
 Pass `scheduled_at` as an ISO 8601 timestamp with a time zone offset, up to 30 days ahead.
 The response is HTTP `202` with `status: "scheduled"`; the worker checks for due emails every
@@ -46,13 +46,25 @@ const { data: scheduled } = await coss.email.send({
   scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 });
 if (scheduled) {
+  // Send it a day later instead…
+  await coss.email.reschedule(scheduled.id, {
+    scheduled_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+  });
+  // …or not at all.
   await coss.email.cancel(scheduled.id);
 }
 ```
 
+Rescheduling moves a `scheduled` email to a new time, again at most 30 days from now, and emits
+`email.rescheduled` with the new and previous times in `data.reschedule`. A time that is not in
+the future sends the email within seconds; the email's current time returns it unchanged, without
+an event. Only `scheduled_at` can change: to change the content, cancel and send again.
+Rescheduling does not charge the send quota again.
+
 Canceling changes the status to `canceled` and emits `email.canceled`; repeating the cancellation
-returns the same email. Once dispatch starts, cancellation returns `422 email_not_cancelable`.
-Scheduling emits `email.scheduled`. Both events describe the whole email.
+returns the same email. Once dispatch starts, cancellation returns `422 email_not_cancelable` and
+rescheduling `422 email_not_reschedulable` (as does rescheduling a canceled email).
+Scheduling emits `email.scheduled`. These events describe the whole email.
 Suspending an organization holds its scheduled emails until the suspension is lifted. Attachment
 bytes remain stored while an email is scheduled and are deleted when it is sent, fails, or is canceled.
 

@@ -22,6 +22,7 @@ import type {
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   ListSuppressionsQuery,
+  RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
@@ -29,6 +30,7 @@ import type {
   SuppressionImport,
   SuppressionList,
 } from "@coss/email/schemas";
+import type { ListLogsQuery, LogEntry, LogList } from "@coss/logs/schemas";
 import type {
   AccountWebhookEvent,
   ReputationCheckObject,
@@ -57,8 +59,10 @@ import type {
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
+  ListLogsParams,
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
+  RescheduleEmailParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
@@ -72,6 +76,7 @@ import type {
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  Log as SdkLog,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   Suppression as SdkSuppression,
@@ -146,6 +151,9 @@ export type Contract = [
   >,
   Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
   Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,
+  // Rescheduling: `reschedule(id, params)` posts the params as they are.
+  Assert<MutuallyAssignable<z.input<typeof RescheduleEmailRequest>, RescheduleEmailParams>>,
+  Assert<Equals<keyof z.input<typeof RescheduleEmailRequest>, keyof RescheduleEmailParams>>,
   // Domains: request and response shapes match the SDK's hand-written types.
   Assert<MutuallyAssignable<z.input<typeof CreateDomainRequest>, CreateDomainParams>>,
   Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
@@ -208,6 +216,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.input<typeof ImportSuppressionsRequest>, ImportSuppressionsParams>>,
   Assert<MutuallyAssignable<z.output<typeof SuppressionImport>, SdkSuppressionImport>>,
   Assert<MutuallyAssignable<z.input<typeof ExportSuppressionsQuery>, ExportSuppressionsParams>>,
+  // Logs: responses, and the query's parameter names (the SDK also accepts arrays and Dates).
+  Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
+  Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,
+  Assert<Equals<keyof z.input<typeof ListLogsQuery>, keyof ListLogsParams>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

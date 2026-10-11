@@ -16,6 +16,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 import { webhookManagementDeps } from "@/lib/webhooks";
 
@@ -28,6 +29,22 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
   });
   if (!found) throw new ActionError("Environment not found.");
   return found;
+}
+
+function endpointAudit(
+  context: OrgContext,
+  endpoint: { id: string; url: string; projectId: string; environmentId: string },
+  action: string,
+  metadata?: Record<string, unknown>,
+) {
+  return recordAudit(context.session, {
+    organizationId: context.organization.id,
+    action,
+    target: { type: "webhook_endpoint", id: endpoint.id, label: endpoint.url },
+    projectId: endpoint.projectId,
+    environmentId: endpoint.environmentId,
+    metadata,
+  });
 }
 
 /** The endpoint addressed by the form, checked to belong to that environment. */
@@ -83,6 +100,9 @@ export async function createWebhookEndpointAction(
         webhookManagementDeps(),
       ),
     );
+    await endpointAudit(context, endpoint, "webhook_endpoint.created", {
+      event_types: endpoint.eventTypes,
+    });
     refresh();
     return { id: endpoint.id, secret };
   });
@@ -97,13 +117,15 @@ export async function setWebhookEndpointEnabledAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
+    const enabled = formString(formData, "enabled") === "true";
     await updateWebhookEndpoint(
-      {
-        organizationId: context.organization.id,
-        id: endpoint.id,
-        enabled: formString(formData, "enabled") === "true",
-      },
+      { organizationId: context.organization.id, id: endpoint.id, enabled },
       webhookManagementDeps(),
+    );
+    await endpointAudit(
+      context,
+      endpoint,
+      enabled ? "webhook_endpoint.enabled" : "webhook_endpoint.disabled",
     );
     refresh();
     return null;
@@ -145,6 +167,7 @@ export async function deleteWebhookEndpointAction(
     });
     const endpoint = await endpointFromForm(context, formData);
     await deleteWebhookEndpoint({ organizationId: context.organization.id, id: endpoint.id });
+    await endpointAudit(context, endpoint, "webhook_endpoint.deleted");
     redirect(
       `/${context.organization.slug}/projects/${formString(formData, "projectSlug")}/` +
         `${formString(formData, "envSlug")}/webhooks`,
@@ -162,7 +185,10 @@ export async function revealWebhookSecretAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
-    return { secret: revealWebhookSecret(endpoint, webhookManagementDeps().secretsKey) };
+    const secret = revealWebhookSecret(endpoint, webhookManagementDeps().secretsKey);
+    // Who has seen a signing secret matters when it leaks.
+    await endpointAudit(context, endpoint, "webhook_endpoint.secret_revealed");
+    return { secret };
   });
 }
 
@@ -181,6 +207,9 @@ export async function retryWebhookDeliveryAction(
       id: formString(formData, "deliveryId"),
     });
     if (!retried) throw new ActionError("This delivery is already scheduled.");
+    await endpointAudit(context, endpoint, "webhook_delivery.retried", {
+      delivery_id: formString(formData, "deliveryId"),
+    });
     refresh();
     return null;
   });
