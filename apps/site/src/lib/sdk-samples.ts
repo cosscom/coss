@@ -86,6 +86,22 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "webhookEndpoints.delete",
     args: (r) => [pathId(r)],
   },
+  "GET /v1/webhook_endpoints/{id}/deliveries": {
+    method: "webhookEndpoints.deliveries.list",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/webhook_endpoints/{id}/deliveries/{delivery_id}": {
+    method: "webhookEndpoints.deliveries.get",
+    args: (request) => [pathId(request), pathParam(request, "delivery_id")],
+  },
+  "POST /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry": {
+    method: "webhookEndpoints.deliveries.retry",
+    args: (request) => [
+      pathId(request),
+      pathParam(request, "delivery_id"),
+      requestOptions(request),
+    ],
+  },
 };
 
 const routes = Object.entries(SDK_SAMPLES).map(([key, sample]) => {
@@ -120,7 +136,11 @@ const { data, error } = await coss.${sample.method}(${args.map((arg) => arg ?? "
 }
 
 function pathId(request: SampleRequest): string {
-  return tsValue(request.path.id?.value ?? "");
+  return pathParam(request, "id");
+}
+
+function pathParam(request: SampleRequest, name: string): string {
+  return tsValue(request.path[name]?.value ?? "");
 }
 
 /**

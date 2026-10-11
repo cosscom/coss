@@ -4,12 +4,16 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { db } from "@coss/db";
+import { newId } from "@coss/db/id";
 import { trackingUrls } from "@coss/email/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
+import { enqueueWebhookMessage, runDueWebhookDeliveries } from "@coss/webhooks";
+import { TEST_SECRETS_KEY } from "@coss/webhooks/testing";
 import { API_VERSION, Coss, type CossOptions, API_VERSIONS as SDK_API_VERSIONS } from "coss";
 import {
   createTestApp,
@@ -555,6 +559,48 @@ describe("coss.webhookEndpoints against the API", () => {
     const result = await live.webhookEndpoints.get(created.data?.id ?? "missing");
 
     expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
+  });
+});
+
+describe("coss.webhookEndpoints.deliveries against the API", () => {
+  test("list, get and retry round-trip a delivery", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const endpoint = await coss.webhookEndpoints.create({ url: "https://example.com/hook" });
+    if (!endpoint.data) throw new Error("create failed");
+    const eventId = newId("evt");
+    await enqueueWebhookMessage(db, {
+      id: eventId,
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      type: "email.delivered",
+      payload: { id: eventId, object: "event", type: "email.delivered", data: {} },
+    });
+    await runDueWebhookDeliveries(
+      { scope: { organizationIds: [tenant.organization.id] } },
+      { secretsKey: TEST_SECRETS_KEY, send: async () => ({ status: 200, body: "ok" }) },
+    );
+
+    const listed = await coss.webhookEndpoints.deliveries.list(endpoint.data.id, {
+      status: "succeeded",
+      limit: 10,
+    });
+    expect(listed.error).toBeNull();
+    const [delivery] = listed.data?.data ?? [];
+    expect(delivery).toMatchObject({
+      object: "webhook_delivery",
+      event_id: eventId,
+      status: "succeeded",
+      attempts: [{ object: "webhook_attempt", status_code: 200, response_excerpt: "ok" }],
+    });
+    if (!delivery) throw new Error("no delivery");
+
+    const fetched = await coss.webhookEndpoints.deliveries.get(endpoint.data.id, delivery.id);
+    expect(fetched).toEqual({ data: delivery, error: null });
+
+    const retried = await coss.webhookEndpoints.deliveries.retry(endpoint.data.id, delivery.id);
+    expect(retried.data).toMatchObject({ id: delivery.id, status: "pending" });
   });
 });
 
