@@ -1,5 +1,6 @@
 import { type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
+import { activeLogDrains, insertLogDrainRecords } from "./drain-outbox.ts";
 import type { LogEntryOutput, LogLevel, LogSource } from "./schemas.ts";
 
 const { logEntry } = schema;
@@ -100,14 +101,36 @@ export function toLogRow(input: LogEntryInput): typeof logEntry.$inferInsert {
 
 /**
  * Appends lines, e.g. in the transaction that records the event they describe (product event
- * tables call this next to their own insert, like `enqueueWebhookMessage`).
+ * tables call this next to their own insert, like `enqueueWebhookMessage`). Lines are also queued
+ * for their environment's log drains, atomically with the lines themselves.
  */
 export async function appendLogEntries(
   executor: Executor,
   inputs: readonly LogEntryInput[],
 ): Promise<void> {
   if (inputs.length === 0) return;
-  await executor.insert(logEntry).values(inputs.map(toLogRow));
+  const rows = inputs.map(toLogRow);
+  // Keep the drain selection protected until both the lines and outbox records commit.
+  // A savepoint inside the caller's transaction, or a transaction of its own.
+  await executor.transaction(async (tx) => {
+    const drains = await activeLogDrains(
+      tx,
+      rows.map((row) => row.environmentId),
+    );
+    await tx.insert(logEntry).values(rows);
+    await insertLogDrainRecords(
+      tx,
+      drains,
+      rows.map((row) => ({
+        organizationId: row.organizationId,
+        environmentId: row.environmentId,
+        source: row.source,
+        sourceId: row.id as string,
+        // Every column is set by `toLogRow`.
+        line: toLogObject(row as LogEntryRow),
+      })),
+    );
+  });
 }
 
 export function toLogObject(row: LogEntryRow): LogEntryOutput {

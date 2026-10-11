@@ -19,13 +19,18 @@ import {
 } from "@coss/reputation";
 import { contentScreeningCheck } from "@coss/screening";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
-import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
+import {
+  runDueLogDrainDeliveries,
+  runDueWebhookDeliveries,
+  type WebhookDeliveryDeps,
+} from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
 import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
+const LOG_DRAIN_BATCH = 10;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
@@ -43,6 +48,7 @@ export type WorkerDeps = {
   domains: DomainDeps;
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
+  /** Also delivers log drain batches (same signing keys and sender). */
   webhooks: WebhookDeliveryDeps;
   /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
   logRetentionDays: number;
@@ -68,6 +74,14 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       intervalMs: 1000,
       run: async () =>
         (await runDueWebhookDeliveries({ limit: WEBHOOK_BATCH }, deps.webhooks)) === WEBHOOK_BATCH,
+    }),
+    startLoop({
+      // Environment logs streamed to log drains, in NDJSON batches.
+      name: "log-drains",
+      intervalMs: 1000,
+      run: async () =>
+        (await runDueLogDrainDeliveries({ limit: LOG_DRAIN_BATCH }, deps.webhooks)) ===
+        LOG_DRAIN_BATCH,
     }),
     startLoop({
       name: "domains",

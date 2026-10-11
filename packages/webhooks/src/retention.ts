@@ -3,10 +3,11 @@
  * System-level: the scan spans organizations; `scope` limits it to some (tests).
  */
 import { db, schema } from "@coss/db";
+import { ID_PREFIXES, newId } from "@coss/db/id";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, eq, inArray, lt, notExists, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, ne, notExists, sql } from "drizzle-orm";
 
-const { webhookDelivery, webhookMessage } = schema;
+const { logDrainBatch, logDrainRecord, webhookDelivery, webhookMessage } = schema;
 
 /**
  * Deletes up to `limit` messages created before the cutoff, oldest first, with their deliveries
@@ -59,4 +60,54 @@ export async function purgeExpiredWebhookMessages(
       .returning({ id: webhookMessage.id });
     return deleted.length;
   });
+}
+
+/**
+ * Deletes up to `limit` finished log drain batches last updated before the cutoff, with their
+ * lines and attempts (cascade), and up to `limit` queued lines that never got into a batch within
+ * `logDrainBacklog` days (a suspended organization's drains are held). Returns both counts.
+ */
+export async function purgeExpiredLogDrainBatches(
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<[batches: number, backlog: number]> {
+  const limit = opts.limit ?? 1000;
+  const batchCutoff = retentionCutoff(RETENTION_DAYS.logDrainBatches, opts.now);
+  const expiredBatches = db
+    .select({ id: logDrainBatch.id })
+    .from(logDrainBatch)
+    .where(
+      and(
+        ne(logDrainBatch.status, "pending"),
+        lt(logDrainBatch.updatedAt, batchCutoff),
+        opts.scope ? inArray(logDrainBatch.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(logDrainBatch.updatedAt))
+    .limit(limit);
+  const batches = await db
+    .delete(logDrainBatch)
+    .where(and(inArray(logDrainBatch.id, expiredBatches), ne(logDrainBatch.status, "pending")))
+    .returning({ id: logDrainBatch.id });
+  // Record ids are time-ordered, so the primary key finds the old ones.
+  const backlogCutoff = newId(
+    ID_PREFIXES.logDrainRecord,
+    retentionCutoff(RETENTION_DAYS.logDrainBacklog, opts.now).getTime(),
+  );
+  const expiredBacklog = db
+    .select({ id: logDrainRecord.id })
+    .from(logDrainRecord)
+    .where(
+      and(
+        lt(logDrainRecord.id, backlogCutoff),
+        isNull(logDrainRecord.batchId),
+        opts.scope ? inArray(logDrainRecord.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(logDrainRecord.id))
+    .limit(limit);
+  const backlog = await db
+    .delete(logDrainRecord)
+    .where(and(inArray(logDrainRecord.id, expiredBacklog), isNull(logDrainRecord.batchId)))
+    .returning({ id: logDrainRecord.id });
+  return [batches.length, backlog.length];
 }

@@ -5,6 +5,7 @@ export type { FetchLike, RequestOptions } from "./core/http.ts";
 export type { AuditEventsResource } from "./resources/audit-events.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
+export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
@@ -46,6 +47,19 @@ export type {
   TrackingOptions,
 } from "./types/email.ts";
 export type { ListLogsParams, Log, LogLevel, LogSource } from "./types/log.ts";
+export type {
+  CreateLogDrainParams,
+  DeletedLogDrain,
+  ListLogDrainBatchesParams,
+  LogDrain,
+  LogDrainAttempt,
+  LogDrainBatch,
+  LogDrainBatchStatus,
+  LogDrainLine,
+  LogDrainSource,
+  LogDrainWithSecret,
+  UpdateLogDrainParams,
+} from "./types/log-drain.ts";
 export type {
   Reputation,
   ReputationCheck,
@@ -89,6 +103,7 @@ export type {
 export { VERSION } from "./version.ts";
 export {
   type VerifyWebhookOptions,
+  verifyLogDrainBatch,
   verifyWebhook,
   type WebhookHeaders,
   WebhookVerificationError,

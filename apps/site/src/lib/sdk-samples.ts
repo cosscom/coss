@@ -33,6 +33,25 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "auditEvents.get",
     args: (request) => [pathId(request)],
   },
+  "POST /v1/log_drains": {
+    method: "logDrains.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/log_drains": { method: "logDrains.list", args: () => [] },
+  "GET /v1/log_drains/{id}": { method: "logDrains.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/log_drains/{id}": {
+    method: "logDrains.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/log_drains/{id}": { method: "logDrains.delete", args: (r) => [pathId(r)] },
+  "GET /v1/log_drains/{id}/batches": {
+    method: "logDrains.batches.list",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/log_drains/{id}/batches/{batch_id}": {
+    method: "logDrains.batches.get",
+    args: (request) => [pathId(request), pathParam(request, "batch_id")],
+  },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],

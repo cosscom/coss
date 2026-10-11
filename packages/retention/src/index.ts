@@ -12,6 +12,10 @@ export const RETENTION_DAYS = {
   emails: 45,
   /** Webhook messages with their deliveries and attempts (once none is pending). */
   webhookDeliveries: 30,
+  /** Log drain batches with their lines and attempt logs (once finished). */
+  logDrainBatches: 7,
+  /** Lines queued for a log drain that never got into a batch (e.g. while its organization is suspended). */
+  logDrainBacklog: 3,
   /** Hourly reputation counts: the longest reputation window (30 days) plus a day. */
   reputationRollups: 31,
   /** Content screening verdicts. */
@@ -67,6 +71,12 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.webhookDeliveries, after: "creation" },
   },
   {
+    id: "log_drain_batches",
+    label: "Log drain batches",
+    description: `The lines sent to your log drains and their delivery attempts (including response excerpts). Lines that could not be sent within ${RETENTION_DAYS.logDrainBacklog} days are dropped.`,
+    period: { days: RETENTION_DAYS.logDrainBatches, after: "creation" },
+  },
+  {
     id: "content_screenings",
     label: "Content screening results",
     description:
@@ -116,7 +126,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints and settings. Items you delete (a key, a domain, an endpoint) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains and settings. Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
     period: { until: "closed" },
   },
 ];

@@ -63,4 +63,5 @@ secret), attachment contents and the `Authorization` header are never kept, long
 to 2,048 characters and bodies to 16 KB. Requests that fail authentication can't be attributed to
 an environment and are not logged.
 
-Logs are kept for 30 days.
+Logs are kept for 30 days. To keep them longer, or to search them next to your own logs, stream
+them to your logging stack with a [log drain](/docs/log-drains).

@@ -31,6 +31,8 @@ export const orgStatements = {
   reputation: ["read"],
   // Environment logs (API requests, email events, webhook attempts).
   log: ["read"],
+  // Log drains: an environment's log streamed to an HTTPS endpoint.
+  logDrain: ["create", "read", "update", "delete"],
   // The organization's audit log: owners and admins.
   audit: ["read"],
 } as const;
@@ -47,6 +49,7 @@ const fullCossAccess = {
   suppression: ["create", "read", "delete"],
   reputation: ["read"],
   log: ["read"],
+  logDrain: ["create", "read", "update", "delete"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -59,6 +62,7 @@ const readOnlyCossAccess = {
   suppression: ["read"],
   reputation: ["read"],
   log: ["read"],
+  logDrain: ["read"],
 } as const;
 
 export const orgRoles = {

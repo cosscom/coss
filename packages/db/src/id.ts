@@ -56,6 +56,10 @@ export const ID_PREFIXES = {
   request: "req",
   logEntry: "log",
   orgAuditEvent: "oaudit",
+  logDrain: "drain",
+  logDrainRecord: "drainrec",
+  logDrainBatch: "drainbat",
+  logDrainAttempt: "drainatt",
   adminAuditEvent: "audit",
   organizationDeletion: "orgdel",
 } as const;

@@ -276,6 +276,27 @@ export default async function EnvironmentPage({
         </Card>
       ) : null}
 
+      {can({ logDrain: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Log drains</CardTitle>
+            <CardDescription>
+              Stream this environment's logs and audit events to your own logging stack, as signed
+              NDJSON batches.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/log-drains`} />}
+                size="sm"
+                variant="outline"
+              >
+                Manage log drains
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Webhooks</CardTitle>

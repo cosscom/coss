@@ -12,22 +12,22 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { webhookEndpoint } = schema;
+const { logDrain, webhookEndpoint } = schema;
 
 export type ReencryptResult = {
-  /** Endpoints looked at. */
+  /** Endpoints and log drains looked at. */
   checked: number;
-  /** Endpoints rewritten (with `dryRun`: that would be). */
+  /** Endpoints and log drains rewritten (with `dryRun`: that would be). */
   reencrypted: number;
-  /** Endpoints with a secret no listed key decrypts: nothing can be delivered to them until it is back. */
+  /** Rows with a secret no listed key decrypts: nothing can be delivered to them until it is back. */
   unreadable: { id: string; organizationId: string; error: string }[];
-  /** Endpoints whose secret was rolled while this ran (left as they are); run again to cover them. */
+  /** Rows whose secret changed while this ran (left as they are); run again to cover them. */
   conflicts: number;
 };
 
 /**
- * Rewrites every endpoint secret not encrypted with the key ring's primary key, and drops previous
- * secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
+ * Rewrites every endpoint and log drain secret not encrypted with the key ring's primary key, and
+ * drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
  * updated if it still holds what was read. `scope` limits the scan to some organizations (tests).
  */
 export async function reencryptWebhookSecrets(opts: {
@@ -120,5 +120,72 @@ export async function reencryptWebhookSecrets(opts: {
     if (!last || rows.length < batchSize) break;
     after = last.id;
   }
+  await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
   return result;
+}
+
+/** Log drains have one secret each (no rolls). */
+async function reencryptLogDrainSecrets(
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    scope?: { organizationIds: string[] };
+  },
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys } = opts;
+  let after = "";
+  for (;;) {
+    const rows = await db
+      .select({
+        id: logDrain.id,
+        organizationId: logDrain.organizationId,
+        secretCiphertext: logDrain.secretCiphertext,
+      })
+      .from(logDrain)
+      .where(
+        and(
+          gt(logDrain.id, after),
+          opts.scope ? inArray(logDrain.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(logDrain.id))
+      .limit(opts.batchSize);
+    for (const row of rows) {
+      result.checked++;
+      if (isEncryptedWithPrimary(row.secretCiphertext, keys)) continue;
+      let secretCiphertext: string;
+      try {
+        secretCiphertext = encryptSecret(decryptSecret(row.secretCiphertext, keys), keys);
+      } catch (error) {
+        result.unreadable.push({
+          id: row.id,
+          organizationId: row.organizationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      if (opts.dryRun) {
+        result.reencrypted++;
+        continue;
+      }
+      const [updated] = await db
+        .update(logDrain)
+        .set({ secretCiphertext, updatedAt: sql`${logDrain.updatedAt}` })
+        .where(
+          and(
+            eq(logDrain.id, row.id),
+            eq(logDrain.organizationId, row.organizationId),
+            eq(logDrain.secretCiphertext, row.secretCiphertext),
+          ),
+        )
+        .returning({ id: logDrain.id });
+      if (updated) result.reencrypted++;
+      else result.conflicts++;
+    }
+    const last = rows.at(-1);
+    if (!last || rows.length < opts.batchSize) break;
+    after = last.id;
+  }
 }

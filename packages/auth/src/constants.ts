@@ -26,4 +26,5 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   log: ["read"],
   // The organization's audit log. Only owners and admins create keys, and they can read it.
   audit: ["read"],
+  logDrain: ["create", "read", "update", "delete"],
 };

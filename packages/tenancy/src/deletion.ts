@@ -22,6 +22,9 @@ const {
   environment,
   invitation,
   logEntry,
+  logDrain,
+  logDrainRecord,
+  logDrainBatch,
   orgAuditEvent,
   member,
   organization,
@@ -352,6 +355,28 @@ async function deleteOrganizationData(
     .from(environment)
     .where(eq(environment.organizationId, organizationId));
   for (const { id: environmentId } of environments) {
+    const drains = await db
+      .select({ id: logDrain.id })
+      .from(logDrain)
+      .where(
+        and(eq(logDrain.environmentId, environmentId), eq(logDrain.organizationId, organizationId)),
+      );
+    for (const drain of drains) {
+      // Records are the bulky part; deleting batches also cascades their attempt history.
+      for (const table of [logDrainRecord, logDrainBatch]) {
+        if (
+          !(await deleteInBatches(
+            deletion,
+            table,
+            table.id,
+            and(eq(table.drainId, drain.id), eq(table.organizationId, organizationId)),
+            batchSize,
+            signal,
+          ))
+        )
+          return false;
+      }
+    }
     const steps: [PgTable, PgColumn, SQL | undefined][] = [
       [
         logEntry,

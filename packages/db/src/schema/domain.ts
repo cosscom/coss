@@ -1209,6 +1209,161 @@ export const orgAuditEvent = pgTable(
   ],
 );
 
+/** What a log drain forwards: the environment log's sources, plus the environment's audit events. */
+export const logDrainSource = pgEnum("log_drain_source", ["api", "email", "webhook", "audit"]);
+export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
+
+/**
+ * An HTTPS endpoint an environment's log lines are streamed to, in signed NDJSON batches by the
+ * worker (`@coss/webhooks` log drains). Queued lines are `log_drain_record`s.
+ */
+export const logDrain = pgTable(
+  "log_drain",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.logDrain)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    url: text("url").notNull(),
+    description: text("description"),
+    // Sources to forward; empty means every source.
+    sources: logDrainSource("sources").array().notNull().default(sql`'{}'::log_drain_source[]`),
+    // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY.
+    secretCiphertext: text("secret_ciphertext").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    // Why it is disabled: `manual` or `failing` (a batch exhausted its retries). Null while enabled.
+    disabledReason: text("disabled_reason"),
+    disabledAt: timestamp("disabled_at", { withTimezone: true }),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "log_drain_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // Every log line looks up its environment's enabled drains.
+    index("log_drain_environment_idx").on(t.environmentId).where(sql`${t.enabled}`),
+    unique("log_drain_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+export const logDrainBatchStatus = pgEnum("log_drain_batch_status", [
+  "pending",
+  "succeeded",
+  "failed",
+]);
+
+/** One NDJSON request of queued lines, retried with backoff until it succeeds or gives up. */
+export const logDrainBatch = pgTable(
+  "log_drain_batch",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.logDrainBatch)),
+    organizationId: text("organization_id").notNull(),
+    drainId: text("drain_id").notNull(),
+    status: logDrainBatchStatus("status").notNull().default("pending"),
+    recordCount: integer("record_count").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // Set while a worker is attempting it; an expired lease can be taken over.
+    leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+    lastStatusCode: integer("last_status_code"),
+    lastError: text("last_error"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "log_drain_batch_drain_fk",
+      columns: [t.drainId, t.organizationId],
+      foreignColumns: [logDrain.id, logDrain.organizationId],
+    }).onDelete("cascade"),
+    // One open batch per drain: lines go out in order, and two workers never form two.
+    uniqueIndex("log_drain_batch_pending_unique").on(t.drainId).where(sql`${t.status} = 'pending'`),
+    index("log_drain_batch_due_idx").on(t.nextAttemptAt).where(sql`${t.status} = 'pending'`),
+    index("log_drain_batch_drain_created_at_idx").on(t.drainId, t.createdAt.desc()),
+    // The worker's retention purge.
+    index("log_drain_batch_updated_at_idx").on(t.updatedAt).where(sql`${t.status} <> 'pending'`),
+    unique("log_drain_batch_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/**
+ * A line queued for one drain (the outbox), written with the log line or audit event it copies.
+ * `line` is the wire object as `GET /v1/logs` returns it (or the audit event's).
+ */
+export const logDrainRecord = pgTable(
+  "log_drain_record",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.logDrainRecord)),
+    organizationId: text("organization_id").notNull(),
+    drainId: text("drain_id").notNull(),
+    // Set when the record joins a batch; deleted with it.
+    batchId: text("batch_id"),
+    source: logDrainSource("source").notNull(),
+    // The `log_…` or `oaudit_…` id.
+    sourceId: text("source_id").notNull(),
+    // `json`, not `jsonb`: keeps the object's key order.
+    line: json("line").$type<Record<string, unknown>>().notNull(),
+    // Bytes of the serialized line, newline included.
+    byteSize: integer("byte_size").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "log_drain_record_drain_fk",
+      columns: [t.drainId, t.organizationId],
+      foreignColumns: [logDrain.id, logDrain.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "log_drain_record_batch_fk",
+      columns: [t.batchId, t.organizationId],
+      foreignColumns: [logDrainBatch.id, logDrainBatch.organizationId],
+    }).onDelete("cascade"),
+    unique("log_drain_record_drain_source_unique").on(t.drainId, t.sourceId),
+    // Lines waiting for a batch, oldest first.
+    index("log_drain_record_queued_idx").on(t.drainId, t.id).where(sql`${t.batchId} is null`),
+    index("log_drain_record_batch_idx").on(t.batchId),
+  ],
+);
+
+/** One HTTP attempt of a batch (the drain's delivery log). */
+export const logDrainAttempt = pgTable(
+  "log_drain_attempt",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.logDrainAttempt)),
+    organizationId: text("organization_id").notNull(),
+    batchId: text("batch_id").notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).notNull(),
+    statusCode: integer("status_code"),
+    durationMs: integer("duration_ms").notNull(),
+    error: text("error"),
+    // At most 1 KB of the response body, as text.
+    responseExcerpt: text("response_excerpt"),
+  },
+  (t) => [
+    foreignKey({
+      name: "log_drain_attempt_batch_fk",
+      columns: [t.batchId, t.organizationId],
+      foreignColumns: [logDrainBatch.id, logDrainBatch.organizationId],
+    }).onDelete("cascade"),
+    index("log_drain_attempt_batch_idx").on(t.batchId, t.attemptedAt),
+  ],
+);
+
 export const authEmailKind = pgEnum("auth_email_kind", [
   "verify_email",
   "reset_password",

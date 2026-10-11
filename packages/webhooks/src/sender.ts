@@ -19,6 +19,10 @@ export type WebhookRequest = {
   headers: Record<string, string>;
   body: string;
   timeoutMs?: number;
+  /** Default `application/json` (log drains send `application/x-ndjson`). */
+  contentType?: string;
+  /** Default `COSS-Webhooks/1.0`. */
+  userAgent?: string;
 };
 
 export type WebhookResponse = { status: number; body: string };
@@ -114,9 +118,9 @@ export function createWebhookSender(opts: SenderOptions = {}): WebhookSender {
           method: "POST",
           headers: {
             ...request.headers,
-            "content-type": "application/json",
+            "content-type": request.contentType ?? "application/json",
             "content-length": String(Buffer.byteLength(request.body)),
-            "user-agent": "COSS-Webhooks/1.0",
+            "user-agent": request.userAgent ?? "COSS-Webhooks/1.0",
           },
           lookup,
           timeout: timeoutMs,

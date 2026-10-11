@@ -32,12 +32,42 @@ export {
   type WebhookManagementDeps,
 } from "./endpoints.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
+export {
+  LOG_DRAIN_CONTENT_TYPE,
+  LOG_DRAIN_MAX_ATTEMPTS,
+  LOG_DRAIN_RETRY_DELAYS_MS,
+  type LogDrainDeliveryDeps,
+  MAX_BATCH_BYTES,
+  MAX_BATCH_LINES,
+  ndjson,
+  runDueLogDrainDeliveries,
+  takeBatch,
+} from "./log-drain-delivery.ts";
+export * from "./log-drain-schemas.ts";
+export {
+  countQueuedLogDrainLines,
+  createLogDrain,
+  deleteLogDrain,
+  getLogDrain,
+  getLogDrainBatch,
+  type LogDrainAttemptRow,
+  type LogDrainBatchLogEntry,
+  type LogDrainBatchRow,
+  type LogDrainRow,
+  listLogDrains,
+  MAX_LOG_DRAINS_PER_ENVIRONMENT,
+  pageLogDrainBatches,
+  revealLogDrainSecret,
+  toLogDrainBatchObject,
+  toLogDrainObject,
+  updateLogDrain,
+} from "./log-drains.ts";
 export { enqueueWebhookMessage } from "./outbox.ts";
 export {
   type ReencryptResult,
   reencryptWebhookSecrets,
 } from "./reencrypt.ts";
-export { purgeExpiredWebhookMessages } from "./retention.ts";
+export { purgeExpiredLogDrainBatches, purgeExpiredWebhookMessages } from "./retention.ts";
 export {
   DEFAULT_PREVIOUS_SECRET_EXPIRES_IN,
   DESCRIPTION_MAX_LENGTH,

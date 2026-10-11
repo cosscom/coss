@@ -1,5 +1,5 @@
 /**
- * Re-encrypts every webhook endpoint secret with the first key of `WEBHOOK_SECRETS_KEY` and drops
+ * Re-encrypts every webhook endpoint and log drain secret with the first key of `WEBHOOK_SECRETS_KEY` and drops
  * previous secrets that stopped signing, so the other keys can be removed from the list. Idempotent;
  * safe to run while the apps serve traffic. Step 3 of README.md, "Rotating WEBHOOK_SECRETS_KEY".
  *
@@ -23,7 +23,7 @@ console.info(
 try {
   const result = await reencryptWebhookSecrets({ keys, dryRun });
   console.info(
-    `[webhooks] ${result.checked} endpoints checked, ${result.reencrypted} ` +
+    `[webhooks] ${result.checked} endpoints and log drains checked, ${result.reencrypted} ` +
       `${dryRun ? "to re-encrypt (dry run)" : "re-encrypted"}, ${result.conflicts} changed meanwhile.`,
   );
   for (const row of result.unreadable) {

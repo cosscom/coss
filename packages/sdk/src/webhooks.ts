@@ -1,7 +1,8 @@
 /**
- * Verifies COSS webhook requests (Standard Webhooks signatures). Uses only Web Crypto, so it runs
- * unchanged on Node, Bun, Deno and Workers.
+ * Verifies COSS webhook and log drain requests (Standard Webhooks signatures). Uses only Web
+ * Crypto, so it runs unchanged on Node, Bun, Deno and Workers.
  */
+import type { LogDrainLine } from "./types/log-drain.ts";
 import type { WebhookEvent } from "./types/webhook.ts";
 
 /** A webhook request failed verification: reject it (e.g. respond 400). */
@@ -46,21 +47,13 @@ function decodeBase64(value: string): Uint8Array<ArrayBuffer> | null {
   }
 }
 
-/**
- * Checks the request's signature and age, then returns the parsed event. Pass the raw request
- * body exactly as received (not re-serialized JSON) and the endpoint's `whsec_…` signing secret.
- * Throws `WebhookVerificationError` when the request must be rejected.
- *
- * ```ts
- * const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET);
- * ```
- */
-export async function verifyWebhook(
+/** Throws unless one of the request's signatures matches and its timestamp is recent. */
+async function verifySignature(
   payload: string,
   headers: WebhookHeaders,
   secret: string,
-  options: VerifyWebhookOptions = {},
-): Promise<WebhookEvent> {
+  options: VerifyWebhookOptions,
+): Promise<void> {
   const id = header(headers, "webhook-id");
   const timestamp = header(headers, "webhook-timestamp");
   const signatures = header(headers, "webhook-signature");
@@ -96,13 +89,58 @@ export async function verifyWebhook(
     if (version !== "v1" || !value) continue;
     const signature = decodeBase64(value);
     // `subtle.verify` compares in constant time.
-    if (signature && (await crypto.subtle.verify("HMAC", key, signature, signed))) {
-      try {
-        return JSON.parse(payload) as WebhookEvent;
-      } catch {
-        throw new WebhookVerificationError("The webhook body is not valid JSON.");
-      }
-    }
+    if (signature && (await crypto.subtle.verify("HMAC", key, signature, signed))) return;
   }
   throw new WebhookVerificationError("No webhook signature matches.");
+}
+
+/**
+ * Checks the request's signature and age, then returns the parsed event. Pass the raw request
+ * body exactly as received (not re-serialized JSON) and the endpoint's `whsec_…` signing secret.
+ * Throws `WebhookVerificationError` when the request must be rejected.
+ *
+ * ```ts
+ * const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET);
+ * ```
+ */
+export async function verifyWebhook(
+  payload: string,
+  headers: WebhookHeaders,
+  secret: string,
+  options: VerifyWebhookOptions = {},
+): Promise<WebhookEvent> {
+  await verifySignature(payload, headers, secret, options);
+  try {
+    return JSON.parse(payload) as WebhookEvent;
+  } catch {
+    throw new WebhookVerificationError("The webhook body is not valid JSON.");
+  }
+}
+
+/**
+ * Checks a log drain request's signature and age, then returns its lines (NDJSON: one log line or
+ * audit event per line). Pass the raw request body exactly as received and the drain's `whsec_…`
+ * signing secret. The `webhook-id` header is the batch id, the same on every retry of a batch:
+ * use it (or each line's `id`) to skip a batch you already stored. Throws
+ * `WebhookVerificationError` when the request must be rejected.
+ *
+ * ```ts
+ * const lines = await verifyLogDrainBatch(await request.text(), request.headers, process.env.COSS_LOG_DRAIN_SECRET);
+ * ```
+ */
+export async function verifyLogDrainBatch(
+  payload: string,
+  headers: WebhookHeaders,
+  secret: string,
+  options: VerifyWebhookOptions = {},
+): Promise<LogDrainLine[]> {
+  await verifySignature(payload, headers, secret, options);
+  try {
+    return payload
+      .split("\n")
+      .filter((line) => line.length > 0)
+      .map((line) => JSON.parse(line) as LogDrainLine);
+  } catch {
+    throw new WebhookVerificationError("The log drain body is not valid NDJSON.");
+  }
 }
