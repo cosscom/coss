@@ -6,7 +6,8 @@
 import { describe, expect, test } from "bun:test";
 import { db } from "@coss/db";
 import { newId } from "@coss/db/id";
-import { trackingUrls } from "@coss/email/testing";
+import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
+import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
@@ -462,6 +463,37 @@ describe("coss.email.suppressions bulk import and export against the API", () =>
     const refused = await coss.email.cancel(sent.data.id);
     expect(refused.error).toMatchObject({ code: "email_not_cancelable", status: 422 });
   });
+
+  test("a scheduled send can be rescheduled", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const scheduled = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Later",
+      text: "Hi",
+      scheduled_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    });
+    if (!scheduled.data) throw new Error("send failed");
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    const rescheduled = await coss.email.reschedule(scheduled.data.id, { scheduled_at: tomorrow });
+    expect(rescheduled.error).toBeNull();
+    expect(rescheduled.data).toMatchObject({ status: "scheduled", scheduled_at: tomorrow });
+    const events = await coss.email.listEvents(scheduled.data.id);
+    expect(events.data?.data.at(-1)).toMatchObject({
+      type: "email.rescheduled",
+      data: {
+        reschedule: { scheduled_at: tomorrow, previous_scheduled_at: scheduled.data.scheduled_at },
+      },
+    });
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    await coss.email.cancel(scheduled.data.id);
+    const refused = await coss.email.reschedule(scheduled.data.id, { scheduled_at: tomorrow });
+    expect(refused.error).toMatchObject({ code: "email_not_reschedulable", status: 422 });
+  });
 });
 
 describe("coss.domains against the API", () => {
@@ -513,6 +545,30 @@ describe("coss.domains against the API", () => {
       param: "name",
     });
     expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+});
+
+describe("coss.domains.tracking against the API", () => {
+  test("create and delete a tracking domain", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey);
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const hostname = `links.${domain.name}`;
+
+    const created = await coss.domains.tracking.create(domain.id, { hostname });
+    expect(created.error).toBeNull();
+    expect(created.data?.tracking).toMatchObject({
+      hostname,
+      status: "active",
+      record: { type: "CNAME", name: hostname, value: "track.coss.test" },
+    });
+
+    const again = await coss.domains.tracking.create(domain.id, { hostname: `t.${domain.name}` });
+    expect(again.error).toMatchObject({ code: "tracking_domain_exists", status: 422 });
+
+    const removed = await coss.domains.tracking.delete(domain.id);
+    expect(removed.data).toMatchObject({ id: domain.id, tracking: null });
   });
 });
 
@@ -740,5 +796,45 @@ describe("coss.reputation against the API", () => {
       code: "account_suspended",
       status: 403,
     });
+  });
+});
+
+describe("coss.logs against the API", () => {
+  test("list and get read the environment's request log", async () => {
+    const tenant = await createTestTenant();
+    const writer = createLogWriter({ flushMs: 60_000 });
+    const { app } = createTestApp({ logWriter: writer });
+    const coss = clientFor(app, tenant.sandboxKey);
+    await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: "nobody",
+      subject: "Hi",
+      text: "Hi",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    await writer.flush();
+
+    const listed = await coss.logs.list({ level: ["warning", "error"], status: ["4xx"] });
+    expect(listed.error).toBeNull();
+    expect(listed.data?.data).toHaveLength(1);
+    const line = listed.data?.data[0];
+    if (!line) throw new Error("missing log line");
+    expect(line).toMatchObject({
+      object: "log",
+      source: "api",
+      level: "warning",
+      method: "POST",
+      route: "/v1/emails",
+      status_code: 422,
+      error_code: "validation_error",
+    });
+    expect(line.request_id).toMatch(REQUEST_ID);
+    expect(await coss.logs.get(line.id)).toEqual({ data: line, error: null });
+
+    const invalid = await coss.logs.list({
+      from: "2026-01-02T00:00:00Z",
+      to: "2026-01-01T00:00:00Z",
+    });
+    expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
   });
 });

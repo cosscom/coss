@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
@@ -36,6 +37,9 @@ export const env = createEnv({
     // Proxies in front of the app that append to X-Forwarded-For (CloudFront → ALB: 2). 0 trusts
     // no forwarded address (local development).
     TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+    // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
+    // of browsers on both zones (dashboard and site).
+    ...sentryEnvShape,
   },
   client: {},
   experimental__runtimeEnv: {},

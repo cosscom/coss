@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
@@ -6,7 +7,7 @@ import {
   insertAttachments,
   loadOutboundAttachments,
   prepareAttachments,
-  purgeAttachmentContent,
+  purgeSendContent,
 } from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
@@ -29,6 +30,7 @@ import {
 import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 import { newTrackingToken } from "./tracking.ts";
+import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml } from "./tracking-html.ts";
 import { resolveTracking } from "./tracking-settings.ts";
 
@@ -47,6 +49,11 @@ export type SendEmailInput = {
   idempotencyKey?: string | null;
   /** Internal callers only: use the same retention on every retry; Infinity never expires. */
   idempotencyRetentionMs?: number;
+  /**
+   * Internal callers only: the body holds a secret (a sign-in link), so it is cleared once the
+   * email is sent, failed or canceled. Its history keeps everything else.
+   */
+  discardBody?: boolean;
 };
 
 export type SendEmailBatchInput = {
@@ -77,6 +84,13 @@ export type EmailService = {
     organizationId: string;
     environmentId: string;
     emailId: string;
+  }): Promise<EmailObjectOutput>;
+  /** Moves a scheduled email to a new time (`scheduled_at`, already validated). */
+  reschedule(input: {
+    organizationId: string;
+    environmentId: string;
+    emailId: string;
+    scheduledAt: string;
   }): Promise<EmailObjectOutput>;
   /**
    * System-level (worker): sends scheduled emails whose time has come, across organizations.
@@ -245,6 +259,12 @@ export type EmailServiceOptions = {
    */
   trackingBaseUrl?: string;
   /**
+   * The provider serving custom tracking domains (`DomainDeps.tracking.name`). With it, an email
+   * whose From domain has an `active` tracking domain of that provider is tracked through it
+   * (`https://<hostname>/t/…`) instead of `trackingBaseUrl`; without it, never.
+   */
+  trackingDomainProvider?: string;
+  /**
    * Content screening of live emails, right before they reach the provider (the worker passes
    * `screenMessage` from `@coss/screening`). A `block` fails the email with `content_rejected`.
    */
@@ -382,8 +402,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ),
         )
         .returning({ id: email.id });
-      // Either way the email has left `queued`, so its attachments are no longer needed.
-      await purgeAttachmentContent(tx, row);
+      // Either way the email has left `queued`, so its attachments (and a discarded body) are no
+      // longer needed.
+      await purgeSendContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
       for (const event of events) await recordProviderEvent(tx, event);
@@ -423,7 +444,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             .where(stillDue)
             .returning({ id: email.id });
           if (!failed) return;
-          await purgeAttachmentContent(tx, row);
+          await purgeSendContent(tx, row);
           await recordProviderEvent(
             tx,
             cossEvent(row, {
@@ -518,8 +539,17 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
     if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
     if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    // Resolved now, as the links are written: a tracking domain that stopped working (or was
+    // removed) since the send falls back to the default host.
+    const customBaseUrl = opts.trackingDomainProvider
+      ? await trackingBaseUrlFor({
+          organizationId: row.organizationId,
+          from: row.from,
+          provider: opts.trackingDomainProvider,
+        })
+      : null;
     const { html, links } = instrumentHtml(row.html, {
-      baseUrl: trackingBaseUrl,
+      baseUrl: customBaseUrl ?? trackingBaseUrl,
       token: row.trackingToken,
       opens: row.trackOpens,
       clicks: row.trackClicks,
@@ -594,6 +624,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     apiKeyId: string | null,
     params: SendEmailRequestOutput,
     trackingCache: Map<string, Promise<{ opens: boolean; clicks: boolean }>>,
+    discardBody = false,
   ): Promise<PreparedSend> {
     const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
     // A time that is not in the future sends now (still recorded as `scheduled_at`).
@@ -628,6 +659,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         subject: params.subject,
         html: params.html,
         text: params.text,
+        discardBody,
         headers: params.headers,
         tags: params.tags,
         category: params.category ?? null,
@@ -703,7 +735,13 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
-    const prepared = await prepareSend(environment, input.apiKeyId, params, new Map());
+    const prepared = await prepareSend(
+      environment,
+      input.apiKeyId,
+      params,
+      new Map(),
+      input.discardBody,
+    );
 
     if (!sandbox) {
       try {
@@ -877,6 +915,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     replay,
     replayBatch,
     cancel: cancelScheduledEmail,
+    reschedule: rescheduleEmail,
     dispatchDue,
   };
 }
@@ -992,11 +1031,12 @@ async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {
   return object;
 }
 
-export async function cancelScheduledEmail(input: {
+/** An email of the environment; malformed ids and other environments' emails are "not found". */
+async function environmentEmail(input: {
   organizationId: string;
   environmentId: string;
   emailId: string;
-}): Promise<EmailObjectOutput> {
+}): Promise<EmailRow> {
   const [found] = isId("email", input.emailId)
     ? await selectEmailsWithMode(
         input.organizationId,
@@ -1005,7 +1045,15 @@ export async function cancelScheduledEmail(input: {
       )
     : [];
   if (!found) throw new EmailError("not_found", "Email not found.");
-  const row = found.email;
+  return found.email;
+}
+
+export async function cancelScheduledEmail(input: {
+  organizationId: string;
+  environmentId: string;
+  emailId: string;
+}): Promise<EmailObjectOutput> {
+  const row = await environmentEmail(input);
   await db.transaction(async (tx) => {
     const [canceled] = await tx
       .update(email)
@@ -1020,7 +1068,7 @@ export async function cancelScheduledEmail(input: {
       )
       .returning({ id: email.id });
     if (!canceled) return;
-    await purgeAttachmentContent(tx, row);
+    await purgeSendContent(tx, row);
     await recordProviderEvent(
       tx,
       cossEvent(row, {
@@ -1036,6 +1084,68 @@ export async function cancelScheduledEmail(input: {
     throw new EmailError(
       "email_not_cancelable",
       `Only scheduled emails can be canceled; this email is ${current.status}.`,
+    );
+  }
+  return current;
+}
+
+/**
+ * Moves a scheduled email to `scheduledAt` (validated by `RescheduleEmailRequest`: at most 30 days
+ * ahead; a past time makes it due now) and records `email.rescheduled`. The same time again
+ * returns the email unchanged, without an event.
+ */
+export async function rescheduleEmail(input: {
+  organizationId: string;
+  environmentId: string;
+  emailId: string;
+  scheduledAt: string;
+}): Promise<EmailObjectOutput> {
+  const row = await environmentEmail(input);
+  const scheduledAt = new Date(input.scheduledAt);
+  const stillScheduled = await db.transaction(async (tx) => {
+    // The row lock makes a worker claiming the email concurrently wait for this commit, after
+    // which its compare-and-set re-checks `scheduled_at` against the new time.
+    const [current] = await tx
+      .select({ scheduledAt: email.scheduledAt })
+      .from(email)
+      .where(
+        and(
+          eq(email.id, row.id),
+          eq(email.organizationId, row.organizationId),
+          eq(email.status, "scheduled"),
+          isNull(email.provider),
+        ),
+      )
+      .for("update");
+    const previous = current?.scheduledAt;
+    if (!previous) return false;
+    if (previous.getTime() === scheduledAt.getTime()) return true;
+    await tx
+      .update(email)
+      .set({ scheduledAt })
+      .where(and(eq(email.id, row.id), eq(email.organizationId, row.organizationId)));
+    await recordProviderEvent(
+      tx,
+      cossEvent(row, {
+        type: "email.rescheduled",
+        providerEventType: "Rescheduled",
+        // Every reschedule is its own event, even back to an earlier time.
+        sourceId: randomUUID(),
+        data: {
+          reschedule: {
+            scheduled_at: scheduledAt.toISOString(),
+            previous_scheduled_at: previous.toISOString(),
+          },
+        },
+      }),
+    );
+    return true;
+  });
+  const current = await currentEmail(row);
+  if (!stillScheduled) {
+    throw new EmailError(
+      "email_not_reschedulable",
+      `Only scheduled emails can be rescheduled; this email is ${current.status}.`,
     );
   }
   return current;

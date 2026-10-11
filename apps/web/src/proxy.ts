@@ -6,7 +6,8 @@ import { clientIpFromForwardedFor } from "@/lib/client-ip";
 
 /**
  * Reachable without a session cookie. /accept-invitation and /sso render their own signed-out state;
- * /api/health is the load balancer's health check.
+ * /api/health is the load balancer's health check; /api/monitoring relays browser errors to Sentry
+ * (signed-out pages and the site report too).
  */
 const PUBLIC_PATH_PREFIXES = [
   "/sign-in",
@@ -16,6 +17,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/sso",
   "/api/auth",
   "/api/health",
+  "/api/monitoring",
   "/accept-invitation",
 ];
 

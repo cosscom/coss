@@ -1,5 +1,5 @@
 import type { RateLimiter } from "@coss/ratelimit";
-import type { ApiKeyContext } from "@coss/tenancy";
+import type { ApiKeyContext, RefusedKeyContext } from "@coss/tenancy";
 import type { Versioning } from "@coss/versioning";
 
 /** Hono environment shared by every router and middleware of the public API. */
@@ -9,6 +9,8 @@ export type AppEnv = {
     requestId: string;
     /** The authenticated key's environment. Only set behind `requireApiKey`. */
     auth: ApiKeyContext;
+    /** A valid key `requireApiKey` refused (permissions, suspension): lets the refusal be logged. */
+    attemptedAuth: RefusedKeyContext;
     rateLimiter: RateLimiter;
     /** The caller's address per `CLIENT_IP_HEADER`; `null` disables per-IP limits. */
     clientIp: string | null;

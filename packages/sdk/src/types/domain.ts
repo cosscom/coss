@@ -38,6 +38,46 @@ export interface DomainRecord {
   found: string[];
 }
 
+/**
+ * `pending` until the CNAME points at COSS and its certificate is issued, `active` once tracking
+ * links of emails sent from the domain use it, `temporary_failure` when an active hostname stopped
+ * working (emails fall back to the default tracking host meanwhile), and `failed` when setup gave
+ * up (72 hours) — call `domains.verify` to start over. `deleting` is a removal in progress.
+ */
+export type TrackingDomainStatus =
+  | "pending"
+  | "active"
+  | "temporary_failure"
+  | "failed"
+  | "deleting";
+
+/** The CNAME a tracking domain needs, with the result of the last check. */
+export interface TrackingDomainRecord {
+  type: "CNAME";
+  /** The fully qualified record name to create. */
+  name: string;
+  /** The host the record must point at. */
+  value: string;
+  status: DomainRecordStatus;
+  /** What DNS returned when it did not match. */
+  found: string[];
+}
+
+/** A domain's custom tracking domain: open pixels and click redirects use it while `active`. */
+export interface TrackingDomain {
+  /** The tracking hostname, a subdomain of the domain (e.g. `links.acme.com`). */
+  hostname: string;
+  status: TrackingDomainStatus;
+  record: TrackingDomainRecord;
+  /** What is holding the hostname up, when the certificate provider said. */
+  message: string | null;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  last_checked_at: string | null;
+  activated_at: string | null;
+  failed_at: string | null;
+}
+
 /** A sending domain of the organization. */
 export interface Domain {
   object: "domain";
@@ -58,6 +98,8 @@ export interface Domain {
   last_checked_at: string | null;
   verified_at: string | null;
   failed_at: string | null;
+  /** The custom tracking domain, or `null` when none is set up. */
+  tracking: TrackingDomain | null;
 }
 
 /** Body of `POST /v1/domains`. */
@@ -74,4 +116,10 @@ export interface DeletedDomain {
   object: "domain";
   id: string;
   deleted: true;
+}
+
+/** Body of `POST /v1/domains/{id}/tracking`. */
+export interface CreateTrackingDomainParams {
+  /** A subdomain of the domain to serve tracking links from (`"links.acme.com"`). */
+  hostname: string;
 }

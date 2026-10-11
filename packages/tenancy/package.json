@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./admin": "./src/admin.ts",
+    "./retention": "./src/retention.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {
@@ -18,6 +19,7 @@
     "@better-auth/api-key": "catalog:",
     "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/versioning": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:"

@@ -37,23 +37,38 @@ function assertTestDatabase(): void {
   }
 }
 
-/** Creates a user with a password credential. `emailVerified` defaults to true. */
+/** Every fixture user shares this password (each user still gets its own credential row). */
+const TEST_PASSWORD = "coss-test-password-not-secret";
+let testPasswordHash: Promise<string> | undefined;
+
+/**
+ * Creates a user with a password credential. `emailVerified` defaults to true.
+ *
+ * Does what Better Auth's admin `createUser` does with a password, but hashes the shared password
+ * once per process: scrypt costs ~45 ms of CPU per call, which was half of the DB suites' runtime.
+ */
 export async function createTestUser(
   opts: { emailVerified?: boolean; name?: string } = {},
 ): Promise<TestUser> {
   assertTestDatabase();
   const suffix = uniqueSuffix();
   const email = `user-${suffix}@coss.test`;
-  const password = `pw-${suffix}-not-secret`;
   const { user } = await auth.api.createUser({
     body: {
       email,
-      password,
       name: opts.name ?? `Test User ${suffix}`,
       data: { emailVerified: opts.emailVerified ?? true },
     },
   });
-  return { id: user.id, email: user.email, password };
+  const context = await auth.$context;
+  testPasswordHash ??= context.password.hash(TEST_PASSWORD);
+  await context.internalAdapter.linkAccount({
+    providerId: "credential",
+    accountId: user.id,
+    password: await testPasswordHash,
+    userId: user.id,
+  });
+  return { id: user.id, email: user.email, password: TEST_PASSWORD };
 }
 
 /** Server-side membership grant (no session or invitation involved). */

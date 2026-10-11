@@ -1,8 +1,14 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "NODE_ENV",
+  "futureFlags": {
+    "longerSignatureKey": true
+  },
+  "remoteCache": {
+    "signature": true
+  },
+  "globalEnv": ["NODE_ENV", "NEXT_DEPLOYMENT_ID"],
+  "globalPassThroughEnv": [
     "DATABASE_URL",
     "TEST_DATABASE_URL",
     "DATABASE_POOL_MAX",
@@ -15,6 +21,10 @@
     "AWS_REGION",
     "SES_CONFIGURATION_SET",
     "SES_TENANT_PREFIX",
+    "TRACKING_DOMAIN_PROVIDER",
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_ZONE_ID",
+    "TRACKING_CNAME_TARGET",
     "SES_EVENTS_QUEUE_URL",
     "NOTIFICATIONS_ENVIRONMENT_ID",
     "NOTIFICATIONS_FROM",
@@ -29,11 +39,14 @@
     "CLIENT_IP_HEADER",
     "TRUSTED_PROXY_COUNT",
     "SKIP_ENV_VALIDATION",
+    "SKIP_BUILD_TYPECHECK",
     "TRUSTED_PROXY_HOPS",
     "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
-    "NEXT_DEPLOYMENT_ID"
-  ],
-  "globalPassThroughEnv": [
+    "LOG_RETENTION_DAYS",
+    "SENTRY_DSN",
+    "SENTRY_ENVIRONMENT",
+    "SENTRY_TRACES_SAMPLE_RATE",
+    "SENTRY_RELEASE",
     "AWS_PROFILE",
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
@@ -46,16 +59,17 @@
     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
     "AWS_CONTAINER_CREDENTIALS_FULL_URI",
     "AWS_CONTAINER_AUTHORIZATION_TOKEN",
-    "NEXT_TELEMETRY_DISABLED"
+    "NEXT_TELEMETRY_DISABLED",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT"
   ],
-  "globalDependencies": [".env"],
   "tasks": {
     "transit": {
       "dependsOn": ["^transit"]
     },
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
     },
     "typecheck": {

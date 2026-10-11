@@ -155,6 +155,9 @@ export const email = pgTable(
     subject: text("subject").notNull(),
     html: text("html"),
     text: text("text"),
+    // Internal sends whose body holds a secret (sign-in links in auth emails): `html`/`text` are
+    // cleared when the email leaves `queued`/`scheduled`, like attachment content.
+    discardBody: boolean("discard_body").notNull().default(false),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
@@ -207,6 +210,8 @@ export const email = pgTable(
     index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
+    // The worker's retention purge (oldest first, across organizations).
+    index("email_created_at_idx").on(t.createdAt),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -241,6 +246,7 @@ export type EmailEventDetails = {
   suppression?: { id: string; scope: string; reason: EmailSuppressionReason };
   open?: { user_agent: string | null };
   click?: { url: string; link_position: number; user_agent: string | null };
+  reschedule?: { scheduled_at: string; previous_scheduled_at: string };
 };
 
 /** One row per distinct recipient address of an email; its status is driven by delivery events. */
@@ -320,6 +326,7 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.canceled",
   "email.opened",
   "email.clicked",
+  "email.rescheduled",
 ]);
 
 /**
@@ -561,6 +568,73 @@ export const domain = pgTable(
   ],
 );
 
+export const trackingDomainStatus = pgEnum("tracking_domain_status", [
+  "pending",
+  "active",
+  "temporary_failure",
+  "failed",
+  "deleting",
+]);
+
+/** Result of checking the CNAME a tracking domain needs (same statuses as `DomainRecord`). */
+export type TrackingDomainRecord = {
+  type: "CNAME";
+  name: string;
+  value: string;
+  status: DomainRecord["status"];
+  found: string[];
+};
+
+/**
+ * The custom tracking hostname of a sending domain (e.g. `links.acme.com`, a CNAME to COSS's
+ * tracking host): open pixels and click redirects of emails sent from that domain use it once the
+ * provider (Cloudflare for SaaS) serves it with a certificate. At most one per domain; hostnames
+ * are unique across organizations while not `failed`.
+ */
+export const trackingDomain = pgTable(
+  "tracking_domain",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.trackingDomain)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    // Lower-case ASCII (punycode), no trailing dot; a subdomain of the domain's name.
+    hostname: text("hostname").notNull(),
+    status: trackingDomainStatus("status").notNull().default("pending"),
+    provider: text("provider").notNull(),
+    // The provider's id for the hostname (a Cloudflare custom hostname id); null until created.
+    providerHostnameId: text("provider_hostname_id"),
+    record: jsonb("record").$type<TrackingDomainRecord>().notNull(),
+    // The latest problem the provider reported (certificate validation, blocked hostname…).
+    providerMessage: text("provider_message"),
+    // Verification gives up 72 hours after this (creation, or the latest restart).
+    verificationStartedAt: timestamp("verification_started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
+    activatedAt: timestamp("activated_at", { withTimezone: true }),
+    failedAt: timestamp("failed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "tracking_domain_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    unique("tracking_domain_domain_unique").on(t.domainId),
+    uniqueIndex("tracking_domain_hostname_active_unique")
+      .on(t.hostname)
+      .where(sql`${t.status} <> 'failed'`),
+    index("tracking_domain_next_check_at_idx")
+      .on(t.nextCheckAt)
+      .where(sql`${t.nextCheckAt} is not null`),
+  ],
+);
+
 /** A customer URL that receives signed event notifications for one environment. */
 export const webhookEndpoint = pgTable(
   "webhook_endpoint",
@@ -623,6 +697,8 @@ export const webhookMessage = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     unique("webhook_message_id_organization_unique").on(t.id, t.organizationId),
+    // The worker's retention purge.
+    index("webhook_message_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -745,7 +821,10 @@ export const reputationEventType = pgEnum("reputation_event_type", [
 
 export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
 
-/** Append-only history of an organization's standing changes (audit trail). */
+/**
+ * Append-only history of an organization's standing changes (audit trail). The worker deletes
+ * entries past the retention in `@coss/retention`, except each organization's latest transition.
+ */
 export const reputationEvent = pgTable(
   "reputation_event",
   {
@@ -888,6 +967,8 @@ export const contentScreening = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+    // The worker's retention purge.
+    index("content_screening_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -941,7 +1022,8 @@ export const organizationApiVersion = pgTable("organization_api_version", {
 });
 
 /**
- * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
+ * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…),
+ * kept for the retention in `@coss/retention` (the worker deletes older entries).
  * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
  * actor's email is copied so entries stay readable after the rows they name are gone.
  */
@@ -966,6 +1048,8 @@ export const adminAuditEvent = pgTable(
     index("admin_audit_event_organization_idx")
       .on(t.organizationId, t.id.desc())
       .where(sql`${t.organizationId} is not null`),
+    // The worker's retention purge.
+    index("admin_audit_event_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -991,4 +1075,166 @@ export const rateLimitOverride = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
+);
+
+export const logSource = pgEnum("log_source", ["api", "email", "webhook"]);
+export type LogSource = (typeof logSource.enumValues)[number];
+
+export const logLevel = pgEnum("log_level", ["info", "warning", "error"]);
+export type LogLevel = (typeof logLevel.enumValues)[number];
+
+/**
+ * One line of an environment's log (`@coss/logs`): an API request, an email event or a webhook
+ * delivery attempt. Append-only and partitioned by day on `occurred_at` (migration 0027; the worker
+ * creates upcoming partitions and drops expired ones), hence the composite primary key.
+ */
+export const logEntry = pgTable(
+  "log_entry",
+  {
+    id: text("id")
+      .notNull()
+      .$defaultFn(() => newId(ID_PREFIXES.logEntry)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    source: logSource("source").notNull(),
+    level: logLevel("level").notNull(),
+    // e.g. `api.request`, `email.delivered`, `webhook.attempt`.
+    type: text("type").notNull(),
+    message: text("message").notNull(),
+    requestId: text("request_id"),
+    // No FK: Better Auth hard-deletes keys.
+    apiKeyId: text("api_key_id"),
+    method: text("method"),
+    path: text("path"),
+    // The matched route pattern, e.g. `/v1/emails/:id`.
+    route: text("route"),
+    statusCode: integer("status_code"),
+    durationMs: integer("duration_ms"),
+    clientIp: text("client_ip"),
+    userAgent: text("user_agent"),
+    errorCode: text("error_code"),
+    // The resource the line is about (`email_…`, `whep_…`, `dom_…`), no FK.
+    resourceType: text("resource_type"),
+    resourceId: text("resource_id"),
+    recipient: text("recipient"),
+    // Redacted request/response bodies, event details.
+    attributes: jsonb("attributes").$type<Record<string, unknown>>().notNull().default({}),
+    // Lowercased text the free-text search matches (message, path, ids, recipient).
+    searchText: text("search_text").notNull().default(""),
+  },
+  (t) => [
+    primaryKey({ name: "log_entry_pkey", columns: [t.occurredAt, t.id] }),
+    foreignKey({
+      name: "log_entry_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    index("log_entry_environment_occurred_at_idx").on(
+      t.environmentId,
+      t.occurredAt.desc(),
+      t.id.desc(),
+    ),
+    index("log_entry_environment_request_idx")
+      .on(t.environmentId, t.requestId)
+      .where(sql`${t.requestId} is not null`),
+    index("log_entry_environment_resource_idx")
+      .on(t.environmentId, t.resourceId)
+      .where(sql`${t.resourceId} is not null`),
+    index("log_entry_search_text_idx").using("gin", t.searchText.op("gin_trgm_ops")),
+  ],
+);
+
+export const orgAuditActorType = pgEnum("org_audit_actor_type", ["user", "api_key", "system"]);
+export type OrgAuditActorType = (typeof orgAuditActorType.enumValues)[number];
+
+/**
+ * An organization's audit log: who changed what (dashboard members, API keys, Better Auth flows,
+ * COSS support). History: no FKs except the organization, and actor/target labels are copied so
+ * entries stay readable after the rows they name are gone. Kept indefinitely.
+ */
+export const orgAuditEvent = pgTable(
+  "org_audit_event",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.orgAuditEvent)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id"),
+    environmentId: text("environment_id"),
+    actorType: orgAuditActorType("actor_type").notNull(),
+    actorId: text("actor_id"),
+    actorLabel: text("actor_label").notNull(),
+    // e.g. `api_key.created`, `domain.deleted`, `member.role_changed`.
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    targetLabel: text("target_label"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+    clientIp: text("client_ip"),
+    userAgent: text("user_agent"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("org_audit_event_organization_idx").on(t.organizationId, t.id.desc()),
+    index("org_audit_event_organization_action_idx").on(t.organizationId, t.action, t.id.desc()),
+  ],
+);
+
+export const authEmailKind = pgEnum("auth_email_kind", [
+  "verify_email",
+  "reset_password",
+  "invitation",
+]);
+
+export const authEmailStatus = pgEnum("auth_email_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the account emails Better Auth asks for (sign-up verification, password resets,
+ * invitations). Written by `@coss/auth`'s callbacks; the worker sends each one through COSS's own
+ * email product (`@coss/auth/emails`). Not tenant data: an email belongs to an address, not an
+ * organization.
+ */
+export const authEmail = pgTable(
+  "auth_email",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.authEmail)),
+    kind: authEmailKind("kind").notNull(),
+    to: text("to").notNull(),
+    // The account it is about (null for invitations, which may go to people without one). No FK:
+    // Better Auth creates a user in a transaction the outbox insert is not part of; an email for
+    // a user that doesn't exist (any more) is skipped.
+    userId: text("user_id"),
+    // The link to send. It carries a secret (a verification or reset token), so it is cleared
+    // as soon as the email is settled.
+    url: text("url"),
+    // Kind-specific content (invitations: organization, inviter, role).
+    data: jsonb("data").$type<Record<string, string>>().notNull().default({}),
+    // The link stops working at this time; an email not sent by then is skipped.
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    status: authEmailStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // Why it was skipped, or the last failure.
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("auth_email_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
+  ],
 );

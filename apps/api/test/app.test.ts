@@ -154,6 +154,7 @@ describe("GET /openapi.json", () => {
     expect(Object.keys(doc.paths).sort()).toEqual([
       "/v1/domains",
       "/v1/domains/{id}",
+      "/v1/domains/{id}/tracking",
       "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/batch",
@@ -161,6 +162,9 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
+      "/v1/emails/{id}/reschedule",
+      "/v1/logs",
+      "/v1/logs/{id}",
       "/v1/reputation",
       "/v1/suppressions",
       "/v1/suppressions/check",
@@ -206,12 +210,25 @@ describe("GET /openapi.json", () => {
         { $ref: "#/components/parameters/CossVersion" },
       ],
     });
+    expect(doc.paths["/v1/logs"]?.get).toMatchObject({
+      operationId: "listLogs",
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/logs/{id}"]?.get).toMatchObject({ operationId: "getLog" });
     expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
       operationId: "getReputation",
       security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
       operationId: "cancelEmail",
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
+    });
+    expect(doc.paths["/v1/emails/{id}/reschedule"]?.post).toMatchObject({
+      operationId: "rescheduleEmail",
       security: [{ bearerAuth: [] }],
       parameters: [
         { in: "path", name: "id", required: true },
@@ -260,6 +277,8 @@ describe("GET /openapi.json", () => {
       ["get /v1/domains/{id}", "getDomain"],
       ["delete /v1/domains/{id}", "deleteDomain"],
       ["post /v1/domains/{id}/verify", "verifyDomain"],
+      ["post /v1/domains/{id}/tracking", "createTrackingDomain"],
+      ["delete /v1/domains/{id}/tracking", "deleteTrackingDomain"],
       ["post /v1/webhook_endpoints", "createWebhookEndpoint"],
       ["get /v1/webhook_endpoints", "listWebhookEndpoints"],
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
@@ -290,6 +309,8 @@ describe("GET /openapi.json", () => {
         "DeletedSuppression",
         "Reputation",
         "ReputationCheck",
+        "Log",
+        "LogList",
         "ImportSuppressionsRequest",
         "SuppressionImport",
         "CreateDomainRequest",
@@ -297,6 +318,8 @@ describe("GET /openapi.json", () => {
         "DomainRecord",
         "DomainList",
         "DeletedDomain",
+        "TrackingDomain",
+        "CreateTrackingDomainRequest",
         "CreateWebhookEndpointRequest",
         "UpdateWebhookEndpointRequest",
         "RollWebhookEndpointSecretRequest",

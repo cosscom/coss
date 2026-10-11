@@ -37,6 +37,7 @@ export {
   type ReencryptResult,
   reencryptWebhookSecrets,
 } from "./reencrypt.ts";
+export { purgeExpiredWebhookMessages } from "./retention.ts";
 export {
   DEFAULT_PREVIOUS_SECRET_EXPIRES_IN,
   DESCRIPTION_MAX_LENGTH,

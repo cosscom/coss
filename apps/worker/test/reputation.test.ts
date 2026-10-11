@@ -7,8 +7,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   EmailError,
+  emailNotifier,
   emailReputationChecks,
-  emailReputationNotifier,
   FakeEmailProvider,
   notificationEnvironment,
 } from "@coss/email";
@@ -115,7 +115,7 @@ describe("live bounces → automatic suspension → webhook", () => {
       // The notification goes out as a live email of COSS's own organization.
       const platform = await createTestTenant();
       const platformDomain = await createVerifiedDomain(platform.organization.id);
-      const notifier = emailReputationNotifier({
+      const notifier = emailNotifier({
         service,
         environment: await notificationEnvironment(platform.production.id),
         from: `COSS <notifications@${platformDomain.name}>`,

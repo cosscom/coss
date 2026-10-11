@@ -15,6 +15,8 @@
   },
   "dependencies": {
     "@coss/db": "workspace:*",
+    "@coss/retention": "workspace:*",
+    "@coss/logs": "workspace:*",
     "@coss/versioning": "workspace:*",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"

@@ -85,6 +85,58 @@ describe("coss.domains", () => {
   });
 });
 
+describe("coss.domains.tracking", () => {
+  const tracked = {
+    ...sampleDomain,
+    tracking: {
+      hostname: "links.acme.com",
+      status: "pending" as const,
+      record: {
+        type: "CNAME" as const,
+        name: "links.acme.com",
+        value: "track.coss.com",
+        status: "missing" as const,
+        found: [],
+      },
+      message: null,
+      created_at: "2026-10-09T12:05:00.000Z",
+      last_checked_at: null,
+      activated_at: null,
+      failed_at: null,
+    },
+  };
+
+  test("create posts the hostname with an idempotency key; delete returns the domain", async () => {
+    const { coss, calls } = client(json(200, tracked), json(200, sampleDomain));
+
+    const created = await coss.domains.tracking.create(sampleDomain.id, {
+      hostname: "links.acme.com",
+    });
+    const removed = await coss.domains.tracking.delete(sampleDomain.id);
+
+    expect(created).toEqual({ data: tracked, error: null });
+    expect(removed.data?.tracking).toBeNull();
+    expect(calls.map((call) => `${call.method} ${new URL(call.url).pathname}`)).toEqual([
+      `POST /v1/domains/${sampleDomain.id}/tracking`,
+      `DELETE /v1/domains/${sampleDomain.id}/tracking`,
+    ]);
+    expect(calls[0]?.body).toBe('{"hostname":"links.acme.com"}');
+    expect(calls[0]?.headers.get("idempotency-key")).toBeString();
+  });
+
+  test("an invalid hostname comes back as an error", async () => {
+    const { coss } = client(
+      apiError(422, {
+        type: "invalid_request_error",
+        code: "invalid_tracking_hostname",
+        param: "hostname",
+      }),
+    );
+    const result = await coss.domains.tracking.create("dom_1/x", { hostname: "links.other.com" });
+    expect(result.error).toMatchObject({ code: "invalid_tracking_hostname", param: "hostname" });
+  });
+});
+
 describe("coss.webhookEndpoints", () => {
   test("create posts the endpoint and returns the secret", async () => {
     const created = { ...sampleEndpoint, secret: "whsec_abc" };

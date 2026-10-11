@@ -10,6 +10,7 @@ import {
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { supportAudit } from "@/lib/audit";
 import { requirePlatformAdminAction } from "@/lib/session";
 
 /** The organization named by the form (platform admins act across organizations). */
@@ -40,6 +41,7 @@ export async function reinstateOrganizationAction(
       adminUserId: admin.session.user.id,
       note: requiredNote(formData),
     });
+    await supportAudit(organizationId, "sending.reinstated");
     refresh();
     return null;
   });
@@ -59,6 +61,7 @@ export async function suspendOrganizationAction(
       note: requiredNote(formData),
     });
     if (!event) throw new ActionError("This organization is already suspended.");
+    await supportAudit(organizationId, "sending.suspended");
     refresh();
     return null;
   });

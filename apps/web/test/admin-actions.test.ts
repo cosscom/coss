@@ -39,6 +39,8 @@ mock.module("@/lib/session", () => ({
     actor: { userId: newId("user"), email: "admin@test.local" },
   }),
 }));
+const supportAudit = mock(async () => {});
+mock.module("@/lib/audit", () => ({ supportAudit }));
 const mutate = mock(async () => ({}));
 mock.module("@/lib/auth", () => ({
   auth: {
@@ -157,6 +159,7 @@ describe("SSO recovery", () => {
     unlinkUserSso.mockClear();
     disableOrganizationSso.mockClear();
     disableOrganizationSsoRequirement.mockClear();
+    supportAudit.mockClear();
   });
 
   test("unlinking a user's SSO accounts needs a user id and a reason", async () => {
@@ -198,6 +201,9 @@ describe("SSO recovery", () => {
       expect(target()).toHaveBeenCalledWith(
         expect.objectContaining({ organizationId, reason: "Outage", actor: expect.any(Object) }),
       );
+      // The organization's own audit log names "COSS support", never the reason.
+      expect(supportAudit).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(supportAudit.mock.calls)).not.toContain("Outage");
     });
   }
 });

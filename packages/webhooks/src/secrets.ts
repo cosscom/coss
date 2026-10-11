@@ -6,7 +6,8 @@
  * encrypts, any of them decrypts, and every ciphertext names the key it was made with
  * (`v2:<key id>:<iv>:<ciphertext>:<tag>`, the `v2:<key id>` prefix authenticated as associated
  * data). Key ids are derived from the keys, so the list needs no labels. Rotating the key:
- * README.md, "Rotating WEBHOOK_SECRETS_KEY".
+ * README.md, "Rotating WEBHOOK_SECRETS_KEY". The first upgrade from v1-only readers requires
+ * the coordinated cutover in "Upgrading from v1 webhook secret storage" before these writers start.
  */
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { decodeSecretsKeys } from "./env.ts";

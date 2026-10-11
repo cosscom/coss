@@ -29,6 +29,7 @@ import {
 } from "@coss/webhooks/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
@@ -324,6 +325,11 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
       },
       deps,
     );
+    await recordApiAudit(c, {
+      action: "webhook_endpoint.created",
+      target: { type: "webhook_endpoint", id: endpoint.id, label: endpoint.url },
+      metadata: { event_types: endpoint.eventTypes },
+    });
     return c.json({ ...toWebhookEndpointObject(endpoint), secret }, 200);
   });
 
@@ -356,6 +362,11 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
       },
       deps,
     );
+    await recordApiAudit(c, {
+      action: "webhook_endpoint.updated",
+      target: { type: "webhook_endpoint", id: updated.id, label: updated.url },
+      metadata: { fields: Object.keys(body) },
+    });
     return c.json(toWebhookEndpointObject(updated), 200);
   });
 
@@ -376,6 +387,10 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
   router.openapi(deleteWebhookEndpointRoute, async (c) => {
     const row = await requireEndpoint(c.var.auth, c.req.valid("param").id);
     await deleteWebhookEndpoint({ organizationId: row.organizationId, id: row.id });
+    await recordApiAudit(c, {
+      action: "webhook_endpoint.deleted",
+      target: { type: "webhook_endpoint", id: row.id, label: row.url },
+    });
     return c.json({ object: "webhook_endpoint" as const, id: row.id, deleted: true as const }, 200);
   });
 

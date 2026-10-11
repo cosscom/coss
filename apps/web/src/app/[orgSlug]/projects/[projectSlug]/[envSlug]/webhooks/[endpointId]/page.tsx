@@ -1,5 +1,7 @@
+import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -84,6 +86,19 @@ export default async function WebhookEndpointPage({
         <PageHeader
           actions={
             <>
+              {can({ log: ["read"] }) ? (
+                <Button
+                  render={
+                    <Link
+                      href={`${base}/logs?${new URLSearchParams({ q: `source:webhook ${endpoint.id}`, range: "7d" })}`}
+                    />
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  View logs
+                </Button>
+              ) : null}
               {canUpdate ? <ToggleEndpointButton {...target} enabled={endpoint.enabled} /> : null}
               {canDelete ? <DeleteEndpointButton {...target} url={endpoint.url} /> : null}
             </>
@@ -165,7 +180,8 @@ export default async function WebhookEndpointPage({
           <CardTitle>Recent deliveries</CardTitle>
           <CardDescription>
             Failed deliveries are retried for about a day (8 attempts). Any 2xx response counts as
-            delivered.
+            delivered. Deliveries are kept for{" "}
+            {formatRetentionDays(RETENTION_DAYS.webhookDeliveries)}.
           </CardDescription>
         </CardHeader>
         <CardPanel className="p-2">

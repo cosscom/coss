@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -35,6 +36,10 @@ export const env = createEnv({
     ...webhookEnvShape,
     ...emailEnvShape,
     ...rateLimitEnvShape,
+    // Error and performance monitoring; read by src/instrument.ts before this schema runs.
+    ...sentryEnvShape,
+    // The image's commit (Dockerfile build argument), Sentry's release.
+    SENTRY_RELEASE: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

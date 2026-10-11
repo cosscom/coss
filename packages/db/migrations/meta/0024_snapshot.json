@@ -1,5 +1,5 @@
 {
-  "id": "2484fcb5-23c3-4d5a-82d6-03e3e9863e18",
+  "id": "05359651-b3fb-4a48-9461-c5b3b16eb9d3",
   "prevId": "9e3f3543-cb77-42ac-ad53-253b4b4814ac",
   "version": "7",
   "dialect": "postgresql",
@@ -1340,6 +1340,127 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.auth_email": {
+      "name": "auth_email",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "auth_email_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "to": {
+          "name": "to",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "auth_email_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "auth_email_next_attempt_idx": {
+          "name": "auth_email_next_attempt_idx",
+          "columns": [
+            {
+              "expression": "next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"auth_email\".\"next_attempt_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.content_screening": {
       "name": "content_screening",
       "schema": "",
@@ -1884,6 +2005,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "discard_body": {
+          "name": "discard_body",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "headers": {
           "name": "headers",
@@ -4417,18 +4545,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "previous_secret_ciphertext": {
-          "name": "previous_secret_ciphertext",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "previous_secret_expires_at": {
-          "name": "previous_secret_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "enabled": {
           "name": "enabled",
           "type": "boolean",
@@ -4516,12 +4632,7 @@
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "webhook_endpoint_previous_secret_check": {
-          "name": "webhook_endpoint_previous_secret_check",
-          "value": "(\"webhook_endpoint\".\"previous_secret_ciphertext\" is null) = (\"webhook_endpoint\".\"previous_secret_expires_at\" is null)"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.webhook_message": {
@@ -4601,6 +4712,25 @@
     }
   },
   "enums": {
+    "public.auth_email_kind": {
+      "name": "auth_email_kind",
+      "schema": "public",
+      "values": [
+        "verify_email",
+        "reset_password",
+        "invitation"
+      ]
+    },
+    "public.auth_email_status": {
+      "name": "auth_email_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "sent",
+        "skipped",
+        "failed"
+      ]
+    },
     "public.content_screening_verdict": {
       "name": "content_screening_verdict",
       "schema": "public",

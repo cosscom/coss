@@ -1,13 +1,16 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
+import { type AuthEmailDeps, runDueAuthEmails } from "@coss/auth/emails";
 import {
   type DomainDeps,
   type EmailDispatchQueue,
   type EmailService,
   emailReputationChecks,
   recheckDueDomains,
+  recheckDueTrackingDomains,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
+import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import {
   type ReputationNotificationDeps,
   runDueReputationEvaluations,
@@ -17,6 +20,7 @@ import { contentScreeningCheck } from "@coss/screening";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
+import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
@@ -24,7 +28,9 @@ const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
+const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
+const RETENTION_BATCH = 1000;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
@@ -35,6 +41,10 @@ export type WorkerDeps = {
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
+  /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
+  logRetentionDays: number;
+  /** Sends account emails (verification, password resets, invitations); `null`: held. */
+  authEmails: AuthEmailDeps | null;
   /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
   notifications: ReputationNotificationDeps | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
@@ -57,9 +67,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
     startLoop({
       name: "domains",
       intervalMs: 30_000,
-      run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
-        DOMAIN_BATCH,
+      // Sending domains, then their custom tracking domains.
+      run: async () => {
+        const opts = { limit: DOMAIN_BATCH, signal: deps.signal };
+        const domains = await recheckDueDomains(opts, deps.domains);
+        const tracking = await recheckDueTrackingDomains(opts, deps.domains);
+        return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH;
+      },
     }),
     startLoop({
       name: "scheduled-emails",
@@ -93,7 +107,39 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
     }),
+    startLoop({
+      // Deletes data past its published retention (`@coss/retention`); catches up in full batches.
+      name: "retention",
+      intervalMs: 10 * 60_000,
+      run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
+    }),
+    startLoop({
+      // Log retention: a week of daily partitions ahead, expired days dropped whole.
+      name: "logs",
+      intervalMs: 60 * 60_000,
+      run: async () => {
+        const created = await ensureLogPartitions();
+        const dropped = await dropExpiredLogPartitions({ retentionDays: deps.logRetentionDays });
+        if (created.length > 0 || dropped.length > 0) {
+          console.info(
+            `[worker:logs] created ${created.length}, dropped ${dropped.length} log partitions`,
+          );
+        }
+      },
+    }),
   ];
+  const authEmails = deps.authEmails;
+  if (authEmails) {
+    loops.push(
+      startLoop({
+        name: "auth-emails",
+        // Someone is waiting for these (a sign-up, a password reset).
+        intervalMs: 2000,
+        run: async () =>
+          (await runDueAuthEmails({ limit: AUTH_EMAIL_BATCH }, authEmails)) === AUTH_EMAIL_BATCH,
+      }),
+    );
+  }
   const notifications = deps.notifications;
   if (notifications) {
     loops.push(

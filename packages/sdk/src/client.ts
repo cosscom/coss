@@ -2,6 +2,7 @@ import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 
@@ -75,6 +76,8 @@ export class Coss {
   readonly webhookEndpoints: WebhookEndpointsResource;
   /** The organization's sending reputation (`coss.reputation.get()`). */
   readonly reputation: ReputationResource;
+  /** The environment's log: API requests, email events, webhook attempts (`coss.logs.list()`). */
+  readonly logs: LogsResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -113,5 +116,6 @@ export class Coss {
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
     this.reputation = new ReputationResource(http);
+    this.logs = new LogsResource(http);
   }
 }

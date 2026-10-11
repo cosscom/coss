@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # Background worker (apps/worker) on Bun, run from TypeScript source. Build from the repository root:
-#   docker build -f apps/worker/Dockerfile .
+#   docker build -f apps/worker/Dockerfile --build-arg SENTRY_RELEASE="$(git rev-parse HEAD)" .
 # One image for every stage: the worker reads and validates its environment when it starts
 # (README.md, "Deploying to AWS"). One-off tasks reuse it:
 #   bun packages/db/src/migrate.ts             database migrations (before every deploy)
@@ -29,9 +29,11 @@ RUN bun install --frozen-lockfile --production
 COPY --from=prune /pruned/full/ .
 
 FROM bun AS runtime
+# The commit: Sentry's release. Not stage-specific.
+ARG SENTRY_RELEASE=""
 # Postgres TLS: DATABASE_URL=…?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem
 ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
-ENV NODE_ENV=production NO_COLOR=1
+ENV NODE_ENV=production NO_COLOR=1 SENTRY_RELEASE=${SENTRY_RELEASE}
 # Root-owned and read-only for the app. No .env exists here (.dockerignore), so Bun's automatic
 # .env loading and the scripts' --env-file are no-ops: configuration comes from the task.
 WORKDIR /app
